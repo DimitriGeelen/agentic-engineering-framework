@@ -26,6 +26,7 @@ do_install_hooks() {
     local hooks_dir="$PROJECT_ROOT/.git/hooks"
     local commit_msg_hook="$hooks_dir/commit-msg"
     local post_commit_hook="$hooks_dir/post-commit"
+    local pre_push_hook="$hooks_dir/pre-push"
 
     # Check if hooks exist
     if [ -f "$commit_msg_hook" ] && [ "$force" = false ]; then
@@ -106,16 +107,65 @@ HOOK_EOF
 
     chmod +x "$post_commit_hook"
 
+    # Create pre-push hook for audit enforcement
+    cat > "$pre_push_hook" << 'HOOK_EOF'
+#!/bin/bash
+# pre-push hook - Audit Enforcement
+# Installed by: ./agents/git/git.sh install-hooks
+# Part of: Agentic Engineering Framework
+# VERSION=1.0
+
+# Find project root (where .git is)
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+
+# Skip if audit script doesn't exist
+if [ ! -f "$AUDIT_SCRIPT" ]; then
+    echo "WARNING: Audit script not found at $AUDIT_SCRIPT"
+    echo "Push allowed, but audit enforcement is disabled"
+    exit 0
+fi
+
+echo ""
+echo "=== Pre-Push Audit Check ==="
+echo ""
+
+# Run audit
+"$AUDIT_SCRIPT"
+audit_exit=$?
+
+if [ $audit_exit -eq 2 ]; then
+    echo ""
+    echo "ERROR: Push blocked - audit has FAILURES"
+    echo ""
+    echo "Fix the issues above before pushing."
+    echo "Emergency bypass: git push --no-verify"
+    echo ""
+    exit 1
+elif [ $audit_exit -eq 1 ]; then
+    echo ""
+    echo "WARNING: Audit has warnings (push allowed)"
+    echo "Consider addressing the issues above."
+    echo ""
+fi
+
+exit 0
+HOOK_EOF
+
+    chmod +x "$pre_push_hook"
+
     echo -e "${GREEN}=== Hooks Installed ===${NC}"
     echo ""
     echo "Installed:"
     echo "  - $commit_msg_hook (task reference validation)"
     echo "  - $post_commit_hook (bypass detection)"
+    echo "  - $pre_push_hook (audit before push)"
     echo ""
     echo "Hook behavior:"
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Allows merge commits and rebases"
-    echo "  - Bypass with: git commit --no-verify (logs warning)"
+    echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
+    echo "  - Bypass with: git commit/push --no-verify (logs warning)"
 }
 
 show_hooks_help() {
@@ -131,7 +181,14 @@ Options:
 Installs:
   - commit-msg hook: Validates task reference in commit message
   - post-commit hook: Detects bypasses and reminds to log them
+  - pre-push hook: Runs audit before push (blocks on FAIL)
 
 The hooks enforce task traceability (P-002: Structural Enforcement).
+
+Pre-push behavior:
+  - Audit FAIL (exit 2): Push blocked
+  - Audit WARN (exit 1): Push allowed with warning
+  - Audit PASS (exit 0): Push allowed
+  - Bypass: git push --no-verify
 EOF
 }

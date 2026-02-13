@@ -68,19 +68,70 @@ Fail: Z
 
 ## Checks Performed
 
-| Check | Source | Severity if Failed |
-|-------|--------|-------------------|
-| .tasks/ directory exists | File system | FAIL |
-| Active tasks have required fields | Task files + 010-TaskSystem.md | WARN |
-| Status values are valid | Task files | WARN |
-| Commits reference tasks | Git log | WARN |
-| No uncommitted changes without task | Git status | WARN |
-| Practices have origin references | 015-Practices.md | WARN |
-| Bypass log exists (if bypasses claimed) | .context/bypass-log.yaml | FAIL |
+### Structure Checks
+| Check | Severity |
+|-------|----------|
+| .tasks/ directory exists | FAIL |
+| Subdirectories (active/completed/templates) exist | WARN |
+| Task template exists | WARN |
+
+### Task Compliance Checks
+| Check | Severity |
+|-------|----------|
+| Required frontmatter fields present | WARN |
+| Status values are valid | WARN |
+| Workflow type is valid | WARN |
+| Updates section exists | WARN |
+
+### Task Quality Checks (P-001, P-004)
+| Check | Severity |
+|-------|----------|
+| Description >= 50 characters | WARN |
+| Started-work tasks have updates | WARN |
+| Tasks older than 7 days have >= 2 updates | WARN |
+
+### Git Traceability Checks
+| Check | Severity |
+|-------|----------|
+| >= 80% commits reference tasks | PASS/WARN/FAIL |
+| Working directory clean | WARN |
+| Commit task refs resolve to actual tasks | WARN |
+
+### Enforcement Checks
+| Check | Severity |
+|-------|----------|
+| Bypass log exists (if commits lack refs) | WARN |
+| Commit-msg hook installed | WARN |
+
+### Learning Capture Checks
+| Check | Severity |
+|-------|----------|
+| Practices documented | WARN |
+| Practices have origins | WARN |
+| Practice origins resolve to actual tasks | WARN |
+
+## Enforcement Integration
+
+The audit is integrated with git hooks for structural enforcement:
+
+```bash
+# Install all hooks including pre-push audit
+./agents/git/git.sh install-hooks
+```
+
+**Pre-push hook behavior:**
+- Runs full audit before allowing push
+- **FAIL (exit 2):** Push blocked
+- **WARN (exit 1):** Push allowed with warning
+- **PASS (exit 0):** Push allowed silently
+- **Bypass:** `git push --no-verify` (emergency only)
+
+This ensures compliance is checked before code leaves the local repository.
 
 ## Integration
 
 - **Script:** `audit.sh` performs mechanical checks
+- **Git hooks:** Pre-push hook runs audit automatically
 - **Claude Code:** Can invoke for intelligent analysis beyond mechanical checks
 - **Output:** Structured report + exit code (0=pass, 1=warnings, 2=failures)
 
