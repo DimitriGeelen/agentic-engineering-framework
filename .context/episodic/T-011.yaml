@@ -1,0 +1,55 @@
+# Episodic Memory - T-011: Define practice graduation criteria
+# Generated: 2026-02-13T21:00:30Z
+
+task_id: T-011
+task_name: "Define practice graduation criteria"
+workflow_type: specification
+
+# Timeline
+created: 2026-02-13T18:19:25Z
+completed: 2026-02-13T22:00:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Define what each level represents
+  - Define graduation criteria from each level to the next
+  - Define retirement/demotion criteria
+  - Document the process for graduation
+  - Update 015-Practices.md with the criteria
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  # No challenges detected (or add manually)
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta, practices, governance]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-011-define-practice-graduation-criteria.md
+generated_by: context-agent

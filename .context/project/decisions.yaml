@@ -57,3 +57,9 @@ decisions:
     date: 2026-02-13
     task: T-010
     rationale: "Framework overhead only justified when AI context loss is the problem being solved"
+
+  - id: D-008
+    decision: "Knowledge pyramid with 4 levels and graduation criteria"
+    date: 2026-02-13
+    task: T-011
+    rationale: "Higher levels require more evidence and are harder to change - directives require human approval"

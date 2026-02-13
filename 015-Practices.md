@@ -195,13 +195,37 @@ Creating tasks only for the immediate next step, losing everything else discusse
 ## Practice Lifecycle
 
 ```
-Observation in task → Repeated pattern → Candidate practice → Proven practice
+                    ┌─────────────┐
+                    │ DIRECTIVES  │  ← Constitutional (D1-D4)
+                    │   (D-XXX)   │     Stable anchors
+                    ├─────────────┤
+                    │  PRACTICES  │  ← Operational (P-XXX)
+                    │   (P-XXX)   │     Proven patterns ← YOU ARE HERE
+                    ├─────────────┤
+                    │  LEARNINGS  │  ← Recognized (L-XXX)
+                    │   (L-XXX)   │     Worth remembering
+                    ├─────────────┤
+                    │   UPDATES   │  ← Observed (in task)
+                    │ (task logs) │     Single instance
+                    └─────────────┘
 ```
 
-Practices are not permanent. They can be:
-- **Promoted** to a directive if they prove constitutional
-- **Retired** if they stop being useful
+### Graduation Criteria
+
+| From | To | Evidence Needed | Approver |
+|------|-----|-----------------|----------|
+| Task Update | Learning | Same pattern in 2+ tasks | Agent |
+| Learning | Practice | 3+ successful applications, traces to directive | Agent |
+| Practice | Directive | Universal, stable 6+ months, foundational | Human |
+
+### Retirement Criteria
+
+Practices can be:
+- **Promoted** to a directive if they prove constitutional (human decision required)
+- **Retired** if context changes or better practice emerges
 - **Refined** as understanding deepens
+
+See **T-011** for full graduation criteria specification.
 
 ---
 
