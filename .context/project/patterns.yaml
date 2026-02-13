@@ -2,7 +2,6 @@
 # Accumulated patterns from working on this project.
 # Grows over time as we learn from tasks.
 
-# Failure patterns - things that went wrong and how to avoid them
 failure_patterns:
   - id: FP-001
     pattern: "Timestamp update loop"
@@ -18,14 +17,13 @@ failure_patterns:
     date_learned: 2026-02-13
     mitigation: "Use simpler grep -c and pipe through tr -d to clean"
 
-# Success patterns - things that work well
-
   - id: FP-003
     pattern: "dependency-version-conflict"
-    description: "Issue resolved in T-026"
+    description: "Package version conflicts prevent installation when project has pinned dependencies"
     learned_from: T-026
     date_learned: 2026-02-13
     mitigation: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"
@@ -41,7 +39,6 @@ success_patterns:
     date_learned: 2026-02-13
     context: "Scripts are reliable, AGENT.md provides judgment guidance"
 
-# Workflow patterns - how we work effectively
 workflow_patterns:
   - id: WP-001
     pattern: "Task absorption"

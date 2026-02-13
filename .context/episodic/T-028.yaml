@@ -1,0 +1,36 @@
+task_id: T-028
+task_name: "Fix healing agent classifier keyword ordering"
+workflow_type: refactor
+enrichment_status: complete
+summary: |
+  Fixed three issues in the healing agent found by E-005: (1) classifier now checks
+  specific types (dependency, external) before generic (code) using scored matching,
+  (2) pattern matching filters by keyword relevance instead of dumping all patterns,
+  (3) parser stays within failure_patterns section boundary. Also fixed resolve.sh
+  duplicate insertion bug and cleaned up patterns.yaml and learnings.yaml.
+outcomes:
+  - "Classifier correctly identifies dependency, external, environment, and code types"
+  - "Pattern matching filters by relevance — only related patterns shown"
+  - "Parser respects section boundaries — no cross-section bleed"
+  - "resolve.sh inserts patterns without duplication"
+successes:
+  - description: "Score-based classification"
+    why: "Counting keyword matches per type is more robust than first-match-wins"
+challenges:
+  - description: "Bash associative arrays don't guarantee iteration order"
+    resolution: "Used explicit CLASSIFY_ORDER array for ordered checking"
+  - description: "awk insertion matched both comment and key"
+    resolution: "Changed to only match success_patterns: key line"
+decisions:
+  - decision: "Use score-based classification over ordered first-match"
+    rationale: "More robust — counts all matches, picks highest-scoring type"
+    alternatives_rejected: ["Reorder declare -A (fragile, bash-version-dependent)"]
+artifacts:
+  modified:
+    - "agents/healing/lib/diagnose.sh"
+    - "agents/healing/lib/resolve.sh"
+    - ".context/project/patterns.yaml"
+    - ".context/project/learnings.yaml"
+tags: [healing-agent, classifier, pattern-matching, refactor]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-028-fix-healing-agent-classifier-keyword-ord.md
+generated_by: context-agent

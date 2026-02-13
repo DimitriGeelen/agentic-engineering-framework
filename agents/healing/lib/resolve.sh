@@ -77,20 +77,20 @@ do_resolve() {
         local next_id=$((${max_id:-0} + 1))
         local fp_id=$(printf "FP-%03d" $next_id)
 
-        # Append new pattern
         local date=$(date -u +"%Y-%m-%d")
 
-        # Find the end of failure_patterns section and insert before success_patterns
+        # Insert new pattern before the success_patterns or comment line
         local temp_file=$(mktemp)
         awk -v id="$fp_id" -v pattern="$pattern_name" -v task="$task_id" -v date="$date" -v mitigation="$mitigation" '
             /^success_patterns:/ {
-                print ""
                 print "  - id: " id
                 print "    pattern: \"" pattern "\""
                 print "    description: \"Issue resolved in " task "\""
                 print "    learned_from: " task
                 print "    date_learned: " date
                 print "    mitigation: \"" mitigation "\""
+                print ""
+                inserted = 1
             }
             { print }
         ' "$PATTERNS_FILE" > "$temp_file"

@@ -35,33 +35,21 @@ learnings:
     context: "Git agent updated completed tasks causing endless uncommitted changes"
     application: "Check task status before updating metadata"
 
-
   - id: L-005
     learning: "Automation that produces sub-human-quality output must fail visibly, not succeed quietly"
     source: Multi-agent review
     task: T-015
     date: 2026-02-13
     context: "Added via context agent"
-    application: "TBD"
-# Candidate learnings (need validation before promotion)
-
-  - id: L-005
-    learning: "Automation that produces sub-human-quality output must fail visibly, not succeed quietly"
-    source: Multi-agent review
-    task: T-015
-    date: 2026-02-13
-    context: "Added via context agent"
-    application: "TBD"
-candidates: []
-  # - observation: "..."
-  #   occurrences: 2
-  #   first_seen: 2026-02-13
-  #   tasks: [T-XXX, T-YYY]
+    application: "Quality gates should reject, not accept-and-warn"
 
   - id: L-006
-    learning: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
+    learning: "Classifier keyword ordering determines accuracy — check specific types before generic"
     source: healing-loop
-    task: T-026
+    task: T-028
     date: 2026-02-13
-    context: "Resolved issue in T-026"
-    application: "Apply when encountering similar dependency-version-conflict issues"
+    context: "E-005 found classifier checked 'code' before 'dependency', causing misclassification"
+    application: "When building keyword classifiers, order from most-specific to least-specific"
+
+# Candidate learnings (need validation before promotion)
+candidates: []

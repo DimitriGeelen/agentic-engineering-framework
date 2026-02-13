@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-13
-timestamp: 2026-02-13T22:46:51Z
+timestamp: 2026-02-13T22:50:51Z
 summary:
-  pass: 16
-  warn: 2
+  pass: 15
+  warn: 12
   fail: 0
 findings:
   - level: PASS
@@ -16,12 +16,40 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: WARN
-    check: "No active tasks found"
-    mitigation: "Create tasks for ongoing work"
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: id"
+    mitigation: "Add 'id:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: name"
+    mitigation: "Add 'name:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: description"
+    mitigation: "Add 'description:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: status"
+    mitigation: "Add 'status:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: workflow_type"
+    mitigation: "Add 'workflow_type:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: owner"
+    mitigation: "Add 'owner:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: created"
+    mitigation: "Add 'created:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing field: last_update"
+    mitigation: "Add 'last_update:' to task frontmatter"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md has invalid status: "
+    mitigation: "Valid statuses: captured refined started-work issues blocked work-completed"
+  - level: WARN
+    check: "Task T-027-e-005-test-task-b---add-schema-validato.md missing Updates section"
+    mitigation: "Add '## Updates' section to track work"
+  - level: WARN
+    check: "Task  has short description (0 chars)"
+    mitigation: "Expand description in T-027-e-005-test-task-b---add-schema-validato.md"
   - level: PASS
-    check: "All active tasks meet quality thresholds"
-  - level: PASS
-    check: "Git traceability: 88% (47/53 commits reference tasks)"
+    check: "Git traceability: 88% (48/54 commits reference tasks)"
   - level: PASS
     check: "Working directory clean"
   - level: PASS
