@@ -107,3 +107,42 @@ Graduated response from tactical to structural:
 2. **B** — Improve technique
 3. **C** — Improve tooling
 4. **D** — Change ways of working
+
+## Agents
+
+The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
+
+### Task Creation Agent
+
+**Location:** `agents/task-create/`
+
+**When to use:** Before starting any new work, create a task.
+
+```bash
+# Interactive mode
+./agents/task-create/create-task.sh
+
+# With arguments
+./agents/task-create/create-task.sh --name "Fix bug" --type build --owner human --start
+```
+
+### Audit Agent
+
+**Location:** `agents/audit/`
+
+**When to use:** Periodically check framework compliance. Run after completing work or when suspecting drift.
+
+```bash
+./agents/audit/audit.sh
+```
+
+**Exit codes:** 0=pass, 1=warnings, 2=failures
+
+## Quick Reference
+
+| Action | Command |
+|--------|---------|
+| Create task | `./agents/task-create/create-task.sh` |
+| Run audit | `./agents/audit/audit.sh` |
+| View metrics | `./metrics.sh` |
+| Check status | `git status && ./metrics.sh` |
