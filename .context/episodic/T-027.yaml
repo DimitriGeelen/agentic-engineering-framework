@@ -1,0 +1,12 @@
+task_id: T-027
+task_name: "E-005 Test Task B - Add schema validator"
+workflow_type: build
+enrichment_status: complete
+summary: |
+  Test task for E-005. Simulated similar dependency failure to T-026. Used to
+  verify that healing agent suggests FP-003 pattern from T-026's resolution.
+  Confirmed pattern recall works.
+outcomes: ["Verified FP-003 pattern recall"]
+tags: [experiment, e005, test-task]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-027-e-005-test-task-b---add-schema-validator.md
+generated_by: context-agent

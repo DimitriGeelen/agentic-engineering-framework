@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-13
-timestamp: 2026-02-13T22:45:12Z
+timestamp: 2026-02-13T22:46:51Z
 summary:
-  pass: 14
-  warn: 4
+  pass: 16
+  warn: 2
   fail: 0
 findings:
   - level: PASS
@@ -15,22 +15,21 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
-  - level: PASS
-    check: "All 1 active tasks are valid"
+  - level: WARN
+    check: "No active tasks found"
+    mitigation: "Create tasks for ongoing work"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 88% (46/52 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
+    check: "Git traceability: 88% (47/53 commits reference tasks)"
+  - level: PASS
+    check: "Working directory clean"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
     check: "Bypass log exists"
-  - level: WARN
-    check: "No commit-msg hook"
-    mitigation: "Install hooks: ./agents/git/git.sh install-hooks"
+  - level: PASS
+    check: "Commit-msg hook installed"
   - level: PASS
     check: "No Tier 0 violations detected"
   - level: PASS
@@ -39,9 +38,8 @@ findings:
     check: "All practices have traceable origins"
   - level: PASS
     check: "All practice origins resolve to actual tasks"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
   - level: WARN
-    check: "Completed task T-023 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-023"
-  - level: WARN
-    check: "1 episodics have empty or TODO summaries"
+    check: "2 episodics have empty or TODO summaries"
     mitigation: "Fill in summary field with actual task description"

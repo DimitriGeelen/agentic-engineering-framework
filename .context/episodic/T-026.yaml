@@ -1,0 +1,12 @@
+task_id: T-026
+task_name: "E-005 Test Task A - Install missing package"
+workflow_type: build
+enrichment_status: complete
+summary: |
+  Test task for E-005. Simulated dependency failure with yaml_validator version
+  conflict. Used to test healing agent diagnose and resolve commands. Generated
+  FP-003 pattern (dependency-version-conflict).
+outcomes: ["Generated FP-003 failure pattern"]
+tags: [experiment, e005, test-task]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-026-e-005-test-task-a---install-missing-pack.md
+generated_by: context-agent

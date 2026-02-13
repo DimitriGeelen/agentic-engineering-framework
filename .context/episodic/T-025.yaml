@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-025: Run E-005 Healing Loop Test
+# ============================================================================
+# Generated: 2026-02-13
+
+task_id: T-025
+task_name: "Run E-005 Healing Loop Test"
+workflow_type: test
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13
+completed: 2026-02-13
+duration_days: 0
+updates_count: 1
+
+# Summary
+summary: |
+  Ran E-005 Healing Loop Test to validate the antifragility directive (D1). Created
+  two tasks with similar dependency failures, used healing agent to diagnose/resolve
+  the first, then checked if the pattern was suggested for the second. Core mechanism
+  works — patterns are captured on resolve and surfaced on diagnose. However, the
+  classifier is keyword-order-dependent (misclassifies dependency issues as "code")
+  and pattern matching shows all patterns without relevance filtering.
+
+# Key outcomes
+outcomes:
+  - "Healing loop write path (resolve) works correctly"
+  - "Healing loop read path (diagnose) surfaces recorded patterns"
+  - "Classifier misclassifies due to keyword ordering — needs fix"
+  - "Pattern matching lacks relevance filtering — shows all patterns"
+  - "Result: PASS with issues"
+
+# What worked well
+successes:
+  - description: "Pattern capture and recall"
+    why: "FP-003 recorded from T-026 appeared in T-027 diagnosis — core loop functional"
+  - description: "Atomic resolve operation"
+    why: "Records pattern + learning + task update in one command"
+
+# Challenges
+challenges:
+  - description: "Classifier keyword ordering"
+    resolution: "Identified as improvement needed — check specific keywords before generic ones"
+  - description: "Non-semantic pattern matching"
+    resolution: "All patterns dumped regardless of relevance — needs type filtering"
+
+# Decisions
+decisions:
+  - decision: "Test with simulated dependency failures"
+    rationale: "Dependency conflicts are common and have clear keywords to test classification"
+    alternatives_rejected: ["Random failures"]
+
+# Files modified
+artifacts:
+  created: []
+  modified:
+    - "020-Experiments.md"
+    - ".context/project/patterns.yaml"
+    - ".context/project/learnings.yaml"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: [T-026, T-027]
+  spawned: []
+
+# Tags
+tags: [experiment, e005, healing-loop, antifragility, pattern-matching, classifier]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-025-run-e-005-healing-loop-test.md
+generated_by: context-agent

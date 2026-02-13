@@ -232,6 +232,7 @@ Start with low-effort experiments that can run now, save real project validation
 |------------|------|--------|--------------|
 | E-003 | 2026-02-13 | PASS | Recovery in <20 seconds; resume + handover sufficient |
 | E-004 | 2026-02-13 | PASS | Hook removal causes 9% traceability drop in 5 commits; audit detects drift |
+| E-005 | 2026-02-13 | PASS (with issues) | Healing loop captures and suggests patterns; classifier needs improvement |
 
 ### E-003 Detailed Findings
 
@@ -297,3 +298,52 @@ Start with low-effort experiments that can run now, save real project validation
 1. Hook = must-have (preventive enforcement)
 2. Audit = should-have (detective enforcement)  
 3. Consider auto-audit on push for continuous detection
+
+### E-005 Detailed Findings
+
+**Date:** 2026-02-13
+**Result:** PASS (with issues — classifier needs improvement)
+
+**Method:**
+1. Created test task T-026 with simulated dependency failure (yaml_validator version conflict)
+2. Set status to `issues`
+3. Ran `healing.sh diagnose T-026` — checked classification and pattern lookup
+4. Ran `healing.sh resolve T-026` — recorded pattern FP-003 (dependency-version-conflict)
+5. Created test task T-027 with similar dependency failure (jsonschema-validator conflict)
+6. Ran `healing.sh diagnose T-027` — checked if FP-003 was suggested
+
+**Results:**
+
+| Step | Expected | Actual | Pass? |
+|------|----------|--------|-------|
+| Classify T-026 failure | "dependency" | "code" | FAIL |
+| Find similar patterns for T-026 | No match (first occurrence) | FP-001 shown (irrelevant) | PARTIAL |
+| Record FP-003 via resolve | Pattern saved | FP-003 saved correctly | PASS |
+| Classify T-027 failure | "dependency" | "unknown" | FAIL |
+| Suggest FP-003 for T-027 | FP-003 shown | FP-003 shown | PASS |
+| suggest command finds T-026 | Lists T-026 | Lists T-026 | PASS |
+
+**What worked:**
+- Pattern recording works correctly (FP-003 saved with full metadata)
+- Pattern recall works — FP-003 appeared in T-027's diagnosis
+- The `suggest` command correctly finds tasks with `issues` status
+- The `resolve` command records both pattern and learning atomically
+
+**Issues found:**
+1. **Classifier is keyword-order-dependent:** Checks "code" keywords before "dependency". Since "error" appears in most failures, it matches "code" first even for dependency issues. T-027 got "unknown" because it didn't match early keywords.
+2. **Pattern matching is non-semantic:** `find_similar_patterns` shows ALL patterns regardless of relevance. FP-001 (timestamp loop) was shown for a dependency issue. No filtering by failure type.
+3. **diagnose reads wrong section:** It parsed the task-creation update instead of the actual failure update for T-027, because the failure text was appended after the Updates section marker.
+
+**Root causes:**
+- Classifier uses ordered keyword matching (`declare -A` in bash doesn't guarantee order, but the for loop hits "code" first)
+- Pattern matching dumps all patterns rather than filtering by type or keyword similarity
+- Update extraction assumes rigid task file structure
+
+**Recommendations (Error Escalation Ladder):**
+1. **B - Improve technique:** Make classifier check most-specific keywords first (dependency before code)
+2. **B - Improve technique:** Filter patterns by failure type in find_similar_patterns
+3. **C - Improve tooling:** Add keyword-based relevance scoring to pattern matching
+4. **D - Change ways of working:** Consider semantic similarity for pattern matching (future)
+
+**Conclusion:**
+The healing loop's core mechanism works — it captures patterns on resolve and surfaces them on diagnose. The **write path** (resolve) is solid. The **read path** (diagnose) needs improvement in classification accuracy and pattern relevance filtering. The loop is functional but not yet intelligent.

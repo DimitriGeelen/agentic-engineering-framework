@@ -19,6 +19,13 @@ failure_patterns:
     mitigation: "Use simpler grep -c and pipe through tr -d to clean"
 
 # Success patterns - things that work well
+
+  - id: FP-003
+    pattern: "dependency-version-conflict"
+    description: "Issue resolved in T-026"
+    learned_from: T-026
+    date_learned: 2026-02-13
+    mitigation: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"

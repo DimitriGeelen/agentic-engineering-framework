@@ -57,3 +57,11 @@ candidates: []
   #   occurrences: 2
   #   first_seen: 2026-02-13
   #   tasks: [T-XXX, T-YYY]
+
+  - id: L-006
+    learning: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
+    source: healing-loop
+    task: T-026
+    date: 2026-02-13
+    context: "Resolved issue in T-026"
+    application: "Apply when encountering similar dependency-version-conflict issues"
