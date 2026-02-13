@@ -1,0 +1,60 @@
+# Episodic Memory - T-001: Define measurable success metrics
+# Generated: 2026-02-13T20:49:32Z
+
+task_id: T-001
+task_name: "Define measurable success metrics"
+workflow_type: specification
+
+# Timeline
+created: 2026-02-13T12:00:00Z
+completed: 2026-02-13T21:50:00Z
+duration_days: 0
+updates_count: 5
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - .tasks/ structure exists and is in use
+  - metrics.sh can report basic counts
+  - At least 3 tasks created and progressed through lifecycle (10 completed)
+  - Success metrics documented with: metric, collection method, baseline, target
+  - Identified at least one metric we thought we could measure but can't
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  - description: "- **Pattern:** We failed at theoretical metrics → pivoted to experimentation → observed real data → learning emerged"
+    resolution: "See task updates"
+  - description: "- **Output:** Vision doc with: problem, vision, success question history, current state, staged success criteria, open questions"
+    resolution: "See task updates"
+  - description: "- **Context:** Now have clear record of: what we tried, why it failed, what we pivoted to, where we are, what's next."
+    resolution: "See task updates"
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta, metrics, bootstrap]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-001-define-success-metrics.md
+generated_by: context-agent
