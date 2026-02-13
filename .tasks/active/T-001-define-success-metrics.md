@@ -15,7 +15,7 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T12:00:00Z
-last_update: 2026-02-13T13:00:00Z
+last_update: 2026-02-13T13:30:00Z
 date_finished: null
 ---
 
@@ -67,3 +67,9 @@ N/A - this is a specification task
 - **Pattern:** We failed at theoretical metrics → pivoted to experimentation → observed real data → learning emerged
 - **Promoted to:** 015-Practices.md (P-001)
 - **Context:** This is an instance of D1 (Antifragility) in action — learning from doing.
+
+### 2026-02-13 13:30 — context-captured [claude-code]
+- **Action:** Created 001-Vision.md to capture full context of success question journey
+- **Output:** Vision doc with: problem, vision, success question history, current state, staged success criteria, open questions
+- **Why:** Risk of losing context between sessions. The success question is bigger than T-001 — needed project-level documentation.
+- **Context:** Now have clear record of: what we tried, why it failed, what we pivoted to, where we are, what's next.
