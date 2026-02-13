@@ -35,7 +35,23 @@ learnings:
     context: "Git agent updated completed tasks causing endless uncommitted changes"
     application: "Check task status before updating metadata"
 
+
+  - id: L-005
+    learning: "Automation that produces sub-human-quality output must fail visibly, not succeed quietly"
+    source: Multi-agent review
+    task: T-015
+    date: 2026-02-13
+    context: "Added via context agent"
+    application: "TBD"
 # Candidate learnings (need validation before promotion)
+
+  - id: L-005
+    learning: "Automation that produces sub-human-quality output must fail visibly, not succeed quietly"
+    source: Multi-agent review
+    task: T-015
+    date: 2026-02-13
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
   # - observation: "..."
   #   occurrences: 2
