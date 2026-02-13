@@ -1,0 +1,65 @@
+# ============================================================================
+# EPISODIC MEMORY - T-024: Run E-004 Enforcement Removal Test
+# ============================================================================
+# Generated: 2026-02-13T22:46:04Z
+
+task_id: T-024
+task_name: "Run E-004 Enforcement Removal Test"
+workflow_type: test
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T22:40:26Z
+completed: 2026-02-13T22:46:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary
+summary: |
+  Ran E-004 Enforcement Removal Test — disabled git commit hook, made 5 commits
+  without task references, and measured traceability degradation. Traceability dropped
+  from 97% to 88% in just 5 commits. Audit detected both the missing hook and the 
+  drift. Confirms that each enforcement gate has a distinct, measurable effect — 
+  the hook is preventive, the audit is detective, both are needed.
+
+# Key outcomes
+outcomes:
+  - "Traceability dropped 97% → 88% with hook disabled (measurable degradation)"
+  - "Audit detected missing hook AND traceability drop"
+  - "Git agent has secondary detection layer (defense in depth)"
+  - "Experiment result: PASS — enforcement gates are load-bearing, not theater"
+
+# What worked well
+successes:
+  - description: "Clean experiment methodology"
+    why: "Baseline → disable → measure → re-enable made results unambiguous"
+  - description: "Defense in depth discovery"
+    why: "Git agent warns about missing refs even without the hook — layered defense"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made
+decisions:
+  - decision: "Use temporary rename (.bak) to disable hook"
+    rationale: "Reversible, no risk of losing the hook"
+    alternatives_rejected: ["git config --unset core.hooksPath (only works with custom path)"]
+
+# Files modified
+artifacts:
+  created: []
+  modified:
+    - "020-Experiments.md"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags
+tags: [experiment, e004, enforcement, traceability, audit, git-hook]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-024-run-e-004-enforcement-removal-test.md
+generated_by: context-agent

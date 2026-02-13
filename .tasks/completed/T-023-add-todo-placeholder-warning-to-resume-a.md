@@ -3,7 +3,7 @@ id: T-023
 name: Add TODO placeholder warning to resume agent
 description: >
   E-003 found that resume agent reads LATEST.md which may have TODO placeholders if not filled in. Add warning when TODO placeholders detected.
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,7 +12,7 @@ agents:
   primary:
   supporting: []
 created: 2026-02-13T22:40:21Z
-last_update: 2026-02-13T22:40:21Z
+last_update: 2026-02-13T22:44:39Z
 date_finished: null
 ---
 

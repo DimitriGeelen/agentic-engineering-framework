@@ -231,6 +231,7 @@ Start with low-effort experiments that can run now, save real project validation
 | Experiment | Date | Result | Key Learning |
 |------------|------|--------|--------------|
 | E-003 | 2026-02-13 | PASS | Recovery in <20 seconds; resume + handover sufficient |
+| E-004 | 2026-02-13 | PASS | Hook removal causes 9% traceability drop in 5 commits; audit detects drift |
 
 ### E-003 Detailed Findings
 
@@ -257,3 +258,42 @@ Start with low-effort experiments that can run now, save real project validation
 ---
 
 *This document evolves as experiments are run. Update the Findings Log after each experiment.*
+
+### E-004 Detailed Findings
+
+**Date:** 2026-02-13
+**Result:** PASS — Each enforcement gate has distinct, measurable effect
+
+**Method:**
+1. Baseline audit: 97% traceability (46/47 commits), 15 passes, 3 warnings
+2. Disabled commit-msg hook (renamed to .bak)
+3. Made 5 commits without task references ("Quick fix #1-5")
+4. Ran audit again
+
+**Measurements:**
+
+| Metric | Before | After | Delta |
+|--------|--------|-------|-------|
+| Traceability | 97% (46/47) | 88% (46/52) | -9% |
+| Audit passes | 15 | 14 | -1 |
+| Audit warnings | 3 | 4 | +1 |
+
+**What worked:**
+- Audit detected BOTH the missing hook AND the traceability drop
+- Git agent printed bypass warnings even without hook (defense in depth)
+- 5 untraceable commits caused immediate, measurable degradation
+- Each gate has distinct effect — not redundant, not theater
+
+**Surprise finding:**
+- Git agent has a secondary detection layer — it warns about missing task refs at `git status` time too, not just at commit time. The hook is the primary gate but not the only defense.
+
+**Conclusion:**
+- The git commit hook is the MVE (confirmed from E-003 + E-004)
+- Removing it causes 9% traceability drop in just 5 commits
+- Audit catches the drift — but only when run (reactive, not preventive)
+- The hook is preventive; the audit is detective — both needed
+
+**Recommendations:**
+1. Hook = must-have (preventive enforcement)
+2. Audit = should-have (detective enforcement)  
+3. Consider auto-audit on push for continuous detection

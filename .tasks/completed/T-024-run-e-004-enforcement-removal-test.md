@@ -3,7 +3,7 @@ id: T-024
 name: Run E-004 Enforcement Removal Test
 description: >
   Disable git commit hook, make 5 commits without task refs, run audit, measure traceability drop. Re-enable, compare. Tests D2 Reliability directive.
-status: captured
+status: work-completed
 workflow_type: test
 owner: claude-code
 priority: medium

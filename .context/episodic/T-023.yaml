@@ -1,0 +1,64 @@
+# ============================================================================
+# EPISODIC MEMORY - T-023: Add TODO placeholder warning to resume agent
+# ============================================================================
+# Generated: 2026-02-13T22:46:04Z
+
+task_id: T-023
+task_name: "Add TODO placeholder warning to resume agent"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T22:40:21Z
+completed: 2026-02-13T22:44:39Z
+duration_days: 0
+updates_count: 1
+
+# Summary
+summary: |
+  Added a TODO placeholder detection warning to the resume agent's status command.
+  When LATEST.md contains unfilled [TODO] markers, the agent now warns that the 
+  handover may be incomplete. This addresses a finding from E-003 where stale or 
+  incomplete handovers could mislead post-compaction recovery.
+
+# Key outcomes
+outcomes:
+  - "Resume agent warns when handover has [TODO] placeholders"
+  - "Warning tested with both positive and negative cases"
+
+# What worked well
+successes:
+  - description: "Simple grep-based detection"
+    why: "grep -c '[TODO]' is reliable, fast, and has no dependencies"
+  - description: "Fix from E-003 finding"
+    why: "Experiment findings drive concrete improvements — antifragility in action"
+
+# Challenges encountered
+challenges:
+  - description: "grep -c output had newline issue in bash subshell"
+    resolution: "Added tr -d newline to clean output before integer comparison"
+
+# Decisions made
+decisions:
+  - decision: "Warn but don't block on TODO placeholders"
+    rationale: "Incomplete handover is better than no handover — warn don't gate"
+    alternatives_rejected: ["Block resume until handover is complete"]
+
+# Files modified
+artifacts:
+  created: []
+  modified:
+    - "agents/resume/resume.sh"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags
+tags: [resume-agent, todo-warning, e003-finding]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-023-add-todo-placeholder-warning-to-resume-a.md
+generated_by: context-agent
