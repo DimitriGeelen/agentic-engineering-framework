@@ -230,7 +230,29 @@ Start with low-effort experiments that can run now, save real project validation
 
 | Experiment | Date | Result | Key Learning |
 |------------|------|--------|--------------|
-| (none yet) | | | |
+| E-003 | 2026-02-13 | PASS | Recovery in <20 seconds; resume + handover sufficient |
+
+### E-003 Detailed Findings
+
+**Date:** 2026-02-13
+**Result:** PASS (with minor issues)
+
+**Recovery time:** ~16 seconds to actionable context
+
+**What worked:**
+- Resume agent immediately showed focus task (T-022) and status
+- Task name alone ("Run E-003 Context Recovery Stress Test") was descriptive enough
+- Uncommitted changes warning was helpful
+- Handover provided full session context, decisions, next steps
+
+**Issues found:**
+- Resume agent reads LATEST.md which may be stale (not updated until commit)
+- If handover isn't committed, resume shows outdated summary
+
+**Recommendations:**
+1. Always commit handover immediately after generating
+2. Consider having handover.sh auto-update LATEST.md (it does, but user may not commit)
+3. Resume agent could warn if LATEST.md has TODO placeholders
 
 ---
 

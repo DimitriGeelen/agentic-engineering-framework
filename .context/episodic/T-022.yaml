@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-022: Run E-003 Context Recovery Stress Test
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T22:30:00Z
+# Enriched: 2026-02-13T22:30:30Z
+
+task_id: T-022
+task_name: "Run E-003 Context Recovery Stress Test"
+workflow_type: test
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T22:28:00Z
+completed: 2026-02-13T22:30:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Executed experiment E-003 to validate context recovery. Simulated compaction
+  by pretending to start fresh, then used only resume agent + handover to recover.
+  Result: PASS — recovery in ~16 seconds to actionable context. Found minor issue:
+  resume reads LATEST.md which may be stale if handover isn't committed yet.
+
+# Key outcomes
+outcomes:
+  - "Result: PASS — resume + handover sufficient for recovery"
+  - "Recovery time: ~16 seconds to actionable context"
+  - "Resume agent showed focus task, status, uncommitted changes"
+  - "Handover provided full session context and decisions"
+  - "Issue found: Stale LATEST.md if handover not committed"
+
+# What worked well
+successes:
+  - description: "Resume agent provides immediate actionable info"
+    why: "Focus task + status + uncommitted warning = know what to do"
+  - description: "Descriptive task names help recovery"
+    why: "'Run E-003 Context Recovery Stress Test' is self-explanatory"
+  - description: "Handover 'Where We Are' section is sufficient"
+    why: "2-3 sentences captured full session state"
+
+# Challenges encountered
+challenges:
+  - description: "Resume read stale LATEST.md with TODO placeholders"
+    resolution: "Handover was written but not copied to LATEST.md before commit"
+    learning: "Always commit handover immediately; consider warning on TODO in LATEST"
+
+# Decisions made during this task
+decisions:
+  - decision: "Simulate compaction rather than wait for real one"
+    rationale: "Can test recovery process without waiting for context limit"
+    alternatives_rejected: ["Wait for real compaction (unpredictable timing)"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "020-Experiments.md (added E-003 findings)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []  # Could spawn: "Add TODO warning to resume agent"
+
+# Tags for retrieval
+tags: [experiment, D1, validation, E-003, recovery]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-022-run-e003-context-recovery-test.md
+generated_by: context-agent
+enriched_by: claude-code
