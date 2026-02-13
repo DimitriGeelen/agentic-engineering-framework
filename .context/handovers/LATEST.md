@@ -1,137 +1,80 @@
 ---
-session_id: S-2026-0213-2150
-timestamp: 2026-02-13T20:50:24Z
-predecessor: S-2026-0213-2048
-tasks_active: [T-009, T-010, T-011]
-tasks_touched: [T-001, T-005, T-006, T-007, T-008]
-tasks_completed: [T-001, T-005, T-006, T-007, T-008]
-uncommitted_changes: 0
+session_id: S-2026-0213-2232
+timestamp: 2026-02-13T21:32:39Z
+predecessor: S-2026-0213-2150
+tasks_active: [T-018, T-019]
+tasks_touched: [T-019, T-018, T-XXX, T-002, T-017, T-004, T-003, T-014, T-016, T-008, T-007, T-006, T-011, T-013, T-010, T-001, T-015, T-012, T-009, T-005]
+tasks_completed: []
+uncommitted_changes: 3
 owner: claude-code
 ---
 
-# Session Handover: S-2026-0213-2150
+# Session Handover: S-2026-0213-2232
 
 ## Where We Are
 
-This session **completed 5 major tasks** bringing the framework to a highly functional state. We implemented the Context Fabric (T-005), enhanced the episodic summary generator (T-006), created the healing agent (T-007), added quality metrics to metrics.sh (T-008), and defined success metrics (T-001). The framework now has 11 completed tasks, 96% git traceability, 7 agents, and all success metrics meeting targets. Only 3 specification tasks remain.
-
-## Completed This Session
-
-### T-005: Implement Context Fabric foundation
-- **Status:** work-completed
-- **Delivered:** Three memory types (Working, Project, Episodic) in .context/
-- **Key feature:** Context agent with 7 commands (init, status, focus, add-learning, add-pattern, add-decision, generate-episodic)
-
-### T-006: Create episodic summary generator
-- **Status:** work-completed
-- **Delivered:** Enhanced generate-episodic command that parses Updates section, extracts acceptance criteria, identifies challenges
-
-### T-007: Implement healing loop mechanism
-- **Status:** work-completed
-- **Delivered:** Healing agent with diagnose, resolve, patterns, suggest commands
-- **Key feature:** Implements Error Escalation Ladder (A-B-C-D), records patterns and learnings
-
-### T-008: Add quality metrics to metrics.sh
-- **Status:** work-completed
-- **Delivered:** Quality metrics section (description quality, updates health, AC coverage) and Context Fabric metrics
-
-### T-001: Define measurable success metrics
-- **Status:** work-completed
-- **Delivered:** 6 measurable success metrics with targets, all currently met
-- **Key insight:** Focus on structural metrics, not behavioral metrics (can't measure "did it help?")
+[TODO: 2-3 sentences summarizing current state and immediate situation]
 
 ## Work in Progress
 
-### T-009: Document falsifiability criteria
+### T-018: Enrich low-quality episodic summaries
 - **Status:** captured
-- **Last action:** Not touched this session
-- **Next step:** Define what would prove the framework wrong
-- **Blockers:** None
-- **Insight:** Important for D1 (Antifragility) — need to know when to pivot
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
-### T-010: Define framework scope and audience
+### T-019: Add handover gate for episodic completeness
 - **Status:** captured
-- **Last action:** Not touched this session
-- **Next step:** Document target users and use cases
-- **Blockers:** None
-
-### T-011: Define practice graduation criteria
-- **Status:** captured
-- **Last action:** Not touched this session
-- **Next step:** Define when learnings graduate to practices to directives
-- **Blockers:** None
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
 ## Decisions Made This Session
 
-1. **YAML for all Context Fabric files**
-   - Why: Human-readable, git-diffable, consistent with task format
-   - Alternatives rejected: JSON (less readable)
+[TODO: List key decisions with rationale and rejected alternatives]
 
-2. **Manual episodic generation (not automatic on completion)**
-   - Why: Automatic integration needs more design work
-   - Alternatives rejected: Hook into task move
-
-3. **Healing agent separate from context agent**
-   - Why: Different concerns (error recovery vs memory management)
-   - Alternatives rejected: Single large context agent
-
-4. **Focus on structural metrics over behavioral**
-   - Why: Can't measure intent, can measure enforcement
-   - Alternatives rejected: Trying to measure "did it help?"
+1. **[Decision]**
+   - Why: [rationale]
+   - Alternatives rejected: [what else was considered]
 
 ## Things Tried That Failed
 
-1. **bash (()) arithmetic returns exit code 1** — Fixed by using $((var + 1)) instead of ((var++))
-2. **Multiline YAML description parsing** — Initial grep didn't handle > blocks, fixed with sed
+[TODO: Document failed approaches to prevent repetition]
+
+1. **[Approach]** — [why it didn't work]
 
 ## Open Questions / Blockers
 
-1. Should episodic generation be automatic when task moves to completed?
-2. When does a repeated audit warning graduate to a practice?
-3. What's the target audience — individual developer or team?
+[TODO: List unresolved questions and blockers]
+
+1. [Question or blocker]
 
 ## Gotchas / Warnings for Next Session
 
-- **Exit code 1 from bash arithmetic** — Use `var=$((var + 1))` not `((var++))`
-- **Multiline YAML descriptions** — Use sed to extract, not simple grep
-- **7 episodic summaries exist** — T-001, T-005, T-006, T-007, T-008, T-013, T-014
+[TODO: Things the next session should watch out for]
+
+- [Gotcha]
 
 ## Suggested First Action
 
-**Work on T-009 (Falsifiability criteria)** — Define what would prove the framework wrong. This is the most important remaining task for antifragility — without knowing failure conditions, we can't improve.
-
-Alternative: **T-010 (Scope and audience)** — Clarifies who we're building for.
+[TODO: The single most important thing for next session to do first]
 
 ## Files Changed This Session
 
-**Created:**
-- `.context/working/session.yaml`, `.context/working/focus.yaml`
-- `.context/project/patterns.yaml`, `.context/project/decisions.yaml`, `.context/project/learnings.yaml`
-- `.context/episodic/TEMPLATE.yaml`, `.context/episodic/T-*.yaml` (7 files)
-- `agents/context/context.sh`, `agents/context/AGENT.md`, `agents/context/lib/*.sh`
-- `agents/healing/healing.sh`, `agents/healing/AGENT.md`, `agents/healing/lib/*.sh`
+[TODO: List created and modified files]
 
-**Modified:**
-- `metrics.sh` — Added quality metrics and Context Fabric sections
-- `CLAUDE.md` — Added context agent and healing agent documentation
-
-## Session Statistics
-
-- Tasks completed: 5 (T-001, T-005, T-006, T-007, T-008)
-- Commits: 6 with task refs
-- New agents: 2 (context, healing)
-- Episodic summaries: 7 total
-- Git traceability: 96% (27/28)
-- Audit status: 16 PASS, 0 WARN, 0 FAIL
+- Created:
+- Modified:
 
 ## Recent Commits
 
-- 139e061 T-001: Define measurable success metrics
-- 9c53f11 T-006, T-007, T-008: Generate episodic summaries
-- 30c0710 T-008: Add quality metrics to metrics.sh
-- 18f3f1f T-007: Implement healing loop mechanism
-- d322be6 T-006: Create episodic summary generator
-- 090765f T-005: Implement Context Fabric foundation
+- 93487cb T-017: Enrich T-017 episodic summary
+- ec4cb71 T-017: Generate and enrich missing episodic summaries
+- fd5bb45 T-016: Add episodic quality checks to audit agent
+- 7e034c6 T-015: Fix episodic generator to require enrichment
+- 3ca49fb T-015: Create remediation tasks for episodic context gap
 
 ---
 
