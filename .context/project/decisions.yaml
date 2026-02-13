@@ -51,3 +51,9 @@ decisions:
     date: 2026-02-13
     task: T-009
     rationale: "Framework claims are now testable - we know what would prove the approach wrong"
+
+  - id: D-007
+    decision: "Primary audience: individual developers using AI agents"
+    date: 2026-02-13
+    task: T-010
+    rationale: "Framework overhead only justified when AI context loss is the problem being solved"

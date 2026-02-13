@@ -1,0 +1,56 @@
+# Episodic Memory - T-010: Define framework scope and audience
+# Generated: 2026-02-13T20:58:26Z
+
+task_id: T-010
+task_name: "Define framework scope and audience"
+workflow_type: specification
+
+# Timeline
+created: 2026-02-13T18:19:22Z
+completed: 2026-02-13T21:58:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Primary audience defined with clear persona
+  - Secondary audiences identified with adaptation notes
+  - Out-of-scope audiences explicitly named
+  - Success criteria linked to audience needs
+  - Use cases documented for primary audience
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  - description: "- **Insight:** Framework overhead only justified when AI context loss is the problem"
+    resolution: "See task updates"
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta, vision, scope]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-010-define-framework-scope-and-audience.md
+generated_by: context-agent
