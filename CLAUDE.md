@@ -251,6 +251,29 @@ The healing loop:
 3. **Suggest** — Recommends recovery using Error Escalation Ladder
 4. **Log** — Records resolution as pattern for future learning
 
+### Resume Agent
+
+**Location:** `agents/resume/`
+
+**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
+
+```bash
+# Full state synthesis (use after compaction)
+./agents/resume/resume.sh status
+
+# Fix stale working memory
+./agents/resume/resume.sh sync
+
+# One-line summary
+./agents/resume/resume.sh quick
+```
+
+Synthesizes current state from:
+- **Handover** — "Where We Are" and suggested action
+- **Working Memory** — Session, focus, may be stale
+- **Git State** — Uncommitted changes, recent commits
+- **Tasks** — Active tasks with status
+
 ## Session Start Protocol
 
 **Before beginning any work:**
@@ -260,6 +283,11 @@ The healing loop:
 4. Set focus: `./agents/context/context.sh focus T-XXX`
 5. Run `./metrics.sh` to see project status
 6. If handover feedback section exists, fill it in
+
+**After context compaction (mid-session recovery):**
+1. Run resume: `./agents/resume/resume.sh status`
+2. Sync working memory: `./agents/resume/resume.sh sync`
+3. Continue from recommendations
 
 ## Quick Reference
 
@@ -278,6 +306,8 @@ The healing loop:
 | Diagnose issue | `./agents/healing/healing.sh diagnose T-XXX` |
 | Resolve issue | `./agents/healing/healing.sh resolve T-XXX --mitigation "..."` |
 | Show patterns | `./agents/healing/healing.sh patterns` |
+| Resume state | `./agents/resume/resume.sh status` |
+| Sync working memory | `./agents/resume/resume.sh sync` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist |
 | Generate handover | `./agents/handover/handover.sh` |
 | Handover + commit | `./agents/handover/handover.sh --commit` |
