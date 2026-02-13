@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-017: Generate missing episodic summaries
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T21:31:46Z
+# Enriched: 2026-02-13T22:32:00Z
+
+task_id: T-017
+task_name: "Generate missing episodic summaries"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T21:21:35Z
+completed: 2026-02-13T22:31:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Generated and enriched episodic summaries for 4 completed tasks that were
+  missing them: T-002, T-003, T-004, T-012. This was debt from before the
+  episodic system was properly enforced. Used the new generator (T-015) then
+  manually enriched each with real context from the source task files.
+
+# Key outcomes
+outcomes:
+  - T-002 episodic: Core agents, established P-006 hybrid architecture
+  - T-003 episodic: Bypass log, established P-005 bootstrap exceptions
+  - T-004 episodic: Pre-commit hooks, structural enforcement
+  - T-012 episodic: Handover agent, state vs understanding distinction
+  - All have enrichment_status: complete
+
+# What worked well
+successes:
+  - description: "New generator with TODO prompts"
+    why: "Made clear what needed to be filled in"
+  - description: "Reading source task files for enrichment"
+    why: "Task Updates section had the context needed"
+
+# Challenges encountered
+challenges:
+  - description: "Retroactive context capture"
+    resolution: "Task files still had good Updates sections to extract from"
+    learning: "Good task documentation enables retroactive episodic creation"
+
+# Decisions made during this task
+decisions:
+  - decision: "Enrich immediately rather than leave as skeletons"
+    rationale: "Demonstrates the correct workflow, provides real value now"
+    alternatives_rejected: ["Leave for later (debt compounds)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - ".context/episodic/T-002.yaml"
+    - ".context/episodic/T-003.yaml"
+    - ".context/episodic/T-004.yaml"
+    - ".context/episodic/T-012.yaml"
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [context-fabric, debt, episodic, retroactive]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-017-generate-missing-episodic-summaries.md
+generated_by: context-agent
+enriched_by: claude-code
