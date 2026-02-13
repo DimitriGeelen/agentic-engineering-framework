@@ -1,0 +1,60 @@
+# Episodic Memory - T-007: Implement healing loop mechanism
+# Generated: 2026-02-13T20:37:25Z
+
+task_id: T-007
+task_name: "Implement healing loop mechanism"
+workflow_type: build
+
+# Timeline
+created: 2026-02-13T18:18:55Z
+completed: 2026-02-13T21:25:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Create healing agent with diagnose command
+  - Lookup similar patterns from patterns.yaml
+  - Classify failure type (code, dependency, environment, design)
+  - Suggest recovery actions based on patterns
+  - Create resolve command to log resolution
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  - description: "  - `diagnose` - Classifies failures, looks up patterns, suggests recovery"
+    resolution: "See task updates"
+  - description: "  - `patterns` - Shows all failure patterns with mitigations"
+    resolution: "See task updates"
+  - description: "  - `suggest` - Checks all tasks with issues status"
+    resolution: "See task updates"
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [antifragility, D1, error-handling]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-007-implement-healing-loop-mechanism.md
+generated_by: context-agent

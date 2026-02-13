@@ -1,0 +1,55 @@
+# Episodic Memory - T-006: Create episodic summary generator
+# Generated: 2026-02-13T20:37:18Z
+
+task_id: T-006
+task_name: "Create episodic summary generator"
+workflow_type: build
+
+# Timeline
+created: 2026-02-13T18:18:53Z
+completed: 2026-02-13T21:25:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Parse Updates section to extract timeline events
+  - Identify challenges (status changes to issues/blocked)
+  - Extract outcomes from final state
+  - Generate summary from description + updates
+  - Count artifacts (files created/modified from updates)
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  # No challenges detected (or add manually)
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [context-fabric, learning, tooling]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-006-create-episodic-summary-generator.md
+generated_by: context-agent

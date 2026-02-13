@@ -1,0 +1,55 @@
+# Episodic Memory - T-008: Add quality metrics to metrics.sh
+# Generated: 2026-02-13T20:37:27Z
+
+task_id: T-008
+task_name: "Add quality metrics to metrics.sh"
+workflow_type: build
+
+# Timeline
+created: 2026-02-13T18:19:01Z
+completed: 2026-02-13T21:25:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Add description quality metrics (avg length, % quality)
+  - Add updates health metrics (avg updates, stale count)
+  - Add acceptance criteria metrics (coverage, completion)
+  - Add Context Fabric metrics (patterns, learnings, episodic)
+  - Format output consistently with existing metrics.sh style
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  # No challenges detected (or add manually)
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [metrics, quality, D2]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-008-add-quality-metrics-to-metricssh.md
+generated_by: context-agent
