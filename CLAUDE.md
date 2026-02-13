@@ -150,7 +150,26 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 - All learnings are captured as practices
 - All open questions are tracked
 
-**Do not end a session without running session capture.**
+### Handover Agent
+
+**Location:** `agents/handover/`
+
+**When to use:** MANDATORY at end of every session.
+
+```bash
+./agents/handover/handover.sh
+```
+
+Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
+
+## Session Start Protocol
+
+**Before beginning any work:**
+1. Read `.context/handovers/LATEST.md` to understand current state
+2. Review the "Suggested First Action" section
+3. Check active tasks: `ls .tasks/active/`
+4. Run `./metrics.sh` to see project status
+5. If handover feedback section exists, fill it in
 
 ## Quick Reference
 
@@ -161,12 +180,18 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 | View metrics | `./metrics.sh` |
 | Check status | `git status && ./metrics.sh` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist |
+| Generate handover | `./agents/handover/handover.sh` |
+| Read last handover | `cat .context/handovers/LATEST.md` |
 
 ## Session End Protocol
 
-Before ending any session:
-1. Run session capture checklist
+**Before ending any session:**
+1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
-4. Commit all changes with task references
-5. Run `./metrics.sh` to verify state
+4. Generate handover: `./agents/handover/handover.sh`
+5. Fill in the [TODO] sections in the handover document
+6. Commit all changes with task references
+7. Run `./metrics.sh` to verify state
+
+**Do not end a session without generating a handover.**
