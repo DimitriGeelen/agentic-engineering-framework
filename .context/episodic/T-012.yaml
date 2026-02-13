@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-012: Create handover agent
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T21:28:48Z
+# Enriched: 2026-02-13T22:31:00Z
+
+task_id: T-012
+task_name: "Create handover agent"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T18:25:23Z
+completed: 2026-02-13T18:30:00Z
+duration_days: 0
+updates_count: 6
+
+# Summary
+summary: |
+  Built the handover agent to enable seamless context transfer between sessions.
+  Key insight from deep reflection: handover is FORWARD-looking ("what does next
+  session need?") while session-capture is BACKWARD-looking ("what happened?").
+  The state vs. understanding distinction is critical - state can be reconstructed
+  from artifacts, but understanding is lost forever if not captured.
+
+# Key outcomes
+outcomes:
+  - Created agents/handover/ with AGENT.md and handover.sh
+  - Created .context/handovers/ directory with LATEST.md symlink
+  - Handover auto-gathers active tasks, git state, recent commits
+  - Session start/end protocols added to CLAUDE.md
+  - First handover document created and filled
+
+# What worked well
+successes:
+  - description: "Deep reflection before building"
+    why: "Clarified state vs understanding distinction, forward vs backward looking"
+  - description: "Template with [TODO] sections"
+    why: "Gathers what's automatable, prompts for what requires judgment"
+  - description: "LATEST.md symlink"
+    why: "Always points to most recent handover, easy to find"
+
+# Challenges encountered
+challenges:
+  - description: "What should handover capture vs session-capture?"
+    resolution: "Handover = forward-looking context for next session; capture = ensuring nothing lost"
+    learning: "Separate concerns, different purposes"
+
+# Decisions made during this task
+decisions:
+  - decision: "Markdown + YAML frontmatter for handovers"
+    rationale: "Consistent with task format, human-readable, git-diffable"
+    alternatives_rejected: ["JSON (less readable)", "Plain markdown (no metadata)"]
+  - decision: "LATEST.md symlink pattern"
+    rationale: "Always current, no need to find latest file"
+    alternatives_rejected: ["Latest by timestamp (requires sorting)"]
+  - decision: "[TODO] sections for human enrichment"
+    rationale: "Agent can't judge what's important; human fills in"
+    alternatives_rejected: ["Full automation (loses nuance)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "agents/handover/AGENT.md"
+    - "agents/handover/handover.sh"
+    - ".context/handovers/"
+    - ".context/handovers/S-2026-0213-1926.md"
+    - ".context/handovers/LATEST.md"
+  modified:
+    - "CLAUDE.md"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [agents, context, D1, D2, handover, session-management]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-012-create-handover-agent.md
+generated_by: context-agent
+enriched_by: claude-code
