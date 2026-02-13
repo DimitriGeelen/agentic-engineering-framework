@@ -482,9 +482,10 @@ if [ -d "$episodic_dir" ]; then
             pending_enrichment=$((pending_enrichment + 1))
         fi
 
-        # Check summary is not empty/TODO
-        summary_content=$(sed -n '/^summary:/,/^[a-z_]*:/p' "$episodic_file" 2>/dev/null | head -5 | grep -v "^summary:" | grep -v "^\s*#" | tr -d ' \n')
-        if [ -z "$summary_content" ] || echo "$summary_content" | grep -q "TODO"; then
+        # Check summary is not empty/TODO placeholder
+        # Only flag if the first content line starts with [TODO (actual unfilled placeholder)
+        summary_first_line=$(sed -n '/^summary:/,/^[a-z_]*:/p' "$episodic_file" 2>/dev/null | grep -v "^summary:" | grep -v "^\s*#" | grep -v "^\s*$" | head -1 | sed 's/^[[:space:]]*//')
+        if [ -z "$summary_first_line" ] || echo "$summary_first_line" | grep -q "^\[TODO"; then
             low_quality_episodic=$((low_quality_episodic + 1))
         fi
     done
