@@ -1,0 +1,59 @@
+# Episodic Memory - T-009: Document falsifiability criteria
+# Generated: 2026-02-13T20:56:32Z
+
+task_id: T-009
+task_name: "Document falsifiability criteria"
+workflow_type: specification
+
+# Timeline
+created: 2026-02-13T18:19:20Z
+completed: 2026-02-13T21:55:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  >
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - Define falsifiability criteria for each of the 4 directives
+  - Define falsifiability criteria for core mechanisms (task system, context fabric, learning loop)
+  - Each criterion has: claim, failure indicator, observable signal
+  - Document the "pivot threshold" — when accumulated failures mean the approach is wrong
+
+# What worked well
+successes: []
+  # Add manually or via LLM analysis
+
+# Challenges encountered
+challenges:
+  - description: "- **Output:** Detailed tables with claim/failure-indicator/observable-signal for each"
+    resolution: "See task updates"
+  - description: "- **Key insight:** Falsifiability is about the framework approach, not individual task failures"
+    resolution: "See task updates"
+  - description: "- **Pivot threshold:** Defined when to abandon the approach (3+ directives fail, 2+ mechanisms fail, usability fails)"
+    resolution: "See task updates"
+
+# Decisions made during this task
+decisions: []
+  # Extract from Design Record or add manually
+
+# Files created or significantly modified
+artifacts:
+  created:
+    # Add file list manually
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta, D1, vision]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-009-document-falsifiability-criteria.md
+generated_by: context-agent

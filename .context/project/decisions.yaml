@@ -45,3 +45,9 @@ decisions:
     alternatives_rejected:
       - "Separate bypass-log script"
       - "Standalone pre-commit hook"
+
+  - id: D-006
+    decision: "Falsifiability criteria defined"
+    date: 2026-02-13
+    task: T-009
+    rationale: "Framework claims are now testable - we know what would prove the approach wrong"
