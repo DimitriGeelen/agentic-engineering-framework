@@ -94,8 +94,9 @@ generate_id() {
     for f in "$TASKS_DIR"/active/T-*.md "$TASKS_DIR"/completed/T-*.md; do
         [ -f "$f" ] || continue
         local id=$(basename "$f" | grep -oE 'T-[0-9]+' | grep -oE '[0-9]+')
-        if [ -n "$id" ] && [ "$id" -gt "$max_id" ]; then
-            max_id=$id
+        # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
+        if [ -n "$id" ] && [ "$((10#$id))" -gt "$max_id" ]; then
+            max_id=$((10#$id))
         fi
     done
     shopt -u nullglob

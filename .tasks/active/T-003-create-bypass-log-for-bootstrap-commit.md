@@ -20,15 +20,41 @@ date_finished: null
 
 ## Design Record
 
-[Architecture decisions, approach rationale — inline or link to artifact]
+Per P-005 (Bootstrap Exceptions Are First-Class), we must document exceptions explicitly rather than pretending they don't exist.
+
+The initial commit `acb4594` created the framework foundation before the task system existed. This is a bootstrap paradox - unavoidable but must be documented.
+
+Structure: `.context/bypass-log.yaml` will contain:
+- Timestamp of bypass
+- Action description
+- Commit reference
+- Who authorized
+- Reason/justification
+- Whether retroactive task was created
 
 ## Specification Record
 
-[Requirements, acceptance criteria — inline or link to artifact]
+**Acceptance criteria:**
+- [ ] `.context/` directory exists
+- [ ] `.context/bypass-log.yaml` created with valid YAML
+- [ ] Bootstrap commit (acb4594) documented as exception
+- [ ] Format matches 011-EnforcementConfig.md spec (line 30-32)
+- [ ] Audit agent passes (no "bypass log missing" warning)
+
+**Bypass log entry format:**
+```yaml
+bypasses:
+  - timestamp: 2026-02-13T18:31:55Z
+    action: "v0.1 base start - initial framework commit"
+    commit: acb4594
+    authorized_by: human
+    reason: "Bootstrap exception - task system did not exist prior to this commit"
+    retroactive_task: null  # Accepted as bootstrap exception
+```
 
 ## Test Files
 
-[References to test scripts and test artifacts]
+- Run `./agents/audit/audit.sh` - should not warn about missing bypass log
 
 ## Updates
 

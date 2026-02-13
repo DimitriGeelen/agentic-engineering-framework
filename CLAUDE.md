@@ -138,6 +138,20 @@ The framework includes agents for common operations. Each agent has a bash scrip
 
 **Exit codes:** 0=pass, 1=warnings, 2=failures
 
+### Session Capture Agent
+
+**Location:** `agents/session-capture/`
+
+**When to use:** MANDATORY before ending any session or switching context.
+
+Review the checklist in `agents/session-capture/AGENT.md` and ensure:
+- All discussed work has tasks
+- All decisions are recorded
+- All learnings are captured as practices
+- All open questions are tracked
+
+**Do not end a session without running session capture.**
+
 ## Quick Reference
 
 | Action | Command |
@@ -146,3 +160,13 @@ The framework includes agents for common operations. Each agent has a bash scrip
 | Run audit | `./agents/audit/audit.sh` |
 | View metrics | `./metrics.sh` |
 | Check status | `git status && ./metrics.sh` |
+| Session capture | Review `agents/session-capture/AGENT.md` checklist |
+
+## Session End Protocol
+
+Before ending any session:
+1. Run session capture checklist
+2. Create tasks for all uncaptured work
+3. Update practices with learnings
+4. Commit all changes with task references
+5. Run `./metrics.sh` to verify state

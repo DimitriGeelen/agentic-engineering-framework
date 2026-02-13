@@ -20,15 +20,48 @@ date_finished: null
 
 ## Design Record
 
-[Architecture decisions, approach rationale — inline or link to artifact]
+Per P-002 (Structural Enforcement Over Agent Discipline), we cannot rely on agents/humans to remember task references. A git pre-commit hook provides structural enforcement.
+
+**Design decisions:**
+- Hook checks commit message for T-XXX pattern
+- Allows bypass with `--no-verify` (Tier 2 bypass - logs warning)
+- Does NOT block merge commits or rebase
+- Provides helpful error message with task-create command
+
+**Not in scope (future):**
+- Validating task file exists
+- Checking task status
+- Tier 0 action blocking (that's a different hook)
 
 ## Specification Record
 
-[Requirements, acceptance criteria — inline or link to artifact]
+**Acceptance criteria:**
+- [ ] `.git/hooks/pre-commit` exists and is executable
+- [ ] Commit without task reference is blocked with helpful message
+- [ ] Commit with task reference (T-XXX) succeeds
+- [ ] `--no-verify` bypass works but logs warning
+- [ ] Merge commits are allowed (no task ref required)
+- [ ] Audit agent passes (no "pre-commit hook missing" warning)
+
+**Hook behavior:**
+```
+If commit message does NOT contain T-[0-9]+:
+  - Print error: "Commit blocked: No task reference found"
+  - Print help: "Add task reference: git commit -m 'T-XXX: description'"
+  - Print help: "Create task: ./agents/task-create/create-task.sh"
+  - Print help: "Bypass (emergency): git commit --no-verify"
+  - Exit 1
+Else:
+  - Allow commit
+  - Exit 0
+```
 
 ## Test Files
 
-[References to test scripts and test artifacts]
+- Test: commit without task ref → blocked
+- Test: commit with T-001 → allowed
+- Test: merge commit → allowed
+- Run `./agents/audit/audit.sh` → no hook warning
 
 ## Updates
 
