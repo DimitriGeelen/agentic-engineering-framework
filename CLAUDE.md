@@ -225,6 +225,32 @@ Manages three memory types:
 - **Project Memory** — Patterns, decisions, learnings
 - **Episodic Memory** — Condensed task histories
 
+### Healing Agent
+
+**Location:** `agents/healing/`
+
+**When to use:** When a task encounters issues (status = `issues` or `blocked`). Implements the antifragile healing loop.
+
+```bash
+# Diagnose task issues and get recovery suggestions
+./agents/healing/healing.sh diagnose T-015
+
+# After fixing, record the resolution (adds pattern + learning)
+./agents/healing/healing.sh resolve T-015 --mitigation "Added retry logic"
+
+# Show all known failure patterns
+./agents/healing/healing.sh patterns
+
+# Check all tasks with issues
+./agents/healing/healing.sh suggest
+```
+
+The healing loop:
+1. **Classify** — Identifies failure type (code, dependency, environment, design, external)
+2. **Lookup** — Searches for similar patterns in patterns.yaml
+3. **Suggest** — Recommends recovery using Error Escalation Ladder
+4. **Log** — Records resolution as pattern for future learning
+
 ## Session Start Protocol
 
 **Before beginning any work:**
@@ -249,6 +275,9 @@ Manages three memory types:
 | Set focus | `./agents/context/context.sh focus T-XXX` |
 | Context status | `./agents/context/context.sh status` |
 | Add learning | `./agents/context/context.sh add-learning "..." --task T-XXX` |
+| Diagnose issue | `./agents/healing/healing.sh diagnose T-XXX` |
+| Resolve issue | `./agents/healing/healing.sh resolve T-XXX --mitigation "..."` |
+| Show patterns | `./agents/healing/healing.sh patterns` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist |
 | Generate handover | `./agents/handover/handover.sh` |
 | Handover + commit | `./agents/handover/handover.sh --commit` |
