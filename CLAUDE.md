@@ -190,14 +190,50 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 
 Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
 
+### Context Agent
+
+**Location:** `agents/context/`
+
+**When to use:** To manage the Context Fabric (persistent memory system).
+
+```bash
+# Initialize session (start of session)
+./agents/context/context.sh init
+
+# Show context state
+./agents/context/context.sh status
+
+# Set/show current focus
+./agents/context/context.sh focus T-005
+./agents/context/context.sh focus
+
+# Record a learning
+./agents/context/context.sh add-learning "Always validate inputs" --task T-014 --source P-001
+
+# Record a pattern (failure/success/workflow)
+./agents/context/context.sh add-pattern failure "API timeout" --task T-015 --mitigation "Add retry"
+
+# Record a decision
+./agents/context/context.sh add-decision "Use YAML" --task T-005 --rationale "Human readable"
+
+# Generate episodic summary for completed task
+./agents/context/context.sh generate-episodic T-014
+```
+
+Manages three memory types:
+- **Working Memory** — Session state, current focus, priorities
+- **Project Memory** — Patterns, decisions, learnings
+- **Episodic Memory** — Condensed task histories
+
 ## Session Start Protocol
 
 **Before beginning any work:**
-1. Read `.context/handovers/LATEST.md` to understand current state
-2. Review the "Suggested First Action" section
-3. Check active tasks: `ls .tasks/active/`
-4. Run `./metrics.sh` to see project status
-5. If handover feedback section exists, fill it in
+1. Initialize context: `./agents/context/context.sh init`
+2. Read `.context/handovers/LATEST.md` to understand current state
+3. Review the "Suggested First Action" section
+4. Set focus: `./agents/context/context.sh focus T-XXX`
+5. Run `./metrics.sh` to see project status
+6. If handover feedback section exists, fill it in
 
 ## Quick Reference
 
@@ -209,6 +245,10 @@ Creates a forward-looking context document in `.context/handovers/` to enable th
 | Install git hooks | `./agents/git/git.sh install-hooks` |
 | Run audit | `./agents/audit/audit.sh` |
 | View metrics | `./metrics.sh` |
+| Initialize session | `./agents/context/context.sh init` |
+| Set focus | `./agents/context/context.sh focus T-XXX` |
+| Context status | `./agents/context/context.sh status` |
+| Add learning | `./agents/context/context.sh add-learning "..." --task T-XXX` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist |
 | Generate handover | `./agents/handover/handover.sh` |
 | Handover + commit | `./agents/handover/handover.sh --commit` |

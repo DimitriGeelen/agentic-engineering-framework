@@ -1,0 +1,73 @@
+# Episodic Memory - T-013: Create git agent
+
+task_id: T-013
+task_name: "Create git agent for local operations"
+workflow_type: build
+
+# Timeline
+created: 2026-02-13T17:30:00Z
+completed: 2026-02-13T19:00:00Z
+duration_days: 0  # Same day
+
+# Summary
+summary: |
+  Created git agent to provide structural enforcement for git operations.
+  Includes commit (with task validation), status (task-aware), install-hooks
+  (commit-msg, post-commit, pre-push), log-bypass, and log (task-filtered).
+  Absorbed T-003 (bypass log) and T-004 (pre-commit hook) as coherent whole.
+
+# Key outcomes
+outcomes:
+  - "Git agent at agents/git/ with 5 commands"
+  - "Pre-push hook runs audit before push"
+  - "Commit-msg hook validates task references"
+  - "Post-commit hook detects bypass attempts"
+  - "Task timestamps updated on commit"
+
+# What worked well
+successes:
+  - description: "Absorbing related tasks into coherent agent"
+    why: "Single tool for all git enforcement better than scattered scripts"
+  - description: "Hybrid architecture (bash + AGENT.md)"
+    why: "Reliable mechanical operations with judgment guidance"
+
+# What didn't work (initially)
+challenges:
+  - description: "Timestamp update loop"
+    resolution: "Only update active tasks, not completed ones"
+    learning: "FP-001: Check task status before updating metadata"
+
+# Decisions made during this task
+decisions:
+  - decision: "Use commit-msg hook (not pre-commit)"
+    rationale: "Validates message format, not file content"
+    alternatives_rejected: ["pre-commit (runs before message exists)"]
+  - decision: "Git agent absorbs T-003 and T-004"
+    rationale: "Coherent tool for all git enforcement"
+    alternatives_rejected: ["Separate scripts"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "agents/git/git.sh"
+    - "agents/git/AGENT.md"
+    - "agents/git/lib/commit.sh"
+    - "agents/git/lib/status.sh"
+    - "agents/git/lib/hooks.sh"
+    - "agents/git/lib/bypass.sh"
+    - "agents/git/lib/log.sh"
+    - "agents/git/lib/common.sh"
+    - ".context/bypass-log.yaml"
+    - ".git/hooks/commit-msg"
+    - ".git/hooks/post-commit"
+    - ".git/hooks/pre-push"
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: [T-003, T-004]
+  spawned: []
+
+# Tags for retrieval
+tags: [git, enforcement, hooks, P-002, structural-enforcement]

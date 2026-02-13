@@ -1,0 +1,47 @@
+# Project Memory - Decisions
+# Key decisions made during the project with rationale.
+# Referenced when similar decisions come up.
+
+decisions:
+  - id: D-001
+    decision: "Use commit-msg hook (not pre-commit)"
+    date: 2026-02-13
+    task: T-013
+    rationale: "Validates message format, not file content; more appropriate for task ref check"
+    alternatives_rejected:
+      - "pre-commit (runs before message exists)"
+
+  - id: D-002
+    decision: "Audit saves history to YAML files"
+    date: 2026-02-13
+    task: T-014
+    rationale: "Enables trend detection without database, human-readable"
+    alternatives_rejected:
+      - "SQLite (overkill for this use case)"
+      - "JSON (less readable than YAML)"
+
+  - id: D-003
+    decision: "3+ occurrences triggers practice candidate"
+    date: 2026-02-13
+    task: T-014
+    rationale: "Balance between noise (too few) and missing patterns (too many)"
+    alternatives_rejected:
+      - "2 (too noisy)"
+      - "5 (too slow to detect patterns)"
+
+  - id: D-004
+    decision: "Tier 0 violations are FAIL not WARN"
+    date: 2026-02-13
+    task: T-014
+    rationale: "Consequential actions must never bypass task requirement"
+    alternatives_rejected:
+      - "WARN (too weak for Tier 0)"
+
+  - id: D-005
+    decision: "Git agent absorbs bypass log and hooks"
+    date: 2026-02-13
+    task: T-013
+    rationale: "Coherent tool for all git enforcement rather than scattered scripts"
+    alternatives_rejected:
+      - "Separate bypass-log script"
+      - "Standalone pre-commit hook"

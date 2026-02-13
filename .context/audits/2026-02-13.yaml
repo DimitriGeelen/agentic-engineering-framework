@@ -1,5 +1,5 @@
 # Audit Results - 2026-02-13
-timestamp: 2026-02-13T19:46:53Z
+timestamp: 2026-02-13T20:21:04Z
 summary:
   pass: 15
   warn: 1
@@ -16,11 +16,11 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 8 active tasks are valid"
+    check: "All 7 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 95% (19/20 commits reference tasks)"
+    check: "Git traceability: 95% (21/22 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"

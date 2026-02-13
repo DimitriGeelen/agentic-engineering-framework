@@ -1,0 +1,44 @@
+# Project Memory - Patterns
+# Accumulated patterns from working on this project.
+# Grows over time as we learn from tasks.
+
+# Failure patterns - things that went wrong and how to avoid them
+failure_patterns:
+  - id: FP-001
+    pattern: "Timestamp update loop"
+    description: "Updating task timestamps on every commit causes endless uncommitted changes"
+    learned_from: T-013
+    date_learned: 2026-02-13
+    mitigation: "Only update timestamps for active tasks, not completed ones"
+
+  - id: FP-002
+    pattern: "sed returns malformed integers"
+    description: "Complex sed commands for counting return output with newlines"
+    learned_from: T-014
+    date_learned: 2026-02-13
+    mitigation: "Use simpler grep -c and pipe through tr -d to clean"
+
+# Success patterns - things that work well
+success_patterns:
+  - id: SP-001
+    pattern: "Phased implementation"
+    description: "Breaking large changes into numbered phases improves traceability"
+    learned_from: T-014
+    date_learned: 2026-02-13
+    context: "5-phase audit improvement was easier to review and commit"
+
+  - id: SP-002
+    pattern: "Hybrid agent architecture"
+    description: "Bash scripts for mechanical work + AGENT.md for intelligence"
+    learned_from: T-002
+    date_learned: 2026-02-13
+    context: "Scripts are reliable, AGENT.md provides judgment guidance"
+
+# Workflow patterns - how we work effectively
+workflow_patterns:
+  - id: WP-001
+    pattern: "Task absorption"
+    description: "Related small tasks can be absorbed into a larger coherent task"
+    learned_from: T-013
+    date_learned: 2026-02-13
+    example: "T-003 and T-004 absorbed into T-013 (git agent)"

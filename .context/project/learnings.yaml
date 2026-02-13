@@ -1,0 +1,43 @@
+# Project Memory - Learnings
+# Lessons learned from completed tasks.
+# Used by agents to improve future work.
+
+learnings:
+  - id: L-001
+    learning: "Measure what exists, not what should exist"
+    source: P-001
+    task: T-014
+    date: 2026-02-13
+    context: "Audit was checking for existence of files, not quality of content"
+    application: "Always add quality heuristics alongside existence checks"
+
+  - id: L-002
+    learning: "Structural enforcement over agent discipline"
+    source: P-002
+    task: T-013
+    date: 2026-02-13
+    context: "Git hooks enforce task refs, not agent willpower"
+    application: "When you need something to always happen, use a hook/gate"
+
+  - id: L-003
+    learning: "Healthy dysfunction indicates framework value"
+    source: T-014
+    task: T-014
+    date: 2026-02-13
+    context: "Audit found issues with itself, proving it works"
+    application: "Self-critique capability is a feature, not a bug"
+
+  - id: L-004
+    learning: "Only update active tasks to avoid timestamp loops"
+    source: T-013
+    task: T-013
+    date: 2026-02-13
+    context: "Git agent updated completed tasks causing endless uncommitted changes"
+    application: "Check task status before updating metadata"
+
+# Candidate learnings (need validation before promotion)
+candidates: []
+  # - observation: "..."
+  #   occurrences: 2
+  #   first_seen: 2026-02-13
+  #   tasks: [T-XXX, T-YYY]
