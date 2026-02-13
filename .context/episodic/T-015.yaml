@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-015: Fix episodic generator to require enrichment
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T21:25:14Z
+# Enriched: 2026-02-13T22:26:00Z
+
+task_id: T-015
+task_name: "Fix episodic generator to require enrichment"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T21:21:25Z
+completed: 2026-02-13T22:26:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary
+summary: |
+  Fixed the episodic generator to be honest about its limitations. Instead of
+  producing empty templates that look complete, it now generates skeletons with
+  explicit [TODO] markers and an enrichment_status field. This prevents the
+  "green metrics, zero value" anti-pattern identified in the multi-agent review.
+
+# Key outcomes
+outcomes:
+  - Added enrichment_status: pending|complete field to track enrichment state
+  - Replaced empty placeholders with actionable [TODO] prompts
+  - Added warning banner making incomplete status visually obvious
+  - Changed output message from "summary generated" to "skeleton generated"
+  - Generator now honest about what automation can and cannot do
+
+# What worked well
+successes:
+  - description: "Multi-agent review identified the problem clearly"
+    why: "Different perspectives (D1, D2, D3, skeptic, architect) provided comprehensive diagnosis"
+  - description: "Minimal code changes for significant improvement"
+    why: "Only changed output format, not fundamental logic"
+  - description: "Self-documenting TODO prompts"
+    why: "Each section tells you exactly what to fill in and why"
+
+# Challenges encountered
+challenges:
+  - description: "Generator cannot synthesize meaning from task content"
+    resolution: "Accepted limitation - generator creates skeleton, human/LLM enriches"
+    learning: "L-005: Automation must fail visibly if it can't produce quality output"
+
+# Decisions made during this task
+decisions:
+  - decision: "Add enrichment_status field rather than blocking generation"
+    rationale: "Non-blocking allows workflow to proceed while tracking debt"
+    alternatives_rejected: ["Block until enriched (too disruptive)", "No tracking (current broken state)"]
+  - decision: "Use [TODO] markers in actual field values"
+    rationale: "Makes incompleteness impossible to miss when reading the file"
+    alternatives_rejected: ["Comments only (easily ignored)", "Separate validation file"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "agents/context/lib/episodic.sh"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: [T-016, T-017, T-018, T-019]
+
+# Tags for retrieval
+tags: [context-fabric, D1, D2, D3, episodic, generator, quality]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-015-fix-episodic-generator-to-require-enrich.md
+generated_by: context-agent
+enriched_by: claude-code

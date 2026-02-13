@@ -74,12 +74,23 @@ do_generate_episodic() {
     local generated_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
     cat > "$episodic_file" << EOF
-# Episodic Memory - ${task_id}: ${task_name}
+# ============================================================================
+# EPISODIC MEMORY - ${task_id}: ${task_name}
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+#
+# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# must be filled in by a human or LLM before this episodic is useful.
+#
+# To enrich: Read the source task file and fill in the TODO sections.
+# When done: Change enrichment_status from "pending" to "complete"
+# ============================================================================
 # Generated: $generated_at
 
 task_id: $task_id
 task_name: "$task_name"
 workflow_type: $workflow_type
+enrichment_status: pending  # Change to "complete" after enrichment
 
 # Timeline
 created: $created
@@ -88,8 +99,10 @@ duration_days: $duration_days
 updates_count: $update_count
 
 # Summary
+# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
+# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  $description
+  [TODO: Summarize what was done and why it matters. Source: $task_file]
 
 # Key outcomes (from acceptance criteria)
 outcomes:
@@ -107,10 +120,14 @@ EOF
     cat >> "$episodic_file" << EOF
 
 # What worked well
-successes: []
-  # Add manually or via LLM analysis
+# [TODO] List 1-3 things that worked well, with WHY they worked.
+# Format: - description: "What worked" / why: "Why it worked"
+successes:
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
 
 # Challenges encountered
+# [TODO] List challenges faced and how they were resolved.
 challenges:
 EOF
 
@@ -129,10 +146,15 @@ EOF
     cat >> "$episodic_file" << EOF
 
 # Decisions made during this task
-decisions: []
-  # Extract from Design Record or add manually
+# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
+# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
+decisions:
+  - decision: "[TODO: Extract from Design Record]"
+    rationale: "[TODO: Why this choice?]"
+    alternatives_rejected: []
 
 # Files created or significantly modified
+# [TODO] List actual files created or modified during this task.
 artifacts:
   created:
 EOF
@@ -141,7 +163,7 @@ EOF
     if [ -n "$files_created" ]; then
         echo "$files_created" >> "$episodic_file"
     else
-        echo "    # Add file list manually" >> "$episodic_file"
+        echo "    - \"[TODO: List files created]\"" >> "$episodic_file"
     fi
 
     cat >> "$episodic_file" << EOF
@@ -161,12 +183,17 @@ source_file: $task_file
 generated_by: context-agent
 EOF
 
-    echo -e "${GREEN}Episodic summary generated: $episodic_file${NC}"
+    echo -e "${GREEN}Episodic skeleton generated: $episodic_file${NC}"
     echo ""
-    echo "Summary:"
-    echo "  Task: $task_name"
+    echo -e "${YELLOW}⚠ ENRICHMENT REQUIRED${NC}"
+    echo "  This is a skeleton with [TODO] placeholders."
+    echo "  Fill in the TODO sections, then set enrichment_status: complete"
+    echo ""
+    echo "Task: $task_name"
     echo "  Duration: $duration_days days"
     echo "  Updates: $update_count"
     [ -n "$outcomes" ] && echo "  Outcomes: $(echo "$outcomes" | wc -l | tr -d ' ')"
     [ -n "$challenges" ] && echo "  Challenges: $(echo "$challenges" | wc -l | tr -d ' ')"
+    echo ""
+    echo "Source: $task_file"
 }
