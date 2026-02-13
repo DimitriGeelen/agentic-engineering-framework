@@ -15,7 +15,7 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T12:00:00Z
-last_update: 2026-02-13T12:00:00Z
+last_update: 2026-02-13T13:00:00Z
 date_finished: null
 ---
 
@@ -39,8 +39,8 @@ Must distinguish between:
 ## Specification Record
 
 Acceptance criteria:
-- [ ] .tasks/ structure exists and is in use
-- [ ] metrics.sh can report basic counts
+- [x] .tasks/ structure exists and is in use
+- [x] metrics.sh can report basic counts
 - [ ] At least 3 tasks created and progressed through lifecycle
 - [ ] Success metrics documented with: metric, collection method, baseline, target
 - [ ] Identified at least one metric we thought we could measure but can't
@@ -55,3 +55,15 @@ N/A - this is a specification task
 - **Action:** Created T-001 as first framework task (bootstrapping)
 - **Output:** .tasks/active/T-001-define-success-metrics.md
 - **Context:** Following critical review from 3 agents. Pivoting from theoretical metrics to experimental approach.
+
+### 2026-02-13 12:30 — infrastructure-created [claude-code]
+- **Action:** Created .tasks/ structure, metrics.sh, committed with T-001 reference
+- **Output:** Commit cb929d6. Traceability: 0% → 50%
+- **Context:** First observable metric change from using the framework.
+
+### 2026-02-13 13:00 — learning-extracted [claude-code]
+- **Action:** Reflected on what we did vs. what we originally planned
+- **Learning:** "Measure what exists, not what should exist"
+- **Pattern:** We failed at theoretical metrics → pivoted to experimentation → observed real data → learning emerged
+- **Promoted to:** 015-Practices.md (P-001)
+- **Context:** This is an instance of D1 (Antifragility) in action — learning from doing.
