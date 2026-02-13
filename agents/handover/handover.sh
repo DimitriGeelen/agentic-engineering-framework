@@ -16,12 +16,13 @@ NC='\033[0m'
 
 # Parse arguments
 SESSION_ID=""
-AUTO_COMMIT=false
+AUTO_COMMIT=true
 COMMIT_TASK=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --session) SESSION_ID="$2"; shift 2 ;;
         --commit) AUTO_COMMIT=true; shift ;;
+        --no-commit) AUTO_COMMIT=false; shift ;;
         --task|-t) COMMIT_TASK="$2"; shift 2 ;;
         --owner) AGENT_OWNER="$2"; shift 2 ;;
         -h|--help)
@@ -29,7 +30,8 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --session ID   Use specific session ID (default: auto-generated)"
-            echo "  --commit       Auto-commit handover via git agent"
+            echo "  --commit       Auto-commit handover via git agent (default)"
+            echo "  --no-commit    Skip auto-commit"
             echo "  --task, -t ID  Task ID for commit (default: T-012)"
             echo "  --owner NAME   Agent/provider name (default: \$AGENT_OWNER or claude-code)"
             echo "  -h, --help     Show this help"
