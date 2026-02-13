@@ -1,0 +1,39 @@
+task_id: T-032
+task_name: "Refactor agents to accept PROJECT_ROOT externally"
+workflow_type: refactor
+enrichment_status: complete
+summary: |
+  Refactored all 8 agents to use PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}" pattern,
+  enabling the shared tooling model where agents live in a central framework install but
+  operate on a separate project directory. Also added FRAMEWORK_ROOT for self-referencing.
+  Fixed D2 silent failure in pre-push hook (now blocks instead of allowing when audit missing).
+  Fixed handover auto-commit to resolve git agent via FRAMEWORK_ROOT. Backward compatible.
+outcomes:
+  - "All agents accept PROJECT_ROOT from environment"
+  - "Pre-push hook resolves audit via .framework.yaml"
+  - "Pre-push hook blocks on missing audit (D2 fix)"
+  - "Handover resolves git agent via FRAMEWORK_ROOT"
+  - "Backward compatible — falls back to ../../ when PROJECT_ROOT not set"
+successes:
+  - description: "Env var with fallback pattern"
+    why: "Simple, backward compatible, one-line change per agent"
+decisions:
+  - decision: "Use ${PROJECT_ROOT:-$FRAMEWORK_ROOT} pattern"
+    rationale: "Backward compatible with direct invocation, enables shared tooling via env"
+    alternatives_rejected: ["Config file read in each agent (too heavy)", "Symlinks (D4 violation)"]
+  - decision: "Pre-push hook exits 1 instead of 0 when audit not found"
+    rationale: "D2 requires no silent failures — missing audit should block push"
+    alternatives_rejected: ["Silent allow (D2 violation)", "Warning only (too weak)"]
+artifacts:
+  modified:
+    - "agents/healing/healing.sh"
+    - "agents/git/git.sh"
+    - "agents/git/lib/hooks.sh"
+    - "agents/context/context.sh"
+    - "agents/resume/resume.sh"
+    - "agents/task-create/create-task.sh"
+    - "agents/audit/audit.sh"
+    - "agents/handover/handover.sh"
+tags: [shared-tooling, PROJECT_ROOT, refactor, D2, backward-compatible]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-032-refactor-agents-to-accept-projectroot-ex.md
+generated_by: context-agent

@@ -3,7 +3,7 @@ id: T-032
 name: Refactor agents to accept PROJECT_ROOT externally
 description: >
   test
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: claude-code
 priority: medium
