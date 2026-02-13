@@ -163,6 +163,75 @@ fi
 echo ""
 
 # ============================================
+# SECTION 2B: TASK QUALITY CHECKS (P-001, P-004)
+# ============================================
+echo "=== TASK QUALITY CHECKS ==="
+
+quality_issues=0
+
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active"/*.md; do
+    [ -f "$task_file" ] || continue
+    task_name=$(basename "$task_file")
+    task_id=$(grep "^id:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    task_status=$(grep "^status:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+
+    # Quality Check 1: Description length > 50 chars
+    description=$(grep "^description:" "$task_file" | head -1 | cut -d: -f2-)
+    # Handle multi-line description (YAML > syntax)
+    if [ -z "$description" ] || [ "$description" = " >" ]; then
+        # Multi-line: get next non-empty line
+        description=$(sed -n '/^description:/,/^[a-z_]*:/p' "$task_file" | sed '1d;/^[a-z_]*:/d' | tr -d '\n' | sed 's/^[ ]*//')
+    fi
+    desc_len=${#description}
+    if [ "$desc_len" -lt 50 ]; then
+        warn "Task $task_id has short description ($desc_len chars)" \
+             "Description should be >= 50 chars for clarity" \
+             "Expand description in $task_name"
+        quality_issues=$((quality_issues + 1))
+    fi
+
+    # Count updates (### headers in Updates section)
+    updates_count=$(grep -c "^### " "$task_file" 2>/dev/null || true)
+    updates_count=${updates_count:-0}
+    # Ensure it's a clean integer
+    updates_count=$(echo "$updates_count" | tr -d '[:space:]')
+
+    # Quality Check 2: Updates section has entries for started-work tasks
+    if [ "$task_status" = "started-work" ]; then
+        if [ "$updates_count" -eq 0 ]; then
+            warn "Task $task_id has no updates but status is started-work" \
+                 "Started tasks should have at least 1 update entry" \
+                 "Add update entry to $task_name"
+            quality_issues=$((quality_issues + 1))
+        fi
+    fi
+
+    # Quality Check 3: Tasks older than 7 days should have > 1 update
+    created_date=$(grep "^created:" "$task_file" | head -1 | cut -d: -f2- | tr -d ' ' | cut -dT -f1)
+    if [ -n "$created_date" ]; then
+        created_ts=$(date -d "$created_date" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$created_date" +%s 2>/dev/null || echo 0)
+        now_ts=$(date +%s)
+        age_days=$(( (now_ts - created_ts) / 86400 ))
+        if [ "$age_days" -gt 7 ] && [ "$task_status" != "work-completed" ]; then
+            if [ "$updates_count" -lt 2 ]; then
+                warn "Task $task_id is $age_days days old with only $updates_count updates" \
+                     "Long-running tasks should show progress" \
+                     "Add progress updates to $task_name"
+                quality_issues=$((quality_issues + 1))
+            fi
+        fi
+    fi
+done
+shopt -u nullglob
+
+if [ "$quality_issues" -eq 0 ]; then
+    pass "All active tasks meet quality thresholds"
+fi
+
+echo ""
+
+# ============================================
 # SECTION 3: GIT TRACEABILITY CHECKS
 # ============================================
 echo "=== GIT TRACEABILITY CHECKS ==="
@@ -194,6 +263,30 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
              "Commit changes with task reference or stash"
     else
         pass "Working directory clean"
+    fi
+
+    # Quality Check: Verify task refs in commits exist as actual tasks
+    orphan_refs=0
+    while IFS= read -r commit_line; do
+        task_ref=$(echo "$commit_line" | grep -oE "T-[0-9]+" | head -1)
+        if [ -n "$task_ref" ]; then
+            # Check if task file exists (active or completed)
+            task_file=$(find "$TASKS_DIR" -name "${task_ref}-*.md" -type f 2>/dev/null | head -1)
+            if [ -z "$task_file" ]; then
+                if [ "$orphan_refs" -eq 0 ]; then
+                    echo ""
+                fi
+                commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
+                warn "Commit $commit_sha references non-existent task $task_ref" \
+                     "Task file for $task_ref not found in .tasks/" \
+                     "Create task or fix commit reference"
+                orphan_refs=$((orphan_refs + 1))
+            fi
+        fi
+    done < <(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null)
+
+    if [ "$orphan_refs" -eq 0 ] && [ "$task_commits" -gt 0 ]; then
+        pass "All commit task refs resolve to actual tasks"
     fi
 else
     warn "Not a git repository" \
@@ -246,6 +339,26 @@ if [ -f "$PROJECT_ROOT/015-Practices.md" ]; then
         practices_with_origin=$(grep -c "Origin:" "$PROJECT_ROOT/015-Practices.md" 2>/dev/null || echo 0)
         if [ "$practices_with_origin" -ge "$practice_count" ]; then
             pass "All practices have traceable origins"
+
+            # Quality Check: Verify practice origins reference existing tasks
+            orphan_origins=0
+            while IFS= read -r origin_line; do
+                task_ref=$(echo "$origin_line" | grep -oE "T-[0-9]+" | head -1)
+                if [ -n "$task_ref" ]; then
+                    task_file=$(find "$TASKS_DIR" -name "${task_ref}-*.md" -type f 2>/dev/null | head -1)
+                    if [ -z "$task_file" ]; then
+                        practice_id=$(echo "$origin_line" | grep -oE "P-[0-9]+" | head -1)
+                        warn "Practice ${practice_id:-unknown} references non-existent task $task_ref" \
+                             "Origin task $task_ref not found in .tasks/" \
+                             "Fix origin reference in 015-Practices.md"
+                        orphan_origins=$((orphan_origins + 1))
+                    fi
+                fi
+            done < <(grep "Origin:" "$PROJECT_ROOT/015-Practices.md" 2>/dev/null)
+
+            if [ "$orphan_origins" -eq 0 ]; then
+                pass "All practice origins resolve to actual tasks"
+            fi
         else
             warn "Some practices missing origin" \
                  "$practices_with_origin of $practice_count have Origin: field" \

@@ -3,7 +3,7 @@ id: T-014
 name: Improve audit agent to measure quality not just existence
 description: >
   Critical review revealed audit agent violates P-001, P-004 (measures existence not quality), P-002 (reports but doesn't enforce), and doesn't check Tier 0 at all. Multiple gaming vectors exist. AGENT.md claims capabilities not implemented in audit.sh.
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 priority: high
@@ -12,7 +12,7 @@ agents:
   primary:
   supporting: [Plan]
 created: 2026-02-13T18:58:38Z
-last_update: 2026-02-13T18:58:38Z
+last_update: 2026-02-13T18:59:12Z
 date_finished: null
 ---
 
