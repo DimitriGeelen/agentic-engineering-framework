@@ -117,13 +117,26 @@ HOOK_EOF
 
 # Find project root (where .git is)
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
-AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
 
-# Skip if audit script doesn't exist
-if [ ! -f "$AUDIT_SCRIPT" ]; then
-    echo "WARNING: Audit script not found at $AUDIT_SCRIPT"
-    echo "Push allowed, but audit enforcement is disabled"
-    exit 0
+# Resolve audit script: check .framework.yaml first, then local agents/
+AUDIT_SCRIPT=""
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    FW_PATH=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    if [ -n "$FW_PATH" ] && [ -f "$FW_PATH/agents/audit/audit.sh" ]; then
+        AUDIT_SCRIPT="$FW_PATH/agents/audit/audit.sh"
+    fi
+fi
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/agents/audit/audit.sh" ]; then
+    AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
+fi
+
+# Skip if audit script not found anywhere
+if [ -z "$AUDIT_SCRIPT" ]; then
+    echo "ERROR: Audit script not found"
+    echo "  Checked: .framework.yaml -> framework_path"
+    echo "  Checked: $PROJECT_ROOT/agents/audit/audit.sh"
+    echo "  Push blocked — fix framework path or install audit agent"
+    exit 1
 fi
 
 echo ""

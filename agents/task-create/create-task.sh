@@ -4,7 +4,9 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 TEMPLATE="$TASKS_DIR/templates/default.md"
 

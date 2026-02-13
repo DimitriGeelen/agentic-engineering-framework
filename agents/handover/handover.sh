@@ -2,7 +2,9 @@
 # Handover Agent - Mechanical Operations
 # Creates handover documents for session continuity
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 CONTEXT_DIR="$PROJECT_ROOT/.context"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
@@ -266,12 +268,20 @@ if [ "$AUTO_COMMIT" = true ]; then
     echo ""
     echo -e "${YELLOW}Auto-committing handover...${NC}"
 
-    if [ -f "$PROJECT_ROOT/agents/git/git.sh" ]; then
+    # Resolve git agent: FRAMEWORK_ROOT (set by this script), then PROJECT_ROOT fallback
+    GIT_AGENT=""
+    if [ -n "${FRAMEWORK_ROOT:-}" ] && [ -f "$FRAMEWORK_ROOT/agents/git/git.sh" ]; then
+        GIT_AGENT="$FRAMEWORK_ROOT/agents/git/git.sh"
+    elif [ -f "$PROJECT_ROOT/agents/git/git.sh" ]; then
+        GIT_AGENT="$PROJECT_ROOT/agents/git/git.sh"
+    fi
+
+    if [ -n "$GIT_AGENT" ]; then
         # Stage handover files
         git -C "$PROJECT_ROOT" add "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
 
         # Commit via git agent
-        "$PROJECT_ROOT/agents/git/git.sh" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
+        PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
     else
         echo -e "${RED}Git agent not found. Manual commit required.${NC}"
         echo "Run: git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""

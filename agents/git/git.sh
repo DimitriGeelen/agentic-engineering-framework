@@ -5,7 +5,8 @@
 set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 LIB_DIR="$SCRIPT_DIR/lib"
 
 # Source common utilities

@@ -1,5 +1,5 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-13T23:09:23Z
+timestamp: 2026-02-13T23:47:05Z
 summary:
   pass: 16
   warn: 2
@@ -15,13 +15,13 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
+  - level: PASS
+    check: "All 7 active tasks are valid"
   - level: WARN
-    check: "No active tasks found"
-    mitigation: "Create tasks for ongoing work"
+    check: "Task T-032 has short description (4 chars)"
+    mitigation: "Expand description in T-032-refactor-agents-to-accept-projectroot-ex.md"
   - level: PASS
-    check: "All active tasks meet quality thresholds"
-  - level: PASS
-    check: "Git traceability: 90% (57/63 commits reference tasks)"
+    check: "Git traceability: 90% (59/65 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
