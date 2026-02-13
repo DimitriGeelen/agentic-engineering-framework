@@ -113,6 +113,12 @@ cmd_status() {
 
     # Handover summary
     if [ -f "$HANDOVER_DIR/LATEST.md" ]; then
+        # Check for unfilled TODO placeholders
+        local todo_count=$(grep -c "\[TODO\]" "$HANDOVER_DIR/LATEST.md" 2>/dev/null | tr -d "\n" || echo "0")
+        if [ "$todo_count" -gt 0 ]; then
+            echo -e "${YELLOW}⚠ Handover has $todo_count unfilled [TODO] placeholder(s) — may be incomplete${NC}"
+        fi
+
         echo -e "${BOLD}Last Handover:${NC}"
         # Extract "Where We Are" section (first paragraph after header)
         local where_we_are=$(sed -n '/^## Where We Are/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -5)
