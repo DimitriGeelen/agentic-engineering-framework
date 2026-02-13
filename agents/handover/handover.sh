@@ -23,6 +23,7 @@ while [[ $# -gt 0 ]]; do
         --session) SESSION_ID="$2"; shift 2 ;;
         --commit) AUTO_COMMIT=true; shift ;;
         --task|-t) COMMIT_TASK="$2"; shift 2 ;;
+        --owner) AGENT_OWNER="$2"; shift 2 ;;
         -h|--help)
             echo "Usage: handover.sh [options]"
             echo ""
@@ -30,6 +31,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --session ID   Use specific session ID (default: auto-generated)"
             echo "  --commit       Auto-commit handover via git agent"
             echo "  --task, -t ID  Task ID for commit (default: T-012)"
+            echo "  --owner NAME   Agent/provider name (default: \$AGENT_OWNER or claude-code)"
             echo "  -h, --help     Show this help"
             exit 0
             ;;
@@ -160,7 +162,7 @@ tasks_active: [$ACTIVE_TASKS]
 tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
-owner: claude-code
+owner: ${AGENT_OWNER:-claude-code}
 ---
 
 # Session Handover: $SESSION_ID
