@@ -149,7 +149,7 @@ We don't have final success criteria yet. We're discovering them through use.
 
 1. ~~**What would prove this approach wrong?** (Falsifiability)~~ → **Answered in T-009**
 2. **Who is this framework for?** Individual? Team? Enterprise? → See T-010
-3. **What's the minimum viable enforcement?** If we could only build one gate, what?
+3. ~~**What's the minimum viable enforcement?** If we could only build one gate, what?~~ → **Answered in T-021: Git commit hook (task reference required)**
 4. ~~**How do we measure quality, not just existence?**~~ → **Answered in T-008 (quality metrics)**
 5. **When does a learning graduate from task → practice → directive?** → See T-011
 

@@ -1,0 +1,237 @@
+# 020-Experiments: Framework Validation Protocol
+
+> "The framework's biggest insight came from using it, not designing it." — T-015 discovery
+
+## Purpose
+
+Define deliberate experiments to validate framework assumptions. Each experiment tests a specific claim with observable outcomes.
+
+---
+
+## Minimum Viable Enforcement (MVE)
+
+**Question:** If someone adopts this framework but can only implement ONE enforcement gate, which provides the most value?
+
+### Analysis
+
+| Gate | What It Enforces | Failure Mode Without It |
+|------|------------------|------------------------|
+| Git commit hook | Task traceability | Work happens without record; can't reconstruct why |
+| Handover gate | Episodic completeness | Context lost at session boundaries |
+| Audit on push | Overall compliance | Drift accumulates silently |
+| Task validation | Required fields | Tasks exist but are useless |
+
+### Answer: **Git Commit Hook (Task Reference Required)**
+
+**Rationale:**
+1. **Structural, not behavioral** — Enforces at action point, not review point
+2. **Creates audit trail** — Every change links to intent
+3. **Enables everything else** — Without traceability, episodics are orphaned, handovers reference nothing
+4. **Lowest friction** — One line addition to commit message
+5. **Hardest to bypass** — Pre-commit hooks require explicit `--no-verify`
+
+**MVE Implementation:**
+```bash
+# Install hook
+./agents/git/git.sh install-hooks
+
+# That's it. One command, permanent enforcement.
+```
+
+**What you lose without the others:**
+- No handover gate → context may be lost (but commits still traceable)
+- No audit → drift not detected (but can run manually)
+- No task validation → low quality tasks (but at least they exist)
+
+---
+
+## Experiment Protocol
+
+### E-001: Real Project Validation
+
+**Directive tested:** D3 (Usability) — "Joy to use"
+
+**Hypothesis:** Framework overhead is justified when AI context loss is the actual problem being solved.
+
+**Method:**
+1. Apply framework to a real project (not this meta-project)
+2. Use for 5+ sessions with context compaction
+3. Track: time to resume, repeated mistakes, friction points
+
+**Success criteria:**
+- Resume time < 2 minutes using handover + resume agent
+- No repeated mistakes that were already captured as patterns
+- User doesn't bypass enforcement (bypass rate < 10%)
+
+**Failure indicator:**
+- User bypasses hooks more than they use them
+- Framework overhead exceeds time saved
+- Handovers aren't read by next session
+
+**Expected learnings:**
+- Which parts are actually used vs. ignored
+- Where friction is too high
+- What's missing for real workflows
+
+---
+
+### E-002: LLM Portability Test
+
+**Directive tested:** D4 (Portability) — "No provider lock-in"
+
+**Hypothesis:** A different LLM (GPT-4, Gemini) can follow CLAUDE.md and operate the framework.
+
+**Method:**
+1. Start session with GPT-4 or Gemini
+2. Point it at CLAUDE.md
+3. Ask it to: create task, make changes, commit, generate handover
+4. Observe: Does it understand? Does it comply? Where does it struggle?
+
+**Success criteria:**
+- LLM creates valid task file
+- LLM commits with task reference
+- LLM generates usable handover
+- No Claude-specific assumptions block it
+
+**Failure indicator:**
+- LLM can't parse CLAUDE.md structure
+- Agent scripts assume Claude-specific behavior
+- Framework only works with one provider
+
+**Expected learnings:**
+- Which instructions are provider-agnostic
+- What needs to be generalized
+- Whether MCP/LSP would help portability
+
+---
+
+### E-003: Context Recovery Stress Test
+
+**Directive tested:** D1 (Antifragility) — "Strengthens under stress"
+
+**Hypothesis:** Handover + resume agent enables recovery after severe context loss.
+
+**Method:**
+1. Work on a task for 30+ minutes
+2. Simulate compaction (new session with only summary)
+3. Run `./agents/resume/resume.sh status`
+4. Attempt to continue work
+5. Measure: time to productive, mistakes made, context gaps
+
+**Success criteria:**
+- Productive work resumes within 3 minutes
+- No contradictory actions (undoing previous work)
+- Key decisions from prior session are accessible
+
+**Failure indicator:**
+- Have to re-read task files manually
+- Make decisions that contradict prior session
+- Resume agent output isn't actionable
+
+**Expected learnings:**
+- What context is lost vs preserved
+- Whether handover format captures what matters
+- Resume agent improvements needed
+
+---
+
+### E-004: Enforcement Removal Test
+
+**Directive tested:** D2 (Reliability) — "Predictable, auditable"
+
+**Hypothesis:** Each enforcement gate prevents specific failure modes; removing one causes detectable degradation.
+
+**Method:**
+1. Disable git commit hook (`git config --unset core.hooksPath`)
+2. Work normally for 5 commits
+3. Run audit, measure traceability
+4. Re-enable, repeat with handover gate disabled
+5. Compare degradation patterns
+
+**Success criteria:**
+- Removing git hook → traceability drops measurably
+- Removing handover gate → episodic gaps appear
+- Each gate has distinct, observable effect
+
+**Failure indicator:**
+- Removing a gate has no measurable effect (gate is theater)
+- Multiple gates are redundant (doing same check)
+- Degradation happens but audit doesn't catch it
+
+**Expected learnings:**
+- Which gates are load-bearing
+- Which might be redundant
+- Whether enforcement is real or theater
+
+---
+
+### E-005: Multi-Agent Stress Test
+
+**Directive tested:** D1 (Antifragility) — "Learning from failure"
+
+**Hypothesis:** The healing loop captures and prevents repeated failures.
+
+**Method:**
+1. Deliberately cause a task to fail (e.g., bad dependency)
+2. Run healing agent: `./agents/healing/healing.sh diagnose T-XXX`
+3. Resolve and record pattern
+4. Cause similar failure on different task
+5. Check if healing agent suggests prior pattern
+
+**Success criteria:**
+- First failure captured as pattern
+- Second failure gets relevant suggestion
+- Pattern matching is specific enough to be useful
+
+**Failure indicator:**
+- Patterns too generic ("something failed")
+- No pattern suggested for similar failure
+- Suggestions aren't actionable
+
+**Expected learnings:**
+- Whether pattern taxonomy is useful
+- How specific patterns should be
+- Healing loop effectiveness
+
+---
+
+## Experiment Prioritization
+
+| Experiment | Effort | Risk of Surprise | Value of Learning |
+|------------|--------|------------------|-------------------|
+| E-001 Real Project | High | High | Very High |
+| E-002 LLM Portability | Medium | Medium | High |
+| E-003 Context Recovery | Low | Medium | High |
+| E-004 Enforcement Removal | Low | Low | Medium |
+| E-005 Healing Loop | Low | Medium | Medium |
+
+**Recommended order:** E-003 → E-004 → E-005 → E-002 → E-001
+
+Start with low-effort experiments that can run now, save real project validation for when confidence is higher.
+
+---
+
+## Running an Experiment
+
+```bash
+# 1. Create task for experiment
+./agents/task-create/create-task.sh --name "Run E-003 Context Recovery" --type test
+
+# 2. Document hypothesis and method in task
+# 3. Execute experiment
+# 4. Record results in task Updates
+# 5. Extract learnings → add to learnings.yaml if generalizable
+# 6. Update this document with findings
+```
+
+---
+
+## Findings Log
+
+| Experiment | Date | Result | Key Learning |
+|------------|------|--------|--------------|
+| (none yet) | | | |
+
+---
+
+*This document evolves as experiments are run. Update the Findings Log after each experiment.*
