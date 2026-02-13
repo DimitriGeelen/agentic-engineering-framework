@@ -46,8 +46,8 @@ Guide the creation of properly structured tasks with:
 
 ## Integration
 
+- **AI Agents:** Can invoke via natural language (e.g., "create a new task for X")
 - **Script:** `create-task.sh` handles mechanical operations
-- **Claude Code:** Can invoke via "create a new task for X"
 - **Output:** Returns task ID and file path
 
 ## Example Usage

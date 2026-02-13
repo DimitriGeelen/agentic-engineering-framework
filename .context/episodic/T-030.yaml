@@ -1,0 +1,34 @@
+task_id: T-030
+task_name: "Fix E-002 portability blocking issues"
+workflow_type: refactor
+enrichment_status: complete
+summary: |
+  Addressed 4 BLOCKING portability issues from E-002 analysis. Created FRAMEWORK.md
+  as the provider-neutral operating guide. Updated CLAUDE.md to be a thin wrapper
+  that references FRAMEWORK.md. Made AGENT.md files provider-neutral by replacing
+  "Claude Code" references with "LLM agent" / "AI Agents". Framework now has a
+  clear path for GPT-4, Gemini, and other LLMs to operate it.
+outcomes:
+  - "Created FRAMEWORK.md — provider-neutral entry point"
+  - "CLAUDE.md now references FRAMEWORK.md (thin wrapper pattern)"
+  - "Handover AGENT.md: 'Claude Code synthesizes' → 'The LLM agent synthesizes'"
+  - "Session capture AGENT.md: 'For Claude Code' → 'For AI Agents'"
+  - "Task create AGENT.md: Provider-neutral invocation guidance"
+successes:
+  - description: "Thin wrapper pattern preserves both provider-specific and neutral paths"
+    why: "CLAUDE.md stays for auto-loading; FRAMEWORK.md exists for everyone else"
+decisions:
+  - decision: "Keep CLAUDE.md and add FRAMEWORK.md rather than renaming"
+    rationale: "CLAUDE.md is auto-loaded by Claude Code — renaming breaks the integration"
+    alternatives_rejected: ["Rename to FRAMEWORK.md (breaks Claude Code auto-load)"]
+artifacts:
+  created:
+    - "FRAMEWORK.md"
+  modified:
+    - "CLAUDE.md"
+    - "agents/handover/AGENT.md"
+    - "agents/session-capture/AGENT.md"
+    - "agents/task-create/AGENT.md"
+tags: [portability, d4-directive, e002-fix, multi-provider]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-030-fix-e-002-portability-blocking-issues.md
+generated_by: context-agent

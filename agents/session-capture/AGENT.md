@@ -42,8 +42,8 @@ Run through this before ending a session:
 
 ## Integration
 
-**For Claude Code:**
-Add to CLAUDE.md:
+**For AI Agents:**
+Add to your provider integration file (CLAUDE.md, .cursorrules, etc.):
 > Before ending a session, invoke the session-capture checklist. Do not close without confirming all discussed work is captured as tasks.
 
 **For Humans:**

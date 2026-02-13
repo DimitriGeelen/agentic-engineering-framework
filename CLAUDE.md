@@ -1,12 +1,17 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Claude Code integration for the Agentic Engineering Framework.
+For the provider-neutral framework guide, see `FRAMEWORK.md`.
+
+This file is auto-loaded by Claude Code. It contains the full operating guide
+plus Claude Code-specific integration notes.
 
 ## Project Overview
 
 The **Agentic Engineering Framework** is a governance framework for systematizing how AI agents work within engineering projects. This is not a traditional code library—it's a set of structural rules, patterns, and enforcement mechanisms for agentic workflows.
 
-**Primary Environment:** Claude Code (file-based, CLI-friendly)
+**Primary Environment:** Any file-based, CLI-capable AI agent (see FRAMEWORK.md)
+**Claude Code Integration:** This file is auto-loaded by Claude Code.
 
 ## Core Principle
 

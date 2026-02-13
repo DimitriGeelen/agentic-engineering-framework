@@ -34,7 +34,7 @@ The script gathers:
 
 ### Step 2: Synthesize Context (Intelligent)
 
-Claude Code synthesizes:
+The LLM agent synthesizes:
 - Current state summary (where are we?)
 - Work in progress with next steps
 - Decisions made and alternatives rejected
@@ -135,9 +135,9 @@ Handover **includes** session capture as first step:
 3. Write handover → persist for next session
 ```
 
-### With CLAUDE.md
+### With Framework Integration
 
-CLAUDE.md should instruct:
+The framework integration file (CLAUDE.md, .cursorrules, etc.) should instruct:
 ```
 ## Session Start Protocol
 1. Read `.context/handovers/LATEST.md`
