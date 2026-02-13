@@ -322,6 +322,48 @@ else
          "Install hooks: ./agents/git/git.sh install-hooks"
 fi
 
+# Tier 0 Checking: Consequential actions must ALWAYS have task refs
+# Patterns from 011-EnforcementConfig.md
+TIER0_PATTERNS="deploy-to-production|delete-|destroy-|modify-firewall|modify-secrets|database-migrate"
+
+tier0_violations=0
+
+# Check git history for Tier 0 patterns without task refs
+if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
+    while IFS= read -r commit_line; do
+        commit_sha=$(echo "$commit_line" | cut -d' ' -f1)
+        commit_msg=$(echo "$commit_line" | cut -d' ' -f2-)
+
+        # Check if commit message contains Tier 0 patterns
+        if echo "$commit_msg" | grep -qiE "$TIER0_PATTERNS"; then
+            # Check if commit has task reference
+            if ! echo "$commit_msg" | grep -qE "T-[0-9]+"; then
+                fail "Tier 0 action without task ref: $commit_sha" \
+                     "Commit '$commit_msg' contains consequential action pattern" \
+                     "Tier 0 actions MUST have task refs - document in bypass-log with explanation"
+                tier0_violations=$((tier0_violations + 1))
+            fi
+        fi
+    done < <(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null)
+fi
+
+# Check bypass log for any Tier 0 patterns (these should never be bypassed)
+if [ -f "$CONTEXT_DIR/bypass-log.yaml" ]; then
+    while IFS= read -r bypass_action; do
+        if echo "$bypass_action" | grep -qiE "$TIER0_PATTERNS"; then
+            action_text=$(echo "$bypass_action" | sed 's/.*action: "//' | sed 's/".*//')
+            fail "Tier 0 action in bypass log" \
+                 "Bypass log contains: $action_text" \
+                 "Tier 0 actions should NEVER be bypassed - review and remediate"
+            tier0_violations=$((tier0_violations + 1))
+        fi
+    done < <(grep "action:" "$CONTEXT_DIR/bypass-log.yaml" 2>/dev/null)
+fi
+
+if [ "$tier0_violations" -eq 0 ]; then
+    pass "No Tier 0 violations detected"
+fi
+
 echo ""
 
 # ============================================
