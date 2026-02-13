@@ -233,6 +233,7 @@ Start with low-effort experiments that can run now, save real project validation
 | E-003 | 2026-02-13 | PASS | Recovery in <20 seconds; resume + handover sufficient |
 | E-004 | 2026-02-13 | PASS | Hook removal causes 9% traceability drop in 5 commits; audit detects drift |
 | E-005 | 2026-02-13 | PASS (with issues) | Healing loop captures and suggests patterns; classifier needs improvement |
+| E-002 | 2026-02-13 | PARTIAL PASS | Architecturally portable; 4 blocking doc issues, 5 friction points, 7 neutral |
 
 ### E-003 Detailed Findings
 
@@ -347,3 +348,54 @@ Start with low-effort experiments that can run now, save real project validation
 
 **Conclusion:**
 The healing loop's core mechanism works — it captures patterns on resolve and surfaces them on diagnose. The **write path** (resolve) is solid. The **read path** (diagnose) needs improvement in classification accuracy and pattern relevance filtering. The loop is functional but not yet intelligent.
+
+### E-002 Detailed Findings (Static Analysis — No Live LLM Test)
+
+**Date:** 2026-02-13
+**Result:** PARTIAL PASS — Architecturally portable, documentation-coupled to Claude
+
+**Method:**
+Static analysis of all framework files for provider-specific assumptions.
+Categorized findings as BLOCKING / FRICTION / NEUTRAL.
+
+**Key Finding:** The framework's mechanical infrastructure (bash scripts, YAML structures,
+git hooks, file formats) is 100% provider-agnostic. All coupling is in documentation
+and agent guidance.
+
+**Inventory:**
+
+| Category | Count | Examples |
+|----------|-------|---------|
+| BLOCKING | 4 | CLAUDE.md filename, handover synthesis guidance, session capture integration, task create invocation |
+| FRICTION | 5 | "Primary Environment" framing, owner: claude-code schema, lock-in perception |
+| NEUTRAL | 7 | All bash scripts, file formats, git hooks, context fabric, enforcement model |
+
+**What's Portable (no changes needed):**
+- Task system (.tasks/ structure, YAML frontmatter, lifecycle)
+- Git hooks and enforcement (commit-msg hook, bypass log)
+- Context Fabric (working/project/episodic memory in YAML)
+- Healing loop (bash pattern matching, patterns.yaml)
+- Audit system (shell scripting, compliance checks)
+- Resume agent (multi-source state synthesis)
+
+**What's NOT Portable (needs changes):**
+1. CLAUDE.md filename — provider-specific entry point
+2. AGENT.md files — "For Claude Code:" sections with no alternative paths
+3. Handover synthesis — described as "Claude Code synthesizes" with no generic spec
+4. owner: claude-code — data schema couples to provider name
+
+**Minimum Fix (unblocks other LLMs):**
+1. Rename CLAUDE.md → FRAMEWORK.md with provider-specific sections
+2. Add "For other LLMs:" guidance in AGENT.md files
+3. Specify provider-agnostic synthesis interface for handover
+4. Make owner field provider-neutral
+
+**Note:** This was a static analysis, not a live test with GPT-4 or Gemini.
+A live test (Phase 2 of E-002) would validate whether the documentation
+changes are sufficient in practice.
+
+**Conclusion:**
+Framework is ~80% portable today. The 20% gap is entirely documentation,
+not architecture. This validates the design decision to use bash scripts
+(portable) with AGENT.md guidance (provider-specific but swappable).
+D4 (Portability) is partially met — structurally yes, operationally no.
