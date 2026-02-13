@@ -5,11 +5,13 @@
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 CONTEXT_DIR="$PROJECT_ROOT/.context"
+AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Counters
@@ -20,10 +22,18 @@ FAIL_COUNT=0
 # Priority actions
 declare -a PRIORITY_ACTIONS
 
+# Findings for history (format: "LEVEL|CHECK|MESSAGE")
+declare -a FINDINGS
+
+# Timestamp for this audit
+AUDIT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+AUDIT_DATE=$(date +"%Y-%m-%d")
+
 # Logging functions
 pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
     PASS_COUNT=$((PASS_COUNT + 1))
+    FINDINGS+=("PASS|$1|")
 }
 
 warn() {
@@ -32,6 +42,7 @@ warn() {
     echo "       Mitigation: $3"
     WARN_COUNT=$((WARN_COUNT + 1))
     PRIORITY_ACTIONS+=("$3")
+    FINDINGS+=("WARN|$1|$3")
 }
 
 fail() {
@@ -40,6 +51,7 @@ fail() {
     echo "       Mitigation: $3"
     FAIL_COUNT=$((FAIL_COUNT + 1))
     PRIORITY_ACTIONS+=("$3")
+    FINDINGS+=("FAIL|$1|$3")
 }
 
 # Header
@@ -433,6 +445,98 @@ if [ ${#PRIORITY_ACTIONS[@]} -gt 0 ]; then
     echo "=== PRIORITY ACTIONS ==="
     printf '%s\n' "${PRIORITY_ACTIONS[@]}" | sort -u | head -5 | nl
 fi
+
+# ============================================
+# SECTION 6: ANTIFRAGILE LEARNING (D1)
+# ============================================
+
+# Ensure audits directory exists
+mkdir -p "$AUDITS_DIR"
+
+# Save this audit's results
+AUDIT_FILE="$AUDITS_DIR/$AUDIT_DATE.yaml"
+
+# Build YAML content
+{
+    echo "# Audit Results - $AUDIT_DATE"
+    echo "timestamp: $AUDIT_TIMESTAMP"
+    echo "summary:"
+    echo "  pass: $PASS_COUNT"
+    echo "  warn: $WARN_COUNT"
+    echo "  fail: $FAIL_COUNT"
+    echo "findings:"
+    for finding in "${FINDINGS[@]}"; do
+        level=$(echo "$finding" | cut -d'|' -f1)
+        check=$(echo "$finding" | cut -d'|' -f2)
+        mitigation=$(echo "$finding" | cut -d'|' -f3)
+        echo "  - level: $level"
+        echo "    check: \"$check\""
+        if [ -n "$mitigation" ]; then
+            echo "    mitigation: \"$mitigation\""
+        fi
+    done
+} > "$AUDIT_FILE"
+
+# Trend detection: Compare with previous audits
+echo ""
+echo "=== TREND ANALYSIS ==="
+
+# Get previous audit files (excluding today)
+shopt -s nullglob
+previous_audits=("$AUDITS_DIR"/*.yaml)
+shopt -u nullglob
+
+# Filter to only files before today
+past_audits=()
+for f in "${previous_audits[@]}"; do
+    fname=$(basename "$f" .yaml)
+    if [ "$fname" != "$AUDIT_DATE" ] && [ -f "$f" ]; then
+        past_audits+=("$f")
+    fi
+done
+
+if [ ${#past_audits[@]} -eq 0 ]; then
+    echo "First audit recorded. Trends will appear after multiple audits."
+else
+    # Count how many times each warning/failure has appeared
+    declare -A issue_counts
+
+    for audit_file in "${past_audits[@]}"; do
+        while IFS= read -r line; do
+            if [[ "$line" =~ ^[[:space:]]+check:[[:space:]]* ]]; then
+                check_name=$(echo "$line" | sed 's/.*check: "//' | sed 's/"$//')
+                issue_counts["$check_name"]=$((${issue_counts["$check_name"]:-0} + 1))
+            fi
+        done < <(grep -A1 "level: WARN\|level: FAIL" "$audit_file" 2>/dev/null)
+    done
+
+    # Find repeated issues (appeared 3+ times)
+    repeated_issues=()
+    for check in "${!issue_counts[@]}"; do
+        if [ "${issue_counts[$check]}" -ge 3 ]; then
+            repeated_issues+=("$check (${issue_counts[$check]} times)")
+        fi
+    done
+
+    if [ ${#repeated_issues[@]} -gt 0 ]; then
+        echo -e "${YELLOW}Repeated issues detected (candidates for practice):${NC}"
+        for issue in "${repeated_issues[@]}"; do
+            echo "  - $issue"
+        done
+        echo ""
+        echo -e "${CYAN}Consider creating a practice to address these recurring issues.${NC}"
+        echo "Run: Review 015-Practices.md and add preventive practice"
+    else
+        echo -e "${GREEN}No repeated issues detected across ${#past_audits[@]} previous audit(s).${NC}"
+    fi
+
+    # Show trend summary
+    echo ""
+    echo "Audit history: ${#past_audits[@]} previous audit(s) + today"
+fi
+
+echo ""
+echo "Audit saved to: $AUDIT_FILE"
 
 echo ""
 echo "=== END AUDIT ==="
