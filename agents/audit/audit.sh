@@ -432,6 +432,87 @@ fi
 echo ""
 
 # ============================================
+# SECTION 6: EPISODIC MEMORY CHECKS
+# ============================================
+echo "=== EPISODIC MEMORY CHECKS ==="
+
+episodic_dir="$CONTEXT_DIR/episodic"
+
+# Check 1: Every completed task should have an episodic summary
+missing_episodic=0
+if [ -d "$TASKS_DIR/completed" ]; then
+    shopt -s nullglob
+    for task_file in "$TASKS_DIR/completed"/*.md; do
+        [ -f "$task_file" ] || continue
+        task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+        [ -z "$task_id" ] && continue
+
+        episodic_file="$episodic_dir/${task_id}.yaml"
+        if [ ! -f "$episodic_file" ]; then
+            warn "Completed task $task_id has no episodic summary" \
+                 "$episodic_file not found" \
+                 "Run: ./agents/context/context.sh generate-episodic $task_id"
+            missing_episodic=$((missing_episodic + 1))
+        fi
+    done
+    shopt -u nullglob
+fi
+
+if [ "$missing_episodic" -eq 0 ]; then
+    pass "All completed tasks have episodic summaries"
+fi
+
+# Check 2: Episodic quality (non-empty required fields, enrichment status)
+low_quality_episodic=0
+pending_enrichment=0
+
+if [ -d "$episodic_dir" ]; then
+    shopt -s nullglob
+    for episodic_file in "$episodic_dir"/*.yaml; do
+        [ -f "$episodic_file" ] || continue
+        filename=$(basename "$episodic_file")
+        # Skip template
+        [ "$filename" = "TEMPLATE.yaml" ] && continue
+
+        task_id=$(basename "$episodic_file" .yaml)
+
+        # Check enrichment status
+        enrichment_status=$(grep "^enrichment_status:" "$episodic_file" 2>/dev/null | sed 's/enrichment_status: //' | tr -d ' ')
+        if [ "$enrichment_status" = "pending" ]; then
+            pending_enrichment=$((pending_enrichment + 1))
+        fi
+
+        # Check summary is not empty/TODO
+        summary_content=$(sed -n '/^summary:/,/^[a-z_]*:/p' "$episodic_file" 2>/dev/null | head -5 | grep -v "^summary:" | grep -v "^\s*#" | tr -d ' \n')
+        if [ -z "$summary_content" ] || echo "$summary_content" | grep -q "TODO"; then
+            low_quality_episodic=$((low_quality_episodic + 1))
+        fi
+    done
+    shopt -u nullglob
+fi
+
+if [ "$pending_enrichment" -gt 0 ]; then
+    warn "$pending_enrichment episodic summaries pending enrichment" \
+         "Files with enrichment_status: pending" \
+         "Enrich episodics with actual content, then set enrichment_status: complete"
+fi
+
+if [ "$low_quality_episodic" -gt 0 ] && [ "$pending_enrichment" -eq 0 ]; then
+    warn "$low_quality_episodic episodics have empty or TODO summaries" \
+         "Summary field is empty or contains [TODO]" \
+         "Fill in summary field with actual task description"
+fi
+
+if [ "$pending_enrichment" -eq 0 ] && [ "$low_quality_episodic" -eq 0 ]; then
+    episodic_count=$(find "$episodic_dir" -name "T-*.yaml" -type f 2>/dev/null | wc -l)
+    if [ "$episodic_count" -gt 0 ]; then
+        pass "All $episodic_count episodic summaries have quality content"
+    fi
+fi
+
+echo ""
+
+# ============================================
 # SUMMARY
 # ============================================
 echo "=== SUMMARY ==="

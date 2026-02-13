@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-016: Add episodic quality checks to audit agent
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T22:28:00Z
+# Enriched: 2026-02-13T22:28:30Z
+
+task_id: T-016
+task_name: "Add episodic quality checks to audit agent"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T21:21:30Z
+completed: 2026-02-13T22:28:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added a new Section 6 (Episodic Memory Checks) to the audit agent. The audit
+  now detects missing episodic summaries and low-quality content. This closes
+  the enforcement gap identified by the multi-agent review - the audit was
+  previously blind to episodic completeness despite it being a primary goal.
+
+# Key outcomes
+outcomes:
+  - Audit checks all completed tasks have episodic files
+  - Audit detects enrichment_status: pending
+  - Audit detects empty/TODO summaries
+  - Immediately found 4 missing + 1 low-quality episodic
+
+# What worked well
+successes:
+  - description: "Followed existing audit.sh patterns"
+    why: "Consistent with existing code style, easy to implement"
+  - description: "New generator immediately exposed gaps"
+    why: "T-015 changes made the problem visible in audit output"
+
+# Challenges encountered
+challenges:
+  - description: "Deciding between WARN and FAIL for missing episodics"
+    resolution: "Used WARN since older tasks may predate the system"
+    learning: "Enforcement should be proportional to maturity"
+
+# Decisions made during this task
+decisions:
+  - decision: "WARN instead of FAIL for missing episodics"
+    rationale: "Older tasks may not have episodics; too disruptive to FAIL"
+    alternatives_rejected: ["FAIL (breaks existing workflow)"]
+  - decision: "Check enrichment_status field"
+    rationale: "Aligns with T-015 changes to generator"
+    alternatives_rejected: []
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "agents/audit/audit.sh"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, D2, P-002, episodic, quality]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-016-add-episodic-quality-checks-to-audit-age.md
+generated_by: context-agent
+enriched_by: claude-code
