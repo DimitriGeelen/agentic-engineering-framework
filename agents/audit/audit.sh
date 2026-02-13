@@ -220,13 +220,13 @@ else
     fi
 fi
 
-# Check for pre-commit hook
-if [ -f "$PROJECT_ROOT/.git/hooks/pre-commit" ]; then
-    pass "Pre-commit hook installed"
+# Check for commit-msg hook (validates task references)
+if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
+    pass "Commit-msg hook installed"
 else
-    warn "No pre-commit hook" \
-         ".git/hooks/pre-commit not found" \
-         "Install pre-commit hook to enforce task references"
+    warn "No commit-msg hook" \
+         ".git/hooks/commit-msg not found" \
+         "Install hooks: ./agents/git/git.sh install-hooks"
 fi
 
 echo ""

@@ -150,6 +150,30 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 - All learnings are captured as practices
 - All open questions are tracked
 
+### Git Agent
+
+**Location:** `agents/git/`
+
+**When to use:** For all git operations that involve code changes. Enforces task traceability (P-002).
+
+```bash
+# Commit with task reference (required)
+./agents/git/git.sh commit -m "T-003: Add bypass log"
+
+# Task-aware status
+./agents/git/git.sh status
+
+# Install enforcement hooks (run once per repo)
+./agents/git/git.sh install-hooks
+
+# Log a bypass (when --no-verify was used)
+./agents/git/git.sh log-bypass --commit abc123 --reason "Emergency hotfix"
+
+# View task-filtered history
+./agents/git/git.sh log --task T-003
+./agents/git/git.sh log --traceability
+```
+
 ### Handover Agent
 
 **Location:** `agents/handover/`
@@ -157,7 +181,11 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 **When to use:** MANDATORY at end of every session.
 
 ```bash
+# Create handover (manual commit)
 ./agents/handover/handover.sh
+
+# Create handover and auto-commit via git agent
+./agents/handover/handover.sh --commit
 ```
 
 Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
@@ -176,11 +204,14 @@ Creates a forward-looking context document in `.context/handovers/` to enable th
 | Action | Command |
 |--------|---------|
 | Create task | `./agents/task-create/create-task.sh` |
+| Commit changes | `./agents/git/git.sh commit -m "T-XXX: description"` |
+| Task-aware status | `./agents/git/git.sh status` |
+| Install git hooks | `./agents/git/git.sh install-hooks` |
 | Run audit | `./agents/audit/audit.sh` |
 | View metrics | `./metrics.sh` |
-| Check status | `git status && ./metrics.sh` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist |
 | Generate handover | `./agents/handover/handover.sh` |
+| Handover + commit | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` |
 
 ## Session End Protocol

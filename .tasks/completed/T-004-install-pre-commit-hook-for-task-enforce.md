@@ -3,7 +3,7 @@ id: T-004
 name: Install pre-commit hook for task enforcement
 description: >
   Create a git pre-commit hook that validates commit messages contain task references (T-XXX pattern). This provides structural enforcement per D2 Reliability.
-status: captured
+status: work-completed
 workflow_type: build
 owner: human
 priority: medium
@@ -12,8 +12,8 @@ agents:
   primary:
   supporting: []
 created: 2026-02-13T18:13:16Z
-last_update: 2026-02-13T18:13:16Z
-date_finished: null
+last_update: 2026-02-13T19:47:00Z
+date_finished: 2026-02-13T19:47:00Z
 ---
 
 # T-004: Install pre-commit hook for task enforcement
@@ -69,3 +69,8 @@ Else:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-004-install-pre-commit-hook-for-task-enforce.md
 - **Context:** Initial task creation
+
+### 2026-02-13T19:47:00Z — work-completed [claude-code]
+- **Action:** Completed via git agent install-hooks command
+- **Output:** .git/hooks/commit-msg and post-commit installed
+- **Context:** Absorbed into T-013 (git agent), uses commit-msg hook (not pre-commit) for message validation

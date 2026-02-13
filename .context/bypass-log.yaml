@@ -1,0 +1,11 @@
+# Bypass Log - Agentic Engineering Framework
+# Records all commits made without task references
+# Reviewed by: audit agent
+
+bypasses:
+  - timestamp: 2026-02-13T18:46:10Z
+    action: "v0.1 base start"
+    commit: acb4594
+    authorized_by: human
+    reason: "Bootstrap exception - task system did not exist prior to this commit"
+    retroactive_task: null

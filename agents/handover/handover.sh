@@ -15,14 +15,20 @@ NC='\033[0m'
 
 # Parse arguments
 SESSION_ID=""
+AUTO_COMMIT=false
+COMMIT_TASK=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --session) SESSION_ID="$2"; shift 2 ;;
+        --commit) AUTO_COMMIT=true; shift ;;
+        --task|-t) COMMIT_TASK="$2"; shift 2 ;;
         -h|--help)
             echo "Usage: handover.sh [options]"
             echo ""
             echo "Options:"
             echo "  --session ID   Use specific session ID (default: auto-generated)"
+            echo "  --commit       Auto-commit handover via git agent"
+            echo "  --task, -t ID  Task ID for commit (default: T-012)"
             echo "  -h, --help     Show this help"
             exit 0
             ;;
@@ -186,14 +192,37 @@ echo ""
 echo -e "${GREEN}=== Handover Created ===${NC}"
 echo "File: $HANDOVER_FILE"
 echo "Latest: $HANDOVER_DIR/LATEST.md"
-echo ""
-echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Edit $HANDOVER_FILE to fill in [TODO] sections"
-echo "2. Review and refine the synthesis"
-echo "3. Commit with: git commit -m \"T-XXX: Session handover $SESSION_ID\""
-echo ""
-echo -e "${CYAN}Key sections to complete:${NC}"
-echo "- Where We Are (summary)"
-echo "- Work in Progress (last action, next step for each task)"
-echo "- Decisions Made (with rationale)"
-echo "- Suggested First Action (most important)"
+
+# Handle auto-commit
+if [ "$AUTO_COMMIT" = true ]; then
+    # Default to T-012 (handover agent task) if not specified
+    if [ -z "$COMMIT_TASK" ]; then
+        COMMIT_TASK="T-012"
+    fi
+
+    echo ""
+    echo -e "${YELLOW}Auto-committing handover...${NC}"
+
+    if [ -f "$PROJECT_ROOT/agents/git/git.sh" ]; then
+        # Stage handover files
+        git -C "$PROJECT_ROOT" add "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
+
+        # Commit via git agent
+        "$PROJECT_ROOT/agents/git/git.sh" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
+    else
+        echo -e "${RED}Git agent not found. Manual commit required.${NC}"
+        echo "Run: git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
+    fi
+else
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo "1. Edit $HANDOVER_FILE to fill in [TODO] sections"
+    echo "2. Review and refine the synthesis"
+    echo "3. Commit with: ./agents/git/git.sh commit -m \"T-012: Session handover $SESSION_ID\""
+    echo ""
+    echo -e "${CYAN}Key sections to complete:${NC}"
+    echo "- Where We Are (summary)"
+    echo "- Work in Progress (last action, next step for each task)"
+    echo "- Decisions Made (with rationale)"
+    echo "- Suggested First Action (most important)"
+fi
