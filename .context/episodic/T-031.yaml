@@ -1,0 +1,26 @@
+task_id: T-031
+task_name: "Add auto-audit on push and fix episodic false positives"
+workflow_type: build
+enrichment_status: complete
+summary: |
+  Fixed audit false positive where episodics discussing [TODO] functionality were
+  flagged as having unfilled placeholders. Changed check to only match [TODO at start
+  of summary first line. Also confirmed pre-push audit hook was already installed —
+  E-004's recommendation was already implemented, just not verified.
+outcomes:
+  - "Audit episodic check no longer false-positives on content discussing TODOs"
+  - "Confirmed pre-push hook runs audit before every push"
+  - "All audit checks now passing (0 warnings)"
+successes:
+  - description: "First-line anchor check"
+    why: "Only real placeholders start with [TODO — content discussing TODOs does not"
+decisions:
+  - decision: "Match [TODO at start of first content line only"
+    rationale: "Prevents false positives while still catching actual unfilled placeholders"
+    alternatives_rejected: ["Exclude specific files (fragile)", "Remove check entirely (loses value)"]
+artifacts:
+  modified:
+    - "agents/audit/audit.sh"
+tags: [audit, false-positive, episodic, pre-push-hook]
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-031-add-auto-audit-on-push-and-fix-episodic-.md
+generated_by: context-agent

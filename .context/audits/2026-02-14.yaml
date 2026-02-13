@@ -1,5 +1,5 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-13T23:00:09Z
+timestamp: 2026-02-13T23:08:24Z
 summary:
   pass: 16
   warn: 2
@@ -21,9 +21,10 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 89% (51/57 commits reference tasks)"
-  - level: PASS
-    check: "Working directory clean"
+    check: "Git traceability: 90% (55/61 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -40,6 +41,5 @@ findings:
     check: "All practice origins resolve to actual tasks"
   - level: PASS
     check: "All completed tasks have episodic summaries"
-  - level: WARN
-    check: "2 episodics have empty or TODO summaries"
-    mitigation: "Fill in summary field with actual task description"
+  - level: PASS
+    check: "All 30 episodic summaries have quality content"

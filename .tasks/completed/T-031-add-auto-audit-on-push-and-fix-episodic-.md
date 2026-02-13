@@ -3,7 +3,7 @@ id: T-031
 name: Add auto-audit on push and fix episodic false positives
 description: >
   E-004 found audit is detective not preventive. Add pre-push hook that runs audit. Also fixed false positive episodic TODO matching in audit.
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,7 +12,7 @@ agents:
   primary:
   supporting: []
 created: 2026-02-13T23:08:32Z
-last_update: 2026-02-13T23:08:32Z
+last_update: 2026-02-13T23:08:38Z
 date_finished: null
 ---
 
