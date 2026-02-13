@@ -49,11 +49,12 @@ get_task_name() {
     fi
 }
 
-# Update task's last_update timestamp
+# Update task's last_update timestamp (only for active tasks)
 update_task_timestamp() {
     local task_id="$1"
     local task_file
-    task_file=$(find "$TASKS_DIR" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+    # Only update active tasks, not completed ones
+    task_file=$(find "$TASKS_DIR/active" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
     if [ -n "$task_file" ]; then
         local timestamp
         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
