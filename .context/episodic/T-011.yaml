@@ -1,9 +1,15 @@
-# Episodic Memory - T-011: Define practice graduation criteria
-# Generated: 2026-02-13T21:00:30Z
+# ============================================================================
+# EPISODIC MEMORY - T-011: Define practice graduation criteria
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T20:56:32Z
+# Enriched: 2026-02-13T21:58:00Z
 
 task_id: T-011
 task_name: "Define practice graduation criteria"
 workflow_type: specification
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-13T18:19:25Z
@@ -13,33 +19,49 @@ updates_count: 2
 
 # Summary
 summary: |
-  >
+  Defined the knowledge pyramid with clear graduation criteria: Task Update →
+  Learning (L-XXX, 2+ tasks) → Practice (P-XXX, 3+ applications) → Directive
+  (D1-D4, human approval, 6+ months stable). Each level requires more evidence
+  and is harder to change. Key insight: Practice → Directive requires human
+  approval (constitutional change). Also defined retirement/demotion criteria.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - Define what each level represents
-  - Define graduation criteria from each level to the next
-  - Define retirement/demotion criteria
-  - Document the process for graduation
-  - Update 015-Practices.md with the criteria
+  - "4-level knowledge pyramid: Update → Learning → Practice → Directive"
+  - "Graduation criteria for each transition"
+  - "Retirement criteria for demotion/removal"
+  - "Process documentation for each graduation"
+  - "Human approval required for Practice → Directive"
 
 # What worked well
-successes: []
-  # Add manually or via LLM analysis
+successes:
+  - description: "Pyramid metaphor clarifies hierarchy"
+    why: "Visual representation makes levels intuitive"
+  - description: "Evidence requirements increase with level"
+    why: "Higher levels are harder to change — appropriate friction"
+  - description: "Explicit demotion path"
+    why: "Knowledge can be wrong; need to retire obsolete/incorrect items"
 
 # Challenges encountered
 challenges:
-  # No challenges detected (or add manually)
+  - description: "Defining 'enough evidence' for graduation"
+    resolution: "Used specific counts (2+ tasks for learning, 3+ for practice)"
+    learning: "Concrete thresholds prevent endless deliberation"
 
 # Decisions made during this task
-decisions: []
-  # Extract from Design Record or add manually
+decisions:
+  - decision: "Practice → Directive requires human approval"
+    rationale: "Directives are constitutional; agents shouldn't change them unilaterally"
+    alternatives_rejected: ["Agent-driven graduation (too much autonomy)"]
+  - decision: "Use specific counts (2+, 3+) rather than subjective assessment"
+    rationale: "Avoids judgment calls; makes graduation mechanical"
+    alternatives_rejected: ["Subjective 'feels proven' (inconsistent)"]
 
 # Files created or significantly modified
 artifacts:
-  created:
-    # Add file list manually
-  modified: []
+  created: []
+  modified:
+    - "015-Practices.md (added graduation criteria)"
 
 # Related tasks
 related_tasks:
@@ -48,8 +70,9 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [meta, practices, governance]
+tags: [meta, practices, governance, knowledge-pyramid, D1]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-011-define-practice-graduation-criteria.md
 generated_by: context-agent
+enriched_by: claude-code

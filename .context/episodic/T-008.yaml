@@ -1,45 +1,67 @@
-# Episodic Memory - T-008: Add quality metrics to metrics.sh
-# Generated: 2026-02-13T20:37:27Z
+# ============================================================================
+# EPISODIC MEMORY - T-008: Add quality metrics to metrics.sh
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T20:49:32Z
+# Enriched: 2026-02-13T21:58:00Z
 
 task_id: T-008
 task_name: "Add quality metrics to metrics.sh"
 workflow_type: build
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-13T18:19:01Z
-completed: 2026-02-13T21:25:00Z
+completed: 2026-02-13T21:35:00Z
 duration_days: 0
 updates_count: 3
 
 # Summary
 summary: |
-  >
+  Extended metrics.sh to distinguish existence from quality, per P-004. Added
+  quality metrics for description length, Updates health, acceptance criteria
+  completion, and Context Fabric health. This addresses the "file exists ≠ file
+  is useful" problem identified in the framework critique. Worked on this with
+  T-006 and T-007 as a batch of context fabric improvements.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - Add description quality metrics (avg length, % quality)
-  - Add updates health metrics (avg updates, stale count)
-  - Add acceptance criteria metrics (coverage, completion)
-  - Add Context Fabric metrics (patterns, learnings, episodic)
-  - Format output consistently with existing metrics.sh style
+  - "Description quality: % >= 50 chars, average length"
+  - "Updates health: average updates per task, stale task count"
+  - "Acceptance criteria: coverage (% with defined AC), completion rate"
+  - "Context Fabric: patterns, learnings, decisions, episodic counts"
+  - "New section === QUALITY METRICS === in output"
 
 # What worked well
-successes: []
-  # Add manually or via LLM analysis
+successes:
+  - description: "Quality heuristics are cheap to compute"
+    why: "Character counts and line counts are fast, no LLM needed"
+  - description: "Consistent output format with existing sections"
+    why: "New section integrates seamlessly with existing metrics.sh style"
 
 # Challenges encountered
 challenges:
-  # No challenges detected (or add manually)
+  - description: "Multiline description parsing in bash"
+    resolution: "Used sed to handle YAML multiline strings"
+    learning: "YAML multiline parsing in bash requires careful handling"
+  - description: "Bash (()) exit codes causing false failures"
+    resolution: "Fixed arithmetic expressions that returned non-zero on zero results"
 
 # Decisions made during this task
-decisions: []
-  # Extract from Design Record or add manually
+decisions:
+  - decision: "Heuristic quality over semantic quality"
+    rationale: "Can't assess meaning programmatically, but length/count correlates"
+    alternatives_rejected: ["LLM-based quality assessment (expensive, slow)"]
+  - decision: "Separate QUALITY METRICS section"
+    rationale: "Clear distinction from existence counts"
+    alternatives_rejected: ["Mixed into existing sections (confusing)"]
 
 # Files created or significantly modified
 artifacts:
-  created:
-    # Add file list manually
-  modified: []
+  created: []
+  modified:
+    - "metrics.sh"
 
 # Related tasks
 related_tasks:
@@ -48,8 +70,9 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [metrics, quality, D2]
+tags: [D2, metrics, quality, P-004, tooling]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-008-add-quality-metrics-to-metricssh.md
 generated_by: context-agent
+enriched_by: claude-code

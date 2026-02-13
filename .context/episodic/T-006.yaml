@@ -1,55 +1,77 @@
-# Episodic Memory - T-006: Create episodic summary generator
-# Generated: 2026-02-13T20:37:18Z
+# ============================================================================
+# EPISODIC MEMORY - T-006: Create episodic summary generator
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+# Generated: 2026-02-13T20:49:32Z
+# Enriched: 2026-02-13T21:58:00Z
 
 task_id: T-006
 task_name: "Create episodic summary generator"
 workflow_type: build
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-13T18:18:53Z
-completed: 2026-02-13T21:25:00Z
+completed: 2026-02-13T21:35:00Z
 duration_days: 0
 updates_count: 3
 
 # Summary
 summary: |
-  >
+  Enhanced the generate-episodic command in the context agent to parse task
+  files more intelligently. The generator now extracts timeline events from the
+  Updates section, identifies challenges from status changes, and extracts
+  outcomes from acceptance criteria. This was part of a batch with T-007 and
+  T-008. Note: Later review (T-015) found the generator produced empty templates
+  rather than useful summaries — this was fixed by requiring enrichment.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - Parse Updates section to extract timeline events
-  - Identify challenges (status changes to issues/blocked)
-  - Extract outcomes from final state
-  - Generate summary from description + updates
-  - Count artifacts (files created/modified from updates)
+  - "Parse Updates section to extract timeline events"
+  - "Identify challenges from status changes (issues/blocked)"
+  - "Extract outcomes from acceptance criteria [x] items"
+  - "Generate summary from description + updates"
+  - "Count artifacts from file references in updates"
 
 # What worked well
-successes: []
-  # Add manually or via LLM analysis
+successes:
+  - description: "Integration with existing context.sh"
+    why: "Command fits naturally: ./agents/context/context.sh generate-episodic T-XXX"
+  - description: "Working on T-006, T-007, T-008 together"
+    why: "Related context fabric tasks benefited from shared understanding"
 
 # Challenges encountered
 challenges:
-  # No challenges detected (or add manually)
+  - description: "Extracting meaningful summary from raw task data"
+    resolution: "Generated structure/skeleton, not actual summary"
+    learning: "Automation limitations — later fixed by T-015 to be honest about this"
 
 # Decisions made during this task
-decisions: []
-  # Extract from Design Record or add manually
+decisions:
+  - decision: "Parse Updates section rather than just copy description"
+    rationale: "Updates contain the actual journey, not just intent"
+    alternatives_rejected: ["Copy description verbatim (no value)"]
+  - decision: "Manual enrichment expected after generation"
+    rationale: "Generator can extract structure but not meaning"
+    alternatives_rejected: ["Fully automated (not possible)"]
 
 # Files created or significantly modified
 artifacts:
-  created:
-    # Add file list manually
-  modified: []
+  created: []
+  modified:
+    - "agents/context/lib/episodic.sh"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: []
+  spawned: [T-015]  # T-015 fixed the quality issues discovered later
 
 # Tags for retrieval
-tags: [context-fabric, learning, tooling]
+tags: [context-fabric, episodic, generator, tooling]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-006-create-episodic-summary-generator.md
 generated_by: context-agent
+enriched_by: claude-code

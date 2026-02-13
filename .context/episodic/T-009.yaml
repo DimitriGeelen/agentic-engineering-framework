@@ -1,9 +1,15 @@
-# Episodic Memory - T-009: Document falsifiability criteria
+# ============================================================================
+# EPISODIC MEMORY - T-009: Document falsifiability criteria
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
 # Generated: 2026-02-13T20:56:32Z
+# Enriched: 2026-02-13T21:58:00Z
 
 task_id: T-009
 task_name: "Document falsifiability criteria"
 workflow_type: specification
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-13T18:19:20Z
@@ -13,37 +19,50 @@ updates_count: 2
 
 # Summary
 summary: |
-  >
+  Defined what would prove the framework approach wrong. For each of the 4
+  directives (Antifragility, Reliability, Usability, Portability) and 3 core
+  mechanisms (Task System, Context Fabric, Learning Loop), documented claims,
+  failure indicators, and observable signals. Established pivot threshold:
+  abandon/redesign when 3+ directives fail OR 2+ mechanisms fail. Critical for
+  D1 — we need to know when to pivot rather than persist with a failing approach.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - Define falsifiability criteria for each of the 4 directives
-  - Define falsifiability criteria for core mechanisms (task system, context fabric, learning loop)
-  - Each criterion has: claim, failure indicator, observable signal
-  - Document the "pivot threshold" — when accumulated failures mean the approach is wrong
+  - "Falsifiability criteria for all 4 directives (D1-D4)"
+  - "Falsifiability criteria for 3 core mechanisms"
+  - "Each criterion has: claim, failure indicator, observable signal (tables)"
+  - "Pivot threshold: 3+ directives fail OR 2+ mechanisms fail OR usability+1 fail"
+  - "What pivoting looks like for each directive"
 
 # What worked well
-successes: []
-  # Add manually or via LLM analysis
+successes:
+  - description: "Structured approach: claim → failure indicator → observable signal"
+    why: "Makes falsifiability concrete and testable, not just philosophical"
+  - description: "Including specific thresholds (e.g., git traceability <80%)"
+    why: "Observable signals need numbers to be actionable"
+  - description: "Distinguishing framework failure from task failure"
+    why: "Key insight: falsifiability is about the approach, not individual tasks"
 
 # Challenges encountered
 challenges:
-  - description: "- **Output:** Detailed tables with claim/failure-indicator/observable-signal for each"
-    resolution: "See task updates"
-  - description: "- **Key insight:** Falsifiability is about the framework approach, not individual task failures"
-    resolution: "See task updates"
-  - description: "- **Pivot threshold:** Defined when to abandon the approach (3+ directives fail, 2+ mechanisms fail, usability fails)"
-    resolution: "See task updates"
+  - description: "Balancing specificity with flexibility in thresholds"
+    resolution: "Used ranges (e.g., 'below 70%', 'after 50+ completions')"
+    learning: "Thresholds should be concrete enough to trigger but not so tight they false-alarm"
 
 # Decisions made during this task
-decisions: []
-  # Extract from Design Record or add manually
+decisions:
+  - decision: "Map each directive to observable failure conditions"
+    rationale: "Can't improve what we can't measure failing"
+    alternatives_rejected: ["Subjective assessment (not falsifiable)"]
+  - decision: "Define pivot threshold explicitly"
+    rationale: "Need to know when to quit, not just when to fix"
+    alternatives_rejected: ["Fix forever (sunk cost fallacy)"]
 
 # Files created or significantly modified
 artifacts:
-  created:
-    # Add file list manually
-  modified: []
+  created: []
+  modified:
+    - "001-Vision.md (updated open questions)"
 
 # Related tasks
 related_tasks:
@@ -52,8 +71,9 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [meta, D1, vision]
+tags: [meta, D1, vision, falsifiability, pivot]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-009-document-falsifiability-criteria.md
 generated_by: context-agent
+enriched_by: claude-code
