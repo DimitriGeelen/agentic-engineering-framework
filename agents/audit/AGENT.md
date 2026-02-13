@@ -5,55 +5,94 @@
 ## Purpose
 
 Systematically check whether the framework is being applied correctly:
-- Task system compliance
-- Directives adherence
-- Enforcement model gaps
+- Task system compliance (structure and quality)
+- Git traceability and enforcement
+- Tier 0 action protection
 - Learning capture completeness
+- Antifragile trend detection
 
 ## When to Use
 
-- Periodically (weekly recommended)
-- After significant work completion
-- Before declaring a milestone complete
-- When suspecting compliance drift
+- **Automatically:** Pre-push hook runs audit before every push
+- **Periodically:** Weekly recommended for trend analysis
+- **After significant work:** Before declaring milestone complete
+- **When suspecting drift:** Manual compliance check
 
-## Audit Dimensions
+## Checks Performed
 
-### 1. Task System Compliance
-- Do all active tasks have required fields?
-- Are status values valid?
-- Do Updates follow the specified format?
-- Are commits traceable to tasks?
+### Section 1: Structure Checks
+| Check | Severity |
+|-------|----------|
+| .tasks/ directory exists | FAIL |
+| Subdirectories (active/completed/templates) exist | WARN |
+| Task template exists | WARN |
 
-### 2. Directives Compliance
-- D1 Antifragility: Are failures producing learnings?
-- D2 Reliability: Is enforcement working? Silent failures?
-- D3 Usability: Is friction low? Errors actionable?
-- D4 Portability: Any vendor lock-in?
+### Section 2: Task Compliance Checks
+| Check | Severity |
+|-------|----------|
+| Required frontmatter fields present | WARN |
+| Status values are valid | WARN |
+| Workflow type is valid | WARN |
+| Updates section exists | WARN |
 
-### 3. Enforcement Compliance
-- What % of commits have task references?
-- Were any Tier 0 actions taken without tasks?
-- Are bypasses being logged?
+### Section 2B: Task Quality Checks (P-001, P-004)
+| Check | Severity |
+|-------|----------|
+| Description >= 50 characters | WARN |
+| Started-work tasks have updates | WARN |
+| Tasks older than 7 days have >= 2 updates | WARN |
 
-### 4. Learning Capture
-- Are practices being extracted from tasks?
-- Is the origin of practices traceable?
-- Are learnings queryable?
+### Section 3: Git Traceability Checks
+| Check | Severity |
+|-------|----------|
+| >= 80% commits reference tasks | PASS (>=80%) / WARN (50-79%) / FAIL (<50%) |
+| Working directory clean | WARN |
+| Commit task refs resolve to actual tasks | WARN |
+
+### Section 4: Enforcement Checks
+| Check | Severity |
+|-------|----------|
+| Bypass log exists (if commits lack refs) | WARN |
+| Commit-msg hook installed | WARN |
+| No Tier 0 violations | FAIL if violated |
+
+**Tier 0 Patterns (from 011-EnforcementConfig.md):**
+- `deploy-to-production`
+- `delete-*`
+- `destroy-*`
+- `modify-firewall-*`
+- `modify-secrets-*`
+- `database-migrate`
+
+Tier 0 actions MUST have task refs and should NEVER appear in bypass log.
+
+### Section 5: Learning Capture Checks
+| Check | Severity |
+|-------|----------|
+| Practices documented | WARN |
+| Practices have origins | WARN |
+| Practice origins resolve to actual tasks | WARN |
+
+### Section 6: Antifragile Learning (D1)
+| Feature | Description |
+|---------|-------------|
+| Audit persistence | Results saved to `.context/audits/YYYY-MM-DD.yaml` |
+| Trend detection | Compares with previous audits |
+| Practice candidates | Issues appearing 3+ times flagged for practice creation |
 
 ## Output Format
 
 ```
 === AUDIT REPORT ===
 Timestamp: [ISO timestamp]
-Scope: [what was audited]
+Project: [path]
 
-=== FINDINGS ===
+=== STRUCTURE CHECKS ===
+[PASS/WARN/FAIL] Check description
+       Evidence: [what was observed]
+       Mitigation: [suggested fix]
 
-[PASS/WARN/FAIL] Category: Finding description
-  - Evidence: [what was observed]
-  - Spec says: [reference to spec]
-  - Mitigation: [suggested fix]
+[... more sections ...]
 
 === SUMMARY ===
 Pass: X
@@ -62,53 +101,15 @@ Fail: Z
 
 === PRIORITY ACTIONS ===
 1. [Most critical action]
-2. [Second priority]
 ...
+
+=== TREND ANALYSIS ===
+[Repeated issues or "First audit recorded"]
+
+Audit saved to: .context/audits/YYYY-MM-DD.yaml
+
+=== END AUDIT ===
 ```
-
-## Checks Performed
-
-### Structure Checks
-| Check | Severity |
-|-------|----------|
-| .tasks/ directory exists | FAIL |
-| Subdirectories (active/completed/templates) exist | WARN |
-| Task template exists | WARN |
-
-### Task Compliance Checks
-| Check | Severity |
-|-------|----------|
-| Required frontmatter fields present | WARN |
-| Status values are valid | WARN |
-| Workflow type is valid | WARN |
-| Updates section exists | WARN |
-
-### Task Quality Checks (P-001, P-004)
-| Check | Severity |
-|-------|----------|
-| Description >= 50 characters | WARN |
-| Started-work tasks have updates | WARN |
-| Tasks older than 7 days have >= 2 updates | WARN |
-
-### Git Traceability Checks
-| Check | Severity |
-|-------|----------|
-| >= 80% commits reference tasks | PASS/WARN/FAIL |
-| Working directory clean | WARN |
-| Commit task refs resolve to actual tasks | WARN |
-
-### Enforcement Checks
-| Check | Severity |
-|-------|----------|
-| Bypass log exists (if commits lack refs) | WARN |
-| Commit-msg hook installed | WARN |
-
-### Learning Capture Checks
-| Check | Severity |
-|-------|----------|
-| Practices documented | WARN |
-| Practices have origins | WARN |
-| Practice origins resolve to actual tasks | WARN |
 
 ## Enforcement Integration
 
@@ -126,14 +127,13 @@ The audit is integrated with git hooks for structural enforcement:
 - **PASS (exit 0):** Push allowed silently
 - **Bypass:** `git push --no-verify` (emergency only)
 
-This ensures compliance is checked before code leaves the local repository.
+## Exit Codes
 
-## Integration
-
-- **Script:** `audit.sh` performs mechanical checks
-- **Git hooks:** Pre-push hook runs audit automatically
-- **Claude Code:** Can invoke for intelligent analysis beyond mechanical checks
-- **Output:** Structured report + exit code (0=pass, 1=warnings, 2=failures)
+| Code | Meaning |
+|------|---------|
+| 0 | All checks pass |
+| 1 | Warnings present (no failures) |
+| 2 | Failures present |
 
 ## Example Usage
 
@@ -141,16 +141,59 @@ This ensures compliance is checked before code leaves the local repository.
 # Full audit
 ./agents/audit/audit.sh
 
-# Specific dimension
-./agents/audit/audit.sh --dimension tasks
-./agents/audit/audit.sh --dimension enforcement
-
-# Output to file
+# Output to file (for archival)
 ./agents/audit/audit.sh > audit-report-$(date +%Y%m%d).md
+
+# Check audit history
+ls .context/audits/
+cat .context/audits/2026-02-13.yaml
 ```
+
+## Audit History
+
+Audit results are automatically saved to `.context/audits/YYYY-MM-DD.yaml`:
+
+```yaml
+# Audit Results - 2026-02-13
+timestamp: 2026-02-13T19:45:02Z
+summary:
+  pass: 16
+  warn: 0
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+```
+
+## Anti-Gaming Features
+
+The audit detects common gaming attempts:
+
+| Gaming Vector | Detection |
+|--------------|-----------|
+| Placeholder descriptions ("TBD") | Description < 50 chars triggers WARN |
+| Stale tasks | Tasks >7 days old with <2 updates trigger WARN |
+| Fake task refs | Commit refs to non-existent tasks trigger WARN |
+| Practice origin fabrication | Origins to non-existent tasks trigger WARN |
+| Tier 0 bypass attempts | Any Tier 0 pattern without task ref triggers FAIL |
 
 ## Limitations
 
-This agent performs **mechanical checks only**. For intelligent analysis (e.g., "is this task description meaningful?"), invoke Claude Code with:
+This agent performs **mechanical checks**. For intelligent analysis:
 
 > "Run the audit agent and then analyze the findings for deeper issues"
+
+**Not yet implemented:**
+- D2-D4 directive compliance checking (D1 partially via trends)
+- Interactive dimension filtering (--dimension flag)
+- Automatic practice generation from repeated issues
+
+## Related
+
+- `agents/git/git.sh` — Installs hooks, enforces task refs
+- `011-EnforcementConfig.md` — Tier 0 patterns, enforcement tiers
+- `015-Practices.md` — Where to add practices from audit trends
+- `.context/audits/` — Audit history for trend analysis
