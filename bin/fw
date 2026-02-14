@@ -112,6 +112,7 @@ show_help() {
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create)"
+    echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project"
@@ -300,6 +301,9 @@ case "$cmd" in
         ;;
     resume)
         exec "$AGENTS_DIR/resume/resume.sh" "$@"
+        ;;
+    note)
+        exec "$AGENTS_DIR/observe/observe.sh" "$@"
         ;;
     task)
         route_task "$@"
