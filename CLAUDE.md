@@ -148,6 +148,23 @@ The framework includes agents for common operations. Each agent has a bash scrip
 ./agents/task-create/create-task.sh --name "Fix bug" --type build --owner human --start
 ```
 
+### Task Update (with auto-triggers)
+
+**Location:** `agents/task-create/update-task.sh`
+
+**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`/`blocked`, and finalizes tasks on `work-completed`.
+
+```bash
+# Change status (auto-triggers healing if issues/blocked)
+fw task update T-015 --status issues --reason "API timeout"
+
+# Complete a task (auto: date_finished, move to completed/, generate episodic)
+fw task update T-015 --status work-completed
+
+# Change owner
+fw task update T-015 --owner human
+```
+
 ### Audit Agent
 
 **Location:** `agents/audit/`
@@ -316,6 +333,7 @@ Synthesizes current state from:
 | Action | fw command | Direct |
 |--------|-----------|--------|
 | Create task | `fw task create` | `./agents/task-create/create-task.sh` |
+| Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |

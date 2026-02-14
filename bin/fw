@@ -111,7 +111,7 @@ show_help() {
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
-    echo -e "  ${GREEN}task${NC} <cmd>           Task management (create)"
+    echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
@@ -261,14 +261,20 @@ route_task() {
         create)
             exec "$AGENTS_DIR/task-create/create-task.sh" "$@"
             ;;
+        update)
+            exec "$AGENTS_DIR/task-create/update-task.sh" "$@"
+            ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
             echo ""
             echo "Subcommands:"
             echo "  create    Create a new task"
+            echo "  update    Update task status (auto-triggers healing/episodic)"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
+            echo '  fw task update T-XXX --status issues --reason "API timeout"'
+            echo '  fw task update T-XXX --status work-completed'
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"

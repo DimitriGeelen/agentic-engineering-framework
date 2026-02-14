@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-14T09:04:20Z
+timestamp: 2026-02-14T09:38:43Z
 summary:
   pass: 16
-  warn: 6
+  warn: 3
   fail: 0
 findings:
   - level: PASS
@@ -21,9 +21,10 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 91% (68/74 commits reference tasks)"
-  - level: PASS
-    check: "Working directory clean"
+    check: "Git traceability: 92% (75/81 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -38,20 +39,10 @@ findings:
     check: "All practices have traceable origins"
   - level: PASS
     check: "All practice origins resolve to actual tasks"
-  - level: WARN
-    check: "Completed task T-034 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-034"
-  - level: WARN
-    check: "Completed task T-035 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-035"
-  - level: WARN
-    check: "Completed task T-036 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-036"
-  - level: WARN
-    check: "Completed task T-037 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-037"
-  - level: WARN
-    check: "Completed task T-038 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-038"
   - level: PASS
-    check: "All 33 episodic summaries have quality content"
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 41 episodic summaries have quality content"
+  - level: WARN
+    check: "1 urgent observation(s) still pending"
+    mitigation: "Run: fw note triage"
