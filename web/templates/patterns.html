@@ -1,0 +1,193 @@
+<style>
+    .pattern-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .pattern-tabs a {
+        padding: 0.35em 0.85em;
+        border-radius: var(--pico-border-radius);
+        font-size: 0.875rem;
+        text-decoration: none;
+        border: 1px solid var(--pico-muted-border-color);
+        color: var(--pico-color);
+    }
+    .pattern-tabs a:hover {
+        background: var(--pico-primary-focus);
+    }
+    .pattern-tabs a.active {
+        background: var(--pico-primary);
+        color: #fff;
+        border-color: var(--pico-primary);
+    }
+    .pattern-card {
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--pico-muted-border-color);
+    }
+    .pattern-card.type-failure  { border-left-color: #c62828; }
+    .pattern-card.type-success  { border-left-color: #2e7d32; }
+    .pattern-card.type-antifragile { border-left-color: #6a1b9a; }
+    .pattern-card.type-workflow { border-left-color: #1565c0; }
+
+    .pattern-badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+    .badge-failure  { background: #c62828; }
+    .badge-success  { background: #2e7d32; }
+    .badge-antifragile { background: #6a1b9a; }
+    .badge-workflow { background: #1565c0; }
+
+    .pattern-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+    .pattern-meta {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.5rem;
+    }
+
+    /* Escalation ladder */
+    .escalation-ladder {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-top: 0.75rem;
+        padding: 0.5rem;
+        background: var(--pico-card-background-color);
+        border-radius: var(--pico-border-radius);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .escalation-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 3.5rem;
+    }
+    .escalation-step .step-letter {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 2px solid var(--pico-muted-border-color);
+        color: var(--pico-muted-color);
+        background: transparent;
+    }
+    .escalation-step.active .step-letter {
+        border-color: #6a1b9a;
+        background: #6a1b9a;
+        color: #fff;
+    }
+    .escalation-step .step-label {
+        font-size: 0.65rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.2rem;
+        text-align: center;
+        max-width: 5rem;
+    }
+    .escalation-connector {
+        flex: 1;
+        height: 2px;
+        background: var(--pico-muted-border-color);
+        min-width: 1rem;
+    }
+    .escalation-connector.active {
+        background: #6a1b9a;
+    }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ all_count }} patterns from project experience.</p>
+</div>
+
+<!-- Tab bar -->
+<div class="pattern-tabs">
+    <a href="/patterns"
+       class="{{ 'active' if not type_filter else '' }}"
+       hx-target="#content" hx-swap="innerHTML" hx-push-url="true">All ({{ all_count }})</a>
+    {% for t in ['failure', 'success', 'antifragile', 'workflow'] %}
+    {% if type_counts.get(t, 0) > 0 %}
+    <a href="/patterns?type={{ t }}"
+       class="{{ 'active' if type_filter == t else '' }}"
+       hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ t | capitalize }} ({{ type_counts[t] }})</a>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Pattern cards -->
+{% if patterns %}
+{% for p in patterns %}
+<article class="pattern-card type-{{ p._type }}">
+    <header style="padding-bottom: 0;">
+        <span class="pattern-badge badge-{{ p._type }}">{{ p.id }}</span>
+        <span class="pattern-title">{{ p.pattern }}</span>
+    </header>
+
+    {% if p.description %}
+    <p>{{ p.description }}</p>
+    {% endif %}
+
+    {% if p._type == 'failure' and p.mitigation %}
+    <p><strong>Mitigation:</strong> {{ p.mitigation }}</p>
+    {% elif p._type == 'success' and p.context %}
+    <p><strong>Context:</strong> {{ p.context }}</p>
+    {% elif p._type == 'workflow' and p.example %}
+    <p><strong>Example:</strong> {{ p.example }}</p>
+    {% endif %}
+
+    {% if p._type == 'antifragile' %}
+        {% if p.capability_gained %}
+        <p><strong>Capability gained:</strong> {{ p.capability_gained }}</p>
+        {% endif %}
+
+        {% if p.escalation_ladder %}
+        <div class="escalation-ladder">
+            {% set ladder = p.escalation_ladder | lower %}
+            <div class="escalation-step {{ 'active' if 'a ' in ladder or 'a(' in ladder else '' }}">
+                <div class="step-letter">A</div>
+                <div class="step-label">Don't repeat</div>
+            </div>
+            <div class="escalation-connector {{ 'active' if 'b ' in ladder or 'b(' in ladder else '' }}"></div>
+            <div class="escalation-step {{ 'active' if 'b ' in ladder or 'b(' in ladder else '' }}">
+                <div class="step-letter">B</div>
+                <div class="step-label">Improve technique</div>
+            </div>
+            <div class="escalation-connector {{ 'active' if 'c ' in ladder or 'c(' in ladder else '' }}"></div>
+            <div class="escalation-step {{ 'active' if 'c ' in ladder or 'c(' in ladder else '' }}">
+                <div class="step-letter">C</div>
+                <div class="step-label">Improve tooling</div>
+            </div>
+            <div class="escalation-connector {{ 'active' if 'd ' in ladder or 'd(' in ladder else '' }}"></div>
+            <div class="escalation-step {{ 'active' if 'd ' in ladder or 'd(' in ladder else '' }}">
+                <div class="step-letter">D</div>
+                <div class="step-label">Change ways</div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <div class="pattern-meta">
+        {% if p.learned_from %}
+        Learned from: <a href="/tasks/{{ p.learned_from }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><code>{{ p.learned_from }}</code></a>
+        {% endif %}
+        {% if p.date_learned %} | {{ p.date_learned }}{% endif %}
+        {% if p.directive %} | Directive: {{ p.directive }}{% endif %}
+    </div>
+</article>
+{% endfor %}
+{% else %}
+<p style="color: var(--pico-muted-color); font-style: italic;">No patterns match this filter.</p>
+{% endif %}

@@ -176,3 +176,46 @@ def search():
                 pass
 
     return render_page("search.html", page_title="Search", query=query, results=results)
+
+
+@bp.route("/patterns")
+def patterns():
+    all_patterns = []
+    pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
+    if pf.exists():
+        with open(pf) as f:
+            data = yaml.safe_load(f)
+        if data:
+            for p in data.get("failure_patterns", []):
+                p["_type"] = "failure"
+                all_patterns.append(p)
+            for p in data.get("success_patterns", []):
+                p["_type"] = "success"
+                all_patterns.append(p)
+            for p in data.get("antifragile_patterns", []):
+                p["_type"] = "antifragile"
+                all_patterns.append(p)
+            for p in data.get("workflow_patterns", []):
+                p["_type"] = "workflow"
+                all_patterns.append(p)
+
+    type_filter = request.args.get("type", "").strip().lower()
+    if type_filter and type_filter in ("failure", "success", "antifragile", "workflow"):
+        filtered = [p for p in all_patterns if p["_type"] == type_filter]
+    else:
+        type_filter = ""
+        filtered = all_patterns
+
+    type_counts = {}
+    for p in all_patterns:
+        t = p["_type"]
+        type_counts[t] = type_counts.get(t, 0) + 1
+
+    return render_page(
+        "patterns.html",
+        page_title="Patterns",
+        patterns=filtered,
+        all_count=len(all_patterns),
+        type_filter=type_filter,
+        type_counts=type_counts,
+    )
