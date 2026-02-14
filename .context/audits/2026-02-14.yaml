@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-14T09:38:43Z
+timestamp: 2026-02-14T09:40:46Z
 summary:
-  pass: 16
-  warn: 3
+  pass: 18
+  warn: 2
   fail: 0
 findings:
   - level: PASS
@@ -21,7 +21,7 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 92% (75/81 commits reference tasks)"
+    check: "Git traceability: 92% (77/83 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -43,6 +43,7 @@ findings:
     check: "All completed tasks have episodic summaries"
   - level: PASS
     check: "All 41 episodic summaries have quality content"
-  - level: WARN
-    check: "1 urgent observation(s) still pending"
-    mitigation: "Run: fw note triage"
+  - level: PASS
+    check: "No orphaned episodic files"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
