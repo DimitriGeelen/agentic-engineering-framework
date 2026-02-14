@@ -1,35 +1,325 @@
-<div class="page-header">
+<style>
+    /* Watchtower header bar */
+    .wt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .wt-header h1 {
+        margin: 0;
+        font-size: 1.6rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .wt-badge {
+        display: inline-block;
+        padding: 0.25em 0.75em;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .wt-badge-pass { background: #2e7d32; color: #fff; }
+    .wt-badge-warn { background: #f9a825; color: #000; }
+    .wt-badge-fail { background: #c62828; color: #fff; }
+
+    /* Two-column grid for Attention + Activity */
+    .wt-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 768px) {
+        .wt-columns { grid-template-columns: 1fr; }
+    }
+
+    /* Attention items */
+    .wt-attention-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .wt-attention-list li {
+        padding: 0.5em 0;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.95rem;
+    }
+    .wt-attention-list li:last-child { border-bottom: none; }
+    .wt-attention-id {
+        font-weight: 700;
+        margin-right: 0.25em;
+    }
+    .wt-attention-id.type-task    { color: #c62828; }
+    .wt-attention-id.type-gap     { color: #e65100; }
+    .wt-attention-id.type-learning { color: #ad1457; }
+
+    /* Activity items */
+    .wt-activity-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .wt-activity-list li {
+        padding: 0.5em 0;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+    }
+    .wt-activity-list li:last-child { border-bottom: none; }
+    .wt-activity-label {
+        font-weight: 700;
+        display: block;
+        font-size: 0.95rem;
+    }
+    .wt-activity-detail {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+    }
+
+    /* Project Pulse compact bar */
+    .wt-pulse {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        font-size: 0.9rem;
+    }
+    .wt-pulse li {
+        white-space: nowrap;
+    }
+    .wt-pulse-value {
+        font-weight: 700;
+    }
+
+    /* Section headers inside cards */
+    .wt-section-title {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--pico-muted-color);
+    }
+
+    /* Inception / new-user view */
+    .wt-inception article {
+        max-width: 640px;
+        margin: 2rem auto;
+        text-align: left;
+    }
+    .wt-inception h2 {
+        margin-bottom: 0.25rem;
+    }
+    .wt-inception .wt-subtitle {
+        color: var(--pico-muted-color);
+        margin-bottom: 1.5rem;
+    }
+    .wt-checklist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 0.75rem;
+    }
+    .wt-checklist-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    .wt-checklist-progress {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+    }
+    .wt-checklist {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .wt-checklist li {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6em 0;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.95rem;
+    }
+    .wt-checklist li:last-child { border-bottom: none; }
+    .wt-check-icon {
+        flex-shrink: 0;
+        width: 1.4em;
+        height: 1.4em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 3px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+    .wt-check-done {
+        background: #2e7d32;
+        color: #fff;
+    }
+    .wt-check-pending {
+        border: 2px solid var(--pico-muted-border-color);
+        background: transparent;
+    }
+    .wt-checklist-label {
+        flex: 1;
+    }
+    .wt-checklist-label.done {
+        color: var(--pico-muted-color);
+    }
+    .wt-checklist-action {
+        flex-shrink: 0;
+    }
+    /* Empty-state messages */
+    .wt-empty {
+        color: var(--pico-muted-color);
+        font-style: italic;
+        font-size: 0.9rem;
+    }
+</style>
+
+{% if is_inception %}
+{# ============================================================
+   NEW USER VIEW — onboarding checklist
+   ============================================================ #}
+<div class="wt-inception">
+    <article>
+        <h2>Welcome to Watchtower</h2>
+        <p class="wt-subtitle">Your project is connected to the framework.</p>
+
+        {% set done_count = inception_checklist | selectattr('done') | list | length %}
+        <div class="wt-checklist-header">
+            <h3>Setup Checklist</h3>
+            <span class="wt-checklist-progress">{{ done_count }}/{{ inception_checklist | length }} done</span>
+        </div>
+
+        <ul class="wt-checklist">
+            {% for item in inception_checklist %}
+            <li>
+                {% if item.done %}
+                <span class="wt-check-icon wt-check-done">&#10003;</span>
+                {% else %}
+                <span class="wt-check-icon wt-check-pending"></span>
+                {% endif %}
+
+                <span class="wt-checklist-label {{ 'done' if item.done else '' }}">{{ item.label }}</span>
+
+                {% if not item.done and item.action_url %}
+                    {% if item.action_url.startswith('POST:') %}
+                    <span class="wt-checklist-action">
+                        <a role="button"
+                           class="outline"
+                           style="font-size: 0.8rem; padding: 0.2em 0.6em;"
+                           hx-post="{{ item.action_url[5:] }}"
+                           hx-target="#content"
+                           hx-swap="innerHTML">{{ item.action_label }}</a>
+                    </span>
+                    {% else %}
+                    <span class="wt-checklist-action">
+                        <a role="button"
+                           class="outline"
+                           style="font-size: 0.8rem; padding: 0.2em 0.6em;"
+                           href="{{ item.action_url }}"
+                           hx-target="#content"
+                           hx-swap="innerHTML"
+                           hx-push-url="true">{{ item.action_label }}</a>
+                    </span>
+                    {% endif %}
+                {% elif not item.done and item.action_label %}
+                <span class="wt-checklist-action">
+                    <code style="font-size: 0.8rem;">{{ item.action_label }}</code>
+                </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </article>
+</div>
+
+{% else %}
+{# ============================================================
+   POWER USER VIEW — command center dashboard
+   ============================================================ #}
+
+{# --- Header bar -------------------------------------------- #}
+<div class="wt-header">
     <h1>{{ page_title }}</h1>
-    <p>Agentic Engineering Framework <span style="color: var(--pico-muted-color);">v1.0.0</span></p>
+    <span class="wt-badge
+        {%- if audit_status == 'PASS' %} wt-badge-pass
+        {%- elif audit_status == 'WARN' %} wt-badge-warn
+        {%- else %} wt-badge-fail{% endif %}">
+        audit: {{ audit_status }}
+        {% if audit_status == 'WARN' %}<small>({{ audit_warn }}w)</small>{% endif %}
+        {% if audit_status == 'FAIL' %}<small>({{ audit_fail }}f)</small>{% endif %}
+    </span>
 </div>
 
-<div class="grid">
+{# --- Needs Attention | Recent Activity --------------------- #}
+<div class="wt-columns">
     <article>
-        <header>Active Tasks</header>
-        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ active_count }}</p>
-        <footer><a href="{{ url_for('tasks.tasks') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View tasks</a></footer>
+        <h4 class="wt-section-title">Needs Attention</h4>
+        {% if attention_items %}
+        <ul class="wt-attention-list">
+            {% for item in attention_items %}
+            <li>
+                <span class="wt-attention-id type-{{ item.type }}">{{ item.id }}:</span>
+                {{ item.message }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="wt-empty">Nothing needs attention right now.</p>
+        {% endif %}
     </article>
+
     <article>
-        <header>Completed Tasks</header>
-        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ completed_count }}</p>
-        <footer><a href="{{ url_for('tasks.tasks') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View tasks</a></footer>
-    </article>
-    <article>
-        <header>Watching Gaps</header>
-        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ gap_count }}</p>
-        <footer><a href="{{ url_for('discovery.gaps') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View gaps</a></footer>
-    </article>
-    <article>
-        <header>Last Session</header>
-        <p style="font-size: 1.1rem; font-weight: bold; margin: 0.5rem 0; word-break: break-all;">{{ last_session }}</p>
-        <footer><a href="{{ url_for('timeline.timeline') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View timeline</a></footer>
+        <h4 class="wt-section-title">Recent Activity</h4>
+        {% if recent_activity %}
+        <ul class="wt-activity-list">
+            {% for entry in recent_activity %}
+            <li>
+                <span class="wt-activity-label">
+                    <a href="{{ url_for('timeline.timeline') }}"
+                       hx-target="#content"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">{{ entry.label }}</a>
+                </span>
+                <span class="wt-activity-detail">{{ entry.detail }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="wt-empty">No recent sessions recorded.</p>
+        {% endif %}
     </article>
 </div>
 
-<h3>Quick Links</h3>
-<div class="grid">
-    <a href="{{ url_for('core.project') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Project Docs</a>
-    <a href="{{ url_for('core.directives') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Directives</a>
-    <a href="{{ url_for('discovery.decisions') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Decisions</a>
-    <a href="{{ url_for('discovery.learnings') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Learnings</a>
-</div>
+{# --- Project Pulse ----------------------------------------- #}
+<article>
+    <h4 class="wt-section-title">Project Pulse</h4>
+    <ul class="wt-pulse">
+        <li>
+            Tasks:
+            <span class="wt-pulse-value">{{ active_count }}</span> active,
+            <span class="wt-pulse-value">{{ completed_count }}</span> done
+        </li>
+        <li>
+            Gaps:
+            <span class="wt-pulse-value">{{ gap_count }}</span> watching
+        </li>
+        <li>
+            Knowledge:
+            <span class="wt-pulse-value">{{ knowledge_counts.learnings }}</span>L,
+            <span class="wt-pulse-value">{{ knowledge_counts.practices }}</span>P,
+            <span class="wt-pulse-value">{{ knowledge_counts.decisions }}</span>D
+        </li>
+        <li>
+            Traceability:
+            <span class="wt-pulse-value">{{ traceability }}%</span>
+        </li>
+    </ul>
+</article>
+
+{% endif %}

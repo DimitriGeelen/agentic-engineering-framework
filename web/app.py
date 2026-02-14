@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Agentic Engineering Framework — Web UI
+Watchtower — Agentic Engineering Framework Web UI
 
-Flask application serving the framework dashboard with htmx-powered
+Flask application serving the Watchtower command center with htmx-powered
 SPA-like navigation and Pico CSS styling.
 
 Usage:
@@ -22,7 +22,7 @@ import sys
 
 from flask import abort, render_template, request, session
 
-from web.shared import APP_DIR, NAV_ITEMS
+from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, build_ambient
 
 # ---------------------------------------------------------------------------
 # Flask application
@@ -70,15 +70,27 @@ from web.blueprints.core import bp as core_bp
 from web.blueprints.tasks import bp as tasks_bp
 from web.blueprints.timeline import bp as timeline_bp
 from web.blueprints.discovery import bp as discovery_bp
+from web.blueprints.quality import bp as quality_bp
 
 app.register_blueprint(core_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(timeline_bp)
 app.register_blueprint(discovery_bp)
+app.register_blueprint(quality_bp)
 
 # ---------------------------------------------------------------------------
 # Error handlers
 # ---------------------------------------------------------------------------
+
+
+def _error_context():
+    """Common context for error pages."""
+    return {
+        "nav_groups": NAV_GROUPS,
+        "nav_items": NAV_ITEMS,
+        "active_endpoint": None,
+        "ambient": build_ambient(),
+    }
 
 
 @app.errorhandler(403)
@@ -89,8 +101,7 @@ def forbidden(e):
         page_title="Forbidden",
         error_title="403 Forbidden",
         error_message=str(e.description) if hasattr(e, "description") else str(e),
-        nav_items=NAV_ITEMS,
-        active_endpoint=None,
+        **_error_context(),
     ), 403
 
 
@@ -102,8 +113,7 @@ def not_found(e):
         page_title="Not Found",
         error_title="404 Not Found",
         error_message="The requested page does not exist.",
-        nav_items=NAV_ITEMS,
-        active_endpoint=None,
+        **_error_context(),
     ), 404
 
 # ---------------------------------------------------------------------------
@@ -115,7 +125,7 @@ def main():
     from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT
 
     parser = argparse.ArgumentParser(
-        description="Agentic Engineering Framework — Web UI",
+        description="Watchtower — Agentic Engineering Framework Web UI",
     )
     parser.add_argument(
         "--port", "-p",
@@ -135,12 +145,12 @@ def main():
     port = args.port
 
     def handle_sigint(sig, frame):
-        print("\nShutting down fw serve...")
+        print("\nShutting down Watchtower...")
         sys.exit(0)
 
     signal.signal(signal.SIGINT, handle_sigint)
 
-    print("fw serve running at http://{}:{}".format(host, port))
+    print("Watchtower running at http://{}:{}".format(host, port))
     print("  Project root: {}".format(PROJECT_ROOT))
     print("  Framework:    {}".format(FRAMEWORK_ROOT))
     print()

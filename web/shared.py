@@ -1,6 +1,9 @@
 """Shared helpers for the web UI blueprints."""
 
 import os
+import re as re_mod
+import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import render_template, request
@@ -14,20 +17,98 @@ FRAMEWORK_ROOT = APP_DIR.parent
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))
 
 # ---------------------------------------------------------------------------
-# Navigation items available to all templates
+# Navigation — grouped for Watchtower command center
 # ---------------------------------------------------------------------------
 
-NAV_ITEMS = [
-    ("Dashboard",  "core.index",         None),
-    ("Project",    "core.project",       None),
-    ("Directives", "core.directives",    None),
-    ("Timeline",   "timeline.timeline",  None),
-    ("Tasks",      "tasks.tasks",        None),
-    ("Decisions",  "discovery.decisions", None),
-    ("Learnings",  "discovery.learnings", None),
-    ("Gaps",       "discovery.gaps",      None),
-    ("Search",     "discovery.search",    None),
+NAV_GROUPS = [
+    ("Work", [
+        ("Tasks",    "tasks.tasks",        None),
+        ("Timeline", "timeline.timeline",  None),
+    ]),
+    ("Knowledge", [
+        ("Learnings", "discovery.learnings", None),
+        ("Decisions", "discovery.decisions", None),
+    ]),
+    ("Govern", [
+        ("Directives", "core.directives",       None),
+        ("Gaps",       "discovery.gaps",         None),
+        ("Quality",    "quality.quality_gate",   None),
+    ]),
 ]
+
+# Flat list for backward compat (used in error handlers, etc.)
+NAV_ITEMS = []
+for _group_name, _items in NAV_GROUPS:
+    NAV_ITEMS.extend(_items)
+
+
+# ---------------------------------------------------------------------------
+# Ambient status strip — data gathered once per request
+# ---------------------------------------------------------------------------
+
+def build_ambient():
+    """Build ambient status data for the status strip."""
+    ambient = {
+        "focus_task": None,
+        "session_age": None,
+        "audit_status": None,
+        "attention_count": 0,
+    }
+
+    # Focus task — currently active tasks
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    if active_dir.exists():
+        active_tasks = sorted(active_dir.glob("T-*.md"))
+        if active_tasks:
+            # Use the first active task as focus
+            stem = active_tasks[0].stem
+            match = re_mod.match(r"(T-\d{3})", stem)
+            if match:
+                ambient["focus_task"] = match.group(1)
+            ambient["attention_count"] = len(active_tasks)
+
+    # Session age — from latest handover
+    handovers_dir = PROJECT_ROOT / ".context" / "handovers"
+    if handovers_dir.exists():
+        sessions = sorted(handovers_dir.glob("S-*.md"), reverse=True)
+        if sessions:
+            content = sessions[0].read_text(errors="replace")
+            ts_match = re_mod.search(r"timestamp:\s*(\S+)", content)
+            if ts_match:
+                try:
+                    ts = datetime.fromisoformat(ts_match.group(1).replace("Z", "+00:00"))
+                    delta = datetime.now(timezone.utc) - ts
+                    hours = int(delta.total_seconds() // 3600)
+                    if hours < 1:
+                        ambient["session_age"] = f"{int(delta.total_seconds() // 60)}m ago"
+                    elif hours < 24:
+                        ambient["session_age"] = f"{hours}h ago"
+                    else:
+                        ambient["session_age"] = f"{hours // 24}d ago"
+                except (ValueError, TypeError):
+                    pass
+
+    # Audit status — from latest audit file
+    audits_dir = PROJECT_ROOT / ".context" / "audits"
+    if audits_dir.exists():
+        audit_files = sorted(audits_dir.glob("*.yaml"), reverse=True)
+        if audit_files:
+            try:
+                import yaml
+                with open(audit_files[0]) as f:
+                    data = yaml.safe_load(f)
+                if data and "summary" in data:
+                    s = data["summary"]
+                    if s.get("fail", 0) > 0:
+                        ambient["audit_status"] = "FAIL"
+                    elif s.get("warn", 0) > 0:
+                        ambient["audit_status"] = "WARN"
+                    else:
+                        ambient["audit_status"] = "PASS"
+            except Exception:
+                pass
+
+    return ambient
 
 
 def render_page(template_name, **context):
@@ -38,9 +119,11 @@ def render_page(template_name, **context):
     base.html. For htmx requests (HX-Request header present), we return
     just the fragment.
     """
+    context.setdefault("nav_groups", NAV_GROUPS)
     context.setdefault("nav_items", NAV_ITEMS)
     context.setdefault("active_endpoint", request.endpoint)
     context.setdefault("project_root", str(PROJECT_ROOT))
+    context.setdefault("ambient", build_ambient())
 
     if request.headers.get("HX-Request"):
         return render_template(template_name, **context)

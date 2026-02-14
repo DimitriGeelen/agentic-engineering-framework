@@ -1,0 +1,138 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Framework compliance, traceability, and test status.</p>
+</div>
+
+<!-- Gate Status Banner -->
+{% if audit_status == "PASS" %}
+<article style="text-align: center; border-left: 6px solid var(--pico-ins-color);">
+    <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: var(--pico-ins-color);">PASS</p>
+    <p style="margin: 0;">
+        {{ audit_summary.get("pass", 0) }} passed &middot;
+        {{ audit_summary.get("warn", 0) }} warnings &middot;
+        {{ audit_summary.get("fail", 0) }} failures
+    </p>
+</article>
+{% elif audit_status == "WARN" %}
+<article style="text-align: center; border-left: 6px solid #e8a317;">
+    <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: #e8a317;">WARN</p>
+    <p style="margin: 0;">
+        {{ audit_summary.get("pass", 0) }} passed &middot;
+        {{ audit_summary.get("warn", 0) }} warnings &middot;
+        {{ audit_summary.get("fail", 0) }} failures
+    </p>
+</article>
+{% else %}
+<article style="text-align: center; border-left: 6px solid var(--pico-del-color);">
+    <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: var(--pico-del-color);">FAIL</p>
+    <p style="margin: 0;">
+        {{ audit_summary.get("pass", 0) }} passed &middot;
+        {{ audit_summary.get("warn", 0) }} warnings &middot;
+        {{ audit_summary.get("fail", 0) }} failures
+    </p>
+</article>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="grid" style="margin-bottom: 1.5rem;">
+    <button hx-post="/api/audit/run"
+            hx-target="#audit-results"
+            hx-swap="innerHTML"
+            hx-indicator="#audit-spinner"
+            class="outline">
+        Run Audit
+        <span id="audit-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
+    </button>
+    <button hx-post="/api/tests/run"
+            hx-target="#test-results"
+            hx-swap="innerHTML"
+            hx-indicator="#test-spinner"
+            class="outline">
+        Run Tests
+        <span id="test-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
+    </button>
+    <button hx-post="/api/audit/run"
+            hx-target="#audit-results"
+            hx-swap="innerHTML"
+            hx-indicator="#full-spinner"
+            hx-on::after-request="htmx.trigger('#full-check-tests', 'click')"
+            class="contrast">
+        Full Check
+        <span id="full-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
+    </button>
+    <button id="full-check-tests"
+            hx-post="/api/tests/run"
+            hx-target="#test-results"
+            hx-swap="innerHTML"
+            style="display: none;">
+    </button>
+</div>
+
+<!-- Metrics Cards: Traceability + Episodic Completeness -->
+<div class="grid">
+    <article>
+        <header><strong>Git Traceability</strong></header>
+        <p style="font-size: 2rem; font-weight: bold; margin: 0;">{{ traceability }}%</p>
+        <progress value="{{ traceability }}" max="100"
+            {% if traceability >= 90 %}style="--pico-progress-color: var(--pico-ins-color);"
+            {% elif traceability >= 70 %}style="--pico-progress-color: #e8a317;"
+            {% else %}style="--pico-progress-color: var(--pico-del-color);"
+            {% endif %}
+        ></progress>
+        <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+            Percentage of recent commits referencing a task (T-XXX)
+        </p>
+    </article>
+    <article>
+        <header><strong>Episodic Completeness</strong></header>
+        <p style="font-size: 2rem; font-weight: bold; margin: 0;">{{ episodic_complete }} / {{ episodic_total }}</p>
+        {% if episodic_total > 0 %}
+        <progress value="{{ episodic_complete }}" max="{{ episodic_total }}"
+            {% if episodic_complete >= episodic_total %}style="--pico-progress-color: var(--pico-ins-color);"
+            {% elif episodic_complete >= (episodic_total * 0.7)|int %}style="--pico-progress-color: #e8a317;"
+            {% else %}style="--pico-progress-color: var(--pico-del-color);"
+            {% endif %}
+        ></progress>
+        {% else %}
+        <progress value="0" max="100"></progress>
+        {% endif %}
+        <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+            Episodic summaries generated for completed tasks
+        </p>
+    </article>
+</div>
+
+<!-- Audit Findings -->
+<h3>Audit Findings</h3>
+<div id="audit-results">
+    {% if findings %}
+    {% include "_quality_audit_fragment.html" %}
+    {% else %}
+    <article style="border-left: 4px solid var(--pico-muted-border-color);">
+        <p style="color: var(--pico-muted-color); font-style: italic;">
+            No audit data available. Click <strong>Run Audit</strong> to perform a compliance check.
+        </p>
+    </article>
+    {% endif %}
+</div>
+
+<!-- Test Results -->
+<h3>Test Results</h3>
+<div id="test-results">
+    {% if test_results %}
+    {{ test_results }}
+    {% else %}
+    <article style="border-left: 4px solid var(--pico-muted-border-color);">
+        <p style="color: var(--pico-muted-color); font-style: italic;">
+            No test results yet. Click <strong>Run Tests</strong> to execute the test suite.
+        </p>
+    </article>
+    {% endif %}
+</div>
+
+<!-- Last Audit Timestamp -->
+{% if audit_timestamp %}
+<p style="text-align: right; color: var(--pico-muted-color); font-size: 0.875rem;">
+    Last audit: {{ audit_timestamp }}
+</p>
+{% endif %}

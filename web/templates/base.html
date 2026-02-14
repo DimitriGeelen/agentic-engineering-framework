@@ -4,82 +4,219 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ page_title | default("Dashboard") }} — Agentic Engineering Framework</title>
+    <title>{{ page_title | default("Watchtower") }} — Agentic Engineering Framework</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <style>
-        /* Navigation styling */
-        nav ul li a[aria-current="page"] {
-            font-weight: bold;
-            text-decoration: underline;
-            text-underline-offset: 4px;
+        /* ── Nav ─────────────────────────────────────────────── */
+        nav.site-nav {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-card-background-color);
         }
-        /* Content area minimum height */
-        main {
-            min-height: 60vh;
+        nav.site-nav > ul {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
         }
-        /* Page header */
-        .page-header {
-            margin-bottom: 2rem;
+        nav.site-nav .brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-right: 1rem;
+            text-decoration: none;
+            color: var(--pico-primary);
         }
-        .page-header h1 {
-            margin-bottom: 0.25rem;
-        }
-        .page-header p {
-            color: var(--pico-muted-color);
-        }
-        /* Coming soon card */
-        .coming-soon {
-            text-align: center;
-            padding: 3rem 1rem;
-            border: 2px dashed var(--pico-muted-border-color);
+        nav.site-nav .brand:hover { text-decoration: none; opacity: 0.85; }
+        nav.site-nav .spacer { flex: 1; }
+
+        /* Dropdown overrides for horizontal nav */
+        nav.site-nav details.dropdown { margin: 0; padding: 0; }
+        nav.site-nav details.dropdown > summary {
+            padding: 0.4rem 0.75rem;
+            margin: 0;
+            font-size: 0.925rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--pico-color);
             border-radius: var(--pico-border-radius);
-            margin-top: 1.5rem;
         }
-        .coming-soon h3 {
-            color: var(--pico-muted-color);
+        nav.site-nav details.dropdown > summary:hover {
+            background: var(--pico-primary-focus);
         }
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 1.5rem 0;
+        nav.site-nav details.dropdown.active-group > summary {
+            color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul { min-width: 10rem; }
+        nav.site-nav details.dropdown ul li a {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.75rem;
+            display: block;
+            text-decoration: none;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav details.dropdown ul li a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul li a[aria-current="page"] {
+            color: var(--pico-primary);
+            font-weight: 600;
+        }
+
+        /* Search link */
+        nav.site-nav .nav-search a {
+            display: flex; align-items: center;
+            padding: 0.4rem 0.6rem;
+            text-decoration: none;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+            font-size: 0.925rem;
+        }
+        nav.site-nav .nav-search a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav .nav-search svg {
+            width: 1rem; height: 1rem;
+            stroke: currentColor; stroke-width: 2; fill: none;
+        }
+
+        /* Project docs link */
+        nav.site-nav .nav-docs a {
+            padding: 0.4rem 0.75rem;
+            text-decoration: none;
+            color: var(--pico-color);
+            font-size: 0.925rem;
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav .nav-docs a:hover {
+            background: var(--pico-primary-focus);
+        }
+
+        /* ── Ambient Status Strip ────────────────────────────── */
+        .ambient-strip {
+            background: var(--pico-card-background-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            padding: 0.25rem 1rem;
+            font-size: 0.775rem;
             color: var(--pico-muted-color);
-            font-size: 0.875rem;
-            border-top: 1px solid var(--pico-muted-border-color);
-            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .ambient-strip .sep { color: var(--pico-muted-border-color); }
+        .ambient-strip .audit-pass { color: #2e7d32; font-weight: 600; }
+        .ambient-strip .audit-warn { color: #e8a317; font-weight: 600; }
+        .ambient-strip .audit-fail { color: #c62828; font-weight: 600; }
+
+        /* ── Content and footer ──────────────────────────────── */
+        main { min-height: 60vh; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { margin-bottom: 0.25rem; }
+        .page-header p { color: var(--pico-muted-color); }
+        .coming-soon {
+            text-align: center; padding: 3rem 1rem;
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius); margin-top: 1.5rem;
+        }
+        .coming-soon h3 { color: var(--pico-muted-color); }
+        footer.site-footer {
+            text-align: center; padding: 1.5rem 0;
+            color: var(--pico-muted-color); font-size: 0.875rem;
+            border-top: 1px solid var(--pico-muted-border-color); margin-top: 2rem;
         }
     </style>
 </head>
 <body hx-boost="true">
-    <nav class="container-fluid">
+
+    <!-- Navigation -->
+    <nav class="site-nav container-fluid">
         <ul>
-            <li><strong>fw</strong></li>
-        </ul>
-        <ul>
-            {% for label, endpoint, icon in nav_items %}
             <li>
-                <a href="{{ url_for(endpoint) }}"
-                   {% if active_endpoint == endpoint %}aria-current="page"{% endif %}
-                   hx-target="#content"
-                   hx-swap="innerHTML"
-                   hx-push-url="true">
-                    {{ label }}
-                </a>
+                <a href="{{ url_for('core.index') }}" class="brand"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Watchtower</a>
+            </li>
+
+            {% for group_name, items in nav_groups %}
+            <li>
+                {%- set ns = namespace(active=false) -%}
+                {%- for label, endpoint, icon in items -%}
+                    {%- if endpoint == active_endpoint -%}{%- set ns.active = true -%}{%- endif -%}
+                {%- endfor -%}
+                <details class="dropdown{% if ns.active %} active-group{% endif %}">
+                    <summary>{{ group_name }}</summary>
+                    <ul dir="ltr">
+                        {% for label, endpoint, icon in items %}
+                        <li>
+                            <a href="{{ url_for(endpoint) }}"
+                               {% if endpoint == active_endpoint %}aria-current="page"{% endif %}
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                                {{ label }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
             </li>
             {% endfor %}
+
+            <li class="spacer"></li>
+
+            <li class="nav-docs">
+                <a href="{{ url_for('core.project') }}"
+                   {% if active_endpoint == 'core.project' %}aria-current="page"{% endif %}
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Docs</a>
+            </li>
+
+            <li class="nav-search">
+                <a href="{{ url_for('discovery.search') }}" title="Search"
+                   {% if active_endpoint == 'discovery.search' %}aria-current="page"{% endif %}
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
+                    </svg>
+                </a>
+            </li>
         </ul>
     </nav>
 
+    <!-- Ambient Status Strip -->
+    {% if ambient %}
+    <div class="ambient-strip container-fluid">
+        <span>{{ ambient.focus_task or 'No focus' }}</span>
+        <span class="sep">|</span>
+        <span>Session: {{ ambient.session_age or 'unknown' }}</span>
+        <span class="sep">|</span>
+        <span>Audit:
+            {% if ambient.audit_status == 'PASS' %}<span class="audit-pass">PASS</span>
+            {% elif ambient.audit_status == 'WARN' %}<span class="audit-warn">WARN</span>
+            {% elif ambient.audit_status == 'FAIL' %}<span class="audit-fail">FAIL</span>
+            {% else %}{{ ambient.audit_status or 'unknown' }}{% endif %}
+        </span>
+        <span class="sep">|</span>
+        <span><strong>{{ ambient.attention_count or 0 }}</strong> items need attention</span>
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
     <main class="container" id="content">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="container">
-        Agentic Engineering Framework v1.0.0
+    <!-- Footer -->
+    <footer class="site-footer container">
+        Watchtower v1.0.0 &mdash; Agentic Engineering Framework
     </footer>
 
     <script>
-        // Attach CSRF token to all htmx requests
+        // CSRF token for htmx requests
         document.body.addEventListener('htmx:configRequest', function(event) {
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
             if (csrfToken) {
@@ -87,22 +224,40 @@
             }
         });
 
-        // Update active nav item on htmx navigation
+        // Update active nav after htmx navigation
         document.body.addEventListener('htmx:afterSwap', function(event) {
-            var currentPath = window.location.pathname;
-            document.querySelectorAll('nav a').forEach(function(link) {
+            document.querySelectorAll('nav.site-nav [aria-current]').forEach(function(el) {
+                el.removeAttribute('aria-current');
+            });
+            document.querySelectorAll('nav.site-nav .active-group').forEach(function(el) {
+                el.classList.remove('active-group');
+            });
+
+            var path = window.location.pathname;
+            document.querySelectorAll('nav.site-nav a').forEach(function(link) {
                 var href = link.getAttribute('href');
-                if (href === currentPath || (currentPath === '/' && href === '/')) {
+                if (href === path || (path === '/' && href === '/')) {
                     link.setAttribute('aria-current', 'page');
-                } else {
-                    link.removeAttribute('aria-current');
+                    var dropdown = link.closest('details.dropdown');
+                    if (dropdown) dropdown.classList.add('active-group');
                 }
             });
+
+            // Close open dropdowns after navigation
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                d.removeAttribute('open');
+            });
+
             // Update page title
-            var pageHeader = document.querySelector('.page-header h1');
-            if (pageHeader) {
-                document.title = pageHeader.textContent + ' — Agentic Engineering Framework';
-            }
+            var h1 = document.querySelector('.page-header h1, .wt-header h1');
+            if (h1) document.title = h1.textContent.trim() + ' — Agentic Engineering Framework';
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                if (!d.contains(event.target)) d.removeAttribute('open');
+            });
         });
     </script>
 </body>

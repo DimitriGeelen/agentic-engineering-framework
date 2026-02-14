@@ -1,8 +1,8 @@
 """
-Test suite for the Agentic Engineering Framework web UI.
+Test suite for the Watchtower web UI.
 
 Covers: all routes (200s), htmx partial rendering, CSRF protection,
-error handlers, task detail pages, search, and data integrity.
+error handlers, task detail pages, search, quality gate, and data integrity.
 
 Run: pytest web/test_app.py -v
 """
@@ -58,6 +58,7 @@ class TestRoutes:
             "/learnings",
             "/gaps",
             "/search",
+            "/quality",
         ],
     )
     def test_route_returns_200(self, client, path):
@@ -80,7 +81,7 @@ class TestHtmxPartials:
 
     @pytest.mark.parametrize(
         "path",
-        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps"],
+        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality"],
     )
     def test_htmx_returns_fragment(self, client, path):
         resp = client.get(path, headers={"HX-Request": "true"})
@@ -92,7 +93,7 @@ class TestHtmxPartials:
 
     @pytest.mark.parametrize(
         "path",
-        ["/", "/tasks", "/timeline"],
+        ["/", "/tasks", "/timeline", "/quality"],
     )
     def test_full_page_has_wrapper(self, client, path):
         resp = client.get(path)
@@ -123,8 +124,6 @@ class TestCSRF:
 
     def test_post_with_valid_csrf_succeeds(self, csrf_client):
         client, token = csrf_client
-        # T-001 is work-completed, so trying to set it to started-work
-        # should either succeed or fail with a business logic error (not 403)
         resp = client.post(
             "/api/task/T-001/status",
             data={"status": "started-work", "_csrf_token": token},
@@ -237,6 +236,41 @@ class TestTimeline:
 
 
 # =========================================================================
+# Quality Gate
+# =========================================================================
+
+
+class TestQualityGate:
+    """Quality Gate page renders and API endpoints work."""
+
+    def test_quality_page_renders(self, client):
+        resp = client.get("/quality")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Quality Gate" in html
+        assert "Traceability" in html
+
+    def test_quality_page_shows_audit_status(self, client):
+        resp = client.get("/quality")
+        html = resp.data.decode()
+        assert "PASS" in html or "WARN" in html or "FAIL" in html
+
+    def test_quality_has_action_buttons(self, client):
+        resp = client.get("/quality")
+        html = resp.data.decode()
+        assert "Run Audit" in html
+        assert "Run Tests" in html
+
+    def test_audit_api_requires_csrf(self, client):
+        resp = client.post("/api/audit/run")
+        assert resp.status_code == 403
+
+    def test_tests_api_requires_csrf(self, client):
+        resp = client.post("/api/tests/run")
+        assert resp.status_code == 403
+
+
+# =========================================================================
 # Data integrity — pages contain expected content
 # =========================================================================
 
@@ -247,8 +281,13 @@ class TestDataIntegrity:
     def test_dashboard_has_task_counts(self, client):
         resp = client.get("/")
         html = resp.data.decode()
-        # Dashboard should mention tasks and gaps
+        # Dashboard should mention tasks
         assert "task" in html.lower() or "Task" in html
+
+    def test_dashboard_shows_watchtower(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Watchtower" in html
 
     def test_gaps_page_shows_gaps(self, client):
         resp = client.get("/gaps")
@@ -291,21 +330,39 @@ class TestDataIntegrity:
         resp = client.get("/search?q=antifragility")
         html = resp.data.decode()
         assert resp.status_code == 200
-        # Should find results in specs or context files
         assert "antifragility" in html.lower() or "result" in html.lower() or "match" in html.lower()
 
 
 # =========================================================================
-# Navigation consistency
+# Navigation — Watchtower grouped nav
 # =========================================================================
 
 
 class TestNavigation:
-    """Navigation links are present and consistent."""
+    """Navigation uses grouped Watchtower layout."""
 
-    def test_all_nav_items_present(self, client):
+    def test_watchtower_brand_present(self, client):
         resp = client.get("/")
         html = resp.data.decode()
-        for label in ["Dashboard", "Project", "Directives", "Timeline", "Tasks",
-                       "Decisions", "Learnings", "Gaps", "Search"]:
-            assert label in html, f"Navigation missing: {label}"
+        assert "Watchtower" in html
+
+    def test_nav_groups_present(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        for group in ["Work", "Knowledge", "Govern"]:
+            assert group in html, f"Navigation group missing: {group}"
+
+    def test_nav_has_search(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "search" in html.lower()
+
+    def test_ambient_strip_present(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "ambient-strip" in html
+
+    def test_footer_shows_watchtower(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Watchtower v1.0.0" in html
