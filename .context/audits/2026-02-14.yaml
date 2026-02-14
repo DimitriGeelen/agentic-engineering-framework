@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-13T23:47:05Z
+timestamp: 2026-02-14T09:04:20Z
 summary:
   pass: 16
-  warn: 2
+  warn: 6
   fail: 0
 findings:
   - level: PASS
@@ -15,16 +15,15 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
-  - level: PASS
-    check: "All 7 active tasks are valid"
   - level: WARN
-    check: "Task T-032 has short description (4 chars)"
-    mitigation: "Expand description in T-032-refactor-agents-to-accept-projectroot-ex.md"
+    check: "No active tasks found"
+    mitigation: "Create tasks for ongoing work"
   - level: PASS
-    check: "Git traceability: 90% (59/65 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 91% (68/74 commits reference tasks)"
+  - level: PASS
+    check: "Working directory clean"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -39,7 +38,20 @@ findings:
     check: "All practices have traceable origins"
   - level: PASS
     check: "All practice origins resolve to actual tasks"
+  - level: WARN
+    check: "Completed task T-034 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-034"
+  - level: WARN
+    check: "Completed task T-035 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-035"
+  - level: WARN
+    check: "Completed task T-036 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-036"
+  - level: WARN
+    check: "Completed task T-037 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-037"
+  - level: WARN
+    check: "Completed task T-038 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-038"
   - level: PASS
-    check: "All completed tasks have episodic summaries"
-  - level: PASS
-    check: "All 31 episodic summaries have quality content"
+    check: "All 33 episodic summaries have quality content"
