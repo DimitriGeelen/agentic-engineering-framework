@@ -13,7 +13,7 @@ agents:
   supporting: []
 created: 2026-02-13T18:19:25Z
 last_update: 2026-02-13T22:00:00Z
-date_finished: null
+date_finished: 2026-02-13T21:00:05Z
 ---
 
 # T-011: Define practice graduation criteria

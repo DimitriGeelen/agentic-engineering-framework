@@ -68,81 +68,89 @@ Actions taken:
 
 ---
 
-## Current State (2026-02-13)
+## Current State (2026-02-14)
 
 ### What Exists
 
 | Component | Status |
 |-----------|--------|
 | Directives (constitutional principles) | Defined |
-| Task System (specification) | Defined |
+| Task System (specification + enforcement) | Operational |
 | Enforcement Config (specification) | Defined |
-| Task Structure (`.tasks/`) | Created |
+| Task Structure (`.tasks/`) | Active — 35 completed tasks |
 | Metrics Script | Working |
-| First Task (T-001) | In progress |
-| First Practice (P-001) | Captured |
+| Practices | 7 captured (P-001 through P-007) |
+| Git Traceability | 90% of commits reference tasks |
+| Agents | 8 operational: audit, context, git, handover, healing, resume, task-create, session-capture |
+| `fw` CLI | Operational — unified wrapper for all agents |
+| Context Fabric | Operational — working, project, and episodic memory |
+| Healing Loop | Operational — diagnose, resolve, pattern extraction |
+| Experiment Protocol | Tested — E-002 through E-005 completed |
 
 ### What's Measurable Now
 
 ```
-- Task count (active/completed)
+- Task count (active/completed): 35 completed
 - Task status distribution
-- Git commit traceability (% with task ref)
+- Git commit traceability: 90%
 - Task file modification recency
+- Quality metrics (via audit agent)
+- Episodic summary quality scores
+- Practice count and coverage
+- Context Fabric state (working/project/episodic memory)
+- Healing pattern library size
 ```
 
 ### What's NOT Measurable Yet
 
 ```
-- Whether task content is meaningful (quality vs. existence)
-- Whether the framework improves outcomes
-- Learning loop effectiveness
-- Enforcement tier compliance (no enforcement tooling)
-- Whether failures actually lead to learning
+- Whether the framework improves outcomes across different projects
+- Long-term learning loop effectiveness (multi-project)
+- Cross-team adoption friction
+- Framework overhead vs. productivity gains (quantified)
 ```
-
 ---
 
 ## Success Criteria (Evolving)
 
-We don't have final success criteria yet. We're discovering them through use.
+We are discovering success criteria through use. Stages 1-2 are achieved; Stage 3 is in progress.
 
-### Stage 1: Adoption (Current)
+### Stage 1: Adoption (Achieved)
 > Is the system being used at all?
 
 | Metric | Target | Current |
 |--------|--------|---------|
 | `.tasks/` exists | Yes | Yes |
-| Active tasks > 0 | Yes | 1 |
-| Commits with task refs | > 50% | 66% |
+| Active tasks > 0 | Yes | Yes |
+| Commits with task refs | > 50% | 90% |
 
-### Stage 2: Engagement (Next)
+### Stage 2: Engagement (Achieved)
 > Is it being used meaningfully?
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Tasks completed | ≥ 3 | 0 |
+| Tasks completed | >= 3 | 35 |
 | Tasks with Updates entries | 100% | 100% |
-| Practices extracted | ≥ 2 | 1 |
+| Practices extracted | >= 2 | 7 |
 
-### Stage 3: Effectiveness (Future)
+### Stage 3: Effectiveness (In Progress)
 > Is it actually helping?
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Rework rate | Decreasing | Unknown |
-| Time in "issues" status | Decreasing | Unknown |
-| Learnings applied from past tasks | Increasing | Unknown |
+| Rework rate | Decreasing | Observed — healing loop captures patterns |
+| Time in "issues" status | Decreasing | Improving — healing agent accelerates recovery |
+| Learnings applied from past tasks | Increasing | Yes — practices and patterns actively referenced |
+| Context survives session boundaries | Yes | Yes — handover + Context Fabric operational |
 
-### Stage 4: Antifragility (Aspirational)
+### Stage 4: Antifragility (Emerging)
 > Does it get stronger under stress?
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| Novel failures lead to new practices | Yes | Unknown |
-| Recovery time improves over similar failures | Yes | Unknown |
-| Framework evolves based on usage friction | Yes | Unknown |
-
+| Novel failures lead to new practices | Yes | Yes — 7 practices extracted from real failures |
+| Recovery time improves over similar failures | Yes | Emerging — healing pattern library growing |
+| Framework evolves based on usage friction | Yes | Yes — agents and CLI created from friction |
 ---
 
 ## Open Questions

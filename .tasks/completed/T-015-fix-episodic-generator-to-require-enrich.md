@@ -13,7 +13,7 @@ agents:
   supporting: []
 created: 2026-02-13T21:21:25Z
 last_update: 2026-02-13T22:25:00Z
-date_finished: null
+date_finished: 2026-02-13T21:26:09Z
 ---
 
 # T-015: Fix episodic generator to require enrichment

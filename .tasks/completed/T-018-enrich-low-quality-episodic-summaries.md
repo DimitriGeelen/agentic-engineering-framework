@@ -13,7 +13,7 @@ agents:
   supporting: []
 created: 2026-02-13T21:21:40Z
 last_update: 2026-02-13T21:58:00Z
-date_finished: null
+date_finished: 2026-02-13T22:02:06Z
 ---
 
 # T-018: Enrich low-quality episodic summaries
