@@ -134,6 +134,7 @@ LYAML
         claude)
             generate_claude_md "$target_dir"
             echo -e "  ${GREEN}OK${NC}  CLAUDE.md"
+            generate_claude_code_config "$target_dir"
             ;;
         cursor)
             generate_cursorrules "$target_dir"
@@ -237,6 +238,102 @@ fw handover --commit                 # End-of-session handover
 **Start:** \`fw context init\` → read handover → \`fw context focus T-XXX\`
 **End:** session capture → \`fw handover --commit\`
 CMDEOF
+}
+
+generate_claude_code_config() {
+    local dir="$1"
+
+    # --- .claude/settings.json (PostToolUse hook for context protection) ---
+    mkdir -p "$dir/.claude/commands"
+
+    if [ ! -f "$dir/.claude/settings.json" ] || [ "$force" = true ]; then
+        cat > "$dir/.claude/settings.json" << 'SJSON'
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__FRAMEWORK_ROOT__/agents/context/checkpoint.sh post-tool"
+          }
+        ]
+      }
+    ]
+  }
+}
+SJSON
+        # Replace placeholder with actual framework path
+        sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (PostToolUse hook)"
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
+    fi
+
+    # --- .claude/commands/resume.md (project-specific /resume) ---
+    if [ ! -f "$dir/.claude/commands/resume.md" ] || [ "$force" = true ]; then
+        cat > "$dir/.claude/commands/resume.md" << 'RESUME'
+# /resume - Context Recovery for Agentic Engineering Framework
+
+When the user says `/resume`, "pick up", or "continue", execute this workflow.
+
+## Step 1: Gather State
+
+Run these in parallel:
+
+1. Read `.context/handovers/LATEST.md`
+2. Run `git status --short` and `git log --oneline -5`
+3. List `.tasks/active/` and extract task IDs, names, and statuses from frontmatter
+4. Check tool counter: `cat .context/working/.tool-counter`
+5. Check web server: `curl -sf http://localhost:3000/ > /dev/null && echo "running" || echo "stopped"`
+
+## Step 2: Summarize
+
+Present this format (fill from gathered data):
+
+```
+## Context Restored
+
+**Last Handover:** {session_id} ({timestamp})
+**Last Commit:** {hash} - {message}
+**Branch:** {branch}
+
+### Where We Are
+{paste the "Where We Are" section from LATEST.md}
+
+### Active Tasks
+- {T-XXX}: {name} ({status})
+
+### Current State
+- Git: {clean/N uncommitted files}
+- Web UI: {running on :3000 / stopped}
+- Tool counter: {N} (P-009)
+
+### Suggested Action
+{paste from LATEST.md "Suggested First Action" section}
+```
+
+## Step 3: Offer Next Steps
+
+List the logical next actions as plain text (numbered). Derive from:
+- The handover's "Suggested First Action"
+- Any tasks with status `started-work`
+- Uncommitted changes that need attention
+
+Then ask: "What would you like to work on?"
+
+## Rules
+
+- Do NOT use AskUserQuestion (may be blocked in dontAsk mode) — use plain text
+- Keep output concise — no commentary
+- If LATEST.md has unfilled `[TODO]` sections, warn about stale handover
+- If tool counter > 0 at session start, the PostToolUse hook is working
+RESUME
+        echo -e "  ${GREEN}OK${NC}  .claude/commands/resume.md"
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  .claude/commands/resume.md already exists"
+    fi
 }
 
 generate_cursorrules() {

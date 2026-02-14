@@ -66,6 +66,9 @@ reminders:
   - "Create handover before ending session"
 EOF
 
+    # Reset tool counter (P-009 context protection)
+    echo "0" > "$CONTEXT_DIR/working/.tool-counter"
+
     echo -e "${GREEN}=== Session Initialized ===${NC}"
     echo "Session ID: $session_id"
     echo "Start time: $timestamp"
@@ -76,4 +79,5 @@ EOF
     echo "Working memory initialized at:"
     echo "  $CONTEXT_DIR/working/session.yaml"
     echo "  $CONTEXT_DIR/working/focus.yaml"
+    echo "  $CONTEXT_DIR/working/.tool-counter (reset to 0)"
 }
