@@ -175,6 +175,17 @@ def _get_inception_checklist():
     return checklist
 
 
+def _get_pattern_summary():
+    """Count patterns by type for the dashboard."""
+    pf = _load_yaml(PROJECT_ROOT / ".context" / "project" / "patterns.yaml")
+    return {
+        "failure": len(pf.get("failure_patterns", [])),
+        "success": len(pf.get("success_patterns", [])),
+        "antifragile": len(pf.get("antifragile_patterns", [])),
+        "workflow": len(pf.get("workflow_patterns", [])),
+    }
+
+
 @bp.route("/")
 def index():
     active_dir = PROJECT_ROOT / ".tasks" / "active"
@@ -220,6 +231,7 @@ def index():
         knowledge_counts=_get_knowledge_counts(),
         traceability=_get_traceability(),
         inception_checklist=_get_inception_checklist(),
+        pattern_summary=_get_pattern_summary(),
     )
 
 

@@ -322,4 +322,40 @@
     </ul>
 </article>
 
+{# --- System Health ----------------------------------------- #}
+<article>
+    <h4 class="wt-section-title">System Health</h4>
+    <ul class="wt-pulse">
+        <li>
+            Traceability:
+            <span class="wt-pulse-value" style="color: {% if traceability >= 90 %}#2e7d32{% elif traceability >= 70 %}#f9a825{% else %}#c62828{% endif %}">{{ traceability }}%</span>
+        </li>
+        <li>
+            Knowledge:
+            <a href="{{ url_for('discovery.learnings') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <span class="wt-pulse-value">{{ knowledge_counts.learnings }}</span>L
+            </a>,
+            <a href="{{ url_for('discovery.patterns') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <span class="wt-pulse-value">{{ pattern_summary.failure + pattern_summary.success + pattern_summary.antifragile + pattern_summary.workflow }}</span>P
+            </a>,
+            <a href="{{ url_for('discovery.decisions') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <span class="wt-pulse-value">{{ knowledge_counts.decisions }}</span>D
+            </a>
+        </li>
+        <li>
+            Patterns:
+            {% if pattern_summary.failure > 0 %}
+            <span class="wt-pulse-value" style="color: #c62828;">{{ pattern_summary.failure }}</span> failure,
+            {% endif %}
+            <span class="wt-pulse-value" style="color: #2e7d32;">{{ pattern_summary.success }}</span> success,
+            <span class="wt-pulse-value" style="color: #6a1b9a;">{{ pattern_summary.antifragile }}</span> antifragile
+        </li>
+        <li>
+            <a href="{{ url_for('metrics.project_metrics') }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="font-size: 0.85rem;">Full metrics &rarr;</a>
+        </li>
+    </ul>
+</article>
+
 {% endif %}
