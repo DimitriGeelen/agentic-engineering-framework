@@ -1,0 +1,15 @@
+# Agentic Engineering Framework - Project Configuration
+#
+# Copy this file to .framework.yaml in your project root.
+# This tells fw where the framework is installed.
+#
+# Usage:
+#   cp /path/to/framework/.framework.yaml.example /your/project/.framework.yaml
+#   # Edit framework_path to point to your framework installation
+
+# Path to the framework installation (absolute path)
+framework_path: /opt/999-Agentic-Engineering-Framework
+
+# Framework version this project was initialized with
+# fw doctor warns if this differs from the installed version
+version: 1.0.0

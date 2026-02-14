@@ -1,0 +1,328 @@
+#!/bin/bash
+# fw - Agentic Engineering Framework CLI
+#
+# Single entry point for all framework operations.
+# Reads .framework.yaml from the project directory to resolve
+# FRAMEWORK_ROOT, then routes commands to the appropriate agent.
+#
+# When run from a project that uses the framework as shared tooling,
+# fw reads .framework.yaml to find the framework install path.
+# When run from inside the framework repo itself, it auto-detects.
+
+set -euo pipefail
+
+FW_VERSION="1.0.0"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+# --- Path Resolution ---
+
+FW_BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/
+find_project_root() {
+    local dir="$PWD"
+    while [ "$dir" != "/" ]; do
+        if [ -f "$dir/.framework.yaml" ] || [ -d "$dir/.tasks" ]; then
+            echo "$dir"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+# Resolve FRAMEWORK_ROOT
+resolve_framework() {
+    # If fw is inside the framework repo (bin/fw), use that
+    local candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
+    if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
+        echo "$candidate"
+        return 0
+    fi
+
+    # Otherwise, read from .framework.yaml
+    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+        local fw_path
+        fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^framework_path:[[:space:]]*//')
+        if [ -n "$fw_path" ] && [ -d "$fw_path" ] && [ -f "$fw_path/FRAMEWORK.md" ]; then
+            echo "$fw_path"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+# Resolve PROJECT_ROOT
+if [ -z "${PROJECT_ROOT:-}" ]; then
+    PROJECT_ROOT=$(find_project_root) || true
+fi
+
+# Resolve FRAMEWORK_ROOT
+FRAMEWORK_ROOT=$(resolve_framework) || true
+
+# Validate we have what we need
+if [ -z "$FRAMEWORK_ROOT" ]; then
+    echo -e "${RED}ERROR: Cannot find framework installation${NC}" >&2
+    echo "" >&2
+    echo "fw looks for the framework in two ways:" >&2
+    echo "  1. Relative to its own location (bin/fw inside framework repo)" >&2
+    echo "  2. Via .framework.yaml in your project root" >&2
+    echo "" >&2
+    echo "To fix:" >&2
+    echo "  - Run fw from inside the framework repo, OR" >&2
+    echo "  - Create .framework.yaml in your project with:" >&2
+    echo "    framework_path: /path/to/999-Agentic-Engineering-Framework" >&2
+    echo "    version: $FW_VERSION" >&2
+    exit 1
+fi
+
+# If no PROJECT_ROOT found, fall back to FRAMEWORK_ROOT (self-referential mode)
+if [ -z "$PROJECT_ROOT" ]; then
+    PROJECT_ROOT="$FRAMEWORK_ROOT"
+fi
+
+# Export for agents
+export PROJECT_ROOT
+export FRAMEWORK_ROOT
+
+# --- Agent Directory ---
+AGENTS_DIR="$FRAMEWORK_ROOT/agents"
+
+# --- Help ---
+
+show_help() {
+    echo -e "${BOLD}fw${NC} - Agentic Engineering Framework CLI v$FW_VERSION"
+    echo ""
+    echo -e "${BOLD}Usage:${NC} fw <command> [subcommand] [options]"
+    echo ""
+    echo -e "${BOLD}Commands:${NC}"
+    echo -e "  ${GREEN}audit${NC}                Run framework compliance audit"
+    echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
+    echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
+    echo -e "  ${GREEN}handover${NC}             Generate session handover document"
+    echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
+    echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
+    echo -e "  ${GREEN}task${NC} <cmd>           Task management (create)"
+    echo ""
+    echo -e "${BOLD}Utility:${NC}"
+    echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
+    echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
+    echo -e "  ${GREEN}version${NC}              Show version information"
+    echo -e "  ${GREEN}help${NC}                 Show this help"
+    echo ""
+    echo -e "${BOLD}Paths:${NC}"
+    echo "  Framework: $FRAMEWORK_ROOT"
+    echo "  Project:   $PROJECT_ROOT"
+    echo ""
+    echo -e "${BOLD}Examples:${NC}"
+    echo "  fw audit"
+    echo "  fw context init"
+    echo "  fw context focus T-005"
+    echo '  fw git commit -m "T-033: Add fw CLI wrapper"'
+    echo "  fw handover --commit"
+    echo "  fw healing diagnose T-015"
+    echo '  fw task create --name "Fix bug" --type build --owner human'
+    echo "  fw resume status"
+}
+
+show_version() {
+    echo "fw v$FW_VERSION"
+    echo "Framework: $FRAMEWORK_ROOT"
+    echo "Project:   $PROJECT_ROOT"
+
+    # Show .framework.yaml version if present
+    if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+        local pinned
+        pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+        if [ -n "$pinned" ]; then
+            echo "Pinned:    $pinned"
+            if [ "$pinned" != "$FW_VERSION" ]; then
+                echo -e "${YELLOW}WARNING: Pinned version ($pinned) differs from installed ($FW_VERSION)${NC}"
+            fi
+        fi
+    fi
+}
+
+# --- Doctor Command ---
+
+do_doctor() {
+    echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
+    echo ""
+
+    local issues=0
+    local warnings=0
+
+    # Check 1: Framework directory
+    if [ -d "$FRAMEWORK_ROOT/agents" ] && [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ]; then
+        echo -e "  ${GREEN}OK${NC}  Framework installation"
+    else
+        echo -e "  ${RED}FAIL${NC}  Framework installation - missing agents/ or FRAMEWORK.md"
+        issues=$((issues + 1))
+    fi
+
+    # Check 2: .framework.yaml (only relevant if PROJECT_ROOT != FRAMEWORK_ROOT)
+    if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
+        if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+            echo -e "  ${GREEN}OK${NC}  .framework.yaml found"
+            local pinned
+            pinned=$(grep "^version:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//')
+            if [ -n "$pinned" ] && [ "$pinned" != "$FW_VERSION" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Version mismatch: pinned=$pinned installed=$FW_VERSION"
+                warnings=$((warnings + 1))
+            fi
+        else
+            echo -e "  ${RED}FAIL${NC}  .framework.yaml missing in $PROJECT_ROOT"
+            issues=$((issues + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  .framework.yaml (running from framework repo)"
+    fi
+
+    # Check 3: Task directories
+    if [ -d "$PROJECT_ROOT/.tasks/active" ] && [ -d "$PROJECT_ROOT/.tasks/completed" ]; then
+        echo -e "  ${GREEN}OK${NC}  Task directories"
+    else
+        echo -e "  ${RED}FAIL${NC}  Task directories missing (.tasks/active, .tasks/completed)"
+        issues=$((issues + 1))
+    fi
+
+    # Check 4: Context directories
+    if [ -d "$PROJECT_ROOT/.context" ]; then
+        echo -e "  ${GREEN}OK${NC}  Context directory"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Context directory missing (.context/)"
+        warnings=$((warnings + 1))
+    fi
+
+    # Check 5: Git hooks
+    local hooks_dir="$PROJECT_ROOT/.git/hooks"
+    if [ -f "$hooks_dir/pre-commit" ] && grep -q "task-reference" "$hooks_dir/pre-commit" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Git pre-commit hook"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Git pre-commit hook not installed (run: fw git install-hooks)"
+        warnings=$((warnings + 1))
+    fi
+
+    if [ -f "$hooks_dir/pre-push" ] && grep -q "audit" "$hooks_dir/pre-push" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Git pre-push hook"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Git pre-push hook not installed (run: fw git install-hooks)"
+        warnings=$((warnings + 1))
+    fi
+
+    # Check 6: Agent scripts exist and are executable
+    local agents_ok=true
+    for agent in audit/audit.sh context/context.sh git/git.sh handover/handover.sh healing/healing.sh resume/resume.sh task-create/create-task.sh; do
+        if [ ! -x "$AGENTS_DIR/$agent" ]; then
+            echo -e "  ${RED}FAIL${NC}  Agent not executable: $agent"
+            agents_ok=false
+            issues=$((issues + 1))
+        fi
+    done
+    if [ "$agents_ok" = true ]; then
+        echo -e "  ${GREEN}OK${NC}  All agent scripts executable"
+    fi
+
+    # Summary
+    echo ""
+    if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
+        echo -e "${GREEN}All checks passed${NC}"
+    elif [ $issues -eq 0 ]; then
+        echo -e "${YELLOW}$warnings warning(s), no failures${NC}"
+    else
+        echo -e "${RED}$issues failure(s), $warnings warning(s)${NC}"
+        exit 2
+    fi
+}
+
+# --- Task Subcommand Routing ---
+
+route_task() {
+    local subcmd="${1:-}"
+    shift || true
+
+    case "$subcmd" in
+        create)
+            exec "$AGENTS_DIR/task-create/create-task.sh" "$@"
+            ;;
+        ""|help|-h|--help)
+            echo -e "${BOLD}fw task${NC} - Task management"
+            echo ""
+            echo "Subcommands:"
+            echo "  create    Create a new task"
+            echo ""
+            echo "Usage:"
+            echo '  fw task create --name "Fix bug" --type build --owner human'
+            ;;
+        *)
+            echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
+            echo "Run 'fw task help' for usage"
+            exit 1
+            ;;
+    esac
+}
+
+# --- Main Command Routing ---
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+    audit)
+        exec "$AGENTS_DIR/audit/audit.sh" "$@"
+        ;;
+    context)
+        exec "$AGENTS_DIR/context/context.sh" "$@"
+        ;;
+    git)
+        exec "$AGENTS_DIR/git/git.sh" "$@"
+        ;;
+    handover)
+        exec "$AGENTS_DIR/handover/handover.sh" "$@"
+        ;;
+    healing)
+        exec "$AGENTS_DIR/healing/healing.sh" "$@"
+        ;;
+    resume)
+        exec "$AGENTS_DIR/resume/resume.sh" "$@"
+        ;;
+    task)
+        route_task "$@"
+        ;;
+    doctor)
+        do_doctor "$@"
+        ;;
+    metrics)
+        if [ -f "$PROJECT_ROOT/metrics.sh" ]; then
+            exec "$PROJECT_ROOT/metrics.sh" "$@"
+        elif [ -f "$FRAMEWORK_ROOT/metrics.sh" ]; then
+            exec "$FRAMEWORK_ROOT/metrics.sh" "$@"
+        else
+            echo -e "${RED}ERROR: metrics.sh not found${NC}" >&2
+            exit 1
+        fi
+        ;;
+    version|-v|--version)
+        show_version
+        ;;
+    help|-h|--help)
+        show_help
+        ;;
+    "")
+        show_help
+        exit 1
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $cmd${NC}" >&2
+        echo "Run 'fw help' for usage" >&2
+        exit 1
+        ;;
+esac

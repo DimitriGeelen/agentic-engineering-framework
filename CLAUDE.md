@@ -113,9 +113,26 @@ Graduated response from tactical to structural:
 3. **C** — Improve tooling
 4. **D** — Change ways of working
 
+## fw CLI (Primary Interface)
+
+The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
+
+```bash
+fw help              # Show all commands
+fw version           # Show version and paths
+fw doctor            # Check framework health
+fw audit             # Run compliance audit
+fw context init      # Initialize session
+fw git commit -m "T-XXX: description"
+fw handover --commit # Generate and commit handover
+fw task create --name "Fix bug" --type build --owner human
+```
+
+**Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
+
 ## Agents
 
-The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
+The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance). All agents can be invoked directly or via `fw`.
 
 ### Task Creation Agent
 
@@ -282,41 +299,42 @@ Synthesizes current state from:
 ## Session Start Protocol
 
 **Before beginning any work:**
-1. Initialize context: `./agents/context/context.sh init`
+1. Initialize context: `fw context init`
 2. Read `.context/handovers/LATEST.md` to understand current state
 3. Review the "Suggested First Action" section
-4. Set focus: `./agents/context/context.sh focus T-XXX`
-5. Run `./metrics.sh` to see project status
+4. Set focus: `fw context focus T-XXX`
+5. Run `fw metrics` to see project status
 6. If handover feedback section exists, fill it in
 
 **After context compaction (mid-session recovery):**
-1. Run resume: `./agents/resume/resume.sh status`
-2. Sync working memory: `./agents/resume/resume.sh sync`
+1. Run resume: `fw resume status`
+2. Sync working memory: `fw resume sync`
 3. Continue from recommendations
 
 ## Quick Reference
 
-| Action | Command |
-|--------|---------|
-| Create task | `./agents/task-create/create-task.sh` |
-| Commit changes | `./agents/git/git.sh commit -m "T-XXX: description"` |
-| Task-aware status | `./agents/git/git.sh status` |
-| Install git hooks | `./agents/git/git.sh install-hooks` |
-| Run audit | `./agents/audit/audit.sh` |
-| View metrics | `./metrics.sh` |
-| Initialize session | `./agents/context/context.sh init` |
-| Set focus | `./agents/context/context.sh focus T-XXX` |
-| Context status | `./agents/context/context.sh status` |
-| Add learning | `./agents/context/context.sh add-learning "..." --task T-XXX` |
-| Diagnose issue | `./agents/healing/healing.sh diagnose T-XXX` |
-| Resolve issue | `./agents/healing/healing.sh resolve T-XXX --mitigation "..."` |
-| Show patterns | `./agents/healing/healing.sh patterns` |
-| Resume state | `./agents/resume/resume.sh status` |
-| Sync working memory | `./agents/resume/resume.sh sync` |
-| Session capture | Review `agents/session-capture/AGENT.md` checklist |
-| Generate handover | `./agents/handover/handover.sh` |
-| Handover + commit | `./agents/handover/handover.sh --commit` |
-| Read last handover | `cat .context/handovers/LATEST.md` |
+| Action | fw command | Direct |
+|--------|-----------|--------|
+| Create task | `fw task create` | `./agents/task-create/create-task.sh` |
+| Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
+| Task-aware status | `fw git status` | `./agents/git/git.sh status` |
+| Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
+| Run audit | `fw audit` | `./agents/audit/audit.sh` |
+| Health check | `fw doctor` | _(fw only)_ |
+| View metrics | `fw metrics` | `./metrics.sh` |
+| Initialize session | `fw context init` | `./agents/context/context.sh init` |
+| Set focus | `fw context focus T-XXX` | `./agents/context/context.sh focus T-XXX` |
+| Context status | `fw context status` | `./agents/context/context.sh status` |
+| Add learning | `fw context add-learning "..."` | `./agents/context/context.sh add-learning "..."` |
+| Diagnose issue | `fw healing diagnose T-XXX` | `./agents/healing/healing.sh diagnose T-XXX` |
+| Resolve issue | `fw healing resolve T-XXX` | `./agents/healing/healing.sh resolve T-XXX` |
+| Show patterns | `fw healing patterns` | `./agents/healing/healing.sh patterns` |
+| Resume state | `fw resume status` | `./agents/resume/resume.sh status` |
+| Sync working memory | `fw resume sync` | `./agents/resume/resume.sh sync` |
+| Session capture | Review `agents/session-capture/AGENT.md` checklist | |
+| Generate handover | `fw handover` | `./agents/handover/handover.sh` |
+| Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
+| Read last handover | `cat .context/handovers/LATEST.md` | |
 
 ## Session End Protocol
 
@@ -324,9 +342,9 @@ Synthesizes current state from:
 1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
-4. Generate handover: `./agents/handover/handover.sh`
+4. Generate handover: `fw handover`
 5. Fill in the [TODO] sections in the handover document
 6. Commit all changes with task references
-7. Run `./metrics.sh` to verify state
+7. Run `fw metrics` to verify state
 
 **Do not end a session without generating a handover.**
