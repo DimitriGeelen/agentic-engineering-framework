@@ -72,6 +72,7 @@ from web.blueprints.timeline import bp as timeline_bp
 from web.blueprints.discovery import bp as discovery_bp
 from web.blueprints.quality import bp as quality_bp
 from web.blueprints.session import bp as session_bp
+from web.blueprints.metrics import bp as metrics_bp
 
 app.register_blueprint(core_bp)
 app.register_blueprint(tasks_bp)
@@ -79,6 +80,7 @@ app.register_blueprint(timeline_bp)
 app.register_blueprint(discovery_bp)
 app.register_blueprint(quality_bp)
 app.register_blueprint(session_bp)
+app.register_blueprint(metrics_bp)
 
 # ---------------------------------------------------------------------------
 # Error handlers

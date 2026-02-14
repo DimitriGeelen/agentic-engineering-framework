@@ -1,0 +1,164 @@
+<style>
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 768px) {
+        .metrics-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .metrics-wide {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    @media (max-width: 768px) {
+        .metrics-wide { grid-template-columns: 1fr; }
+    }
+    .metric-card { text-align: center; }
+    .metric-card .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .metric-card .metric-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .metric-card .metric-sub {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.25rem;
+    }
+    .gauge-bar {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--pico-muted-border-color);
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    .gauge-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s;
+    }
+    .gauge-green { background: #2e7d32; }
+    .gauge-yellow { background: #f9a825; }
+    .gauge-red { background: #c62828; }
+    .commit-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .commit-list li {
+        padding: 0.4em 0;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.875rem;
+        font-family: monospace;
+    }
+    .commit-list li:last-child { border-bottom: none; }
+    .commit-hash { color: var(--pico-muted-color); }
+    .commit-traced { font-weight: 600; }
+    .commit-untraced { color: var(--pico-muted-color); }
+    .stale-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .stale-list li {
+        padding: 0.4em 0;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.875rem;
+    }
+    .stale-list li:last-child { border-bottom: none; }
+    .wt-section-title {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--pico-muted-color);
+    }
+</style>
+
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>{{ page_title }}</h1>
+        <p>Project health at a glance.</p>
+    </div>
+    <a role="button" class="outline" style="font-size: 0.85rem;"
+       hx-get="/metrics" hx-target="#content" hx-swap="innerHTML">Refresh</a>
+</div>
+
+<!-- Top row: 4 metric cards -->
+<div class="metrics-grid">
+    <article class="metric-card">
+        <div class="metric-value">{{ active_count }}</div>
+        <div class="metric-label">Active Tasks</div>
+        <div class="metric-sub">{{ completed_count }} completed</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-value">{{ traceability }}%</div>
+        <div class="metric-label">Traceability</div>
+        <div class="gauge-bar">
+            <div class="gauge-fill {% if traceability >= 90 %}gauge-green{% elif traceability >= 70 %}gauge-yellow{% else %}gauge-red{% endif %}"
+                 style="width: {{ traceability }}%;"></div>
+        </div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-value">{{ desc_quality }}%</div>
+        <div class="metric-label">Description Quality</div>
+        <div class="metric-sub">{{ ac_coverage }}% AC coverage</div>
+        <div class="gauge-bar">
+            <div class="gauge-fill {% if desc_quality >= 90 %}gauge-green{% elif desc_quality >= 70 %}gauge-yellow{% else %}gauge-red{% endif %}"
+                 style="width: {{ desc_quality }}%;"></div>
+        </div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-value">{{ knowledge.learnings + knowledge.patterns + knowledge.decisions + knowledge.practices }}</div>
+        <div class="metric-label">Knowledge Items</div>
+        <div class="metric-sub">{{ knowledge.learnings }}L {{ knowledge.patterns }}P {{ knowledge.decisions }}D {{ knowledge.practices }}Pr</div>
+    </article>
+</div>
+
+<!-- Bottom row: commits + stale tasks -->
+<div class="metrics-wide">
+    <article>
+        <h4 class="wt-section-title">Recent Commits</h4>
+        {% if commits %}
+        <ul class="commit-list">
+            {% for c in commits %}
+            <li>
+                <span class="commit-hash">{{ c.hash }}</span>
+                <span class="{{ 'commit-traced' if c.traced else 'commit-untraced' }}">{{ c.message }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--pico-muted-color); font-style: italic;">No commits found.</p>
+        {% endif %}
+    </article>
+
+    <article>
+        <h4 class="wt-section-title">Needs Attention</h4>
+        {% if stale_tasks %}
+        <ul class="stale-list">
+            {% for t in stale_tasks %}
+            <li>
+                <a href="/tasks/{{ t.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <strong>{{ t.id }}</strong>
+                </a>
+                {{ t.name }} — <small style="color: var(--pico-del-color);">{{ t.reason }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: var(--pico-muted-color); font-style: italic;">All tasks healthy.</p>
+        {% endif %}
+    </article>
+</div>
