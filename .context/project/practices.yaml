@@ -72,3 +72,13 @@ practices:
     origin_date: 2026-02-13
     status: active
     applications: 0
+
+  - id: P-008
+    name: "Tasks Must Carry Executable Context"
+    derived_from: [D2, D1]
+    description: "A task assigned to an agent must contain enough context for the agent to execute without rediscovering the design: authority link, relevant sections, extracted key decisions, and concrete acceptance criteria."
+    anti_pattern: "Creating tasks with empty Design/Specification Records and expecting agents to figure out what to build."
+    origin_task: T-047
+    origin_date: 2026-02-14
+    status: active
+    applications: 8

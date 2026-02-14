@@ -20,11 +20,22 @@ date_finished: null
 
 ## Design Record
 
-[Architecture decisions, approach rationale — inline or link to artifact]
+<!-- P-008: Tasks Must Carry Executable Context.
+     For substantial tasks (build, specification), include:
+     - **Design authority:** link to the authoritative design/spec document
+     - **Relevant sections:** specific section names within that document
+     - **Key decisions:** extracted decisions relevant to THIS task (3-7 bullets)
+     - **Dependencies:** T-XXX references to prerequisite tasks
+     Small fixes and refactors can use a single sentence of context. -->
 
 ## Specification Record
 
-[Requirements, acceptance criteria — inline or link to artifact]
+<!-- P-008: Define "done" clearly.
+     For substantial tasks, include:
+     - **Acceptance Criteria** as checkbox items: - [ ] criterion
+     - Concrete, verifiable conditions (not vague goals)
+     - Performance or quality targets if applicable
+     Small fixes can state the expected behavior in one line. -->
 
 ## Test Files
 
