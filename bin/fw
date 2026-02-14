@@ -115,6 +115,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project"
+    echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
@@ -136,6 +137,7 @@ show_help() {
     echo '  fw task create --name "Fix bug" --type build --owner human'
     echo "  fw resume status"
     echo "  fw init /path/to/project --provider claude"
+    echo "  fw harvest /path/to/project --dry-run"
 }
 
 show_version() {
@@ -305,6 +307,10 @@ case "$cmd" in
     init)
         source "$FW_LIB_DIR/init.sh"
         do_init "$@"
+        ;;
+    harvest)
+        source "$FW_LIB_DIR/harvest.sh"
+        do_harvest "$@"
         ;;
     doctor)
         do_doctor "$@"
