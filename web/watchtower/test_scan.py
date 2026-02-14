@@ -400,3 +400,72 @@ class TestChallengeRules:
         assert isinstance(framework_recommends, list)
         assert isinstance(opportunities, list)
         assert isinstance(risks, list)
+
+
+class TestPrioritizer:
+    """Test work queue prioritization."""
+
+    def test_issues_ranked_first(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.prioritizer import prioritize_work_queue
+        inputs = gather_inputs(project, project)
+        queue = prioritize_work_queue(inputs)
+        assert len(queue) >= 2
+        # T-003 (issues) should be ranked above T-001 (started-work)
+        ids = [item["task_id"] for item in queue]
+        assert ids.index("T-003") < ids.index("T-001")
+
+    def test_work_queue_has_required_fields(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.prioritizer import prioritize_work_queue
+        inputs = gather_inputs(project, project)
+        queue = prioritize_work_queue(inputs)
+        for item in queue:
+            assert "task_id" in item
+            assert "name" in item
+            assert "status" in item
+            assert "priority" in item
+            assert "priority_factors" in item
+
+    def test_session_continuity_boost(self, project):
+        """Tasks from last handover get priority boost."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.prioritizer import prioritize_work_queue
+        inputs = gather_inputs(project, project)
+        queue = prioritize_work_queue(inputs)
+        # T-001 is in tasks_touched from handover
+        t001 = next(q for q in queue if q["task_id"] == "T-001")
+        factors = [f["rule"] for f in t001["priority_factors"]]
+        assert "session_continuity" in factors
+
+    def test_empty_tasks_returns_empty(self, tmp_path):
+        from web.watchtower.prioritizer import prioritize_work_queue
+        inputs = {"active_tasks": [], "handover": None}
+        queue = prioritize_work_queue(inputs)
+        assert queue == []
+
+
+class TestFeedback:
+    """Test antifragility and feedback metrics."""
+
+    def test_computes_pattern_counts(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.feedback import compute_feedback
+        inputs = gather_inputs(project, project)
+        result = compute_feedback(inputs)
+        assert "patterns_total" in result
+        assert result["patterns_total"] >= 2
+
+    def test_computes_practice_adoption(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.feedback import compute_feedback
+        inputs = gather_inputs(project, project)
+        result = compute_feedback(inputs)
+        assert "dead_letter_practices" in result
+
+    def test_scan_accuracy_without_previous(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.feedback import compute_feedback
+        inputs = gather_inputs(project, project)
+        result = compute_feedback(inputs)
+        assert "scan_accuracy" in result
