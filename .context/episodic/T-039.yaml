@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-039: Add observation inbox (fw note)
+# ============================================================================
+# Generated: 2026-02-14T09:35:00Z
+
+task_id: T-039
+task_name: "Add observation inbox (fw note)"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T09:20:55Z
+completed: 2026-02-14T09:20:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary
+summary: |
+  Built a lightweight observation capture system (fw note) that fills the gap
+  between heavyweight task creation and losing observations. Core insight:
+  separate the moment of observation from the moment of classification.
+  Captures text with auto-detected context task, supports tags/urgency flags.
+  Triage workflow enables promote-to-task or dismiss decisions later.
+
+# Key outcomes
+outcomes:
+  - "fw note 'text' captures observations in <2 seconds"
+  - "Auto-detects focus task from focus.yaml for context"
+  - "fw note list/count/triage for inbox management"
+  - "fw note promote OBS-NNN creates task from observation"
+  - "fw note dismiss OBS-NNN with reason tracking"
+  - "5-agent review unanimously validated the approach"
+
+# What worked well
+successes:
+  - description: "GTD-inspired zero-classification inbox"
+    why: "Eliminates friction at capture time — classify later during triage"
+  - description: "Auto-context from focus.yaml"
+    why: "No need to specify --task manually when focus is set"
+  - description: "5-agent review before building"
+    why: "Confirmed the gap was real and the solution appropriate before investing effort"
+
+# Challenges encountered
+challenges:
+  - description: "Existing skeleton features (notes: [] in session.yaml, candidates: [] in learnings.yaml) never wired up"
+    resolution: "Built observation inbox as a separate, purpose-built system rather than retrofitting skeletons"
+    learning: "Skeleton features without enforcement become dead code — build complete or don't build at all"
+
+# Decisions made during this task
+decisions:
+  - decision: "fw note as top-level command (not fw observe or fw context note)"
+    rationale: "High-frequency action deserves the shortest path"
+    alternatives_rejected: ["fw observe (too long)", "fw context note (buried)"]
+  - decision: "Observation inbox separate from tasks"
+    rationale: "Observations are pre-task signals, not commitments — different lifecycle"
+    alternatives_rejected: ["Extend task system with 'draft' status"]
+  - decision: "YAML file storage (.context/inbox.yaml)"
+    rationale: "Git-tracked, human-readable, consistent with framework patterns"
+    alternatives_rejected: ["SQLite (overkill)", "plain text (no structure)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "agents/observe/observe.sh"
+    - ".context/inbox.yaml"
+  modified:
+    - "bin/fw (added note command routing)"
+
+# Related tasks
+related_tasks:
+  blocked: [T-040]
+  absorbed: []
+  spawned: [T-040]
+
+# Tags for retrieval
+tags: [observation, inbox, capture, lightweight, gtd, usability]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-039-add-observation-inbox-fw-note.md
+generated_by: claude-code
