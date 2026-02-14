@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-035: Create harvest.sh for cross-project learning
+# ============================================================================
+# Generated: 2026-02-14T09:04:30Z
+# Enriched: 2026-02-14
+
+task_id: T-035
+task_name: "Create harvest.sh for cross-project learning"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T23:45:28Z
+completed: 2026-02-14T09:01:23Z
+duration_days: 1
+updates_count: 2
+
+# Summary
+summary: |
+  Built lib/harvest.sh for the `fw harvest` command, which pulls learnings, patterns, and decisions
+  from a project's .context/ back to the framework with provenance tracking. This closes the
+  cross-project learning loop — projects generate knowledge through work, and harvest promotes
+  reusable insights back to the framework for all future projects to benefit from. The graduation
+  pipeline concept (local -> candidate -> practice) was designed but not yet enforced.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "`fw harvest --dry-run` shows what would be harvested"
+  - "Detects new patterns, learnings, decisions"
+  - "Correctly identifies duplicates via string matching"
+  - "Refuses to harvest from framework itself"
+  - "Appends with provenance (harvested_from, harvest_date) when not dry-run"
+  - "`--verbose` shows duplicates explicitly"
+  - "Harvest log maintained at .context/harvest.log"
+
+# What worked well
+successes:
+  - description: "Simple string-matching deduplication with grep -F"
+    why: "Exact-match deduplication is sufficient for the current scale and avoids introducing fuzzy matching complexity prematurely."
+  - description: "Provenance tracking on harvested items"
+    why: "Knowing which project a learning came from enables traceability and helps evaluate whether a pattern is truly universal or project-specific."
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "Use grep -F string matching for deduplication"
+    rationale: "Simple, effective for exact matches at current scale; fuzzy matching can be added later if needed"
+    alternatives_rejected: ["Fuzzy matching", "Hash-based dedup"]
+  - decision: "Decisions are reported but not auto-promoted"
+    rationale: "Decisions are inherently project-specific (architecture choices, tool selections) and should not be blindly copied to the framework"
+    alternatives_rejected: ["Auto-promote all item types equally"]
+  - decision: "Graduation pipeline designed but not enforced"
+    rationale: "Requires multi-project tracking metadata that does not exist yet; design captures intent for future implementation"
+    alternatives_rejected: ["Implement full graduation tracking immediately"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "lib/harvest.sh"
+  modified:
+    - "bin/fw (added harvest command routing)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cross-project, learning, harvest, fw-cli, provenance, graduation-pipeline]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-035-create-harvestsh-for-cross-project-learn.md
+generated_by: context-agent

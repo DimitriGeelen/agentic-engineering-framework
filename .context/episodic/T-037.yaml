@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-037: Create fw doctor health check command
+# ============================================================================
+# Generated: 2026-02-14T09:04:30Z
+# Enriched: 2026-02-14
+
+task_id: T-037
+task_name: "Create fw doctor health check command"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-13T23:45:32Z
+completed: 2026-02-14T09:04:14Z
+duration_days: 1
+updates_count: 1
+
+# Summary
+summary: |
+  This task was absorbed into T-033 (fw CLI wrapper). The `fw doctor` command was implemented as an
+  embedded `do_doctor` function in bin/fw rather than a separate agent, since doctor is a diagnostic
+  tool, not a workflow. It performs 7 health checks (framework installation, .framework.yaml,
+  version pinning, task directories, context directory, git hooks, agent executability) with
+  OK/WARN/FAIL output and appropriate exit codes.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "7 health checks implemented and working"
+  - "Exit code 0 for pass/warnings-only, exit code 2 for failures"
+  - "Checks: framework install, .framework.yaml, version pin, task dirs, context dir, git hooks, agent scripts"
+  - "Embedded in bin/fw as do_doctor function"
+
+# What worked well
+successes:
+  - description: "Absorbing doctor into the fw CLI rather than building a separate agent"
+    why: "Doctor is a diagnostic tool that needs to be always available with zero setup. Embedding it in bin/fw means it works immediately after framework installation without any additional agent configuration."
+  - description: "Checking commit-msg hook (not pre-commit) for task traceability"
+    why: "The framework enforces task references in commit messages via the commit-msg hook, so that is the correct hook to validate during health checks."
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "Embed doctor in bin/fw as a function, not a separate agent"
+    rationale: "Doctor is a diagnostic tool, not a workflow — it does not need AGENT.md guidance or task lifecycle management"
+    alternatives_rejected: ["Separate agents/doctor/ agent directory", "Standalone lib/doctor.sh"]
+  - decision: "Absorb T-037 into T-033 (fw CLI wrapper)"
+    rationale: "Doctor was naturally implemented as part of building the fw CLI; creating a separate task artifact would be redundant"
+    alternatives_rejected: ["Keep T-037 as independent implementation"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "bin/fw (do_doctor function added)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed:
+    - "T-033 (fw CLI wrapper — doctor was built as part of this task)"
+  spawned: []
+
+# Tags for retrieval
+tags: [doctor, health-check, fw-cli, absorbed, diagnostics]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-037-create-fw-doctor-health-check-command.md
+generated_by: context-agent
