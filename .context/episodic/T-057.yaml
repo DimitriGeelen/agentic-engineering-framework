@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-057: Add automated test suite for web UI and CLI
+# ============================================================================
+# Generated: 2026-02-14T15:06:27Z | Enriched: 2026-02-14T15:07:00Z
+
+task_id: T-057
+task_name: "Add automated test suite for web UI and CLI"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T15:00:00Z
+completed: 2026-02-14T15:06:27Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Created a pytest test suite with 47 tests covering the web UI. Tests verify
+  all 10 routes return 200, htmx partial rendering returns fragments (no wrapper),
+  CSRF protection blocks requests without valid tokens, error handlers return
+  proper 404/403 pages, task detail validates IDs and blocks injection, timeline
+  API works, search returns results, all pages display real framework data, and
+  navigation is consistent across pages. Added `fw test` CLI command. All 47
+  tests pass in under 2 seconds.
+
+# Key outcomes
+outcomes:
+  - "47 tests in web/test_app.py covering 8 test classes"
+  - "fw test command added to CLI"
+  - "Tests cover: routes, htmx, CSRF, errors, task detail, timeline, data integrity, navigation"
+  - "All tests pass in 1.8 seconds"
+
+# What worked well
+successes:
+  - description: "Flask test client makes web testing straightforward"
+    why: "No need for external HTTP server — test client simulates requests in-process"
+  - description: "Parametrized tests for route coverage"
+    why: "Single test definition covers 10 routes without code duplication"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "pytest over unittest"
+    rationale: "Parametrize, fixtures, and assert rewriting make tests more readable and maintainable"
+    alternatives_rejected: ["unittest", "curl-based integration tests"]
+  - decision: "Test against real framework data, not fixtures"
+    rationale: "Integration tests catch real issues; framework has stable data to test against"
+    alternatives_rejected: ["Mock all data sources", "Create test fixtures"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "web/test_app.py"
+  modified:
+    - "bin/fw (added test command)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags:
+  - cli
+  - D2
+  - build
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-057-add-automated-test-suite-for-web-ui-and-.md
+generated_by: context-agent
