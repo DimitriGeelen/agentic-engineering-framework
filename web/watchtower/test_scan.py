@@ -42,12 +42,13 @@ def project(tmp_path):
                 created=now - timedelta(days=10),
                 last_update=now - timedelta(days=8))
 
-    # Completed tasks (for velocity calculation)
+    # Completed tasks (for velocity calculation — ~2-day durations so
+    # stale threshold = max(7, int(2*6)) = 12 days, allowing T-002 to trigger)
     for i in range(4, 9):
         _write_task(p, f"T-{i:03d}", f"Completed Task {i}", "work-completed",
-                    created=now - timedelta(days=20 + i),
-                    last_update=now - timedelta(days=10 + i),
-                    date_finished=(now - timedelta(days=10 + i)).isoformat())
+                    created=now - timedelta(days=4 + i),
+                    last_update=now - timedelta(days=2 + i),
+                    date_finished=(now - timedelta(days=2 + i)).isoformat())
 
     # Patterns
     _write_yaml(p / ".context" / "project" / "patterns.yaml", {
@@ -274,3 +275,128 @@ class TestWriteScan:
 
         data = yaml.safe_load(latest.read_text())
         assert data["scan_id"] == "SC-test"
+
+
+class TestChallengeRules:
+    """Test challenge/issue detection rules."""
+
+    def test_stale_task_detected(self, project):
+        """T-002 has 20 days since update, should be flagged."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_stale_tasks
+        inputs = gather_inputs(project, project)
+        results = check_stale_tasks(inputs)
+        ids = [r["summary"] for r in results]
+        assert any("T-002" in s for s in ids)
+
+    def test_non_stale_task_not_detected(self, project):
+        """T-001 has 2 days since update, should not be flagged."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_stale_tasks
+        inputs = gather_inputs(project, project)
+        results = check_stale_tasks(inputs)
+        summaries = " ".join(r["summary"] for r in results)
+        assert "T-001" not in summaries
+
+    def test_stale_task_has_correct_structure(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_stale_tasks
+        inputs = gather_inputs(project, project)
+        results = check_stale_tasks(inputs)
+        assert len(results) >= 1
+        item = results[0]
+        assert "id" in item
+        assert "type" in item
+        assert item["type"] == "stale_task"
+        assert "summary" in item
+        assert "recommended_action" in item
+        assert "priority" in item
+        assert "priority_factors" in item
+
+    def test_unresolved_healing_detected(self, project):
+        """T-003 is in issues status, should be flagged."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_unresolved_healing
+        inputs = gather_inputs(project, project)
+        results = check_unresolved_healing(inputs)
+        assert any("T-003" in r["summary"] for r in results)
+
+    def test_traceability_drift_detected(self, project):
+        """Provide git log with untraceable commits."""
+        from web.watchtower.rules import check_traceability_drift
+        inputs = {
+            "git_log": [
+                "abc1234 Fix something",
+                "def5678 Fix another thing",
+                "ghi9012 T-001: proper commit",
+            ]
+        }
+        results = check_traceability_drift(inputs)
+        assert len(results) >= 1
+        assert results[0]["type"] == "traceability_drift"
+
+    def test_traceability_no_drift(self, project):
+        """All commits have task refs — no drift."""
+        from web.watchtower.rules import check_traceability_drift
+        inputs = {
+            "git_log": [
+                "abc1234 T-001: Fix something",
+                "def5678 T-002: Fix another",
+            ]
+        }
+        results = check_traceability_drift(inputs)
+        assert len(results) == 0
+
+    def test_audit_regression_detected(self):
+        """Current audit worse than previous."""
+        from web.watchtower.rules import check_audit_regression
+        inputs = {
+            "audits": [
+                {"summary": {"pass": 15, "warn": 3, "fail": 2}},
+                {"summary": {"pass": 18, "warn": 2, "fail": 0}},
+            ]
+        }
+        results = check_audit_regression(inputs)
+        assert len(results) >= 1
+        assert results[0]["type"] == "audit_regression"
+
+    def test_audit_no_regression(self):
+        """Current audit same or better."""
+        from web.watchtower.rules import check_audit_regression
+        inputs = {
+            "audits": [
+                {"summary": {"pass": 20, "warn": 1, "fail": 0}},
+                {"summary": {"pass": 18, "warn": 2, "fail": 0}},
+            ]
+        }
+        results = check_audit_regression(inputs)
+        assert len(results) == 0
+
+    def test_gap_trigger_detected(self, project):
+        """G-002 has trigger_check at 85% — should flag."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_gap_triggers
+        inputs = gather_inputs(project, project)
+        results = check_gap_triggers(inputs)
+        assert any("G-002" in r["summary"] for r in results)
+
+    def test_novel_failure_detected(self, project):
+        """T-003 is in issues but its body doesn't match any known pattern."""
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import check_novel_failures
+        inputs = gather_inputs(project, project)
+        results = check_novel_failures(inputs)
+        # T-003 is in issues — if no pattern matches, it's novel
+        assert any("T-003" in r["summary"] for r in results)
+
+    def test_run_all_rules_returns_four_lists(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.rules import run_all_rules
+        inputs = gather_inputs(project, project)
+        result = run_all_rules(inputs)
+        assert len(result) == 4
+        needs_decision, framework_recommends, opportunities, risks = result
+        assert isinstance(needs_decision, list)
+        assert isinstance(framework_recommends, list)
+        assert isinstance(opportunities, list)
+        assert isinstance(risks, list)
