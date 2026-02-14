@@ -7,7 +7,7 @@ status: started-work
 workflow_type: specification
 owner: human
 created: 2026-02-14T18:05:02Z
-last_update: 2026-02-14T18:10:53Z
+last_update: 2026-02-14T21:30:00Z
 date_finished: null
 ---
 
@@ -36,3 +36,16 @@ date_finished: null
   - Quality Gate page (/quality) with Run Audit, Run Tests, Full Check
   - Traceability gauge and episodic completeness bars
   - 60 tests passing (up from 47)
+
+### 2026-02-14T21:30:00Z — phase-2-implemented [claude-code]
+- **Action:** Implemented Watchtower Phase 2 - Active Development
+- **Output:** Added write actions and operational controls
+- **Changes:**
+  - Kanban board with 4-column status layout and click-to-advance cards
+  - Board/list view toggle on tasks page
+  - Create Task form (validates name, type, owner; shells out to fw task create)
+  - Session cockpit blueprint (5 API routes: status, decision, learning, init, healing)
+  - Session info widget (_session_strip.html) with git state and quick action forms
+  - Decision/learning recording via fw context add-decision / add-learning
+  - Healing diagnosis trigger via fw healing diagnose
+  - 76 tests passing (up from 60)
