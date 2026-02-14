@@ -664,7 +664,7 @@ def main():
     )
     args = parser.parse_args()
 
-    host = "127.0.0.1"
+    host = os.environ.get("FW_HOST", "0.0.0.0")
     port = args.port
 
     # Graceful shutdown on Ctrl-C
