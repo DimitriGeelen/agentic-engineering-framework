@@ -154,6 +154,33 @@ else
     echo -e "${GREEN}✓ All recent completed tasks have enriched episodics${NC}"
 fi
 
+# Step 1.6: Observation inbox status
+INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
+PENDING_OBS=0
+URGENT_OBS=0
+if [ -f "$INBOX_FILE" ]; then
+    PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    URGENT_OBS=$(python3 -c "
+import re
+with open('$INBOX_FILE') as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)
+print(urgent)
+" 2>/dev/null || echo 0)
+fi
+
+if [ "$PENDING_OBS" -gt 0 ]; then
+    if [ "$URGENT_OBS" -gt 0 ]; then
+        echo -e "${YELLOW}⚠ Observation inbox: $PENDING_OBS pending ($URGENT_OBS urgent)${NC}"
+    else
+        echo -e "${CYAN}Observation inbox: $PENDING_OBS pending${NC}"
+    fi
+    echo "  Run: fw note triage"
+else
+    echo -e "${GREEN}✓ Observation inbox clean${NC}"
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -198,6 +225,37 @@ for f in "$TASKS_DIR/active"/*.md; do
 EOF
 done
 shopt -u nullglob
+
+# Add observation inbox status if any pending
+if [ "$PENDING_OBS" -gt 0 ]; then
+    {
+        echo "## Observation Inbox"
+        echo ""
+        if [ "$URGENT_OBS" -gt 0 ]; then
+            echo "**$PENDING_OBS pending observations ($URGENT_OBS urgent)** — run \`fw note triage\` before starting new work."
+        else
+            echo "**$PENDING_OBS pending observations** — review with \`fw note list\` or \`fw note triage\`."
+        fi
+        echo ""
+        # List pending observation summaries
+        python3 << PYEOF
+import re
+with open("$INBOX_FILE") as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+for b in blocks[1:]:
+    if 'status: pending' not in b:
+        continue
+    obs_id = re.search(r'id: (OBS-\d+)', b)
+    text = re.search(r'text: "(.*?)"', b)
+    urgent = 'urgent: true' in b
+    if obs_id and text:
+        prefix = "[URGENT] " if urgent else ""
+        print(f"- {prefix}{obs_id.group(1)}: {text.group(1)}")
+PYEOF
+        echo ""
+    } >> "$HANDOVER_FILE"
+fi
 
 cat >> "$HANDOVER_FILE" << EOF
 ## Decisions Made This Session

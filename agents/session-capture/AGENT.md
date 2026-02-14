@@ -38,6 +38,8 @@ Run through this before ending a session:
 [ ] Create tasks for all identified work
 [ ] Update existing tasks with new context
 [ ] Capture learnings in 015-Practices.md or task Updates
+[ ] Review observation inbox: fw note list (triage pending, promote or dismiss)
+[ ] Capture in-session observations: fw note "text" for anything noticed but not actioned
 ```
 
 ## Integration

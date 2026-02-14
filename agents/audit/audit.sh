@@ -516,6 +516,77 @@ fi
 echo ""
 
 # ============================================
+# SECTION 7: OBSERVATION INBOX CHECKS
+# ============================================
+echo "=== OBSERVATION INBOX CHECKS ==="
+
+INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
+
+if [ -f "$INBOX_FILE" ]; then
+    pending_obs=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    urgent_obs=0
+    stale_obs=0
+
+    if [ "$pending_obs" -gt 0 ]; then
+        # Check for urgent pending observations
+        # Count blocks that have both status: pending and urgent: true
+        urgent_obs=$(python3 -c "
+import re
+with open('$INBOX_FILE') as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)
+print(urgent)
+" 2>/dev/null || echo 0)
+
+        # Check for stale observations (>7 days old)
+        stale_obs=$(python3 -c "
+import re
+from datetime import datetime, timedelta
+with open('$INBOX_FILE') as f:
+    content = f.read()
+blocks = re.split(r'\n  - ', content)
+cutoff = datetime.utcnow() - timedelta(days=7)
+stale = 0
+for b in blocks[1:]:
+    if 'status: pending' not in b:
+        continue
+    m = re.search(r'captured: (\S+)', b)
+    if m:
+        try:
+            ts = datetime.fromisoformat(m.group(1).replace('Z', '+00:00')).replace(tzinfo=None)
+            if ts < cutoff:
+                stale += 1
+        except:
+            pass
+print(stale)
+" 2>/dev/null || echo 0)
+
+        if [ "$urgent_obs" -gt 0 ]; then
+            warn "$urgent_obs urgent observation(s) still pending" \
+                 "Urgent items in .context/inbox.yaml need attention" \
+                 "Run: fw note triage"
+        fi
+
+        if [ "$stale_obs" -gt 0 ]; then
+            warn "$stale_obs observation(s) pending for >7 days" \
+                 "Stale observations in .context/inbox.yaml" \
+                 "Run: fw note triage — promote or dismiss stale items"
+        fi
+
+        if [ "$urgent_obs" -eq 0 ] && [ "$stale_obs" -eq 0 ]; then
+            pass "Observation inbox: $pending_obs pending (none stale or urgent)"
+        fi
+    else
+        pass "Observation inbox clean (0 pending)"
+    fi
+else
+    pass "No observation inbox (not yet initialized)"
+fi
+
+echo ""
+
+# ============================================
 # SUMMARY
 # ============================================
 echo "=== SUMMARY ==="
