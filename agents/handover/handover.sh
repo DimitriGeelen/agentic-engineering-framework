@@ -181,6 +181,16 @@ else
     echo -e "${GREEN}✓ Observation inbox clean${NC}"
 fi
 
+# Step 1.7: Gaps register status
+GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+WATCHING_GAPS=0
+if [ -f "$GAPS_FILE" ]; then
+    WATCHING_GAPS=$(grep -c 'status: watching' "$GAPS_FILE" 2>/dev/null) || WATCHING_GAPS=0
+    if [ "$WATCHING_GAPS" -gt 0 ]; then
+        echo -e "${CYAN}Gaps register: $WATCHING_GAPS watching${NC}"
+    fi
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -253,6 +263,29 @@ for b in blocks[1:]:
         prefix = "[URGENT] " if urgent else ""
         print(f"- {prefix}{obs_id.group(1)}: {text.group(1)}")
 PYEOF
+        echo ""
+    } >> "$HANDOVER_FILE"
+fi
+
+# Add gaps register summary if any watching
+if [ "$WATCHING_GAPS" -gt 0 ]; then
+    {
+        echo "## Gaps Register"
+        echo ""
+        echo "**$WATCHING_GAPS spec-reality gap(s) being watched** — see \`.context/project/gaps.yaml\`"
+        echo ""
+        python3 << PYEOF
+import yaml
+with open("$GAPS_FILE") as f:
+    data = yaml.safe_load(f)
+for gap in data.get('gaps', []):
+    if gap.get('status') != 'watching':
+        continue
+    sev = gap.get('severity', 'unknown')
+    print(f"- **{gap['id']}** [{sev}]: {gap['title']}")
+PYEOF
+        echo ""
+        echo "Run \`fw audit\` to check if any trigger conditions are met."
         echo ""
     } >> "$HANDOVER_FILE"
 fi

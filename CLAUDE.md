@@ -338,6 +338,7 @@ Synthesizes current state from:
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
 | Run audit | `fw audit` | `./agents/audit/audit.sh` |
+| Show gaps | `fw gaps` | _(fw only)_ |
 | Health check | `fw doctor` | _(fw only)_ |
 | View metrics | `fw metrics` | `./metrics.sh` |
 | Initialize session | `fw context init` | `./agents/context/context.sh init` |

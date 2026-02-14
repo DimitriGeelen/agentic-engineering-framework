@@ -609,6 +609,91 @@ fi
 echo ""
 
 # ============================================
+# SECTION 8: GAPS REGISTER CHECKS
+# ============================================
+echo "=== GAPS REGISTER CHECKS ==="
+
+GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+
+if [ -f "$GAPS_FILE" ]; then
+    watching_count=$(grep -c 'status: watching' "$GAPS_FILE" 2>/dev/null) || watching_count=0
+    triggered_gaps=0
+
+    if [ "$watching_count" -gt 0 ]; then
+        # Run auto-checkable triggers
+        triggered_gaps=$(python3 << PYEOF
+import yaml, subprocess, os
+
+project_root = os.environ.get('PROJECT_ROOT', '$PROJECT_ROOT')
+
+with open('$GAPS_FILE') as f:
+    data = yaml.safe_load(f)
+
+triggered = 0
+for gap in data.get('gaps', []):
+    if gap.get('status') != 'watching':
+        continue
+    tc = gap.get('trigger_check', {})
+    if tc.get('type') != 'auto':
+        continue
+
+    check_cmd = tc.get('check', '')
+    threshold = tc.get('threshold', '')
+    if not check_cmd:
+        continue
+
+    # Substitute variables
+    check_cmd = check_cmd.replace('$' + 'PROJECT_ROOT', project_root)
+
+    try:
+        result = subprocess.run(check_cmd, shell=True, capture_output=True, text=True, timeout=5)
+        value = int(result.stdout.strip())
+
+        # Parse threshold
+        if threshold.startswith('>= '):
+            target = int(threshold.split('>= ')[1].split()[0])
+            if value >= target:
+                print(f"  TRIGGERED: {gap['id']} — {gap['title']}")
+                print(f"    Value: {value}, Threshold: {threshold}")
+                print(f"    Action: Review gap and decide — build or simplify")
+                triggered += 1
+        elif threshold.startswith('> '):
+            target = int(threshold.split('> ')[1].split()[0])
+            if value > target:
+                print(f"  TRIGGERED: {gap['id']} — {gap['title']}")
+                print(f"    Value: {value}, Threshold: {threshold}")
+                print(f"    Action: Review gap and decide — build or simplify")
+                triggered += 1
+    except:
+        pass
+
+print(triggered)
+PYEOF
+)
+        # Extract just the count (last line)
+        trigger_count=$(echo "$triggered_gaps" | tail -1)
+        trigger_output=$(echo "$triggered_gaps" | head -n -1)
+
+        if [ -n "$trigger_output" ]; then
+            echo "$trigger_output"
+            warn "Gap trigger(s) fired — review gaps register" \
+                 "Auto-check found trigger conditions met" \
+                 "Review .context/project/gaps.yaml and decide: build or simplify"
+        fi
+
+        if [ "${trigger_count:-0}" -eq 0 ]; then
+            pass "Gaps register: $watching_count watching, no triggers fired"
+        fi
+    else
+        pass "Gaps register: no gaps being watched"
+    fi
+else
+    echo -e "  ${CYAN}SKIP${NC}  No gaps register (.context/project/gaps.yaml)"
+fi
+
+echo ""
+
+# ============================================
 # SUMMARY
 # ============================================
 echo "=== SUMMARY ==="

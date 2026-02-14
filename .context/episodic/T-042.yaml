@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-042: Add gaps register with audit integration
+# ============================================================================
+# Generated: 2026-02-14T10:01:09Z
+
+task_id: T-042
+task_name: "Add gaps register with audit integration"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T09:55:00Z
+completed: 2026-02-14T10:01:09Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Created a structural memory mechanism for spec-reality gaps — things we
+  consciously chose NOT to build yet, with decision triggers for when to
+  revisit. Fills the space between "task" (commitment to build) and
+  "observation" (quick triage). Each gap has a trigger condition that the
+  audit agent auto-checks where possible. Handovers surface all watching
+  gaps. fw gaps command gives quick overview. Solves the core fear:
+  "we'll forget what we deferred."
+
+# Key outcomes
+outcomes:
+  - ".context/project/gaps.yaml with 6 gaps (G-001 through G-006)"
+  - "Audit Section 8: auto-checks trigger conditions, warns when fired"
+  - "Handover: lists all watching gaps with severity"
+  - "fw gaps command for quick overview"
+  - "Each gap has: why_not_now, decision_trigger, evidence_needed, alternative_outcome"
+
+# What worked well
+successes:
+  - description: "Alternative outcome field forces honest thinking"
+    why: "Every gap must answer: 'what if we NEVER build this?' — prevents accumulating unbounded debt"
+  - description: "Auto-checkable triggers where possible (learnings count, status usage)"
+    why: "Removes human memory from the critical path for quantitative triggers"
+  - description: "fw task update auto-triggered episodic generation for this task"
+    why: "First real use of T-041's auto-trigger pipeline — it works"
+
+# Challenges encountered
+challenges:
+  - description: "G-004 auto-check triggered false positive (Plan agent in supporting field)"
+    resolution: "Changed to manual check — 'Plan' in supporting is not true multi-agent collaboration"
+    learning: "Auto-checks need to match semantic meaning, not just syntax"
+  - description: "Python escape sequence warning in audit"
+    resolution: "Changed from literal \\$PROJECT_ROOT to string concatenation"
+
+# Decisions made during this task
+decisions:
+  - decision: "Gaps register is separate from tasks and observations"
+    rationale: "Tasks imply commitment, observations imply quick triage. Gaps are neither — they're watched decisions with triggers."
+    alternatives_rejected: ["Tasks with 'deferred' status", "Long-lived observations", "Notes in spec docs"]
+  - decision: "Status values: watching, decided-build, decided-simplify, decided-defer, closed"
+    rationale: "Force a decision between 'build the feature' and 'simplify the spec' — not just 'do it someday'"
+    alternatives_rejected: ["Simple open/closed"]
+  - decision: "Auto-check for quantitative triggers, manual for qualitative"
+    rationale: "Counting learnings can be automated. Judging 'did someone wish they could filter by priority?' cannot."
+    alternatives_rejected: ["All manual", "All automated"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - ".context/project/gaps.yaml"
+  modified:
+    - "agents/audit/audit.sh (Section 8: Gaps Register Checks)"
+    - "agents/handover/handover.sh (gaps count + document section)"
+    - "bin/fw (fw gaps command)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gaps, deferred-decisions, structural-memory, decision-triggers, audit]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-042-add-gaps-register-with-audit-integration.md
+generated_by: claude-code

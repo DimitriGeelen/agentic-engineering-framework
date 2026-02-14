@@ -1,0 +1,188 @@
+# Gaps Register — Spec-Reality Gaps with Decision Triggers
+#
+# Purpose: Structural memory for things we chose NOT to build yet.
+# Each gap has a trigger condition — when the trigger fires, we decide:
+# build the feature, or simplify the spec.
+#
+# Checked by: audit agent (Section 8)
+# Surfaced in: handover documents
+#
+# Status values:
+#   watching         — gap identified, waiting for trigger
+#   decided-build    — trigger fired, decided to build
+#   decided-simplify — trigger fired, decided to simplify spec
+#   decided-defer    — trigger evaluated, explicitly deferred again
+#   closed           — resolved (built or simplified)
+
+gaps:
+  - id: G-001
+    title: "Enforcement tiers are spec-only"
+    description: >
+      010-TaskSystem.md defines 4 enforcement tiers (Tier 0: never bypass,
+      Tier 1: strict default, Tier 2: situational, Tier 3: pre-approved).
+      Only Tier 1 is partially implemented (commit-msg hook requires T-XXX).
+      No agent-level enforcement, no block-and-offer, no bypass tracking.
+    spec_reference: "010-TaskSystem.md §Enforcement: The Four Tiers"
+    severity: high
+    why_not_now: >
+      Zero evidence that lack of enforcement has caused harm. Single agent,
+      single user, high discipline. Building gates for problems that haven't
+      occurred is P-001 anti-pattern.
+    decision_trigger: >
+      First destructive action without a task on a real project, OR first
+      time a second human/agent works in the framework and skips task creation.
+    trigger_check:
+      type: manual
+      hint: "Check after each real-world project: did anyone bypass task creation?"
+    evidence_needed: "At least 1 real-world project where consequential action lacks task ref"
+    evidence_collected: "None — framework has only been used self-referentially"
+    alternative_outcome: >
+      If 3 projects pass without enforcement issues → simplify spec.
+      Remove tiers 0-2 machinery, keep the commit hook, document it as sufficient.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14
+
+  - id: G-002
+    title: "Status transitions not validated"
+    description: >
+      010-TaskSystem.md defines a specific lifecycle flow
+      (Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed).
+      fw task update accepts any valid status from any other — no transition
+      validation. Also: 'refined' and 'blocked' statuses have never been used.
+    spec_reference: "010-TaskSystem.md §Task Statuses (Lifecycle)"
+    severity: medium
+    why_not_now: >
+      Single agent follows conventions naturally. No invalid transitions
+      have occurred. Validation would be enforcing rules nobody has broken.
+    decision_trigger: >
+      First invalid transition observed, OR second agent starts using
+      fw task update, OR 'refined' status is used for the first time.
+    trigger_check:
+      type: auto
+      check: "grep -r 'status: refined' $PROJECT_ROOT/.tasks/ 2>/dev/null | wc -l"
+      threshold: "> 0 means 'refined' is being used — review lifecycle"
+    evidence_needed: "Real misuse or multi-agent scenario"
+    evidence_collected: >
+      In 41 tasks: 0 used 'refined', 0 used 'blocked', 7 used 'issues'.
+      Actual lifecycle is: captured → started-work ↔ issues → work-completed.
+    alternative_outcome: >
+      If never triggered → simplify lifecycle. Remove 'refined', merge
+      'blocked' into 'issues', reduce to 4 statuses.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14
+
+  - id: G-003
+    title: "Unused frontmatter fields (workflow_type, priority, tags, agents.supporting)"
+    description: >
+      Task template defines 11 frontmatter fields. Only 4 are functionally
+      consumed (id, name, status, description). workflow_type, priority,
+      tags, agents.primary, and agents.supporting are populated but nothing
+      reads or routes based on them.
+    spec_reference: "010-TaskSystem.md §Task Fields Reference"
+    severity: low
+    why_not_now: >
+      No consumer exists. Building consumers for data nobody queries is waste.
+      The fields don't hurt — they just don't help.
+    decision_trigger: >
+      First query that would benefit from these fields (e.g., "show me all
+      high-priority tasks" or "what did test-agent work on?").
+    trigger_check:
+      type: manual
+      hint: "After each project: did anyone wish they could filter/sort by these fields?"
+    evidence_needed: "A real query or workflow that needs field-based filtering"
+    evidence_collected: >
+      41 tasks: 27 build, 5 spec, 4 test, 4 refactor, 1 design. All medium
+      priority. Tags almost always []. Supporting agents always [].
+    alternative_outcome: >
+      After 3 projects, if still unused → remove from default template,
+      make optional in spec. Honest spec > comprehensive spec.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14
+
+  - id: G-004
+    title: "Multi-agent collaboration untested"
+    description: >
+      Spec describes primary + supporting agents on a single task, with all
+      agents logging to the same update history. Never tested — every task
+      has been single-owner, single-agent. agents.supporting is [] on all 41 tasks.
+    spec_reference: "010-TaskSystem.md §Task-to-Agent Relationship"
+    severity: low
+    why_not_now: >
+      Only one agent exists (claude-code). Can't test multi-agent patterns
+      without multiple agents. Building coordination for a solo performer is waste.
+    decision_trigger: >
+      First project where two agents need to work on the same task.
+    trigger_check:
+      type: manual
+      hint: "Check after each project: did two different agents work on the same task?"
+    evidence_needed: "Actual multi-agent scenario"
+    evidence_collected: "0 instances across 41 tasks"
+    alternative_outcome: >
+      If single-agent remains the pattern after 3 projects → simplify
+      agents field to just 'owner', drop primary/supporting distinction.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14
+
+  - id: G-005
+    title: "Graduation pipeline has no tooling"
+    description: >
+      015-Practices.md defines a graduation pipeline:
+      task update → learning (2+ tasks) → practice (3+ applications) → directive.
+      This pipeline is entirely manual. No counting, no promotion command,
+      no detection of "this learning appeared in 3 tasks."
+    spec_reference: "015-Practices.md §Graduation Criteria"
+    severity: medium
+    why_not_now: >
+      Manual graduation works at current scale (8 learnings, 7 practices).
+      Automation ROI kicks in at 30+ learnings when manual tracking breaks.
+    decision_trigger: >
+      learnings.yaml has 20+ entries, OR a learning is missed that was
+      applicable (context loss causes repeat failure).
+    trigger_check:
+      type: auto
+      check: "grep -c '^  - id: L-' $PROJECT_ROOT/.context/project/learnings.yaml 2>/dev/null"
+      threshold: ">= 20 means scale warrants automation"
+    evidence_needed: "Scale (20+ learnings) or missed application"
+    evidence_collected: "Currently 8 learnings, 7 practices. Manual works fine."
+    alternative_outcome: >
+      If scale never comes → keep manual. Document that the pipeline
+      is a thinking tool, not an automation target.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14
+
+  - id: G-006
+    title: "Only default.md template exists"
+    description: >
+      010-TaskSystem.md shows workflow-specific templates (build.md, test.md,
+      specification.md). Only default.md exists. All 41 tasks used default.md
+      successfully.
+    spec_reference: "010-TaskSystem.md §Location"
+    severity: low
+    why_not_now: >
+      One template works. The Design Record / Spec Record / Test Files
+      sections in default.md are actually dead weight (always placeholder).
+      Adding more templates would multiply dead weight.
+    decision_trigger: >
+      When someone creates a task and the default template is clearly
+      wrong for it (e.g., a spec task that needs requirement fields
+      the template doesn't have).
+    trigger_check:
+      type: manual
+      hint: "After task creation: was the template helpful or did you fight it?"
+    evidence_needed: "Template friction — someone needs fields the default doesn't have"
+    evidence_collected: >
+      41 tasks used default.md. Design Record, Spec Record, and Test Files
+      sections are placeholder in every single task. Updates section carries
+      100% of meaningful content.
+    alternative_outcome: >
+      Simplify default.md — remove dead sections, keep what's actually used
+      (frontmatter + Updates). If specific templates are needed later,
+      create them from real need, not from spec imagination.
+    status: watching
+    created: 2026-02-14
+    last_reviewed: 2026-02-14

@@ -119,6 +119,7 @@ show_help() {
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
+    echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}version${NC}              Show version information"
@@ -321,6 +322,39 @@ case "$cmd" in
     harvest)
         source "$FW_LIB_DIR/harvest.sh"
         do_harvest "$@"
+        ;;
+    gaps)
+        GAPS_FILE="$PROJECT_ROOT/.context/project/gaps.yaml"
+        if [ ! -f "$GAPS_FILE" ]; then
+            echo -e "${YELLOW}No gaps register found${NC}"
+            echo "Create one at: .context/project/gaps.yaml"
+            exit 0
+        fi
+        python3 << PYEOF
+import yaml
+
+with open("$GAPS_FILE") as f:
+    data = yaml.safe_load(f)
+
+gaps = data.get('gaps', [])
+watching = [g for g in gaps if g.get('status') == 'watching']
+closed = [g for g in gaps if g.get('status') in ('closed', 'decided-build', 'decided-simplify')]
+
+print(f"\033[1mGaps Register\033[0m — {len(watching)} watching, {len(closed)} resolved")
+print()
+
+for gap in watching:
+    sev_colors = {'high': '\033[0;31m', 'medium': '\033[1;33m', 'low': '\033[0;36m'}
+    sev = gap.get('severity', 'unknown')
+    color = sev_colors.get(sev, '\033[0m')
+    print(f"  {color}{gap['id']}\033[0m [{sev}]  {gap['title']}")
+    trigger = gap.get('decision_trigger', '').strip().split('\n')[0]
+    print(f"    Trigger: {trigger}")
+    print()
+
+if not watching:
+    print("  \033[0;32mNo gaps being watched\033[0m")
+PYEOF
         ;;
     doctor)
         do_doctor "$@"
