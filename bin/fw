@@ -95,6 +95,7 @@ export FRAMEWORK_ROOT
 
 # --- Agent Directory ---
 AGENTS_DIR="$FRAMEWORK_ROOT/agents"
+FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
 
 # --- Help ---
 
@@ -111,6 +112,9 @@ show_help() {
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create)"
+    echo ""
+    echo -e "${BOLD}Setup:${NC}"
+    echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
@@ -131,6 +135,7 @@ show_help() {
     echo "  fw healing diagnose T-015"
     echo '  fw task create --name "Fix bug" --type build --owner human'
     echo "  fw resume status"
+    echo "  fw init /path/to/project --provider claude"
 }
 
 show_version() {
@@ -204,10 +209,10 @@ do_doctor() {
 
     # Check 5: Git hooks
     local hooks_dir="$PROJECT_ROOT/.git/hooks"
-    if [ -f "$hooks_dir/pre-commit" ] && grep -q "task-reference" "$hooks_dir/pre-commit" 2>/dev/null; then
-        echo -e "  ${GREEN}OK${NC}  Git pre-commit hook"
+    if [ -f "$hooks_dir/commit-msg" ] && grep -q "Task Reference" "$hooks_dir/commit-msg" 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  Git commit-msg hook"
     else
-        echo -e "  ${YELLOW}WARN${NC}  Git pre-commit hook not installed (run: fw git install-hooks)"
+        echo -e "  ${YELLOW}WARN${NC}  Git commit-msg hook not installed (run: fw git install-hooks)"
         warnings=$((warnings + 1))
     fi
 
@@ -296,6 +301,10 @@ case "$cmd" in
         ;;
     task)
         route_task "$@"
+        ;;
+    init)
+        source "$FW_LIB_DIR/init.sh"
+        do_init "$@"
         ;;
     doctor)
         do_doctor "$@"
