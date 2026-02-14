@@ -67,5 +67,37 @@ learnings:
     context: "((0++)) evaluates to 0 (falsy), returning exit code 1 which triggers set -e"
     application: "Never use ((var++)) in set -e scripts — use var=$((var + 1)) which always returns 0"
 
+  - id: L-009
+    learning: "Claude Code JSONL transcript contains per-message token usage at message.usage"
+    source: T-059
+    task: T-059
+    date: 2026-02-14
+    context: "Transcript at ~/.claude/projects/*/UUID.jsonl has input_tokens, cache_read_input_tokens, cache_creation_input_tokens in every assistant message. Effective context = sum of all three."
+    application: "Use tail -c 500000 + python3 JSON parse to read context size in O(1) time regardless of transcript size"
+
+  - id: L-010
+    learning: "Claude Code compaction occurs at ~155-165K tokens — context is summarized, not preserved"
+    source: T-059
+    task: T-059
+    date: 2026-02-14
+    context: "Analyzed 4103 API calls across sessions. Peak context before compaction consistently 155K-165K. Post-compaction drops to ~40-50K (summary). Work context is lost."
+    application: "Set warning thresholds well below 155K (100K/130K/150K) to give time to commit and handover"
+
+  - id: L-011
+    learning: "Token reading from JSONL lags ~1 API call behind actual usage"
+    source: T-059
+    task: T-059
+    date: 2026-02-14
+    context: "The usage data records what the PREVIOUS call consumed. By the time the hook reads it, current call has already added more. Observed lag ~10-30K tokens."
+    application: "Never set thresholds close to the compaction limit — maintain at least 30K buffer"
+
+  - id: L-012
+    learning: "grep for 'input_tokens' in JSONL matches command text, not just usage data"
+    source: T-059
+    task: T-059
+    date: 2026-02-14
+    context: "Commands that reference input_tokens (like analyzing token usage) get recorded in JSONL tool_use entries. grep can't distinguish usage data from command text."
+    application: "Use proper JSON parsing (python3) to extract message.usage, not grep patterns"
+
 # Candidate learnings (need validation before promotion)
 candidates: []

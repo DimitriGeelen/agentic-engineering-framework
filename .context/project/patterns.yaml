@@ -24,6 +24,13 @@ failure_patterns:
     date_learned: 2026-02-13
     mitigation: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
 
+  - id: FP-004
+    pattern: "Context exhaustion before handover"
+    description: "72 tool calls consumed context. Agent outputs (268K-532K bytes each) were the primary consumer. Handover was a skeleton with [TODO] placeholders — useless for recovery."
+    learned_from: T-059
+    date_learned: 2026-02-14
+    mitigation: "Token-aware monitoring from JSONL transcript (D-009). Warns at 100K/130K/150K of 200K window. Falls back to tool-call counting when transcript unavailable."
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"
@@ -39,20 +46,23 @@ success_patterns:
     date_learned: 2026-02-13
     context: "Scripts are reliable, AGENT.md provides judgment guidance"
 
-  - id: FP-004
-    pattern: "Context exhaustion before handover"
-    description: "72 tool calls consumed context. Agent outputs (268K-532K bytes each) were the primary consumer. Handover was a skeleton with [TODO] placeholders — useless for recovery."
-    learned_from: T-059
-    date_learned: 2026-02-14
-    mitigation: "Defense in depth: L1 CLAUDE.md rules, L2 tool-call counter hook, L3 post-commit checkpoint reset, L4 emergency handover mode"
-
-success_patterns:
   - id: SP-003
     pattern: "Commit early, commit often"
     description: "Frequent commits preserve work even when session context is lost. Each commit is a recovery point."
     learned_from: T-059
     date_learned: 2026-02-14
     context: "Despite losing all context, all code changes were preserved because Phase 1 and Phase 2 were committed before exhaustion"
+
+antifragile_patterns:
+  - id: AF-001
+    pattern: "Failure-driven capability acquisition"
+    description: "Context exhaustion killed a session → post-mortem revealed token data in JSONL → built token-aware monitoring that didn't exist before. The system is now stronger than if the failure never occurred."
+    learned_from: T-059
+    date_learned: 2026-02-14
+    trigger: "Session context exhaustion with stale handover"
+    capability_gained: "Real-time context budget monitoring with graduated warnings"
+    directive: D1 (Antifragility)
+    escalation_ladder: "A (don't repeat) → B (improve technique: token reading) → C (improve tooling: checkpoint.sh) → D (change ways of working: P-009 practice)"
 
 workflow_patterns:
   - id: WP-001

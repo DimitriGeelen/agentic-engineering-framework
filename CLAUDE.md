@@ -334,8 +334,16 @@ Synthesizes current state from:
 - Prefer `fw resume quick` over `fw resume status` for routine checks
 - Prefer `git log --oneline -5` over `git log -5`
 
+### Automated Monitoring (Claude Code)
+- A PostToolUse hook runs `checkpoint.sh` which reads **actual token usage** from the session JSONL transcript
+- Warnings fire at: **100K** (note), **130K** (warning), **150K** (critical) — out of a 200K context window
+- Compaction (automatic context summarization) is observed at ~160K tokens — work context is lost
+- Token reading lags ~1 API call behind actual usage; thresholds are conservative to compensate
+- Check current usage: `./agents/context/checkpoint.sh status`
+- If no transcript is available, falls back to tool-call counting (less accurate)
+
 ### Emergency Protocol
-- If you notice the system warning about context or unusual truncation:
+- If you see a CRITICAL warning from the checkpoint hook:
   immediately run `fw handover --emergency` and commit
 - Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
 

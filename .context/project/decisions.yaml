@@ -65,6 +65,27 @@ decisions:
     rationale: "Framework overhead only justified when AI context loss is the problem being solved"
     directives_served: [D3]
 
+  - id: D-009
+    decision: "Monitor context budget via token reading from JSONL transcript, not tool-call counting"
+    date: 2026-02-14
+    task: T-059
+    rationale: "Tool calls are a garbage proxy — one call can consume 50 or 50,000 tokens. The Claude Code JSONL transcript contains actual token usage (message.usage) per API call. Tail + JSON parse takes 23ms on a 30MB file. Reading lags ~1 API call; conservative thresholds compensate."
+    directives_served: [D1, D2]
+    alternatives_rejected:
+      - "Tool call counting (no correlation with actual context consumption)"
+      - "Token estimation heuristics (fragile, provider-specific assumptions)"
+      - "Time-based warnings (no correlation with context size)"
+
+  - id: D-010
+    decision: "Check tokens every 5th tool call, not every call"
+    date: 2026-02-14
+    task: T-059
+    rationale: "23ms per check is fine but unnecessary overhead on every call. Every 5th gives ~5-minute granularity during active work, well within the warning buffer before compaction."
+    directives_served: [D2, D3]
+    alternatives_rejected:
+      - "Every call (unnecessary overhead)"
+      - "Every 10th (too infrequent near thresholds)"
+
   - id: D-008
     decision: "Knowledge pyramid with 4 levels and graduation criteria"
     date: 2026-02-13
