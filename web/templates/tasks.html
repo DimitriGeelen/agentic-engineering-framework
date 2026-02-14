@@ -1,32 +1,463 @@
+<style>
+/* ── View Toggle ────────────────────────────────────────── */
+.view-toggle {
+    display: inline-flex;
+    gap: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    overflow: hidden;
+}
+.view-toggle a {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.875rem;
+    text-decoration: none;
+    color: var(--pico-color);
+    background: transparent;
+    border-right: 1px solid var(--pico-muted-border-color);
+    transition: background 0.15s;
+}
+.view-toggle a:last-child { border-right: none; }
+.view-toggle a:hover { background: var(--pico-primary-focus); }
+.view-toggle a.active {
+    background: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+}
+
+/* ── Task Actions Bar ───────────────────────────────────── */
+.task-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.task-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ── Create Task Form ───────────────────────────────────── */
+.create-task-panel {
+    margin-bottom: 1.5rem;
+}
+.create-task-panel summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    background: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+    border-radius: var(--pico-border-radius);
+    display: inline-block;
+    font-size: 0.9rem;
+    list-style: none;
+}
+.create-task-panel summary::-webkit-details-marker { display: none; }
+.create-task-panel summary::marker { content: ""; }
+.create-task-panel[open] summary {
+    margin-bottom: 0.75rem;
+}
+.create-task-form {
+    padding: 1rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    background: var(--pico-card-background-color);
+}
+.create-task-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.create-task-form label {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+.create-task-form textarea {
+    min-height: 4rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ── Kanban Board ───────────────────────────────────────── */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+@media (max-width: 992px) {
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kanban-column {
+    min-height: 8rem;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 0.75rem;
+}
+.kanban-column-header {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--pico-muted-border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.kanban-column-header .count {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+}
+
+/* Column border colors */
+.kanban-column[data-status="captured"] .kanban-column-header {
+    border-bottom-color: var(--pico-muted-border-color);
+}
+.kanban-column[data-status="started-work"] .kanban-column-header {
+    border-bottom-color: #2196f3;
+}
+.kanban-column[data-status="issues"] .kanban-column-header {
+    border-bottom-color: #c62828;
+}
+.kanban-column[data-status="work-completed"] .kanban-column-header {
+    border-bottom-color: #2e7d32;
+}
+
+/* ── Kanban Cards ───────────────────────────────────────── */
+.kanban-card {
+    margin: 0 0 0.5rem 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: var(--pico-border-radius);
+    border: 1px solid var(--pico-muted-border-color);
+    background: var(--pico-background-color);
+}
+.kanban-card:last-child { margin-bottom: 0; }
+
+/* Left border accent per status */
+.kanban-column[data-status="started-work"] .kanban-card {
+    border-left: 3px solid #2196f3;
+}
+.kanban-column[data-status="issues"] .kanban-card {
+    border-left: 3px solid #c62828;
+}
+.kanban-column[data-status="work-completed"] .kanban-card {
+    border-left: 3px solid #2e7d32;
+}
+
+.kanban-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+}
+.kanban-card-id {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--pico-primary);
+    text-decoration: none;
+}
+.kanban-card-id:hover {
+    text-decoration: underline;
+}
+.kanban-card-name {
+    display: block;
+    margin-bottom: 0.35rem;
+    line-height: 1.3;
+    color: var(--pico-color);
+}
+.kanban-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.kanban-card-meta .badge {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    background: var(--pico-muted-border-color);
+    color: var(--pico-muted-color);
+    white-space: nowrap;
+}
+.kanban-card-meta .owner {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color);
+}
+.advance-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--pico-muted-color);
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.advance-btn:hover {
+    background: var(--pico-primary-focus);
+    color: var(--pico-primary);
+    border-color: var(--pico-primary);
+}
+.kanban-empty {
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+    text-align: center;
+    padding: 1rem 0;
+}
+
+/* ── List View Inline Status ────────────────────────────── */
+.inline-status-select {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+}
+td .status-update-result {
+    font-size: 0.75rem;
+}
+</style>
+
 <div class="page-header">
     <h1>Tasks</h1>
     <p>{{ tasks|length }} tasks</p>
 </div>
 
+<!-- Task Actions Bar -->
+<div class="task-actions">
+    <div class="task-actions-left">
+        <div class="view-toggle">
+            <a href="/tasks?view=board"
+               hx-get="/tasks?view=board" hx-target="#content" hx-push-url="true"
+               class="{% if view == 'board' %}active{% endif %}">Board</a>
+            <a href="/tasks?view=list"
+               hx-get="/tasks?view=list" hx-target="#content" hx-push-url="true"
+               class="{% if view == 'list' %}active{% endif %}">List</a>
+        </div>
+    </div>
+</div>
+
+<!-- Create Task -->
+<details class="create-task-panel">
+    <summary>+ Create Task</summary>
+    <div class="create-task-form">
+        <form hx-post="/api/task/create" hx-target="#create-result" hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="form-row">
+                <div>
+                    <label for="task-name">Name</label>
+                    <input type="text" id="task-name" name="name" placeholder="Task name" required>
+                </div>
+                <div>
+                    <label for="task-type">Type</label>
+                    <select id="task-type" name="type">
+                        <option value="build">build</option>
+                        <option value="test">test</option>
+                        <option value="refactor">refactor</option>
+                        <option value="specification">specification</option>
+                        <option value="design">design</option>
+                        <option value="decommission">decommission</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="task-owner">Owner</label>
+                    <select id="task-owner" name="owner">
+                        <option value="human">human</option>
+                        <option value="claude-code">claude-code</option>
+                    </select>
+                </div>
+            </div>
+            <label for="task-desc">Description</label>
+            <textarea id="task-desc" name="description" placeholder="Optional description"></textarea>
+            <button type="submit">Create Task</button>
+        </form>
+        <div id="create-result"></div>
+    </div>
+</details>
+
+{% if view == 'board' %}
+<!-- ════════════════════════════════════════════════════════
+     KANBAN BOARD VIEW
+     ════════════════════════════════════════════════════════ -->
+{% set captured = tasks|selectattr('status', 'equalto', 'captured')|list %}
+{% set in_progress = tasks|selectattr('status', 'equalto', 'started-work')|list %}
+{% set issues = tasks|selectattr('status', 'equalto', 'issues')|list %}
+{% set completed = tasks|selectattr('status', 'equalto', 'work-completed')|list %}
+
+<div class="kanban-board">
+    <!-- Captured -->
+    <div class="kanban-column" data-status="captured">
+        <div class="kanban-column-header">
+            Captured <span class="count">({{ captured|length }})</span>
+        </div>
+        {% for task in captured %}
+        <article class="kanban-card">
+            <div class="kanban-card-header">
+                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
+                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
+                      hx-vals='{"status":"started-work"}' style="margin:0;padding:0;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="started-work">
+                    <button type="submit" class="advance-btn" title="Start work">&#9654;</button>
+                </form>
+            </div>
+            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+            <div class="kanban-card-meta">
+                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                <span class="owner">{{ task.owner or 'unassigned' }}</span>
+            </div>
+        </article>
+        {% else %}
+        <div class="kanban-empty">No tasks</div>
+        {% endfor %}
+    </div>
+
+    <!-- In Progress -->
+    <div class="kanban-column" data-status="started-work">
+        <div class="kanban-column-header">
+            In Progress <span class="count">({{ in_progress|length }})</span>
+        </div>
+        {% for task in in_progress %}
+        <article class="kanban-card">
+            <div class="kanban-card-header">
+                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
+                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
+                      hx-vals='{"status":"work-completed"}' style="margin:0;padding:0;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="work-completed">
+                    <button type="submit" class="advance-btn" title="Complete">&#9654;</button>
+                </form>
+            </div>
+            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+            <div class="kanban-card-meta">
+                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                <span class="owner">{{ task.owner or 'unassigned' }}</span>
+            </div>
+        </article>
+        {% else %}
+        <div class="kanban-empty">No tasks</div>
+        {% endfor %}
+    </div>
+
+    <!-- Issues -->
+    <div class="kanban-column" data-status="issues">
+        <div class="kanban-column-header">
+            Issues <span class="count">({{ issues|length }})</span>
+        </div>
+        {% for task in issues %}
+        <article class="kanban-card">
+            <div class="kanban-card-header">
+                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
+                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
+                      hx-vals='{"status":"started-work"}' style="margin:0;padding:0;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="started-work">
+                    <button type="submit" class="advance-btn" title="Retry">&#9654;</button>
+                </form>
+            </div>
+            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+            <div class="kanban-card-meta">
+                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                <span class="owner">{{ task.owner or 'unassigned' }}</span>
+            </div>
+        </article>
+        {% else %}
+        <div class="kanban-empty">No tasks</div>
+        {% endfor %}
+    </div>
+
+    <!-- Completed -->
+    <div class="kanban-column" data-status="work-completed">
+        <div class="kanban-column-header">
+            Completed <span class="count">({{ completed|length }})</span>
+        </div>
+        {% for task in completed %}
+        <article class="kanban-card">
+            <div class="kanban-card-header">
+                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
+                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+            </div>
+            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+            <div class="kanban-card-meta">
+                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                <span class="owner">{{ task.owner or 'unassigned' }}</span>
+            </div>
+        </article>
+        {% else %}
+        <div class="kanban-empty">No tasks</div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Reload board after advance button -->
+<script>
+document.addEventListener('htmx:afterRequest', function(event) {
+    var form = event.detail.elt;
+    if (form && form.closest && form.closest('.kanban-card') && event.detail.successful) {
+        htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'});
+    }
+});
+</script>
+
+{% else %}
+<!-- ════════════════════════════════════════════════════════
+     LIST VIEW
+     ════════════════════════════════════════════════════════ -->
+
 <!-- Filters -->
 <div class="grid" style="margin-bottom: 1rem;">
-    <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='type'],[name='component'],[name='sort']">
+    <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Statuses</option>
         {% for s in ['captured','started-work','issues','work-completed'] %}
         <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <select name="type" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='component'],[name='sort']">
+    <select name="type" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='status'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Types</option>
         {% for t in types %}
         <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
         {% endfor %}
     </select>
-    <select name="component" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='type'],[name='sort']">
+    <select name="component" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='status'],[name='type'],[name='sort'],[name='view']">
         <option value="">All Components</option>
         {% for c in components %}
         <option value="{{ c }}" {% if component_filter == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
-    <select name="sort" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='type'],[name='component']">
+    <select name="sort" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='status'],[name='type'],[name='component'],[name='view']">
         <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Sort by ID</option>
         <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
     </select>
+    <input type="hidden" name="view" value="list">
 </div>
 
 <!-- Task table -->
@@ -44,12 +475,23 @@
     <tbody>
         {% for task in tasks %}
         <tr>
-            <td><a href="/tasks/{{ task.id }}">{{ task.id }}</a></td>
+            <td><a href="/tasks/{{ task.id }}"
+                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a></td>
             <td>{{ task.name }}</td>
             <td>
-                {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
-                {% elif task.status == 'issues' %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
-                {% else %}{{ task.status }}{% endif %}
+                <form hx-post="/api/task/{{ task.id }}/status"
+                      hx-target="next .status-update-result"
+                      hx-swap="innerHTML"
+                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <select name="status" class="inline-status-select"
+                            onchange="this.form.requestSubmit()">
+                        {% for s in ['captured','started-work','issues','work-completed'] %}
+                        <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <span class="status-update-result"></span>
             </td>
             <td>{{ task.workflow_type or '' }}</td>
             <td>{{ task.owner or '' }}</td>
@@ -58,3 +500,4 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}

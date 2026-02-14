@@ -1,0 +1,223 @@
+<style>
+    .session-strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.6rem 1rem;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+    .session-strip .ss-item {
+        white-space: nowrap;
+    }
+    .session-strip .ss-label {
+        color: var(--pico-muted-color);
+        margin-right: 0.25em;
+    }
+    .session-strip .ss-value {
+        font-weight: 700;
+    }
+    .session-strip .ss-commit {
+        max-width: 30ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        vertical-align: bottom;
+    }
+    .session-strip .ss-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .session-strip .ss-actions a,
+    .session-strip .ss-actions summary {
+        font-size: 0.8rem;
+        padding: 0.15em 0.5em;
+        cursor: pointer;
+    }
+
+    /* Inline quick-action forms */
+    .ss-inline-form {
+        padding: 0.75rem 1rem;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    .ss-inline-form label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .ss-inline-form input,
+    .ss-inline-form textarea,
+    .ss-inline-form select {
+        font-size: 0.85rem;
+        padding: 0.3em 0.5em;
+        margin-bottom: 0.4rem;
+    }
+    .ss-inline-form textarea {
+        min-height: 2.5rem;
+        resize: vertical;
+    }
+    .ss-inline-form .ss-form-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: end;
+    }
+    .ss-inline-form .ss-form-row > * {
+        flex: 1;
+        min-width: 120px;
+    }
+    .ss-inline-form button[type="submit"] {
+        font-size: 0.8rem;
+        padding: 0.3em 0.8em;
+        margin-top: 0.3rem;
+    }
+    .ss-inline-form .ss-form-result {
+        margin-top: 0.3rem;
+    }
+</style>
+
+<div class="session-strip">
+    {% if session_id %}
+    <span class="ss-item">
+        <span class="ss-label">Session:</span>
+        <span class="ss-value">{{ session_id }}</span>
+    </span>
+    {% endif %}
+
+    <span class="ss-item">
+        <span class="ss-label">Branch:</span>
+        <span class="ss-value">{{ branch }}</span>
+    </span>
+
+    <span class="ss-item">
+        <span class="ss-label">Changes:</span>
+        <span class="ss-value"
+              {% if changes_count > 0 %}style="color: #e8a317;"{% endif %}>
+            {{ changes_count }}
+        </span>
+    </span>
+
+    <span class="ss-item">
+        <span class="ss-label">Last:</span>
+        <code class="ss-commit">{{ last_commit }}</code>
+    </span>
+
+    {% if focus_task %}
+    <span class="ss-item">
+        <span class="ss-label">Focus:</span>
+        <a href="/tasks/{{ focus_task }}"
+           hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           class="ss-value">{{ focus_task }}</a>
+    </span>
+    {% endif %}
+
+    <span class="ss-actions">
+        <details>
+            <summary role="button" class="outline secondary">Record Decision</summary>
+        </details>
+        <details>
+            <summary role="button" class="outline secondary">Record Learning</summary>
+        </details>
+    </span>
+</div>
+
+{# --- Inline form: Record Decision --- #}
+<div id="ss-decision-form" style="display: none;">
+    <div class="ss-inline-form">
+        <form hx-post="/api/decision"
+              hx-target="#ss-decision-result"
+              hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label for="ss-dec-text">Decision</label>
+            <input type="text" id="ss-dec-text" name="decision"
+                   placeholder="e.g. Use YAML for config files" required>
+            <div class="ss-form-row">
+                <div>
+                    <label for="ss-dec-task">Task (optional)</label>
+                    <input type="text" id="ss-dec-task" name="task"
+                           placeholder="T-XXX">
+                </div>
+                <div>
+                    <label for="ss-dec-rationale">Rationale (optional)</label>
+                    <input type="text" id="ss-dec-rationale" name="rationale"
+                           placeholder="Human readable, widely supported">
+                </div>
+            </div>
+            <button type="submit">Save Decision</button>
+            <div id="ss-decision-result" class="ss-form-result"></div>
+        </form>
+    </div>
+</div>
+
+{# --- Inline form: Record Learning --- #}
+<div id="ss-learning-form" style="display: none;">
+    <div class="ss-inline-form">
+        <form hx-post="/api/learning"
+              hx-target="#ss-learning-result"
+              hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label for="ss-lrn-text">Learning</label>
+            <input type="text" id="ss-lrn-text" name="learning"
+                   placeholder="e.g. Always validate inputs before subprocess calls" required>
+            <div class="ss-form-row">
+                <div>
+                    <label for="ss-lrn-task">Task (optional)</label>
+                    <input type="text" id="ss-lrn-task" name="task"
+                           placeholder="T-XXX">
+                </div>
+                <div>
+                    <label for="ss-lrn-source">Source (optional)</label>
+                    <input type="text" id="ss-lrn-source" name="source"
+                           placeholder="P-001">
+                </div>
+            </div>
+            <button type="submit">Save Learning</button>
+            <div id="ss-learning-result" class="ss-form-result"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Wire up the <details> toggles to show/hide the inline forms
+    var strip = document.querySelector('.session-strip');
+    if (!strip) return;
+
+    var detailsEls = strip.querySelectorAll('details');
+    var formMap = [
+        document.getElementById('ss-decision-form'),
+        document.getElementById('ss-learning-form')
+    ];
+
+    detailsEls.forEach(function(det, idx) {
+        det.addEventListener('toggle', function() {
+            var form = formMap[idx];
+            if (!form) return;
+            if (det.open) {
+                form.style.display = 'block';
+                // Close the other one
+                var otherIdx = idx === 0 ? 1 : 0;
+                if (detailsEls[otherIdx].open) {
+                    detailsEls[otherIdx].open = false;
+                }
+                if (formMap[otherIdx]) {
+                    formMap[otherIdx].style.display = 'none';
+                }
+            } else {
+                form.style.display = 'none';
+            }
+        });
+    });
+})();
+</script>

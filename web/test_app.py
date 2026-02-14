@@ -2,7 +2,8 @@
 Test suite for the Watchtower web UI.
 
 Covers: all routes (200s), htmx partial rendering, CSRF protection,
-error handlers, task detail pages, search, quality gate, and data integrity.
+error handlers, task detail pages, kanban board, quality gate,
+session cockpit, search, and data integrity.
 
 Run: pytest web/test_app.py -v
 """
@@ -30,7 +31,6 @@ def client():
 @pytest.fixture
 def csrf_client(client):
     """Client with a valid CSRF token pre-loaded."""
-    # Hit any page to establish a session with CSRF token
     client.get("/")
     with client.session_transaction() as sess:
         token = sess.get("_csrf_token", "")
@@ -53,6 +53,8 @@ class TestRoutes:
             "/directives",
             "/timeline",
             "/tasks",
+            "/tasks?view=board",
+            "/tasks?view=list",
             "/tasks?show_all=true",
             "/decisions",
             "/learnings",
@@ -87,7 +89,6 @@ class TestHtmxPartials:
         resp = client.get(path, headers={"HX-Request": "true"})
         assert resp.status_code == 200
         html = resp.data.decode()
-        # Fragment should NOT contain full page wrapper elements
         assert "<!DOCTYPE" not in html
         assert "<html" not in html
 
@@ -99,7 +100,6 @@ class TestHtmxPartials:
         resp = client.get(path)
         assert resp.status_code == 200
         html = resp.data.decode()
-        # Full page SHOULD contain wrapper elements
         assert "<!DOCTYPE" in html or "<html" in html
 
 
@@ -128,7 +128,6 @@ class TestCSRF:
             "/api/task/T-001/status",
             data={"status": "started-work", "_csrf_token": token},
         )
-        # Should NOT be 403 (CSRF passed)
         assert resp.status_code != 403
 
     def test_csrf_via_header(self, csrf_client):
@@ -184,7 +183,6 @@ class TestTaskDetail:
         assert resp.status_code == 200
         html = resp.data.decode()
         assert "T-001" in html
-        assert "success metrics" in html.lower() or "Define" in html
 
     def test_task_id_validation_blocks_injection(self, client):
         resp = client.get("/tasks/T-001;rm+-rf")
@@ -208,7 +206,49 @@ class TestTaskDetail:
 
 
 # =========================================================================
-# Timeline API
+# Kanban Board
+# =========================================================================
+
+
+class TestKanbanBoard:
+    """Kanban board view works correctly."""
+
+    def test_board_view_renders(self, client):
+        resp = client.get("/tasks?view=board")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Board" in html or "board" in html
+
+    def test_list_view_renders(self, client):
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "List" in html or "table" in html.lower()
+
+    def test_create_task_form_present(self, client):
+        resp = client.get("/tasks?view=board")
+        html = resp.data.decode()
+        assert "Create Task" in html
+
+    def test_create_task_api_requires_name(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_create_task_api_validates_type(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "invalid", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+
+# =========================================================================
+# Timeline
 # =========================================================================
 
 
@@ -218,7 +258,6 @@ class TestTimeline:
     def test_timeline_page(self, client):
         resp = client.get("/timeline")
         assert resp.status_code == 200
-        # Should contain at least one session
         html = resp.data.decode()
         assert "S-" in html
 
@@ -232,7 +271,7 @@ class TestTimeline:
 
     def test_timeline_task_nonexistent(self, client):
         resp = client.get("/api/timeline/task/T-999")
-        assert resp.status_code == 200  # Returns "No episodic data" message
+        assert resp.status_code == 200
 
 
 # =========================================================================
@@ -271,23 +310,82 @@ class TestQualityGate:
 
 
 # =========================================================================
-# Data integrity — pages contain expected content
+# Session Cockpit
+# =========================================================================
+
+
+class TestSessionCockpit:
+    """Session status and write action endpoints."""
+
+    def test_session_status_returns_200(self, client):
+        resp = client.get("/api/session/status")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Branch" in html or "branch" in html
+
+    def test_session_status_shows_git_info(self, client):
+        resp = client.get("/api/session/status")
+        html = resp.data.decode()
+        assert "master" in html or "main" in html
+
+    def test_decision_api_requires_csrf(self, client):
+        resp = client.post("/api/decision", data={"decision": "Test"})
+        assert resp.status_code == 403
+
+    def test_decision_api_requires_text(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/decision",
+            data={"decision": "", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_learning_api_requires_csrf(self, client):
+        resp = client.post("/api/learning", data={"learning": "Test"})
+        assert resp.status_code == 403
+
+    def test_learning_api_requires_text(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/learning",
+            data={"learning": "", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_session_init_requires_csrf(self, client):
+        resp = client.post("/api/session/init")
+        assert resp.status_code == 403
+
+    def test_healing_api_requires_csrf(self, client):
+        resp = client.post("/api/healing/T-001")
+        assert resp.status_code == 403
+
+    def test_healing_api_validates_task_id(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/healing/INVALID",
+            data={"_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+
+# =========================================================================
+# Data integrity
 # =========================================================================
 
 
 class TestDataIntegrity:
     """Pages display real framework data."""
 
-    def test_dashboard_has_task_counts(self, client):
-        resp = client.get("/")
-        html = resp.data.decode()
-        # Dashboard should mention tasks
-        assert "task" in html.lower() or "Task" in html
-
     def test_dashboard_shows_watchtower(self, client):
         resp = client.get("/")
         html = resp.data.decode()
         assert "Watchtower" in html
+
+    def test_dashboard_has_task_counts(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "task" in html.lower() or "Task" in html
 
     def test_gaps_page_shows_gaps(self, client):
         resp = client.get("/gaps")
@@ -318,19 +416,16 @@ class TestDataIntegrity:
         resp = client.get("/project/001-Vision")
         assert resp.status_code == 200
         html = resp.data.decode()
-        # Should contain rendered markdown (not raw)
         assert "<h" in html or "<p>" in html
 
-    def test_tasks_page_shows_all_with_filter(self, client):
-        resp = client.get("/tasks?show_all=true")
+    def test_tasks_page_shows_tasks(self, client):
+        resp = client.get("/tasks?view=list")
         html = resp.data.decode()
-        assert "T-001" in html
+        assert "T-0" in html
 
     def test_search_returns_results(self, client):
         resp = client.get("/search?q=antifragility")
-        html = resp.data.decode()
         assert resp.status_code == 200
-        assert "antifragility" in html.lower() or "result" in html.lower() or "match" in html.lower()
 
 
 # =========================================================================

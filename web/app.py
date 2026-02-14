@@ -71,12 +71,14 @@ from web.blueprints.tasks import bp as tasks_bp
 from web.blueprints.timeline import bp as timeline_bp
 from web.blueprints.discovery import bp as discovery_bp
 from web.blueprints.quality import bp as quality_bp
+from web.blueprints.session import bp as session_bp
 
 app.register_blueprint(core_bp)
 app.register_blueprint(tasks_bp)
 app.register_blueprint(timeline_bp)
 app.register_blueprint(discovery_bp)
 app.register_blueprint(quality_bp)
+app.register_blueprint(session_bp)
 
 # ---------------------------------------------------------------------------
 # Error handlers

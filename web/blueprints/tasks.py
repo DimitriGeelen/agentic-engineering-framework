@@ -88,6 +88,10 @@ def tasks():
         "specification", "design",
     ]
 
+    view = request.args.get("view", "board")
+    if view not in ("board", "list"):
+        view = "board"
+
     return render_page(
         "tasks.html",
         page_title="Tasks",
@@ -99,6 +103,7 @@ def tasks():
         type_filter=type_filter,
         component_filter=component_filter,
         sort_by=sort_by,
+        view=view,
     )
 
 
@@ -144,6 +149,55 @@ def task_detail(task_id):
         task_id=task_id,
         status_options=status_options,
     )
+
+
+@bp.route("/api/task/create", methods=["POST"])
+def create_task():
+    name = request.form.get("name", "").strip()
+    workflow_type = request.form.get("type", "build").strip()
+    owner = request.form.get("owner", "human").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name:
+        return '<p style="color: var(--pico-del-color);">Task name is required</p>', 400
+
+    allowed_types = ["build", "test", "refactor", "specification", "design", "decommission"]
+    if workflow_type not in allowed_types:
+        return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
+
+    allowed_owners = ["human", "claude-code"]
+    if owner not in allowed_owners:
+        return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
+
+    try:
+        cmd = [
+            str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "create",
+            "--name", name,
+            "--type", workflow_type,
+            "--owner", owner,
+        ]
+        if description:
+            cmd.extend(["--description", description])
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+        )
+        if result.returncode == 0:
+            # Extract task ID from output if possible
+            id_match = re_mod.search(r"(T-\d{3})", result.stdout)
+            task_id = id_match.group(1) if id_match else "new task"
+            return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
+        else:
+            return (
+                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
+                500,
+            )
+    except Exception as e:
+        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
 
 
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
