@@ -26,13 +26,15 @@ NAV_GROUPS = [
         ("Timeline", "timeline.timeline",  None),
     ]),
     ("Knowledge", [
-        ("Learnings", "discovery.learnings", None),
-        ("Decisions", "discovery.decisions", None),
+        ("Learnings", "discovery.learnings",  None),
+        ("Patterns",  "discovery.patterns",   None),
+        ("Decisions", "discovery.decisions",  None),
     ]),
     ("Govern", [
-        ("Directives", "core.directives",       None),
-        ("Gaps",       "discovery.gaps",         None),
-        ("Quality",    "quality.quality_gate",   None),
+        ("Directives", "core.directives",          None),
+        ("Gaps",       "discovery.gaps",            None),
+        ("Quality",    "quality.quality_gate",      None),
+        ("Metrics",    "metrics.project_metrics",   None),
     ]),
 ]
 
