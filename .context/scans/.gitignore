@@ -1,0 +1,3 @@
+# Scan results are ephemeral — re-derivable from project state
+SC-*.yaml
+LATEST.yaml

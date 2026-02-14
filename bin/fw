@@ -115,6 +115,7 @@ show_help() {
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
+    echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
@@ -586,6 +587,14 @@ case "$cmd" in
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
+        ;;
+    scan)
+        if ! python3 -c "import yaml" 2>/dev/null; then
+            echo -e "${RED}ERROR: PyYAML is not installed${NC}" >&2
+            echo "  pip install -r $FRAMEWORK_ROOT/web/requirements.txt" >&2
+            exit 1
+        fi
+        cd "$FRAMEWORK_ROOT" && exec python3 -m web.watchtower "$@"
         ;;
     serve)
         # Check Flask is installed

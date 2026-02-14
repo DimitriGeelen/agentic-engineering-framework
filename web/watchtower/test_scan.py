@@ -469,3 +469,64 @@ class TestFeedback:
         inputs = gather_inputs(project, project)
         result = compute_feedback(inputs)
         assert "scan_accuracy" in result
+
+
+class TestFullScan:
+    """Integration test — full scan produces valid output."""
+
+    def test_scan_produces_complete_output(self, project):
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+        assert result["schema_version"] == 1
+        assert result["scan_id"].startswith("SC-")
+        assert result["scan_status"] in ("complete", "partial")
+        assert isinstance(result["summary"], str)
+        assert len(result["summary"]) > 0
+        assert isinstance(result["project_health"], dict)
+        assert isinstance(result["antifragility"], dict)
+        assert isinstance(result["needs_decision"], list)
+        assert isinstance(result["framework_recommends"], list)
+        assert isinstance(result["opportunities"], list)
+        assert isinstance(result["work_queue"], list)
+        assert isinstance(result["risks"], list)
+
+    def test_scan_writes_yaml_file(self, project):
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+        latest = project / ".context" / "scans" / "LATEST.yaml"
+        assert latest.exists()
+        import yaml
+        data = yaml.safe_load(latest.read_text())
+        assert data["scan_id"] == result["scan_id"]
+
+    def test_scan_detects_stale_task(self, project):
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+        all_summaries = " ".join(
+            r.get("summary", "") for r in result["framework_recommends"]
+        )
+        assert "T-002" in all_summaries
+
+    def test_scan_detects_issues_task(self, project):
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+        all_summaries = " ".join(
+            r.get("summary", "") for r in result["needs_decision"]
+        )
+        assert "T-003" in all_summaries
+
+    def test_scan_with_empty_project(self, tmp_path):
+        """Scan on empty project produces valid output with no crashes."""
+        from web.watchtower.scanner import scan
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        (empty / ".context" / "scans").mkdir(parents=True)
+        result = scan(project_root=empty, framework_root=empty)
+        assert result["scan_status"] == "complete"
+        assert result["needs_decision"] == []
+        assert result["work_queue"] == []
+
+    def test_scan_summary_mentions_active_count(self, project):
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+        assert "3 active" in result["summary"]

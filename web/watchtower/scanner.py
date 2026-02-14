@@ -227,22 +227,33 @@ def load_yaml(path):
 # ---------------------------------------------------------------------------
 
 def generate_summary(inputs, needs_decision, framework_recommends, risks, work_queue):
-    """Generate a human-readable summary dict."""
+    """Generate a human-readable summary string."""
     active = inputs["active_tasks"]
     completed = inputs["completed_tasks"]
     issues_tasks = [t for t in active if t.get("status") == "issues"]
 
-    return {
-        "active_tasks": len(active),
-        "completed_tasks": len(completed),
-        "tasks_with_issues": len(issues_tasks),
-        "needs_decision_count": len(needs_decision),
-        "framework_recommends_count": len(framework_recommends),
-        "risk_count": len(risks),
-        "work_queue_size": len(work_queue),
-        "audit_status": _get_audit_status(inputs),
-        "velocity": _compute_velocity(completed),
-    }
+    parts = [f"{len(active)} active"]
+    if issues_tasks:
+        parts.append(f"{len(issues_tasks)} with issues")
+    parts.append(f"{len(completed)} completed")
+
+    summary = "Project: " + ", ".join(parts) + "."
+
+    items = []
+    if needs_decision:
+        items.append(f"{len(needs_decision)} need decision")
+    if framework_recommends:
+        items.append(f"{len(framework_recommends)} recommendations")
+    if risks:
+        items.append(f"{len(risks)} risks")
+    if items:
+        summary += " " + ", ".join(items) + "."
+
+    if work_queue:
+        top = work_queue[0]
+        summary += f" Top priority: {top.get('task_id', '?')} ({top.get('status', '?')})."
+
+    return summary
 
 
 def compute_health(inputs):
@@ -289,14 +300,16 @@ def compute_delta(inputs, needs_decision, framework_recommends):
     if not prev:
         return {"first_scan": True}
 
-    prev_summary = prev.get("summary", {})
+    # Use project_health for numeric task counts (summary is now a string)
+    prev_health = prev.get("project_health", {})
+    prev_trace = prev_health.get("traceability", {})
     curr_active = len(inputs["active_tasks"])
     curr_completed = len(inputs["completed_tasks"])
 
     return {
         "first_scan": False,
-        "active_tasks_delta": curr_active - prev_summary.get("active_tasks", 0),
-        "completed_tasks_delta": curr_completed - prev_summary.get("completed_tasks", 0),
+        "active_tasks_delta": curr_active - prev_trace.get("active", 0),
+        "completed_tasks_delta": curr_completed - prev_trace.get("completed", 0),
         "new_decisions_needed": len(needs_decision) - len(prev.get("needs_decision", [])),
         "new_recommendations": len(framework_recommends) - len(prev.get("framework_recommends", [])),
     }

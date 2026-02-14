@@ -80,4 +80,13 @@ EOF
     echo "  $CONTEXT_DIR/working/session.yaml"
     echo "  $CONTEXT_DIR/working/focus.yaml"
     echo "  $CONTEXT_DIR/working/.tool-counter (reset to 0)"
+
+    # Auto-run watchtower scan (Phase 4)
+    if python3 -c "import web.watchtower" 2>/dev/null; then
+        echo ""
+        echo "Running watchtower scan..."
+        cd "$FRAMEWORK_ROOT" && python3 -m web.watchtower --quiet 2>/dev/null && \
+            echo "  Scan written to .context/scans/LATEST.yaml" || \
+            echo "  (scan skipped — non-critical)"
+    fi
 }
