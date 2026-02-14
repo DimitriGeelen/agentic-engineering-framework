@@ -596,7 +596,7 @@ case "$cmd" in
             echo "  pip install -r $FRAMEWORK_ROOT/web/requirements.txt" >&2
             exit 1
         fi
-        exec python3 "$FRAMEWORK_ROOT/web/app.py" "$@"
+        cd "$FRAMEWORK_ROOT" && exec python3 -m web.app "$@"
         ;;
     task)
         route_task "$@"

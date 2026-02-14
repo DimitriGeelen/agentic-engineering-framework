@@ -3,7 +3,7 @@
     <p>Full-text search across tasks, decisions, learnings, patterns, and documentation.</p>
 </div>
 
-<form action="{{ url_for('search') }}" method="get" role="search" hx-get="{{ url_for('search') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+<form action="{{ url_for('discovery.search') }}" method="get" role="search" hx-get="{{ url_for('discovery.search') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
     <fieldset role="group">
         <input type="search" name="q" value="{{ query | default('') }}" placeholder="Search framework content..." aria-label="Search" minlength="2" required>
         <button type="submit">Search</button>

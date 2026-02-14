@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-054: Split app.py into Flask blueprints
+# ============================================================================
+# Generated: 2026-02-14T13:15:10Z | Enriched: 2026-02-14T13:16:00Z
+
+task_id: T-054
+task_name: "Split app.py into Flask blueprints"
+workflow_type: refactor
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T13:06:00Z
+completed: 2026-02-14T13:15:10Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Refactored web/app.py (700 lines) into 4 Flask blueprints plus a shared
+  helpers module. This eliminates the concurrent-modification risk identified
+  in the previous session (4 agents modified app.py simultaneously). Each
+  blueprint is independently editable: core (dashboard, project docs, directives),
+  tasks, timeline, and discovery (decisions, learnings, gaps, search).
+
+# Key outcomes
+outcomes:
+  - "app.py reduced from 700 lines to 166 lines (app factory + CSRF + error handlers)"
+  - "4 blueprints: core.py, tasks.py, timeline.py, discovery.py"
+  - "shared.py: render_page helper, path constants, NAV_ITEMS"
+  - "All 16 tests pass (routes, htmx partials, CSRF, 404)"
+  - "fw serve updated to use python3 -m web.app for package imports"
+
+# What worked well
+successes:
+  - description: "Clean separation by domain"
+    why: "Routes naturally grouped into 4 domains with no cross-dependencies"
+  - description: "url_for blueprint prefix migration caught by tests"
+    why: "Flask test client immediately showed BuildError for non-prefixed endpoints"
+
+# Challenges encountered
+challenges:
+  - description: "Templates used non-prefixed url_for endpoint names"
+    resolution: "Updated all url_for calls in 5 templates to use blueprint prefix (e.g. 'tasks' → 'tasks.tasks')"
+  - description: "fw serve needed module-style invocation"
+    resolution: "Changed 'python3 web/app.py' to 'cd $FRAMEWORK_ROOT && python3 -m web.app'"
+
+# Decisions made during this task
+decisions:
+  - decision: "4 blueprints instead of 1 per route"
+    rationale: "Routes naturally cluster by domain. 13 separate files would be over-engineered."
+    alternatives_rejected: ["Keep monolithic app.py", "1 blueprint per route"]
+  - decision: "Extract shared.py for render_page and constants"
+    rationale: "All blueprints need render_page, PROJECT_ROOT, NAV_ITEMS. Avoids circular imports."
+    alternatives_rejected: ["Put helpers in app.py and import from there"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "web/shared.py"
+    - "web/blueprints/__init__.py"
+    - "web/blueprints/core.py"
+    - "web/blueprints/tasks.py"
+    - "web/blueprints/timeline.py"
+    - "web/blueprints/discovery.py"
+  modified:
+    - "web/app.py"
+    - "web/templates/index.html"
+    - "web/templates/_error.html"
+    - "web/templates/project.html"
+    - "web/templates/project_doc.html"
+    - "web/templates/search.html"
+    - "bin/fw"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags:
+  - cli
+  - D3
+  - refactor
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-054-split-apppy-into-flask-blueprints.md
+generated_by: context-agent

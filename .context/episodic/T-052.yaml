@@ -1,20 +1,12 @@
 # ============================================================================
 # EPISODIC MEMORY - T-052: Simplify default task template
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
-#
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
-# must be filled in by a human or LLM before this episodic is useful.
-#
-# To enrich: Read the source task file and fill in the TODO sections.
-# When done: Change enrichment_status from "pending" to "complete"
-# ============================================================================
-# Generated: 2026-02-14T13:05:34Z
+# Generated: 2026-02-14T13:05:34Z | Enriched: 2026-02-14T13:15:00Z
 
 task_id: T-052
 task_name: "Simplify default task template"
 workflow_type: refactor
-enrichment_status: pending  # Change to "complete" after enrichment
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-14T12:48:48Z
@@ -23,41 +15,47 @@ duration_days: 0
 updates_count: 2
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
-# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-052-simplify-default-task-template.md]
+  Simplified the default task template and create-task.sh based on evidence from
+  50 tasks. Removed 3 dead body sections (Design Record, Specification Record,
+  Test Files) that were placeholder text in every single task, replacing them with
+  a single Context section. Removed 3 unused frontmatter fields (priority, tags,
+  agents). Closed G-003 and G-006.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - "Task completed"
+  - "Template reduced from 47 lines to 25 lines"
+  - "G-003 closed: removed unused frontmatter fields"
+  - "G-006 closed: removed dead body sections"
+  - "create-task.sh updated to match simplified template"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
-# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "Single Context section replaces three specialized sections"
+    why: "Flexible enough for both small fixes (one sentence) and large tasks (linked docs)"
+  - description: "Removing --priority and --tags from CLI without breakage"
+    why: "No consumer ever read these fields, so removal had zero impact"
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
-challenges:
-  # No challenges detected (or add manually)
+challenges: []
 
 # Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
-# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
-  - decision: "[TODO: Extract from Design Record]"
-    rationale: "[TODO: Why this choice?]"
-    alternatives_rejected: []
+  - decision: "Replace Design Record + Specification Record + Test Files with single Context"
+    rationale: "All 50 tasks used Updates for actual content. The three sections were always placeholder."
+    alternatives_rejected: ["Keep sections but make them optional comments"]
+  - decision: "Keep workflow_type in frontmatter despite being in G-003"
+    rationale: "workflow_type IS consumed by task list filtering and episodic tags, unlike priority/tags/agents"
+    alternatives_rejected: ["Remove all fields listed in G-003"]
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
 artifacts:
-  created:
-    - "[TODO: List files created]"
-  modified: []
+  created: []
+  modified:
+    - ".tasks/templates/default.md"
+    - "agents/task-create/create-task.sh"
+    - "010-TaskSystem.md"
+    - ".context/project/gaps.yaml"
 
 # Related tasks
 related_tasks:
@@ -66,7 +64,11 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags:
+  - task-system
+  - D3
+  - refactor
+  - P-001
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-052-simplify-default-task-template.md

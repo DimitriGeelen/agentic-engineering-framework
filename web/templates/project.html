@@ -15,7 +15,7 @@
         {% for doc in docs %}
         <tr>
             <td>
-                <a href="{{ url_for('project_doc', doc=doc.name) }}"
+                <a href="{{ url_for('core.project_doc', doc=doc.name) }}"
                    hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                     {{ doc.name }}
                 </a>
