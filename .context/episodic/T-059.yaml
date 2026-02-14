@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-059: Context exhaustion protection (defense in depth)
+# ============================================================================
+# Generated: 2026-02-14T18:42:57Z
+
+task_id: T-059
+task_name: "Context exhaustion protection (defense in depth)"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T18:39:21Z
+completed: 2026-02-14T18:42:57Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Implemented five-layer defense against context exhaustion after a session hit 0%
+  context without generating a handover. Root cause: 72 tool calls consumed context
+  (agent outputs 268K-532K bytes each) with no circuit breaker. All code was saved
+  by frequent commits, but handover/session-capture were lost. Built: CLAUDE.md rules
+  (P-009), automatic tool-call counter hook, post-commit counter reset + staleness
+  check, emergency/checkpoint handover modes, and pattern/practice records.
+
+# Key outcomes
+outcomes:
+  - "Automatic tool-call counter warns at 40/60/80 calls via Claude Code hook"
+  - "Emergency handover mode produces zero-[TODO] machine-gathered handover"
+  - "Checkpoint handover mode creates mid-session recovery points"
+  - "Post-commit hook resets counter and detects stale handovers"
+  - "P-009 practice codified: Context Budget Awareness"
+
+# What worked well
+successes:
+  - description: "Commit-early-commit-often pattern saved all code"
+    why: "Both Phase 1 and Phase 2 of Watchtower were committed before context died — zero code loss"
+  - description: "Parallel investigation agents for root cause analysis"
+    why: "Three agents (transcript analysis, infrastructure research, damage assessment) ran in parallel for fast diagnosis"
+  - description: "Defense-in-depth design with independent layers"
+    why: "Each layer works independently — if any one fails, others still protect"
+
+# Challenges encountered
+challenges:
+  - description: "Cannot get real-time context percentage from Claude Code"
+    resolution: "Used tool-call count as proxy — imperfect but practical"
+  - description: "Claude Code hooks cannot inject messages into conversation"
+    resolution: "Hooks write to stderr which appears in tool output as warnings"
+
+# Decisions made during this task
+decisions:
+  - decision: "Use tool-call count as context proxy instead of trying to measure tokens"
+    rationale: "Token counting is not exposed by Claude Code; tool calls are countable and correlate with context consumption"
+    alternatives_rejected: ["Token estimation heuristic", "Time-based warnings"]
+  - decision: "Never block tool calls from hooks (always exit 0)"
+    rationale: "Blocking could prevent the emergency handover itself from executing"
+    alternatives_rejected: ["Block at critical threshold"]
+  - decision: "Post-commit resets counter, not handover"
+    rationale: "Commits are the real safety checkpoints; rewards commit-often behavior"
+    alternatives_rejected: ["Reset only on handover generation"]
+  - decision: "Emergency handover has zero [TODO] sections"
+    rationale: "The whole point is to work when the AI cannot fill sections in"
+    alternatives_rejected: ["Reduced [TODO] count"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "agents/context/checkpoint.sh"
+    - ".claude/settings.json"
+  modified:
+    - "CLAUDE.md (P-009 Context Budget Management section)"
+    - "agents/handover/handover.sh (--emergency, --checkpoint modes)"
+    - "agents/git/lib/hooks.sh (post-commit v1.1: counter reset + staleness check)"
+    - "bin/fw (help text for new handover flags)"
+    - ".context/project/practices.yaml (P-009)"
+    - ".context/project/patterns.yaml (FP-004, SP-003)"
+    - ".gitignore (.tool-counter)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [context-fabric, cli, handover, audit, healing-loop]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-059-context-exhaustion-protection-defense-in.md
+generated_by: claude-code
