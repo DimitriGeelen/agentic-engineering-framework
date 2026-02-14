@@ -61,6 +61,9 @@ class TestRoutes:
             "/gaps",
             "/search",
             "/quality",
+            "/metrics",
+            "/patterns",
+            "/patterns?type=failure",
         ],
     )
     def test_route_returns_200(self, client, path):
@@ -83,7 +86,7 @@ class TestHtmxPartials:
 
     @pytest.mark.parametrize(
         "path",
-        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality"],
+        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality", "/metrics", "/patterns"],
     )
     def test_htmx_returns_fragment(self, client, path):
         resp = client.get(path, headers={"HX-Request": "true"})
@@ -461,3 +464,101 @@ class TestNavigation:
         resp = client.get("/")
         html = resp.data.decode()
         assert "Watchtower v1.0.0" in html
+
+
+# =========================================================================
+# Phase 3 — Operational Intelligence
+# =========================================================================
+
+
+class TestMetrics:
+    """Metrics page shows project health data."""
+
+    def test_metrics_has_task_counts(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Active Tasks" in html
+        assert "completed" in html.lower()
+
+    def test_metrics_has_traceability(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Traceability" in html
+        assert "gauge-" in html
+
+    def test_metrics_has_knowledge_counts(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Knowledge Items" in html
+
+    def test_metrics_has_recent_commits(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Recent Commits" in html
+
+    def test_metrics_has_refresh_button(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Refresh" in html
+
+
+class TestPatterns:
+    """Patterns page shows categorized patterns with filtering."""
+
+    def test_patterns_has_all_types(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "FP-" in html or "SP-" in html or "AF-" in html or "WP-" in html
+
+    def test_patterns_filter_by_type(self, client):
+        resp = client.get("/patterns?type=failure")
+        html = resp.data.decode()
+        assert "FP-" in html
+        assert "SP-" not in html
+
+    def test_patterns_antifragile_has_escalation(self, client):
+        resp = client.get("/patterns?type=antifragile")
+        html = resp.data.decode()
+        assert "escalation-ladder" in html
+        assert "step-letter" in html
+
+    def test_patterns_has_tab_bar(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "pattern-tabs" in html
+        assert "Failure" in html
+
+    def test_patterns_cards_link_to_tasks(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "/tasks/T-" in html
+
+
+class TestPhase3Integration:
+    """Cross-cutting Phase 3 integration checks."""
+
+    def test_learnings_no_longer_has_pattern_tables(self, client):
+        resp = client.get("/learnings")
+        html = resp.data.decode()
+        assert "Failure Patterns" not in html
+        assert "pattern" in html.lower()  # but has the link
+
+    def test_learnings_has_patterns_link(self, client):
+        resp = client.get("/learnings")
+        html = resp.data.decode()
+        assert "/patterns" in html
+
+    def test_nav_has_patterns(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Patterns" in html
+
+    def test_nav_has_metrics(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Metrics" in html
+
+    def test_dashboard_has_system_health(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "System Health" in html
