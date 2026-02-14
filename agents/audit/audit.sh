@@ -513,6 +513,28 @@ if [ "$pending_enrichment" -eq 0 ] && [ "$low_quality_episodic" -eq 0 ]; then
     fi
 fi
 
+# Check 3: Orphaned episodic files (no matching task)
+orphaned_episodic=0
+if [ -d "$episodic_dir" ]; then
+    shopt -s nullglob
+    for episodic_file in "$episodic_dir"/T-*.yaml; do
+        [ -f "$episodic_file" ] || continue
+        task_id=$(basename "$episodic_file" .yaml)
+        task_file=$(find "$TASKS_DIR" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+        if [ -z "$task_file" ]; then
+            warn "Orphaned episodic: $task_id has no matching task file" \
+                 "$episodic_file has no corresponding task" \
+                 "Remove orphaned episodic or create matching task"
+            orphaned_episodic=$((orphaned_episodic + 1))
+        fi
+    done
+    shopt -u nullglob
+fi
+
+if [ "$orphaned_episodic" -eq 0 ] && [ -d "$episodic_dir" ]; then
+    pass "No orphaned episodic files"
+fi
+
 echo ""
 
 # ============================================
@@ -523,7 +545,7 @@ echo "=== OBSERVATION INBOX CHECKS ==="
 INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
 
 if [ -f "$INBOX_FILE" ]; then
-    pending_obs=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    pending_obs=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending_obs=0
     urgent_obs=0
     stale_obs=0
 

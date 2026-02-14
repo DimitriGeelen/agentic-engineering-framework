@@ -117,7 +117,7 @@ EOF
 do_list() {
     ensure_inbox
     local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
 
     if [ "$pending" -eq 0 ]; then
         echo -e "${GREEN}Inbox empty${NC} — no pending observations"
@@ -156,9 +156,9 @@ PYEOF
 do_count() {
     ensure_inbox
     local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
     local urgent
-    urgent=$(grep -c 'urgent: true' "$INBOX_FILE" 2>/dev/null || echo 0)
+    urgent=$(grep -c 'urgent: true' "$INBOX_FILE" 2>/dev/null) || urgent=0
 
     if [ "$urgent" -gt 0 ]; then
         echo "$pending pending ($urgent urgent)"
@@ -225,7 +225,7 @@ do_dismiss() {
 do_triage() {
     ensure_inbox
     local pending
-    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    pending=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || pending=0
 
     if [ "$pending" -eq 0 ]; then
         echo -e "${GREEN}Nothing to triage${NC} — inbox is clean"

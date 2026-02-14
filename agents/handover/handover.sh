@@ -159,7 +159,7 @@ INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
 PENDING_OBS=0
 URGENT_OBS=0
 if [ -f "$INBOX_FILE" ]; then
-    PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null || echo 0)
+    PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || PENDING_OBS=0
     URGENT_OBS=$(python3 -c "
 import re
 with open('$INBOX_FILE') as f:

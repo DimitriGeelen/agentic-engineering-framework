@@ -8,14 +8,14 @@ observations:
     captured: 2026-02-14T09:20:33Z
     context_task: T-030
     tags: [improvement]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-002
     text: "pre-push hook exit code 127 is not handled"
     captured: 2026-02-14T09:20:33Z
     context_task: T-030
     tags: [bug]
-    status: pending
+    status: dismissed
     promoted_to: null
     urgent: true
   - id: OBS-003
