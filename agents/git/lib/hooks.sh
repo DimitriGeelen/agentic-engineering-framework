@@ -83,18 +83,20 @@ HOOK_EOF
 
     chmod +x "$commit_msg_hook"
 
-    # Create post-commit hook for bypass detection
+    # Create post-commit hook for bypass detection + context checkpoint
     cat > "$post_commit_hook" << 'HOOK_EOF'
 #!/bin/bash
-# post-commit hook - Bypass Detection
+# post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.0
+# VERSION=1.1
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
 # Get the commit message
 COMMIT_MSG=$(git log -1 --format=%B HEAD)
 
-# Check if it has a task reference
+# --- Task reference check ---
 if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo ""
     echo "WARNING: Commit made without task reference (bypass detected)"
@@ -102,6 +104,29 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo "Please log this bypass:"
     echo "  ./agents/git/git.sh log-bypass --commit $(git rev-parse --short HEAD) --reason \"your reason\""
     echo ""
+fi
+
+# --- Context checkpoint: reset tool counter on commit ---
+COUNTER_FILE="$PROJECT_ROOT/.context/working/.tool-counter"
+if [ -f "$COUNTER_FILE" ]; then
+    echo "0" > "$COUNTER_FILE"
+fi
+
+# --- Handover staleness check ---
+LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
+if [ -f "$LATEST" ]; then
+    TODO_COUNT=$(grep -c '\[TODO' "$LATEST" 2>/dev/null || true)
+    if [ "${TODO_COUNT:-0}" -gt 3 ]; then
+        HANDOVER_TIME=$(stat -c %Y "$LATEST" 2>/dev/null || stat -f %m "$LATEST" 2>/dev/null || echo 0)
+        NOW=$(date +%s)
+        ELAPSED=$(( (NOW - HANDOVER_TIME) / 60 ))
+        if [ "$ELAPSED" -gt 60 ]; then
+            echo ""
+            echo "HANDOVER STALE: Last handover has $TODO_COUNT unfilled [TODO] sections (${ELAPSED}min old)"
+            echo "  Run: fw handover --commit"
+            echo ""
+        fi
+    fi
 fi
 HOOK_EOF
 

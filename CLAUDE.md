@@ -313,6 +313,32 @@ Synthesizes current state from:
 - **Git State** — Uncommitted changes, recent commits
 - **Tasks** — Active tasks with status
 
+## Context Budget Management (P-009)
+
+**Context is a finite, non-renewable resource within a session.** Treat it like a battery gauge.
+
+### Commit Cadence Rule
+- **Commit after every meaningful unit of work** (not just at session end)
+- A "meaningful unit" = completing a subtask, finishing a file, or making a decision
+- Each commit is a checkpoint: if context runs out, work up to the last commit is safe
+- Target: at least one commit every 15-20 minutes of active work
+
+### Handover Timing Rule
+- **Generate handover AFTER work is done, not before**
+- Never generate a skeleton handover "to fill in later" — the session may not survive to fill it
+- When generating handover: fill in ALL [TODO] sections immediately in the same operation
+- For mid-session checkpoints: `fw handover --checkpoint`
+
+### Agent Output Discipline
+- When using Task/Agent tools, request concise output (summaries, not raw data)
+- Prefer `fw resume quick` over `fw resume status` for routine checks
+- Prefer `git log --oneline -5` over `git log -5`
+
+### Emergency Protocol
+- If you notice the system warning about context or unusual truncation:
+  immediately run `fw handover --emergency` and commit
+- Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
+
 ## Session Start Protocol
 
 **Before beginning any work:**

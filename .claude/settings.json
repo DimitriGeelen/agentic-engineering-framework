@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "command": "/opt/999-Agentic-Engineering-Framework/agents/context/checkpoint.sh post-tool"
+      }
+    ]
+  }
+}

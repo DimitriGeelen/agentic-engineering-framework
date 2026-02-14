@@ -109,6 +109,8 @@ show_help() {
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
     echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
+    echo -e "  ${GREEN}handover --emergency${NC} Emergency handover (no [TODO]s, auto-generated)"
+    echo -e "  ${GREEN}handover --checkpoint${NC} Mid-session checkpoint (P-009)"
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"

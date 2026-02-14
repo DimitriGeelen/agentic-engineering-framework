@@ -82,3 +82,13 @@ practices:
     origin_date: 2026-02-14
     status: active
     applications: 8
+
+  - id: P-009
+    name: "Context Budget Awareness"
+    derived_from: [D1, D2]
+    description: "Treat context window as a finite, non-renewable resource. Commit early and often — each commit is a recovery checkpoint. Generate handovers AFTER work, never as skeletons. Use --emergency mode when context is critical."
+    anti_pattern: "Running 72 tool calls without committing, generating skeleton handovers with [TODO] placeholders, then losing all session context."
+    origin_task: T-059
+    origin_date: 2026-02-14
+    status: active
+    applications: 0

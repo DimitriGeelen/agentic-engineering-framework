@@ -39,6 +39,21 @@ success_patterns:
     date_learned: 2026-02-13
     context: "Scripts are reliable, AGENT.md provides judgment guidance"
 
+  - id: FP-004
+    pattern: "Context exhaustion before handover"
+    description: "72 tool calls consumed context. Agent outputs (268K-532K bytes each) were the primary consumer. Handover was a skeleton with [TODO] placeholders — useless for recovery."
+    learned_from: T-059
+    date_learned: 2026-02-14
+    mitigation: "Defense in depth: L1 CLAUDE.md rules, L2 tool-call counter hook, L3 post-commit checkpoint reset, L4 emergency handover mode"
+
+success_patterns:
+  - id: SP-003
+    pattern: "Commit early, commit often"
+    description: "Frequent commits preserve work even when session context is lost. Each commit is a recovery point."
+    learned_from: T-059
+    date_learned: 2026-02-14
+    context: "Despite losing all context, all code changes were preserved because Phase 1 and Phase 2 were committed before exhaustion"
+
 workflow_patterns:
   - id: WP-001
     pattern: "Task absorption"
