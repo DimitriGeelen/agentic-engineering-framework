@@ -51,5 +51,21 @@ learnings:
     context: "E-005 found classifier checked 'code' before 'dependency', causing misclassification"
     application: "When building keyword classifiers, order from most-specific to least-specific"
 
+  - id: L-007
+    learning: "grep -c || echo 0 produces multi-line output — use ) || var=0 instead"
+    source: T-041
+    task: T-041
+    date: 2026-02-14
+    context: "grep -c returns 0 with exit code 1 when no matches; || echo 0 appends a second '0', making the variable '0\\n0' which breaks integer comparisons"
+    application: "Use var=$(grep -c ... 2>/dev/null) || var=0 — the fallback assignment only runs on failure, doesn't contaminate stdout"
+
+  - id: L-008
+    learning: "((x++)) crashes under set -e when x=0 — use x=$((x + 1))"
+    source: T-033
+    task: T-033
+    date: 2026-02-14
+    context: "((0++)) evaluates to 0 (falsy), returning exit code 1 which triggers set -e"
+    application: "Never use ((var++)) in set -e scripts — use var=$((var + 1)) which always returns 0"
+
 # Candidate learnings (need validation before promotion)
 candidates: []
