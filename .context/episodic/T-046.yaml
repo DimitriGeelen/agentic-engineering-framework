@@ -1,20 +1,12 @@
 # ============================================================================
 # EPISODIC MEMORY - T-046: Dashboard, project docs, and directives pages
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
-#
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
-# must be filled in by a human or LLM before this episodic is useful.
-#
-# To enrich: Read the source task file and fill in the TODO sections.
-# When done: Change enrichment_status from "pending" to "complete"
-# ============================================================================
-# Generated: 2026-02-14T12:27:34Z
+# Generated: 2026-02-14T12:27:34Z | Enriched: 2026-02-14T15:45:00Z
 
 task_id: T-046
 task_name: "Dashboard, project docs, and directives pages"
 workflow_type: build
-enrichment_status: pending  # Change to "complete" after enrichment
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-14T11:34:14Z
@@ -23,42 +15,53 @@ duration_days: 0
 updates_count: 4
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
-# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-046-dashboard-project-docs-and-directives-pa.md]
+  Built three strategic web UI pages with live data. Dashboard (/) shows project
+  overview with task counts, gap count, and last session ID. Project page
+  (/project) lists all foundational documents (001-Vision through
+  025-ArtifactDiscovery, FRAMEWORK.md) with clickable links to rendered markdown.
+  Directives page (/directives) serves as the traceability hub — each directive
+  (D1-D4) shows expandable details with linked practices, decisions, and gaps.
+  Path traversal protection added to project doc rendering.
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - "Task completed"
+  - "Dashboard shows active tasks, completed count, gap count, last session"
+  - "/project lists all foundational docs with markdown rendering"
+  - "/project/<doc> renders markdown with path traversal protection"
+  - "/directives shows D1-D4 with linked practices, decisions, gaps"
+  - "All cross-references are clickable links"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
-# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "Directives as traceability hub"
+    why: "Naturally groups all artifacts by constitutional directive — answers 'why does this exist?'"
+  - description: "Path traversal protection on project doc route"
+    why: "Caught early during testing — prevents reading arbitrary files via URL manipulation"
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
 challenges:
-  - description: "- **Testing:** All routes return HTTP 200, real data verified (counts, doc names, directive IDs, practice/decision cross-references), htmx partial rendering confirmed, path traversal blocked with 404"
-    resolution: "See task updates"
+  - description: "Rendering markdown safely required HTML sanitization"
+    resolution: "Used markdown2 + bleach for safe HTML rendering"
 
 # Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
-# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
-  - decision: "[TODO: Extract from Design Record]"
-    rationale: "[TODO: Why this choice?]"
-    alternatives_rejected: []
+  - decision: "Directives page uses expandable <details> for linked artifacts"
+    rationale: "Progressive disclosure — page stays scannable while allowing deep exploration"
+    alternatives_rejected: ["Separate page per directive", "Flat list"]
+  - decision: "Read-only pages (no edit capability)"
+    rationale: "Source files are the authority — editing YAML in browser risks corruption"
+    alternatives_rejected: ["Inline editing"]
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
 artifacts:
   created:
-    - "[TODO: List files created]"
-  modified: []
+    - "web/templates/project.html"
+    - "web/templates/project_doc.html"
+    - "web/templates/directives.html"
+  modified:
+    - "web/app.py"
+    - "web/templates/index.html"
 
 # Related tasks
 related_tasks:
@@ -67,7 +70,10 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags:
+  - cli
+  - D3
+  - build
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-046-dashboard-project-docs-and-directives-pa.md
