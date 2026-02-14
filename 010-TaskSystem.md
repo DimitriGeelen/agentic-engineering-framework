@@ -29,9 +29,7 @@ machine-parseable, git-syncable.
     T-039-setup-docker-registry.md
     T-040-implement-health-checks.md
   templates/
-    build.md
-    test.md
-    specification.md
+    default.md
 ```
 
 ### File Format
@@ -106,13 +104,9 @@ See [ADR-007](../docs/decisions/adr-007-oauth.md) for rationale.
 | id | string | yes | Unique identifier (e.g., T-042) |
 | name | string | yes | Human-readable short name |
 | description | string | yes | What this task accomplishes |
-| status | enum | yes | Current lifecycle state |
+| status | enum | yes | Current lifecycle state (captured, started-work, issues, work-completed) |
 | workflow_type | enum | yes | What kind of work this is |
 | owner | string | yes | Who is accountable (human name or "agent") |
-| priority | enum | no | high, medium, low |
-| tags | list[string] | no | Flexible categorization |
-| agents.primary | string | no | Primary agent handling this task |
-| agents.supporting | list[string] | no | Additional agents involved |
 | created | datetime | yes | When task was captured |
 | last_update | datetime | yes | Last modification timestamp |
 | date_finished | datetime | no | When task reached completed status |
@@ -121,36 +115,33 @@ See [ADR-007](../docs/decisions/adr-007-oauth.md) for rationale.
 
 | Section | Purpose |
 |---------|---------|
-| Design Record | Architecture decisions, approach rationale (inline or linked) |
-| Specification Record | Requirements, acceptance criteria (inline or linked) |
-| Test Files | References to test scripts and test artifacts |
+| Context | Design docs, specs, predecessor tasks — scope proportional to task size |
 | Updates | Chronological log of every action taken on this task |
 
 ---
 
 ## Task Statuses (Lifecycle)
 
+Four statuses, validated transitions. Simplified from the original six-status
+model after evidence from 50 tasks showed that `refined` (0 uses) and `blocked`
+(0 uses, `issues` covered all cases) were unnecessary.
+
 ```
                     ┌──────────┐
                     │ Captured │  Task identified, minimal detail
-                    └────┬─────┘
-                         │
-                    ┌────▼─────┐
-                    │ Refined  │  Requirements clear, ready for work
                     └────┬─────┘
                          │
                  ┌───────▼────────┐
                  │ Started Work   │  Active execution
                  └──┬──────────┬──┘
                     │          │
-              ┌─────▼──┐  ┌───▼────┐
-              │ Issues │  │Blocked │  Problem encountered / dependency
-              └─────┬──┘  └───┬────┘
-                    │         │
-                    └────┬────┘
-                         │  (resolved)
-                         │
-                 ┌───────▼────────┐
+                    │    ┌─────▼──┐
+                    │    │ Issues │  Problem or dependency encountered
+                    │    └─────┬──┘
+                    │          │  (resolved)
+                    │◄─────────┘
+                    │
+                 ┌──▼─────────────┐
                  │ Work Completed │  Done, verified
                  └────────────────┘
 ```
@@ -160,13 +151,13 @@ See [ADR-007](../docs/decisions/adr-007-oauth.md) for rationale.
 | Transition | Trigger | Framework Action |
 |------------|---------|-----------------|
 | → Captured | Human or agent identifies work | Create task file, minimal fields required |
-| Captured → Refined | Requirements documented | Framework validates description, spec, acceptance criteria exist |
-| Refined → Started Work | Work begins | Framework activates task context, agents can now execute against it |
-| Started Work → Issues | Error or unexpected problem | **Healing loop activates.** Classifies failure, suggests recovery. |
-| Started Work → Blocked | External dependency | Framework logs blocker, surfaces in status reports |
+| Captured → Started Work | Work begins | Framework activates task context |
+| Started Work → Issues | Error or dependency problem | **Healing loop activates.** Classifies failure, suggests recovery. |
 | Issues → Started Work | Problem resolved | Resolution logged, healing loop records pattern for learning |
-| Blocked → Started Work | Dependency resolved | Unblock logged with resolution reference |
 | Started Work → Work Completed | All acceptance criteria met | Framework archives to `completed/`, captures episodic summary |
+
+**Validated transitions** — `fw task update` enforces these transitions. Invalid
+transitions (e.g., `captured` → `work-completed`) are rejected with an error.
 
 ---
 

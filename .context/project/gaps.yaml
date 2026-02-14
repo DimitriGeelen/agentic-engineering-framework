@@ -46,61 +46,41 @@ gaps:
   - id: G-002
     title: "Status transitions not validated"
     description: >
-      010-TaskSystem.md defines a specific lifecycle flow
-      (Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed).
-      fw task update accepts any valid status from any other — no transition
-      validation. Also: 'refined' and 'blocked' statuses have never been used.
+      010-TaskSystem.md originally defined 6 statuses including 'refined' and
+      'blocked'. After 50 tasks, neither was ever used. Simplified to 4 statuses
+      (captured, started-work, issues, work-completed) with validated transitions.
     spec_reference: "010-TaskSystem.md §Task Statuses (Lifecycle)"
     severity: medium
-    why_not_now: >
-      Single agent follows conventions naturally. No invalid transitions
-      have occurred. Validation would be enforcing rules nobody has broken.
-    decision_trigger: >
-      First invalid transition observed, OR second agent starts using
-      fw task update, OR 'refined' status is used for the first time.
-    trigger_check:
-      type: auto
-      check: "grep -r 'status: refined' $PROJECT_ROOT/.tasks/ 2>/dev/null | wc -l"
-      threshold: "> 0 means 'refined' is being used — review lifecycle"
-    evidence_needed: "Real misuse or multi-agent scenario"
+    resolution: >
+      Decided-simplify (T-051): Removed 'refined' and 'blocked' statuses.
+      Added transition validation to update-task.sh. Updated spec, CLI, web UI.
+      Legacy compat: old tasks with refined/blocked can transition to started-work.
     evidence_collected: >
-      In 41 tasks: 0 used 'refined', 0 used 'blocked', 7 used 'issues'.
-      Actual lifecycle is: captured → started-work ↔ issues → work-completed.
-    alternative_outcome: >
-      If never triggered → simplify lifecycle. Remove 'refined', merge
-      'blocked' into 'issues', reduce to 4 statuses.
-    status: watching
+      50 tasks: 0 used 'refined', 0 used 'blocked', 7 used 'issues'.
+      Actual lifecycle was always: captured → started-work ↔ issues → work-completed.
+    status: closed
     created: 2026-02-14
     last_reviewed: 2026-02-14
+    closed_date: 2026-02-14
 
   - id: G-003
-    title: "Unused frontmatter fields (workflow_type, priority, tags, agents.supporting)"
+    title: "Unused frontmatter fields (priority, tags, agents.supporting)"
     description: >
-      Task template defines 11 frontmatter fields. Only 4 are functionally
-      consumed (id, name, status, description). workflow_type, priority,
-      tags, agents.primary, and agents.supporting are populated but nothing
-      reads or routes based on them.
+      Task template had 11 frontmatter fields. Removed priority, tags,
+      agents.primary, and agents.supporting from default template (T-052).
+      workflow_type kept — it IS consumed by task list filtering and episodic tags.
     spec_reference: "010-TaskSystem.md §Task Fields Reference"
     severity: low
-    why_not_now: >
-      No consumer exists. Building consumers for data nobody queries is waste.
-      The fields don't hurt — they just don't help.
-    decision_trigger: >
-      First query that would benefit from these fields (e.g., "show me all
-      high-priority tasks" or "what did test-agent work on?").
-    trigger_check:
-      type: manual
-      hint: "After each project: did anyone wish they could filter/sort by these fields?"
-    evidence_needed: "A real query or workflow that needs field-based filtering"
+    resolution: >
+      Decided-simplify (T-052): Removed priority, tags, agents from default template
+      and create-task.sh. Existing tasks retain these fields (no migration needed).
+      workflow_type retained as it has consumers (task list, web UI).
     evidence_collected: >
-      41 tasks: 27 build, 5 spec, 4 test, 4 refactor, 1 design. All medium
-      priority. Tags almost always []. Supporting agents always [].
-    alternative_outcome: >
-      After 3 projects, if still unused → remove from default template,
-      make optional in spec. Honest spec > comprehensive spec.
-    status: watching
+      50 tasks: all medium priority, tags almost always [], supporting agents always [].
+    status: closed
     created: 2026-02-14
     last_reviewed: 2026-02-14
+    closed_date: 2026-02-14
 
   - id: G-004
     title: "Multi-agent collaboration untested"
@@ -158,31 +138,19 @@ gaps:
   - id: G-006
     title: "Only default.md template exists"
     description: >
-      010-TaskSystem.md shows workflow-specific templates (build.md, test.md,
-      specification.md). Only default.md exists. All 41 tasks used default.md
-      successfully.
+      Simplified default.md to match actual usage. Removed dead sections
+      (Design Record, Specification Record, Test Files). Added single Context
+      section. Spec-imagined workflow-specific templates not created.
     spec_reference: "010-TaskSystem.md §Location"
     severity: low
-    why_not_now: >
-      One template works. The Design Record / Spec Record / Test Files
-      sections in default.md are actually dead weight (always placeholder).
-      Adding more templates would multiply dead weight.
-    decision_trigger: >
-      When someone creates a task and the default template is clearly
-      wrong for it (e.g., a spec task that needs requirement fields
-      the template doesn't have).
-    trigger_check:
-      type: manual
-      hint: "After task creation: was the template helpful or did you fight it?"
-    evidence_needed: "Template friction — someone needs fields the default doesn't have"
+    resolution: >
+      Decided-simplify (T-052): Simplified default.md to frontmatter + Context +
+      Updates. Removed 3 dead sections and 3 unused frontmatter fields.
+      If workflow-specific templates are needed, create from real need.
     evidence_collected: >
-      41 tasks used default.md. Design Record, Spec Record, and Test Files
-      sections are placeholder in every single task. Updates section carries
-      100% of meaningful content.
-    alternative_outcome: >
-      Simplify default.md — remove dead sections, keep what's actually used
-      (frontmatter + Updates). If specific templates are needed later,
-      create them from real need, not from spec imagination.
-    status: watching
+      50 tasks: Design Record, Spec Record, and Test Files sections were
+      placeholder in every single task. Updates carried 100% of content.
+    status: closed
     created: 2026-02-14
     last_reviewed: 2026-02-14
+    closed_date: 2026-02-14

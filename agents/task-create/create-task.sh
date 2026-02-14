@@ -24,8 +24,6 @@ NAME=""
 DESCRIPTION=""
 WORKFLOW_TYPE=""
 OWNER=""
-PRIORITY="medium"
-TAGS=""
 START_WORK=false
 
 while [[ $# -gt 0 ]]; do
@@ -34,8 +32,6 @@ while [[ $# -gt 0 ]]; do
         --description) DESCRIPTION="$2"; shift 2 ;;
         --type) WORKFLOW_TYPE="$2"; shift 2 ;;
         --owner) OWNER="$2"; shift 2 ;;
-        --priority) PRIORITY="$2"; shift 2 ;;
-        --tags) TAGS="$2"; shift 2 ;;
         --start) START_WORK=true; shift ;;
         -h|--help)
             echo "Usage: create-task.sh [options]"
@@ -45,8 +41,6 @@ while [[ $# -gt 0 ]]; do
             echo "  --description Task description (required)"
             echo "  --type        Workflow type: $VALID_TYPES"
             echo "  --owner       Task owner (required)"
-            echo "  --priority    Priority: high, medium, low (default: medium)"
-            echo "  --tags        Comma-separated tags"
             echo "  --start       Set status to started-work instead of captured"
             echo "  -h, --help    Show this help"
             exit 0
@@ -126,13 +120,6 @@ else
     STATUS="captured"
 fi
 
-# Format tags
-if [ -n "$TAGS" ]; then
-    TAGS_YAML="[$(echo "$TAGS" | sed 's/,/, /g')]"
-else
-    TAGS_YAML="[]"
-fi
-
 # Create task file
 cat > "$FILEPATH" << EOF
 ---
@@ -143,11 +130,6 @@ description: >
 status: $STATUS
 workflow_type: $WORKFLOW_TYPE
 owner: $OWNER
-priority: $PRIORITY
-tags: $TAGS_YAML
-agents:
-  primary:
-  supporting: []
 created: $TIMESTAMP
 last_update: $TIMESTAMP
 date_finished: null
@@ -155,17 +137,9 @@ date_finished: null
 
 # $TASK_ID: $NAME
 
-## Design Record
+## Context
 
-[Architecture decisions, approach rationale — inline or link to artifact]
-
-## Specification Record
-
-[Requirements, acceptance criteria — inline or link to artifact]
-
-## Test Files
-
-[References to test scripts and test artifacts]
+[Link to design docs, specs, or predecessor tasks]
 
 ## Updates
 
@@ -192,6 +166,6 @@ echo "Owner:    $OWNER"
 echo "File:     $FILEPATH"
 echo ""
 echo -e "${YELLOW}Next steps:${NC}"
-echo "1. Edit the task file to add Design Record and Specification Record"
+echo "1. Add context (design docs, specs, predecessor tasks) to the task file"
 echo "2. Reference this task in commits: git commit -m \"$TASK_ID: description\""
 echo "3. Update task status as work progresses"

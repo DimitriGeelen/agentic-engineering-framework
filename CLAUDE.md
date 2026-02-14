@@ -58,7 +58,7 @@ Tasks are Markdown with YAML frontmatter. Use `zzz-default.md` as template.
 ### Task Lifecycle
 
 ```
-Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed
+Captured → Started Work ↔ Issues → Work Completed
 ```
 
 ### Workflow Types
@@ -89,7 +89,7 @@ When starting work:
 3. Log every action in Updates section with: action, output, context snapshot
 
 When encountering issues:
-1. Set status to `issues` or `blocked`
+1. Set status to `issues`
 2. Log error reference and healing loop suggestions
 3. Record resolution when fixed for pattern learning
 
@@ -152,10 +152,10 @@ The framework includes agents for common operations. Each agent has a bash scrip
 
 **Location:** `agents/task-create/update-task.sh`
 
-**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`/`blocked`, and finalizes tasks on `work-completed`.
+**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
 
 ```bash
-# Change status (auto-triggers healing if issues/blocked)
+# Change status (auto-triggers healing if issues)
 fw task update T-015 --status issues --reason "API timeout"
 
 # Complete a task (auto: date_finished, move to completed/, generate episodic)
@@ -268,7 +268,7 @@ Manages three memory types:
 
 **Location:** `agents/healing/`
 
-**When to use:** When a task encounters issues (status = `issues` or `blocked`). Implements the antifragile healing loop.
+**When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
 
 ```bash
 # Diagnose task issues and get recovery suggestions

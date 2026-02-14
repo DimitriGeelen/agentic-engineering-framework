@@ -9,7 +9,7 @@
             <tbody>
                 <tr><th>Status</th><td>
                     {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
-                    {% elif task.status in ['issues', 'blocked'] %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
+                    {% elif task.status == 'issues' %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
                     {% else %}{{ task.status }}{% endif %}
                 </td></tr>
                 <tr><th>Owner</th><td>{{ task.owner or 'unassigned' }}</td></tr>

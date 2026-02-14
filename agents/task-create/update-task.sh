@@ -26,7 +26,7 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-VALID_STATUSES="captured refined started-work issues blocked work-completed"
+VALID_STATUSES="captured started-work issues work-completed"
 
 # Check for help before positional args
 case "${1:-}" in
@@ -54,7 +54,7 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help    Show this help"
             echo ""
             echo "Auto-triggers:"
-            echo "  issues/blocked   → healing agent diagnose"
+            echo "  issues           → healing agent diagnose"
             echo "  work-completed   → date_finished, move to completed/, episodic generation"
             exit 0
             ;;
@@ -107,6 +107,28 @@ if [ -n "$NEW_STATUS" ]; then
     if [ "$OLD_STATUS" = "$NEW_STATUS" ]; then
         echo -e "${YELLOW}Status already '$NEW_STATUS' — no change${NC}"
     else
+        # Validate transition (4-status lifecycle: captured → started-work ↔ issues → work-completed)
+        VALID_TRANSITION=false
+        case "$OLD_STATUS:$NEW_STATUS" in
+            captured:started-work)       VALID_TRANSITION=true ;;
+            started-work:issues)         VALID_TRANSITION=true ;;
+            started-work:work-completed) VALID_TRANSITION=true ;;
+            issues:started-work)         VALID_TRANSITION=true ;;
+            issues:work-completed)       VALID_TRANSITION=true ;;
+            # Legacy compat: refined/blocked → started-work (for old tasks)
+            refined:started-work)        VALID_TRANSITION=true ;;
+            blocked:started-work)        VALID_TRANSITION=true ;;
+        esac
+
+        if [ "$VALID_TRANSITION" = "false" ]; then
+            echo -e "${RED}ERROR: Invalid transition '$OLD_STATUS' → '$NEW_STATUS'${NC}" >&2
+            echo "Valid transitions:" >&2
+            echo "  captured → started-work" >&2
+            echo "  started-work → issues | work-completed" >&2
+            echo "  issues → started-work | work-completed" >&2
+            exit 1
+        fi
+
         sed -i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")

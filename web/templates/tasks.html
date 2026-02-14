@@ -7,7 +7,7 @@
 <div class="grid" style="margin-bottom: 1rem;">
     <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='type'],[name='component'],[name='sort']">
         <option value="">All Statuses</option>
-        {% for s in ['captured','refined','started-work','issues','blocked','work-completed'] %}
+        {% for s in ['captured','started-work','issues','work-completed'] %}
         <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
@@ -48,7 +48,7 @@
             <td>{{ task.name }}</td>
             <td>
                 {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
-                {% elif task.status in ['issues', 'blocked'] %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
+                {% elif task.status == 'issues' %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
                 {% else %}{{ task.status }}{% endif %}
             </td>
             <td>{{ task.workflow_type or '' }}</td>

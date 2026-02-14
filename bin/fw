@@ -312,9 +312,9 @@ def status_color(s):
     s = s.lower() if s else ''
     if s in ('work-completed', 'completed'):
         return GREEN
-    if s in ('issues', 'blocked'):
+    if s == 'issues':
         return YELLOW
-    if s in ('captured', 'refined', 'started-work'):
+    if s in ('captured', 'started-work'):
         return CYAN
     return NC
 
@@ -354,6 +354,9 @@ for d in dirs:
             continue
         fm = parse_task(os.path.join(d, fn))
         if fm and fm.get('id'):
+            # Derive status from directory as fallback
+            if 'completed' in d and fm.get('status') in ('captured', 'started-work', 'issues'):
+                fm['status'] = 'work-completed'
             tasks.append(fm)
 
 if status_filter:
@@ -385,7 +388,17 @@ def sort_key(t):
 tasks.sort(key=sort_key)
 
 if not tasks:
-    print(f'{YELLOW}No tasks found matching filters{NC}')
+    # Count completed tasks to give useful context
+    completed_dir = os.path.join(project_root, '.tasks', 'completed')
+    completed_count = 0
+    if os.path.isdir(completed_dir):
+        completed_count = len([f for f in os.listdir(completed_dir) if f.endswith('.md')])
+
+    if completed_count > 0 and not show_all:
+        print(f'{BOLD}No active tasks{NC}')
+        print(f'  {completed_count} completed tasks (use --all to show)')
+    else:
+        print(f'{YELLOW}No tasks found matching filters{NC}')
     sys.exit(0)
 
 print(f'{BOLD}Tasks{NC} ({len(tasks)} found)')

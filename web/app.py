@@ -419,7 +419,7 @@ def task_detail(task_id):
             episodic = yaml.safe_load(f)
 
     # Status allowlist for write-back
-    status_options = ['captured', 'refined', 'started-work', 'issues', 'blocked', 'work-completed']
+    status_options = ['captured', 'started-work', 'issues', 'work-completed']
 
     return render_page("task_detail.html", page_title=f"Task {task_id}",
         task=task_data, task_content=task_content, episodic=episodic,
@@ -593,7 +593,7 @@ def update_task_status(task_id):
 
     # Validate status against allowlist
     status = request.form.get('status', '')
-    allowed = ['captured', 'refined', 'started-work', 'issues', 'blocked', 'work-completed']
+    allowed = ['captured', 'started-work', 'issues', 'work-completed']
     if status not in allowed:
         return '<p style="color: var(--pico-del-color);">Invalid status value</p>', 400
 
