@@ -140,6 +140,32 @@ cmd_status() {
     fi
     echo ""
 
+    # Scan intelligence
+    local scan_file="$PROJECT_ROOT/.context/scans/LATEST.yaml"
+    if [ -f "$scan_file" ]; then
+        echo -e "${BOLD}Scan Intelligence:${NC}"
+        python3 -c "
+import yaml, sys
+with open('$scan_file') as f:
+    data = yaml.safe_load(f)
+if not data:
+    sys.exit(0)
+print(f\"  Scan: {data.get('scan_id', '?')} ({data.get('scan_status', '?')})\")
+print(f\"  Summary: {data.get('summary', 'N/A')}\")
+wq = data.get('work_queue', [])
+if wq:
+    print(f\"  Work Queue ({len(wq)} items):\")
+    for item in wq[:5]:
+        print(f\"    {item.get('priority', '?')}. {item.get('task_id', '?')}: {item.get('name', '?')} ({item.get('status', '?')})\")
+nd = data.get('needs_decision', [])
+if nd:
+    print(f\"  Needs Decision ({len(nd)} items):\")
+    for item in nd[:3]:
+        print(f\"    - {item.get('summary', '?')}\")
+" 2>/dev/null
+        echo ""
+    fi
+
     # Recommendations
     echo -e "${BOLD}${CYAN}Recommendations:${NC}"
     if [ "$task_count" -eq 0 ]; then
@@ -259,6 +285,20 @@ cmd_quick() {
     fi
 
     echo "$summary"
+
+    # Scan summary if available
+    local scan_file="$PROJECT_ROOT/.context/scans/LATEST.yaml"
+    if [ -f "$scan_file" ]; then
+        echo ""
+        echo "=== Scan Summary ==="
+        python3 -c "
+import yaml, sys
+with open('$scan_file') as f:
+    data = yaml.safe_load(f)
+if data and 'summary' in data:
+    print(data['summary'])
+" 2>/dev/null
+    fi
 }
 
 # Main
