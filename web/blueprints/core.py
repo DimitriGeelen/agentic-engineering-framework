@@ -9,6 +9,7 @@ import yaml
 from flask import Blueprint, abort
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.blueprints.cockpit import load_scan, get_cockpit_context
 
 bp = Blueprint("core", __name__)
 
@@ -193,6 +194,25 @@ def index():
     active_count = len(list(active_dir.glob("T-*.md"))) if active_dir.exists() else 0
     completed_count = len(list(completed_dir.glob("T-*.md"))) if completed_dir.exists() else 0
 
+    # Inception detection: no tasks at all
+    is_inception = (active_count == 0 and completed_count == 0)
+
+    if is_inception:
+        return render_page(
+            "index.html",
+            page_title="Watchtower",
+            is_inception=True,
+            inception_checklist=_get_inception_checklist(),
+        )
+
+    # Try cockpit view (Phase 4 — scan-driven dashboard)
+    scan_data = load_scan()
+    if scan_data:
+        ctx = get_cockpit_context(scan_data)
+        ctx["recent_activity"] = _get_recent_activity()
+        return render_page("cockpit.html", page_title="Watchtower", **ctx)
+
+    # Fallback: existing dashboard (no scan data)
     gaps_file = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
     gap_count = 0
     if gaps_file.exists():
@@ -208,10 +228,6 @@ def index():
         if sessions:
             last_session = sessions[0].stem
 
-    # Inception detection: no tasks at all
-    is_inception = (active_count == 0 and completed_count == 0)
-
-    # Audit status
     audit_status, audit_pass, audit_warn, audit_fail = _get_audit_status()
 
     return render_page(
@@ -221,7 +237,7 @@ def index():
         completed_count=completed_count,
         gap_count=gap_count,
         last_session=last_session,
-        is_inception=is_inception,
+        is_inception=False,
         audit_status=audit_status,
         audit_pass=audit_pass,
         audit_warn=audit_warn,

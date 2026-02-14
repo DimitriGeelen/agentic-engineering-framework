@@ -1,0 +1,219 @@
+{# web/templates/cockpit.html — Watchtower Cockpit (Phase 4) #}
+<style>
+    .wt-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .wt-header h1 { margin:0; font-size:1.6rem; letter-spacing:0.05em; text-transform:uppercase; }
+    .wt-scan-meta { display:flex; gap:1rem; align-items:center; font-size:0.85rem; color:var(--pico-muted-color); }
+    .wt-section { margin-bottom:1rem; }
+    .wt-section-title { margin:0 0 0.75rem 0; font-size:1rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--pico-muted-color); }
+    .wt-card { border-left:4px solid var(--pico-muted-border-color); padding:0.75rem 1rem; margin-bottom:0.5rem; background:var(--pico-card-background-color); border-radius:0 4px 4px 0; }
+    .wt-card-amber { border-left-color:#f9a825; }
+    .wt-card-blue { border-left-color:#1565c0; }
+    .wt-card-green { border-left-color:#2e7d32; }
+    .wt-card-red { border-left-color:#c62828; }
+    .wt-card-summary { font-weight:600; margin-bottom:0.25rem; }
+    .wt-card-detail { font-size:0.85rem; color:var(--pico-muted-color); margin-bottom:0.5rem; }
+    .wt-card-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .wt-card-actions button, .wt-card-actions a[role="button"] { font-size:0.75rem; padding:0.2em 0.6em; }
+    .wt-columns { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+    @media (max-width:768px) { .wt-columns { grid-template-columns:1fr; } }
+    .wt-pulse { display:flex; flex-wrap:wrap; gap:1.5rem; padding:0; margin:0; list-style:none; font-size:0.9rem; }
+    .wt-pulse-value { font-weight:700; }
+    .wt-badge { display:inline-block; padding:0.25em 0.75em; border-radius:4px; font-size:0.8rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
+    .wt-badge-pass { background:#2e7d32; color:#fff; }
+    .wt-badge-warn { background:#f9a825; color:#000; }
+    .wt-badge-fail { background:#c62828; color:#fff; }
+    .wt-allclear { text-align:center; padding:2rem; color:var(--pico-muted-color); font-style:italic; }
+    .wt-show-all { font-size:0.8rem; float:right; }
+    .wt-queue-item { display:flex; justify-content:space-between; align-items:center; padding:0.5em 0; border-bottom:1px solid var(--pico-muted-border-color); }
+    .wt-queue-item:last-child { border-bottom:none; }
+    .wt-queue-rank { font-weight:700; margin-right:0.75rem; color:var(--pico-muted-color); min-width:1.5em; }
+    .wt-queue-name { flex:1; }
+    .wt-queue-status { font-size:0.8rem; margin-left:0.5rem; }
+    .wt-queue-status.issues { color:#c62828; }
+    .wt-queue-status.started-work { color:#1565c0; }
+</style>
+
+{# --- Header ------------------------------------------------ #}
+<div class="wt-header">
+    <h1>Watchtower</h1>
+    <div class="wt-scan-meta">
+        <span>Scan: {{ scan_age }}</span>
+        {% set audit_status = health.get('audit_status', 'UNKNOWN') %}
+        <span class="wt-badge
+            {%- if audit_status == 'PASS' %} wt-badge-pass
+            {%- elif audit_status == 'WARN' %} wt-badge-warn
+            {%- else %} wt-badge-fail{% endif %}">
+            audit: {{ audit_status }}
+        </span>
+        <button class="outline" style="font-size:0.75rem; padding:0.2em 0.6em;"
+                hx-post="/api/scan/refresh"
+                hx-target="#content"
+                hx-swap="innerHTML"
+                hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+            Refresh
+        </button>
+    </div>
+</div>
+
+{% if scan_status == 'partial' %}
+<article style="border-left:4px solid #f9a825; padding:0.5rem 1rem; margin-bottom:1rem;">
+    <small>Scan partially completed — some data sources were unavailable.</small>
+</article>
+{% endif %}
+
+{# --- Needs Decision (amber) -------------------------------- #}
+{% if needs_decision %}
+<div class="wt-section">
+    <h4 class="wt-section-title">
+        Needs Your Decision ({{ needs_decision_total }})
+        {% if needs_decision_total > 3 %}
+        <a href="#" class="wt-show-all" onclick="this.parentElement.parentElement.querySelectorAll('.wt-card-hidden').forEach(e=>e.style.display='block');this.style.display='none';return false;">Show all</a>
+        {% endif %}
+    </h4>
+    {% for item in scan.get('needs_decision', []) %}
+    <div class="wt-card wt-card-amber {{ 'wt-card-hidden' if loop.index > 3 else '' }}" style="{{ 'display:none' if loop.index > 3 else '' }}" id="rec-{{ item.id }}">
+        <div class="wt-card-summary">{{ item.summary }}</div>
+        {% if item.priority_factors %}
+        <div class="wt-card-detail">{{ item.priority_factors[0].detail if item.priority_factors else '' }}</div>
+        {% endif %}
+        <div class="wt-card-actions">
+            {% if item.suggested_action is mapping %}
+            <button class="outline"
+                    hx-post="/api/scan/approve/{{ item.id }}"
+                    hx-target="#rec-{{ item.id }}"
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+                Approve
+            </button>
+            {% endif %}
+            <button class="outline secondary"
+                    hx-post="/api/scan/defer/{{ item.id }}"
+                    hx-target="#rec-{{ item.id }}"
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+                Defer
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# --- Framework Recommends (blue) --------------------------- #}
+{% if framework_recommends %}
+<div class="wt-section">
+    <h4 class="wt-section-title">
+        Framework Recommends ({{ framework_recommends_total }})
+        {% if framework_recommends_total > 3 %}
+        <a href="#" class="wt-show-all" onclick="this.parentElement.parentElement.querySelectorAll('.wt-card-hidden').forEach(e=>e.style.display='block');this.style.display='none';return false;">Show all</a>
+        {% endif %}
+    </h4>
+    {% for item in scan.get('framework_recommends', []) %}
+    <div class="wt-card wt-card-blue {{ 'wt-card-hidden' if loop.index > 3 else '' }}" style="{{ 'display:none' if loop.index > 3 else '' }}" id="fra-{{ item.id }}">
+        <div class="wt-card-summary">{{ item.summary }}</div>
+        {% if item.priority_factors %}
+        <div class="wt-card-detail">{{ item.priority_factors[0].detail if item.priority_factors else '' }}</div>
+        {% endif %}
+        <div class="wt-card-actions">
+            <button class="outline"
+                    hx-post="/api/scan/apply/{{ item.id }}"
+                    hx-target="#fra-{{ item.id }}"
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+                Apply
+            </button>
+            <button class="outline secondary"
+                    onclick="this.closest('.wt-card').style.display='none'">
+                Ignore
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# --- Work Direction ---------------------------------------- #}
+<article>
+    <h4 class="wt-section-title">Work Direction</h4>
+    {% if work_queue %}
+    {% for item in work_queue %}
+    <div class="wt-queue-item">
+        <span>
+            <span class="wt-queue-rank">{{ item.priority }}.</span>
+            <span class="wt-queue-name">
+                <a href="/tasks/{{ item.task_id }}"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    {{ item.task_id }}: {{ item.name }}
+                </a>
+            </span>
+            <span class="wt-queue-status {{ item.status }}">{{ item.status }}</span>
+        </span>
+        <span class="wt-card-actions">
+            <button class="outline" style="font-size:0.7rem; padding:0.15em 0.4em;"
+                    hx-post="/api/scan/focus/{{ item.task_id }}"
+                    hx-target="this"
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRF-Token": "{{ csrf_token() }}"}'>
+                Focus
+            </button>
+        </span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:var(--pico-muted-color); font-style:italic;">No active tasks.</p>
+    {% endif %}
+</article>
+
+{# --- Opportunities (green) --------------------------------- #}
+{% if opportunities %}
+<div class="wt-section">
+    <h4 class="wt-section-title">Opportunities ({{ opportunities_total }})</h4>
+    {% for item in scan.get('opportunities', [])[:3] %}
+    <div class="wt-card wt-card-green">
+        <div class="wt-card-summary">{{ item.summary }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# --- All Clear banner -------------------------------------- #}
+{% if not needs_decision and not framework_recommends and not opportunities and not risks %}
+<div class="wt-allclear">
+    <p>All Clear — no items requiring attention.</p>
+</div>
+{% endif %}
+
+{# --- System Health + Scan Summary -------------------------- #}
+<div class="wt-columns">
+    <article>
+        <h4 class="wt-section-title">System Health</h4>
+        <ul class="wt-pulse">
+            <li>Traceability: <span class="wt-pulse-value">{{ health.get('traceability', '?') }}</span></li>
+            <li>Knowledge:
+                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('learnings', 0) }}</span>L,
+                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('patterns', 0) }}</span>P,
+                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('decisions', 0) }}</span>D
+            </li>
+            <li>Gaps: <span class="wt-pulse-value">{{ health.get('gaps_watching', 0) }}</span> watching</li>
+            {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
+            <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
+            {% endif %}
+        </ul>
+        <p style="margin-top:0.5rem;">
+            <a href="/metrics" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">Full metrics &rarr;</a>
+        </p>
+    </article>
+
+    <article>
+        <h4 class="wt-section-title">Scan Summary</h4>
+        <p style="font-size:0.9rem; white-space:pre-line;">{{ summary }}</p>
+        {% if risks %}
+        <h5 style="color:#c62828; font-size:0.85rem; margin-top:0.75rem;">Risks</h5>
+        {% for risk in risks %}
+        <div class="wt-card wt-card-red" style="padding:0.5rem 0.75rem;">
+            <div style="font-size:0.85rem;">{{ risk.summary }}</div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </article>
+</div>

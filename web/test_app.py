@@ -562,3 +562,233 @@ class TestPhase3Integration:
         resp = client.get("/")
         html = resp.data.decode()
         assert "System Health" in html
+
+
+# =========================================================================
+# Phase 4 — Cockpit UI (scan-driven dashboard)
+# =========================================================================
+
+
+def _make_scan_data(**overrides):
+    """Build minimal valid scan data for testing."""
+    data = {
+        "schema_version": "1.0",
+        "timestamp": "2026-02-14T12:00:00+00:00",
+        "scan_status": "complete",
+        "summary": "Test scan summary",
+        "needs_decision": [],
+        "framework_recommends": [],
+        "opportunities": [],
+        "work_queue": [],
+        "risks": [],
+        "project_health": {
+            "audit_status": "PASS",
+            "traceability": "85%",
+            "knowledge": {"learnings": 5, "patterns": 3, "decisions": 2},
+            "gaps_watching": 1,
+        },
+        "antifragility": {},
+        "warnings": [],
+        "recent_failures": [],
+    }
+    data.update(overrides)
+    return data
+
+
+class TestCockpitUI:
+    """Cockpit dashboard renders when scan data exists."""
+
+    def test_cockpit_renders_with_scan_data(self, client, monkeypatch):
+        """Dashboard shows cockpit view when LATEST.yaml exists."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Watchtower" in html
+        assert "Scan:" in html
+        assert "System Health" in html
+
+    def test_cockpit_fallback_without_scan(self, client, monkeypatch):
+        """Dashboard falls back to index.html without scan data."""
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: None)
+        resp = client.get("/")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Watchtower" in html
+        # Fallback dashboard has Project Pulse section
+        assert "Project Pulse" in html or "System Health" in html
+
+    def test_cockpit_shows_needs_decision(self, client, monkeypatch):
+        """Needs Decision section appears when items exist."""
+        scan_data = _make_scan_data(needs_decision=[
+            {
+                "id": "ND-001",
+                "summary": "Stale task needs attention",
+                "type": "stale_task",
+                "priority_factors": [{"detail": "20 days without update"}],
+                "suggested_action": {"command": "task", "args": "update T-002 --status issues"},
+            },
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Needs Your Decision" in html
+        assert "Stale task needs attention" in html
+        assert "Approve" in html
+        assert "Defer" in html
+
+    def test_cockpit_shows_framework_recommends(self, client, monkeypatch):
+        """Framework Recommends section appears when items exist."""
+        scan_data = _make_scan_data(framework_recommends=[
+            {
+                "id": "FR-001",
+                "summary": "Graduate learning to practice",
+                "type": "learning_graduation",
+                "priority_factors": [],
+                "recommended_action": {"command": "context", "args": "graduate L-001"},
+            },
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Framework Recommends" in html
+        assert "Graduate learning to practice" in html
+        assert "Apply" in html
+
+    def test_cockpit_shows_work_queue(self, client, monkeypatch):
+        """Work Direction section shows prioritized tasks."""
+        scan_data = _make_scan_data(work_queue=[
+            {"priority": 1, "task_id": "T-001", "name": "Build feature", "status": "started-work"},
+            {"priority": 2, "task_id": "T-002", "name": "Fix bug", "status": "issues"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Work Direction" in html
+        assert "T-001" in html
+        assert "Build feature" in html
+        assert "Focus" in html
+
+    def test_cockpit_shows_opportunities(self, client, monkeypatch):
+        """Opportunities section appears when items exist."""
+        scan_data = _make_scan_data(opportunities=[
+            {"id": "OP-001", "summary": "Add more tests"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Opportunities" in html
+        assert "Add more tests" in html
+
+    def test_cockpit_shows_risks(self, client, monkeypatch):
+        """Risks appear in the scan summary section."""
+        scan_data = _make_scan_data(risks=[
+            {"summary": "Knowledge debt accumulating"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Risks" in html
+        assert "Knowledge debt accumulating" in html
+
+    def test_cockpit_all_clear_banner(self, client, monkeypatch):
+        """All Clear banner shows when no items need attention."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "All Clear" in html
+
+    def test_cockpit_htmx_returns_fragment(self, client, monkeypatch):
+        """Cockpit returns fragment for htmx requests."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/", headers={"HX-Request": "true"})
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "<!DOCTYPE" not in html
+        assert "Watchtower" in html
+
+    def test_cockpit_scan_age_display(self, client, monkeypatch):
+        """Scan age is displayed in the header."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        # Should show some age indicator (e.g., "Xh ago", "Xd ago", etc.)
+        assert "Scan:" in html
+
+    def test_cockpit_partial_scan_warning(self, client, monkeypatch):
+        """Partial scan status shows warning banner."""
+        scan_data = _make_scan_data(scan_status="partial")
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "partially completed" in html
+
+
+class TestCockpitControlActions:
+    """Cockpit control action API endpoints."""
+
+    def test_scan_refresh_requires_csrf(self, client):
+        resp = client.post("/api/scan/refresh")
+        assert resp.status_code == 403
+
+    def test_scan_approve_requires_csrf(self, client):
+        resp = client.post("/api/scan/approve/ND-001")
+        assert resp.status_code == 403
+
+    def test_scan_defer_requires_csrf(self, client):
+        resp = client.post("/api/scan/defer/ND-001")
+        assert resp.status_code == 403
+
+    def test_scan_apply_requires_csrf(self, client):
+        resp = client.post("/api/scan/apply/FR-001")
+        assert resp.status_code == 403
+
+    def test_scan_focus_requires_csrf(self, client):
+        resp = client.post("/api/scan/focus/T-001")
+        assert resp.status_code == 403
+
+    def test_scan_focus_validates_task_id(self, csrf_client, monkeypatch):
+        """Focus endpoint rejects invalid task IDs."""
+        client, token = csrf_client
+        resp = client.post(
+            "/api/scan/focus/INVALID",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 400
+        assert b"Invalid task ID" in resp.data
+
+    def test_scan_defer_without_scan_data(self, csrf_client, monkeypatch):
+        """Defer endpoint returns 400 when no scan data exists."""
+        client, token = csrf_client
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: None)
+        resp = client.post(
+            "/api/scan/defer/ND-001",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_scan_approve_not_found(self, csrf_client, monkeypatch):
+        """Approve returns 404 for non-existent recommendation."""
+        client, token = csrf_client
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: scan_data)
+        resp = client.post(
+            "/api/scan/approve/NONEXISTENT",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 404
+
+    def test_scan_apply_not_found(self, csrf_client, monkeypatch):
+        """Apply returns 404 for non-existent recommendation."""
+        client, token = csrf_client
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: scan_data)
+        resp = client.post(
+            "/api/scan/apply/NONEXISTENT",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 404
