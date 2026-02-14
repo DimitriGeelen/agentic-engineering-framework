@@ -9,26 +9,29 @@ summary: |
   "Claude Code" references with "LLM agent" / "AI Agents". Framework now has a
   clear path for GPT-4, Gemini, and other LLMs to operate it.
 outcomes:
-  - "Created FRAMEWORK.md — provider-neutral entry point"
-  - "CLAUDE.md now references FRAMEWORK.md (thin wrapper pattern)"
-  - "Handover AGENT.md: 'Claude Code synthesizes' → 'The LLM agent synthesizes'"
-  - "Session capture AGENT.md: 'For Claude Code' → 'For AI Agents'"
-  - "Task create AGENT.md: Provider-neutral invocation guidance"
+- "Created FRAMEWORK.md — provider-neutral entry point"
+- "CLAUDE.md now references FRAMEWORK.md (thin wrapper pattern)"
+- "Handover AGENT.md: 'Claude Code synthesizes' → 'The LLM agent synthesizes'"
+- "Session capture AGENT.md: 'For Claude Code' → 'For AI Agents'"
+- "Task create AGENT.md: Provider-neutral invocation guidance"
 successes:
-  - description: "Thin wrapper pattern preserves both provider-specific and neutral paths"
-    why: "CLAUDE.md stays for auto-loading; FRAMEWORK.md exists for everyone else"
+- description: "Thin wrapper pattern preserves both provider-specific and neutral paths"
+  why: "CLAUDE.md stays for auto-loading; FRAMEWORK.md exists for everyone else"
 decisions:
-  - decision: "Keep CLAUDE.md and add FRAMEWORK.md rather than renaming"
-    rationale: "CLAUDE.md is auto-loaded by Claude Code — renaming breaks the integration"
-    alternatives_rejected: ["Rename to FRAMEWORK.md (breaks Claude Code auto-load)"]
+- decision: "Keep CLAUDE.md and add FRAMEWORK.md rather than renaming"
+  rationale: "CLAUDE.md is auto-loaded by Claude Code — renaming breaks the integration"
+  alternatives_rejected: ["Rename to FRAMEWORK.md (breaks Claude Code auto-load)"]
 artifacts:
   created:
-    - "FRAMEWORK.md"
+  - "FRAMEWORK.md"
   modified:
-    - "CLAUDE.md"
-    - "agents/handover/AGENT.md"
-    - "agents/session-capture/AGENT.md"
-    - "agents/task-create/AGENT.md"
-tags: [portability, d4-directive, e002-fix, multi-provider]
+  - "CLAUDE.md"
+  - "agents/handover/AGENT.md"
+  - "agents/session-capture/AGENT.md"
+  - "agents/task-create/AGENT.md"
+tags: [specification, D4-portability, refactor]
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-030-fix-e-002-portability-blocking-issues.md
 generated_by: context-agent
+created: '2026-02-13T12:00:00Z'
+completed: '2026-02-13T12:00:00Z'
+duration_days: 0

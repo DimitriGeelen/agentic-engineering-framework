@@ -26,41 +26,41 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - Added enrichment_status: pending|complete field to track enrichment state
-  - Replaced empty placeholders with actionable [TODO] prompts
-  - Added warning banner making incomplete status visually obvious
-  - Changed output message from "summary generated" to "skeleton generated"
-  - Generator now honest about what automation can and cannot do
+- Added enrichment_status: pending|complete field to track enrichment state
+- Replaced empty placeholders with actionable [TODO] prompts
+- Added warning banner making incomplete status visually obvious
+- Changed output message from "summary generated" to "skeleton generated"
+- Generator now honest about what automation can and cannot do
 
 # What worked well
 successes:
-  - description: "Multi-agent review identified the problem clearly"
-    why: "Different perspectives (D1, D2, D3, skeptic, architect) provided comprehensive diagnosis"
-  - description: "Minimal code changes for significant improvement"
-    why: "Only changed output format, not fundamental logic"
-  - description: "Self-documenting TODO prompts"
-    why: "Each section tells you exactly what to fill in and why"
+- description: "Multi-agent review identified the problem clearly"
+  why: "Different perspectives (D1, D2, D3, skeptic, architect) provided comprehensive diagnosis"
+- description: "Minimal code changes for significant improvement"
+  why: "Only changed output format, not fundamental logic"
+- description: "Self-documenting TODO prompts"
+  why: "Each section tells you exactly what to fill in and why"
 
 # Challenges encountered
 challenges:
-  - description: "Generator cannot synthesize meaning from task content"
-    resolution: "Accepted limitation - generator creates skeleton, human/LLM enriches"
-    learning: "L-005: Automation must fail visibly if it can't produce quality output"
+- description: "Generator cannot synthesize meaning from task content"
+  resolution: "Accepted limitation - generator creates skeleton, human/LLM enriches"
+  learning: "L-005: Automation must fail visibly if it can't produce quality output"
 
 # Decisions made during this task
 decisions:
-  - decision: "Add enrichment_status field rather than blocking generation"
-    rationale: "Non-blocking allows workflow to proceed while tracking debt"
-    alternatives_rejected: ["Block until enriched (too disruptive)", "No tracking (current broken state)"]
-  - decision: "Use [TODO] markers in actual field values"
-    rationale: "Makes incompleteness impossible to miss when reading the file"
-    alternatives_rejected: ["Comments only (easily ignored)", "Separate validation file"]
+- decision: "Add enrichment_status field rather than blocking generation"
+  rationale: "Non-blocking allows workflow to proceed while tracking debt"
+  alternatives_rejected: ["Block until enriched (too disruptive)", "No tracking (current broken state)"]
+- decision: "Use [TODO] markers in actual field values"
+  rationale: "Makes incompleteness impossible to miss when reading the file"
+  alternatives_rejected: ["Comments only (easily ignored)", "Separate validation file"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "agents/context/lib/episodic.sh"
+  - "agents/context/lib/episodic.sh"
 
 # Related tasks
 related_tasks:
@@ -69,7 +69,7 @@ related_tasks:
   spawned: [T-016, T-017, T-018, T-019]
 
 # Tags for retrieval
-tags: [context-fabric, D1, D2, D3, episodic, generator, quality]
+tags: [context-fabric, D1-antifragility, D2-reliability, D3-usability, fix]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-015-fix-episodic-generator-to-require-enrich.md

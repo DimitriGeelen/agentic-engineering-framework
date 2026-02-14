@@ -1,0 +1,60 @@
+<div class="page-header">
+    <h1>Tasks</h1>
+    <p>{{ tasks|length }} tasks</p>
+</div>
+
+<!-- Filters -->
+<div class="grid" style="margin-bottom: 1rem;">
+    <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='type'],[name='component'],[name='sort']">
+        <option value="">All Statuses</option>
+        {% for s in ['captured','refined','started-work','issues','blocked','work-completed'] %}
+        <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    <select name="type" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='component'],[name='sort']">
+        <option value="">All Types</option>
+        {% for t in types %}
+        <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+    </select>
+    <select name="component" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='type'],[name='sort']">
+        <option value="">All Components</option>
+        {% for c in components %}
+        <option value="{{ c }}" {% if component_filter == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <select name="sort" hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-include="[name='status'],[name='type'],[name='component']">
+        <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Sort by ID</option>
+        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
+    </select>
+</div>
+
+<!-- Task table -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Owner</th>
+            <th>Tags</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td><a href="/tasks/{{ task.id }}">{{ task.id }}</a></td>
+            <td>{{ task.name }}</td>
+            <td>
+                {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
+                {% elif task.status in ['issues', 'blocked'] %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
+                {% else %}{{ task.status }}{% endif %}
+            </td>
+            <td>{{ task.workflow_type or '' }}</td>
+            <td>{{ task.owner or '' }}</td>
+            <td><small>{{ task._tags[:3]|join(', ') }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

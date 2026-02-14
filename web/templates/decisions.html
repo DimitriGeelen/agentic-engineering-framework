@@ -1,0 +1,62 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ decisions|length }} architectural and operational decisions with rationale and traceability.</p>
+</div>
+
+{% if decisions %}
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Type</th>
+            <th scope="col">Decision</th>
+            <th scope="col">Directives</th>
+            <th scope="col">Task</th>
+            <th scope="col">Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in decisions %}
+        <tr>
+            <td><code>{{ d.id }}</code></td>
+            <td>
+                {% if d.type == 'architectural' %}
+                <mark style="background-color: var(--pico-primary-background); color: var(--pico-primary-inverse); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem;">arch</mark>
+                {% else %}
+                <mark style="background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem;">ops</mark>
+                {% endif %}
+            </td>
+            <td>{{ d.decision }}</td>
+            <td><small>{{ d.directives_served }}</small></td>
+            <td>{% if d.task %}<code>{{ d.task }}</code>{% endif %}</td>
+            <td><small>{{ d.date }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if rationale_map %}
+<details style="margin-top: 2rem;">
+    <summary>Decision Rationale Details</summary>
+    {% for d in decisions %}
+    {% if d.rationale %}
+    <article style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
+        <strong>{{ d.id }}</strong> &mdash; {{ d.decision }}
+        <p style="margin: 0.5rem 0 0; color: var(--pico-muted-color); font-size: 0.875rem;">{{ d.rationale }}</p>
+        {% if d.alternatives %}
+        <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--pico-muted-color);">
+            Rejected: {{ d.alternatives | join(', ') }}
+        </p>
+        {% endif %}
+    </article>
+    {% endif %}
+    {% endfor %}
+</details>
+{% endif %}
+
+{% else %}
+<div class="coming-soon">
+    <h3>No Decisions Found</h3>
+    <p>No decisions were found in <code>.context/project/decisions.yaml</code> or <code>005-DesignDirectives.md</code>.</p>
+</div>
+{% endif %}

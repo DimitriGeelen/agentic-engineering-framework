@@ -24,45 +24,47 @@ summary: |
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "`fw init` scaffolds full directory structure"
-  - "`fw init --provider claude` generates CLAUDE.md"
-  - "`fw init --provider cursor` generates .cursorrules"
-  - "`.framework.yaml` points to correct framework path"
-  - "Git hooks installed when .git exists"
-  - "Idempotent — refuses reinit without --force"
-  - "Task template copied from framework"
+- "`fw init` scaffolds full directory structure"
+- "`fw init --provider claude` generates CLAUDE.md"
+- "`fw init --provider cursor` generates .cursorrules"
+- "`.framework.yaml` points to correct framework path"
+- "Git hooks installed when .git exists"
+- "Idempotent — refuses reinit without --force"
+- "Task template copied from framework"
 
 # What worked well
 successes:
-  - description: "Embedding init as lib/init.sh sourced by fw rather than a separate agent"
-    why: "Init is a one-time setup operation, not a recurring workflow. Keeping it as a library function avoids agent overhead while still being accessible via the fw CLI."
-  - description: "Idempotent design with --force flag for re-initialization"
-    why: "Prevents accidental overwrites of project-specific customizations while still allowing intentional resets."
+- description: "Embedding init as lib/init.sh sourced by fw rather than a separate agent"
+  why: "Init is a one-time setup operation, not a recurring workflow. Keeping it as a library function avoids agent overhead
+    while still being accessible via the fw CLI."
+- description: "Idempotent design with --force flag for re-initialization"
+  why: "Prevents accidental overwrites of project-specific customizations while still allowing intentional resets."
 
 # Challenges encountered
 challenges:
-  - description: "Doctor health check was checking pre-commit hook instead of commit-msg, and grep pattern was incorrect"
-    resolution: "Fixed doctor to check commit-msg hook (for task traceability) and corrected the grep pattern during the same build session."
+- description: "Doctor health check was checking pre-commit hook instead of commit-msg, and grep pattern was incorrect"
+  resolution: "Fixed doctor to check commit-msg hook (for task traceability) and corrected the grep pattern during the same
+    build session."
 
 # Decisions made during this task
 decisions:
-  - decision: "Use lib/init.sh (library) instead of a separate agent"
-    rationale: "Init is a one-time setup command, not a recurring workflow requiring AGENT.md guidance or task lifecycle"
-    alternatives_rejected: ["Separate agents/init/ agent directory"]
-  - decision: "Support --provider flag with claude, cursor, and generic options"
-    rationale: "Framework is provider-neutral; projects need provider-specific config files (CLAUDE.md vs .cursorrules)"
-    alternatives_rejected: ["Auto-detect provider", "Always generate both files"]
-  - decision: "Create empty project memory files with schema comments"
-    rationale: "Gives projects correct structure from day one without dummy data; schema comments guide agents on expected format"
-    alternatives_rejected: ["Copy framework memory files as examples"]
+- decision: "Use lib/init.sh (library) instead of a separate agent"
+  rationale: "Init is a one-time setup command, not a recurring workflow requiring AGENT.md guidance or task lifecycle"
+  alternatives_rejected: ["Separate agents/init/ agent directory"]
+- decision: "Support --provider flag with claude, cursor, and generic options"
+  rationale: "Framework is provider-neutral; projects need provider-specific config files (CLAUDE.md vs .cursorrules)"
+  alternatives_rejected: ["Auto-detect provider", "Always generate both files"]
+- decision: "Create empty project memory files with schema comments"
+  rationale: "Gives projects correct structure from day one without dummy data; schema comments guide agents on expected format"
+  alternatives_rejected: ["Copy framework memory files as examples"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "lib/init.sh"
+  - "lib/init.sh"
   modified:
-    - "bin/fw (added init command routing)"
-    - "bin/fw (fixed doctor commit-msg check and grep pattern)"
+  - "bin/fw (added init command routing)"
+  - "bin/fw (fixed doctor commit-msg check and grep pattern)"
 
 # Related tasks
 related_tasks:
@@ -71,7 +73,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [bootstrapping, shared-tooling, init, fw-cli, provider-config]
+tags: [cli, D3-usability, D4-portability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-034-create-initsh-for-project-bootstrapping.md

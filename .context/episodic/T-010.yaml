@@ -28,42 +28,42 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Primary audience: individual developer using AI agents"
-  - "Secondary audience: small team (2-5 devs) with adaptation notes"
-  - "Tertiary audience: enterprise/compliance with integration needs"
-  - "5 explicit out-of-scope cases"
-  - "5 documented use cases (UC-1 through UC-5)"
-  - "Success criteria by audience (table)"
+- "Primary audience: individual developer using AI agents"
+- "Secondary audience: small team (2-5 devs) with adaptation notes"
+- "Tertiary audience: enterprise/compliance with integration needs"
+- "5 explicit out-of-scope cases"
+- "5 documented use cases (UC-1 through UC-5)"
+- "Success criteria by audience (table)"
 
 # What worked well
 successes:
-  - description: "Starting with narrowest viable audience"
-    why: "Focus enables depth; expand intentionally"
-  - description: "Deriving audience from what was built"
-    why: "Framework emerged from specific problem (AI context loss) — let that guide"
-  - description: "Explicit out-of-scope list"
-    why: "Prevents scope creep; makes assumptions clear"
+- description: "Starting with narrowest viable audience"
+  why: "Focus enables depth; expand intentionally"
+- description: "Deriving audience from what was built"
+  why: "Framework emerged from specific problem (AI context loss) — let that guide"
+- description: "Explicit out-of-scope list"
+  why: "Prevents scope creep; makes assumptions clear"
 
 # Challenges encountered
 challenges:
-  - description: "Temptation to make framework 'for everyone'"
-    resolution: "Narrowed to specific pain point (AI session context loss)"
-    learning: "Framework overhead only justified when AI context loss is the problem"
+- description: "Temptation to make framework 'for everyone'"
+  resolution: "Narrowed to specific pain point (AI session context loss)"
+  learning: "Framework overhead only justified when AI context loss is the problem"
 
 # Decisions made during this task
 decisions:
-  - decision: "Primary audience is individual developer with AI agent"
-    rationale: "This is the problem the framework was built to solve"
-    alternatives_rejected: ["Team-first (overcomplicates)", "Enterprise-first (overkill)"]
-  - decision: "Start narrow, expand intentionally"
-    rationale: "Better to serve one audience well than many poorly"
-    alternatives_rejected: ["Universal design (dilutes value)"]
+- decision: "Primary audience is individual developer with AI agent"
+  rationale: "This is the problem the framework was built to solve"
+  alternatives_rejected: ["Team-first (overcomplicates)", "Enterprise-first (overkill)"]
+- decision: "Start narrow, expand intentionally"
+  rationale: "Better to serve one audience well than many poorly"
+  alternatives_rejected: ["Universal design (dilutes value)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "001-Vision.md (updated open questions)"
+  - "001-Vision.md (updated open questions)"
 
 # Related tasks
 related_tasks:
@@ -72,7 +72,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [meta, vision, scope, audience, use-cases]
+tags: [specification, D3-usability, specification]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-010-define-framework-scope-and-audience.md

@@ -26,38 +26,38 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - Git hooks enforce T-XXX pattern in commit messages
-  - Bypass possible with --no-verify (logged as warning)
-  - Merge commits exempt from task requirement
-  - Structural enforcement replaces agent discipline
+- Git hooks enforce T-XXX pattern in commit messages
+- Bypass possible with --no-verify (logged as warning)
+- Merge commits exempt from task requirement
+- Structural enforcement replaces agent discipline
 
 # What worked well
 successes:
-  - description: "commit-msg hook instead of pre-commit"
-    why: "Validates message content, not file state; more appropriate for task refs"
-  - description: "Absorbed into git agent"
-    why: "install-hooks command makes it easy to set up in new clones"
+- description: "commit-msg hook instead of pre-commit"
+  why: "Validates message content, not file state; more appropriate for task refs"
+- description: "Absorbed into git agent"
+  why: "install-hooks command makes it easy to set up in new clones"
 
 # Challenges encountered
 challenges:
-  - description: "Deciding hook type (pre-commit vs commit-msg)"
-    resolution: "commit-msg validates message; pre-commit runs before message exists"
-    learning: "Match hook type to what you're validating"
+- description: "Deciding hook type (pre-commit vs commit-msg)"
+  resolution: "commit-msg validates message; pre-commit runs before message exists"
+  learning: "Match hook type to what you're validating"
 
 # Decisions made during this task
 decisions:
-  - decision: "commit-msg hook (not pre-commit)"
-    rationale: "Validates message format, not file content"
-    alternatives_rejected: ["pre-commit (runs before message exists)"]
-  - decision: "Allow --no-verify bypass"
-    rationale: "Tier 2 situational bypass; logged, not blocked"
-    alternatives_rejected: ["No bypass (too rigid)"]
+- decision: "commit-msg hook (not pre-commit)"
+  rationale: "Validates message format, not file content"
+  alternatives_rejected: ["pre-commit (runs before message exists)"]
+- decision: "Allow --no-verify bypass"
+  rationale: "Tier 2 situational bypass; logged, not blocked"
+  alternatives_rejected: ["No bypass (too rigid)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - ".git/hooks/commit-msg"
-    - ".git/hooks/post-commit"
+  - ".git/hooks/commit-msg"
+  - ".git/hooks/post-commit"
   modified: []
 
 # Related tasks
@@ -67,7 +67,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [enforcement, git, D2, P-002, hooks]
+tags: [git-agent, D2-reliability, bootstrap, build, P-002]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-004-install-pre-commit-hook-for-task-enforce.md

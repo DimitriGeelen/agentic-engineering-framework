@@ -1,0 +1,43 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Full-text search across tasks, decisions, learnings, patterns, and documentation.</p>
+</div>
+
+<form action="{{ url_for('search') }}" method="get" role="search" hx-get="{{ url_for('search') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+    <fieldset role="group">
+        <input type="search" name="q" value="{{ query | default('') }}" placeholder="Search framework content..." aria-label="Search" minlength="2" required>
+        <button type="submit">Search</button>
+    </fieldset>
+</form>
+
+{% if query %}
+<p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+    {% if results %}
+    Showing results for <strong>{{ query }}</strong> across {{ results.keys() | list | length }} categories.
+    {% else %}
+    No results found for <strong>{{ query }}</strong>.
+    {% endif %}
+</p>
+{% endif %}
+
+{% if results %}
+{% for category, files in results.items() %}
+<details open>
+    <summary><strong>{{ category }}</strong> ({{ files|length }} file{{ 's' if files|length != 1 else '' }})</summary>
+    {% for f in files %}
+    <article style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
+        <p style="margin: 0; font-weight: bold; font-size: 0.9rem;"><code>{{ f.path }}</code></p>
+        {% if f.matches %}
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; font-family: monospace; color: var(--pico-muted-color); white-space: pre-wrap; overflow-x: auto;">{% for m in f.matches %}{{ m }}
+{% endfor %}</div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</details>
+{% endfor %}
+{% elif query %}
+<div class="coming-soon">
+    <h3>No Results</h3>
+    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term.</p>
+</div>
+{% endif %}

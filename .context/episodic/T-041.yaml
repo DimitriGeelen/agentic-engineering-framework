@@ -24,43 +24,43 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "fw task update T-XXX --status <status> modifies task frontmatter"
-  - "issues/blocked auto-triggers healing agent diagnosis"
-  - "work-completed auto-sets date_finished, moves file, generates episodic"
-  - "Update entries appended to task Updates section with timestamps"
-  - "Wired into fw CLI as fw task update"
+- "fw task update T-XXX --status <status> modifies task frontmatter"
+- "issues/blocked auto-triggers healing agent diagnosis"
+- "work-completed auto-sets date_finished, moves file, generates episodic"
+- "Update entries appended to task Updates section with timestamps"
+- "Wired into fw CLI as fw task update"
 
 # What worked well
 successes:
-  - description: "Using the command to finalize itself (self-referential test)"
-    why: "Tested all three triggers naturally — issues, started-work, work-completed"
-  - description: "Positional + flag argument parsing with T-* pattern match"
-    why: "Allows flexible argument order: T-XXX --status or --status T-XXX"
+- description: "Using the command to finalize itself (self-referential test)"
+  why: "Tested all three triggers naturally — issues, started-work, work-completed"
+- description: "Positional + flag argument parsing with T-* pattern match"
+  why: "Allows flexible argument order: T-XXX --status or --status T-XXX"
 
 # Challenges encountered
 challenges:
-  - description: "--help parsed as task ID positional argument"
-    resolution: "Added pre-parse check for -h/--help before positional arg extraction"
-    learning: "When mixing positional and flag args, handle help/version flags before positional parsing"
+- description: "--help parsed as task ID positional argument"
+  resolution: "Added pre-parse check for -h/--help before positional arg extraction"
+  learning: "When mixing positional and flag args, handle help/version flags before positional parsing"
 
 # Decisions made during this task
 decisions:
-  - decision: "Co-locate update-task.sh with create-task.sh in agents/task-create/"
-    rationale: "Both are task management operations, share the same directory context"
-    alternatives_rejected: ["Separate agents/task-update/ directory (unnecessary separation)"]
-  - decision: "Auto-trigger healing on issues/blocked with || true fallback"
-    rationale: "Healing failure shouldn't block the status update itself"
-    alternatives_rejected: ["Strict failure propagation (too fragile)"]
-  - decision: "Append update entries to task file for audit trail"
-    rationale: "Consistent with existing task update pattern, enables trend analysis"
-    alternatives_rejected: ["Separate changelog (fragmented history)"]
+- decision: "Co-locate update-task.sh with create-task.sh in agents/task-create/"
+  rationale: "Both are task management operations, share the same directory context"
+  alternatives_rejected: ["Separate agents/task-update/ directory (unnecessary separation)"]
+- decision: "Auto-trigger healing on issues/blocked with || true fallback"
+  rationale: "Healing failure shouldn't block the status update itself"
+  alternatives_rejected: ["Strict failure propagation (too fragile)"]
+- decision: "Append update entries to task file for audit trail"
+  rationale: "Consistent with existing task update pattern, enables trend analysis"
+  alternatives_rejected: ["Separate changelog (fragmented history)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "agents/task-create/update-task.sh"
+  - "agents/task-create/update-task.sh"
   modified:
-    - "bin/fw (added update subcommand to task routing and help)"
+  - "bin/fw (added update subcommand to task routing and help)"
 
 # Related tasks
 related_tasks:
@@ -69,7 +69,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [task-management, auto-healing, status-transition, episodic-generation]
+tags: [healing-loop, task-system, D1-antifragility, D2-reliability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-041-add-fw-task-update-with-auto-healing-tri.md

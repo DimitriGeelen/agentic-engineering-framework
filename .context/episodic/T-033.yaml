@@ -25,49 +25,49 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "fw help shows all commands with examples"
-  - "fw version shows version + paths + version pin check"
-  - "fw doctor validates framework health (7 checks)"
-  - "fw <agent> routes to correct agent script via exec"
-  - "Works from inside framework repo (self-referential mode)"
-  - "Works from external project via .framework.yaml"
-  - "Actionable error when framework not found (D2/D3)"
+- "fw help shows all commands with examples"
+- "fw version shows version + paths + version pin check"
+- "fw doctor validates framework health (7 checks)"
+- "fw <agent> routes to correct agent script via exec"
+- "Works from inside framework repo (self-referential mode)"
+- "Works from external project via .framework.yaml"
+- "Actionable error when framework not found (D2/D3)"
 
 # What worked well
 successes:
-  - description: "3-tier path resolution (relative, config, error)"
-    why: "Covers all use cases: framework-internal, shared tooling, and misconfigured"
-  - description: "exec for command routing"
-    why: "Replaces shell process cleanly — exit codes propagate, no zombie processes"
-  - description: "Doctor embedded in fw rather than separate agent"
-    why: "Diagnostic tool doesn't need the agent pattern (no AGENT.md, no task workflow)"
+- description: "3-tier path resolution (relative, config, error)"
+  why: "Covers all use cases: framework-internal, shared tooling, and misconfigured"
+- description: "exec for command routing"
+  why: "Replaces shell process cleanly — exit codes propagate, no zombie processes"
+- description: "Doctor embedded in fw rather than separate agent"
+  why: "Diagnostic tool doesn't need the agent pattern (no AGENT.md, no task workflow)"
 
 # Challenges encountered
 challenges:
-  - description: "((warnings++)) exits under set -e when incrementing from 0"
-    resolution: "Changed to warnings=$((warnings + 1)) which always returns 0"
-  - description: "Write and Edit tools blocked in Claude Code"
-    resolution: "Used bash heredoc for file creation, sed for modifications"
+- description: "((warnings++)) exits under set -e when incrementing from 0"
+  resolution: "Changed to warnings=$((warnings + 1)) which always returns 0"
+- description: "Write and Edit tools blocked in Claude Code"
+  resolution: "Used bash heredoc for file creation, sed for modifications"
 
 # Decisions made during this task
 decisions:
-  - decision: "3-tier path resolution: relative → .framework.yaml → error"
-    rationale: "Each tier handles a different deployment scenario"
-    alternatives_rejected: ["Single resolution strategy (inflexible)"]
-  - decision: "exec for agent routing instead of source/subshell"
-    rationale: "Clean process replacement, exit codes propagate naturally"
-    alternatives_rejected: ["source (pollutes namespace)", "subshell (extra process)"]
-  - decision: "Embed doctor in fw rather than creating agents/doctor/"
-    rationale: "Doctor is a diagnostic, not a workflow — doesn't need AGENT.md or task lifecycle"
-    alternatives_rejected: ["Separate doctor agent"]
+- decision: "3-tier path resolution: relative → .framework.yaml → error"
+  rationale: "Each tier handles a different deployment scenario"
+  alternatives_rejected: ["Single resolution strategy (inflexible)"]
+- decision: "exec for agent routing instead of source/subshell"
+  rationale: "Clean process replacement, exit codes propagate naturally"
+  alternatives_rejected: ["source (pollutes namespace)", "subshell (extra process)"]
+- decision: "Embed doctor in fw rather than creating agents/doctor/"
+  rationale: "Doctor is a diagnostic, not a workflow — doesn't need AGENT.md or task lifecycle"
+  alternatives_rejected: ["Separate doctor agent"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "bin/fw"
-    - ".framework.yaml.example"
+  - "bin/fw"
+  - ".framework.yaml.example"
   modified:
-    - "CLAUDE.md (added fw CLI section, updated Quick Reference table)"
+  - "CLAUDE.md (added fw CLI section, updated Quick Reference table)"
 
 # Related tasks
 related_tasks:
@@ -76,7 +76,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [cli, shared-tooling, critical-path, path-resolution]
+tags: [cli, D2-reliability, D3-usability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-033-create-fw-cli-wrapper-with-frameworkyaml.md

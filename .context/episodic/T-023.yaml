@@ -23,32 +23,32 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Resume agent warns when handover has [TODO] placeholders"
-  - "Warning tested with both positive and negative cases"
+- "Resume agent warns when handover has [TODO] placeholders"
+- "Warning tested with both positive and negative cases"
 
 # What worked well
 successes:
-  - description: "Simple grep-based detection"
-    why: "grep -c '[TODO]' is reliable, fast, and has no dependencies"
-  - description: "Fix from E-003 finding"
-    why: "Experiment findings drive concrete improvements — antifragility in action"
+- description: "Simple grep-based detection"
+  why: "grep -c '[TODO]' is reliable, fast, and has no dependencies"
+- description: "Fix from E-003 finding"
+  why: "Experiment findings drive concrete improvements — antifragility in action"
 
 # Challenges encountered
 challenges:
-  - description: "grep -c output had newline issue in bash subshell"
-    resolution: "Added tr -d newline to clean output before integer comparison"
+- description: "grep -c output had newline issue in bash subshell"
+  resolution: "Added tr -d newline to clean output before integer comparison"
 
 # Decisions made
 decisions:
-  - decision: "Warn but don't block on TODO placeholders"
-    rationale: "Incomplete handover is better than no handover — warn don't gate"
-    alternatives_rejected: ["Block resume until handover is complete"]
+- decision: "Warn but don't block on TODO placeholders"
+  rationale: "Incomplete handover is better than no handover — warn don't gate"
+  alternatives_rejected: ["Block resume until handover is complete"]
 
 # Files modified
 artifacts:
   created: []
   modified:
-    - "agents/resume/resume.sh"
+  - "agents/resume/resume.sh"
 
 # Related tasks
 related_tasks:
@@ -57,7 +57,7 @@ related_tasks:
   spawned: []
 
 # Tags
-tags: [resume-agent, todo-warning, e003-finding]
+tags: [resume, D2-reliability, fix]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-023-add-todo-placeholder-warning-to-resume-a.md

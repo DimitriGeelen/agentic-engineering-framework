@@ -8,6 +8,7 @@ decisions:
     date: 2026-02-13
     task: T-013
     rationale: "Validates message format, not file content; more appropriate for task ref check"
+    directives_served: [D2]
     alternatives_rejected:
       - "pre-commit (runs before message exists)"
 
@@ -16,6 +17,7 @@ decisions:
     date: 2026-02-13
     task: T-014
     rationale: "Enables trend detection without database, human-readable"
+    directives_served: [D1, D2]
     alternatives_rejected:
       - "SQLite (overkill for this use case)"
       - "JSON (less readable than YAML)"
@@ -25,6 +27,7 @@ decisions:
     date: 2026-02-13
     task: T-014
     rationale: "Balance between noise (too few) and missing patterns (too many)"
+    directives_served: [D1]
     alternatives_rejected:
       - "2 (too noisy)"
       - "5 (too slow to detect patterns)"
@@ -34,6 +37,7 @@ decisions:
     date: 2026-02-13
     task: T-014
     rationale: "Consequential actions must never bypass task requirement"
+    directives_served: [D1, D2]
     alternatives_rejected:
       - "WARN (too weak for Tier 0)"
 
@@ -42,6 +46,7 @@ decisions:
     date: 2026-02-13
     task: T-013
     rationale: "Coherent tool for all git enforcement rather than scattered scripts"
+    directives_served: [D2, D3]
     alternatives_rejected:
       - "Separate bypass-log script"
       - "Standalone pre-commit hook"
@@ -51,15 +56,18 @@ decisions:
     date: 2026-02-13
     task: T-009
     rationale: "Framework claims are now testable - we know what would prove the approach wrong"
+    directives_served: [D1, D2]
 
   - id: D-007
     decision: "Primary audience: individual developers using AI agents"
     date: 2026-02-13
     task: T-010
     rationale: "Framework overhead only justified when AI context loss is the problem being solved"
+    directives_served: [D3]
 
   - id: D-008
     decision: "Knowledge pyramid with 4 levels and graduation criteria"
     date: 2026-02-13
     task: T-011
     rationale: "Higher levels require more evidence and are harder to change - directives require human approval"
+    directives_served: [D1, D2]

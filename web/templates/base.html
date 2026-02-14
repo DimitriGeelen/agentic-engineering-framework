@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ page_title | default("Dashboard") }} — Agentic Engineering Framework</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
+    <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
+    <style>
+        /* Navigation styling */
+        nav ul li a[aria-current="page"] {
+            font-weight: bold;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+        /* Content area minimum height */
+        main {
+            min-height: 60vh;
+        }
+        /* Page header */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            margin-bottom: 0.25rem;
+        }
+        .page-header p {
+            color: var(--pico-muted-color);
+        }
+        /* Coming soon card */
+        .coming-soon {
+            text-align: center;
+            padding: 3rem 1rem;
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius);
+            margin-top: 1.5rem;
+        }
+        .coming-soon h3 {
+            color: var(--pico-muted-color);
+        }
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1.5rem 0;
+            color: var(--pico-muted-color);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--pico-muted-border-color);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body hx-boost="true">
+    <nav class="container-fluid">
+        <ul>
+            <li><strong>fw</strong></li>
+        </ul>
+        <ul>
+            {% for label, endpoint, icon in nav_items %}
+            <li>
+                <a href="{{ url_for(endpoint) }}"
+                   {% if active_endpoint == endpoint %}aria-current="page"{% endif %}
+                   hx-target="#content"
+                   hx-swap="innerHTML"
+                   hx-push-url="true">
+                    {{ label }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    <main class="container" id="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container">
+        Agentic Engineering Framework v1.0.0
+    </footer>
+
+    <script>
+        // Attach CSRF token to all htmx requests
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                event.detail.headers['X-CSRF-Token'] = csrfToken.getAttribute('content');
+            }
+        });
+
+        // Update active nav item on htmx navigation
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            var currentPath = window.location.pathname;
+            document.querySelectorAll('nav a').forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (href === currentPath || (currentPath === '/' && href === '/')) {
+                    link.setAttribute('aria-current', 'page');
+                } else {
+                    link.removeAttribute('aria-current');
+                }
+            });
+            // Update page title
+            var pageHeader = document.querySelector('.page-header h1');
+            if (pageHeader) {
+                document.title = pageHeader.textContent + ' — Agentic Engineering Framework';
+            }
+        });
+    </script>
+</body>
+</html>

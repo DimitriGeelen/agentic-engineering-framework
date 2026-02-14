@@ -1,0 +1,12 @@
+<div class="page-header">
+    <h1>{{ doc_name }}</h1>
+    <p>
+        <a href="{{ url_for('project') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+            &larr; Back to Project Documentation
+        </a>
+    </p>
+</div>
+
+<article>
+    {{ html_content | safe }}
+</article>

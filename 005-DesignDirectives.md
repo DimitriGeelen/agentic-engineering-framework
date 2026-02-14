@@ -107,20 +107,20 @@ Usability ←———→ Portability
 > Every significant architectural decision should be recorded here
 > with a reference to which directive(s) it serves.
 
-| Date       | Decision                                          | Directives Served | Rationale |
-|------------|---------------------------------------------------|-------------------|-----------|
-| 2026-02-13 | LLM integration via layered approach: Direct API → Pluggable Provider → MCP | D1, D2, D4 | Direct API ensures reliability (D2). Pluggable layer ensures portability (D4). MCP ensures standard tool interface. Layering ensures antifragility (D1) — any layer can evolve independently. |
-| 2026-02-13 | Context Fabric as foundational layer (#2 in stack) | D1, D2, D3 | Context is the spine — self-healing (D1) and self-learning (D1) depend on structured context. Reliable state (D2). Relevance scoring improves DX (D3). |
-| 2026-02-13 | Design directives recorded in `docs/DESIGN_DIRECTIVES.md` | D2, D3 | Traceability (D2). Onboarding clarity (D3). |
-| 2026-02-13 | Composition hierarchy: Scripts → Commands → Skills → Agents | D1, D3, D4 | Commands are the universal interface boundary (D4). Skills group by domain (D3). Agents compose skills. "Automate downward" principle pushes stable logic into scripts (D1). |
-| 2026-02-13 | Staged manifest maturity: Exploration → Stabilization → Automation | D1, D2, D3 | Exploration: sparse, human-in-loop. Stabilization: collaborative, framework observes and suggests enrichments. Automation: full contract, agent-reliable. Manifests grow from reality, not speculation (D1). Low friction to start (D3). Full contracts when stakes are high (D2). |
-| 2026-02-13 | Dual manifest structure: manifest.yaml + COMMAND.md | D2, D3 | Machine-readable contract (D2) paired with human-readable judgment guide (D3). LLMs read both — manifest for *how*, COMMAND.md for *whether and why*. |
-| 2026-02-13 | Framework targets Claude Code as primary environment | D3, D4 | File-based, CLI-friendly, CLAUDE.md-compatible. Context Fabric can generate project-level CLAUDE.md from command/skill/agent structure. |
-| 2026-02-13 | Task storage: Markdown with YAML frontmatter, git-synced | D1, D2, D3, D4 | Human-readable when framework breaks (D1). Machine-parseable frontmatter (D2). Editable in any editor/Claude Code (D3). Git-syncable, no vendor lock (D4). |
-| 2026-02-13 | Task enforcement: Strict by default, four-tier bypass model | D1, D2 | Tier 0: never bypass (consequential). Tier 1: strict default. Tier 2: human situational. Tier 3: pre-approved (ITIL standard change). Structural enforcement over agent discipline (D2). |
-| 2026-02-13 | Authority model: Agent=initiative, Framework=authority, Human=sovereignty | D1, D2 | Agent proposes, framework enforces, human overrides. Prevents agent drift (D2). Enables antifragile governance (D1). |
-| 2026-02-13 | Tasks can engage multiple agents (primary + supporting) | D3 | Avoids artificial task fragmentation. Unified traceability. Workflow type guides agent relevance. |
-| 2026-02-13 | Error response escalation ladder: A(don't repeat) → B(improve technique) → C(improve tooling) → D(change ways of working) | D1 | Graduated response to failures from tactical to structural. |
+| ID     | Date       | Decision                                          | Directives Served | Rationale |
+|--------|------------|---------------------------------------------------|-------------------|-----------|
+| AD-001 | 2026-02-13 | LLM integration via layered approach: Direct API → Pluggable Provider → MCP | D1, D2, D4 | Direct API ensures reliability (D2). Pluggable layer ensures portability (D4). MCP ensures standard tool interface. Layering ensures antifragility (D1) — any layer can evolve independently. |
+| AD-002 | 2026-02-13 | Context Fabric as foundational layer (#2 in stack) | D1, D2, D3 | Context is the spine — self-healing (D1) and self-learning (D1) depend on structured context. Reliable state (D2). Relevance scoring improves DX (D3). |
+| AD-003 | 2026-02-13 | Design directives recorded in `docs/DESIGN_DIRECTIVES.md` | D2, D3 | Traceability (D2). Onboarding clarity (D3). |
+| AD-004 | 2026-02-13 | Composition hierarchy: Scripts → Commands → Skills → Agents | D1, D3, D4 | Commands are the universal interface boundary (D4). Skills group by domain (D3). Agents compose skills. "Automate downward" principle pushes stable logic into scripts (D1). |
+| AD-005 | 2026-02-13 | Staged manifest maturity: Exploration → Stabilization → Automation | D1, D2, D3 | Exploration: sparse, human-in-loop. Stabilization: collaborative, framework observes and suggests enrichments. Automation: full contract, agent-reliable. Manifests grow from reality, not speculation (D1). Low friction to start (D3). Full contracts when stakes are high (D2). |
+| AD-006 | 2026-02-13 | Dual manifest structure: manifest.yaml + COMMAND.md | D2, D3 | Machine-readable contract (D2) paired with human-readable judgment guide (D3). LLMs read both — manifest for *how*, COMMAND.md for *whether and why*. |
+| AD-007 | 2026-02-13 | Framework targets Claude Code as primary environment | D3, D4 | File-based, CLI-friendly, CLAUDE.md-compatible. Context Fabric can generate project-level CLAUDE.md from command/skill/agent structure. |
+| AD-008 | 2026-02-13 | Task storage: Markdown with YAML frontmatter, git-synced | D1, D2, D3, D4 | Human-readable when framework breaks (D1). Machine-parseable frontmatter (D2). Editable in any editor/Claude Code (D3). Git-syncable, no vendor lock (D4). |
+| AD-009 | 2026-02-13 | Task enforcement: Strict by default, four-tier bypass model | D1, D2 | Tier 0: never bypass (consequential). Tier 1: strict default. Tier 2: human situational. Tier 3: pre-approved (ITIL standard change). Structural enforcement over agent discipline (D2). |
+| AD-010 | 2026-02-13 | Authority model: Agent=initiative, Framework=authority, Human=sovereignty | D1, D2 | Agent proposes, framework enforces, human overrides. Prevents agent drift (D2). Enables antifragile governance (D1). |
+| AD-011 | 2026-02-13 | Tasks can engage multiple agents (primary + supporting) | D3 | Avoids artificial task fragmentation. Unified traceability. Workflow type guides agent relevance. |
+| AD-012 | 2026-02-13 | Error response escalation ladder: A(don't repeat) → B(improve technique) → C(improve tooling) → D(change ways of working) | D1 | Graduated response to failures from tactical to structural. |
 
 ---
 

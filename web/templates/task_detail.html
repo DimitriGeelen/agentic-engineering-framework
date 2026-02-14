@@ -1,0 +1,140 @@
+<div class="page-header">
+    <h1>{{ task.id }}: {{ task.name }}</h1>
+</div>
+
+<!-- Task metadata -->
+<div class="grid">
+    <div>
+        <table>
+            <tbody>
+                <tr><th>Status</th><td>
+                    {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
+                    {% elif task.status in ['issues', 'blocked'] %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
+                    {% else %}{{ task.status }}{% endif %}
+                </td></tr>
+                <tr><th>Owner</th><td>{{ task.owner or 'unassigned' }}</td></tr>
+                <tr><th>Workflow Type</th><td>{{ task.workflow_type or '' }}</td></tr>
+                <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
+                <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
+                {% if task.date_finished %}
+                <tr><th>Finished</th><td>{{ task.date_finished }}</td></tr>
+                {% endif %}
+                {% if task.priority %}
+                <tr><th>Priority</th><td>{{ task.priority }}</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <h4>Update Status</h4>
+        <form hx-post="/api/task/{{ task_id }}/status" hx-target="#status-result" hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="grid">
+                <select name="status">
+                    {% for s in status_options %}
+                    <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Update Status</button>
+            </div>
+        </form>
+        <div id="status-result"></div>
+    </div>
+</div>
+
+<!-- Description -->
+{% if task.description %}
+<details open>
+    <summary><strong>Description</strong></summary>
+    <p>{{ task.description }}</p>
+</details>
+{% endif %}
+
+<!-- Episodic Summary -->
+{% if episodic %}
+<details open>
+    <summary><strong>Episodic Summary</strong></summary>
+    {% if episodic.summary %}
+    <p>{{ episodic.summary }}</p>
+    {% endif %}
+
+    {% if episodic.outcomes %}
+    <h5>Outcomes</h5>
+    <ul>
+        {% for o in episodic.outcomes %}
+        <li>{{ o }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.decisions %}
+    <h5>Decisions</h5>
+    <ul>
+        {% for d in episodic.decisions %}
+        <li><strong>{{ d.decision }}</strong> — {{ d.rationale or '' }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.challenges %}
+    <h5>Challenges</h5>
+    <ul>
+        {% for c in episodic.challenges %}
+        <li><strong>{{ c.description }}</strong>{% if c.resolution %} — {{ c.resolution }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.artifacts %}
+    <h5>Artifacts</h5>
+    {% if episodic.artifacts.created %}
+    <p><small>Created:</small></p>
+    <ul>
+        {% for a in episodic.artifacts.created %}
+        <li><code>{{ a }}</code></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if episodic.artifacts.modified %}
+    <p><small>Modified:</small></p>
+    <ul>
+        {% for a in episodic.artifacts.modified %}
+        <li><code>{{ a }}</code></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endif %}
+
+    {% if episodic.related_tasks %}
+    <h5>Related Tasks</h5>
+    <ul>
+        {% for edge_type, tasks_list in episodic.related_tasks.items() %}
+            {% if tasks_list %}
+            <li><em>{{ edge_type }}:</em>
+                {% for rt in tasks_list %}
+                <a href="/tasks/{{ rt }}">{{ rt }}</a>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.tags %}
+    <h5>Tags</h5>
+    <p>
+        {% for tag in episodic.tags %}
+        <kbd>{{ tag }}</kbd>
+        {% endfor %}
+    </p>
+    {% endif %}
+</details>
+{% endif %}
+
+<!-- Raw task content -->
+{% if task_content %}
+<details>
+    <summary><strong>Task Body</strong></summary>
+    <pre><code>{{ task_content }}</code></pre>
+</details>
+{% endif %}

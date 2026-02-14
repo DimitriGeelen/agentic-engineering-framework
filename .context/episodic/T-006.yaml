@@ -28,39 +28,39 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Parse Updates section to extract timeline events"
-  - "Identify challenges from status changes (issues/blocked)"
-  - "Extract outcomes from acceptance criteria [x] items"
-  - "Generate summary from description + updates"
-  - "Count artifacts from file references in updates"
+- "Parse Updates section to extract timeline events"
+- "Identify challenges from status changes (issues/blocked)"
+- "Extract outcomes from acceptance criteria [x] items"
+- "Generate summary from description + updates"
+- "Count artifacts from file references in updates"
 
 # What worked well
 successes:
-  - description: "Integration with existing context.sh"
-    why: "Command fits naturally: ./agents/context/context.sh generate-episodic T-XXX"
-  - description: "Working on T-006, T-007, T-008 together"
-    why: "Related context fabric tasks benefited from shared understanding"
+- description: "Integration with existing context.sh"
+  why: "Command fits naturally: ./agents/context/context.sh generate-episodic T-XXX"
+- description: "Working on T-006, T-007, T-008 together"
+  why: "Related context fabric tasks benefited from shared understanding"
 
 # Challenges encountered
 challenges:
-  - description: "Extracting meaningful summary from raw task data"
-    resolution: "Generated structure/skeleton, not actual summary"
-    learning: "Automation limitations — later fixed by T-015 to be honest about this"
+- description: "Extracting meaningful summary from raw task data"
+  resolution: "Generated structure/skeleton, not actual summary"
+  learning: "Automation limitations — later fixed by T-015 to be honest about this"
 
 # Decisions made during this task
 decisions:
-  - decision: "Parse Updates section rather than just copy description"
-    rationale: "Updates contain the actual journey, not just intent"
-    alternatives_rejected: ["Copy description verbatim (no value)"]
-  - decision: "Manual enrichment expected after generation"
-    rationale: "Generator can extract structure but not meaning"
-    alternatives_rejected: ["Fully automated (not possible)"]
+- decision: "Parse Updates section rather than just copy description"
+  rationale: "Updates contain the actual journey, not just intent"
+  alternatives_rejected: ["Copy description verbatim (no value)"]
+- decision: "Manual enrichment expected after generation"
+  rationale: "Generator can extract structure but not meaning"
+  alternatives_rejected: ["Fully automated (not possible)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "agents/context/lib/episodic.sh"
+  - "agents/context/lib/episodic.sh"
 
 # Related tasks
 related_tasks:
@@ -69,7 +69,7 @@ related_tasks:
   spawned: [T-015]  # T-015 fixed the quality issues discovered later
 
 # Tags for retrieval
-tags: [context-fabric, episodic, generator, tooling]
+tags: [context-fabric, D1-antifragility, D2-reliability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-006-create-episodic-summary-generator.md

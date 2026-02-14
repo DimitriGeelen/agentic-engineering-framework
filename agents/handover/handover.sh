@@ -204,6 +204,7 @@ tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
 owner: ${AGENT_OWNER:-claude-code}
+session_narrative: ""
 ---
 
 # Session Handover: $SESSION_ID

@@ -1,0 +1,99 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ gaps|length }} specification-reality gaps with decision triggers and evidence tracking.</p>
+</div>
+
+{% if gaps %}
+{% for g in gaps %}
+<article>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>
+                <code>{{ g.id }}</code> &mdash; {{ g.title }}
+            </span>
+            <span>
+                {% if g.severity == 'high' %}
+                <mark style="background-color: #c0392b; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">HIGH</mark>
+                {% elif g.severity == 'medium' %}
+                <mark style="background-color: #f39c12; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">MEDIUM</mark>
+                {% elif g.severity == 'low' %}
+                <mark style="background-color: #27ae60; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">LOW</mark>
+                {% else %}
+                <mark style="padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{{ g.severity | default('unknown') | upper }}</mark>
+                {% endif %}
+
+                {% if g.status == 'watching' %}
+                <mark style="background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">WATCHING</mark>
+                {% elif g.status == 'decided-build' %}
+                <mark style="background-color: #2980b9; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">BUILD</mark>
+                {% elif g.status == 'decided-simplify' %}
+                <mark style="background-color: #8e44ad; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">SIMPLIFY</mark>
+                {% elif g.status == 'closed' %}
+                <mark style="background-color: #95a5a6; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">CLOSED</mark>
+                {% else %}
+                <mark style="padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{{ g.status | default('unknown') | upper }}</mark>
+                {% endif %}
+            </span>
+        </div>
+    </header>
+
+    <p>{{ g.description }}</p>
+
+    {% if g.spec_reference %}
+    <p style="font-size: 0.875rem;"><strong>Spec:</strong> <code>{{ g.spec_reference }}</code></p>
+    {% endif %}
+
+    {% if g.why_not_now %}
+    <details>
+        <summary>Why not now?</summary>
+        <p style="color: var(--pico-muted-color);">{{ g.why_not_now }}</p>
+    </details>
+    {% endif %}
+
+    {% if g.decision_trigger %}
+    <details>
+        <summary>Decision trigger</summary>
+        <p>{{ g.decision_trigger }}</p>
+        {% if g.trigger_check %}
+        <p style="font-size: 0.8rem; color: var(--pico-muted-color);">
+            Check type: <code>{{ g.trigger_check.type }}</code>
+            {% if g.trigger_check.hint %} &mdash; {{ g.trigger_check.hint }}{% endif %}
+            {% if g.trigger_check.check %}<br>Command: <code>{{ g.trigger_check.check }}</code>{% endif %}
+            {% if g.trigger_check.threshold %}<br>Threshold: {{ g.trigger_check.threshold }}{% endif %}
+        </p>
+        {% endif %}
+    </details>
+    {% endif %}
+
+    {% if g.evidence_needed or g.evidence_collected %}
+    <details>
+        <summary>Evidence</summary>
+        {% if g.evidence_needed %}
+        <p><strong>Needed:</strong> {{ g.evidence_needed }}</p>
+        {% endif %}
+        {% if g.evidence_collected %}
+        <p><strong>Collected:</strong> {{ g.evidence_collected }}</p>
+        {% endif %}
+    </details>
+    {% endif %}
+
+    {% if g.alternative_outcome %}
+    <details>
+        <summary>Alternative outcome</summary>
+        <p style="color: var(--pico-muted-color);">{{ g.alternative_outcome }}</p>
+    </details>
+    {% endif %}
+
+    <footer style="text-align: left; border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--pico-muted-color);">
+        {% if g.related_directives %}Directives: {{ g.related_directives | join(', ') }} | {% endif %}
+        Created: {{ g.created | default('unknown') }}
+        {% if g.last_reviewed %} | Last reviewed: {{ g.last_reviewed }}{% endif %}
+    </footer>
+</article>
+{% endfor %}
+{% else %}
+<div class="coming-soon">
+    <h3>No Gaps Found</h3>
+    <p>No gaps were found in <code>.context/project/gaps.yaml</code>.</p>
+</div>
+{% endif %}

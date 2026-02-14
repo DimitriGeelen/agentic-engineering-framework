@@ -27,44 +27,44 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "resume.sh status command synthesizes current state"
-  - "resume.sh sync command fixes stale working memory"
-  - "resume.sh quick command gives one-line summary"
-  - "AGENT.md documents when and how to use"
-  - "CLAUDE.md updated with Resume Agent section"
-  - "Session Start Protocol includes post-compaction recovery"
+- "resume.sh status command synthesizes current state"
+- "resume.sh sync command fixes stale working memory"
+- "resume.sh quick command gives one-line summary"
+- "AGENT.md documents when and how to use"
+- "CLAUDE.md updated with Resume Agent section"
+- "Session Start Protocol includes post-compaction recovery"
 
 # What worked well
 successes:
-  - description: "Multi-source synthesis approach"
-    why: "Single command reads handover, working memory, git, tasks — no manual hunting"
-  - description: "Sync command for stale state"
-    why: "Working memory drifts during work; sync fixes without full re-init"
-  - description: "Following P-006 hybrid architecture"
-    why: "Consistent with other agents; bash for mechanics, AGENT.md for guidance"
+- description: "Multi-source synthesis approach"
+  why: "Single command reads handover, working memory, git, tasks — no manual hunting"
+- description: "Sync command for stale state"
+  why: "Working memory drifts during work; sync fixes without full re-init"
+- description: "Following P-006 hybrid architecture"
+  why: "Consistent with other agents; bash for mechanics, AGENT.md for guidance"
 
 # Challenges encountered
 challenges:
-  - description: "Working memory files don't auto-update during task changes"
-    resolution: "Added sync command to manually fix; considered but deferred auto-update hooks"
-    learning: "Explicit sync is simpler than maintaining update hooks everywhere"
+- description: "Working memory files don't auto-update during task changes"
+  resolution: "Added sync command to manually fix; considered but deferred auto-update hooks"
+  learning: "Explicit sync is simpler than maintaining update hooks everywhere"
 
 # Decisions made during this task
 decisions:
-  - decision: "Three commands: status, sync, quick"
-    rationale: "status for full synthesis, sync for fixing stale state, quick for prompts"
-    alternatives_rejected: ["Single command (too complex)", "Auto-sync (too invasive)"]
-  - decision: "Read from existing sources rather than create new state"
-    rationale: "Don't duplicate state; synthesize from authoritative sources"
-    alternatives_rejected: ["Dedicated resume state file (duplication)"]
+- decision: "Three commands: status, sync, quick"
+  rationale: "status for full synthesis, sync for fixing stale state, quick for prompts"
+  alternatives_rejected: ["Single command (too complex)", "Auto-sync (too invasive)"]
+- decision: "Read from existing sources rather than create new state"
+  rationale: "Don't duplicate state; synthesize from authoritative sources"
+  alternatives_rejected: ["Dedicated resume state file (duplication)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "agents/resume/resume.sh"
-    - "agents/resume/AGENT.md"
+  - "agents/resume/resume.sh"
+  - "agents/resume/AGENT.md"
   modified:
-    - "CLAUDE.md (added Resume Agent section, Quick Reference, post-compaction protocol)"
+  - "CLAUDE.md (added Resume Agent section, Quick Reference, post-compaction protocol)"
 
 # Related tasks
 related_tasks:
@@ -73,7 +73,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [context-fabric, compaction, D2, recovery, working-memory]
+tags: [context-fabric, resume, D2-reliability, build, P-006]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-020-create-resume-agent.md

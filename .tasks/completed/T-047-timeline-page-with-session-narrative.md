@@ -3,7 +3,7 @@ id: T-047
 name: Timeline page with session narrative
 description: >
   Build the timeline page and add session narrative generation to the handover process. (1) Modify handover.sh to generate a session_narrative field: 2-3 paragraph prose summary of session arc, connecting tasks to each other and the bigger picture. Stored in handover frontmatter or as new section. (2) Build /timeline page: sessions collapsed by default showing date + task count. Expand session (htmx hx-get) shows session_narrative prose + task list with component tags. Expand task shows episodic summary (outcomes, decisions, challenges). (3) Fallback for pre-feature handovers: stitch existing fragments (Where We Are + episodic summaries). Timeline is read-only. Data source: handover files + episodic files, computed on-the-fly. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Q2 Timeline format, Q5 Timeline freshness, Three levels of progressive disclosure. Depends on: T-045 (web foundation).
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,8 +12,8 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:34:22Z
-last_update: 2026-02-14T11:34:22Z
-date_finished: null
+last_update: 2026-02-14T12:27:34Z
+date_finished: 2026-02-14T12:27:34Z
 ---
 
 # T-047: Timeline page with session narrative
@@ -54,3 +54,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-047-timeline-page-with-session-narrative.md
 - **Context:** Initial task creation
+
+### 2026-02-14T12:27:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-14T12:27:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

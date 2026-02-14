@@ -1,0 +1,9 @@
+<div class="page-header">
+    <h1>{{ error_title | default("Error") }}</h1>
+</div>
+<article>
+    <p>{{ error_message | default("An unexpected error occurred.") }}</p>
+    <footer>
+        <a href="{{ url_for('index') }}">Return to Dashboard</a>
+    </footer>
+</article>

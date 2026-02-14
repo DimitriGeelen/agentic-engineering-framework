@@ -1,0 +1,165 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ learnings|length }} learnings, {{ patterns.failure|length + patterns.success|length + patterns.workflow|length }} patterns, and {{ practices|length }} practices from project experience.</p>
+</div>
+
+<!-- Learnings section -->
+<details open>
+    <summary><strong>Learnings ({{ learnings|length }})</strong></summary>
+    {% if learnings %}
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Learning</th>
+                <th scope="col">Source</th>
+                <th scope="col">Task</th>
+                <th scope="col">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l in learnings %}
+            <tr>
+                <td><code>{{ l.id }}</code></td>
+                <td>
+                    {{ l.learning }}
+                    {% if l.context %}
+                    <br><small style="color: var(--pico-muted-color);">{{ l.context }}</small>
+                    {% endif %}
+                </td>
+                <td><small>{{ l.source | default('') }}</small></td>
+                <td>{% if l.task %}<code>{{ l.task }}</code>{% endif %}</td>
+                <td><small>{{ l.date | default('') }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">No learnings recorded yet.</p>
+    {% endif %}
+</details>
+
+<!-- Patterns section -->
+<details>
+    <summary><strong>Patterns ({{ patterns.failure|length + patterns.success|length + patterns.workflow|length }})</strong></summary>
+
+    {% if patterns.failure %}
+    <h4 style="margin-top: 1rem; color: #c0392b;">Failure Patterns</h4>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Pattern</th>
+                <th scope="col">Mitigation</th>
+                <th scope="col">Learned From</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patterns.failure %}
+            <tr>
+                <td><code>{{ p.id }}</code></td>
+                <td>
+                    <strong>{{ p.pattern }}</strong>
+                    {% if p.description %}
+                    <br><small style="color: var(--pico-muted-color);">{{ p.description }}</small>
+                    {% endif %}
+                </td>
+                <td><small>{{ p.mitigation | default('') }}</small></td>
+                <td>{% if p.learned_from %}<code>{{ p.learned_from }}</code>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if patterns.success %}
+    <h4 style="margin-top: 1rem; color: #27ae60;">Success Patterns</h4>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Pattern</th>
+                <th scope="col">Context</th>
+                <th scope="col">Learned From</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patterns.success %}
+            <tr>
+                <td><code>{{ p.id }}</code></td>
+                <td>
+                    <strong>{{ p.pattern }}</strong>
+                    {% if p.description %}
+                    <br><small style="color: var(--pico-muted-color);">{{ p.description }}</small>
+                    {% endif %}
+                </td>
+                <td><small>{{ p.context | default('') }}</small></td>
+                <td>{% if p.learned_from %}<code>{{ p.learned_from }}</code>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if patterns.workflow %}
+    <h4 style="margin-top: 1rem; color: #2980b9;">Workflow Patterns</h4>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Pattern</th>
+                <th scope="col">Example</th>
+                <th scope="col">Learned From</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in patterns.workflow %}
+            <tr>
+                <td><code>{{ p.id }}</code></td>
+                <td>
+                    <strong>{{ p.pattern }}</strong>
+                    {% if p.description %}
+                    <br><small style="color: var(--pico-muted-color);">{{ p.description }}</small>
+                    {% endif %}
+                </td>
+                <td><small>{{ p.example | default('') }}</small></td>
+                <td>{% if p.learned_from %}<code>{{ p.learned_from }}</code>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if not patterns.failure and not patterns.success and not patterns.workflow %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">No patterns recorded yet.</p>
+    {% endif %}
+</details>
+
+<!-- Practices section -->
+<details>
+    <summary><strong>Practices ({{ practices|length }})</strong></summary>
+    {% if practices %}
+    {% for p in practices %}
+    <article style="margin-bottom: 0.5rem;">
+        <header>
+            <code>{{ p.id }}</code> &mdash; {{ p.name }}
+            <span style="float: right; color: var(--pico-muted-color); font-size: 0.8rem;">
+                {{ p.status | default("active") }}
+                {% if p.applications %} | {{ p.applications }} applications{% endif %}
+            </span>
+        </header>
+        <p>{{ p.description }}</p>
+        {% if p.anti_pattern %}
+        <p style="color: #c0392b; font-size: 0.875rem;"><strong>Anti-pattern:</strong> {{ p.anti_pattern }}</p>
+        {% endif %}
+        <p style="color: var(--pico-muted-color); font-size: 0.8rem;">
+            Derived from: <code>{{ p.derived_from if p.derived_from is string else p.derived_from | join(', ') }}</code>
+            {% if p.origin_task %} | Origin: <code>{{ p.origin_task }}</code>{% endif %}
+            {% if p.origin_date %} | {{ p.origin_date }}{% endif %}
+        </p>
+    </article>
+    {% endfor %}
+    {% else %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">No practices recorded yet.</p>
+    {% endif %}
+</details>

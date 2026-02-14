@@ -24,33 +24,36 @@ summary: |
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "practices.yaml created with all 7 practices as structured YAML"
-  - "Each practice includes id, name, derived_from, description, anti_pattern, origin_task, origin_date, status, applications"
-  - "Auto-healing trigger designed but deferred pending task status transition mechanism"
+- "practices.yaml created with all 7 practices as structured YAML"
+- "Each practice includes id, name, derived_from, description, anti_pattern, origin_task, origin_date, status, applications"
+- "Auto-healing trigger designed but deferred pending task status transition mechanism"
 
 # What worked well
 successes:
-  - description: "Deriving structured practices directly from the existing 015-Practices.md document"
-    why: "The human-readable practices document already had clear structure, making conversion to YAML straightforward and ensuring consistency between human docs and machine-queryable data."
+- description: "Deriving structured practices directly from the existing 015-Practices.md document"
+  why: "The human-readable practices document already had clear structure, making conversion to YAML straightforward and ensuring
+    consistency between human docs and machine-queryable data."
 
 # Challenges encountered
 challenges:
-  - description: "Auto-healing trigger requires task status change detection that does not exist"
-    resolution: "Deferred to future implementation when task status transitions are formalized (e.g., via a `fw task update` command). Documented the design intent so the work is not lost."
+- description: "Auto-healing trigger requires task status change detection that does not exist"
+  resolution: "Deferred to future implementation when task status transitions are formalized (e.g., via a `fw task update`
+    command). Documented the design intent so the work is not lost."
 
 # Decisions made during this task
 decisions:
-  - decision: "Defer auto-healing trigger implementation"
-    rationale: "No task status transition mechanism exists yet; implementing one is out of scope for this task and would require its own design"
-    alternatives_rejected: ["Build task status transition mechanism as part of this task", "Use file-watching for status changes"]
-  - decision: "Include anti_pattern field in each practice"
-    rationale: "Anti-patterns help agents recognize when they are violating a practice, enabling self-correction"
-    alternatives_rejected: ["Only store positive practice descriptions"]
+- decision: "Defer auto-healing trigger implementation"
+  rationale: "No task status transition mechanism exists yet; implementing one is out of scope for this task and would require
+    its own design"
+  alternatives_rejected: ["Build task status transition mechanism as part of this task", "Use file-watching for status changes"]
+- decision: "Include anti_pattern field in each practice"
+  rationale: "Anti-patterns help agents recognize when they are violating a practice, enabling self-correction"
+  alternatives_rejected: ["Only store positive practice descriptions"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - ".context/project/practices.yaml"
+  - ".context/project/practices.yaml"
   modified: []
 
 # Related tasks
@@ -60,7 +63,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [practices, structured-data, auto-healing, deferred]
+tags: [context-fabric, healing-loop, D1-antifragility, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-036-add-practicesyaml-and-auto-healing-trigg.md

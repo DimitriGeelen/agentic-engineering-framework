@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-14
-timestamp: 2026-02-14T10:10:50Z
+timestamp: 2026-02-14T12:27:39Z
 summary:
-  pass: 20
-  warn: 1
+  pass: 17
+  warn: 4
   fail: 0
 findings:
   - level: PASS
@@ -21,9 +21,10 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 93% (82/88 commits reference tasks)"
-  - level: PASS
-    check: "Working directory clean"
+    check: "Git traceability: 93% (84/90 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -40,11 +41,13 @@ findings:
     check: "All practice origins resolve to actual tasks"
   - level: PASS
     check: "All completed tasks have episodic summaries"
-  - level: PASS
-    check: "All 42 episodic summaries have quality content"
+  - level: WARN
+    check: "9 episodics have empty or TODO summaries"
+    mitigation: "Fill in summary field with actual task description"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
-  - level: PASS
-    check: "Gaps register: 6 watching, no triggers fired"
+  - level: WARN
+    check: "Gap trigger(s) fired — review gaps register"
+    mitigation: "Review .context/project/gaps.yaml and decide: build or simplify"

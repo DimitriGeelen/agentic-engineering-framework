@@ -27,43 +27,43 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - Created agents/ directory structure
-  - Built task-create agent with bash script + AGENT.md
-  - Built audit agent with bash script + AGENT.md
-  - Updated CLAUDE.md with Quick Reference for agent invocation
-  - Established hybrid architecture as the agent pattern
+- Created agents/ directory structure
+- Built task-create agent with bash script + AGENT.md
+- Built audit agent with bash script + AGENT.md
+- Updated CLAUDE.md with Quick Reference for agent invocation
+- Established hybrid architecture as the agent pattern
 
 # What worked well
 successes:
-  - description: "Hybrid architecture (bash + markdown)"
-    why: "Bash handles mechanics reliably; markdown guides intelligent decisions"
-  - description: "CLAUDE.md integration"
-    why: "Agents immediately usable in Claude Code without separate tooling"
+- description: "Hybrid architecture (bash + markdown)"
+  why: "Bash handles mechanics reliably; markdown guides intelligent decisions"
+- description: "CLAUDE.md integration"
+  why: "Agents immediately usable in Claude Code without separate tooling"
 
 # Challenges encountered
 challenges:
-  - description: "Determining boundary between bash and LLM responsibilities"
-    resolution: "Bash does file ops, validation, git; LLM handles judgment calls"
-    learning: "Became P-006: Hybrid Agent Architecture"
+- description: "Determining boundary between bash and LLM responsibilities"
+  resolution: "Bash does file ops, validation, git; LLM handles judgment calls"
+  learning: "Became P-006: Hybrid Agent Architecture"
 
 # Decisions made during this task
 decisions:
-  - decision: "Hybrid agent architecture (bash + markdown)"
-    rationale: "Best of both worlds - reliability of scripts + intelligence of LLM"
-    alternatives_rejected: ["Pure bash (too dumb)", "Pure LLM (unpredictable)"]
-  - decision: "AGENT.md for intelligence layer"
-    rationale: "Consistent with CLAUDE.md pattern, LLM can read it directly"
-    alternatives_rejected: ["JSON config (less readable)", "Embedded in bash"]
+- decision: "Hybrid agent architecture (bash + markdown)"
+  rationale: "Best of both worlds - reliability of scripts + intelligence of LLM"
+  alternatives_rejected: ["Pure bash (too dumb)", "Pure LLM (unpredictable)"]
+- decision: "AGENT.md for intelligence layer"
+  rationale: "Consistent with CLAUDE.md pattern, LLM can read it directly"
+  alternatives_rejected: ["JSON config (less readable)", "Embedded in bash"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "agents/task-create/AGENT.md"
-    - "agents/task-create/create-task.sh"
-    - "agents/audit/AGENT.md"
-    - "agents/audit/audit.sh"
+  - "agents/task-create/AGENT.md"
+  - "agents/task-create/create-task.sh"
+  - "agents/audit/AGENT.md"
+  - "agents/audit/audit.sh"
   modified:
-    - "CLAUDE.md"
+  - "CLAUDE.md"
 
 # Related tasks
 related_tasks:
@@ -72,7 +72,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [agents, tooling, bootstrap, P-006, hybrid-architecture]
+tags: [audit, task-system, D2-reliability, D3-usability, bootstrap, build, P-006]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-002-create-core-agents.md

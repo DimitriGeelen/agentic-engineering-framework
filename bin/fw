@@ -113,10 +113,21 @@ show_help() {
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
+    echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
+    echo ""
+    echo -e "${BOLD}Discovery:${NC}"
+    echo -e "  ${GREEN}task list${NC}          List all tasks (filterable by --status, --type, --component)"
+    echo -e "  ${GREEN}task show${NC} T-XXX    Show task detail with episodic summary"
+    echo -e "  ${GREEN}decisions${NC}          Show all decisions (architectural + operational)"
+    echo -e "  ${GREEN}timeline${NC}           Show session timeline"
+    echo -e "  ${GREEN}learnings${NC}          Show learnings with context"
+    echo -e "  ${GREEN}patterns${NC}           Show failure/success patterns"
+    echo -e "  ${GREEN}practices${NC}          Show graduated principles"
+    echo -e "  ${GREEN}search${NC} <keyword>   Search across all artifacts"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
@@ -265,17 +276,265 @@ route_task() {
         update)
             exec "$AGENTS_DIR/task-create/update-task.sh" "$@"
             ;;
+        list)
+            FW_TASK_ARGS="$*" python3 << 'PYTASK_LIST'
+import os, yaml, sys, shlex
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+
+# Parse args from env (bash can't pass args to heredoc python)
+args = shlex.split(os.environ.get('FW_TASK_ARGS', ''))
+status_filter = None
+type_filter = None
+component_filter = None
+show_all = False
+
+i = 0
+while i < len(args):
+    if args[i] == '--status' and i + 1 < len(args):
+        status_filter = args[i+1]; i += 2
+    elif args[i] == '--type' and i + 1 < len(args):
+        type_filter = args[i+1]; i += 2
+    elif args[i] == '--component' and i + 1 < len(args):
+        component_filter = args[i+1]; i += 2
+    elif args[i] == '--all':
+        show_all = True; i += 1
+    else:
+        i += 1
+
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+BOLD = '\033[1m'
+NC = '\033[0m'
+
+def status_color(s):
+    s = s.lower() if s else ''
+    if s in ('work-completed', 'completed'):
+        return GREEN
+    if s in ('issues', 'blocked'):
+        return YELLOW
+    if s in ('captured', 'refined', 'started-work'):
+        return CYAN
+    return NC
+
+def parse_task(path):
+    try:
+        with open(path) as f:
+            text = f.read()
+        if not text.startswith('---'):
+            return None
+        end = text.index('---', 3)
+        block = text[3:end]
+        try:
+            fm = yaml.safe_load(block)
+        except:
+            # Fallback: regex parse key fields from malformed YAML
+            import re
+            fm = {}
+            for key in ['id', 'status', 'workflow_type', 'owner', 'name']:
+                m = re.search(r'^' + key + r':\s*(.+)', block, re.MULTILINE)
+                if m:
+                    val = m.group(1).strip().strip('"').strip("'")
+                    fm[key] = val
+        return fm if fm else None
+    except:
+        return None
+
+tasks = []
+dirs = [os.path.join(project_root, '.tasks', 'active')]
+if show_all or status_filter in ('work-completed', 'completed'):
+    dirs.append(os.path.join(project_root, '.tasks', 'completed'))
+
+for d in dirs:
+    if not os.path.isdir(d):
+        continue
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith('.md'):
+            continue
+        fm = parse_task(os.path.join(d, fn))
+        if fm and fm.get('id'):
+            tasks.append(fm)
+
+if status_filter:
+    tasks = [t for t in tasks if t.get('status', '').lower() == status_filter.lower()]
+if type_filter:
+    tasks = [t for t in tasks if t.get('workflow_type', '').lower() == type_filter.lower()]
+if component_filter:
+    ep_dir = os.path.join(project_root, '.context', 'episodic')
+    matching_ids = set()
+    if os.path.isdir(ep_dir):
+        for fn in os.listdir(ep_dir):
+            if fn.endswith('.yaml') and fn != 'TEMPLATE.yaml':
+                try:
+                    with open(os.path.join(ep_dir, fn)) as f:
+                        ep = yaml.safe_load(f)
+                    tags = ep.get('tags', [])
+                    if any(component_filter.lower() in str(t).lower() for t in tags):
+                        matching_ids.add(ep.get('task_id', ''))
+                except:
+                    pass
+    tasks = [t for t in tasks if t.get('id', '') in matching_ids]
+
+def sort_key(t):
+    tid = t.get('id', 'T-999')
+    try:
+        return int(tid.replace('T-', ''))
+    except:
+        return 999
+tasks.sort(key=sort_key)
+
+if not tasks:
+    print(f'{YELLOW}No tasks found matching filters{NC}')
+    sys.exit(0)
+
+print(f'{BOLD}Tasks{NC} ({len(tasks)} found)')
+print()
+print(f'  {"ID":<8} {"Status":<18} {"Type":<15} {"Owner":<12} {"Name"}')
+print(f'  {chr(9472)*8} {chr(9472)*18} {chr(9472)*15} {chr(9472)*12} {chr(9472)*30}')
+
+for t in tasks:
+    tid = t.get('id', '?')
+    status = t.get('status', '?')
+    wtype = t.get('workflow_type', '?')
+    owner = t.get('owner', '?')
+    name = t.get('name', '?')
+    sc = status_color(status)
+    print(f'  {tid:<8} {sc}{status:<18}{NC} {wtype:<15} {owner:<12} {name}')
+PYTASK_LIST
+            ;;
+        show)
+            local task_id="${1:-}"
+            if [ -z "$task_id" ]; then
+                echo -e "${RED}Usage: fw task show T-XXX${NC}"
+                exit 1
+            fi
+            python3 - "$task_id" << 'PYTASK_SHOW'
+import os, yaml, sys
+
+task_id = sys.argv[1]
+project_root = os.environ.get('PROJECT_ROOT', '.')
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+task_file = None
+for subdir in ['active', 'completed']:
+    d = os.path.join(project_root, '.tasks', subdir)
+    if not os.path.isdir(d):
+        continue
+    for fn in os.listdir(d):
+        if fn.startswith(task_id + '-') and fn.endswith('.md'):
+            task_file = os.path.join(d, fn)
+            break
+    if task_file:
+        break
+
+if not task_file:
+    print(f'\033[0;31mTask {task_id} not found\033[0m')
+    sys.exit(1)
+
+with open(task_file) as f:
+    text = f.read()
+
+fm = {}
+if text.startswith('---'):
+    end = text.index('---', 3)
+    fm = yaml.safe_load(text[3:end]) or {}
+
+print(f'{BOLD}{task_id}: {fm.get("name", "Unknown")}{NC}')
+print()
+print(f'  Status:    {fm.get("status", "?")}')
+print(f'  Type:      {fm.get("workflow_type", "?")}')
+print(f'  Owner:     {fm.get("owner", "?")}')
+print(f'  Created:   {fm.get("created", "?")}')
+if fm.get('date_finished'):
+    print(f'  Finished:  {fm.get("date_finished")}')
+print()
+
+ep_file = os.path.join(project_root, '.context', 'episodic', f'{task_id}.yaml')
+if os.path.isfile(ep_file):
+    with open(ep_file) as f:
+        ep = yaml.safe_load(f)
+
+    if ep.get('summary'):
+        print(f'{BOLD}Summary{NC}')
+        for line in ep['summary'].strip().split('\n'):
+            print(f'  {line.strip()}')
+        print()
+
+    if ep.get('outcomes'):
+        print(f'{BOLD}Outcomes{NC}')
+        for o in ep['outcomes']:
+            print(f'  {GREEN}*{NC} {o}')
+        print()
+
+    if ep.get('challenges'):
+        print(f'{BOLD}Challenges{NC}')
+        for c in ep['challenges']:
+            desc = c if isinstance(c, str) else c.get('description', '')
+            res = '' if isinstance(c, str) else c.get('resolution', '')
+            print(f'  {YELLOW}*{NC} {desc}')
+            if res:
+                print(f'    Resolution: {res}')
+        print()
+
+    if ep.get('decisions'):
+        print(f'{BOLD}Decisions{NC}')
+        for d in ep['decisions']:
+            dec = d if isinstance(d, str) else d.get('decision', '')
+            rat = '' if isinstance(d, str) else d.get('rationale', '')
+            print(f'  {CYAN}*{NC} {dec}')
+            if rat:
+                print(f'    Rationale: {rat}')
+        print()
+
+    if ep.get('related_tasks'):
+        rt = ep['related_tasks']
+        parts = []
+        if rt.get('spawned'):
+            parts.append(f'Spawned: {", ".join(str(t) for t in rt["spawned"])}')
+        if rt.get('absorbed'):
+            parts.append(f'Absorbed: {", ".join(str(t) for t in rt["absorbed"])}')
+        if rt.get('blocked'):
+            parts.append(f'Blocked: {", ".join(str(t) for t in rt["blocked"])}')
+        if parts:
+            print(f'{BOLD}Related Tasks{NC}')
+            for p in parts:
+                print(f'  {p}')
+            print()
+
+    if ep.get('tags'):
+        print(f'{BOLD}Tags{NC}')
+        print(f'  {", ".join(str(t) for t in ep["tags"])}')
+        print()
+else:
+    desc = fm.get('description', '')
+    if desc:
+        print(f'{BOLD}Description{NC}')
+        for line in desc.strip().split('\n'):
+            print(f'  {line.strip()}')
+        print()
+PYTASK_SHOW
+            ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
             echo ""
             echo "Subcommands:"
             echo "  create    Create a new task"
             echo "  update    Update task status (auto-triggers healing/episodic)"
+            echo "  list      List all tasks (filterable)"
+            echo "  show      Show task detail with episodic summary"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
             echo '  fw task update T-XXX --status issues --reason "API timeout"'
             echo '  fw task update T-XXX --status work-completed'
+            echo '  fw task list --status captured --type build'
+            echo '  fw task show T-001'
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
@@ -311,6 +570,20 @@ case "$cmd" in
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
+        ;;
+    serve)
+        # Check Flask is installed
+        if ! python3 -c "import flask" 2>/dev/null; then
+            echo -e "${RED}ERROR: Flask is not installed${NC}" >&2
+            echo "" >&2
+            echo "Install required packages:" >&2
+            echo "  pip install flask pyyaml ruamel.yaml markdown2 bleach" >&2
+            echo "" >&2
+            echo "Or install from requirements file:" >&2
+            echo "  pip install -r $FRAMEWORK_ROOT/web/requirements.txt" >&2
+            exit 1
+        fi
+        exec python3 "$FRAMEWORK_ROOT/web/app.py" "$@"
         ;;
     task)
         route_task "$@"
@@ -355,6 +628,435 @@ for gap in watching:
 if not watching:
     print("  \033[0;32mNo gaps being watched\033[0m")
 PYEOF
+        ;;
+    decisions)
+        python3 << 'PYDECISIONS'
+import os, yaml, re
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+
+op_decisions = []
+dec_file = os.path.join(project_root, '.context', 'project', 'decisions.yaml')
+if os.path.isfile(dec_file):
+    with open(dec_file) as f:
+        data = yaml.safe_load(f) or {}
+    for d in data.get('decisions', []):
+        op_decisions.append({
+            'id': d.get('id', '?'),
+            'decision': d.get('decision', ''),
+            'directives': ', '.join(str(x) for x in d.get('directives_served', [])),
+            'date': str(d.get('date', '?')),
+        })
+
+arch_decisions = []
+dd_file = os.path.join(project_root, '005-DesignDirectives.md')
+if os.path.isfile(dd_file):
+    with open(dd_file) as f:
+        lines = f.readlines()
+    for line in lines:
+        m = re.match(r'\|\s*(AD-\d+)\s*\|\s*(\S+)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|', line)
+        if m:
+            arch_decisions.append({
+                'id': m.group(1),
+                'decision': m.group(3).strip(),
+                'directives': m.group(4).strip(),
+                'date': m.group(2).strip(),
+            })
+
+total = len(arch_decisions) + len(op_decisions)
+print(f'{BOLD}Decisions{NC} ({total} total: {len(arch_decisions)} architectural, {len(op_decisions)} operational)')
+print()
+
+if arch_decisions:
+    print(f'{BOLD}Architectural Decisions{NC}')
+    print(f'  {"ID":<8} {"Date":<12} {"Directives":<14} {"Decision"}')
+    print(f'  {chr(9472)*8} {chr(9472)*12} {chr(9472)*14} {chr(9472)*60}')
+    for d in arch_decisions:
+        dec = d['decision'][:60] + ('...' if len(d['decision']) > 60 else '')
+        print(f'  {CYAN}{d["id"]:<8}{NC} {d["date"]:<12} {d["directives"]:<14} {dec}')
+    print()
+
+if op_decisions:
+    print(f'{BOLD}Operational Decisions{NC}')
+    print(f'  {"ID":<8} {"Date":<12} {"Directives":<14} {"Decision"}')
+    print(f'  {chr(9472)*8} {chr(9472)*12} {chr(9472)*14} {chr(9472)*60}')
+    for d in op_decisions:
+        dec = d['decision'][:60] + ('...' if len(d['decision']) > 60 else '')
+        print(f'  {GREEN}{d["id"]:<8}{NC} {d["date"]:<12} {d["directives"]:<14} {dec}')
+    print()
+PYDECISIONS
+        ;;
+    timeline)
+        python3 << 'PYTIMELINE'
+import os, yaml
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+handover_dir = os.path.join(project_root, '.context', 'handovers')
+
+if not os.path.isdir(handover_dir):
+    print(f'{YELLOW}No handovers directory found{NC}')
+    exit(0)
+
+sessions = []
+for fn in sorted(os.listdir(handover_dir)):
+    if not fn.startswith('S-') or not fn.endswith('.md'):
+        continue
+    path = os.path.join(handover_dir, fn)
+    try:
+        with open(path) as f:
+            text = f.read()
+        if not text.startswith('---'):
+            continue
+        end = text.index('---', 3)
+        fm = yaml.safe_load(text[3:end]) or {}
+        sessions.append({
+            'session_id': fm.get('session_id', fn.replace('.md', '')),
+            'timestamp': str(fm.get('timestamp', '?')),
+            'touched': fm.get('tasks_touched', []),
+            'completed': fm.get('tasks_completed', []),
+            'owner': fm.get('owner', '?'),
+        })
+    except:
+        continue
+
+sessions.sort(key=lambda s: s['timestamp'], reverse=True)
+
+print(f'{BOLD}Session Timeline{NC} ({len(sessions)} sessions)')
+print()
+print(f'  {"Session ID":<22} {"Date":<22} {"Touched":<10} {"Completed":<10} {"Owner"}')
+print(f'  {chr(9472)*22} {chr(9472)*22} {chr(9472)*10} {chr(9472)*10} {chr(9472)*12}')
+
+for s in sessions:
+    touched_n = len(s['touched']) if isinstance(s['touched'], list) else 0
+    completed_n = len(s['completed']) if isinstance(s['completed'], list) else 0
+    comp_color = GREEN if completed_n > 0 else NC
+    print(f'  {CYAN}{s["session_id"]:<22}{NC} {s["timestamp"]:<22} {touched_n:<10} {comp_color}{completed_n:<10}{NC} {s["owner"]}')
+print()
+PYTIMELINE
+        ;;
+    learnings)
+        LEARNINGS_FILE="$PROJECT_ROOT/.context/project/learnings.yaml"
+        if [ ! -f "$LEARNINGS_FILE" ]; then
+            echo -e "${YELLOW}No learnings file found${NC}"
+            echo "Expected at: .context/project/learnings.yaml"
+            exit 0
+        fi
+        python3 << 'PYLEARNINGS'
+import os, yaml
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+path = os.path.join(project_root, '.context', 'project', 'learnings.yaml')
+
+with open(path) as f:
+    data = yaml.safe_load(f) or {}
+
+learnings = data.get('learnings', [])
+candidates = data.get('candidates', [])
+
+print(f'{BOLD}Learnings{NC} ({len(learnings)} confirmed, {len(candidates)} candidates)')
+print()
+print(f'  {"ID":<8} {"Task":<8} {"Date":<12} {"Learning"}')
+print(f'  {chr(9472)*8} {chr(9472)*8} {chr(9472)*12} {chr(9472)*50}')
+
+for l in learnings:
+    lid = l.get('id', '?')
+    task = l.get('task', '?')
+    date = str(l.get('date', '?'))
+    learning = l.get('learning', '?')
+    print(f'  {GREEN}{lid:<8}{NC} {task:<8} {date:<12} {learning}')
+
+if candidates:
+    print()
+    print(f'{BOLD}Candidates{NC}')
+    for c in candidates:
+        print(f'  {YELLOW}*{NC} {c.get("learning", c) if isinstance(c, dict) else c}')
+print()
+PYLEARNINGS
+        ;;
+    patterns)
+        PATTERNS_FILE="$PROJECT_ROOT/.context/project/patterns.yaml"
+        if [ ! -f "$PATTERNS_FILE" ]; then
+            echo -e "${YELLOW}No patterns file found${NC}"
+            echo "Expected at: .context/project/patterns.yaml"
+            exit 0
+        fi
+        python3 << 'PYPATTERNS'
+import os, yaml
+
+BOLD = '\033[1m'
+RED = '\033[0;31m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+path = os.path.join(project_root, '.context', 'project', 'patterns.yaml')
+
+with open(path) as f:
+    data = yaml.safe_load(f) or {}
+
+failure = data.get('failure_patterns', [])
+success = data.get('success_patterns', [])
+workflow = data.get('workflow_patterns', [])
+
+total = len(failure) + len(success) + len(workflow)
+print(f'{BOLD}Patterns{NC} ({total} total: {len(failure)} failure, {len(success)} success, {len(workflow)} workflow)')
+print()
+
+if failure:
+    print(f'{BOLD}Failure Patterns{NC}')
+    for p in failure:
+        pid = p.get('id', '?')
+        desc = p.get('description', p.get('pattern', '?'))
+        mitigation = p.get('mitigation', '?')
+        task = p.get('learned_from', '?')
+        print(f'  {RED}{pid}{NC} [{task}] {p.get("pattern", "?")}')
+        print(f'    {desc}')
+        print(f'    {GREEN}Mitigation:{NC} {mitigation}')
+        print()
+
+if success:
+    print(f'{BOLD}Success Patterns{NC}')
+    for p in success:
+        pid = p.get('id', '?')
+        desc = p.get('description', '?')
+        ctx = p.get('context', '')
+        task = p.get('learned_from', '?')
+        print(f'  {GREEN}{pid}{NC} [{task}] {p.get("pattern", "?")}')
+        print(f'    {desc}')
+        if ctx:
+            print(f'    Context: {ctx}')
+        print()
+
+if workflow:
+    print(f'{BOLD}Workflow Patterns{NC}')
+    for p in workflow:
+        pid = p.get('id', '?')
+        desc = p.get('description', '?')
+        example = p.get('example', '')
+        task = p.get('learned_from', '?')
+        print(f'  {CYAN}{pid}{NC} [{task}] {p.get("pattern", "?")}')
+        print(f'    {desc}')
+        if example:
+            print(f'    Example: {example}')
+        print()
+PYPATTERNS
+        ;;
+    practices)
+        PRACTICES_FILE="$PROJECT_ROOT/.context/project/practices.yaml"
+        if [ ! -f "$PRACTICES_FILE" ]; then
+            echo -e "${YELLOW}No practices file found${NC}"
+            echo "Expected at: .context/project/practices.yaml"
+            exit 0
+        fi
+        python3 << 'PYPRACTICES'
+import os, yaml
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+path = os.path.join(project_root, '.context', 'project', 'practices.yaml')
+
+with open(path) as f:
+    data = yaml.safe_load(f) or {}
+
+practices = data.get('practices', [])
+active = [p for p in practices if p.get('status') == 'active']
+
+print(f'{BOLD}Practices{NC} ({len(active)} active of {len(practices)} total)')
+print()
+print(f'  {"ID":<8} {"Derived":<12} {"Apps":<6} {"Name"}')
+print(f'  {chr(9472)*8} {chr(9472)*12} {chr(9472)*6} {chr(9472)*40}')
+
+for p in practices:
+    pid = p.get('id', '?')
+    derived = p.get('derived_from', '?')
+    if isinstance(derived, list):
+        derived = ', '.join(str(d) for d in derived)
+    apps = p.get('applications', 0)
+    name = p.get('name', '?')
+    status = p.get('status', '?')
+    color = GREEN if status == 'active' else YELLOW
+    print(f'  {color}{pid:<8}{NC} {str(derived):<12} {apps:<6} {name}')
+
+print()
+for p in practices:
+    pid = p.get('id', '?')
+    desc = p.get('description', '')
+    anti = p.get('anti_pattern', '')
+    if desc:
+        short_desc = desc[:80] + ('...' if len(desc) > 80 else '')
+        print(f'  {BOLD}{pid}{NC}: {short_desc}')
+        if anti:
+            short_anti = anti[:70] + ('...' if len(anti) > 70 else '')
+            print(f'    {YELLOW}Anti-pattern:{NC} {short_anti}')
+print()
+PYPRACTICES
+        ;;
+    search)
+        SEARCH_TERM="${1:-}"
+        if [ -z "$SEARCH_TERM" ]; then
+            echo -e "${RED}Usage: fw search <keyword>${NC}"
+            exit 1
+        fi
+        python3 - "$SEARCH_TERM" << 'PYSEARCH'
+import os, subprocess, sys, re
+
+term = sys.argv[1]
+project_root = os.environ.get('PROJECT_ROOT', '.')
+
+BOLD = '\033[1m'
+RED = '\033[0;31m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+search_areas = [
+    (os.path.join(project_root, '.tasks'), 'Tasks'),
+    (os.path.join(project_root, '.context'), 'Context'),
+]
+
+spec_docs = []
+for fn in os.listdir(project_root):
+    if fn.startswith('0') and fn.endswith('.md'):
+        spec_docs.append(os.path.join(project_root, fn))
+
+print(f'{BOLD}Search:{NC} "{term}"')
+print()
+
+total_results = 0
+max_total = 50
+max_per_file = 5
+
+for area_path, area_label in search_areas:
+    if not os.path.isdir(area_path):
+        continue
+    try:
+        result = subprocess.run(
+            ['grep', '-rn', '--include=*.yaml', '--include=*.md', '-i', term, area_path],
+            capture_output=True, text=True, timeout=10
+        )
+        lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
+    except:
+        continue
+
+    if not lines:
+        continue
+
+    by_file = {}
+    for line in lines:
+        parts = line.split(':', 2)
+        if len(parts) >= 3:
+            fname = parts[0]
+            if fname not in by_file:
+                by_file[fname] = []
+            by_file[fname].append(line)
+
+    printed = False
+    for fname, flines in sorted(by_file.items()):
+        if total_results >= max_total:
+            break
+        rel_path = os.path.relpath(fname, project_root)
+        shown = 0
+        for line in flines:
+            if total_results >= max_total or shown >= max_per_file:
+                break
+            if not printed:
+                print(f'{BOLD}{area_label}{NC}')
+                printed = True
+            parts = line.split(':', 2)
+            if len(parts) >= 3:
+                lineno = parts[1]
+                content = parts[2].strip()
+                highlighted = re.sub(
+                    f'({re.escape(term)})',
+                    f'{YELLOW}\\1{NC}',
+                    content,
+                    flags=re.IGNORECASE
+                )
+                print(f'  {CYAN}{rel_path}{NC}:{lineno}: {highlighted}')
+                total_results += 1
+                shown += 1
+        if shown < len(flines) and total_results < max_total:
+            remaining = len(flines) - shown
+            print(f'  {CYAN}{rel_path}{NC}: ... {remaining} more match(es)')
+    if printed:
+        print()
+
+if spec_docs and total_results < max_total:
+    printed = False
+    for doc_path in sorted(spec_docs):
+        if total_results >= max_total:
+            break
+        try:
+            result = subprocess.run(
+                ['grep', '-n', '-i', term, doc_path],
+                capture_output=True, text=True, timeout=10
+            )
+            lines = result.stdout.strip().split('\n') if result.stdout.strip() else []
+        except:
+            continue
+
+        if not lines:
+            continue
+
+        if not printed:
+            print(f'{BOLD}Spec Documents{NC}')
+            printed = True
+
+        rel_path = os.path.relpath(doc_path, project_root)
+        shown = 0
+        for line in lines:
+            if total_results >= max_total or shown >= max_per_file:
+                break
+            parts = line.split(':', 1)
+            if len(parts) >= 2:
+                lineno = parts[0]
+                content = parts[1].strip()
+                highlighted = re.sub(
+                    f'({re.escape(term)})',
+                    f'{YELLOW}\\1{NC}',
+                    content,
+                    flags=re.IGNORECASE
+                )
+                print(f'  {CYAN}{rel_path}{NC}:{lineno}: {highlighted}')
+                total_results += 1
+                shown += 1
+        if shown < len(lines) and total_results < max_total:
+            remaining = len(lines) - shown
+            print(f'  {CYAN}{rel_path}{NC}: ... {remaining} more match(es)')
+    if printed:
+        print()
+
+if total_results == 0:
+    print(f'{YELLOW}No results found{NC}')
+else:
+    print(f'{total_results} result(s) found')
+PYSEARCH
         ;;
     doctor)
         do_doctor "$@"

@@ -25,36 +25,38 @@ summary: |
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "001-Vision.md updated to 2026-02-14 reality"
-  - "Stage 1-2 marked Achieved, Stage 3 In Progress, Stage 4 Emerging"
-  - "date_finished populated on all 27 completed task files"
-  - "Timeline data now accurate for episodic memory and metrics"
+- "001-Vision.md updated to 2026-02-14 reality"
+- "Stage 1-2 marked Achieved, Stage 3 In Progress, Stage 4 Emerging"
+- "date_finished populated on all 27 completed task files"
+- "Timeline data now accurate for episodic memory and metrics"
 
 # What worked well
 successes:
-  - description: "Batch-updating all 27 completed tasks in a single pass"
-    why: "Using file modification timestamps as date_finished values was a pragmatic approach that produced accurate-enough data without requiring manual research into each task's completion date."
-  - description: "Updating the vision document alongside metadata cleanup"
-    why: "Combining document updates with metadata fixes in one task prevented the need for multiple small cleanup tasks and ensured the project's self-description matches reality."
+- description: "Batch-updating all 27 completed tasks in a single pass"
+  why: "Using file modification timestamps as date_finished values was a pragmatic approach that produced accurate-enough
+    data without requiring manual research into each task's completion date."
+- description: "Updating the vision document alongside metadata cleanup"
+  why: "Combining document updates with metadata fixes in one task prevented the need for multiple small cleanup tasks and
+    ensured the project's self-description matches reality."
 
 # Challenges encountered
 challenges: []
 
 # Decisions made during this task
 decisions:
-  - decision: "Use file modification timestamps for date_finished values"
-    rationale: "The most reliable available proxy for completion date; task files are typically last modified when completed"
-    alternatives_rejected: ["Manual research into git history for each task", "Leave date_finished as null"]
-  - decision: "Mark Stage 3 as In Progress rather than Achieved"
-    rationale: "Cross-project learning (harvest, graduation pipeline) is built but not yet validated across multiple real projects"
-    alternatives_rejected: ["Mark Stage 3 as Achieved based on tooling alone"]
+- decision: "Use file modification timestamps for date_finished values"
+  rationale: "The most reliable available proxy for completion date; task files are typically last modified when completed"
+  alternatives_rejected: ["Manual research into git history for each task", "Leave date_finished as null"]
+- decision: "Mark Stage 3 as In Progress rather than Achieved"
+  rationale: "Cross-project learning (harvest, graduation pipeline) is built but not yet validated across multiple real projects"
+  alternatives_rejected: ["Mark Stage 3 as Achieved based on tooling alone"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "docs/001-Vision.md (current state and success criteria updated)"
-    - "27 completed task files in .tasks/completed/ (date_finished populated)"
+  - "docs/001-Vision.md (current state and success criteria updated)"
+  - "27 completed task files in .tasks/completed/ (date_finished populated)"
 
 # Related tasks
 related_tasks:
@@ -63,7 +65,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [docs, metadata, cleanup, vision, date-finished, hygiene]
+tags: [metrics, task-system, D2-reliability, refactor]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-038-update-stale-documents-and-metadata.md

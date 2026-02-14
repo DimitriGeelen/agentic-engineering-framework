@@ -26,38 +26,38 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - Audit checks all completed tasks have episodic files
-  - Audit detects enrichment_status: pending
-  - Audit detects empty/TODO summaries
-  - Immediately found 4 missing + 1 low-quality episodic
+- Audit checks all completed tasks have episodic files
+- Audit detects enrichment_status: pending
+- Audit detects empty/TODO summaries
+- Immediately found 4 missing + 1 low-quality episodic
 
 # What worked well
 successes:
-  - description: "Followed existing audit.sh patterns"
-    why: "Consistent with existing code style, easy to implement"
-  - description: "New generator immediately exposed gaps"
-    why: "T-015 changes made the problem visible in audit output"
+- description: "Followed existing audit.sh patterns"
+  why: "Consistent with existing code style, easy to implement"
+- description: "New generator immediately exposed gaps"
+  why: "T-015 changes made the problem visible in audit output"
 
 # Challenges encountered
 challenges:
-  - description: "Deciding between WARN and FAIL for missing episodics"
-    resolution: "Used WARN since older tasks may predate the system"
-    learning: "Enforcement should be proportional to maturity"
+- description: "Deciding between WARN and FAIL for missing episodics"
+  resolution: "Used WARN since older tasks may predate the system"
+  learning: "Enforcement should be proportional to maturity"
 
 # Decisions made during this task
 decisions:
-  - decision: "WARN instead of FAIL for missing episodics"
-    rationale: "Older tasks may not have episodics; too disruptive to FAIL"
-    alternatives_rejected: ["FAIL (breaks existing workflow)"]
-  - decision: "Check enrichment_status field"
-    rationale: "Aligns with T-015 changes to generator"
-    alternatives_rejected: []
+- decision: "WARN instead of FAIL for missing episodics"
+  rationale: "Older tasks may not have episodics; too disruptive to FAIL"
+  alternatives_rejected: ["FAIL (breaks existing workflow)"]
+- decision: "Check enrichment_status field"
+  rationale: "Aligns with T-015 changes to generator"
+  alternatives_rejected: []
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "agents/audit/audit.sh"
+  - "agents/audit/audit.sh"
 
 # Related tasks
 related_tasks:
@@ -66,7 +66,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [audit, D2, P-002, episodic, quality]
+tags: [audit, context-fabric, D2-reliability, build, P-002]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-016-add-episodic-quality-checks-to-audit-age.md

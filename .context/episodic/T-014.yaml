@@ -18,41 +18,41 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Audit now measures quality, not just existence"
-  - "Pre-push hook blocks on audit failures"
-  - "Tier 0 violations cause FAIL status"
-  - "Audit history enables trend detection"
-  - "AGENT.md accurately reflects implementation"
+- "Audit now measures quality, not just existence"
+- "Pre-push hook blocks on audit failures"
+- "Tier 0 violations cause FAIL status"
+- "Audit history enables trend detection"
+- "AGENT.md accurately reflects implementation"
 
 # What worked well
 successes:
-  - description: "Phased implementation (5 phases)"
-    why: "Each phase was small, committable, and verifiable"
-  - description: "Self-critique revealed real issues"
-    why: "Framework critiquing itself proved the audit works"
+- description: "Phased implementation (5 phases)"
+  why: "Each phase was small, committable, and verifiable"
+- description: "Self-critique revealed real issues"
+  why: "Framework critiquing itself proved the audit works"
 
 # What didn't work (initially)
 challenges:
-  - description: "sed command for counting updates returned malformed integers"
-    resolution: "Replaced with simpler grep -c piped through tr -d"
-    learning: "L-004: Prefer simple commands over complex sed"
+- description: "sed command for counting updates returned malformed integers"
+  resolution: "Replaced with simpler grep -c piped through tr -d"
+  learning: "L-004: Prefer simple commands over complex sed"
 
 # Decisions made during this task
 decisions:
-  - decision: "Tier 0 violations are FAIL not WARN"
-    rationale: "Consequential actions must never bypass task requirement"
-    alternatives_rejected: ["WARN (too weak)"]
-  - decision: "3+ occurrences for practice candidate"
-    rationale: "Balance between noise and pattern detection"
-    alternatives_rejected: ["2 (noisy)", "5 (slow)"]
+- decision: "Tier 0 violations are FAIL not WARN"
+  rationale: "Consequential actions must never bypass task requirement"
+  alternatives_rejected: ["WARN (too weak)"]
+- decision: "3+ occurrences for practice candidate"
+  rationale: "Balance between noise and pattern detection"
+  alternatives_rejected: ["2 (noisy)", "5 (slow)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - ".context/audits/2026-02-13.yaml"
+  - ".context/audits/2026-02-13.yaml"
   modified:
-    - "agents/audit/audit.sh"
-    - "agents/audit/AGENT.md"
+  - "agents/audit/audit.sh"
+  - "agents/audit/AGENT.md"
 
 # Related tasks
 related_tasks:
@@ -61,4 +61,8 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [audit, P-001, P-002, P-004, D1, enforcement, quality]
+tags: [audit, D1-antifragility, D2-reliability, build, P-001, P-002, P-004]
+enrichment_status: complete
+source_file: 
+  /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-014-improve-audit-agent-to-measure-quality-not-just-ex.md
+generated_by: context-agent

@@ -24,40 +24,40 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Audit Section 7: warns on urgent pending and stale (>7d) observations"
-  - "Handover: shows pending count in console output and lists items in document"
-  - "Session capture: 2 new checklist items for inbox review and capture"
-  - "Observations now have 3 structural nudges toward triage"
+- "Audit Section 7: warns on urgent pending and stale (>7d) observations"
+- "Handover: shows pending count in console output and lists items in document"
+- "Session capture: 2 new checklist items for inbox review and capture"
+- "Observations now have 3 structural nudges toward triage"
 
 # What worked well
 successes:
-  - description: "Additive integration — each touchpoint is a new section, not a refactor"
-    why: "Minimizes risk of breaking existing functionality"
-  - description: "Python for date comparison and YAML parsing in audit"
-    why: "Bash date arithmetic is fragile; Python handles ISO timestamps reliably"
+- description: "Additive integration — each touchpoint is a new section, not a refactor"
+  why: "Minimizes risk of breaking existing functionality"
+- description: "Python for date comparison and YAML parsing in audit"
+  why: "Bash date arithmetic is fragile; Python handles ISO timestamps reliably"
 
 # Challenges encountered
 challenges:
-  - description: "Test handover overwrote LATEST.md"
-    resolution: "Restored from the actual last handover file"
-    learning: "Handover agent always updates LATEST.md — use --no-commit and clean up test files"
+- description: "Test handover overwrote LATEST.md"
+  resolution: "Restored from the actual last handover file"
+  learning: "Handover agent always updates LATEST.md — use --no-commit and clean up test files"
 
 # Decisions made during this task
 decisions:
-  - decision: "7-day threshold for stale observations"
-    rationale: "Long enough to allow natural triage rhythm, short enough to catch neglect"
-    alternatives_rejected: ["3 days (too aggressive)", "14 days (too lenient)"]
-  - decision: "Urgent observations get separate warning in audit"
-    rationale: "Urgent items should not be lumped with age-based staleness"
-    alternatives_rejected: ["Single combined warning"]
+- decision: "7-day threshold for stale observations"
+  rationale: "Long enough to allow natural triage rhythm, short enough to catch neglect"
+  alternatives_rejected: ["3 days (too aggressive)", "14 days (too lenient)"]
+- decision: "Urgent observations get separate warning in audit"
+  rationale: "Urgent items should not be lumped with age-based staleness"
+  alternatives_rejected: ["Single combined warning"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "agents/audit/audit.sh (Section 7: Observation Inbox Checks)"
-    - "agents/handover/handover.sh (inbox status + document section)"
-    - "agents/session-capture/AGENT.md (2 checklist items)"
+  - "agents/audit/audit.sh (Section 7: Observation Inbox Checks)"
+  - "agents/handover/handover.sh (inbox status + document section)"
+  - "agents/session-capture/AGENT.md (2 checklist items)"
 
 # Related tasks
 related_tasks:
@@ -66,7 +66,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [observation, integration, audit, handover, session-capture, enforcement]
+tags: [audit, handover, observation, D2-reliability, integration]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-040-wire-fw-note-into-audit-handover-and-ses.md

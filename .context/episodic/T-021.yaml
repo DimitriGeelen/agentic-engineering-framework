@@ -27,42 +27,42 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "MVE answered: Git commit hook (task reference required)"
-  - "5 experiments defined: E-001 through E-005"
-  - "Each experiment has hypothesis, method, success/failure criteria"
-  - "Prioritization matrix with recommended order"
-  - "020-Experiments.md created as living protocol document"
+- "MVE answered: Git commit hook (task reference required)"
+- "5 experiments defined: E-001 through E-005"
+- "Each experiment has hypothesis, method, success/failure criteria"
+- "Prioritization matrix with recommended order"
+- "020-Experiments.md created as living protocol document"
 
 # What worked well
 successes:
-  - description: "Structured experiment format"
-    why: "Hypothesis/method/criteria makes experiments falsifiable and actionable"
-  - description: "Mapping experiments to directives"
-    why: "Each experiment tests a specific framework claim (D1-D4)"
-  - description: "Prioritization by effort vs. learning value"
-    why: "Start with low-effort high-learning before committing to big experiments"
+- description: "Structured experiment format"
+  why: "Hypothesis/method/criteria makes experiments falsifiable and actionable"
+- description: "Mapping experiments to directives"
+  why: "Each experiment tests a specific framework claim (D1-D4)"
+- description: "Prioritization by effort vs. learning value"
+  why: "Start with low-effort high-learning before committing to big experiments"
 
 # Challenges encountered
 challenges:
-  - description: "Balancing thoroughness with actionability"
-    resolution: "Focused on experiments that can actually be run, not theoretical validation"
-    learning: "Experiments should be doable within a session or two"
+- description: "Balancing thoroughness with actionability"
+  resolution: "Focused on experiments that can actually be run, not theoretical validation"
+  learning: "Experiments should be doable within a session or two"
 
 # Decisions made during this task
 decisions:
-  - decision: "Git commit hook is MVE"
-    rationale: "Structural enforcement at action point; enables traceability for everything else"
-    alternatives_rejected: ["Handover gate (doesn't prevent untraceable work)", "Audit (reactive, not preventive)"]
-  - decision: "Start with E-003 (Context Recovery)"
-    rationale: "Low effort, medium risk of surprise, high learning value"
-    alternatives_rejected: ["Start with E-001 (too high effort for first experiment)"]
+- decision: "Git commit hook is MVE"
+  rationale: "Structural enforcement at action point; enables traceability for everything else"
+  alternatives_rejected: ["Handover gate (doesn't prevent untraceable work)", "Audit (reactive, not preventive)"]
+- decision: "Start with E-003 (Context Recovery)"
+  rationale: "Low effort, medium risk of surprise, high learning value"
+  alternatives_rejected: ["Start with E-001 (too high effort for first experiment)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "020-Experiments.md"
+  - "020-Experiments.md"
   modified:
-    - "001-Vision.md (marked MVE question answered)"
+  - "001-Vision.md (marked MVE question answered)"
 
 # Related tasks
 related_tasks:
@@ -71,7 +71,7 @@ related_tasks:
   spawned: []  # E-001 through E-005 can become tasks when run
 
 # Tags for retrieval
-tags: [meta, D1, validation, experiments, MVE]
+tags: [specification, D1-antifragility, specification]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-021-design-experiment-protocol.md

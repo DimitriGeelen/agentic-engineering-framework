@@ -7,6 +7,9 @@ summary: |
   verify that healing agent suggests FP-003 pattern from T-026's resolution.
   Confirmed pattern recall works.
 outcomes: ["Verified FP-003 pattern recall"]
-tags: [experiment, e005, test-task]
+tags: [healing-loop, D1-antifragility, experiment]
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-027-e-005-test-task-b---add-schema-validator.md
 generated_by: context-agent
+created: '2026-02-13T12:00:00Z'
+completed: '2026-02-13T12:00:00Z'
+duration_days: 0

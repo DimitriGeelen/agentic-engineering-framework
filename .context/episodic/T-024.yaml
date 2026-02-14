@@ -24,32 +24,32 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Traceability dropped 97% → 88% with hook disabled (measurable degradation)"
-  - "Audit detected missing hook AND traceability drop"
-  - "Git agent has secondary detection layer (defense in depth)"
-  - "Experiment result: PASS — enforcement gates are load-bearing, not theater"
+- "Traceability dropped 97% → 88% with hook disabled (measurable degradation)"
+- "Audit detected missing hook AND traceability drop"
+- "Git agent has secondary detection layer (defense in depth)"
+- "Experiment result: PASS — enforcement gates are load-bearing, not theater"
 
 # What worked well
 successes:
-  - description: "Clean experiment methodology"
-    why: "Baseline → disable → measure → re-enable made results unambiguous"
-  - description: "Defense in depth discovery"
-    why: "Git agent warns about missing refs even without the hook — layered defense"
+- description: "Clean experiment methodology"
+  why: "Baseline → disable → measure → re-enable made results unambiguous"
+- description: "Defense in depth discovery"
+  why: "Git agent warns about missing refs even without the hook — layered defense"
 
 # Challenges encountered
 challenges: []
 
 # Decisions made
 decisions:
-  - decision: "Use temporary rename (.bak) to disable hook"
-    rationale: "Reversible, no risk of losing the hook"
-    alternatives_rejected: ["git config --unset core.hooksPath (only works with custom path)"]
+- decision: "Use temporary rename (.bak) to disable hook"
+  rationale: "Reversible, no risk of losing the hook"
+  alternatives_rejected: ["git config --unset core.hooksPath (only works with custom path)"]
 
 # Files modified
 artifacts:
   created: []
   modified:
-    - "020-Experiments.md"
+  - "020-Experiments.md"
 
 # Related tasks
 related_tasks:
@@ -58,7 +58,7 @@ related_tasks:
   spawned: []
 
 # Tags
-tags: [experiment, e004, enforcement, traceability, audit, git-hook]
+tags: [audit, git-agent, D2-reliability, experiment]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-024-run-e-004-enforcement-removal-test.md

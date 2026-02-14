@@ -9,28 +9,31 @@ summary: |
   (3) parser stays within failure_patterns section boundary. Also fixed resolve.sh
   duplicate insertion bug and cleaned up patterns.yaml and learnings.yaml.
 outcomes:
-  - "Classifier correctly identifies dependency, external, environment, and code types"
-  - "Pattern matching filters by relevance — only related patterns shown"
-  - "Parser respects section boundaries — no cross-section bleed"
-  - "resolve.sh inserts patterns without duplication"
+- "Classifier correctly identifies dependency, external, environment, and code types"
+- "Pattern matching filters by relevance — only related patterns shown"
+- "Parser respects section boundaries — no cross-section bleed"
+- "resolve.sh inserts patterns without duplication"
 successes:
-  - description: "Score-based classification"
-    why: "Counting keyword matches per type is more robust than first-match-wins"
+- description: "Score-based classification"
+  why: "Counting keyword matches per type is more robust than first-match-wins"
 challenges:
-  - description: "Bash associative arrays don't guarantee iteration order"
-    resolution: "Used explicit CLASSIFY_ORDER array for ordered checking"
-  - description: "awk insertion matched both comment and key"
-    resolution: "Changed to only match success_patterns: key line"
+- description: "Bash associative arrays don't guarantee iteration order"
+  resolution: "Used explicit CLASSIFY_ORDER array for ordered checking"
+- description: "awk insertion matched both comment and key"
+  resolution: "Changed to only match success_patterns: key line"
 decisions:
-  - decision: "Use score-based classification over ordered first-match"
-    rationale: "More robust — counts all matches, picks highest-scoring type"
-    alternatives_rejected: ["Reorder declare -A (fragile, bash-version-dependent)"]
+- decision: "Use score-based classification over ordered first-match"
+  rationale: "More robust — counts all matches, picks highest-scoring type"
+  alternatives_rejected: ["Reorder declare -A (fragile, bash-version-dependent)"]
 artifacts:
   modified:
-    - "agents/healing/lib/diagnose.sh"
-    - "agents/healing/lib/resolve.sh"
-    - ".context/project/patterns.yaml"
-    - ".context/project/learnings.yaml"
-tags: [healing-agent, classifier, pattern-matching, refactor]
+  - "agents/healing/lib/diagnose.sh"
+  - "agents/healing/lib/resolve.sh"
+  - ".context/project/patterns.yaml"
+  - ".context/project/learnings.yaml"
+tags: [healing-loop, D1-antifragility, refactor]
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-028-fix-healing-agent-classifier-keyword-ord.md
 generated_by: context-agent
+created: '2026-02-13T12:00:00Z'
+completed: '2026-02-13T12:00:00Z'
+duration_days: 0

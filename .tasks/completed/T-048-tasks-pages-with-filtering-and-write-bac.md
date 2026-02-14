@@ -3,7 +3,7 @@ id: T-048
 name: Tasks pages with filtering and write-back
 description: >
   Build task list and task detail web pages with interactive features. (1) /tasks page: filterable task list by component, directive, workflow_type, status. Sortable by date, name. Data source: episodic files parsed on-the-fly. (2) /tasks/:id page: full episodic summary (outcomes, decisions, challenges, artifacts, relationships) + raw task content. (3) Write-back: PATCH /api/task/:id for safe fields (priority, tags, owner) via direct YAML edit. POST /api/task/:id/status routes through fw task update CLI to preserve automation triggers (healing on issues/blocked, episodic generation on work-completed). (4) Uses controlled tag vocabulary from T-044 for filter options. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Write-Back Safety Model, Design Decision Episodic Memory as Primary Discovery Layer, Q1 Episodic Index (on-the-fly). Depends on: T-044 (tag backfill), T-045 (web foundation).
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,8 +12,8 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:34:34Z
-last_update: 2026-02-14T11:34:34Z
-date_finished: null
+last_update: 2026-02-14T12:27:34Z
+date_finished: 2026-02-14T12:27:34Z
 ---
 
 # T-048: Tasks pages with filtering and write-back
@@ -60,3 +60,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-048-tasks-pages-with-filtering-and-write-bac.md
 - **Context:** Initial task creation
+
+### 2026-02-14T12:27:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-14T12:27:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

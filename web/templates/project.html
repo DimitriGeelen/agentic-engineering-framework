@@ -1,0 +1,33 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Browse and read project documentation files rendered from Markdown.</p>
+</div>
+
+{% if docs %}
+<table role="grid">
+    <thead>
+        <tr>
+            <th>Document</th>
+            <th>Filename</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for doc in docs %}
+        <tr>
+            <td>
+                <a href="{{ url_for('project_doc', doc=doc.name) }}"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    {{ doc.name }}
+                </a>
+            </td>
+            <td><code>{{ doc.filename }}</code></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="coming-soon">
+    <h3>No Documents Found</h3>
+    <p>No project documentation files (0*.md, FRAMEWORK.md) were found in the project root.</p>
+</div>
+{% endif %}

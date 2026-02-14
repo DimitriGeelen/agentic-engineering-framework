@@ -25,42 +25,44 @@ summary: |
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "`fw harvest --dry-run` shows what would be harvested"
-  - "Detects new patterns, learnings, decisions"
-  - "Correctly identifies duplicates via string matching"
-  - "Refuses to harvest from framework itself"
-  - "Appends with provenance (harvested_from, harvest_date) when not dry-run"
-  - "`--verbose` shows duplicates explicitly"
-  - "Harvest log maintained at .context/harvest.log"
+- "`fw harvest --dry-run` shows what would be harvested"
+- "Detects new patterns, learnings, decisions"
+- "Correctly identifies duplicates via string matching"
+- "Refuses to harvest from framework itself"
+- "Appends with provenance (harvested_from, harvest_date) when not dry-run"
+- "`--verbose` shows duplicates explicitly"
+- "Harvest log maintained at .context/harvest.log"
 
 # What worked well
 successes:
-  - description: "Simple string-matching deduplication with grep -F"
-    why: "Exact-match deduplication is sufficient for the current scale and avoids introducing fuzzy matching complexity prematurely."
-  - description: "Provenance tracking on harvested items"
-    why: "Knowing which project a learning came from enables traceability and helps evaluate whether a pattern is truly universal or project-specific."
+- description: "Simple string-matching deduplication with grep -F"
+  why: "Exact-match deduplication is sufficient for the current scale and avoids introducing fuzzy matching complexity prematurely."
+- description: "Provenance tracking on harvested items"
+  why: "Knowing which project a learning came from enables traceability and helps evaluate whether a pattern is truly universal
+    or project-specific."
 
 # Challenges encountered
 challenges: []
 
 # Decisions made during this task
 decisions:
-  - decision: "Use grep -F string matching for deduplication"
-    rationale: "Simple, effective for exact matches at current scale; fuzzy matching can be added later if needed"
-    alternatives_rejected: ["Fuzzy matching", "Hash-based dedup"]
-  - decision: "Decisions are reported but not auto-promoted"
-    rationale: "Decisions are inherently project-specific (architecture choices, tool selections) and should not be blindly copied to the framework"
-    alternatives_rejected: ["Auto-promote all item types equally"]
-  - decision: "Graduation pipeline designed but not enforced"
-    rationale: "Requires multi-project tracking metadata that does not exist yet; design captures intent for future implementation"
-    alternatives_rejected: ["Implement full graduation tracking immediately"]
+- decision: "Use grep -F string matching for deduplication"
+  rationale: "Simple, effective for exact matches at current scale; fuzzy matching can be added later if needed"
+  alternatives_rejected: ["Fuzzy matching", "Hash-based dedup"]
+- decision: "Decisions are reported but not auto-promoted"
+  rationale: "Decisions are inherently project-specific (architecture choices, tool selections) and should not be blindly
+    copied to the framework"
+  alternatives_rejected: ["Auto-promote all item types equally"]
+- decision: "Graduation pipeline designed but not enforced"
+  rationale: "Requires multi-project tracking metadata that does not exist yet; design captures intent for future implementation"
+  alternatives_rejected: ["Implement full graduation tracking immediately"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - "lib/harvest.sh"
+  - "lib/harvest.sh"
   modified:
-    - "bin/fw (added harvest command routing)"
+  - "bin/fw (added harvest command routing)"
 
 # Related tasks
 related_tasks:
@@ -69,7 +71,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [cross-project, learning, harvest, fw-cli, provenance, graduation-pipeline]
+tags: [cli, context-fabric, D1-antifragility, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-035-create-harvestsh-for-cross-project-learn.md

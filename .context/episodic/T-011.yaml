@@ -27,41 +27,41 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "4-level knowledge pyramid: Update → Learning → Practice → Directive"
-  - "Graduation criteria for each transition"
-  - "Retirement criteria for demotion/removal"
-  - "Process documentation for each graduation"
-  - "Human approval required for Practice → Directive"
+- "4-level knowledge pyramid: Update → Learning → Practice → Directive"
+- "Graduation criteria for each transition"
+- "Retirement criteria for demotion/removal"
+- "Process documentation for each graduation"
+- "Human approval required for Practice → Directive"
 
 # What worked well
 successes:
-  - description: "Pyramid metaphor clarifies hierarchy"
-    why: "Visual representation makes levels intuitive"
-  - description: "Evidence requirements increase with level"
-    why: "Higher levels are harder to change — appropriate friction"
-  - description: "Explicit demotion path"
-    why: "Knowledge can be wrong; need to retire obsolete/incorrect items"
+- description: "Pyramid metaphor clarifies hierarchy"
+  why: "Visual representation makes levels intuitive"
+- description: "Evidence requirements increase with level"
+  why: "Higher levels are harder to change — appropriate friction"
+- description: "Explicit demotion path"
+  why: "Knowledge can be wrong; need to retire obsolete/incorrect items"
 
 # Challenges encountered
 challenges:
-  - description: "Defining 'enough evidence' for graduation"
-    resolution: "Used specific counts (2+ tasks for learning, 3+ for practice)"
-    learning: "Concrete thresholds prevent endless deliberation"
+- description: "Defining 'enough evidence' for graduation"
+  resolution: "Used specific counts (2+ tasks for learning, 3+ for practice)"
+  learning: "Concrete thresholds prevent endless deliberation"
 
 # Decisions made during this task
 decisions:
-  - decision: "Practice → Directive requires human approval"
-    rationale: "Directives are constitutional; agents shouldn't change them unilaterally"
-    alternatives_rejected: ["Agent-driven graduation (too much autonomy)"]
-  - decision: "Use specific counts (2+, 3+) rather than subjective assessment"
-    rationale: "Avoids judgment calls; makes graduation mechanical"
-    alternatives_rejected: ["Subjective 'feels proven' (inconsistent)"]
+- decision: "Practice → Directive requires human approval"
+  rationale: "Directives are constitutional; agents shouldn't change them unilaterally"
+  alternatives_rejected: ["Agent-driven graduation (too much autonomy)"]
+- decision: "Use specific counts (2+, 3+) rather than subjective assessment"
+  rationale: "Avoids judgment calls; makes graduation mechanical"
+  alternatives_rejected: ["Subjective 'feels proven' (inconsistent)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "015-Practices.md (added graduation criteria)"
+  - "015-Practices.md (added graduation criteria)"
 
 # Related tasks
 related_tasks:
@@ -70,7 +70,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [meta, practices, governance, knowledge-pyramid, D1]
+tags: [context-fabric, specification, D1-antifragility, specification]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-011-define-practice-graduation-criteria.md

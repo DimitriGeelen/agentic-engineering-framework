@@ -3,7 +3,7 @@ id: T-050
 name: CLI discovery commands (sovereignty backstop)
 description: >
   Add discovery CLI commands to fw as sovereignty backstop — these work without the web UI or AI. (1) fw task list: all tasks filterable by --status, --type, --component. Data from episodic files. (2) fw decisions: all decisions with rationale, both architectural and operational. (3) fw timeline: structured chronological list of sessions and tasks. (4) fw learnings: all learnings with context. (5) fw patterns: failure/success/workflow patterns. (6) fw practices: graduated principles. (7) fw task show T-XXX: episodic summary for a single task. (8) fw search keyword: grep across all YAML + MD artifacts. All read-only terminal output. Can run in parallel with web UI development. Design authority: 025-ArtifactDiscovery.md. Relevant sections: fw CLI Commands table, Four-Layer Architecture (CLI is Layer 3). No dependencies — independent of web UI.
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,8 +12,8 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:34:55Z
-last_update: 2026-02-14T11:34:55Z
-date_finished: null
+last_update: 2026-02-14T12:27:34Z
+date_finished: 2026-02-14T12:27:34Z
 ---
 
 # T-050: CLI discovery commands (sovereignty backstop)
@@ -56,3 +56,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-050-cli-discovery-commands-sovereignty-backs.md
 - **Context:** Initial task creation
+
+### 2026-02-14T12:18:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-14T12:24:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-02-14T12:27:26Z — status-update [task-update-agent]
+- **Change:** status: work-completed → started-work
+
+### 2026-02-14T12:27:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

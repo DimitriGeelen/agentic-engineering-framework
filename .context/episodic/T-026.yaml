@@ -7,6 +7,9 @@ summary: |
   conflict. Used to test healing agent diagnose and resolve commands. Generated
   FP-003 pattern (dependency-version-conflict).
 outcomes: ["Generated FP-003 failure pattern"]
-tags: [experiment, e005, test-task]
+tags: [healing-loop, D1-antifragility, experiment]
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-026-e-005-test-task-a---install-missing-pack.md
 generated_by: context-agent
+created: '2026-02-13T12:00:00Z'
+completed: '2026-02-13T12:00:00Z'
+duration_days: 0

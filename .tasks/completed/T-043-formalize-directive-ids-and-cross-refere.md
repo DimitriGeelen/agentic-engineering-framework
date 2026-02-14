@@ -3,7 +3,7 @@ id: T-043
 name: Formalize directive IDs and cross-references
 description: >
   Create directives.yaml with formal D1-D4 IDs and last_reviewed dates. Add IDs (AD-001 through AD-012) to architectural decisions in 005-DesignDirectives.md. Add directives_served field to all entries in decisions.yaml. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Q3 decision stores, Missing Cross-References, Directive IDs.
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
 priority: medium
@@ -12,8 +12,8 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:33:46Z
-last_update: 2026-02-14T11:33:46Z
-date_finished: null
+last_update: 2026-02-14T12:27:34Z
+date_finished: 2026-02-14T12:27:34Z
 ---
 
 # T-043: Formalize directive IDs and cross-references
@@ -50,3 +50,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-043-formalize-directive-ids-and-cross-refere.md
 - **Context:** Initial task creation
+
+### 2026-02-14T12:27:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-14T12:27:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

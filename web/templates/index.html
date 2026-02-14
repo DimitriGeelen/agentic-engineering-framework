@@ -1,0 +1,35 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Agentic Engineering Framework <span style="color: var(--pico-muted-color);">v1.0.0</span></p>
+</div>
+
+<div class="grid">
+    <article>
+        <header>Active Tasks</header>
+        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ active_count }}</p>
+        <footer><a href="{{ url_for('tasks') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View tasks</a></footer>
+    </article>
+    <article>
+        <header>Completed Tasks</header>
+        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ completed_count }}</p>
+        <footer><a href="{{ url_for('tasks') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View tasks</a></footer>
+    </article>
+    <article>
+        <header>Watching Gaps</header>
+        <p style="font-size: 2.5rem; font-weight: bold; margin: 0;">{{ gap_count }}</p>
+        <footer><a href="{{ url_for('gaps') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View gaps</a></footer>
+    </article>
+    <article>
+        <header>Last Session</header>
+        <p style="font-size: 1.1rem; font-weight: bold; margin: 0.5rem 0; word-break: break-all;">{{ last_session }}</p>
+        <footer><a href="{{ url_for('timeline') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View timeline</a></footer>
+    </article>
+</div>
+
+<h3>Quick Links</h3>
+<div class="grid">
+    <a href="{{ url_for('project') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Project Docs</a>
+    <a href="{{ url_for('directives') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Directives</a>
+    <a href="{{ url_for('decisions') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Decisions</a>
+    <a href="{{ url_for('learnings') }}" role="button" class="outline" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Learnings</a>
+</div>

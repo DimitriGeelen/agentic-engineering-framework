@@ -1,0 +1,49 @@
+<div class="page-header">
+    <h1>Timeline</h1>
+    <p>Chronological project narrative across {{ sessions|length }} sessions</p>
+</div>
+
+{% for session in sessions %}
+<article>
+    <details>
+        <summary>
+            <strong>{{ session.id }}</strong>
+            <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
+            — {{ session.touched_count }} tasks touched, {{ session.completed_count }} completed
+        </summary>
+
+        <!-- Level 2: Session narrative + task list -->
+        <div style="padding: 1rem 0;">
+            {% if session.narrative %}
+            <blockquote>{{ session.narrative }}</blockquote>
+            {% endif %}
+
+            <h4>Tasks Touched</h4>
+            <ul>
+                {% for t in session.tasks_touched %}
+                <li>
+                    <a href="/tasks/{{ t }}">{{ t }}</a>
+                    <span hx-get="/api/timeline/task/{{ t }}" hx-trigger="click" hx-swap="afterend" style="cursor:pointer; color: var(--pico-primary);">[expand]</span>
+                </li>
+                {% endfor %}
+            </ul>
+
+            {% if session.tasks_completed %}
+            <h4>Tasks Completed</h4>
+            <ul>
+                {% for t in session.tasks_completed %}
+                <li><a href="/tasks/{{ t }}">{{ t }}</a></li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </details>
+</article>
+{% endfor %}
+
+{% if not sessions %}
+<div class="coming-soon">
+    <h3>No sessions found</h3>
+    <p>Session handovers will appear here after running <code>fw handover</code></p>
+</div>
+{% endif %}

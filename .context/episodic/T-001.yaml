@@ -1,84 +1,82 @@
 # ============================================================================
 # EPISODIC MEMORY - T-001: Define measurable success metrics
 # ============================================================================
-# STATUS: ENRICHED
+# STATUS: REQUIRES ENRICHMENT
+#
+# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# must be filled in by a human or LLM before this episodic is useful.
+#
+# To enrich: Read the source task file and fill in the TODO sections.
+# When done: Change enrichment_status from "pending" to "complete"
 # ============================================================================
-# Generated: 2026-02-13T20:49:32Z
-# Enriched: 2026-02-13T21:58:00Z
+# Generated: 2026-02-14T12:24:36Z
 
 task_id: T-001
 task_name: "Define measurable success metrics"
 workflow_type: specification
-enrichment_status: complete
+enrichment_status: pending  # Change to "complete" after enrichment
 
 # Timeline
 created: 2026-02-13T12:00:00Z
-completed: 2026-02-13T21:50:00Z
-duration_days: 0
-updates_count: 5
+completed: 2026-02-14T12:24:36Z
+duration_days: 1
+updates_count: 7
 
 # Summary
+# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
+# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  Bootstrapped the framework's metric system through experimentation rather than
-  upfront design. Defined 6 measurable success metrics (git traceability, task
-  completion, description quality, AC completion, context captured, audit pass rate)
-  and identified 4 metrics we thought we could measure but can't (outcomes, time
-  saved, bugs prevented, agent discipline). Key insight: focus on structural metrics
-  over behavioral metrics — aligns with P-002.
+  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-001-define-success-metrics.md]
 
-# Key outcomes
+# Key outcomes (from acceptance criteria)
 outcomes:
-  - ".tasks/ structure exists and is in use"
-  - "metrics.sh can report basic counts"
-  - "10 tasks completed (target was 3+)"
-  - "6 success metrics documented with collection method, baseline, target"
-  - "4 unmeasurable metrics identified (outcome, time saved, bugs prevented, agent discipline)"
-  - "96% git traceability achieved"
+  - .tasks/ structure exists and is in use
+  - metrics.sh can report basic counts
+  - At least 3 tasks created and progressed through lifecycle (10 completed)
+  - Success metrics documented with: metric, collection method, baseline, target
+  - Identified at least one metric we thought we could measure but can't
 
 # What worked well
+# [TODO] List 1-3 things that worked well, with WHY they worked.
+# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "Experiential learning over upfront design"
-    why: "Theory failed; doing work revealed what was actually measurable"
-  - description: "Pivoting from theoretical to experimental approach"
-    why: "Multi-agent review caught that original metrics were semantic/fake"
-  - description: "Creating infrastructure while using it"
-    why: "First observable metric change came from using the framework"
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
 
 # Challenges encountered
+# [TODO] List challenges faced and how they were resolved.
 challenges:
-  - description: "Original theoretical metrics couldn't be measured"
-    resolution: "Pivoted to experimental approach — create, use, observe, define"
-    learning: "Measure what exists, not what should exist (became L-001)"
-  - description: "Risk of context loss before framework existed"
-    resolution: "Created 001-Vision.md to capture full context journey"
+  - description: "- **Pattern:** We failed at theoretical metrics → pivoted to experimentation → observed real data → learning emerged"
+    resolution: "See task updates"
+  - description: "- **Output:** Vision doc with: problem, vision, success question history, current state, staged success criteria, open questions"
+    resolution: "See task updates"
+  - description: "- **Context:** Now have clear record of: what we tried, why it failed, what we pivoted to, where we are, what's next."
+    resolution: "See task updates"
 
 # Decisions made during this task
+# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
+# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
-  - decision: "Experiential learning over upfront design"
-    rationale: "We don't know what we can measure until we try"
-    alternatives_rejected: ["Define metrics theoretically first (failed)"]
-  - decision: "Focus on structural metrics over behavioral metrics"
-    rationale: "Can't measure what agents 'want' to do; can measure enforcement"
-    alternatives_rejected: ["Agent discipline metrics (unmeasurable)"]
+  - decision: "[TODO: Extract from Design Record]"
+    rationale: "[TODO: Why this choice?]"
+    alternatives_rejected: []
 
 # Files created or significantly modified
+# [TODO] List actual files created or modified during this task.
 artifacts:
   created:
-    - ".tasks/active/T-001-define-success-metrics.md"
-    - "metrics.sh"
-    - "001-Vision.md"
+    - "[TODO: List files created]"
   modified: []
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: [T-002, T-003, T-004, T-005]
+  spawned: []
 
 # Tags for retrieval
-tags: [meta, metrics, bootstrap, D1, D2, P-001, P-002]
+tags: [meta, metrics, bootstrap]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-001-define-success-metrics.md
 generated_by: context-agent
-enriched_by: claude-code

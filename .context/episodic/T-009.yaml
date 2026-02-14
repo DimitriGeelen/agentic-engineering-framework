@@ -28,41 +28,41 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Falsifiability criteria for all 4 directives (D1-D4)"
-  - "Falsifiability criteria for 3 core mechanisms"
-  - "Each criterion has: claim, failure indicator, observable signal (tables)"
-  - "Pivot threshold: 3+ directives fail OR 2+ mechanisms fail OR usability+1 fail"
-  - "What pivoting looks like for each directive"
+- "Falsifiability criteria for all 4 directives (D1-D4)"
+- "Falsifiability criteria for 3 core mechanisms"
+- "Each criterion has: claim, failure indicator, observable signal (tables)"
+- "Pivot threshold: 3+ directives fail OR 2+ mechanisms fail OR usability+1 fail"
+- "What pivoting looks like for each directive"
 
 # What worked well
 successes:
-  - description: "Structured approach: claim → failure indicator → observable signal"
-    why: "Makes falsifiability concrete and testable, not just philosophical"
-  - description: "Including specific thresholds (e.g., git traceability <80%)"
-    why: "Observable signals need numbers to be actionable"
-  - description: "Distinguishing framework failure from task failure"
-    why: "Key insight: falsifiability is about the approach, not individual tasks"
+- description: "Structured approach: claim → failure indicator → observable signal"
+  why: "Makes falsifiability concrete and testable, not just philosophical"
+- description: "Including specific thresholds (e.g., git traceability <80%)"
+  why: "Observable signals need numbers to be actionable"
+- description: "Distinguishing framework failure from task failure"
+  why: "Key insight: falsifiability is about the approach, not individual tasks"
 
 # Challenges encountered
 challenges:
-  - description: "Balancing specificity with flexibility in thresholds"
-    resolution: "Used ranges (e.g., 'below 70%', 'after 50+ completions')"
-    learning: "Thresholds should be concrete enough to trigger but not so tight they false-alarm"
+- description: "Balancing specificity with flexibility in thresholds"
+  resolution: "Used ranges (e.g., 'below 70%', 'after 50+ completions')"
+  learning: "Thresholds should be concrete enough to trigger but not so tight they false-alarm"
 
 # Decisions made during this task
 decisions:
-  - decision: "Map each directive to observable failure conditions"
-    rationale: "Can't improve what we can't measure failing"
-    alternatives_rejected: ["Subjective assessment (not falsifiable)"]
-  - decision: "Define pivot threshold explicitly"
-    rationale: "Need to know when to quit, not just when to fix"
-    alternatives_rejected: ["Fix forever (sunk cost fallacy)"]
+- decision: "Map each directive to observable failure conditions"
+  rationale: "Can't improve what we can't measure failing"
+  alternatives_rejected: ["Subjective assessment (not falsifiable)"]
+- decision: "Define pivot threshold explicitly"
+  rationale: "Need to know when to quit, not just when to fix"
+  alternatives_rejected: ["Fix forever (sunk cost fallacy)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "001-Vision.md (updated open questions)"
+  - "001-Vision.md (updated open questions)"
 
 # Related tasks
 related_tasks:
@@ -71,7 +71,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [meta, D1, vision, falsifiability, pivot]
+tags: [specification, D1-antifragility, specification]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-009-document-falsifiability-criteria.md

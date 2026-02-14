@@ -26,36 +26,36 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - Created .context/bypass-log.yaml
-  - Documented bootstrap commit as authorized exception
-  - Established pattern for handling pre-system commits
+- Created .context/bypass-log.yaml
+- Documented bootstrap commit as authorized exception
+- Established pattern for handling pre-system commits
 
 # What worked well
 successes:
-  - description: "Explicit documentation over pretending it didn't happen"
-    why: "Bootstrap exceptions are unavoidable; hiding them creates debt"
-  - description: "Absorbed into git agent (T-013)"
-    why: "Became the log-bypass command, not a one-off script"
+- description: "Explicit documentation over pretending it didn't happen"
+  why: "Bootstrap exceptions are unavoidable; hiding them creates debt"
+- description: "Absorbed into git agent (T-013)"
+  why: "Became the log-bypass command, not a one-off script"
 
 # Challenges encountered
 challenges:
-  - description: "Bootstrap paradox - documenting work before system existed"
-    resolution: "Retroactive documentation with explicit 'bootstrap exception' status"
-    learning: "Became P-005: Bootstrap Exceptions Are First-Class"
+- description: "Bootstrap paradox - documenting work before system existed"
+  resolution: "Retroactive documentation with explicit 'bootstrap exception' status"
+  learning: "Became P-005: Bootstrap Exceptions Are First-Class"
 
 # Decisions made during this task
 decisions:
-  - decision: "YAML for bypass log format"
-    rationale: "Consistent with task files, human-readable, git-diffable"
-    alternatives_rejected: ["JSON (less readable)"]
-  - decision: "Explicit 'bootstrap exception' category"
-    rationale: "Distinguishes unavoidable pre-system commits from actual bypasses"
-    alternatives_rejected: ["Treat as normal bypass (dishonest)"]
+- decision: "YAML for bypass log format"
+  rationale: "Consistent with task files, human-readable, git-diffable"
+  alternatives_rejected: ["JSON (less readable)"]
+- decision: "Explicit 'bootstrap exception' category"
+  rationale: "Distinguishes unavoidable pre-system commits from actual bypasses"
+  alternatives_rejected: ["Treat as normal bypass (dishonest)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - ".context/bypass-log.yaml"
+  - ".context/bypass-log.yaml"
   modified: []
 
 # Related tasks
@@ -65,7 +65,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [enforcement, compliance, bootstrap, P-005]
+tags: [audit, git-agent, D2-reliability, bootstrap, build, P-005]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-003-create-bypass-log-for-bootstrap-commit.md

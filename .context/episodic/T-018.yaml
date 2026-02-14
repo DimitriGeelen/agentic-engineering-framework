@@ -27,46 +27,46 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "T-001 enriched: success metrics, experiential learning approach"
-  - "T-006 enriched: episodic generator creation, automation limitations"
-  - "T-007 enriched: healing loop, Error Escalation Ladder integration"
-  - "T-008 enriched: quality metrics, P-004 implementation"
-  - "T-009 enriched: falsifiability criteria, pivot threshold"
-  - "T-010 enriched: framework scope/audience, 5 use cases"
-  - "T-011 enriched: knowledge pyramid, graduation criteria"
+- "T-001 enriched: success metrics, experiential learning approach"
+- "T-006 enriched: episodic generator creation, automation limitations"
+- "T-007 enriched: healing loop, Error Escalation Ladder integration"
+- "T-008 enriched: quality metrics, P-004 implementation"
+- "T-009 enriched: falsifiability criteria, pivot threshold"
+- "T-010 enriched: framework scope/audience, 5 use cases"
+- "T-011 enriched: knowledge pyramid, graduation criteria"
 
 # What worked well
 successes:
-  - description: "Reading source task files for enrichment"
-    why: "Task Updates sections contain the journey — not just outcomes"
-  - description: "Batch processing all 7 at once"
-    why: "Consistent format and style across all episodics"
-  - description: "Following T-015 format template"
-    why: "New format with enrichment_status makes quality explicit"
+- description: "Reading source task files for enrichment"
+  why: "Task Updates sections contain the journey — not just outcomes"
+- description: "Batch processing all 7 at once"
+  why: "Consistent format and style across all episodics"
+- description: "Following T-015 format template"
+  why: "New format with enrichment_status makes quality explicit"
 
 # Challenges encountered
 challenges:
-  - description: "Audit still shows 1 warning for TODO in content"
-    resolution: "False positive - episodics that mention TODO in context (describing what they did) trigger the check"
-    learning: "Quality checks should distinguish placeholder TODO from descriptive TODO"
+- description: "Audit still shows 1 warning for TODO in content"
+  resolution: "False positive - episodics that mention TODO in context (describing what they did) trigger the check"
+  learning: "Quality checks should distinguish placeholder TODO from descriptive TODO"
 
 # Decisions made during this task
 decisions:
-  - decision: "Enrich all 7 immediately rather than queue"
-    rationale: "Complete the debt cleanup in one pass"
-    alternatives_rejected: ["Incremental (extends debt timeline)"]
+- decision: "Enrich all 7 immediately rather than queue"
+  rationale: "Complete the debt cleanup in one pass"
+  alternatives_rejected: ["Incremental (extends debt timeline)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - ".context/episodic/T-001.yaml"
-    - ".context/episodic/T-006.yaml"
-    - ".context/episodic/T-007.yaml"
-    - ".context/episodic/T-008.yaml"
-    - ".context/episodic/T-009.yaml"
-    - ".context/episodic/T-010.yaml"
-    - ".context/episodic/T-011.yaml"
+  - ".context/episodic/T-001.yaml"
+  - ".context/episodic/T-006.yaml"
+  - ".context/episodic/T-007.yaml"
+  - ".context/episodic/T-008.yaml"
+  - ".context/episodic/T-009.yaml"
+  - ".context/episodic/T-010.yaml"
+  - ".context/episodic/T-011.yaml"
 
 # Related tasks
 related_tasks:
@@ -75,7 +75,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [context-fabric, debt, episodic, enrichment]
+tags: [context-fabric, D2-reliability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-018-enrich-low-quality-episodic-summaries.md

@@ -1,0 +1,5 @@
+flask>=3.0,<4.0
+pyyaml>=6.0
+ruamel.yaml>=0.18
+markdown2>=2.4
+bleach>=6.0

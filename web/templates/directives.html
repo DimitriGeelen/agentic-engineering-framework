@@ -1,0 +1,104 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>The four constitutional directives that govern all architectural decisions, with linked practices, decisions, and gaps.</p>
+</div>
+
+{% if directives %}
+{% for d in directives %}
+<article>
+    <header>
+        <strong>{{ d.id }}</strong> &mdash; {{ d.name }}
+        {% if d.priority %}
+        <span style="float: right; color: var(--pico-muted-color);">Priority {{ d.priority }}</span>
+        {% endif %}
+    </header>
+
+    <p>{{ d.statement }}</p>
+
+    {% if d.last_reviewed %}
+    <p style="color: var(--pico-muted-color); font-size: 0.875rem;">Last reviewed: {{ d.last_reviewed }}</p>
+    {% endif %}
+
+    {% if d.practices %}
+    <details>
+        <summary>Practices ({{ d.practices | length }})</summary>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in d.practices %}
+                <tr>
+                    <td><code>{{ p.id }}</code></td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.status | default("active") }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% endif %}
+
+    {% if d.decisions %}
+    <details>
+        <summary>Decisions ({{ d.decisions | length }})</summary>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Decision</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dec in d.decisions %}
+                <tr>
+                    <td><code>{{ dec.id }}</code></td>
+                    <td>{{ dec.decision }}</td>
+                    <td>{{ dec.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% endif %}
+
+    {% if d.gaps %}
+    <details>
+        <summary>Gaps ({{ d.gaps | length }})</summary>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in d.gaps %}
+                <tr>
+                    <td><code>{{ g.id }}</code></td>
+                    <td>{{ g.title }}</td>
+                    <td>{{ g.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% endif %}
+
+    {% if not d.practices and not d.decisions and not d.gaps %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">No linked practices, decisions, or gaps.</p>
+    {% endif %}
+</article>
+{% endfor %}
+{% else %}
+<div class="coming-soon">
+    <h3>No Directives Found</h3>
+    <p>No directives were found in <code>.context/project/directives.yaml</code>.</p>
+</div>
+{% endif %}

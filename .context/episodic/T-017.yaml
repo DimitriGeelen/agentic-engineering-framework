@@ -26,38 +26,38 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - T-002 episodic: Core agents, established P-006 hybrid architecture
-  - T-003 episodic: Bypass log, established P-005 bootstrap exceptions
-  - T-004 episodic: Pre-commit hooks, structural enforcement
-  - T-012 episodic: Handover agent, state vs understanding distinction
-  - All have enrichment_status: complete
+- T-002 episodic: Core agents, established P-006 hybrid architecture
+- T-003 episodic: Bypass log, established P-005 bootstrap exceptions
+- T-004 episodic: Pre-commit hooks, structural enforcement
+- T-012 episodic: Handover agent, state vs understanding distinction
+- All have enrichment_status: complete
 
 # What worked well
 successes:
-  - description: "New generator with TODO prompts"
-    why: "Made clear what needed to be filled in"
-  - description: "Reading source task files for enrichment"
-    why: "Task Updates section had the context needed"
+- description: "New generator with TODO prompts"
+  why: "Made clear what needed to be filled in"
+- description: "Reading source task files for enrichment"
+  why: "Task Updates section had the context needed"
 
 # Challenges encountered
 challenges:
-  - description: "Retroactive context capture"
-    resolution: "Task files still had good Updates sections to extract from"
-    learning: "Good task documentation enables retroactive episodic creation"
+- description: "Retroactive context capture"
+  resolution: "Task files still had good Updates sections to extract from"
+  learning: "Good task documentation enables retroactive episodic creation"
 
 # Decisions made during this task
 decisions:
-  - decision: "Enrich immediately rather than leave as skeletons"
-    rationale: "Demonstrates the correct workflow, provides real value now"
-    alternatives_rejected: ["Leave for later (debt compounds)"]
+- decision: "Enrich immediately rather than leave as skeletons"
+  rationale: "Demonstrates the correct workflow, provides real value now"
+  alternatives_rejected: ["Leave for later (debt compounds)"]
 
 # Files created or significantly modified
 artifacts:
   created:
-    - ".context/episodic/T-002.yaml"
-    - ".context/episodic/T-003.yaml"
-    - ".context/episodic/T-004.yaml"
-    - ".context/episodic/T-012.yaml"
+  - ".context/episodic/T-002.yaml"
+  - ".context/episodic/T-003.yaml"
+  - ".context/episodic/T-004.yaml"
+  - ".context/episodic/T-012.yaml"
   modified: []
 
 # Related tasks
@@ -67,7 +67,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [context-fabric, debt, episodic, retroactive]
+tags: [context-fabric, D2-reliability, build]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-017-generate-missing-episodic-summaries.md

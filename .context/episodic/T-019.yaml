@@ -27,41 +27,41 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Step 1.5 EPISODIC COMPLETENESS GATE in handover.sh"
-  - "Checks tasks modified in last 24h in completed/"
-  - "Verifies episodic file exists"
-  - "Verifies enrichment_status is complete (not pending)"
-  - "Shows warnings with fix guidance, or success message"
+- "Step 1.5 EPISODIC COMPLETENESS GATE in handover.sh"
+- "Checks tasks modified in last 24h in completed/"
+- "Verifies episodic file exists"
+- "Verifies enrichment_status is complete (not pending)"
+- "Shows warnings with fix guidance, or success message"
 
 # What worked well
 successes:
-  - description: "Inserting check between gather and create"
-    why: "Natural checkpoint — after we know state but before we commit to output"
-  - description: "Warning, not blocking"
-    why: "Per FP-003 insight, older tasks may predate the system — too disruptive to fail"
-  - description: "Guidance with specific commands"
-    why: "Users can immediately act on warnings"
+- description: "Inserting check between gather and create"
+  why: "Natural checkpoint — after we know state but before we commit to output"
+- description: "Warning, not blocking"
+  why: "Per FP-003 insight, older tasks may predate the system — too disruptive to fail"
+- description: "Guidance with specific commands"
+  why: "Users can immediately act on warnings"
 
 # Challenges encountered
 challenges:
-  - description: "Determining 'recently completed' boundary"
-    resolution: "Used 24 hours (-mmin -1440) — captures full session window"
-    learning: "Handover is per-session, so session-length window is appropriate"
+- description: "Determining 'recently completed' boundary"
+  resolution: "Used 24 hours (-mmin -1440) — captures full session window"
+  learning: "Handover is per-session, so session-length window is appropriate"
 
 # Decisions made during this task
 decisions:
-  - decision: "Warn, don't block"
-    rationale: "Consistent with FP-003 and T-016 audit approach"
-    alternatives_rejected: ["Block handover (too disruptive)"]
-  - decision: "24-hour window for 'recent'"
-    rationale: "Matches typical session length; aligns with task modification check"
-    alternatives_rejected: ["Since last handover (complex to track)"]
+- decision: "Warn, don't block"
+  rationale: "Consistent with FP-003 and T-016 audit approach"
+  alternatives_rejected: ["Block handover (too disruptive)"]
+- decision: "24-hour window for 'recent'"
+  rationale: "Matches typical session length; aligns with task modification check"
+  alternatives_rejected: ["Since last handover (complex to track)"]
 
 # Files created or significantly modified
 artifacts:
   created: []
   modified:
-    - "agents/handover/handover.sh"
+  - "agents/handover/handover.sh"
 
 # Related tasks
 related_tasks:
@@ -70,7 +70,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [handover, D2, P-002, enforcement, episodic]
+tags: [context-fabric, handover, D2-reliability, build, P-002]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-019-add-handover-gate-for-episodic-completen.md

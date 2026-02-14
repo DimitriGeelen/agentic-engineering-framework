@@ -25,39 +25,39 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - "Healing loop write path (resolve) works correctly"
-  - "Healing loop read path (diagnose) surfaces recorded patterns"
-  - "Classifier misclassifies due to keyword ordering — needs fix"
-  - "Pattern matching lacks relevance filtering — shows all patterns"
-  - "Result: PASS with issues"
+- "Healing loop write path (resolve) works correctly"
+- "Healing loop read path (diagnose) surfaces recorded patterns"
+- "Classifier misclassifies due to keyword ordering — needs fix"
+- "Pattern matching lacks relevance filtering — shows all patterns"
+- "Result: PASS with issues"
 
 # What worked well
 successes:
-  - description: "Pattern capture and recall"
-    why: "FP-003 recorded from T-026 appeared in T-027 diagnosis — core loop functional"
-  - description: "Atomic resolve operation"
-    why: "Records pattern + learning + task update in one command"
+- description: "Pattern capture and recall"
+  why: "FP-003 recorded from T-026 appeared in T-027 diagnosis — core loop functional"
+- description: "Atomic resolve operation"
+  why: "Records pattern + learning + task update in one command"
 
 # Challenges
 challenges:
-  - description: "Classifier keyword ordering"
-    resolution: "Identified as improvement needed — check specific keywords before generic ones"
-  - description: "Non-semantic pattern matching"
-    resolution: "All patterns dumped regardless of relevance — needs type filtering"
+- description: "Classifier keyword ordering"
+  resolution: "Identified as improvement needed — check specific keywords before generic ones"
+- description: "Non-semantic pattern matching"
+  resolution: "All patterns dumped regardless of relevance — needs type filtering"
 
 # Decisions
 decisions:
-  - decision: "Test with simulated dependency failures"
-    rationale: "Dependency conflicts are common and have clear keywords to test classification"
-    alternatives_rejected: ["Random failures"]
+- decision: "Test with simulated dependency failures"
+  rationale: "Dependency conflicts are common and have clear keywords to test classification"
+  alternatives_rejected: ["Random failures"]
 
 # Files modified
 artifacts:
   created: []
   modified:
-    - "020-Experiments.md"
-    - ".context/project/patterns.yaml"
-    - ".context/project/learnings.yaml"
+  - "020-Experiments.md"
+  - ".context/project/patterns.yaml"
+  - ".context/project/learnings.yaml"
 
 # Related tasks
 related_tasks:
@@ -66,7 +66,7 @@ related_tasks:
   spawned: []
 
 # Tags
-tags: [experiment, e005, healing-loop, antifragility, pattern-matching, classifier]
+tags: [healing-loop, D1-antifragility, experiment]
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-025-run-e-005-healing-loop-test.md

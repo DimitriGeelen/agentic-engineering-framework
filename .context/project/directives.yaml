@@ -1,0 +1,28 @@
+# Project Directives - Constitutional principles
+# Machine-queryable format of 005-DesignDirectives.md
+# These are stable anchors — changes require human sovereignty approval
+
+directives:
+  - id: D1
+    name: "Antifragility"
+    statement: "The system must get stronger under stress, not merely survive it."
+    priority: 1
+    last_reviewed: 2026-02-14
+
+  - id: D2
+    name: "Reliability"
+    statement: "The system must behave predictably and consistently under known conditions."
+    priority: 2
+    last_reviewed: 2026-02-14
+
+  - id: D3
+    name: "Usability"
+    statement: "The framework must be a joy to use, extend, and debug."
+    priority: 3
+    last_reviewed: 2026-02-14
+
+  - id: D4
+    name: "Portability"
+    statement: "The framework must not be captive to any single provider, language, or environment."
+    priority: 4
+    last_reviewed: 2026-02-14
