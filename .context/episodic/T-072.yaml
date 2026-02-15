@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-072: Audit task and memory quality
+# ============================================================================
+# Generated: 2026-02-15T16:58:55Z
+
+task_id: T-072
+task_name: "Audit task and memory quality"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-15T11:08:00Z
+completed: 2026-02-15T16:58:55Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Comprehensive audit of all 71 tasks, 72 episodic files, and 6 project memory
+  files. Used 3 parallel subagents to analyze every file. Found: task quality is
+  50/50 (clear temporal cliff after T-022), episodic memory is 87.5% enriched
+  (9 skeletons from latest session), long-term memory is WEAK with only 35% of
+  tasks referenced. Promotion pipeline from episodic to project memory is broken.
+  Full report at docs/reports/2026-02-15-context-memory-audit.md. Created 4
+  follow-up tasks (T-073 through T-076) for remediation.
+
+# Key outcomes
+outcomes:
+  - "Full audit report at docs/reports/2026-02-15-context-memory-audit.md"
+  - "Task quality: 18 RICH, 18 ADEQUATE, 22 THIN, 13 SKELETON"
+  - "Episodic: 63 enriched, 9 skeleton (all from latest session)"
+  - "Project memory: WEAK — only 35% task coverage, broken promotion pipeline"
+  - "4 follow-up tasks created: T-073 (enrich skeletons), T-074 (backfill), T-075 (fix structural issues), T-076 (fix fw work-on description)"
+
+# What worked well
+successes:
+  - description: "Parallel subagent audit"
+    why: "3 agents analyzed 71 tasks, 72 episodics, 6 memory files simultaneously — thorough coverage"
+  - description: "Episodic memory system"
+    why: "87.5% enriched, complete coverage — the episodics ARE the real knowledge store"
+
+# Challenges encountered
+challenges:
+  - description: "Playwright sandbox failure blocked reading project page"
+    resolution: "Used curl/direct file reads instead"
+
+# Decisions made
+decisions:
+  - decision: "Write audit report to docs/reports/ for persistence"
+    rationale: "Report survives compaction; tasks can reference it by path"
+    alternatives_rejected: ["Keep in context only", "Put in task file"]
+  - decision: "Create 4 targeted follow-up tasks rather than one mega-task"
+    rationale: "Each addresses a distinct concern; can be worked independently"
+    alternatives_rejected: ["Single remediation task"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "docs/reports/2026-02-15-context-memory-audit.md"
+    - ".tasks/active/T-073 through T-076 (4 follow-up tasks)"
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: ["T-073", "T-074", "T-075", "T-076"]
+
+# Tags for retrieval
+tags: [audit, context-fabric, project-memory, quality, meta]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-072-audit-task-and-memory-quality.md
+generated_by: context-agent
