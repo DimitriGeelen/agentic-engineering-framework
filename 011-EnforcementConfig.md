@@ -1,5 +1,13 @@
 # Task Enforcement Configuration
 # See docs/TASK_SYSTEM.md for full specification
+#
+# Implementation status (T-066, 2026-02-15):
+#   Tier 0: SPEC ONLY — needs Bash command parsing (future work)
+#   Tier 1: IMPLEMENTED — PreToolUse hook (check-active-task.sh) blocks
+#           Write/Edit without active task. Git commit-msg hook blocks
+#           commits without T-XXX. fw work-on provides single-step gate.
+#   Tier 2: PARTIAL — git --no-verify bypass exists, logging is manual
+#   Tier 3: SPEC ONLY — pre-approved categories not consumed by enforcement
 
 # Tier 0: Actions that ALWAYS require task context, no bypass possible
 unconditional_enforcement:

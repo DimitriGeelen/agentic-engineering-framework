@@ -16,32 +16,40 @@
 
 gaps:
   - id: G-001
-    title: "Enforcement tiers are spec-only"
+    title: "Enforcement tiers — Tier 1 implemented, Tier 0 remains spec-only"
     description: >
-      010-TaskSystem.md defines 4 enforcement tiers (Tier 0: never bypass,
-      Tier 1: strict default, Tier 2: situational, Tier 3: pre-approved).
-      Only Tier 1 is partially implemented (commit-msg hook requires T-XXX).
-      No agent-level enforcement, no block-and-offer, no bypass tracking.
+      010-TaskSystem.md defines 4 enforcement tiers. Trigger fired: third-party
+      plugins (acting as second agent) caused task-first bypass (T-061 investigation).
+      Tier 1 now implemented via PreToolUse hook (T-063) + fw work-on (T-064).
+      Tier 0 (consequential actions) still spec-only — needs Bash command parsing.
     spec_reference: "010-TaskSystem.md §Enforcement: The Four Tiers"
-    severity: high
-    why_not_now: >
-      Zero evidence that lack of enforcement has caused harm. Single agent,
-      single user, high discipline. Building gates for problems that haven't
-      occurred is P-001 anti-pattern.
-    decision_trigger: >
-      First destructive action without a task on a real project, OR first
-      time a second human/agent works in the framework and skips task creation.
-    trigger_check:
-      type: manual
-      hint: "Check after each real-world project: did anyone bypass task creation?"
-    evidence_needed: "At least 1 real-world project where consequential action lacks task ref"
-    evidence_collected: "None — framework has only been used self-referentially"
-    alternative_outcome: >
-      If 3 projects pass without enforcement issues → simplify spec.
-      Remove tiers 0-2 machinery, keep the commit hook, document it as sufficient.
-    status: watching
+    severity: medium
+    trigger_fired: true
+    trigger_event: >
+      T-061: Third-party plugins (superpowers, feature-dev, etc.) acted as
+      second agent and caused task creation bypass. 0/20 loaded skills were
+      task-aware. Investigation confirmed by 4 parallel analysis agents.
+    resolution_in_progress: >
+      T-062: Instruction precedence in CLAUDE.md (DONE)
+      T-063: PreToolUse hook blocks Write/Edit without active task (DONE)
+      T-064: fw work-on single-step gate command (DONE)
+      T-065: /start-work command for plugin integration (DONE)
+      T-067: Plugin onboarding audit process (BACKLOG)
+      Remaining: Tier 0 Bash enforcement for destructive commands
+    what_works_now: >
+      Tier 1: PreToolUse hook blocks Write/Edit without active task in focus.yaml.
+      Exempt paths: .context/, .tasks/, .claude/, .git/.
+      Agent gets clear error with instructions to create task.
+      Git commit-msg hook still enforces T-XXX pattern at commit time.
+      CLAUDE.md instruction precedence resolves plugin authority conflicts.
+    what_remains: >
+      Tier 0: No enforcement for destructive Bash commands (deploy, delete, etc.).
+      Tier 2: No formal bypass logging mechanism beyond git --no-verify.
+      Tier 3: Pre-approved categories exist in spec but not consumed by enforcement.
+    status: decided-build
     created: 2026-02-14
-    last_reviewed: 2026-02-14
+    last_reviewed: 2026-02-15
+    trigger_fired_date: 2026-02-15
 
   - id: G-002
     title: "Status transitions not validated"
