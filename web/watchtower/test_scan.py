@@ -556,3 +556,54 @@ class TestFeedbackWithDecisions:
         assert result["scan_accuracy"]["recommendations_approved"] == 1
         assert result["scan_accuracy"]["recommendations_dismissed"] == 1
         assert result["scan_accuracy"]["approval_rate"] == 50
+
+
+class TestIntegration:
+    """End-to-end integration tests."""
+
+    def test_scan_then_rescan_shows_delta(self, project):
+        """Two scans should show changes_since_last_scan."""
+        from web.watchtower.scanner import scan
+
+        # First scan
+        result1 = scan(project_root=project, framework_root=project)
+        assert result1["changes_since_last_scan"].get("first_scan") is True
+
+        # Second scan (should detect delta from previous)
+        result2 = scan(project_root=project, framework_root=project)
+        assert result2["changes_since_last_scan"].get("first_scan") is False
+
+    def test_scan_performance(self, project):
+        """Scan should complete in under 3 seconds."""
+        import time
+        from web.watchtower.scanner import scan
+
+        start = time.time()
+        scan(project_root=project, framework_root=project)
+        elapsed = time.time() - start
+        assert elapsed < 3.0, f"Scan took {elapsed:.1f}s (budget: 3s)"
+
+    def test_scan_with_corrupt_yaml(self, project):
+        """Scan should handle corrupt YAML gracefully."""
+        from web.watchtower.scanner import scan
+
+        # Corrupt a YAML file
+        (project / ".context" / "project" / "patterns.yaml").write_text(
+            "invalid: yaml: [unterminated"
+        )
+
+        result = scan(project_root=project, framework_root=project)
+        # Should still produce output (partial or complete)
+        assert result["scan_id"].startswith("SC-")
+
+    def test_all_output_ids_unique(self, project):
+        """All recommendation IDs should be unique within a scan."""
+        from web.watchtower.scanner import scan
+        result = scan(project_root=project, framework_root=project)
+
+        all_ids = []
+        for section in ("needs_decision", "framework_recommends", "opportunities"):
+            for item in result.get(section, []):
+                all_ids.append(item.get("id"))
+
+        assert len(all_ids) == len(set(all_ids)), "Duplicate IDs found"
