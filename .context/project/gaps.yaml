@@ -34,7 +34,7 @@ gaps:
       T-063: PreToolUse hook blocks Write/Edit without active task (DONE)
       T-064: fw work-on single-step gate command (DONE)
       T-065: /start-work command for plugin integration (DONE)
-      T-067: Plugin onboarding audit process (BACKLOG)
+      T-067: Plugin onboarding audit process (DONE)
       Remaining: Tier 0 Bash enforcement for destructive commands
     what_works_now: >
       Tier 1: PreToolUse hook blocks Write/Edit without active task in focus.yaml.
