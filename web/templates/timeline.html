@@ -9,7 +9,7 @@
         <summary>
             <strong>{{ session.id }}</strong>
             <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
-            — {{ session.touched_count }} tasks touched, {{ session.completed_count }} completed
+            — {% if session.narrative_short %}{{ session.narrative_short }} ({{ session.touched_count }} tasks){% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
         </summary>
 
         <!-- Level 2: Session narrative + task list -->
@@ -22,8 +22,8 @@
             <ul>
                 {% for t in session.tasks_touched %}
                 <li>
-                    <a href="/tasks/{{ t }}">{{ t }}</a>
-                    <span hx-get="/api/timeline/task/{{ t }}" hx-trigger="click" hx-swap="afterend" style="cursor:pointer; color: var(--pico-primary);">[expand]</span>
+                    <a href="/tasks/{{ t.id }}">{{ t.id }}{% if t.name %}: {{ t.name }}{% endif %}</a>
+                    <span hx-get="/api/timeline/task/{{ t.id }}" hx-trigger="click" hx-swap="afterend" style="cursor:pointer; color: var(--pico-primary);">[expand]</span>
                 </li>
                 {% endfor %}
             </ul>
@@ -32,7 +32,7 @@
             <h4>Tasks Completed</h4>
             <ul>
                 {% for t in session.tasks_completed %}
-                <li><a href="/tasks/{{ t }}">{{ t }}</a></li>
+                <li><a href="/tasks/{{ t.id }}">{{ t.id }}{% if t.name %}: {{ t.name }}{% endif %}</a></li>
                 {% endfor %}
             </ul>
             {% endif %}
