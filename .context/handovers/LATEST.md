@@ -7,30 +7,30 @@ tasks_touched: [T-070, T-067, T-XXX, T-065, T-047, T-042, T-021, T-017, T-025, T
 tasks_completed: []
 uncommitted_changes: 10
 owner: claude-code
-session_narrative: ""
+session_narrative: "Deep investigation into task-first rule bypass vectors (T-061). Confirmed plugins are primary bypass vector — 0/20 skills are task-aware. Built 5-layer enforcement: instruction precedence in CLAUDE.md, PreToolUse hook blocking Write/Edit, fw work-on command, /start-work command, and G-001 gap closure. Also enhanced timeline page with inline task names and session narratives (T-060)."
 ---
 
 # Session Handover: S-2026-0215-0954
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Major governance investigation (T-061) completed and remediated. The core principle "Nothing gets done without a task" was being bypassed by third-party plugins that aren't aware of framework rules. Built 4-layer defense in depth: CLAUDE.md instruction precedence, PreToolUse hook (check-active-task.sh), `fw work-on` command, and `/start-work` command. The PreToolUse hook is the only structural enforcement — it blocks Write/Edit tools when no active task is set. **Takes effect next session** (hooks snapshot at start). Also enhanced the timeline page (T-060) with inline task names and truncated session narratives.
 
 ## Work in Progress
 
 ### T-067: Plugin onboarding audit — task-awareness check for new plugins
-- **Status:** captured
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** captured (backlog)
+- **Last action:** Created as remediation task from T-061 investigation
+- **Next step:** Design a script/checklist that scans new plugin skill files for task-system references
+- **Blockers:** None — lower priority than the enforcement tasks that are now complete
+- **Insight:** Need a repeatable process to run whenever a plugin is added to settings.json
 
 ### T-070: Session handover S-2026-0215-0837
-- **Status:** started-work
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** started-work (this handover)
+- **Last action:** Generating end-of-session handover
+- **Next step:** Commit and close
+- **Blockers:** None
+- **Insight:** N/A
 
 ## Gaps Register
 
@@ -43,40 +43,48 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **D-011: G-001 decision trigger has fired — build enforcement (not simplify)**
+   - Why: 4-agent investigation confirmed 0/20 plugins are task-aware; bypass happened 3 times in one session
+   - Alternatives rejected: "Simplify spec" — the bypass is real and recurring, not theoretical
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **PreToolUse hook (exit code 2) as primary enforcement, not Bash hooks**
+   - Why: Only Write/Edit tools modify code; Bash is too broad (legitimate uses everywhere)
+   - Alternatives rejected: Bash matcher (too many false positives), SessionStart-only check (doesn't catch mid-session work)
+
+3. **Project command (`/start-work`) instead of full plugin skill**
+   - Why: Simpler, project-specific, no plugin packaging needed
+   - Alternatives rejected: Full plugin fork of superpowers (heavy, maintenance burden)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Instruction precedence in CLAUDE.md alone** — Agent bypassed task-first rule 2 more times AFTER adding it. Documentation-only enforcement does not work. Proves P-002 is correct.
+2. **YAML parsing without error handling** — Some task files have colons in `name:` field (e.g. "Web UI foundation: Flask + htmx"). Added try/except yaml.YAMLError.
+3. **Playwright MCP without --no-sandbox** — Fails as root. Added `--no-sandbox` to both .mcp.json locations. Takes effect next session.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. Will the PreToolUse hook cause problems with legitimate framework operations? Exempt paths (.context/, .tasks/, .claude/, .git/) should cover it, but watch for edge cases.
+2. Tier 0 enforcement (destructive Bash commands) is still spec-only — needs command parsing which is complex and error-prone. Is it worth building?
+3. Plugin onboarding (T-067) — should this be a `fw doctor` check or a standalone script?
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- **PreToolUse hook is NEW** — first session with it active. Watch for false positives on exempt paths.
+- **Playwright --no-sandbox fix is NEW** — verify it works by navigating to localhost:3000.
+- **Web server must be restarted** after code changes to web/ files (it doesn't auto-reload).
+- **Hooks snapshot at session start** — any changes to .claude/settings.json need a restart.
+- The agent bypassed task-first 3 times this session despite having the rules. Trust the hook, not the agent.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first]
+1. Run `fw context init` then test the PreToolUse hook: try to Edit a file WITHOUT setting focus — it should block with exit 2. If it works, the enforcement is live.
+2. If it works, try `fw work-on T-067` and start the plugin onboarding audit task.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `agents/context/check-active-task.sh`, `.claude/commands/start-work.md`
+- Modified: `CLAUDE.md` (instruction precedence, session start protocol, quick reference), `FRAMEWORK.md` (working with tasks), `bin/fw` (work-on command), `.claude/settings.json` (PreToolUse hook), `011-EnforcementConfig.md` (implementation status), `.context/project/gaps.yaml` (G-001 decided-build), `web/blueprints/timeline.py` (task names + narrative truncation), `web/templates/timeline.html` (inline descriptions)
+- Playwright config: `/root/.claude/plugins/cache/claude-plugins-official/playwright/2cd88e7947b7/.mcp.json` and marketplace copy (--no-sandbox)
 
 ## Recent Commits
 
