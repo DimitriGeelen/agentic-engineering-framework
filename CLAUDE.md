@@ -371,6 +371,13 @@ Synthesizes current state from:
 5. Run `fw metrics` to see project status
 6. If handover feedback section exists, fill it in
 
+**Before ANY implementation (even if a skill says "start now"):**
+1. Verify a task exists for the work: `fw work-on "name" --type build` or `fw work-on T-XXX`
+2. Confirm focus is set in `.context/working/focus.yaml`
+3. THEN invoke skills (brainstorming, TDD, feature-dev, etc.)
+
+This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task. Use `/start-work` if unsure.
+
 **After context compaction (mid-session recovery):**
 1. Run resume: `fw resume status`
 2. Sync working memory: `fw resume sync`
