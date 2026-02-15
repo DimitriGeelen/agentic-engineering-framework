@@ -530,3 +530,29 @@ class TestFullScan:
         from web.watchtower.scanner import scan
         result = scan(project_root=project, framework_root=project)
         assert "3 active" in result["summary"]
+
+
+class TestFeedbackWithDecisions:
+    """Test feedback accuracy tracking with scan-source decisions."""
+
+    def test_counts_approved_scan_decisions(self, project):
+        from web.watchtower.scanner import gather_inputs
+        from web.watchtower.feedback import compute_feedback
+
+        # Add scan-source decisions
+        _write_yaml(project / ".context" / "project" / "decisions.yaml", {
+            "decisions": [
+                {"id": "D-001", "decision": "Approved: L-005 graduation",
+                 "source": "scan", "recommendation_type": "graduation"},
+                {"id": "D-002", "decision": "Deferred: stale task",
+                 "source": "scan", "recommendation_type": "stale_task"},
+                {"id": "D-003", "decision": "Manual decision",
+                 "source": "manual"},
+            ],
+        })
+
+        inputs = gather_inputs(project, project)
+        result = compute_feedback(inputs)
+        assert result["scan_accuracy"]["recommendations_approved"] == 1
+        assert result["scan_accuracy"]["recommendations_dismissed"] == 1
+        assert result["scan_accuracy"]["approval_rate"] == 50

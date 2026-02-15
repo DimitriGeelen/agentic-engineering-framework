@@ -9,6 +9,8 @@ do_add_decision() {
     local task=""
     local rationale=""
     local rejected=""
+    local source=""
+    local recommendation_type=""
 
     # Parse arguments
     while [ $# -gt 0 ]; do
@@ -23,6 +25,14 @@ do_add_decision() {
                 ;;
             --rejected)
                 rejected="$2"
+                shift 2
+                ;;
+            --source)
+                source="$2"
+                shift 2
+                ;;
+            --recommendation-type)
+                recommendation_type="$2"
                 shift 2
                 ;;
             -*)
@@ -69,6 +79,16 @@ EOF
     date: $date
     task: ${task:-unknown}
     rationale: \"${rationale:-Not specified}\""
+
+    if [ -n "$source" ]; then
+        entry="$entry
+    source: \"$source\""
+    fi
+
+    if [ -n "$recommendation_type" ]; then
+        entry="$entry
+    recommendation_type: \"$recommendation_type\""
+    fi
 
     if [ -n "$rejected" ]; then
         # Convert comma-separated to YAML array

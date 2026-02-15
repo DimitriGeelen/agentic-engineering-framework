@@ -9,6 +9,9 @@ failure_patterns:
     learned_from: T-013
     date_learned: 2026-02-13
     mitigation: "Only update timestamps for active tasks, not completed ones"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
   - id: FP-002
     pattern: "sed returns malformed integers"
@@ -16,6 +19,9 @@ failure_patterns:
     learned_from: T-014
     date_learned: 2026-02-13
     mitigation: "Use simpler grep -c and pipe through tr -d to clean"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
   - id: FP-003
     pattern: "dependency-version-conflict"
@@ -23,6 +29,9 @@ failure_patterns:
     learned_from: T-026
     date_learned: 2026-02-13
     mitigation: "Use built-in PyYAML validation instead of yaml_validator to avoid dependency conflicts"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
   - id: FP-004
     pattern: "Context exhaustion before handover"
@@ -30,6 +39,9 @@ failure_patterns:
     learned_from: T-059
     date_learned: 2026-02-14
     mitigation: "Token-aware monitoring from JSONL transcript (D-009). Warns at 100K/130K/150K of 200K window. Falls back to tool-call counting when transcript unavailable."
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
 success_patterns:
   - id: SP-001
@@ -38,6 +50,9 @@ success_patterns:
     learned_from: T-014
     date_learned: 2026-02-13
     context: "5-phase audit improvement was easier to review and commit"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
   - id: SP-002
     pattern: "Hybrid agent architecture"
@@ -45,6 +60,9 @@ success_patterns:
     learned_from: T-002
     date_learned: 2026-02-13
     context: "Scripts are reliable, AGENT.md provides judgment guidance"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
   - id: SP-003
     pattern: "Commit early, commit often"
@@ -52,6 +70,9 @@ success_patterns:
     learned_from: T-059
     date_learned: 2026-02-14
     context: "Despite losing all context, all code changes were preserved because Phase 1 and Phase 2 were committed before exhaustion"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
 antifragile_patterns:
   - id: AF-001
@@ -63,6 +84,9 @@ antifragile_patterns:
     capability_gained: "Real-time context budget monitoring with graduated warnings"
     directive: D1 (Antifragility)
     escalation_ladder: "A (don't repeat) → B (improve technique: token reading) → C (improve tooling: checkpoint.sh) → D (change ways of working: P-009 practice)"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
 
 workflow_patterns:
   - id: WP-001
@@ -71,3 +95,6 @@ workflow_patterns:
     learned_from: T-013
     date_learned: 2026-02-13
     example: "T-003 and T-004 absorbed into T-013 (git agent)"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
