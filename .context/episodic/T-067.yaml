@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-067: Plugin onboarding audit — task-awareness check for new plugins
+# ============================================================================
+# Generated: 2026-02-15T09:13:58Z
+
+task_id: T-067
+task_name: "Plugin onboarding audit — task-awareness check for new plugins"
+workflow_type: specification
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-15T08:35:49Z
+completed: 2026-02-15T09:13:58Z
+duration_days: 0
+updates_count: 4
+
+# Summary
+summary: |
+  Built a plugin task-awareness audit tool that scans all enabled Claude Code plugins
+  and classifies their skills/agents/commands as TASK-AWARE, TASK-SILENT, or TASK-BYPASSING.
+  This closes the remediation loop from T-061 (task-first bypass investigation) by providing
+  a repeatable way to detect plugins that may override the framework's core governance principle.
+  Integrated into both `fw plugin-audit` (detailed report) and `fw doctor` Check 7 (routine health check).
+
+# Key outcomes
+outcomes:
+  - "fw plugin-audit command classifies all plugin content across 10 enabled plugins"
+  - "fw doctor Check 7 warns when BYPASSING skills are detected"
+  - "Correctly identifies 9 AWARE, 17 SILENT, 2 BYPASSING in current plugin set"
+
+# What worked well
+successes:
+  - description: "Approach C (doctor check + standalone audit) gives both routine detection and deep investigation"
+    why: "Doctor check ensures visibility during health checks without requiring users to remember a separate command"
+  - description: "Scanning skills, agents, AND commands (not just SKILL.md)"
+    why: "Exploration revealed plugins use different content types — feature-dev has agents, commit-commands has commands"
+
+# Challenges encountered
+challenges:
+  - description: "Heredoc python script didn't receive filepath argument — was executed as a command after heredoc"
+    resolution: "Changed from 'python3 << PYEOF ... PYEOF \"$filepath\"' to 'python3 - \"$filepath\" << PYEOF'"
+
+# Decisions made during this task
+decisions:
+  - decision: "Approach C: fw doctor check + standalone fw plugin-audit command"
+    rationale: "Doctor check catches issues routinely; standalone gives detailed actionable output"
+    alternatives_rejected: ["Doctor-only (no detail)", "Standalone-only (not discoverable)"]
+  - decision: "Three-tier classification: AWARE/SILENT/BYPASSING"
+    rationale: "SILENT plugins (MCP tools, LSPs) need no action — only BYPASSING needs attention"
+    alternatives_rejected: ["Binary AWARE/UNAWARE (too noisy — most plugins are harmlessly silent)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "agents/audit/plugin-audit.sh"
+    - "docs/plans/2026-02-15-plugin-audit-design.md"
+  modified:
+    - "bin/fw (plugin-audit route + doctor Check 7 + help text)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [plugins, governance, task-first, audit, enforcement]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-067-plugin-onboarding-audit--task-awareness-.md
+generated_by: context-agent

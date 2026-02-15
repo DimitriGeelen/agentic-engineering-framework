@@ -134,6 +134,7 @@ show_help() {
     echo -e "  ${GREEN}search${NC} <keyword>   Search across all artifacts"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
+    echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
@@ -255,6 +256,20 @@ do_doctor() {
     done
     if [ "$agents_ok" = true ]; then
         echo -e "  ${GREEN}OK${NC}  All agent scripts executable"
+    fi
+
+    # Check 7: Plugin task-awareness
+    if [ -x "$AGENTS_DIR/audit/plugin-audit.sh" ]; then
+        local bypassing_count
+        bypassing_count=$("$AGENTS_DIR/audit/plugin-audit.sh" --doctor-check 2>/dev/null) || true
+        if [ "${bypassing_count:-0}" = "0" ]; then
+            echo -e "  ${GREEN}OK${NC}  Plugin task-awareness"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  $bypassing_count plugin skill(s) may bypass task-first rule (run: fw plugin-audit)"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Plugin task-awareness (plugin-audit.sh not found)"
     fi
 
     # Summary
@@ -571,6 +586,9 @@ shift || true
 case "$cmd" in
     audit)
         exec "$AGENTS_DIR/audit/audit.sh" "$@"
+        ;;
+    plugin-audit)
+        exec "$AGENTS_DIR/audit/plugin-audit.sh" "$@"
         ;;
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
