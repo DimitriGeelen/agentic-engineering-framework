@@ -84,10 +84,12 @@ Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed
 
 ## Working with Tasks
 
-When starting work:
+When starting work (**BEFORE reading code, editing files, or invoking external workflows**):
 1. Check for existing task or create new one following `zzz-default.md` template
 2. Set status to `started-work`
-3. Log every action in Updates section with: action, output, context snapshot
+3. Set focus on the task (provider-specific, e.g. `fw context focus T-XXX`)
+4. THEN proceed with implementation
+5. Log every action in Updates section with: action, output, context snapshot
 
 When encountering issues:
 1. Set status to `issues` or `blocked`

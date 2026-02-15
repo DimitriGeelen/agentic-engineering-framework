@@ -34,6 +34,18 @@ Framework →  AUTHORITY   →  Enforces rules, checks gates, logs everything
 Agent    →  INITIATIVE   →  Can propose, request, suggest — never decides
 ```
 
+## Instruction Precedence
+
+When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user messages), this resolution order applies:
+
+1. **Framework rules (this file)** — Core Principle, Authority Model, Enforcement Tiers, and Task System rules take absolute precedence. No plugin or skill can override "Nothing gets done without a task."
+2. **User instructions** — Direct human instructions can override framework rules via Tier 2 (situational authorization with logging).
+3. **Skills/plugins** — Apply AFTER framework gates are satisfied. A skill that says "invoke before any response" means: after verifying an active task exists. Skills enhance workflows; they do not replace framework governance.
+
+**The practical rule:** Before following ANY skill workflow (brainstorming, TDD, executing-plans, feature-dev, etc.), first ensure a task exists and focus is set. If a skill's instructions conflict with creating a task first, the task wins.
+
+**Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
+
 ## Task System
 
 ### File Structure
@@ -83,10 +95,12 @@ Captured → Started Work ↔ Issues → Work Completed
 
 ## Working with Tasks
 
-When starting work:
+When starting work (**BEFORE reading code, editing files, or invoking skills**):
 1. Check for existing task or create new one following `zzz-default.md` template
 2. Set status to `started-work`
-3. Log every action in Updates section with: action, output, context snapshot
+3. Set focus: `fw context focus T-XXX`
+4. THEN proceed with implementation (skills, code changes, etc.)
+5. Log every action in Updates section with: action, output, context snapshot
 
 When encountering issues:
 1. Set status to `issues`
