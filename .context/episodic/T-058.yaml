@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-058: Watchtower Command Center - Design Spec
+# ============================================================================
+# Generated: 2026-02-15T08:12:45Z
+
+task_id: T-058
+task_name: "Watchtower Command Center - Design Spec"
+workflow_type: specification
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-14T18:05:02Z
+completed: 2026-02-15T08:12:45Z
+duration_days: 1
+updates_count: 5
+
+# Summary
+summary: |
+  Designed and implemented the Watchtower Intelligence Layer (Phase 4), transforming
+  the read-only dashboard into a shared intelligence layer. Built a scan engine that
+  reads all project state, runs 11 detection rules across challenges/opportunities/strengths,
+  prioritizes work queue, and outputs structured YAML consumed by both a web cockpit
+  (human interface) and CLI/agents (AI interface). 156 tests, all passing.
+
+# Key outcomes
+outcomes:
+  - "Scan engine with gather_inputs, 11 detection rules, prioritizer, and feedback metrics"
+  - "Cockpit UI with progressive disclosure, control actions (approve/defer/apply/focus)"
+  - "CLI entry point (fw scan) with auto-scan on context init"
+  - "Resume agent integration for scan-driven status output"
+  - "Escalation tracking fields in patterns.yaml, scan metadata in decisions"
+  - "Integration tests: rescan delta, performance <3s, corrupt YAML handling, unique IDs"
+
+# What worked well
+successes:
+  - description: "Subagent-driven development with TDD"
+    why: "Each task dispatched to a fresh subagent with spec/test review between. Caught missing git_log in gather_inputs through spec compliance review."
+  - description: "One Scan, Two Interfaces architecture"
+    why: "Same YAML output consumed by web cockpit and CLI agents. No duplication of logic."
+  - description: "Phased 8-task implementation plan"
+    why: "Clear dependencies, testable increments, each task committable independently."
+
+# Challenges encountered
+challenges:
+  - description: "Context budget pressure at ~150K of 160K limit"
+    resolution: "Deferred Tasks 7-8 to next session, completed them fresh"
+  - description: "Traceability drift threshold mismatch in plan"
+    resolution: "Lowered threshold from >=3 to >=2 to match test expectations"
+  - description: "generate_summary returning dict vs string"
+    resolution: "Changed to return human-readable string for CLI and integration use"
+
+# Decisions made during this task
+decisions:
+  - decision: "Analysis Tier 3, Action Tier 1 — scan reads are pre-approved diagnostic, mutations go through fw commands"
+    rationale: "Maintains authority model while allowing comprehensive scanning"
+    alternatives_rejected: ["Direct mutation from scan", "Separate read/write APIs"]
+  - decision: "Stateless scan — no dismiss/undo state in YAML; deferrals become decisions"
+    rationale: "Keeps scan output derivable, decisions tracked in existing decisions.yaml"
+    alternatives_rejected: ["Scan-level state tracking", "Separate deferral database"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "web/watchtower/__init__.py"
+    - "web/watchtower/scanner.py"
+    - "web/watchtower/rules.py"
+    - "web/watchtower/prioritizer.py"
+    - "web/watchtower/feedback.py"
+    - "web/watchtower/__main__.py"
+    - "web/watchtower/test_scan.py"
+    - "web/blueprints/cockpit.py"
+    - "web/templates/cockpit.html"
+    - ".context/scans/.gitkeep"
+    - ".context/scans/.gitignore"
+  modified:
+    - "bin/fw"
+    - "agents/context/lib/init.sh"
+    - "agents/context/lib/decision.sh"
+    - "agents/resume/resume.sh"
+    - "web/blueprints/core.py"
+    - "web/app.py"
+    - "web/test_app.py"
+    - ".context/project/patterns.yaml"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, scan-engine, cockpit, intelligence-layer, phase-4, detection-rules]
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-058-watchtower-command-center---design-spec.md
+generated_by: context-agent
