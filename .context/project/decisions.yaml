@@ -92,3 +92,9 @@ decisions:
     task: T-011
     rationale: "Higher levels require more evidence and are harder to change - directives require human approval"
     directives_served: [D1, D2]
+
+  - id: D-011
+    decision: "G-001 decision trigger has fired: plugins act as second agent and caused task bypass. Remediation tasks T-062 through T-066 created covering Tier C (tooling) and Tier D (ways of working) fixes."
+    date: 2026-02-15
+    task: T-061
+    rationale: "4-agent investigation confirmed: 0/20 skills are task-aware, using-superpowers usurps framework authority, enforcement is git-commit-only, tier system is vaporware"

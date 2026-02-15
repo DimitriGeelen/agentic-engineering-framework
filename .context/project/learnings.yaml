@@ -99,5 +99,21 @@ learnings:
     context: "Commands that reference input_tokens (like analyzing token usage) get recorded in JSONL tool_use entries. grep can't distinguish usage data from command text."
     application: "Use proper JSON parsing (python3) to extract message.usage, not grep patterns"
 
+
+  - id: L-013
+    learning: "Plugins that claim absolute authority (using-superpowers: 'YOU DO NOT HAVE A CHOICE') will override framework rules written in CLAUDE.md when they conflict. Structural enforcement (P-002) must be actual code gates, not markdown instructions. Gap G-001 decision trigger has fired."
+    source: P-002
+    task: T-061
+    date: 2026-02-15
+    context: "Added via context agent"
+    application: "TBD"
 # Candidate learnings (need validation before promotion)
+
+  - id: L-013
+    learning: "Plugins that claim absolute authority (using-superpowers: 'YOU DO NOT HAVE A CHOICE') will override framework rules written in CLAUDE.md when they conflict. Structural enforcement (P-002) must be actual code gates, not markdown instructions. Gap G-001 decision trigger has fired."
+    source: P-002
+    task: T-061
+    date: 2026-02-15
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
