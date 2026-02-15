@@ -114,6 +114,7 @@ show_help() {
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
+    echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -147,7 +148,8 @@ show_help() {
     echo -e "${BOLD}Examples:${NC}"
     echo "  fw audit"
     echo "  fw context init"
-    echo "  fw context focus T-005"
+    echo '  fw work-on "Fix login bug" --type build   # One-step: create + focus + start'
+    echo "  fw work-on T-042                           # Resume existing task"
     echo '  fw git commit -m "T-033: Add fw CLI wrapper"'
     echo "  fw handover --commit"
     echo "  fw healing diagnose T-015"
@@ -609,6 +611,40 @@ case "$cmd" in
             exit 1
         fi
         cd "$FRAMEWORK_ROOT" && exec python3 -m web.app "$@"
+        ;;
+    work-on)
+        # Single-step gate: create/resume task + set focus + start work
+        wo_target="${1:-}"
+        if [ -z "$wo_target" ]; then
+            echo -e "${RED}Usage:${NC}"
+            echo '  fw work-on "Fix login bug" --type build    # Create new task + start'
+            echo '  fw work-on T-042                            # Resume existing task'
+            exit 1
+        fi
+
+        if [[ "$wo_target" =~ ^T-[0-9]+$ ]]; then
+            # Resume existing task
+            echo -e "${CYAN}=== Resuming $wo_target ===${NC}"
+            "$AGENTS_DIR/task-create/update-task.sh" "$wo_target" --status started-work 2>/dev/null || true
+            "$AGENTS_DIR/context/context.sh" focus "$wo_target"
+            echo ""
+            echo -e "${GREEN}Ready to work on $wo_target${NC}"
+        else
+            # Create new task — pass remaining args (--type, --owner, etc.)
+            shift
+            wo_output=$("$AGENTS_DIR/task-create/create-task.sh" --name "$wo_target" --description "Created via fw work-on" --start "$@" 2>&1)
+            echo "$wo_output"
+
+            # Extract task ID from output
+            wo_task_id=$(echo "$wo_output" | grep "^ID:" | sed 's/ID:[[:space:]]*//')
+            if [ -n "$wo_task_id" ]; then
+                "$AGENTS_DIR/context/context.sh" focus "$wo_task_id"
+                echo ""
+                echo -e "${GREEN}Ready to work on $wo_task_id: $wo_target${NC}"
+            else
+                echo -e "${YELLOW}Task created but could not extract ID for focus${NC}"
+            fi
+        fi
         ;;
     task)
         route_task "$@"

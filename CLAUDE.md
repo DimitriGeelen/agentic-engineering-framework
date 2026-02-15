@@ -380,6 +380,8 @@ Synthesizes current state from:
 
 | Action | fw command | Direct |
 |--------|-----------|--------|
+| **Start work** | **`fw work-on "name" --type build`** | Creates task + sets focus + starts work |
+| Resume task | `fw work-on T-XXX` | Sets focus + status to started-work |
 | Create task | `fw task create` | `./agents/task-create/create-task.sh` |
 | Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
