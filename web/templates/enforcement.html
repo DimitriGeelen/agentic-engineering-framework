@@ -1,0 +1,152 @@
+<style>
+    .tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    @media (max-width: 768px) { .tier-grid { grid-template-columns: 1fr; } }
+    .tier-card { border: 1px solid var(--pico-muted-border-color); border-radius: 8px; padding: 1rem; }
+    .tier-card header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .tier-num { font-size: 1.5rem; font-weight: 700; color: var(--pico-muted-color); }
+    .tier-name { font-weight: 600; }
+    .badge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .badge-active { background-color: #27ae60; color: white; }
+    .badge-partial { background-color: #f39c12; color: white; }
+    .badge-spec { background-color: #95a5a6; color: white; }
+    .badge-off { background-color: #c0392b; color: white; }
+    .tier-desc { font-size: 0.875rem; color: var(--pico-muted-color); margin: 0.5rem 0; }
+    .tier-detail { font-size: 0.8rem; }
+    .tier-detail dt { font-weight: 600; display: inline; }
+    .tier-detail dd { display: inline; margin-left: 0; margin-right: 1rem; }
+
+    .hooks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+    .hook-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+    .hook-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .hook-dot.on { background-color: #27ae60; }
+    .hook-dot.off { background-color: #c0392b; }
+
+    .bypass-table { font-size: 0.85rem; }
+    .bypass-table td { padding: 0.4rem 0.6rem; }
+    .bypass-table .tier-tag { font-weight: 600; }
+
+    .pending-alert { background: #ffeaa7; color: #2d3436; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .approved-alert { background: #dfe6e9; color: #2d3436; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Enforcement tiers control what actions require task context, human approval, or are pre-approved.</p>
+</div>
+
+{% if tier0_state.pending %}
+<div class="pending-alert">
+    <strong>Pending Block:</strong> A destructive command is waiting for Tier 0 approval.
+    Run <code>fw tier0 approve</code> to allow it.
+</div>
+{% endif %}
+{% if tier0_state.approved %}
+<div class="approved-alert">
+    <strong>Active Approval:</strong> A one-time Tier 0 approval is active (not yet consumed).
+</div>
+{% endif %}
+
+<!-- Tier Cards -->
+<h2>Enforcement Tiers</h2>
+<div class="tier-grid">
+{% for t in tiers %}
+    <div class="tier-card">
+        <header>
+            <span>
+                <span class="tier-num">{{ t.tier }}</span>
+                <span class="tier-name">{{ t.name }}</span>
+            </span>
+            {% if t.status == 'active' %}
+            <span class="badge badge-active">Active</span>
+            {% elif t.status == 'partial' %}
+            <span class="badge badge-partial">Partial</span>
+            {% elif t.status == 'spec only' %}
+            <span class="badge badge-spec">Spec Only</span>
+            {% else %}
+            <span class="badge badge-off">Off</span>
+            {% endif %}
+        </header>
+        <p class="tier-desc">{{ t.description }}</p>
+        <dl class="tier-detail">
+            <dt>Mechanism:</dt> <dd>{{ t.mechanism }}</dd><br>
+            <dt>Bypass:</dt> <dd>{{ t.bypass }}</dd>
+        </dl>
+    </div>
+{% endfor %}
+</div>
+
+<!-- Hook Status -->
+<h2>Hook Configuration</h2>
+<div class="hooks-grid">
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if claude_hooks.tier0 else 'off' }}"></span>
+        <span>Tier 0 &mdash; Bash guard</span>
+    </div>
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if claude_hooks.tier1 else 'off' }}"></span>
+        <span>Tier 1 &mdash; Task-first gate</span>
+    </div>
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if claude_hooks.checkpoint else 'off' }}"></span>
+        <span>Checkpoint &mdash; Context budget</span>
+    </div>
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if git_hooks.commit_msg else 'off' }}"></span>
+        <span>Git commit-msg &mdash; Task ref</span>
+    </div>
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if git_hooks.post_commit else 'off' }}"></span>
+        <span>Git post-commit &mdash; Bypass detect</span>
+    </div>
+    <div class="hook-item">
+        <span class="hook-dot {{ 'on' if git_hooks.pre_push else 'off' }}"></span>
+        <span>Git pre-push &mdash; Audit gate</span>
+    </div>
+</div>
+
+<!-- Bypass Log -->
+<h2>Approval &amp; Bypass Log</h2>
+{% if all_bypasses %}
+<table class="bypass-table" role="grid">
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Tier</th>
+            <th>Action / Risk</th>
+            <th>Authorized By</th>
+            <th>Mechanism</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for b in all_bypasses %}
+        <tr>
+            <td><small>{{ b.timestamp | default('?') }}</small></td>
+            <td><span class="tier-tag">T{{ b.tier | default('?') }}</span></td>
+            <td>{{ b.risk | default(b.action | default('?')) }}</td>
+            <td>{{ b.authorized_by | default('?') }}</td>
+            <td><small>{{ b.mechanism | default(b.reason | default('?')) }}</small></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color: var(--pico-muted-color); font-style: italic;">
+    No bypass or approval entries logged yet. Entries appear when Tier 0 commands are approved
+    or git hooks are bypassed with <code>--no-verify</code>.
+</p>
+{% endif %}
+
+<details style="margin-top: 2rem;">
+    <summary>Tier 0 Protected Patterns</summary>
+    <table role="grid" style="font-size: 0.85rem; margin-top: 0.5rem;">
+        <thead>
+            <tr><th>Category</th><th>Patterns</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Git</td><td><code>push --force</code>, <code>reset --hard</code>, <code>clean -f</code>, <code>branch -D</code>, <code>checkout/restore .</code></td></tr>
+            <tr><td>File System</td><td>Recursive delete of <code>/</code>, <code>~</code>, <code>.</code>, <code>*</code></td></tr>
+            <tr><td>Database</td><td><code>DROP TABLE/DATABASE</code>, <code>TRUNCATE TABLE</code></td></tr>
+            <tr><td>Infrastructure</td><td><code>docker system prune</code>, <code>kubectl delete namespace</code></td></tr>
+        </tbody>
+    </table>
+</details>

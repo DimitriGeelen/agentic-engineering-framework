@@ -34,10 +34,11 @@ NAV_GROUPS = [
         ("Decisions",   "discovery.decisions",    None),
     ]),
     ("Govern", [
-        ("Directives", "core.directives",          None),
-        ("Gaps",       "discovery.gaps",            None),
-        ("Quality",    "quality.quality_gate",      None),
-        ("Metrics",    "metrics.project_metrics",   None),
+        ("Directives",  "core.directives",                    None),
+        ("Enforcement", "enforcement.enforcement_dashboard",  None),
+        ("Gaps",        "discovery.gaps",                     None),
+        ("Quality",     "quality.quality_gate",               None),
+        ("Metrics",     "metrics.project_metrics",            None),
     ]),
 ]
 

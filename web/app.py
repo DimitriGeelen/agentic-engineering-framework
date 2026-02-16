@@ -75,6 +75,7 @@ from web.blueprints.session import bp as session_bp
 from web.blueprints.metrics import bp as metrics_bp
 from web.blueprints.cockpit import bp as cockpit_bp
 from web.blueprints.inception import bp as inception_bp
+from web.blueprints.enforcement import bp as enforcement_bp
 
 app.register_blueprint(core_bp)
 app.register_blueprint(tasks_bp)
@@ -85,6 +86,7 @@ app.register_blueprint(session_bp)
 app.register_blueprint(metrics_bp)
 app.register_blueprint(cockpit_bp)
 app.register_blueprint(inception_bp)
+app.register_blueprint(enforcement_bp)
 
 # ---------------------------------------------------------------------------
 # Error handlers
