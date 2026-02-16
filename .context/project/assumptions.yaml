@@ -1,9 +1,34 @@
-# Assumptions Register
-# Key assumptions made during inception phases
-# Tracks validation status and evidence
-#
-# Lifecycle: untested -> validated | invalidated
-# Validated assumptions become project knowledge
-# Invalidated assumptions become gaps or risks
-
-assumptions: []
+assumptions:
+- id: A-001
+  statement: 'Inception tasks are identifiable by workflow_type: inception in frontmatter'
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-084
+  created: '2026-02-16'
+  resolved_date: null
+- id: A-002
+  statement: Assumptions YAML can be parsed directly by Flask without CLI intermediary
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-084
+  created: '2026-02-16'
+  resolved_date: null
+- id: A-003
+  statement: HTMX plus Pico CSS can render assumption tracker without new JS dependencies
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-084
+  created: '2026-02-16'
+  resolved_date: null
+- id: A-004
+  statement: Existing blueprint pattern supports adding inception views in under 2
+    files
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-084
+  created: '2026-02-16'
+  resolved_date: null
