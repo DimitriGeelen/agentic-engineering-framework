@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-089: Phase 2 inception UI — write actions
+# ============================================================================
+# Generated: 2026-02-16T22:32:10Z
+
+task_id: T-089
+task_name: "Phase 2 inception UI — write actions"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:24:53Z
+completed: 2026-02-16T22:32:10Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added write actions to the Watchtower inception UI, turning it from read-only
+  into a fully interactive tool. Users can now add assumptions, validate/invalidate
+  them with evidence, and record go/no-go decisions directly from the browser —
+  eliminating the need to switch to CLI for inception workflow operations.
+
+# Key outcomes
+outcomes:
+  - "POST /inception/<task_id>/add-assumption — creates assumptions from browser"
+  - "POST /assumptions/<id>/resolve — validate/invalidate with evidence from browser"
+  - "POST /inception/<task_id>/decide — record go/no-go/defer from browser"
+  - "CSRF protection via hidden token fields on all forms"
+  - "Forms hidden when not applicable (completed tasks, already-decided, already-resolved)"
+
+# What worked well
+successes:
+  - description: "Reusing fw CLI via subprocess instead of duplicating YAML logic"
+    why: "Single source of truth — all validation, ID generation, and file manipulation stays in the CLI. Flask routes are thin wrappers."
+  - description: "Progressive disclosure with HTML details elements for resolve forms"
+    why: "Keeps the UI clean — untested assumptions show a 'Resolve...' toggle that reveals the evidence form only when needed."
+
+# Challenges encountered
+challenges:
+  - description: "CSRF protection blocking POST requests"
+    resolution: "Added hidden _csrf_token field to all forms using csrf_token() template global"
+    learning: "Flask CSRF middleware rejects POST without token — always include in forms"
+
+# Decisions made during this task
+decisions:
+  - decision: "Flask POST routes calling fw CLI via subprocess (Approach A)"
+    rationale: "Reuses existing CLI logic, no code duplication, maintains zero-JS HTMX pattern"
+    alternatives_rejected: ["Direct Python YAML manipulation", "JavaScript fetch + REST API"]
+  - decision: "Standard form POST + redirect instead of HTMX partial swaps"
+    rationale: "Simpler implementation, full page state refresh ensures consistency, HTMX partial would need fragment endpoints"
+    alternatives_rejected: ["HTMX hx-post with fragment swap"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "docs/plans/2026-02-16-inception-write-actions-design.md"
+  modified:
+    - "web/blueprints/inception.py"
+    - "web/templates/inception_detail.html"
+    - "web/templates/assumptions.html"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, inception, write-actions, flask-blueprint, csrf, htmx]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 4
+  lines_added: 267
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-089-phase-2-inception-ui--write-actions.md
+generated_by: context-agent
