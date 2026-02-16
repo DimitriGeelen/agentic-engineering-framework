@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-088: Add graduation pipeline to Watchtower UI
+# ============================================================================
+# Generated: 2026-02-16T22:17:40Z
+
+task_id: T-088
+task_name: "Add graduation pipeline to Watchtower UI"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:15:40Z
+completed: 2026-02-16T22:17:40Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added a /graduation page to the Watchtower web UI that visualizes the knowledge
+  graduation pipeline built in T-087. Shows a pipeline flow diagram (Learnings → Ready
+  → Practices → Directives), summary stats, filterable table with application dot
+  indicators, and collapsible promotion instructions. Reuses the application counting
+  logic from fw promote in Python within the discovery blueprint.
+
+# Key outcomes
+outcomes:
+  - "/graduation route with pipeline flow visualization"
+  - "Application dot indicators show progress toward 3-app threshold"
+  - "Filter buttons for status (ready, almost, building, promoted)"
+  - "Graduation added to Knowledge nav group"
+  - "All 10 routes return 200"
+
+# What worked well
+successes:
+  - description: "Adding to existing discovery blueprint rather than creating new blueprint"
+    why: "Graduation is knowledge discovery — it belongs with learnings and patterns. Avoided creating a 4th blueprint for a single route."
+
+# Challenges encountered
+challenges:
+  # No challenges — straightforward following existing patterns
+
+# Decisions made during this task
+decisions:
+  - decision: "Place graduation in Knowledge nav group between Learnings and Patterns"
+    rationale: "Graduation is the bridge between learnings and practices — positioning it after learnings makes the flow intuitive"
+    alternatives_rejected: ["Separate Govern section", "Submenu under Learnings"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "web/templates/graduation.html"
+  modified:
+    - "web/blueprints/discovery.py"
+    - "web/shared.py"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, graduation-pipeline, flask-blueprint, htmx, knowledge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 371
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-088-add-graduation-pipeline-to-watchtower-ui.md
+generated_by: context-agent
