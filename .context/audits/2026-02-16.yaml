@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-16
-timestamp: 2026-02-16T22:14:18Z
+timestamp: 2026-02-16T22:40:38Z
 summary:
-  pass: 19
-  warn: 3
+  pass: 20
+  warn: 2
   fail: 0
 findings:
   - level: PASS
@@ -15,13 +15,13 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
-  - level: PASS
-    check: "All 1 active tasks are valid"
   - level: WARN
-    check: "Task T-087 has short description (46 chars)"
-    mitigation: "Expand description in T-087-build-graduation-pipeline-fw-promote--g-.md"
+    check: "No active tasks found"
+    mitigation: "Create tasks for ongoing work"
   - level: PASS
-    check: "Git traceability: 96% (183/189 commits reference tasks)"
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 96% (193/199 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -42,13 +42,12 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 86 episodic summaries have quality content"
+    check: "All 90 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
-  - level: WARN
-    check: "Gap trigger(s) fired — review gaps register"
-    mitigation: "Review .context/project/gaps.yaml and decide: build or simplify"
+  - level: PASS
+    check: "Gaps register: 1 watching, no triggers fired"
   - level: PASS
     check: "Graduation pipeline: 21 learnings, no promotions ready yet"
