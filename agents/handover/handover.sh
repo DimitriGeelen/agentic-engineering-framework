@@ -16,6 +16,47 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
+_resolve_commit_task() {
+    # If task already set by --task flag, keep it
+    if [ -n "$COMMIT_TASK" ]; then return; fi
+    # Check if T-012 exists (framework's own handover task)
+    if [ -n "$(ls "$TASKS_DIR/active/T-012-"*.md "$TASKS_DIR/completed/T-012-"*.md 2>/dev/null)" ]; then
+        COMMIT_TASK="T-012"
+        return
+    fi
+    # Look for any task with "handover" in its slug
+    local handover_task
+    handover_task=$(ls "$TASKS_DIR/active/"*handover*.md "$TASKS_DIR/completed/"*handover*.md 2>/dev/null | head -1)
+    if [ -n "$handover_task" ]; then
+        COMMIT_TASK=$(basename "$handover_task" | grep -oE "T-[0-9]+" | head -1)
+        if [ -n "$COMMIT_TASK" ]; then return; fi
+    fi
+    # Auto-create a handover maintenance task for this project
+    if [ -x "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" ]; then
+        local create_output
+        create_output=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
+            --name "Session handover maintenance" --type build --owner agent \
+            --description "Ongoing task for session handover commits" 2>&1)
+        COMMIT_TASK=$(echo "$create_output" | grep "^ID:" | awk '{print $2}')
+        if [ -n "$COMMIT_TASK" ]; then
+            echo -e "${CYAN}Auto-created handover task: $COMMIT_TASK${NC}"
+            return
+        fi
+    fi
+    # Use focused task as last resort
+    local focus_file="$CONTEXT_DIR/working/focus.yaml"
+    if [ -f "$focus_file" ]; then
+        local focused
+        focused=$(grep '^task_id:' "$focus_file" 2>/dev/null | awk '{print $2}' | tr -d '"')
+        if [ -n "$focused" ] && [ "$focused" != "null" ] && [ "$focused" != "none" ]; then
+            COMMIT_TASK="$focused"
+            return
+        fi
+    fi
+    # Absolute fallback — use T-000 placeholder (will pass hook regex)
+    COMMIT_TASK="T-000"
+}
+
 # Parse arguments
 SESSION_ID=""
 AUTO_COMMIT=true
@@ -143,7 +184,7 @@ EMERGENCY_EOF
 
     # Auto-commit
     if [ "$AUTO_COMMIT" = true ]; then
-        COMMIT_TASK="${COMMIT_TASK:-T-012}"
+        _resolve_commit_task
         GIT_AGENT=""
         if [ -f "$FRAMEWORK_ROOT/agents/git/git.sh" ]; then
             GIT_AGENT="$FRAMEWORK_ROOT/agents/git/git.sh"
@@ -210,7 +251,7 @@ CHECKPOINT_EOF
 
     # Auto-commit
     if [ "$AUTO_COMMIT" = true ]; then
-        COMMIT_TASK="${COMMIT_TASK:-T-012}"
+        _resolve_commit_task
         GIT_AGENT=""
         if [ -f "$FRAMEWORK_ROOT/agents/git/git.sh" ]; then
             GIT_AGENT="$FRAMEWORK_ROOT/agents/git/git.sh"
@@ -543,10 +584,7 @@ echo "Latest: $HANDOVER_DIR/LATEST.md"
 
 # Handle auto-commit
 if [ "$AUTO_COMMIT" = true ]; then
-    # Default to T-012 (handover agent task) if not specified
-    if [ -z "$COMMIT_TASK" ]; then
-        COMMIT_TASK="T-012"
-    fi
+    _resolve_commit_task
 
     echo ""
     echo -e "${YELLOW}Auto-committing handover...${NC}"
@@ -574,7 +612,8 @@ else
     echo -e "${YELLOW}Next steps:${NC}"
     echo "1. Edit $HANDOVER_FILE to fill in [TODO] sections"
     echo "2. Review and refine the synthesis"
-    echo "3. Commit with: ./agents/git/git.sh commit -m \"T-012: Session handover $SESSION_ID\""
+    _resolve_commit_task
+    echo "3. Commit with: fw git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
     echo ""
     echo -e "${CYAN}Key sections to complete:${NC}"
     echo "- Where We Are (summary)"

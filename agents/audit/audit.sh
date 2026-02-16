@@ -385,14 +385,17 @@ echo ""
 # ============================================
 echo "=== LEARNING CAPTURE CHECKS ==="
 
-# Check practices file
-if [ -f "$PROJECT_ROOT/015-Practices.md" ]; then
-    practice_count=$(grep -c "^## P-[0-9]" "$PROJECT_ROOT/015-Practices.md" 2>/dev/null || echo 0)
+# Check practices file (supports both 015-Practices.md and practices.yaml)
+PRACTICES_MD="$PROJECT_ROOT/015-Practices.md"
+PRACTICES_YAML="$PROJECT_ROOT/.context/project/practices.yaml"
+
+if [ -f "$PRACTICES_MD" ]; then
+    practice_count=$(grep -c "^## P-[0-9]" "$PRACTICES_MD" 2>/dev/null || echo 0)
     if [ "$practice_count" -gt 0 ]; then
-        pass "Practices documented: $practice_count practice(s)"
+        pass "Practices documented: $practice_count practice(s) in 015-Practices.md"
 
         # Check if practices have origins
-        practices_with_origin=$(grep -c "Origin:" "$PROJECT_ROOT/015-Practices.md" 2>/dev/null || echo 0)
+        practices_with_origin=$(grep -c "Origin:" "$PRACTICES_MD" 2>/dev/null || echo 0)
         if [ "$practices_with_origin" -ge "$practice_count" ]; then
             pass "All practices have traceable origins"
 
@@ -410,7 +413,7 @@ if [ -f "$PROJECT_ROOT/015-Practices.md" ]; then
                         orphan_origins=$((orphan_origins + 1))
                     fi
                 fi
-            done < <(grep "Origin:" "$PROJECT_ROOT/015-Practices.md" 2>/dev/null)
+            done < <(grep "Origin:" "$PRACTICES_MD" 2>/dev/null)
 
             if [ "$orphan_origins" -eq 0 ]; then
                 pass "All practice origins resolve to actual tasks"
@@ -425,10 +428,22 @@ if [ -f "$PROJECT_ROOT/015-Practices.md" ]; then
              "015-Practices.md exists but no P-XXX entries" \
              "Extract learnings from completed tasks into practices"
     fi
+elif [ -f "$PRACTICES_YAML" ]; then
+    practice_count=$(python3 -c "
+import yaml
+with open('$PRACTICES_YAML') as f:
+    data = yaml.safe_load(f) or {}
+print(len(data.get('practices', [])))
+" 2>/dev/null || echo 0)
+    if [ "$practice_count" -gt 0 ]; then
+        pass "Practices documented: $practice_count practice(s) in practices.yaml"
+    else
+        pass "Practices file exists (practices.yaml, no entries yet)"
+    fi
 else
     warn "Practices file missing" \
-         "015-Practices.md not found" \
-         "Create practices file to capture learnings"
+         "No 015-Practices.md or .context/project/practices.yaml found" \
+         "Run: fw init --force (or create practices file manually)"
 fi
 
 echo ""
@@ -818,7 +833,7 @@ else
         done
         echo ""
         echo -e "${CYAN}Consider creating a practice to address these recurring issues.${NC}"
-        echo "Run: Review 015-Practices.md and add preventive practice"
+        echo "Run: fw context add-learning \"description\" --task T-XXX"
     else
         echo -e "${GREEN}No repeated issues detected across ${#past_audits[@]} previous audit(s).${NC}"
     fi

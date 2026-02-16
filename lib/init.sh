@@ -83,10 +83,14 @@ do_init() {
     echo -e "  ${GREEN}OK${NC}  .tasks/{active,completed,templates}"
     echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers}"
 
-    # --- Copy task template ---
+    # --- Copy task templates ---
     if [ -f "$FRAMEWORK_ROOT/.tasks/templates/default.md" ]; then
         cp "$FRAMEWORK_ROOT/.tasks/templates/default.md" "$target_dir/.tasks/templates/default.md"
-        echo -e "  ${GREEN}OK${NC}  Task template"
+        echo -e "  ${GREEN}OK${NC}  Task template (default)"
+    fi
+    if [ -f "$FRAMEWORK_ROOT/.tasks/templates/inception.md" ]; then
+        cp "$FRAMEWORK_ROOT/.tasks/templates/inception.md" "$target_dir/.tasks/templates/inception.md"
+        echo -e "  ${GREEN}OK${NC}  Task template (inception)"
     fi
 
     # --- Create .framework.yaml ---
@@ -124,6 +128,15 @@ DYAML
 learnings: []
 LYAML
         echo -e "  ${GREEN}OK${NC}  learnings.yaml"
+    fi
+
+    if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "$force" = true ]; then
+        cat > "$target_dir/.context/project/practices.yaml" << 'PRAML'
+# Project Practices - Graduated learnings (3+ applications)
+# Promoted via: fw promote L-XXX --name "practice name" --directive D1
+practices: []
+PRAML
+        echo -e "  ${GREEN}OK${NC}  practices.yaml"
     fi
 
     # --- Generate provider config ---
