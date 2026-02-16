@@ -4,6 +4,14 @@ Run: python3 agents/context/test-tier0-patterns.py
 """
 import re, sys
 
+
+def strip_quotes(cmd):
+    """Strip quoted string contents to avoid false positives."""
+    cmd = re.sub(r"'[^']*'", "''", cmd)
+    cmd = re.sub(r'"[^"]*"', '""', cmd)
+    return cmd
+
+
 PATTERNS = [
     (r'\bgit\s+push\b[^;|&]*(-f\b|--force\b|--force-with-lease\b)',
      'FORCE PUSH'),
@@ -34,8 +42,9 @@ PATTERNS = [
 ]
 
 def check(cmd):
+    stripped = strip_quotes(cmd)
     for pattern, desc in PATTERNS:
-        if re.search(pattern, cmd):
+        if re.search(pattern, stripped):
             return desc
     return "SAFE"
 
@@ -82,6 +91,11 @@ ALLOW_TESTS = [
     "kubectl get pods",
     "python3 test.py",
     "npm install",
+    # False positive prevention — patterns inside quoted strings
+    'git commit -m "Detects git push --force and rm -rf /"',
+    "git commit -m 'Add DROP TABLE detection'",
+    'echo "git reset --hard is dangerous"',
+    "echo 'docker system prune removes everything'",
 ]
 
 passed = 0

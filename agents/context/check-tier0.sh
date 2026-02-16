@@ -58,6 +58,18 @@ import re, sys
 
 command = sys.stdin.read().strip()
 
+# Strip quoted string contents to avoid false positives on commit messages,
+# echo arguments, heredocs, and embedded Python/test code.
+# This is an approximation — perfect shell parsing is impossible in regex.
+def strip_quotes(cmd):
+    # Remove single-quoted string contents (no escaping inside single quotes in sh)
+    cmd = re.sub(r\"'[^']*'\", \"''\", cmd)
+    # Remove double-quoted string contents (approximate)
+    cmd = re.sub(r'\"[^\"]*\"', '\"\"', cmd)
+    return cmd
+
+command_stripped = strip_quotes(command)
+
 # Tier 0 destructive patterns — high confidence, low false positive
 # Each tuple: (regex_pattern, risk_description)
 PATTERNS = [
@@ -98,7 +110,7 @@ PATTERNS = [
 ]
 
 for pattern, description in PATTERNS:
-    if re.search(pattern, command):
+    if re.search(pattern, command_stripped):
         print(f'BLOCKED|{description}')
         sys.exit(0)
 
