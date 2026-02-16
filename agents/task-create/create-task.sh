@@ -17,7 +17,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Valid workflow types
-VALID_TYPES="specification design build test refactor decommission"
+VALID_TYPES="specification design build test refactor decommission inception"
 
 # Parse arguments
 NAME=""
@@ -120,8 +120,28 @@ else
     STATUS="captured"
 fi
 
-# Create task file
-cat > "$FILEPATH" << EOF
+# Select template content based on workflow type
+if [ "$WORKFLOW_TYPE" = "inception" ] && [ -f "$TASKS_DIR/templates/inception.md" ]; then
+    # Use inception template — replace placeholders via Python (safe with special chars)
+    python3 -c "
+import sys
+with open('$TASKS_DIR/templates/inception.md') as f:
+    t = f.read()
+t = t.replace('id: T-XXX', 'id: $TASK_ID')
+t = t.replace('name:', 'name: ' + sys.argv[1], 1)
+t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
+t = t.replace('status: captured', 'status: $STATUS')
+t = t.replace('owner:', 'owner: $OWNER', 1)
+t = t.replace('created:', 'created: $TIMESTAMP', 1)
+t = t.replace('last_update:', 'last_update: $TIMESTAMP', 1)
+t = t.replace('# T-XXX: [Inception Name]', '# $TASK_ID: ' + sys.argv[1])
+t = t.replace('[Chronological log', '### $TIMESTAMP — task-created [task-create-agent]\n- **Action:** Created inception task\n- **Output:** $FILEPATH\n- **Context:** Initial task creation\n\n[Chronological log')
+with open('$FILEPATH', 'w') as f:
+    f.write(t)
+" "$NAME" "$DESCRIPTION"
+else
+    # Default template
+    cat > "$FILEPATH" << EOF
 ---
 id: $TASK_ID
 name: $NAME
@@ -148,6 +168,7 @@ date_finished: null
 - **Output:** $FILEPATH
 - **Context:** Initial task creation
 EOF
+fi
 
 # Validate the created file
 if ! grep -q "^id: $TASK_ID" "$FILEPATH"; then

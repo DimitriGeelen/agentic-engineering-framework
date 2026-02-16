@@ -1,0 +1,9 @@
+# Assumptions Register
+# Key assumptions made during inception phases
+# Tracks validation status and evidence
+#
+# Lifecycle: untested -> validated | invalidated
+# Validated assumptions become project knowledge
+# Invalidated assumptions become gaps or risks
+
+assumptions: []
