@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-075: Fix structural issues in project memory
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+#
+# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# must be filled in by a human or LLM before this episodic is useful.
+#
+# To enrich: Read the source task file and fill in the TODO sections.
+# When done: Change enrichment_status from "pending" to "complete"
+# ============================================================================
+# Generated: 2026-02-16T19:31:48Z
+
+task_id: T-075
+task_name: "Fix structural issues in project memory"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-15T16:57:20Z
+completed: 2026-02-16T19:31:48Z
+duration_days: 1
+updates_count: 3
+
+# Summary
+summary: |
+  Fixed 6 structural data quality issues identified in the T-072 context and memory audit, including duplicate learning removal, missing field completion, reordering, and evidence counter updates. These fixes improved the integrity and usability of project memory storage, ensuring that reference counts accurately reflect the number of supporting tasks and that all decision metadata is complete.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "Removed duplicate L-013 entry and filled TBD application field"
+  - "Added missing L-014 stale cache learning"
+  - "Reordered D-008 decision to correct sequence"
+  - "Added missing alternatives_rejected and directives_served to D-011"
+  - "Updated G-005 evidence counts from (8,7) to (14,9) learnings and practices"
+  - "Updated 9 practice application counters from 0 to actual values reflecting task usage"
+  - "Fixed L-009 application text (tail size fix)"
+
+# What worked well
+successes:
+  - description: "Systematic T-072 audit provided clear specification of all 6 issues to fix"
+    why: "Audit report gave exact locations, field names, and expected values; reduced ambiguity and rework"
+  - description: "Evidence counter updates based on task cross-reference preserved relationship integrity"
+    why: "Counting actual task references rather than estimating ensures counters remain synchronized with reality"
+  - description: "Unified approach to fixing practice application counters across all 9 practices"
+    why: "Consistent methodology ensured no practices were overlooked and updates were uniform"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "Preserve L-013 content during consolidation rather than discarding the duplicate"
+    rationale: "Learning content was valuable; consolidation ensures no knowledge is lost while eliminating data redundancy"
+    alternatives_rejected: ["Discard duplicate and lose learning context"]
+  - decision: "Use actual task cross-references to count practice applications rather than estimates"
+    rationale: "Task counts are observable facts in the codebase; estimation introduces drift over time"
+    alternatives_rejected: ["Use estimated counts", "Leave counters at zero"]
+  - decision: "Update all 9 practice counters simultaneously to maintain consistency"
+    rationale: "Batch updates reduce risk of partial synchronization and ensure uniform data quality"
+    alternatives_rejected: ["Update counters incrementally", "Defer some practice updates"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "/.context/project/learnings.yaml (deduplicated L-013, added L-014, fixed application fields)"
+    - "/.context/project/decisions.yaml (reordered D-008, added D-011 alternatives_rejected and directives_served)"
+    - "/.context/project/glossary.yaml (updated G-005 evidence counts to 14 learnings, 9 practices)"
+    - "/.context/project/practices.yaml (updated application counters for 9 practices, fixed L-009 application text)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-075-fix-structural-issues-in-project-memory.md
+generated_by: context-agent

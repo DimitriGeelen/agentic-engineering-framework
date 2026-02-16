@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-074: Backfill project memory from episodics
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+#
+# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# must be filled in by a human or LLM before this episodic is useful.
+#
+# To enrich: Read the source task file and fill in the TODO sections.
+# When done: Change enrichment_status from "pending" to "complete"
+# ============================================================================
+# Generated: 2026-02-16T19:35:14Z
+
+task_id: T-074
+task_name: "Backfill project memory from episodics"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-15T16:56:22Z
+completed: 2026-02-16T19:35:14Z
+duration_days: 1
+updates_count: 3
+
+# Summary
+summary: |
+  Successfully backfilled project memory from enriched episodic files, promoting 7 decisions (D-012 to D-018), 3 patterns (FP-005, SP-004, WP-002), and 6 learnings (L-015 to L-020) to project memory storage. This work increased project memory task coverage from 35% (25/71 tasks) to 45%+, improving the knowledge base available for future decision-making and pattern recognition across the framework.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "Promoted 7 decisions from episodics to decisions.yaml"
+  - "Added 3 patterns to project patterns"
+  - "Backfilled 6 learnings from experiments (T-022, T-024, T-025)"
+  - "Improved project memory coverage from 35% to 45%+"
+
+# What worked well
+successes:
+  - description: "Systematic review of enriched episodic files enabled high-fidelity promotion of decisions and patterns"
+    why: "Episodic enrichment captured full context including rationale and alternatives, making promotion straightforward and accurate"
+  - description: "Linking decisions to source tasks (T-045, T-051, T-054, T-061, T-063, T-064, T-067) ensured traceability"
+    why: "Clear source traceability builds confidence in promoted knowledge and enables future validation"
+  - description: "Experiment protocol workflow pattern validated against 3 source tasks improved pattern robustness"
+    why: "Multiple sources reduce bias and increase likelihood that pattern will apply to future scenarios"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "Promote Flask+htmx architectural pattern and files-as-truth design principle from T-045"
+    rationale: "These patterns emerged consistently in web UI work and represent validated architectural decisions"
+    alternatives_rejected: []
+  - decision: "Standardize 4-status task lifecycle (captured→started-work→issues→work-completed) as canonical pattern from T-051"
+    rationale: "Lifecycle pattern proven across multiple tasks and documented in T-051 implementation"
+    alternatives_rejected: []
+  - decision: "Add plugin authority failure pattern (FP-005) from T-061 governance work"
+    rationale: "T-061 identified failure mode where plugins override framework rules; critical to prevent recurrence"
+    alternatives_rejected: []
+  - decision: "Promote PreToolUse enforcement gate decision from T-063 and fw work-on decision from T-064"
+    rationale: "These decisions address core authority model enforcement and are now proven in practice"
+    alternatives_rejected: []
+  - decision: "Add 3-tier plugin architecture pattern from T-067 audit"
+    rationale: "Plugin audit uncovered consistent 3-tier pattern (compatibility, integration, governance) across plugin ecosystem"
+    alternatives_rejected: []
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "/.context/project/decisions.yaml (added D-012 to D-018)"
+    - "/.context/project/patterns.yaml (added FP-005, SP-004, WP-002)"
+    - "/.context/project/learnings.yaml (added L-015 to L-020)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-074-backfill-project-memory-from-episodics.md
+generated_by: context-agent
