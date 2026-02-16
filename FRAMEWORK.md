@@ -72,6 +72,7 @@ Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed
 | Test | Verify correctness |
 | Refactor | Improve existing code |
 | Decommission | Remove obsolete code |
+| Inception | Explore problem space, validate assumptions, go/no-go decision |
 
 ## Enforcement Tiers
 

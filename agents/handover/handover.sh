@@ -409,6 +409,25 @@ EOF
 done
 shopt -u nullglob
 
+# Add inception section if any inception tasks exist
+inception_count=0
+shopt -s nullglob
+for f in "$TASKS_DIR/active"/*.md; do
+    [ -f "$f" ] || continue
+    if grep -q "workflow_type: inception" "$f" 2>/dev/null; then
+        inception_count=$((inception_count + 1))
+    fi
+done
+shopt -u nullglob
+if [ "$inception_count" -gt 0 ]; then
+    {
+        echo "## Inception Phases"
+        echo ""
+        echo "**$inception_count inception task(s) pending decision** — run \`fw inception status\` for details."
+        echo ""
+    } >> "$HANDOVER_FILE"
+fi
+
 # Add observation inbox status if any pending
 if [ "$PENDING_OBS" -gt 0 ]; then
     {

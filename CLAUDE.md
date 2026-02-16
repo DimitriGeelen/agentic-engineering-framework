@@ -83,6 +83,7 @@ Captured → Started Work ↔ Issues → Work Completed
 | Test | Verify correctness | Test Agent |
 | Refactor | Improve existing code | Coder Agent |
 | Decommission | Remove obsolete code | Deployment Agent |
+| Inception | Explore problem, validate assumptions, go/no-go | Human / Any Agent |
 
 ## Enforcement Tiers
 
@@ -411,6 +412,12 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |
+| **Start inception** | **`fw inception start "name"`** | Creates inception task + sets focus |
+| Inception status | `fw inception status` | Lists active inception tasks |
+| Inception decide | `fw inception decide T-XXX go` | Records go/no-go with rationale |
+| Add assumption | `fw assumption add "..." --task T-XXX` | Register assumption |
+| Validate assumption | `fw assumption validate A-XXX --evidence "..."` | Mark validated |
+| List assumptions | `fw assumption list` | Show all by status |
 
 ## Session End Protocol
 
