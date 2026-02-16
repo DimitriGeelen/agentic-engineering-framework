@@ -1,11 +1,14 @@
 """Inception blueprint — inception task tracking and assumption registry."""
 
 import re as re_mod
+import subprocess
 
 import yaml
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, redirect, request, url_for
 
 from web.shared import PROJECT_ROOT, render_page
+
+FW_BIN = str(PROJECT_ROOT / "bin" / "fw")
 
 bp = Blueprint("inception", __name__)
 
@@ -192,6 +195,60 @@ def inception_detail(task_id):
         episodic=episodic,
         task_id=task_id,
     )
+
+
+@bp.route("/inception/<task_id>/add-assumption", methods=["POST"])
+def add_assumption(task_id):
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+    statement = request.form.get("statement", "").strip()
+    if not statement:
+        abort(400)
+    subprocess.run(
+        [FW_BIN, "assumption", "add", statement, "--task", task_id],
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        timeout=10,
+    )
+    return redirect(url_for("inception.inception_detail", task_id=task_id))
+
+
+@bp.route("/assumptions/<assumption_id>/resolve", methods=["POST"])
+def resolve_assumption(assumption_id):
+    if not re_mod.match(r"^A-\d{3}$", assumption_id):
+        abort(404)
+    action = request.form.get("action", "").strip().lower()
+    evidence = request.form.get("evidence", "").strip()
+    if action not in ("validate", "invalidate") or not evidence:
+        abort(400)
+    subprocess.run(
+        [FW_BIN, "assumption", action, assumption_id, "--evidence", evidence],
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        timeout=10,
+    )
+    # Redirect back to referrer or assumptions list
+    referrer = request.form.get("redirect", "")
+    if referrer:
+        return redirect(referrer)
+    return redirect(url_for("inception.assumptions_list"))
+
+
+@bp.route("/inception/<task_id>/decide", methods=["POST"])
+def record_decision(task_id):
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+    decision = request.form.get("decision", "").strip().lower()
+    rationale = request.form.get("rationale", "").strip()
+    if decision not in ("go", "no-go", "defer") or not rationale:
+        abort(400)
+    subprocess.run(
+        [FW_BIN, "inception", "decide", task_id, decision, "--rationale", rationale],
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        timeout=10,
+    )
+    return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 
 @bp.route("/assumptions")

@@ -53,6 +53,37 @@
     .status-validated { background-color: #2e7d32; color: white; }
     .status-invalidated { background-color: #c62828; color: white; }
     .status-untested { background-color: #f9a825; color: #333; }
+    .action-btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 4px;
+        cursor: pointer;
+        border: 1px solid;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .btn-validate { background: transparent; color: #2e7d32; border-color: #2e7d32; }
+    .btn-validate:hover { background: #2e7d32; color: white; }
+    .btn-invalidate { background: transparent; color: #c62828; border-color: #c62828; }
+    .btn-invalidate:hover { background: #c62828; color: white; }
+    .evidence-form {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .evidence-form input[type="text"] {
+        margin-bottom: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        flex: 1;
+    }
+    .evidence-form button {
+        margin-bottom: 0;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
     .health-bar {
         display: flex;
         height: 8px;
@@ -118,6 +149,7 @@
             <th scope="col">Status</th>
             <th scope="col">Task</th>
             <th scope="col">Created</th>
+            <th scope="col">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -154,6 +186,20 @@
                 {% endif %}
             </td>
             <td><small>{{ a.created | default('') }}</small></td>
+            <td>
+                {% if a.status == 'untested' %}
+                <details>
+                    <summary style="font-size: 0.75rem; cursor: pointer;">Resolve</summary>
+                    <form action="/assumptions/{{ a.id }}/resolve" method="post" class="evidence-form">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="redirect" value="/assumptions">
+                        <input type="text" name="evidence" placeholder="Evidence..." required>
+                        <button type="submit" name="action" value="validate" class="action-btn btn-validate">Validate</button>
+                        <button type="submit" name="action" value="invalidate" class="action-btn btn-invalidate">Invalidate</button>
+                    </form>
+                </details>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
