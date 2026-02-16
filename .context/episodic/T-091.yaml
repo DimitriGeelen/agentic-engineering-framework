@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-091: Stress-test fw init on external project
+# ============================================================================
+# Generated: 2026-02-16T22:49:00Z
+
+task_id: T-091
+task_name: "Stress-test fw init on external project"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:41:04Z
+completed: 2026-02-16T22:49:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Stress-tested fw init on a fresh external project (/tmp/test-project). Found and
+  fixed 3 bugs: (1) handover agent hardcoded T-012 which doesn't exist in external
+  projects — added _resolve_commit_task() that auto-creates a handover task, (2) fw init
+  didn't create practices.yaml — added to init, (3) audit only checked 015-Practices.md
+  — added practices.yaml support as alternative.
+
+# Key outcomes
+outcomes:
+  - "fw init creates practices.yaml and inception template for external projects"
+  - "Handover agent auto-creates handover task if T-012 doesn't exist"
+  - "Audit supports both 015-Practices.md and practices.yaml"
+  - "Full lifecycle tested: init → context init → task create → commit → complete → handover"
+  - "Git hooks correctly block commits without task references"
+
+# What worked well
+successes:
+  - description: "Testing on a real external project directory"
+    why: "Immediately surfaced 3 bugs that were invisible when running inside the framework repo"
+
+# Challenges encountered
+challenges:
+  - description: "ls pipeline returning true on empty output"
+    resolution: "Changed from 'ls | head -1 > /dev/null' to '[ -n \"$(ls ...)\" ]' — head returns 0 on empty input"
+    learning: "Pipeline exit codes come from the last command, not the first"
+  - description: "Handover hardcoded T-012 for all projects"
+    resolution: "Created _resolve_commit_task() with fallback chain: T-012 → *handover* slug → auto-create → focused task → T-000"
+
+# Decisions made during this task
+decisions:
+  - decision: "Auto-create handover task for external projects rather than use FW prefix"
+    rationale: "FW prefix bypasses commit-msg hook validation. Auto-creating a real task keeps traceability intact."
+    alternatives_rejected: ["FW: prefix (fails hook)", "Skip commit validation for handover"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "agents/handover/handover.sh"
+    - "agents/audit/audit.sh"
+    - "lib/init.sh"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, fw-init, external-project, handover, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 3
+  lines_added: 85
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-091-stress-test-fw-init-on-external-project.md
+generated_by: context-agent
