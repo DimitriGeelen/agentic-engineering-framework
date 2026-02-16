@@ -116,4 +116,52 @@ learnings:
     context: "checkpoint.sh cached transcript path across sessions. It validated file existence but not recency, causing it to read an old session's token count while the current session hit 177K tokens with zero warnings."
     application: "Removed transcript cache entirely. Always find most-recent file (~33ms, acceptable). Safety systems must never cache identity-dependent state across session boundaries."
 
+  - id: L-015
+    learning: "Context recovery after compaction takes ~16 seconds using resume agent + handover — but LATEST.md must be committed immediately or it will be stale with TODO placeholders"
+    source: E-003
+    task: T-022
+    date: 2026-02-13
+    context: "Experiment simulated compaction by pretending to start fresh. Resume agent showed focus task, status, and uncommitted changes. Handover 'Where We Are' section provided full session state."
+    application: "Always commit handover immediately after generation. Resume agent warns when LATEST.md contains TODO placeholders."
+
+  - id: L-016
+    learning: "Enforcement gates are load-bearing, not theater — removing the git commit-msg hook caused traceability to drop from 97% to 88% in just 5 commits"
+    source: E-004
+    task: T-024
+    date: 2026-02-13
+    context: "Experiment E-004 disabled git hook, made 5 commits without task refs, measured degradation. Audit detected both the missing hook AND the traceability drop."
+    application: "Never remove enforcement gates without evidence they are redundant. Preventive (hooks) and detective (audit) controls serve different roles — both are needed."
+
+  - id: L-017
+    learning: "Healing loop classifier is keyword-order-dependent — check specific types before generic"
+    source: E-005
+    task: T-025
+    date: 2026-02-13
+    context: "Two tasks with similar dependency failures tested the loop. Classifier checked 'code' before 'dependency', causing misclassification. Pattern matching lacks relevance filtering."
+    application: "When building keyword classifiers, order from most-specific to least-specific. Add type-based filtering to pattern matching."
+
+  - id: L-018
+    learning: "Evidence-driven lifecycle decisions are obvious and debate-free — 50 tasks of data made removing 'refined' and 'blocked' statuses a no-brainer"
+    source: T-051
+    task: T-051
+    date: 2026-02-14
+    context: "Both 'refined' and 'blocked' had exactly 0 uses across 50 tasks. 'Issues' covered all blocking scenarios. Data eliminated speculation entirely."
+    application: "Defer lifecycle and process decisions until sufficient usage data exists. Let the evidence decide."
+
+  - id: L-019
+    learning: "Splitting a monolithic file into blueprints/modules eliminates concurrent-modification risk when multiple agents work simultaneously"
+    source: T-054
+    task: T-054
+    date: 2026-02-14
+    context: "web/app.py was 700 lines and had been modified by 4 agents simultaneously. Splitting into 4 blueprints meant each agent could work on an independent file."
+    application: "When a file exceeds ~500 lines or is modified by multiple agents, split by domain."
+
+  - id: L-020
+    learning: "Making compliance easier than non-compliance is the most effective enforcement strategy — fw work-on reduced 3 manual steps to 1"
+    source: T-064
+    task: T-064
+    date: 2026-02-15
+    context: "T-061 identified compliance friction as a key bypass vector. The 3-step manual process was more work than just skipping. fw work-on collapses this to one command."
+    application: "When enforcement is being bypassed due to friction, reduce the compliant path to fewer steps than the non-compliant path."
+
 candidates: []

@@ -43,6 +43,16 @@ failure_patterns:
     occurrences_at_step: 0
     last_escalated: null
 
+  - id: FP-005
+    pattern: "Plugin authority override bypasses framework governance"
+    description: "Third-party plugins using authority-claiming language ('YOU MUST', 'BEFORE ANY response') override CLAUDE.md framework rules. 0/20 loaded skills referenced task creation. Caused 3 task-first bypasses in a single session."
+    learned_from: T-061
+    date_learned: 2026-02-15
+    mitigation: "Three-layer fix: (1) Instruction precedence in CLAUDE.md (T-062), (2) PreToolUse structural gate (T-063), (3) Plugin audit tool for ongoing detection (T-067)"
+    escalation_step: D
+    occurrences_at_step: 0
+    last_escalated: null
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"
@@ -74,6 +84,16 @@ success_patterns:
     occurrences_at_step: 0
     last_escalated: null
 
+  - id: SP-004
+    pattern: "Graduated enforcement: detect-then-prevent"
+    description: "Build detective controls first (audit), then preventive controls (hooks/gates). Evidence from detective controls justifies and shapes preventive ones."
+    learned_from: T-061
+    date_learned: 2026-02-15
+    context: "T-061 investigation (detective) provided evidence for T-063 PreToolUse hook (preventive). T-024 experiment proved both layers are needed — audit alone catches drift, hooks alone prevent it."
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
+
 antifragile_patterns:
   - id: AF-001
     pattern: "Failure-driven capability acquisition"
@@ -95,6 +115,16 @@ workflow_patterns:
     learned_from: T-013
     date_learned: 2026-02-13
     example: "T-003 and T-004 absorbed into T-013 (git agent)"
+    escalation_step: A
+    occurrences_at_step: 0
+    last_escalated: null
+
+  - id: WP-002
+    pattern: "Experiment protocol: baseline-disable-measure-restore"
+    description: "To validate that an enforcement mechanism is load-bearing: establish a baseline metric, disable the mechanism, perform operations, measure degradation, restore the mechanism. Produces unambiguous evidence."
+    learned_from: T-024
+    date_learned: 2026-02-13
+    example: "E-004 disabled git hook, made 5 commits, traceability dropped 97% to 88%. Proved hooks are load-bearing, not theater."
     escalation_step: A
     occurrences_at_step: 0
     last_escalated: null

@@ -105,3 +105,74 @@ decisions:
     alternatives_rejected:
       - "Accept plugin override as feature (violates Authority Model)"
       - "Remove all plugins (loses productivity gains)"
+
+  - id: D-012
+    decision: "Flask + htmx + Pico CSS with no build step for web UI"
+    date: 2026-02-14
+    task: T-045
+    rationale: "Portability directive (D4) — no provider lock-in, no npm ecosystem. Single 14kb JS file, vendored dependencies, works fully offline."
+    directives_served: [D3, D4]
+    alternatives_rejected:
+      - "React/Next.js"
+      - "Svelte"
+      - "Plain CGI"
+
+  - id: D-013
+    decision: "Files as source of truth for web UI — no database"
+    date: 2026-02-14
+    task: T-045
+    rationale: "Framework already stores everything in YAML/MD — adding a DB duplicates data and creates sync problems"
+    directives_served: [D2, D4]
+    alternatives_rejected:
+      - "SQLite cache"
+      - "Redis"
+
+  - id: D-014
+    decision: "4-status task lifecycle: captured, started-work, issues, work-completed"
+    date: 2026-02-14
+    task: T-051
+    rationale: "Evidence from 50 tasks showed 0 uses of 'refined' and 0 uses of 'blocked'. Issues covered all blocking scenarios. Transition validation added to prevent drift."
+    directives_served: [D2, D3]
+    alternatives_rejected:
+      - "Keep all 6 statuses and add validation only"
+
+  - id: D-015
+    decision: "4 Flask blueprints (core, tasks, timeline, discovery) instead of monolith or per-route"
+    date: 2026-02-14
+    task: T-054
+    rationale: "Routes naturally cluster by domain. Eliminates concurrent-modification risk (4 agents modifying app.py simultaneously). 13 separate files would be over-engineered."
+    directives_served: [D2, D3]
+    alternatives_rejected:
+      - "Keep monolithic app.py"
+      - "1 blueprint per route"
+
+  - id: D-016
+    decision: "PreToolUse hook blocks Write/Edit only, not Bash"
+    date: 2026-02-15
+    task: T-063
+    rationale: "Bash is needed for task creation itself; blocking it creates a chicken-and-egg problem where you cannot create the task needed to unblock tools"
+    directives_served: [D1, D2]
+    alternatives_rejected:
+      - "Block all tools (unworkable — cannot create tasks)"
+      - "Block nothing (status quo — no enforcement)"
+
+  - id: D-017
+    decision: "fw work-on accepts both name strings (create new) and task IDs (resume existing) in one command"
+    date: 2026-02-15
+    task: T-064
+    rationale: "Need to both create new tasks and resume existing ones; two separate commands would add friction. Single command makes compliance easier than non-compliance."
+    directives_served: [D2, D3]
+    alternatives_rejected:
+      - "Separate commands for create vs resume"
+      - "Only support task IDs (no inline creation)"
+
+  - id: D-018
+    decision: "Three-tier plugin classification (AWARE/SILENT/BYPASSING) with dual output: fw doctor check + standalone fw plugin-audit"
+    date: 2026-02-15
+    task: T-067
+    rationale: "SILENT plugins (MCP tools, LSPs) need no action — only BYPASSING needs attention. Doctor check catches issues routinely; standalone gives detailed actionable output."
+    directives_served: [D1, D2]
+    alternatives_rejected:
+      - "Binary AWARE/UNAWARE (too noisy — most plugins are harmlessly silent)"
+      - "Doctor-only (no detail)"
+      - "Standalone-only (not discoverable)"
