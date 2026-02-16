@@ -164,4 +164,12 @@ learnings:
     context: "T-061 identified compliance friction as a key bypass vector. The 3-step manual process was more work than just skipping. fw work-on collapses this to one command."
     application: "When enforcement is being bypassed due to friction, reduce the compliant path to fewer steps than the non-compliant path."
 
+
+  - id: L-021
+    learning: "yaml.safe_load converts ISO timestamps to datetime objects — handle both str and datetime when parsing"
+    source: backfill debugging
+    task: T-086
+    date: 2026-02-16
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

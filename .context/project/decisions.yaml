@@ -176,3 +176,15 @@ decisions:
       - "Binary AWARE/UNAWARE (too noisy — most plugins are harmlessly silent)"
       - "Doctor-only (no detail)"
       - "Standalone-only (not discoverable)"
+
+  - id: D-019
+    decision: "Tags over hierarchy for task grouping"
+    date: 2026-02-16
+    task: T-086
+    rationale: "Flat tags are simpler, more flexible, and avoid taxonomy design. Epics/features add brittle coupling for single-agent work."
+
+  - id: D-020
+    decision: "Passive git metrics over manual estimation"
+    date: 2026-02-16
+    task: T-086
+    rationale: "Manual story points meaningless for AI agents. Git data is objective. Learning loop comes from comparing similar completed tasks via fw metrics predict."
