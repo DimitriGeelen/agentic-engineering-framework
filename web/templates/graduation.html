@@ -1,0 +1,246 @@
+<style>
+.grad-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.grad-stat {
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: var(--pico-card-background-color);
+}
+.grad-stat .number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    display: block;
+}
+.grad-stat .label {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--pico-card-background-color);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+.pipeline-stage {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+.pipeline-arrow {
+    color: var(--pico-muted-color);
+    font-size: 1.2rem;
+}
+.stage-learning { background: #2c3e50; color: #ecf0f1; }
+.stage-practice { background: #27ae60; color: #fff; }
+.stage-directive { background: #2980b9; color: #fff; }
+.filter-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.filter-row a {
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    background: var(--pico-card-background-color);
+    color: var(--pico-color);
+}
+.filter-row a.active {
+    background: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.status-promoted { background: #27ae60; color: #fff; }
+.status-ready { background: #f39c12; color: #fff; }
+.status-almost { background: #3498db; color: #fff; }
+.status-building { background: #7f8c8d; color: #fff; }
+.app-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+.app-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.app-dot.filled { background: #27ae60; }
+.app-dot.empty { background: #34495e; opacity: 0.3; }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Knowledge graduation pipeline: learnings mature into practices through evidence.</p>
+</div>
+
+<!-- Pipeline flow visualization -->
+<div class="pipeline-flow">
+    <div class="pipeline-stage stage-learning">
+        Learnings<br><small>{{ summary.total }}</small>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-stage" style="background: #f39c12; color: #fff;">
+        Ready<br><small>{{ summary.ready }}</small>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-stage stage-practice">
+        Practices<br><small>{{ summary.practices }}</small>
+    </div>
+    <div class="pipeline-arrow">&rarr;</div>
+    <div class="pipeline-stage stage-directive">
+        Directives<br><small>4</small>
+    </div>
+</div>
+
+<!-- Summary stats -->
+<div class="grad-summary">
+    <div class="grad-stat">
+        <span class="number">{{ summary.total }}</span>
+        <span class="label">Learnings</span>
+    </div>
+    <div class="grad-stat">
+        <span class="number" style="color: #f39c12;">{{ summary.ready }}</span>
+        <span class="label">Ready</span>
+    </div>
+    <div class="grad-stat">
+        <span class="number" style="color: #3498db;">{{ summary.almost }}</span>
+        <span class="label">Almost</span>
+    </div>
+    <div class="grad-stat">
+        <span class="number" style="color: #7f8c8d;">{{ summary.building }}</span>
+        <span class="label">Building</span>
+    </div>
+    <div class="grad-stat">
+        <span class="number" style="color: #27ae60;">{{ summary.promoted }}</span>
+        <span class="label">Promoted</span>
+    </div>
+    <div class="grad-stat">
+        <span class="number" style="color: #27ae60;">{{ summary.practices }}</span>
+        <span class="label">Practices</span>
+    </div>
+</div>
+
+<!-- Filter row -->
+<div class="filter-row">
+    <a href="/graduation" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{{ 'active' if not status_filter }}">All</a>
+    <a href="/graduation?status=ready" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{{ 'active' if status_filter == 'ready' }}">Ready ({{ summary.ready }})</a>
+    <a href="/graduation?status=almost" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{{ 'active' if status_filter == 'almost' }}">Almost ({{ summary.almost }})</a>
+    <a href="/graduation?status=building" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{{ 'active' if status_filter == 'building' }}">Building ({{ summary.building }})</a>
+    <a href="/graduation?status=promoted" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{{ 'active' if status_filter == 'promoted' }}">Promoted ({{ summary.promoted }})</a>
+</div>
+
+<!-- Pipeline table -->
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Learning</th>
+            <th scope="col">Apps</th>
+            <th scope="col">Status</th>
+            <th scope="col">Task</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for l in pipeline %}
+        <tr>
+            <td><code>{{ l.id }}</code></td>
+            <td>
+                {{ l.learning }}
+                {% if l.context %}
+                <br><small style="color: var(--pico-muted-color);">{{ l.context }}</small>
+                {% endif %}
+            </td>
+            <td>
+                <div class="app-bar" title="{{ l._apps }} application(s), 3 needed">
+                    {% for i in range(3) %}
+                    <span class="app-dot {{ 'filled' if i < l._apps else 'empty' }}"></span>
+                    {% endfor %}
+                    {% if l._apps > 3 %}
+                    <small style="margin-left: 2px;">+{{ l._apps - 3 }}</small>
+                    {% endif %}
+                </div>
+            </td>
+            <td>
+                <span class="status-badge status-{{ l._status }}">{{ l._status }}</span>
+            </td>
+            <td>
+                {% if l.task %}<code>{{ l.task }}</code>{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not pipeline %}
+<p style="color: var(--pico-muted-color); font-style: italic;">No learnings match the current filter.</p>
+{% endif %}
+
+<!-- Promotion instructions -->
+<details style="margin-top: 1.5rem;">
+    <summary><strong>How to promote a learning</strong></summary>
+    <div style="padding: 0.5rem 0;">
+        <p>Graduation criteria from <code>015-Practices.md</code>:</p>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Evidence Needed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Task Update</td>
+                    <td>Learning</td>
+                    <td>Same pattern in 2+ tasks</td>
+                </tr>
+                <tr>
+                    <td>Learning</td>
+                    <td>Practice</td>
+                    <td>3+ successful applications, traces to directive</td>
+                </tr>
+                <tr>
+                    <td>Practice</td>
+                    <td>Directive</td>
+                    <td>Universal, stable 6+ months, human decision</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>CLI commands:</p>
+        <pre><code>fw promote suggest                    # Show promotion candidates
+fw promote L-008 --name "..." --directive D1  # Execute promotion</code></pre>
+        <p style="color: var(--pico-muted-color); font-size: 0.85rem;">
+            Application counts are based on explicit <code>L-XXX</code> references in task updates and episodic memories.
+            Reference learnings when you apply them to build evidence.
+        </p>
+    </div>
+</details>

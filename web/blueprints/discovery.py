@@ -1,5 +1,6 @@
-"""Discovery blueprint — decisions, learnings, gaps, search."""
+"""Discovery blueprint — decisions, learnings, gaps, search, graduation."""
 
+import os
 import re as re_mod
 import subprocess
 
@@ -218,4 +219,123 @@ def patterns():
         all_count=len(all_patterns),
         type_filter=type_filter,
         type_counts=type_counts,
+    )
+
+
+def _count_applications(learning_id):
+    """Count how many distinct tasks/episodics reference this learning ID."""
+    referenced = set()
+
+    # Search episodics
+    ep_dir = PROJECT_ROOT / ".context" / "episodic"
+    if ep_dir.exists():
+        for f in ep_dir.glob("T-*.yaml"):
+            try:
+                content = f.read_text()
+                if learning_id in content:
+                    referenced.add(f.stem)
+            except Exception:
+                continue
+
+    # Search tasks
+    for subdir in ["active", "completed"]:
+        td = PROJECT_ROOT / ".tasks" / subdir
+        if not td.exists():
+            continue
+        for f in td.glob("T-*.md"):
+            try:
+                content = f.read_text()
+                if learning_id in content:
+                    m = re_mod.match(r"(T-\d+)", f.name)
+                    if m:
+                        referenced.add(m.group(1))
+            except Exception:
+                continue
+
+    # Search patterns
+    pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
+    extra = 0
+    if pf.exists():
+        try:
+            if learning_id in pf.read_text():
+                extra = 1
+        except Exception:
+            pass
+
+    return len(referenced) + extra
+
+
+@bp.route("/graduation")
+def graduation():
+    # Load learnings
+    learnings_list = []
+    lf = PROJECT_ROOT / ".context" / "project" / "learnings.yaml"
+    if lf.exists():
+        with open(lf) as f:
+            data = yaml.safe_load(f)
+        if data:
+            learnings_list = data.get("learnings", [])
+
+    # Load practices
+    practices_list = []
+    prf = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
+    if prf.exists():
+        with open(prf) as f:
+            data = yaml.safe_load(f)
+        if data:
+            practices_list = data.get("practices", [])
+
+    # Build promoted set
+    promoted_ids = set()
+    for p in practices_list:
+        origin = p.get("derived_from", "")
+        if isinstance(origin, str) and origin.startswith("L-"):
+            promoted_ids.add(origin)
+        elif isinstance(origin, list):
+            for o in origin:
+                if str(o).startswith("L-"):
+                    promoted_ids.add(str(o))
+        if p.get("promoted_from"):
+            promoted_ids.add(p["promoted_from"])
+
+    # Compute application counts and status for each learning
+    pipeline = []
+    for l in learnings_list:
+        lid = l.get("id", "")
+        apps = _count_applications(lid)
+        if lid in promoted_ids:
+            status = "promoted"
+        elif apps >= 3:
+            status = "ready"
+        elif apps >= 2:
+            status = "almost"
+        else:
+            status = "building"
+        pipeline.append({
+            **l,
+            "_apps": apps,
+            "_status": status,
+        })
+
+    # Summary stats
+    summary = {
+        "total": len(learnings_list),
+        "promoted": len([p for p in pipeline if p["_status"] == "promoted"]),
+        "ready": len([p for p in pipeline if p["_status"] == "ready"]),
+        "almost": len([p for p in pipeline if p["_status"] == "almost"]),
+        "building": len([p for p in pipeline if p["_status"] == "building"]),
+        "practices": len(practices_list),
+    }
+
+    status_filter = request.args.get("status", "").strip().lower()
+    if status_filter and status_filter in ("promoted", "ready", "almost", "building"):
+        pipeline = [p for p in pipeline if p["_status"] == status_filter]
+
+    return render_page(
+        "graduation.html",
+        page_title="Graduation",
+        pipeline=pipeline,
+        practices=practices_list,
+        summary=summary,
+        status_filter=status_filter,
     )
