@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-087: Build graduation pipeline (fw promote) — G-005
+# ============================================================================
+# Generated: 2026-02-16T22:14:53Z
+
+task_id: T-087
+task_name: "Build graduation pipeline (fw promote) — G-005"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:11:53Z
+completed: 2026-02-16T22:14:53Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Built the graduation pipeline tooling that G-005 had been tracking since the
+  framework reached 20+ learnings. The fw promote command provides three subcommands:
+  suggest (finds learnings with 3+ applications), status (shows all learnings with
+  application counts), and L-XXX (promotes a specific learning to practice). Application
+  counting is deliberate — it only counts explicit L-XXX references in episodics and
+  tasks, encouraging agents to consciously apply and reference learnings. Added audit
+  section 9 to check for promotion candidates. Closed G-005.
+
+# Key outcomes
+outcomes:
+  - "fw promote suggest — identifies promotion candidates"
+  - "fw promote status — shows pipeline state"
+  - "fw promote L-XXX — executes promotion to practice"
+  - "Audit section 9 checks graduation at 20+ learnings"
+  - "G-005 closed after being watched since 2026-02-14"
+
+# What worked well
+successes:
+  - description: "Single Python heredoc for all subcommands"
+    why: "Kept the implementation in one file (lib/promote.sh) with Python doing the heavy lifting — consistent with other fw lib scripts"
+  - description: "Deliberate application counting over fuzzy matching"
+    why: "Only counts explicit L-XXX references, which means promotions are evidence-based and agents are incentivized to reference learnings when applying them"
+
+# Challenges encountered
+challenges:
+  # No significant challenges
+
+# Decisions made during this task
+decisions:
+  - decision: "Count only explicit L-XXX references for application evidence"
+    rationale: "Fuzzy text matching would produce false positives. Deliberate referencing creates a conscious learning-application loop."
+    alternatives_rejected: ["Fuzzy text matching", "Keyword similarity scoring"]
+  - decision: "Auto-assign directive when not specified"
+    rationale: "Reduce friction — most learnings can be traced to a directive automatically via their source practice"
+    alternatives_rejected: ["Always require --directive flag"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "lib/promote.sh"
+  modified:
+    - "bin/fw"
+    - "agents/audit/audit.sh"
+    - ".context/project/gaps.yaml"
+    - "CLAUDE.md"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [graduation-pipeline, practices, learnings, cli, audit, G-005]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 9
+  lines_added: 414
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-087-build-graduation-pipeline-fw-promote--g-.md
+generated_by: context-agent
