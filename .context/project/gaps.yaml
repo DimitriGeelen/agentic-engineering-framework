@@ -124,9 +124,6 @@ gaps:
       no detection of "this learning appeared in 3 tasks."
     spec_reference: "015-Practices.md §Graduation Criteria"
     severity: medium
-    why_not_now: >
-      Manual graduation works at current scale (8 learnings, 7 practices).
-      Automation ROI kicks in at 30+ learnings when manual tracking breaks.
     decision_trigger: >
       learnings.yaml has 20+ entries, OR a learning is missed that was
       applicable (context loss causes repeat failure).
@@ -134,14 +131,20 @@ gaps:
       type: auto
       check: "grep -c '^  - id: L-' $PROJECT_ROOT/.context/project/learnings.yaml 2>/dev/null"
       threshold: ">= 20 means scale warrants automation"
-    evidence_needed: "Scale (20+ learnings) or missed application"
-    evidence_collected: "Currently 14 learnings, 9 practices. Approaching scale threshold. T-072 audit found promotion pipeline broken (35% task coverage in project memory)."
-    alternative_outcome: >
-      If scale never comes → keep manual. Document that the pipeline
-      is a thinking tool, not an automation target.
-    status: watching
+    trigger_fired: true
+    trigger_fired_date: 2026-02-16
+    resolution: >
+      Built fw promote (T-087) with three commands:
+      - fw promote suggest: identifies learnings with 3+ applications
+      - fw promote status: shows all learnings with application counts
+      - fw promote L-XXX: promotes a learning to a practice
+      Audit section 9 checks for promotion candidates when 20+ learnings exist.
+      Application counting is deliberate (explicit L-XXX references) not fuzzy.
+    evidence_collected: "21 learnings, 9 practices. Trigger threshold (20) exceeded. T-087 built full tooling."
+    status: closed
     created: 2026-02-14
-    last_reviewed: 2026-02-14
+    last_reviewed: 2026-02-16
+    closed_date: 2026-02-16
 
   - id: G-006
     title: "Only default.md template exists"

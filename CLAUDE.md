@@ -402,6 +402,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Health check | `fw doctor` | _(fw only)_ |
 | View metrics | `fw metrics` | `./metrics.sh` |
 | Predict effort | `fw metrics predict --type build` | _(fw only)_ |
+| Promotion candidates | `fw promote suggest` | _(fw only)_ |
+| Promote learning | `fw promote L-XXX --name "..." --directive D1` | _(fw only)_ |
+| Graduation status | `fw promote status` | _(fw only)_ |
 | Initialize session | `fw context init` | `./agents/context/context.sh init` |
 | Set focus | `fw context focus T-XXX` | `./agents/context/context.sh focus T-XXX` |
 | Context status | `fw context status` | `./agents/context/context.sh status` |

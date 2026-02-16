@@ -116,6 +116,7 @@ show_help() {
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
     echo -e "  ${GREEN}inception${NC} <cmd>      Inception phase workflow (start, status, decide)"
     echo -e "  ${GREEN}assumption${NC} <cmd>    Assumption tracking (add, validate, invalidate, list)"
+    echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
@@ -622,6 +623,10 @@ case "$cmd" in
     inception)
         source "$FW_LIB_DIR/inception.sh"
         do_inception "$@"
+        ;;
+    promote)
+        source "$FW_LIB_DIR/promote.sh"
+        do_promote "$@"
         ;;
     assumption)
         source "$FW_LIB_DIR/assumption.sh"

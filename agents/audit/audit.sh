@@ -694,6 +694,37 @@ fi
 echo ""
 
 # ============================================
+# SECTION 9: GRADUATION PIPELINE CHECK
+# ============================================
+echo "=== GRADUATION PIPELINE CHECKS ==="
+
+LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
+if [ -f "$LEARNINGS_FILE" ]; then
+    learning_count=$(grep -c '^  - id: L-' "$LEARNINGS_FILE" 2>/dev/null) || learning_count=0
+
+    if [ "$learning_count" -ge 20 ]; then
+        # Check for promotion candidates using fw promote
+        promote_output=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/bin/fw" promote suggest 2>/dev/null) || true
+        ready_count=$(echo "$promote_output" | grep -c "ready for promotion" 2>/dev/null) || ready_count=0
+        almost_count=$(echo "$promote_output" | grep -c "^  " 2>/dev/null) || almost_count=0
+
+        if echo "$promote_output" | grep -q "No learnings currently meet"; then
+            pass "Graduation pipeline: $learning_count learnings, no promotions ready yet"
+        else
+            warn "Learnings ready for promotion — review graduation candidates" \
+                 "$learning_count learnings, promotion candidates available" \
+                 "Run: fw promote suggest"
+        fi
+    else
+        pass "Graduation pipeline: $learning_count learnings (threshold: 20)"
+    fi
+else
+    echo -e "  ${CYAN}SKIP${NC}  No learnings file"
+fi
+
+echo ""
+
+# ============================================
 # SUMMARY
 # ============================================
 echo "=== SUMMARY ==="
