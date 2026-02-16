@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-16
-timestamp: 2026-02-16T20:06:42Z
+timestamp: 2026-02-16T21:15:38Z
 summary:
-  pass: 17
-  warn: 4
+  pass: 16
+  warn: 14
   fail: 0
 findings:
   - level: PASS
@@ -16,12 +16,40 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: WARN
-    check: "No active tasks found"
-    mitigation: "Create tasks for ongoing work"
+    check: "Task T-084-test-inception-template.md missing field: id"
+    mitigation: "Add 'id:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: name"
+    mitigation: "Add 'name:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: description"
+    mitigation: "Add 'description:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: status"
+    mitigation: "Add 'status:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: workflow_type"
+    mitigation: "Add 'workflow_type:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: owner"
+    mitigation: "Add 'owner:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: created"
+    mitigation: "Add 'created:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing field: last_update"
+    mitigation: "Add 'last_update:' to task frontmatter"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md has invalid status: "
+    mitigation: "Valid statuses: captured refined started-work issues blocked work-completed"
+  - level: WARN
+    check: "Task T-084-test-inception-template.md missing Updates section"
+    mitigation: "Add '## Updates' section to track work"
+  - level: WARN
+    check: "Task  has short description (0 chars)"
+    mitigation: "Expand description in T-084-test-inception-template.md"
   - level: PASS
-    check: "All active tasks meet quality thresholds"
-  - level: PASS
-    check: "Git traceability: 96% (165/171 commits reference tasks)"
+    check: "Git traceability: 96% (171/177 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -42,7 +70,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: WARN
-    check: "3 episodics have empty or TODO summaries"
+    check: "7 episodics have empty or TODO summaries"
     mitigation: "Fill in summary field with actual task description"
   - level: PASS
     check: "No orphaned episodic files"
