@@ -1,73 +1,81 @@
 # ============================================================================
 # EPISODIC MEMORY - T-061: Investigate task-first rule bypass vectors
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
-#
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
-# must be filled in by a human or LLM before this episodic is useful.
-#
-# To enrich: Read the source task file and fill in the TODO sections.
-# When done: Change enrichment_status from "pending" to "complete"
-# ============================================================================
 # Generated: 2026-02-15T08:34:59Z
 
 task_id: T-061
 task_name: "Investigate task-first rule bypass vectors"
 workflow_type: specification
-enrichment_status: pending  # Change to "complete" after enrichment
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-15T08:27:10Z
 completed: 2026-02-15T08:34:59Z
 duration_days: 0
-updates_count: 2
+updates_count: 4
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
-# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-061-investigate-task-first-rule-bypass-vecto.md]
+  Deep multi-agent investigation into how the task-first rule ("Nothing gets done
+  without a task") gets bypassed. Scanned all 20 loaded skills and confirmed the
+  hypothesis: plugins are the primary bypass vector. Zero skills reference task
+  creation, while several use authority-claiming language ("YOU MUST", "BEFORE ANY
+  response") that overrides CLAUDE.md framework rules. This triggered G-001's
+  decision condition and spawned five remediation tasks (T-062 through T-067).
 
-# Key outcomes (from acceptance criteria)
+# Key outcomes
 outcomes:
-  - "Task completed"
+  - "Confirmed 0/20 plugin skills are task-aware"
+  - "Identified 3 bypass vectors: plugin authority override, no structural enforcement, compliance friction"
+  - "Triggered G-001 decision condition — build enforcement"
+  - "Spawned T-062 through T-067 as remediation arc"
+  - "Created D-011 decision and L-013 learning"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
-# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "Multi-agent investigation approach — used 4 parallel agents to scan different aspects simultaneously"
+    why: "Comprehensive coverage in minimal time; each agent focused on one bypass vector category"
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
-challenges:
-  # No challenges detected (or add manually)
+challenges: []
 
-# Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
-# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
+# Decisions made
 decisions:
-  - decision: "[TODO: Extract from Design Record]"
-    rationale: "[TODO: Why this choice?]"
-    alternatives_rejected: []
+  - decision: "Build enforcement rather than simplify the spec (D-011)"
+    rationale: "Bypass is real (happened 3 times in one session), not theoretical. Structural enforcement is the only reliable fix."
+    alternatives_rejected:
+      - "Simplify spec to match reality"
+      - "Rely on agent discipline"
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
 artifacts:
-  created:
-    - "[TODO: List files created]"
-  modified: []
+  created: []
+  modified:
+    - ".context/project/decisions.yaml (D-011)"
+    - ".context/project/learnings.yaml (L-013)"
+    - ".context/project/gaps.yaml (G-001 trigger fired)"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: []
+  spawned:
+    - T-062
+    - T-063
+    - T-064
+    - T-065
+    - T-066
+    - T-067
 
 # Tags for retrieval
-tags: []
+tags:
+  - governance
+  - enforcement
+  - task-first
+  - investigation
+  - D2-reliability
+  - P-002
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-061-investigate-task-first-rule-bypass-vecto.md
+source_file: .tasks/completed/T-061-investigate-task-first-rule-bypass-vecto.md
 generated_by: context-agent
