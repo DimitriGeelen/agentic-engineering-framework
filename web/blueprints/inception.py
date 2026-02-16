@@ -3,10 +3,23 @@
 import re as re_mod
 import subprocess
 
+import markdown2
 import yaml
 from flask import Blueprint, abort, redirect, request, url_for
+from markupsafe import Markup
 
 from web.shared import PROJECT_ROOT, render_page
+
+
+def _md(text):
+    """Convert markdown text to safe HTML."""
+    if not text:
+        return ""
+    # Ensure blank line before lists so markdown parser recognizes them
+    text = re_mod.sub(r"([^\n])\n(- )", r"\1\n\n\2", text)
+    text = re_mod.sub(r"([^\n])\n(\d+\. )", r"\1\n\n\2", text)
+    html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
+    return Markup(html)
 
 FW_BIN = str(PROJECT_ROOT / "bin" / "fw")
 
@@ -161,15 +174,15 @@ def inception_detail(task_id):
     if not task_data or task_data.get("workflow_type") != "inception":
         abort(404)
 
-    # Extract sections
+    # Extract sections and render markdown to HTML
     sections = {
-        "problem": _extract_section(task_body, "Problem Statement"),
-        "assumptions_text": _extract_section(task_body, "Assumptions"),
-        "exploration": _extract_section(task_body, "Exploration Plan"),
-        "scope": _extract_section(task_body, "Scope Fence"),
-        "criteria": _extract_section(task_body, "Go/No-Go Criteria"),
-        "decision": _extract_section(task_body, "Decision"),
-        "updates": _extract_section(task_body, "Updates"),
+        "problem": _md(_extract_section(task_body, "Problem Statement")),
+        "assumptions_text": _md(_extract_section(task_body, "Assumptions")),
+        "exploration": _md(_extract_section(task_body, "Exploration Plan")),
+        "scope": _md(_extract_section(task_body, "Scope Fence")),
+        "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
+        "decision": _md(_extract_section(task_body, "Decision")),
+        "updates": _md(_extract_section(task_body, "Updates")),
     }
 
     decision_state = _extract_decision(task_body)
