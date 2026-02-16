@@ -69,6 +69,14 @@ tags:
   - handover
   - integration
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 5
+  lines_added: 133
+  lines_removed: 0
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-083-integrate-inception-with-episodics-hando.md
 generated_by: context-agent

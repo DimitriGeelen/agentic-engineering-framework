@@ -103,6 +103,14 @@ tags:
   - "transcript-parsing"
   - "P-009"
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 340
+  commits: 3
+  files_changed: 7
+  lines_added: 188
+  lines_removed: 20
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-078-fix-checkpoint-blind-spot-and-recover-lo.md
 generated_by: context-agent

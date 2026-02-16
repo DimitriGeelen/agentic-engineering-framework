@@ -68,6 +68,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, resume, D1-antifragility, experiment]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 8
+  lines_added: 445
+  lines_removed: 83
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-022-run-e003-context-recovery-test.md
 generated_by: context-agent

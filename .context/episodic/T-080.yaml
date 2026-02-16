@@ -92,6 +92,14 @@ tags:
   - "python-string-handling"
   - "sed-alternative"
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 8
+  lines_added: 282
+  lines_removed: 3
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-080-create-inception-task-template-and-assum.md
 generated_by: context-agent

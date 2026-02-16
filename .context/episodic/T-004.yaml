@@ -69,6 +69,14 @@ related_tasks:
 # Tags for retrieval
 tags: [git-agent, D2-reliability, bootstrap, build, P-002]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 93
+  commits: 2
+  files_changed: 8
+  lines_added: 442
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-004-install-pre-commit-hook-for-task-enforce.md
 generated_by: context-agent

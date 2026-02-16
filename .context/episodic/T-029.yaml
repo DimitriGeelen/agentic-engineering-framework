@@ -29,3 +29,11 @@ generated_by: context-agent
 created: '2026-02-13T12:00:00Z'
 completed: '2026-02-13T12:00:00Z'
 duration_days: 0
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 5
+  lines_added: 83
+  lines_removed: 3

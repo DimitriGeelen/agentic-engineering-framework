@@ -87,6 +87,14 @@ tags:
   - "evidence-based-validation"
   - "python-argv-bug"
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 7
+  lines_added: 794
+  lines_removed: 0
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-082-build-fw-assumption-cli-commands.md
 generated_by: context-agent

@@ -65,6 +65,14 @@ tags:
   - D2
   - fix
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 12
+  lines_added: 440
+  lines_removed: 302
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-056-enrich-9-remaining-episodic-skeletons.md
 generated_by: context-agent

@@ -75,6 +75,14 @@ related_tasks:
 # Tags for retrieval
 tags: [cli, D3-usability, D4-portability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 554
+  commits: 1
+  files_changed: 4
+  lines_added: 344
+  lines_removed: 41
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-034-create-initsh-for-project-bootstrapping.md
 generated_by: context-agent

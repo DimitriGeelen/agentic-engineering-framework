@@ -74,6 +74,14 @@ related_tasks:
 # Tags for retrieval
 tags: [audit, task-system, D2-reliability, D3-usability, bootstrap, build, P-006]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 30
+  commits: 2
+  files_changed: 12
+  lines_added: 1135
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-002-create-core-agents.md
 generated_by: context-agent

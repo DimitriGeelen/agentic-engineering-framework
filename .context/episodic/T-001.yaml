@@ -77,6 +77,14 @@ tags:
   - bootstrap
   - specification
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1464
+  commits: 7
+  files_changed: 21
+  lines_added: 1388
+  lines_removed: 130
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-001-define-success-metrics.md
 generated_by: context-agent

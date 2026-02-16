@@ -91,6 +91,14 @@ related_tasks:
 # Tags for retrieval
 tags: [watchtower, scan-engine, cockpit, intelligence-layer, phase-4, detection-rules]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 847
+  commits: 24
+  files_changed: 42
+  lines_added: 11078
+  lines_removed: 279
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-058-watchtower-command-center---design-spec.md
 generated_by: context-agent

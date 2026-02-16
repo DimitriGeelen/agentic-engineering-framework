@@ -80,6 +80,14 @@ related_tasks:
 # Tags for retrieval
 tags: []
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1598
+  commits: 2
+  files_changed: 10
+  lines_added: 248
+  lines_removed: 13
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-074-backfill-project-memory-from-episodics.md
 generated_by: context-agent

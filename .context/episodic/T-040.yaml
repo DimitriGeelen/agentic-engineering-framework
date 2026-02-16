@@ -68,6 +68,14 @@ related_tasks:
 # Tags for retrieval
 tags: [audit, handover, observation, D2-reliability, integration]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 6
+  lines_added: 330
+  lines_removed: 0
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-040-wire-fw-note-into-audit-handover-and-ses.md
 generated_by: claude-code

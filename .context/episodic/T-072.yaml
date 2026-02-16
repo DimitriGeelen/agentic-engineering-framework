@@ -69,6 +69,14 @@ related_tasks:
 # Tags for retrieval
 tags: [audit, context-fabric, project-memory, quality, meta]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 350
+  commits: 1
+  files_changed: 13
+  lines_added: 557
+  lines_removed: 75
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-072-audit-task-and-memory-quality.md
 generated_by: context-agent

@@ -75,6 +75,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, resume, D2-reliability, build, P-006]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 9
+  lines_added: 713
+  lines_removed: 31
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-020-create-resume-agent.md
 generated_by: context-agent

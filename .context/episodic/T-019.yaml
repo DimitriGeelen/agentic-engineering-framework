@@ -72,6 +72,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, handover, D2-reliability, build, P-002]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 3
+  files_changed: 11
+  lines_added: 568
+  lines_removed: 65
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-019-add-handover-gate-for-episodic-completen.md
 generated_by: context-agent

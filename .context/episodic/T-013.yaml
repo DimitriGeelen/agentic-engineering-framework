@@ -74,3 +74,11 @@ tags: [git-agent, D2-reliability, build, P-002]
 enrichment_status: complete
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-013-create-git-agent-for-local-operations.md
 generated_by: context-agent
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 90
+  commits: 4
+  files_changed: 17
+  lines_added: 1396
+  lines_removed: 165

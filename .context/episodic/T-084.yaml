@@ -76,6 +76,14 @@ related_tasks:
 # Tags for retrieval
 tags: ["inception", "watchtower", "ui", "go-decision", "architecture-review", "assumptions"]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 201
+  lines_removed: 17
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-084-watchtower-inception-ui-integration.md
 generated_by: context-agent

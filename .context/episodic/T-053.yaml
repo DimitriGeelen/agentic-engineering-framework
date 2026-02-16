@@ -64,6 +64,14 @@ tags:
   - fix
   - P-004
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 16
+  lines_added: 458
+  lines_removed: 163
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-053-fix-fw-task-list-default-display.md
 generated_by: context-agent

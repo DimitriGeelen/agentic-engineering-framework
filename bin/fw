@@ -140,6 +140,7 @@ show_help() {
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
+    echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
     echo -e "  ${GREEN}test${NC}                  Run framework test suite"
     echo -e "  ${GREEN}version${NC}              Show version information"
     echo -e "  ${GREEN}help${NC}                 Show this help"
@@ -1173,14 +1174,164 @@ PYSEARCH
         do_doctor "$@"
         ;;
     metrics)
-        if [ -f "$PROJECT_ROOT/metrics.sh" ]; then
-            exec "$PROJECT_ROOT/metrics.sh" "$@"
-        elif [ -f "$FRAMEWORK_ROOT/metrics.sh" ]; then
-            exec "$FRAMEWORK_ROOT/metrics.sh" "$@"
-        else
-            echo -e "${RED}ERROR: metrics.sh not found${NC}" >&2
-            exit 1
-        fi
+        metrics_subcmd="${1:-dashboard}"
+        case "$metrics_subcmd" in
+            predict|estimate)
+                shift
+                python3 - "$@" << 'PYPREDICT'
+import os, yaml, sys
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+ep_dir = os.path.join(project_root, '.context', 'episodic')
+
+# Parse args
+type_filter = None
+tag_filter = None
+args = sys.argv[1:]
+i = 0
+while i < len(args):
+    if args[i] == '--type' and i + 1 < len(args):
+        type_filter = args[i+1]; i += 2
+    elif args[i] == '--tag' and i + 1 < len(args):
+        tag_filter = args[i+1]; i += 2
+    elif args[i] in ('-h', '--help'):
+        print(f'{BOLD}fw metrics predict{NC} — Estimate task effort from historical data')
+        print()
+        print('Options:')
+        print('  --type <type>   Filter by workflow type (build, test, refactor, ...)')
+        print('  --tag <tag>     Filter by tag')
+        print()
+        print('Examples:')
+        print('  fw metrics predict --type build')
+        print('  fw metrics predict --tag watchtower')
+        sys.exit(0)
+    else:
+        i += 1
+
+if not os.path.isdir(ep_dir):
+    print(f'{YELLOW}No episodic memory found{NC}')
+    sys.exit(0)
+
+# Load all episodics with metrics
+episodes = []
+for fn in os.listdir(ep_dir):
+    if not fn.endswith('.yaml') or fn == 'TEMPLATE.yaml':
+        continue
+    try:
+        with open(os.path.join(ep_dir, fn)) as f:
+            ep = yaml.safe_load(f)
+        if not isinstance(ep, dict) or not ep.get('metrics'):
+            continue
+        episodes.append(ep)
+    except:
+        continue
+
+# Apply filters
+if type_filter:
+    episodes = [e for e in episodes if e.get('workflow_type', '').lower() == type_filter.lower()]
+if tag_filter:
+    episodes = [e for e in episodes if tag_filter.lower() in [str(t).lower() for t in e.get('tags', [])]]
+
+if not episodes:
+    label = ''
+    if type_filter:
+        label += f' type={type_filter}'
+    if tag_filter:
+        label += f' tag={tag_filter}'
+    print(f'{YELLOW}No episodic data with metrics found{label}{NC}')
+    print(f'Complete more tasks to build prediction data.')
+    sys.exit(0)
+
+# Compute statistics
+def stats(values):
+    values = [v for v in values if v is not None and v > 0]
+    if not values:
+        return {'min': 0, 'max': 0, 'avg': 0, 'median': 0, 'count': 0}
+    values.sort()
+    n = len(values)
+    median = values[n // 2] if n % 2 == 1 else (values[n // 2 - 1] + values[n // 2]) / 2
+    return {
+        'min': min(values),
+        'max': max(values),
+        'avg': sum(values) / n,
+        'median': median,
+        'count': n,
+    }
+
+minutes = stats([e.get('metrics', {}).get('wall_clock_minutes', 0) for e in episodes])
+commits = stats([e.get('metrics', {}).get('commits', 0) for e in episodes])
+lines_a = stats([e.get('metrics', {}).get('lines_added', 0) for e in episodes])
+lines_r = stats([e.get('metrics', {}).get('lines_removed', 0) for e in episodes])
+files_c = stats([e.get('metrics', {}).get('files_changed', 0) for e in episodes])
+
+label = ''
+if type_filter:
+    label += f' type={type_filter}'
+if tag_filter:
+    label += f' tag={tag_filter}'
+if not label:
+    label = ' (all types)'
+
+print(f'{BOLD}Effort Prediction{NC}{label} — {len(episodes)} completed task(s)')
+print()
+print(f'  {"Metric":<20} {"Min":>8} {"Median":>8} {"Avg":>8} {"Max":>8}  {"(n)":>4}')
+print(f'  {chr(9472)*20} {chr(9472)*8} {chr(9472)*8} {chr(9472)*8} {chr(9472)*8}  {chr(9472)*4}')
+
+def row(label, s, unit=''):
+    if s['count'] == 0:
+        print(f'  {label:<20} {"—":>8} {"—":>8} {"—":>8} {"—":>8}  {0:>4}')
+    else:
+        print(f'  {label:<20} {s["min"]:>7.0f}{unit} {s["median"]:>7.0f}{unit} {s["avg"]:>7.0f}{unit} {s["max"]:>7.0f}{unit}  {s["count"]:>4}')
+
+row('Wall clock (min)', minutes)
+row('Commits', commits)
+row('Files changed', files_c)
+row('Lines added', lines_a)
+row('Lines removed', lines_r)
+
+print()
+print(f'{BOLD}Prediction:{NC} A similar task will likely take:')
+if minutes['count'] > 0:
+    print(f'  {GREEN}~{minutes["median"]:.0f} min{NC} (median), {minutes["avg"]:.0f} min (avg)')
+    print(f'  ~{commits["median"]:.0f} commits, ~{lines_a["median"]:.0f} lines added')
+else:
+    print(f'  {YELLOW}Insufficient data{NC}')
+
+print()
+print(f'{CYAN}Source tasks:{NC}')
+for e in episodes:
+    m = e.get('metrics', {})
+    tid = e.get('task_id', '?')
+    name = e.get('task_name', '?')
+    wmin = m.get('wall_clock_minutes', 0)
+    cmt = m.get('commits', 0)
+    la = m.get('lines_added', 0)
+    print(f'  {tid}: {name} ({wmin}min, {cmt} commits, +{la} lines)')
+PYPREDICT
+                ;;
+            dashboard|"")
+                shift 2>/dev/null || true
+                if [ -f "$PROJECT_ROOT/metrics.sh" ]; then
+                    exec "$PROJECT_ROOT/metrics.sh" "$@"
+                elif [ -f "$FRAMEWORK_ROOT/metrics.sh" ]; then
+                    exec "$FRAMEWORK_ROOT/metrics.sh" "$@"
+                else
+                    echo -e "${RED}ERROR: metrics.sh not found${NC}" >&2
+                    exit 1
+                fi
+                ;;
+            *)
+                echo -e "${RED}Unknown metrics subcommand: $metrics_subcmd${NC}" >&2
+                echo "Subcommands: dashboard, predict" >&2
+                exit 1
+                ;;
+        esac
         ;;
     test)
         if ! python3 -c "import pytest" 2>/dev/null; then

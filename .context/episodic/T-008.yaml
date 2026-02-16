@@ -72,6 +72,14 @@ related_tasks:
 # Tags for retrieval
 tags: [metrics, D2-reliability, build, P-004]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 195
+  commits: 4
+  files_changed: 21
+  lines_added: 1178
+  lines_removed: 167
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-008-add-quality-metrics-to-metricssh.md
 generated_by: context-agent

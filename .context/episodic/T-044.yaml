@@ -69,6 +69,14 @@ tags:
   - D2
   - build
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53
+  commits: 1
+  files_changed: 85
+  lines_added: 4043
+  lines_removed: 949
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-044-backfill-episodic-tags-with-controlled-v.md
 generated_by: context-agent

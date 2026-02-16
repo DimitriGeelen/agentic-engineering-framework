@@ -68,6 +68,14 @@ related_tasks:
 # Tags for retrieval
 tags: [cli, D2-reliability, D3-usability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 558
+  commits: 1
+  files_changed: 2
+  lines_added: 42
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-037-create-fw-doctor-health-check-command.md
 generated_by: context-agent

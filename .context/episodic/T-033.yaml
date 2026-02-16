@@ -78,6 +78,14 @@ related_tasks:
 # Tags for retrieval
 tags: [cli, D2-reliability, D3-usability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 549
+  commits: 3
+  files_changed: 8
+  lines_added: 577
+  lines_removed: 80
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-033-create-fw-cli-wrapper-with-frameworkyaml.md
 generated_by: claude-code

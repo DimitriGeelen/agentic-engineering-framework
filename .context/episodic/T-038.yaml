@@ -67,6 +67,14 @@ related_tasks:
 # Tags for retrieval
 tags: [metrics, task-system, D2-reliability, refactor]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 557
+  commits: 2
+  files_changed: 35
+  lines_added: 451
+  lines_removed: 94
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-038-update-stale-documents-and-metadata.md
 generated_by: context-agent

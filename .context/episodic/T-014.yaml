@@ -66,3 +66,11 @@ enrichment_status: complete
 source_file: 
   /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-014-improve-audit-agent-to-measure-quality-not-just-ex.md
 generated_by: context-agent
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 11
+  files_changed: 8
+  lines_added: 974
+  lines_removed: 253

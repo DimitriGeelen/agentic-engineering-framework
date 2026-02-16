@@ -83,6 +83,14 @@ tags:
   - D3
   - refactor
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 20
+  lines_added: 940
+  lines_removed: 660
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-054-split-apppy-into-flask-blueprints.md
 generated_by: context-agent

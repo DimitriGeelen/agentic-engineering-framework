@@ -78,6 +78,14 @@ related_tasks:
 # Tags for retrieval
 tags: []
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1594
+  commits: 3
+  files_changed: 13
+  lines_added: 300
+  lines_removed: 39
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-075-fix-structural-issues-in-project-memory.md
 generated_by: context-agent

@@ -47,3 +47,11 @@ tags: [handover, session-management]
 
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-070-session-handover-s-2026-0215-0837.md
 generated_by: context-agent
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 8
+  lines_added: 259
+  lines_removed: 65

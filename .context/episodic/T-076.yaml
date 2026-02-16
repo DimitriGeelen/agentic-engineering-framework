@@ -79,6 +79,14 @@ tags:
   - "automation-safety"
   - "L-020"
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1602
+  commits: 3
+  files_changed: 10
+  lines_added: 147
+  lines_removed: 40
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-076-fix-fw-work-on-to-prompt-for-description.md
 generated_by: context-agent

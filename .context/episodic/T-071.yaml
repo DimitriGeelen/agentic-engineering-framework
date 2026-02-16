@@ -57,6 +57,14 @@ related_tasks:
 # Tags for retrieval
 tags: [handover, session-management]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 7
+  lines_added: 224
+  lines_removed: 56
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-071-session-handover-s-2026-0215-0903.md
 generated_by: context-agent

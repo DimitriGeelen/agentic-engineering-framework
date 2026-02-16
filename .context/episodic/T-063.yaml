@@ -71,6 +71,14 @@ tags:
   - D2-reliability
   - build
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 14
+  lines_added: 420
+  lines_removed: 58
 # Metadata
 source_file: .tasks/completed/T-063-add-pretooluse-hook-for-task-first-enfor.md
 generated_by: context-agent

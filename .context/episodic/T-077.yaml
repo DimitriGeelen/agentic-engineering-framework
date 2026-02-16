@@ -82,6 +82,14 @@ tags:
   - task-planning
   - prioritization
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-077-session-handover-s-2026-0215-1108.md
 generated_by: context-agent

@@ -73,6 +73,14 @@ related_tasks:
 # Tags for retrieval
 tags: [healing-loop, D1-antifragility, build, P-006]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 196
+  commits: 3
+  files_changed: 22
+  lines_added: 1657
+  lines_removed: 159
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-007-implement-healing-loop-mechanism.md
 generated_by: context-agent

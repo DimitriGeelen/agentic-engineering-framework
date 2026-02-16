@@ -65,6 +65,14 @@ tags:
   - specification
   - D2-reliability
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 14
+  lines_added: 347
+  lines_removed: 62
 # Metadata
 source_file: .tasks/completed/T-062-add-instruction-precedence-declaration-t.md
 generated_by: context-agent

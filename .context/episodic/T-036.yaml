@@ -65,6 +65,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, healing-loop, D1-antifragility, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 558
+  commits: 1
+  files_changed: 3
+  lines_added: 105
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-036-add-practicesyaml-and-auto-healing-trigg.md
 generated_by: context-agent

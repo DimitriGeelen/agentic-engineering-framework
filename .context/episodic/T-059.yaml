@@ -85,6 +85,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, cli, handover, audit, healing-loop]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 9
+  files_changed: 20
+  lines_added: 930
+  lines_removed: 125
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-059-context-exhaustion-protection-defense-in.md
 generated_by: claude-code

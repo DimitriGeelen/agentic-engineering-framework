@@ -53,6 +53,14 @@ related_tasks:
 # Tags for retrieval
 tags: [debugging, flask, playwright, web-ui]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 3
+  lines_added: 27
+  lines_removed: 2
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-069-debug-timeline-rendering-and-fix-playwri.md
 generated_by: context-agent

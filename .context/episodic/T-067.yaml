@@ -66,6 +66,14 @@ related_tasks:
 # Tags for retrieval
 tags: [plugins, governance, task-first, audit, enforcement]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 38
+  commits: 1
+  files_changed: 10
+  lines_added: 497
+  lines_removed: 102
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-067-plugin-onboarding-audit--task-awareness-.md
 generated_by: context-agent

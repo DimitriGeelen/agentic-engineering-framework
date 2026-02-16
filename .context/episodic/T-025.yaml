@@ -68,6 +68,14 @@ related_tasks:
 # Tags
 tags: [healing-loop, D1-antifragility, experiment]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 2
+  files_changed: 13
+  lines_added: 308
+  lines_removed: 23
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-025-run-e-005-healing-loop-test.md
 generated_by: context-agent

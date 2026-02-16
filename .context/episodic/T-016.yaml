@@ -68,6 +68,14 @@ related_tasks:
 # Tags for retrieval
 tags: [audit, context-fabric, D2-reliability, build, P-002]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 66
+  commits: 2
+  files_changed: 9
+  lines_added: 423
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-016-add-episodic-quality-checks-to-audit-age.md
 generated_by: context-agent

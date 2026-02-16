@@ -79,6 +79,14 @@ tags:
   - D4
   - build
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53
+  commits: 3
+  files_changed: 86
+  lines_added: 4045
+  lines_removed: 950
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-045-web-ui-foundation-flask--htmx--fw-serve.md
 generated_by: context-agent

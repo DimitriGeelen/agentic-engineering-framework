@@ -83,6 +83,14 @@ related_tasks:
 # Tags for retrieval
 tags: ["watchtower", "inception-ui", "flask-blueprint", "htmx", "assumptions-tracker", "build"]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 12
+  lines_added: 970
+  lines_removed: 47
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-085-build-watchtower-inception-ui-pages.md
 generated_by: context-agent

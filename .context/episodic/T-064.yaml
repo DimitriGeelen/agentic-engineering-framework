@@ -67,6 +67,14 @@ tags:
   - D3-usability
   - build
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 22
+  lines_added: 650
+  lines_removed: 78
 # Metadata
 source_file: .tasks/completed/T-064-create-fw-work-on-command.md
 generated_by: context-agent

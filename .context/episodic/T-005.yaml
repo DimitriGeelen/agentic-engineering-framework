@@ -90,3 +90,11 @@ tags: [context-fabric, D1-antifragility, D2-reliability, build]
 enrichment_status: complete
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-005-implement-context-fabric-foundation.md
 generated_by: context-agent
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 121
+  commits: 3
+  files_changed: 35
+  lines_added: 2431
+  lines_removed: 167

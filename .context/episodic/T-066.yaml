@@ -62,6 +62,14 @@ related_tasks:
 # Tags for retrieval
 tags: [enforcement, governance, G-001, Tier-1, D2-reliability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 19
+  lines_added: 530
+  lines_removed: 90
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-066-implement-tier-1-enforcement-from-011-en.md
 generated_by: context-agent

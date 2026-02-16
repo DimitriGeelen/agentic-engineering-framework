@@ -73,6 +73,14 @@ related_tasks:
 # Tags for retrieval
 tags: [specification, D1-antifragility, specification]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 8
+  lines_added: 558
+  lines_removed: 33
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-021-design-experiment-protocol.md
 generated_by: context-agent

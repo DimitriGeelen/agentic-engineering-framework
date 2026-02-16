@@ -77,6 +77,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, D2-reliability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 3
+  files_changed: 17
+  lines_added: 897
+  lines_removed: 235
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-018-enrich-low-quality-episodic-summaries.md
 generated_by: context-agent

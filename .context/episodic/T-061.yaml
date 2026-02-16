@@ -76,6 +76,14 @@ tags:
   - D2-reliability
   - P-002
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 13
+  lines_added: 352
+  lines_removed: 58
 # Metadata
 source_file: .tasks/completed/T-061-investigate-task-first-rule-bypass-vecto.md
 generated_by: context-agent

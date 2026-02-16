@@ -80,6 +80,14 @@ related_tasks:
 # Tags for retrieval
 tags: [handover, D1-antifragility, D2-reliability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 38
+  files_changed: 67
+  lines_added: 7568
+  lines_removed: 2125
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-012-create-handover-agent.md
 generated_by: context-agent

@@ -73,6 +73,14 @@ related_tasks:
 # Tags for retrieval
 tags: [cli, context-fabric, D1-antifragility, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 555
+  commits: 1
+  files_changed: 4
+  lines_added: 409
+  lines_removed: 38
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-035-create-harvestsh-for-cross-project-learn.md
 generated_by: context-agent

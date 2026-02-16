@@ -53,6 +53,14 @@ related_tasks:
 # Tags for retrieval
 tags: [testing, cli, fw-work-on, smoke-test]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-068-test-the-work-on-command.md
 generated_by: context-agent

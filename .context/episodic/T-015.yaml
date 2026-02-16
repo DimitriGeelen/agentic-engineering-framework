@@ -71,6 +71,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, D1-antifragility, D2-reliability, D3-usability, fix]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 64
+  commits: 2
+  files_changed: 9
+  lines_added: 394
+  lines_removed: 48
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-015-fix-episodic-generator-to-require-enrich.md
 generated_by: context-agent

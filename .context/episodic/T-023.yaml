@@ -59,6 +59,14 @@ related_tasks:
 # Tags
 tags: [resume, D2-reliability, fix]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 5
+  lines_added: 90
+  lines_removed: 8
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-023-add-todo-placeholder-warning-to-resume-a.md
 generated_by: context-agent

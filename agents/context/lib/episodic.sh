@@ -69,6 +69,33 @@ do_generate_episodic() {
         duration_days=$(( ($(date -d "$completed_date" +%s) - $(date -d "$created_date" +%s)) / 86400 ))
     fi
 
+    # Calculate wall-clock minutes from created → last_update
+    local wall_minutes=0
+    if [ -n "$created" ] && [ -n "$last_update" ]; then
+        local start_epoch end_epoch
+        start_epoch=$(date -d "$created" +%s 2>/dev/null) || start_epoch=0
+        end_epoch=$(date -d "$last_update" +%s 2>/dev/null) || end_epoch=0
+        if [ "$start_epoch" -gt 0 ] && [ "$end_epoch" -gt "$start_epoch" ]; then
+            wall_minutes=$(( (end_epoch - start_epoch) / 60 ))
+        fi
+    fi
+
+    # Derive git metrics for this task
+    local commit_count=0
+    local lines_added=0
+    local lines_removed=0
+    local files_changed_count=0
+    if command -v git >/dev/null 2>&1 && [ -d "$PROJECT_ROOT/.git" ]; then
+        commit_count=$(git -C "$PROJECT_ROOT" log --all --oneline --grep="$task_id:" 2>/dev/null | wc -l | tr -d ' ')
+        local stat_output
+        stat_output=$(git -C "$PROJECT_ROOT" log --all --grep="$task_id:" --numstat --format="" 2>/dev/null || true)
+        if [ -n "$stat_output" ]; then
+            lines_added=$(echo "$stat_output" | awk '{s+=$1} END {print s+0}')
+            lines_removed=$(echo "$stat_output" | awk '{s+=$2} END {print s+0}')
+            files_changed_count=$(echo "$stat_output" | awk 'NF>=3 {print $3}' | sort -u | wc -l | tr -d ' ')
+        fi
+    fi
+
     # Generate episodic file
     local episodic_file="$CONTEXT_DIR/episodic/${task_id}.yaml"
     local generated_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -178,6 +205,14 @@ related_tasks:
 # Tags for retrieval
 tags: [$tags]
 
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: $wall_minutes
+  commits: $commit_count
+  files_changed: $files_changed_count
+  lines_added: $lines_added
+  lines_removed: $lines_removed
+
 # Metadata
 source_file: $task_file
 generated_by: context-agent
@@ -190,8 +225,10 @@ EOF
     echo "  Fill in the TODO sections, then set enrichment_status: complete"
     echo ""
     echo "Task: $task_name"
-    echo "  Duration: $duration_days days"
+    echo "  Duration: $duration_days days ($wall_minutes min)"
     echo "  Updates: $update_count"
+    echo "  Commits: $commit_count"
+    echo "  Lines: +$lines_added -$lines_removed across $files_changed_count files"
     [ -n "$outcomes" ] && echo "  Outcomes: $(echo "$outcomes" | wc -l | tr -d ' ')"
     [ -n "$challenges" ] && echo "  Challenges: $(echo "$challenges" | wc -l | tr -d ' ')"
     echo ""

@@ -71,6 +71,14 @@ related_tasks:
 # Tags for retrieval
 tags: [context-fabric, D1-antifragility, D2-reliability, build]
 
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 196
+  commits: 3
+  files_changed: 17
+  lines_added: 975
+  lines_removed: 179
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-006-create-episodic-summary-generator.md
 generated_by: context-agent
