@@ -37,12 +37,16 @@ esac
 TASK_ID=""
 NEW_STATUS=""
 NEW_OWNER=""
+NEW_TAGS=""
+ADD_TAGS=""
 REASON=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --status|-s) NEW_STATUS="$2"; shift 2 ;;
         --owner|-o) NEW_OWNER="$2"; shift 2 ;;
+        --tags) NEW_TAGS="$2"; shift 2 ;;
+        --add-tag) ADD_TAGS="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -50,6 +54,8 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --status, -s  New status ($VALID_STATUSES)"
             echo "  --owner, -o   New owner"
+            echo "  --tags        Replace tags (comma-separated)"
+            echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
             echo "  -h, --help    Show this help"
             echo ""
@@ -141,6 +147,65 @@ if [ -n "$NEW_OWNER" ]; then
     sed -i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"
     CHANGES+=("owner: $OLD_OWNER → $NEW_OWNER")
+fi
+
+# Update tags (replace or add)
+if [ -n "$NEW_TAGS" ] || [ -n "$ADD_TAGS" ]; then
+    if grep -q "^tags:" "$TASK_FILE"; then
+        if [ -n "$NEW_TAGS" ]; then
+            # Replace all tags
+            IFS=',' read -ra tag_items <<< "$NEW_TAGS"
+            tag_yaml="["
+            first=true
+            for t in "${tag_items[@]}"; do
+                t=$(echo "$t" | xargs)
+                [ -z "$t" ] && continue
+                if [ "$first" = true ]; then tag_yaml="${tag_yaml}${t}"; first=false
+                else tag_yaml="${tag_yaml}, ${t}"; fi
+            done
+            tag_yaml="${tag_yaml}]"
+            sed -i "s/^tags:.*/tags: $tag_yaml/" "$TASK_FILE"
+            echo "Tags:    → $tag_yaml"
+            CHANGES+=("tags: → $tag_yaml")
+        elif [ -n "$ADD_TAGS" ]; then
+            # Add to existing tags via python (safer YAML manipulation)
+            python3 -c "
+import re, sys
+tag_input = sys.argv[1]
+new_tags = [t.strip() for t in tag_input.split(',') if t.strip()]
+with open(sys.argv[2]) as f:
+    content = f.read()
+m = re.search(r'^tags:\s*\[([^\]]*)\]', content, re.MULTILINE)
+if m:
+    existing = [t.strip() for t in m.group(1).split(',') if t.strip()]
+    combined = list(dict.fromkeys(existing + new_tags))
+    new_line = 'tags: [' + ', '.join(combined) + ']'
+    content = content[:m.start()] + new_line + content[m.end():]
+else:
+    # No tags line — add after owner
+    content = re.sub(r'^(owner:.*)', r'\1\ntags: [' + ', '.join(new_tags) + ']', content, count=1, flags=re.MULTILINE)
+with open(sys.argv[2], 'w') as f:
+    f.write(content)
+" "$ADD_TAGS" "$TASK_FILE"
+            echo "Tags:    +$ADD_TAGS"
+            CHANGES+=("tags: +$ADD_TAGS")
+        fi
+    else
+        # No tags field exists — add it
+        IFS=',' read -ra tag_items <<< "${NEW_TAGS:-$ADD_TAGS}"
+        tag_yaml="["
+        first=true
+        for t in "${tag_items[@]}"; do
+            t=$(echo "$t" | xargs)
+            [ -z "$t" ] && continue
+            if [ "$first" = true ]; then tag_yaml="${tag_yaml}${t}"; first=false
+            else tag_yaml="${tag_yaml}, ${t}"; fi
+        done
+        tag_yaml="${tag_yaml}]"
+        sed -i "/^owner:.*/a tags: $tag_yaml" "$TASK_FILE"
+        echo "Tags:    $tag_yaml (added)"
+        CHANGES+=("tags: $tag_yaml (added)")
+    fi
 fi
 
 # Update last_update timestamp

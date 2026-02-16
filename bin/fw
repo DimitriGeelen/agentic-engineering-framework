@@ -310,6 +310,7 @@ args = shlex.split(os.environ.get('FW_TASK_ARGS', ''))
 status_filter = None
 type_filter = None
 component_filter = None
+tag_filter = None
 show_all = False
 
 i = 0
@@ -320,6 +321,8 @@ while i < len(args):
         type_filter = args[i+1]; i += 2
     elif args[i] == '--component' and i + 1 < len(args):
         component_filter = args[i+1]; i += 2
+    elif args[i] == '--tag' and i + 1 < len(args):
+        tag_filter = args[i+1]; i += 2
     elif args[i] == '--all':
         show_all = True; i += 1
     else:
@@ -401,6 +404,8 @@ if component_filter:
                 except:
                     pass
     tasks = [t for t in tasks if t.get('id', '') in matching_ids]
+if tag_filter:
+    tasks = [t for t in tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get('tags', [])]]
 
 def sort_key(t):
     tid = t.get('id', 'T-999')
@@ -489,6 +494,10 @@ print(f'  Owner:     {fm.get("owner", "?")}')
 print(f'  Created:   {fm.get("created", "?")}')
 if fm.get('date_finished'):
     print(f'  Finished:  {fm.get("date_finished")}')
+if fm.get('tags'):
+    print(f'  Tags:      {", ".join(str(t) for t in fm["tags"])}')
+if fm.get('related_tasks'):
+    print(f'  Related:   {", ".join(str(t) for t in fm["related_tasks"])}')
 print()
 
 ep_file = os.path.join(project_root, '.context', 'episodic', f'{task_id}.yaml')
@@ -568,8 +577,10 @@ PYTASK_SHOW
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
             echo '  fw task update T-XXX --status issues --reason "API timeout"'
+            echo '  fw task update T-XXX --add-tag "watchtower,ui"'
             echo '  fw task update T-XXX --status work-completed'
             echo '  fw task list --status captured --type build'
+            echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
             ;;
         *)

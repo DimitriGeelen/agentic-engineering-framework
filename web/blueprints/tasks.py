@@ -60,12 +60,19 @@ def tasks():
                 continue
 
     for t in all_tasks:
-        t["_tags"] = task_tags.get(t.get("id", ""), [])
+        # Merge frontmatter tags with episodic tags (deduplicated)
+        fm_tags = t.get("tags", []) or []
+        ep_tags = task_tags.get(t.get("id", ""), [])
+        combined = list(dict.fromkeys(
+            [str(tg) for tg in fm_tags] + [str(tg) for tg in ep_tags]
+        ))
+        t["_tags"] = combined
 
     # Apply filters
     status_filter = request.args.get("status", "")
     type_filter = request.args.get("type", "")
     component_filter = request.args.get("component", "")
+    tag_filter = request.args.get("tag", "")
     sort_by = request.args.get("sort", "id")
 
     if status_filter:
@@ -74,6 +81,8 @@ def tasks():
         all_tasks = [t for t in all_tasks if t.get("workflow_type") == type_filter]
     if component_filter:
         all_tasks = [t for t in all_tasks if component_filter in t.get("_tags", [])]
+    if tag_filter:
+        all_tasks = [t for t in all_tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get("_tags", [])]]
 
     if sort_by == "name":
         all_tasks.sort(key=lambda t: t.get("name", ""))
@@ -102,6 +111,7 @@ def tasks():
         status_filter=status_filter,
         type_filter=type_filter,
         component_filter=component_filter,
+        tag_filter=tag_filter,
         sort_by=sort_by,
         view=view,
     )
@@ -157,6 +167,7 @@ def create_task():
     workflow_type = request.form.get("type", "build").strip()
     owner = request.form.get("owner", "human").strip()
     description = request.form.get("description", "").strip()
+    tags = request.form.get("tags", "").strip()
 
     if not name:
         return '<p style="color: var(--pico-del-color);">Task name is required</p>', 400
@@ -178,6 +189,8 @@ def create_task():
         ]
         if description:
             cmd.extend(["--description", description])
+        if tags:
+            cmd.extend(["--tags", tags])
 
         result = subprocess.run(
             cmd,

@@ -24,6 +24,8 @@ NAME=""
 DESCRIPTION=""
 WORKFLOW_TYPE=""
 OWNER=""
+TAGS=""
+RELATED=""
 START_WORK=false
 
 while [[ $# -gt 0 ]]; do
@@ -32,6 +34,8 @@ while [[ $# -gt 0 ]]; do
         --description) DESCRIPTION="$2"; shift 2 ;;
         --type) WORKFLOW_TYPE="$2"; shift 2 ;;
         --owner) OWNER="$2"; shift 2 ;;
+        --tags) TAGS="$2"; shift 2 ;;
+        --related) RELATED="$2"; shift 2 ;;
         --start) START_WORK=true; shift ;;
         -h|--help)
             echo "Usage: create-task.sh [options]"
@@ -41,6 +45,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --description Task description (required)"
             echo "  --type        Workflow type: $VALID_TYPES"
             echo "  --owner       Task owner (required)"
+            echo "  --tags        Comma-separated tags (e.g. \"watchtower,ui,inception\")"
+            echo "  --related     Comma-separated related task IDs (e.g. \"T-084,T-085\")"
             echo "  --start       Set status to started-work instead of captured"
             echo "  -h, --help    Show this help"
             exit 0
@@ -120,6 +126,32 @@ else
     STATUS="captured"
 fi
 
+# Format tags and related_tasks as YAML arrays
+format_yaml_array() {
+    local input="$1"
+    if [ -z "$input" ]; then
+        echo "[]"
+        return
+    fi
+    local result="["
+    local first=true
+    IFS=',' read -ra items <<< "$input"
+    for item in "${items[@]}"; do
+        item=$(echo "$item" | xargs)  # trim whitespace
+        [ -z "$item" ] && continue
+        if [ "$first" = true ]; then
+            result="${result}${item}"
+            first=false
+        else
+            result="${result}, ${item}"
+        fi
+    done
+    echo "${result}]"
+}
+
+TAGS_YAML=$(format_yaml_array "$TAGS")
+RELATED_YAML=$(format_yaml_array "$RELATED")
+
 # Select template content based on workflow type
 if [ "$WORKFLOW_TYPE" = "inception" ] && [ -f "$TASKS_DIR/templates/inception.md" ]; then
     # Use inception template — replace placeholders via Python (safe with special chars)
@@ -132,6 +164,8 @@ t = t.replace('name:', 'name: ' + sys.argv[1], 1)
 t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
 t = t.replace('status: captured', 'status: $STATUS')
 t = t.replace('owner:', 'owner: $OWNER', 1)
+t = t.replace('tags: []', 'tags: $TAGS_YAML')
+t = t.replace('related_tasks: []', 'related_tasks: $RELATED_YAML')
 t = t.replace('created:', 'created: $TIMESTAMP', 1)
 t = t.replace('last_update:', 'last_update: $TIMESTAMP', 1)
 t = t.replace('# T-XXX: [Inception Name]', '# $TASK_ID: ' + sys.argv[1])
@@ -150,6 +184,8 @@ description: >
 status: $STATUS
 workflow_type: $WORKFLOW_TYPE
 owner: $OWNER
+tags: $TAGS_YAML
+related_tasks: $RELATED_YAML
 created: $TIMESTAMP
 last_update: $TIMESTAMP
 date_finished: null

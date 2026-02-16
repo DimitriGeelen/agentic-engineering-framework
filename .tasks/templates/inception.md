@@ -6,6 +6,8 @@ description: >
 status: captured
 workflow_type: inception
 owner:
+tags: []
+related_tasks: []
 created:
 last_update:
 date_finished: null
