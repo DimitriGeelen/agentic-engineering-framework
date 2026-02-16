@@ -23,7 +23,7 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 CONTEXT_DIR="$PROJECT_ROOT/.context"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
-TRANSCRIPT_CACHE="$CONTEXT_DIR/working/.transcript-path"
+PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
 # Token thresholds (200K context window, compaction observed at ~160K)
 # Conservative due to ~10-30K lag in token readings
@@ -53,36 +53,37 @@ increment_counter() {
     echo "$count"
 }
 
-# Find current session JSONL transcript (path cached for performance)
+# Find current session JSONL transcript.
+# Always finds the most-recently-modified transcript (~23ms) to avoid stale
+# cache hits from previous sessions. The old caching approach checked file
+# existence but not recency, so it silently returned old transcripts.
 find_transcript() {
-    if [ -f "$TRANSCRIPT_CACHE" ]; then
-        local cached
-        cached=$(cat "$TRANSCRIPT_CACHE")
-        if [ -f "$cached" ]; then
-            echo "$cached"
-            return
-        fi
-    fi
     local transcript
     transcript=$(find ~/.claude/projects -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
     if [ -n "$transcript" ]; then
-        echo "$transcript" > "$TRANSCRIPT_CACHE"
         echo "$transcript"
     fi
 }
 
-# Read effective context size from the last API response in the transcript.
+# Read effective context size from the last REAL API response in the transcript.
 # Uses tail -c (O(1) seek) + python3 JSON parsing for accuracy.
 # grep alone can't distinguish usage data from command text containing "input_tokens".
-# Performance: ~23ms on a 30MB transcript.
+# Performance: ~30ms on a 30MB transcript (2MB tail window).
+#
+# Filters out <synthetic> model entries which Claude Code writes after compaction
+# with 0 tokens — taking the last such entry would hide that context was just destroyed.
 get_context_tokens() {
     local transcript="$1"
-    tail -c 500000 "$transcript" 2>/dev/null | python3 -c "
+    tail -c 2000000 "$transcript" 2>/dev/null | python3 -c "
 import sys, json
 t = 0
 for line in sys.stdin:
     try:
         e = json.loads(line)
+        # Skip synthetic entries (written after compaction, report 0 tokens)
+        model = e.get('message', {}).get('model', '')
+        if model == '<synthetic>' or model.startswith('<'):
+            continue
         u = e.get('message', {}).get('usage')
         if u and 'input_tokens' in u:
             t = u['input_tokens'] + u.get('cache_read_input_tokens', 0) + u.get('cache_creation_input_tokens', 0)
@@ -113,6 +114,27 @@ warn_by_tokens() {
         echo "Note: Context at ${tokens} tokens (~${pct}%). Commit frequently." >&2
         echo "" >&2
     fi
+}
+
+# Detect compaction: if previous reading was >100K and current is 0 or <10K,
+# context was just compacted (summarized). This is a critical event because
+# the agent's working memory has been destroyed.
+detect_compaction() {
+    local tokens="$1"
+    if [ -f "$PREV_TOKENS_FILE" ]; then
+        local prev
+        prev=$(tr -d '[:space:]' < "$PREV_TOKENS_FILE" 2>/dev/null) || prev=0
+        if [ "${prev:-0}" -gt 100000 ] && [ "$tokens" -lt 10000 ]; then
+            echo "" >&2
+            echo "===========================================" >&2
+            echo "COMPACTION DETECTED: Tokens dropped ${prev} -> ${tokens}." >&2
+            echo "Context was summarized — working memory is lost." >&2
+            echo "ACTION: Run 'fw resume status' then 'fw resume sync'." >&2
+            echo "===========================================" >&2
+            echo "" >&2
+        fi
+    fi
+    echo "$tokens" > "$PREV_TOKENS_FILE"
 }
 
 warn_by_calls() {
@@ -147,8 +169,12 @@ case "${1:-}" in
             if [ -n "${transcript:-}" ]; then
                 tokens=$(get_context_tokens "$transcript") || true
                 if [ "${tokens:-0}" -gt 0 ]; then
+                    detect_compaction "$tokens"
                     warn_by_tokens "$tokens"
                     have_tokens=true
+                elif [ -f "$PREV_TOKENS_FILE" ]; then
+                    # Token reading is 0 but we had a previous reading — possible compaction
+                    detect_compaction 0
                 fi
             fi
 
@@ -161,8 +187,13 @@ case "${1:-}" in
         exit 0
         ;;
     reset)
+        # Clear all session-specific state.
+        # Note: `fw context init` should call `checkpoint.sh reset` at session start
+        # to ensure clean state. Bug 1 fix (no transcript cache) handles stale
+        # transcripts regardless, but clearing prev-tokens prevents false compaction alerts.
         ensure_counter
         echo "0" > "$COUNTER_FILE"
+        rm -f "$PREV_TOKENS_FILE"
         echo "Counter reset."
         ;;
     status)
