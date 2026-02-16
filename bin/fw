@@ -635,8 +635,9 @@ case "$cmd" in
         wo_target="${1:-}"
         if [ -z "$wo_target" ]; then
             echo -e "${RED}Usage:${NC}"
-            echo '  fw work-on "Fix login bug" --type build    # Create new task + start'
-            echo '  fw work-on T-042                            # Resume existing task'
+            echo '  fw work-on "Fix login bug" --type build                  # Create new task + start'
+            echo '  fw work-on "Fix login bug" --description "Details here"  # With description'
+            echo '  fw work-on T-042                                         # Resume existing task'
             exit 1
         fi
 
@@ -648,9 +649,19 @@ case "$cmd" in
             echo ""
             echo -e "${GREEN}Ready to work on $wo_target${NC}"
         else
-            # Create new task — pass remaining args (--type, --owner, etc.)
+            # Create new task — pass remaining args (--type, --owner, --description, etc.)
             shift
-            wo_output=$("$AGENTS_DIR/task-create/create-task.sh" --name "$wo_target" --description "Created via fw work-on" --start "$@" 2>&1)
+            # Build default args, then let explicit args override
+            wo_has_desc=false
+            wo_has_owner=false
+            for wo_arg in "$@"; do
+                [ "$wo_arg" = "--description" ] && wo_has_desc=true
+                [ "$wo_arg" = "--owner" ] && wo_has_owner=true
+            done
+            wo_defaults=()
+            [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")
+            [ "$wo_has_owner" = false ] && wo_defaults+=(--owner agent)
+            wo_output=$("$AGENTS_DIR/task-create/create-task.sh" --name "$wo_target" --start "${wo_defaults[@]}" "$@" 2>&1)
             echo "$wo_output"
 
             # Extract task ID from output
