@@ -65,6 +65,16 @@ decisions:
     rationale: "Framework overhead only justified when AI context loss is the problem being solved"
     directives_served: [D3]
 
+  - id: D-008
+    decision: "Knowledge pyramid with 4 levels and graduation criteria"
+    date: 2026-02-13
+    task: T-011
+    rationale: "Higher levels require more evidence and are harder to change - directives require human approval"
+    directives_served: [D1, D2]
+    alternatives_rejected:
+      - "Flat structure (no graduation, all knowledge equal)"
+      - "3 levels without directives (insufficient authority stratification)"
+
   - id: D-009
     decision: "Monitor context budget via token reading from JSONL transcript, not tool-call counting"
     date: 2026-02-14
@@ -86,15 +96,12 @@ decisions:
       - "Every call (unnecessary overhead)"
       - "Every 10th (too infrequent near thresholds)"
 
-  - id: D-008
-    decision: "Knowledge pyramid with 4 levels and graduation criteria"
-    date: 2026-02-13
-    task: T-011
-    rationale: "Higher levels require more evidence and are harder to change - directives require human approval"
-    directives_served: [D1, D2]
-
   - id: D-011
     decision: "G-001 decision trigger has fired: plugins act as second agent and caused task bypass. Remediation tasks T-062 through T-066 created covering Tier C (tooling) and Tier D (ways of working) fixes."
     date: 2026-02-15
     task: T-061
     rationale: "4-agent investigation confirmed: 0/20 skills are task-aware, using-superpowers usurps framework authority, enforcement is git-commit-only, tier system is vaporware"
+    directives_served: [D1, D2]
+    alternatives_rejected:
+      - "Accept plugin override as feature (violates Authority Model)"
+      - "Remove all plugins (loses productivity gains)"

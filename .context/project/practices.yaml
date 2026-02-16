@@ -11,7 +11,7 @@ practices:
     origin_task: T-001
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 7
 
   - id: P-002
     name: "Structural Enforcement Over Agent Discipline"
@@ -21,7 +21,7 @@ practices:
     origin_task: T-001
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 12
 
   - id: P-003
     name: "Adoption Before Measurement"
@@ -31,7 +31,7 @@ practices:
     origin_task: T-001
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 5
 
   - id: P-004
     name: "Distinguish Existence from Quality"
@@ -41,7 +41,7 @@ practices:
     origin_task: T-001
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 5
 
   - id: P-005
     name: "Bootstrap Exceptions Are First-Class"
@@ -51,7 +51,7 @@ practices:
     origin_task: T-003
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 2
 
   - id: P-006
     name: "Hybrid Agent Architecture"
@@ -61,7 +61,7 @@ practices:
     origin_task: T-002
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 7
 
   - id: P-007
     name: "Systematic Session Capture"
@@ -71,7 +71,7 @@ practices:
     origin_task: T-001
     origin_date: 2026-02-13
     status: active
-    applications: 0
+    applications: 1
 
   - id: P-008
     name: "Tasks Must Carry Executable Context"
@@ -91,4 +91,4 @@ practices:
     origin_task: T-059
     origin_date: 2026-02-14
     status: active
-    applications: 0
+    applications: 2

@@ -73,7 +73,7 @@ learnings:
     task: T-059
     date: 2026-02-14
     context: "Transcript at ~/.claude/projects/*/UUID.jsonl has input_tokens, cache_read_input_tokens, cache_creation_input_tokens in every assistant message. Effective context = sum of all three."
-    application: "Use tail -c 500000 + python3 JSON parse to read context size in O(1) time regardless of transcript size"
+    application: "Use tail -c 2000000 + python3 JSON parse to read context size in O(1) time regardless of transcript size (500K was too small when sub-agent results bloat transcript end)"
 
   - id: L-010
     learning: "Claude Code compaction occurs at ~155-165K tokens — context is summarized, not preserved"
@@ -106,14 +106,14 @@ learnings:
     task: T-061
     date: 2026-02-15
     context: "Added via context agent"
-    application: "TBD"
-# Candidate learnings (need validation before promotion)
+    application: "Built PreToolUse hook (T-063) to structurally block Write/Edit without active task. Added instruction precedence to CLAUDE.md (T-062). Created /start-work skill (T-065)."
 
-  - id: L-013
-    learning: "Plugins that claim absolute authority (using-superpowers: 'YOU DO NOT HAVE A CHOICE') will override framework rules written in CLAUDE.md when they conflict. Structural enforcement (P-002) must be actual code gates, not markdown instructions. Gap G-001 decision trigger has fired."
-    source: P-002
-    task: T-061
-    date: 2026-02-15
-    context: "Added via context agent"
-    application: "TBD"
+  - id: L-014
+    learning: "Caching optimizations that don't validate session identity are dangerous — stale cache causes safety systems to read wrong data"
+    source: T-078
+    task: T-078
+    date: 2026-02-16
+    context: "checkpoint.sh cached transcript path across sessions. It validated file existence but not recency, causing it to read an old session's token count while the current session hit 177K tokens with zero warnings."
+    application: "Removed transcript cache entirely. Always find most-recent file (~33ms, acceptable). Safety systems must never cache identity-dependent state across session boundaries."
+
 candidates: []

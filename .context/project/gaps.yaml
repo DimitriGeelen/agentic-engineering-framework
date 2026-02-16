@@ -135,7 +135,7 @@ gaps:
       check: "grep -c '^  - id: L-' $PROJECT_ROOT/.context/project/learnings.yaml 2>/dev/null"
       threshold: ">= 20 means scale warrants automation"
     evidence_needed: "Scale (20+ learnings) or missed application"
-    evidence_collected: "Currently 8 learnings, 7 practices. Manual works fine."
+    evidence_collected: "Currently 14 learnings, 9 practices. Approaching scale threshold. T-072 audit found promotion pipeline broken (35% task coverage in project memory)."
     alternative_outcome: >
       If scale never comes → keep manual. Document that the pipeline
       is a thinking tool, not an automation target.
