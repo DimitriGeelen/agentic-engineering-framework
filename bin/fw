@@ -114,6 +114,8 @@ show_help() {
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
     echo -e "  ${GREEN}resume${NC} <cmd>         Post-compaction recovery (status, sync, quick)"
     echo -e "  ${GREEN}task${NC} <cmd>           Task management (create, update)"
+    echo -e "  ${GREEN}inception${NC} <cmd>      Inception phase workflow (start, status, decide)"
+    echo -e "  ${GREEN}assumption${NC} <cmd>    Assumption tracking (add, validate, invalidate, list)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
@@ -604,6 +606,14 @@ case "$cmd" in
         ;;
     resume)
         exec "$AGENTS_DIR/resume/resume.sh" "$@"
+        ;;
+    inception)
+        source "$FW_LIB_DIR/inception.sh"
+        do_inception "$@"
+        ;;
+    assumption)
+        source "$FW_LIB_DIR/assumption.sh"
+        do_assumption "$@"
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
