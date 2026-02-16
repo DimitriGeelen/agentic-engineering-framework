@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-092: Tier 0 enforcement — destructive Bash command guard
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+#
+# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# must be filled in by a human or LLM before this episodic is useful.
+#
+# To enrich: Read the source task file and fill in the TODO sections.
+# When done: Change enrichment_status from "pending" to "complete"
+# ============================================================================
+# Generated: 2026-02-16T23:11:11Z
+
+task_id: T-092
+task_name: "Tier 0 enforcement — destructive Bash command guard"
+workflow_type: build
+enrichment_status: pending  # Change to "complete" after enrichment
+
+# Timeline
+created: 2026-02-16T23:02:05Z
+completed: 2026-02-16T23:11:11Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
+# Don't just copy the description - synthesize the journey from Updates section.
+summary: |
+  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-092-tier-0-enforcement--destructive-bash-com.md]
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "Task completed"
+
+# What worked well
+# [TODO] List 1-3 things that worked well, with WHY they worked.
+# Format: - description: "What worked" / why: "Why it worked"
+successes:
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
+
+# Challenges encountered
+# [TODO] List challenges faced and how they were resolved.
+challenges:
+  # No challenges detected (or add manually)
+
+# Decisions made during this task
+# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
+# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
+decisions:
+  - decision: "[TODO: Extract from Design Record]"
+    rationale: "[TODO: Why this choice?]"
+    alternatives_rejected: []
+
+# Files created or significantly modified
+# [TODO] List actual files created or modified during this task.
+artifacts:
+  created:
+    - "[TODO: List files created]"
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-092-tier-0-enforcement--destructive-bash-com.md
+generated_by: context-agent

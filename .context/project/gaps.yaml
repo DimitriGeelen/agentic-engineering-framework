@@ -43,12 +43,18 @@ gaps:
       Git commit-msg hook still enforces T-XXX pattern at commit time.
       CLAUDE.md instruction precedence resolves plugin authority conflicts.
     what_remains: >
-      Tier 0: No enforcement for destructive Bash commands (deploy, delete, etc.).
       Tier 2: No formal bypass logging mechanism beyond git --no-verify.
       Tier 3: Pre-approved categories exist in spec but not consumed by enforcement.
+    tier0_resolution: >
+      T-092 (2026-02-16): Built check-tier0.sh PreToolUse hook for Bash tool.
+      Detects: force push, hard reset, git clean, branch -D, rm -rf /, DROP TABLE,
+      TRUNCATE, docker system prune, kubectl delete namespace.
+      Approval flow: fw tier0 approve (one-time, 5-min expiry, logged to bypass-log.yaml).
+      36/36 pattern tests passing. Fast path: keyword pre-filter avoids Python overhead
+      for 95%+ of safe commands.
     status: decided-build
     created: 2026-02-14
-    last_reviewed: 2026-02-15
+    last_reviewed: 2026-02-16
     trigger_fired_date: 2026-02-15
 
   - id: G-002

@@ -117,6 +117,7 @@ show_help() {
     echo -e "  ${GREEN}inception${NC} <cmd>      Inception phase workflow (start, status, decide)"
     echo -e "  ${GREEN}assumption${NC} <cmd>    Assumption tracking (add, validate, invalidate, list)"
     echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
+    echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
@@ -249,7 +250,21 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
-    # Check 6: Agent scripts exist and are executable
+    # Check 6: Tier 0 enforcement hook
+    local settings_file="$PROJECT_ROOT/.claude/settings.json"
+    if [ -f "$settings_file" ] && grep -q "check-tier0.sh" "$settings_file" 2>/dev/null; then
+        if [ -x "$AGENTS_DIR/context/check-tier0.sh" ]; then
+            echo -e "  ${GREEN}OK${NC}  Tier 0 enforcement hook (Bash destructive command guard)"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Tier 0 hook configured but check-tier0.sh not executable"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${YELLOW}WARN${NC}  Tier 0 enforcement not configured (add Bash hook to .claude/settings.json)"
+        warnings=$((warnings + 1))
+    fi
+
+    # Check 7: Agent scripts executable
     local agents_ok=true
     for agent in audit/audit.sh context/context.sh git/git.sh handover/handover.sh healing/healing.sh resume/resume.sh task-create/create-task.sh; do
         if [ ! -x "$AGENTS_DIR/$agent" ]; then
@@ -262,7 +277,7 @@ do_doctor() {
         echo -e "  ${GREEN}OK${NC}  All agent scripts executable"
     fi
 
-    # Check 7: Plugin task-awareness
+    # Check 8: Plugin task-awareness
     if [ -x "$AGENTS_DIR/audit/plugin-audit.sh" ]; then
         local bypassing_count
         bypassing_count=$("$AGENTS_DIR/audit/plugin-audit.sh" --doctor-check 2>/dev/null) || true
@@ -656,6 +671,76 @@ case "$cmd" in
             exit 1
         fi
         cd "$FRAMEWORK_ROOT" && exec python3 -m web.app "$@"
+        ;;
+    tier0)
+        # Tier 0 enforcement — approve or inspect blocked commands
+        tier0_subcmd="${1:-}"
+        shift || true
+        case "$tier0_subcmd" in
+            approve)
+                PENDING_FILE="$PROJECT_ROOT/.context/working/.tier0-approval.pending"
+                APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
+                if [ ! -f "$PENDING_FILE" ]; then
+                    echo -e "${YELLOW}No pending Tier 0 block to approve${NC}"
+                    echo "A Tier 0 block must occur first before you can approve it."
+                    exit 1
+                fi
+                PENDING_HASH=$(awk '{print $1}' "$PENDING_FILE")
+                echo -e "${BOLD}Tier 0 Approval${NC}"
+                echo ""
+                echo -e "  Approving command with hash: ${CYAN}${PENDING_HASH:0:16}...${NC}"
+                echo ""
+                echo -e "  ${YELLOW}This allows a blocked destructive command to execute once.${NC}"
+                echo -e "  The approval expires in 5 minutes and is logged for audit."
+                echo ""
+                # Write the approval (hash + current timestamp)
+                echo "$PENDING_HASH $(date +%s)" > "$APPROVAL_FILE"
+                rm -f "$PENDING_FILE"
+                echo -e "${GREEN}Approved.${NC} Retry the command now."
+                ;;
+            status)
+                PENDING_FILE="$PROJECT_ROOT/.context/working/.tier0-approval.pending"
+                APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
+                LOG_FILE="$PROJECT_ROOT/.context/bypass-log.yaml"
+                echo -e "${BOLD}Tier 0 Enforcement Status${NC}"
+                echo ""
+                if [ -f "$PENDING_FILE" ]; then
+                    echo -e "  ${YELLOW}Pending block:${NC} A command is waiting for approval"
+                    echo "    Run 'fw tier0 approve' to allow it"
+                elif [ -f "$APPROVAL_FILE" ]; then
+                    echo -e "  ${GREEN}Active approval:${NC} One command approved (not yet used)"
+                else
+                    echo -e "  ${GREEN}Clean:${NC} No pending blocks or approvals"
+                fi
+                echo ""
+                if [ -f "$LOG_FILE" ]; then
+                    tier0_count=$(python3 -c "
+import yaml
+with open('$LOG_FILE') as f:
+    data = yaml.safe_load(f) or {}
+tier0 = [b for b in data.get('bypasses', []) if b.get('tier') == 0]
+print(len(tier0))
+" 2>/dev/null || echo 0)
+                    echo -e "  Tier 0 approvals logged: $tier0_count"
+                fi
+                ;;
+            ""|help|-h|--help)
+                echo -e "${BOLD}fw tier0${NC} — Tier 0 enforcement management"
+                echo ""
+                echo "Subcommands:"
+                echo "  approve    Approve a pending Tier 0 blocked command"
+                echo "  status     Show Tier 0 enforcement status"
+                echo ""
+                echo "Tier 0 commands are destructive operations that require"
+                echo "explicit human approval before an AI agent can execute them."
+                echo "See: 011-EnforcementConfig.md"
+                ;;
+            *)
+                echo -e "${RED}Unknown tier0 subcommand: $tier0_subcmd${NC}"
+                echo "Run 'fw tier0 help' for usage"
+                exit 1
+                ;;
+        esac
         ;;
     work-on)
         # Single-step gate: create/resume task + set focus + start work

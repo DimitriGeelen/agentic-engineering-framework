@@ -9,6 +9,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-active-task.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [

@@ -87,12 +87,12 @@ Captured → Started Work ↔ Issues → Work Completed
 
 ## Enforcement Tiers
 
-| Tier | Description | Bypass |
-|------|-------------|--------|
-| 0 | Consequential actions (deploy, delete, destroy, firewall, secrets, db-migrate) | Never |
-| 1 | All standard operations (default) | Create task or escalate to Tier 2 |
-| 2 | Human situational authorization | Single-use, mandatory logging |
-| 3 | Pre-approved categories (health checks, status queries, git-status) | Configured |
+| Tier | Description | Bypass | Implementation |
+|------|-------------|--------|----------------|
+| 0 | Consequential actions (force push, hard reset, rm -rf /, DROP TABLE) | Human approval via `fw tier0 approve` | PreToolUse hook on Bash (`check-tier0.sh`) |
+| 1 | All standard operations (default) | Create task or escalate to Tier 2 | PreToolUse hook on Write/Edit (`check-active-task.sh`) |
+| 2 | Human situational authorization | Single-use, mandatory logging | Partial (git --no-verify + bypass log) |
+| 3 | Pre-approved categories (health checks, status queries, git-status) | Configured | Spec only |
 
 ## Working with Tasks
 
@@ -424,6 +424,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Add assumption | `fw assumption add "..." --task T-XXX` | Register assumption |
 | Validate assumption | `fw assumption validate A-XXX --evidence "..."` | Mark validated |
 | List assumptions | `fw assumption list` | Show all by status |
+| Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
+| Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
 
 ## Session End Protocol
 

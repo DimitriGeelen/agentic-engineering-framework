@@ -1,8 +1,11 @@
 # Task Enforcement Configuration
 # See docs/TASK_SYSTEM.md for full specification
 #
-# Implementation status (T-066, 2026-02-15):
-#   Tier 0: SPEC ONLY — needs Bash command parsing (future work)
+# Implementation status (T-092, 2026-02-16):
+#   Tier 0: IMPLEMENTED — PreToolUse hook (check-tier0.sh) on Bash tool
+#           detects destructive commands (force push, hard reset, rm -rf /,
+#           DROP TABLE, etc.) and blocks with approval workflow.
+#           Approval: fw tier0 approve. Logged to bypass-log.yaml.
 #   Tier 1: IMPLEMENTED — PreToolUse hook (check-active-task.sh) blocks
 #           Write/Edit without active task. Git commit-msg hook blocks
 #           commits without T-XXX. fw work-on provides single-step gate.
