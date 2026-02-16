@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-086: Add tags and related_tasks to task system
+# ============================================================================
+# Generated: 2026-02-16T22:09:19Z
+
+task_id: T-086
+task_name: "Add tags and related_tasks to task system"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:02:12Z
+completed: 2026-02-16T22:09:19Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added two lightweight features to the task system based on a structured evaluation
+  of four proposed process improvements (backlog, hierarchy, sprints, estimation).
+  The evaluation rejected heavyweight approaches in favor of tags+related_tasks for
+  grouping (instead of epics/hierarchy) and passive metrics derived from git/timestamps
+  (instead of manual story-point estimation). Tags are optional frontmatter fields
+  that enable task grouping without structural hierarchy. Passive metrics are computed
+  automatically in episodic generation from git commit data and timestamps.
+
+# Key outcomes
+outcomes:
+  - "tags[] and related_tasks[] added to task templates and CLI (create + update)"
+  - "fw task list --tag and fw task show display tags"
+  - "Episodic generator now computes metrics block (wall_clock, commits, lines, files)"
+  - "fw metrics predict queries episodic history for effort estimation"
+  - "Backfilled metrics into all 85 existing episodic memories"
+  - "Web UI merges frontmatter tags with episodic tags"
+
+# What worked well
+successes:
+  - description: "Multi-agent parallel evaluation of 4 ideas before building"
+    why: "Using 5 parallel agents (1 explorer + 4 evaluators) gave thorough analysis in one round-trip, preventing premature implementation of the wrong thing"
+  - description: "Minimal viable changes — optional fields, no breaking changes"
+    why: "Tags and metrics are additive. Existing tasks work without tags. Episodic metrics are auto-populated. Zero migration needed."
+
+# Challenges encountered
+challenges:
+  - description: "Wall clock backfill showed 0 for all episodics"
+    resolution: "yaml.safe_load converts timestamps to datetime objects, not strings. Fixed backfill to handle both types."
+
+# Decisions made during this task
+decisions:
+  - decision: "Tags as flat array rather than structured categories"
+    rationale: "Flat tags are simpler, more flexible, and avoid the taxonomy design problem. Users can impose structure through naming conventions (e.g. 'phase-2', 'watchtower-ui')."
+    alternatives_rejected: ["Structured categories (domain/component/phase)", "Separate tag taxonomy file"]
+  - decision: "Derive metrics passively from git rather than manual estimation"
+    rationale: "Manual story points are meaningless for AI agents. Git data (commits, lines, files) is objective and already available. The learning loop comes from comparing similar tasks."
+    alternatives_rejected: ["Manual story points", "Token-based estimation", "Time-based estimation"]
+  - decision: "Rejected backlog, hierarchy, and sprints proposals"
+    rationale: "status:captured already serves as backlog. Hierarchy adds brittle coupling for single-agent work. Sessions already ARE sprints. Adding ceremony without proven pain violates antifragility directive."
+    alternatives_rejected: ["Formal backlog register", "Epic/feature/task hierarchy", "Sprint planning framework"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - ".tasks/templates/default.md"
+    - ".tasks/templates/inception.md"
+    - "agents/task-create/create-task.sh"
+    - "agents/task-create/update-task.sh"
+    - "agents/context/lib/episodic.sh"
+    - "bin/fw"
+    - "web/blueprints/tasks.py"
+    - "CLAUDE.md"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [task-system, tags, metrics, episodic, prediction, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 92
+  lines_added: 1007
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-086-add-tags-and-relatedtasks-to-task-system.md
+generated_by: context-agent

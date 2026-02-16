@@ -391,7 +391,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | **Start work** | **`fw work-on "name" --type build`** | Creates task + sets focus + starts work |
 | Resume task | `fw work-on T-XXX` | Sets focus + status to started-work |
 | Create task | `fw task create` | `./agents/task-create/create-task.sh` |
+| Create with tags | `fw task create --tags "ui,api"` | `create-task.sh --tags "..."` |
 | Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
+| Add tags | `fw task update T-XXX --add-tag "ui"` | `update-task.sh T-XXX --add-tag "..."` |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
@@ -399,6 +401,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Show gaps | `fw gaps` | _(fw only)_ |
 | Health check | `fw doctor` | _(fw only)_ |
 | View metrics | `fw metrics` | `./metrics.sh` |
+| Predict effort | `fw metrics predict --type build` | _(fw only)_ |
 | Initialize session | `fw context init` | `./agents/context/context.sh init` |
 | Set focus | `fw context focus T-XXX` | `./agents/context/context.sh focus T-XXX` |
 | Context status | `fw context status` | `./agents/context/context.sh status` |
