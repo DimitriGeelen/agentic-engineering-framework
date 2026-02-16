@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-090: Add markdown rendering to inception detail sections
+# ============================================================================
+# Generated: 2026-02-16T22:35:32Z
+
+task_id: T-090
+task_name: "Add markdown rendering to inception detail sections"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-16T22:32:56Z
+completed: 2026-02-16T22:35:32Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added markdown rendering to inception detail page sections using markdown2.
+  Previously, raw markdown text (bold markers, bullet lists) displayed as literal
+  characters. Now all section content (Problem Statement, Exploration Plan, Scope
+  Fence, Go/No-Go Criteria, Decision Record, Updates) renders as proper HTML.
+
+# Key outcomes
+outcomes:
+  - "Bold text (**text**) renders as <strong> tags"
+  - "Bullet lists render as <ul><li> elements"
+  - "Numbered lists render as <ol><li> elements"
+  - "Backtick code renders as <code> tags"
+  - "All 11 routes still return 200"
+
+# What worked well
+successes:
+  - description: "Using markdown2 with list normalization regex"
+    why: "Task markdown doesn't always have blank lines before lists. A simple regex to insert blank lines before list markers fixed rendering without modifying source data."
+
+# Challenges encountered
+challenges:
+  - description: "markdown2 not rendering lists without preceding blank line"
+    resolution: "Added regex to insert blank line before - and numbered list markers"
+    learning: "Markdown parsers are strict about blank lines before block elements"
+
+# Decisions made during this task
+decisions:
+  - decision: "Use markdown2 with Markup() for safe HTML injection"
+    rationale: "markdown2 already installed, Markup avoids XSS by marking output as safe at the source"
+    alternatives_rejected: ["markdown library", "manual regex replacement"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "web/blueprints/inception.py"
+    - "web/templates/inception_detail.html"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, inception, markdown, markdown2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 24
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-090-add-markdown-rendering-to-inception-deta.md
+generated_by: context-agent
