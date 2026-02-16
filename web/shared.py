@@ -22,8 +22,10 @@ PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))
 
 NAV_GROUPS = [
     ("Work", [
-        ("Tasks",    "tasks.tasks",        None),
-        ("Timeline", "timeline.timeline",  None),
+        ("Tasks",       "tasks.tasks",              None),
+        ("Inception",   "inception.inception_list",  None),
+        ("Assumptions", "inception.assumptions_list", None),
+        ("Timeline",    "timeline.timeline",         None),
     ]),
     ("Knowledge", [
         ("Learnings", "discovery.learnings",  None),

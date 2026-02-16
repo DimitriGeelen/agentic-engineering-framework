@@ -1,0 +1,166 @@
+<style>
+    .assumption-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .assumption-stat {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .assumption-stat .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .assumption-stat .stat-label {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.25rem;
+    }
+    .filter-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .filter-row a {
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .filter-row a.active {
+        background: var(--pico-primary-background);
+        color: var(--pico-primary-inverse);
+        border-color: var(--pico-primary-background);
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-validated { background-color: #2e7d32; color: white; }
+    .status-invalidated { background-color: #c62828; color: white; }
+    .status-untested { background-color: #f9a825; color: #333; }
+    .health-bar {
+        display: flex;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: var(--pico-muted-border-color);
+        margin-bottom: 2rem;
+    }
+    .health-bar .bar-validated { background: #2e7d32; }
+    .health-bar .bar-invalidated { background: #c62828; }
+    .health-bar .bar-untested { background: #f9a825; }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ summary.total }} assumption{% if summary.total != 1 %}s{% endif %} tracked across inception tasks. Lifecycle: untested &rarr; validated | invalidated.</p>
+</div>
+
+<div class="assumption-summary">
+    <div class="assumption-stat">
+        <div class="stat-value">{{ summary.total }}</div>
+        <div class="stat-label">Total</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value" style="color: #2e7d32;">{{ summary.validated }}</div>
+        <div class="stat-label">Validated</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value" style="color: #f9a825;">{{ summary.untested }}</div>
+        <div class="stat-label">Untested</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value" style="color: #c62828;">{{ summary.invalidated }}</div>
+        <div class="stat-label">Invalidated</div>
+    </div>
+</div>
+
+{% if summary.total > 0 %}
+<div class="health-bar">
+    <div class="bar-validated" style="width: {{ (summary.validated / summary.total * 100) | round }}%;"></div>
+    <div class="bar-invalidated" style="width: {{ (summary.invalidated / summary.total * 100) | round }}%;"></div>
+    <div class="bar-untested" style="width: {{ (summary.untested / summary.total * 100) | round }}%;"></div>
+</div>
+{% endif %}
+
+<div class="filter-row">
+    <a href="/assumptions" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if not status_filter and not task_filter %}active{% endif %}">All</a>
+    <a href="/assumptions?status=untested" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'untested' %}active{% endif %}">Untested</a>
+    <a href="/assumptions?status=validated" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'validated' %}active{% endif %}">Validated</a>
+    <a href="/assumptions?status=invalidated" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'invalidated' %}active{% endif %}">Invalidated</a>
+</div>
+
+{% if assumptions %}
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Statement</th>
+            <th scope="col">Status</th>
+            <th scope="col">Task</th>
+            <th scope="col">Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in assumptions %}
+        <tr>
+            <td><code>{{ a.id }}</code></td>
+            <td>
+                {{ a.statement }}
+                {% if a.evidence %}
+                <details style="margin-top: 0.25rem;">
+                    <summary style="font-size: 0.75rem;">{{ a.evidence | length }} evidence record{% if a.evidence | length != 1 %}s{% endif %}</summary>
+                    {% for e in a.evidence %}
+                    <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin: 0.25rem 0;">
+                        {{ e.outcome }} <small>({{ e.date }})</small>
+                    </p>
+                    {% endfor %}
+                </details>
+                {% endif %}
+            </td>
+            <td>
+                {% if a.status == 'validated' %}
+                <span class="status-badge status-validated">Validated</span>
+                {% elif a.status == 'invalidated' %}
+                <span class="status-badge status-invalidated">Invalidated</span>
+                {% else %}
+                <span class="status-badge status-untested">Untested</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if a.linked_task %}
+                <a href="/inception/{{ a.linked_task }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <code>{{ a.linked_task }}</code>
+                </a>
+                {% endif %}
+            </td>
+            <td><small>{{ a.created | default('') }}</small></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="coming-soon">
+    <h3>No Assumptions Found</h3>
+    <p>No assumptions registered{% if status_filter %} with status "{{ status_filter }}"{% endif %}. Register one with <code>fw assumption add "Statement" --task T-XXX</code></p>
+</div>
+{% endif %}

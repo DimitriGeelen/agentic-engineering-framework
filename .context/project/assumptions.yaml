@@ -1,34 +1,42 @@
 assumptions:
 - id: A-001
   statement: 'Inception tasks are identifiable by workflow_type: inception in frontmatter'
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: workflow_type filter works in inception.py _load_all_tasks
+    date: '2026-02-16'
   linked_task: T-084
   created: '2026-02-16'
-  resolved_date: null
+  resolved_date: '2026-02-16'
 - id: A-002
   statement: Assumptions YAML can be parsed directly by Flask without CLI intermediary
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: Flask reads assumptions.yaml directly via yaml.safe_load, no CLI needed
+    date: '2026-02-16'
   linked_task: T-084
   created: '2026-02-16'
-  resolved_date: null
+  resolved_date: '2026-02-16'
 - id: A-003
   statement: HTMX plus Pico CSS can render assumption tracker without new JS dependencies
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: All 3 pages render with Pico CSS + HTMX, zero new JS dependencies
+    date: '2026-02-16'
   linked_task: T-084
   created: '2026-02-16'
-  resolved_date: null
+  resolved_date: '2026-02-16'
 - id: A-004
   statement: Existing blueprint pattern supports adding inception views in under 2
     files
-  status: untested
+  status: validated
   validation_method: TBD
-  evidence: []
+  evidence:
+  - outcome: Implementation used 1 blueprint + 3 templates + 2 edits, close to estimate
+    date: '2026-02-16'
   linked_task: T-084
   created: '2026-02-16'
-  resolved_date: null
+  resolved_date: '2026-02-16'

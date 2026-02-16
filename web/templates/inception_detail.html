@@ -1,0 +1,223 @@
+<style>
+    .decision-banner {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .decision-banner.go { background: rgba(46, 125, 50, 0.15); border-left: 4px solid #2e7d32; color: #2e7d32; }
+    .decision-banner.no-go { background: rgba(198, 40, 40, 0.15); border-left: 4px solid #c62828; color: #c62828; }
+    .decision-banner.defer { background: rgba(249, 168, 37, 0.15); border-left: 4px solid #f9a825; color: #795548; }
+    .decision-banner.pending { background: rgba(21, 101, 192, 0.1); border-left: 4px solid #1565c0; color: var(--pico-color); }
+    .section-card {
+        margin-bottom: 1rem;
+    }
+    .section-card header {
+        font-weight: 600;
+    }
+    .section-content {
+        white-space: pre-wrap;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .assumption-card {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--pico-muted-border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .assumption-status {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .status-validated { background-color: #2e7d32; color: white; }
+    .status-invalidated { background-color: #c62828; color: white; }
+    .status-untested { background-color: #f9a825; color: #333; }
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+    }
+    .meta-item {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .meta-item .meta-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--pico-muted-color);
+        letter-spacing: 0.05em;
+    }
+    .criteria-list {
+        margin: 0.5rem 0;
+    }
+    .criteria-list li {
+        margin-bottom: 0.25rem;
+    }
+    .back-link {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+</style>
+
+<a href="/inception" class="back-link" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; All Inceptions</a>
+
+<div class="page-header">
+    <h1><code>{{ task_id }}</code>: {{ task.name }}</h1>
+</div>
+
+<!-- Decision banner -->
+{% set dec = decision_state | lower %}
+{% if dec == 'go' %}
+<div class="decision-banner go">Decision: GO</div>
+{% elif dec in ('no-go', 'no_go') %}
+<div class="decision-banner no-go">Decision: NO-GO</div>
+{% elif dec == 'defer' %}
+<div class="decision-banner defer">Decision: DEFER — exploration continues</div>
+{% else %}
+<div class="decision-banner pending">Decision pending — exploration in progress</div>
+{% endif %}
+
+<!-- Metadata -->
+<div class="meta-grid">
+    <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div>{{ task.status }}</div>
+    </div>
+    <div class="meta-item">
+        <div class="meta-label">Owner</div>
+        <div>{{ task.owner | default('unassigned') }}</div>
+    </div>
+    <div class="meta-item">
+        <div class="meta-label">Created</div>
+        <div>{{ task.created | default('unknown') }}</div>
+    </div>
+    {% if task.date_finished %}
+    <div class="meta-item">
+        <div class="meta-label">Finished</div>
+        <div>{{ task.date_finished }}</div>
+    </div>
+    {% endif %}
+    <div class="meta-item">
+        <div class="meta-label">Assumptions</div>
+        <div>{{ linked_assumptions | length }}</div>
+    </div>
+</div>
+
+<!-- Problem Statement -->
+{% if sections.problem %}
+<article class="section-card">
+    <header>Problem Statement</header>
+    <div class="section-content">{{ sections.problem }}</div>
+</article>
+{% endif %}
+
+<!-- Linked Assumptions -->
+{% if linked_assumptions %}
+<article class="section-card">
+    <header>Assumptions ({{ linked_assumptions | length }})</header>
+    {% for a in linked_assumptions %}
+    <div class="assumption-card">
+        <div>
+            <code>{{ a.id }}</code> &mdash; {{ a.statement }}
+            {% if a.evidence %}
+            <div style="font-size: 0.8rem; color: var(--pico-muted-color); margin-top: 0.25rem;">
+                {% for e in a.evidence %}
+                <div>Evidence: {{ e.outcome }} ({{ e.date }})</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div>
+            {% if a.status == 'validated' %}
+            <span class="assumption-status status-validated">Validated</span>
+            {% elif a.status == 'invalidated' %}
+            <span class="assumption-status status-invalidated">Invalidated</span>
+            {% else %}
+            <span class="assumption-status status-untested">Untested</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</article>
+{% endif %}
+
+<!-- Exploration Plan -->
+{% if sections.exploration %}
+<article class="section-card">
+    <header>Exploration Plan</header>
+    <div class="section-content">{{ sections.exploration }}</div>
+</article>
+{% endif %}
+
+<!-- Scope Fence -->
+{% if sections.scope %}
+<article class="section-card">
+    <header>Scope Fence</header>
+    <div class="section-content">{{ sections.scope }}</div>
+</article>
+{% endif %}
+
+<!-- Go/No-Go Criteria -->
+{% if sections.criteria %}
+<article class="section-card">
+    <header>Go/No-Go Criteria</header>
+    <div class="section-content">{{ sections.criteria }}</div>
+</article>
+{% endif %}
+
+<!-- Decision Details -->
+{% if sections.decision and dec != 'pending' %}
+<article class="section-card">
+    <header>Decision Record</header>
+    <div class="section-content">{{ sections.decision }}</div>
+</article>
+{% endif %}
+
+<!-- Updates Log -->
+{% if sections.updates %}
+<details style="margin-top: 1.5rem;">
+    <summary>Update Log</summary>
+    <div class="section-content" style="font-size: 0.85rem; margin-top: 0.75rem;">{{ sections.updates }}</div>
+</details>
+{% endif %}
+
+<!-- Episodic Memory -->
+{% if episodic %}
+<details style="margin-top: 1rem;">
+    <summary>Episodic Memory</summary>
+    <div style="margin-top: 0.75rem; font-size: 0.85rem;">
+        {% if episodic.summary %}
+        <p>{{ episodic.summary }}</p>
+        {% endif %}
+        {% if episodic.outcomes %}
+        <p><strong>Outcomes:</strong></p>
+        <ul>
+            {% for o in episodic.outcomes %}
+            <li>{{ o }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if episodic.tags %}
+        <p style="color: var(--pico-muted-color);">
+            Tags: {% for tag in episodic.tags %}<code>{{ tag }}</code> {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</details>
+{% endif %}

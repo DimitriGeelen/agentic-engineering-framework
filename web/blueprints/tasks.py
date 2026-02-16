@@ -161,7 +161,7 @@ def create_task():
     if not name:
         return '<p style="color: var(--pico-del-color);">Task name is required</p>', 400
 
-    allowed_types = ["build", "test", "refactor", "specification", "design", "decommission"]
+    allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
     if workflow_type not in allowed_types:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 

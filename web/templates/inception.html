@@ -1,0 +1,171 @@
+<style>
+    .inception-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .inception-stat {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .inception-stat .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .inception-stat .stat-label {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.25rem;
+    }
+    .decision-badge {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .decision-go { background-color: #2e7d32; color: white; }
+    .decision-no-go { background-color: #c62828; color: white; }
+    .decision-defer { background-color: #f9a825; color: #333; }
+    .decision-pending { background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); }
+    .assumption-bar {
+        display: flex;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        background: var(--pico-muted-border-color);
+        margin-top: 0.5rem;
+    }
+    .assumption-bar .bar-validated { background: #2e7d32; }
+    .assumption-bar .bar-invalidated { background: #c62828; }
+    .assumption-bar .bar-untested { background: #f9a825; }
+    .filter-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .filter-row a {
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .filter-row a.active {
+        background: var(--pico-primary-background);
+        color: var(--pico-primary-inverse);
+        border-color: var(--pico-primary-background);
+    }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ summary.total }} inception{% if summary.total != 1 %}s{% endif %} exploring problem spaces and validating assumptions before commitment.</p>
+</div>
+
+<div class="inception-summary">
+    <div class="inception-stat">
+        <div class="stat-value">{{ summary.active }}</div>
+        <div class="stat-label">Active</div>
+    </div>
+    <div class="inception-stat">
+        <div class="stat-value" style="color: #2e7d32;">{{ summary.go }}</div>
+        <div class="stat-label">GO</div>
+    </div>
+    <div class="inception-stat">
+        <div class="stat-value" style="color: #c62828;">{{ summary.no_go }}</div>
+        <div class="stat-label">NO-GO</div>
+    </div>
+    <div class="inception-stat">
+        <div class="stat-value" style="color: #f9a825;">{{ summary.pending }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+    <div class="inception-stat">
+        <div class="stat-value">{{ assumptions_total }}</div>
+        <div class="stat-label">Assumptions</div>
+    </div>
+</div>
+
+<div class="filter-row">
+    <a href="/inception" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if not decision_filter and not location_filter %}active{% endif %}">All</a>
+    <a href="/inception?location=active" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if location_filter == 'active' %}active{% endif %}">Active</a>
+    <a href="/inception?decision=pending" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if decision_filter == 'pending' %}active{% endif %}">Pending</a>
+    <a href="/inception?decision=go" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if decision_filter == 'go' %}active{% endif %}">GO</a>
+    <a href="/inception?decision=no-go" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if decision_filter == 'no-go' %}active{% endif %}">NO-GO</a>
+</div>
+
+{% if inception_tasks %}
+{% for t in inception_tasks %}
+<article>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>
+                <a href="/inception/{{ t.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <code>{{ t.id }}</code>
+                </a>
+                &mdash; {{ t.name }}
+            </span>
+            <span>
+                {% set dec = t._decision | lower %}
+                {% if dec == 'go' %}
+                <span class="decision-badge decision-go">GO</span>
+                {% elif dec in ('no-go', 'no_go') %}
+                <span class="decision-badge decision-no-go">NO-GO</span>
+                {% elif dec == 'defer' %}
+                <span class="decision-badge decision-defer">DEFER</span>
+                {% else %}
+                <span class="decision-badge decision-pending">PENDING</span>
+                {% endif %}
+
+                {% if t._location == 'active' %}
+                <mark style="background-color: #1565c0; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.25rem;">ACTIVE</mark>
+                {% endif %}
+            </span>
+        </div>
+    </header>
+
+    {% if t.description %}
+    <p style="font-size: 0.9rem;">{{ t.description[:200] }}{% if t.description|length > 200 %}...{% endif %}</p>
+    {% endif %}
+
+    {% if t._assumption_total > 0 %}
+    <div style="font-size: 0.8rem; color: var(--pico-muted-color);">
+        Assumptions: {{ t._assumption_validated }} validated, {{ t._assumption_untested }} untested, {{ t._assumption_invalidated }} invalidated
+        <div class="assumption-bar">
+            {% if t._assumption_total > 0 %}
+            <div class="bar-validated" style="width: {{ (t._assumption_validated / t._assumption_total * 100) | round }}%;"></div>
+            <div class="bar-invalidated" style="width: {{ (t._assumption_invalidated / t._assumption_total * 100) | round }}%;"></div>
+            <div class="bar-untested" style="width: {{ (t._assumption_untested / t._assumption_total * 100) | round }}%;"></div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <footer style="text-align: left; border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--pico-muted-color);">
+        Owner: {{ t.owner | default('unassigned') }}
+        | Status: {{ t.status }}
+        | Created: {{ t.created | default('unknown') }}
+        {% if t.date_finished %} | Finished: {{ t.date_finished }}{% endif %}
+    </footer>
+</article>
+{% endfor %}
+{% else %}
+<div class="coming-soon">
+    <h3>No Inception Tasks</h3>
+    <p>No inception tasks found. Start one with <code>fw inception start "Problem to explore"</code></p>
+</div>
+{% endif %}
