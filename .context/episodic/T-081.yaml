@@ -1,20 +1,17 @@
 # ============================================================================
 # EPISODIC MEMORY - T-081: Build fw inception CLI commands
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
+# STATUS: ENRICHED AND COMPLETE
 #
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
-# must be filled in by a human or LLM before this episodic is useful.
-#
-# To enrich: Read the source task file and fill in the TODO sections.
-# When done: Change enrichment_status from "pending" to "complete"
+# This episodic has been enriched with full task context and is ready for use.
 # ============================================================================
 # Generated: 2026-02-16T21:13:34Z
+# Enriched: 2026-02-16T22:05:00Z
 
 task_id: T-081
 task_name: "Build fw inception CLI commands"
 workflow_type: build
-enrichment_status: pending  # Change to "complete" after enrichment
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-16T21:06:20Z
@@ -23,50 +20,62 @@ duration_days: 0
 updates_count: 3
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
-# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-081-build-fw-inception-cli-commands.md]
+  Created fw inception CLI commands to manage the inception phase workflow. Implemented three subcommands: start creates inception tasks using the new inception template and auto-sets focus, status lists all active inception tasks with their decision state (go/no-go/defer), and decide validates the decision, requires rationale, updates the Decision section via Python inline editing, and auto-completes the task for go/no-go decisions. This fills the gap identified in T-072 audit where the framework had no tooling for the intellectual work of early-stage problem exploration and go/no-go gates.
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "Task completed"
+  - "fw inception start creates inception task with proper template and sets focus"
+  - "fw inception status lists active inception tasks with decision status"
+  - "fw inception decide validates go/no-go/defer, requires rationale, updates Decision section, completes task"
+  - "Full E2E lifecycle tested successfully"
+  - "Integration with bin/fw routing completed"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
-# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "Python inline script for Decision section updates"
+    why: "Avoided file parsing complexity by using Python's string manipulation within bash heredoc. Clean separation of concerns: bash for routing, Python for structured editing."
+  - description: "Automatic task completion on go/no-go decision"
+    why: "Encodes the workflow rule that inception tasks end at the decision gate, preventing forgotten task cleanup. Only defer keeps task active for continued exploration."
+  - description: "Contextual next-step guidance"
+    why: "Each subcommand prints relevant next actions (e.g., after 'start': register assumptions; after 'decide go': create build tasks). Lowers cognitive load for users."
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
-challenges:
-  # No challenges detected (or add manually)
+challenges: []
 
 # Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
-# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
-  - decision: "[TODO: Extract from Design Record]"
-    rationale: "[TODO: Why this choice?]"
-    alternatives_rejected: []
+  - decision: "Use Python inline script for Decision section updates instead of sed"
+    rationale: "Decision section has multi-line structure (Decision, Rationale, Date). Sed would require complex line counting and state machine. Python provides cleaner string manipulation and YAML-safe formatting."
+    alternatives_rejected: ["sed multi-line replacement", "awk script", "dedicated editing agent"]
+  - decision: "Auto-complete task on go/no-go, keep active on defer"
+    rationale: "go/no-go are terminal states (inception ends). defer signals 'need more exploration' — task should stay active. Matches natural workflow expectations."
+    alternatives_rejected: ["Manual completion for all decisions", "Never auto-complete"]
+  - decision: "Task ID extraction via grep + sed from create-task output"
+    rationale: "create-task.sh outputs 'ID: T-XXX' line. Reliable pattern for auto-focus after creation."
+    alternatives_rejected: ["Parse YAML frontmatter", "Return task ID via exit code"]
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
 artifacts:
   created:
-    - "[TODO: List files created]"
-  modified: []
+    - "lib/inception.sh"
+  modified:
+    - "bin/fw"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
   spawned: []
+  parent: "T-079"
 
 # Tags for retrieval
-tags: []
+tags:
+  - "inception-phase"
+  - "cli-commands"
+  - "workflow-type"
+  - "go-no-go-gates"
+  - "python-inline-editing"
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-081-build-fw-inception-cli-commands.md

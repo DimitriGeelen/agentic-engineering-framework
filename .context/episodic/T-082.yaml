@@ -1,20 +1,17 @@
 # ============================================================================
 # EPISODIC MEMORY - T-082: Build fw assumption CLI commands
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
+# STATUS: ENRICHED AND COMPLETE
 #
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
-# must be filled in by a human or LLM before this episodic is useful.
-#
-# To enrich: Read the source task file and fill in the TODO sections.
-# When done: Change enrichment_status from "pending" to "complete"
+# This episodic has been enriched with full task context and is ready for use.
 # ============================================================================
 # Generated: 2026-02-16T21:13:41Z
+# Enriched: 2026-02-16T22:05:00Z
 
 task_id: T-082
 task_name: "Build fw assumption CLI commands"
 workflow_type: build
-enrichment_status: pending  # Change to "complete" after enrichment
+enrichment_status: complete
 
 # Timeline
 created: 2026-02-16T21:06:21Z
@@ -23,50 +20,72 @@ duration_days: 0
 updates_count: 3
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
-# Don't just copy the description - synthesize the journey from Updates section.
 summary: |
-  [TODO: Summarize what was done and why it matters. Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-082-build-fw-assumption-cli-commands.md]
+  Created fw assumption CLI commands to manage project assumptions across their lifecycle. Implemented four subcommands: add generates A-XXX IDs and stores assumptions in .context/project/assumptions.yaml linked to inception tasks, validate/invalidate record evidence and update status with timestamps, and list shows color-coded assumptions (green=validated, red=invalidated, yellow=untested) with optional status filtering. Discovered and fixed a critical bug during testing where sys.argv[1:5] extracted only 4 arguments instead of 5, causing Python script failures. This provides the assumptions register identified as necessary in T-079 design.
 
 # Key outcomes (from acceptance criteria)
 outcomes:
-  - "Task completed"
+  - "fw assumption add generates A-XXX IDs and stores in assumptions.yaml"
+  - "fw assumption validate/invalidate records evidence and dates"
+  - "fw assumption list shows color-coded by status with filtering"
+  - "Bug found and fixed: sys.argv slice error (1:5 should be 1:6 for 5 args)"
+  - "Full lifecycle tested successfully"
+  - "Integration with bin/fw routing completed"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
-# Format: - description: "What worked" / why: "Why it worked"
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "YAML-based assumptions register in .context/project/"
+    why: "Assumptions outlive individual inception tasks and need to be queryable across the project lifecycle. Storing in project memory (not task-specific) enables cross-inception pattern recognition."
+  - description: "Auto-incrementing A-XXX ID generation"
+    why: "Pythonic max(existing_ids) + 1 approach is simple and collision-free. Three-digit zero-padding (A-001) maintains visual consistency with task IDs."
+  - description: "Color-coded status in list output"
+    why: "Validated (green), invalidated (red), untested (yellow) provides instant visual feedback on assumption health. Critical for inception go/no-go decisions."
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
 challenges:
-  # No challenges detected (or add manually)
+  - issue: "sys.argv[1:5] only extracted 4 arguments instead of 5"
+    root_cause: "Python slice [1:5] means indices 1,2,3,4 (4 elements). For 5 args after script name, needed [1:6]."
+    resolution: "Changed to sys.argv[1:6] in assumption.sh line 195 (do_assumption_update function)"
+    learning: "Python slice end index is exclusive. Common off-by-one error when converting 'I need N args' to slice notation."
 
 # Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
-# Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
-  - decision: "[TODO: Extract from Design Record]"
-    rationale: "[TODO: Why this choice?]"
-    alternatives_rejected: []
+  - decision: "Store assumptions in .context/project/assumptions.yaml (not task files)"
+    rationale: "Assumptions are project-level knowledge, not task-specific. Multiple inception tasks may reference the same assumption. Centralized register enables assumption reuse and lifecycle tracking beyond individual tasks."
+    alternatives_rejected: ["Store in task frontmatter", "Create .tasks/assumptions/ directory", "Store in episodic memory"]
+  - decision: "Evidence stored as array with date timestamps"
+    rationale: "An assumption might be partially validated by multiple experiments. Array structure allows cumulative evidence gathering. Timestamps enable understanding of when validation occurred."
+    alternatives_rejected: ["Single evidence string", "Separate evidence.yaml file"]
+  - decision: "Require --evidence flag for validate/invalidate"
+    rationale: "Antifragility principle: we learn from why assumptions fail or succeed. Evidence is the learning artifact. Making it required prevents lazy status updates without documentation."
+    alternatives_rejected: ["Optional evidence", "Auto-generated evidence from git log"]
+  - decision: "validation_method field defaults to 'TBD'"
+    rationale: "Forces explicit thinking about how to test each assumption. TBD acts as a reminder to plan validation before executing."
+    alternatives_rejected: ["Omit validation_method field", "Auto-infer from assumption text"]
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
 artifacts:
   created:
-    - "[TODO: List files created]"
-  modified: []
+    - "lib/assumption.sh"
+    - ".context/project/assumptions.yaml"
+  modified:
+    - "bin/fw"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
   spawned: []
+  parent: "T-079"
 
 # Tags for retrieval
-tags: []
+tags:
+  - "assumption-tracking"
+  - "inception-phase"
+  - "cli-commands"
+  - "yaml-register"
+  - "evidence-based-validation"
+  - "python-argv-bug"
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-082-build-fw-assumption-cli-commands.md
