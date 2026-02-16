@@ -172,4 +172,20 @@ learnings:
     date: 2026-02-16
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-022
+    learning: "PreToolUse hooks fire on ALL tool calls including test commands — write pattern tests as standalone files that test regex logic directly"
+    source: P-002
+    task: T-092
+    date: 2026-02-16
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-023
+    learning: "Bash command text includes quoted arguments (commit messages, echo args) — strip quoted content before pattern matching to prevent false positives"
+    source: P-002
+    task: T-092
+    date: 2026-02-16
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

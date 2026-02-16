@@ -263,6 +263,26 @@ generate_claude_code_config() {
         cat > "$dir/.claude/settings.json" << 'SJSON'
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__FRAMEWORK_ROOT__/agents/context/check-active-task.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__FRAMEWORK_ROOT__/agents/context/check-tier0.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "",
@@ -279,7 +299,7 @@ generate_claude_code_config() {
 SJSON
         # Replace placeholder with actual framework path
         sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (PostToolUse hook)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (Tier 0 + Tier 1 + checkpoint hooks)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi
