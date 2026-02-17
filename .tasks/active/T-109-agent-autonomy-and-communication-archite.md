@@ -1,17 +1,18 @@
 ---
 id: T-109
-name: Agent autonomy and communication architecture
+name: Structured result ledger protocol
 description: >
-  Explore three levels of agent autonomy: (1) structured result ledger for sub-agent
-  coordination, (2) external trigger mechanisms (systemd.path) to start agent work from
-  file events, (3) automated compact-resume lifecycle for indefinite agent sessions.
+  Inception: Design and spike a task-scoped, file-based result ledger with typed YAML
+  envelopes and automatic size gating. Implements fw bus post/read/manifest CLI.
+  Go/no-go: prevents T-073-class context explosion in simulated scenario.
   Research doc: docs/reports/2026-02-17-agent-communication-bus-research.md
+  NOTE: Decomposed from original umbrella task. Spikes 2-3 moved to T-110, T-111.
 
 status: started-work
 workflow_type: inception
 owner: human
-tags: [multi-agent, autonomy, architecture, communication]
-related_tasks: [T-097, T-098]
+tags: [multi-agent, result-ledger, communication]
+related_tasks: [T-097, T-098, T-110, T-111]
 created: 2026-02-17T11:19:24Z
 last_update: 2026-02-17T11:19:24Z
 date_finished: null

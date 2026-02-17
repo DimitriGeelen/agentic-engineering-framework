@@ -107,11 +107,13 @@ warn_by_tokens() {
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
-        echo "Commit work. Consider: fw handover --checkpoint" >&2
+        echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
+        echo "ACTION: Commit work, then 'fw handover --checkpoint'" >&2
         echo "" >&2
     elif [ "$tokens" -ge "$TOKEN_WARN" ]; then
         echo "" >&2
-        echo "Note: Context at ${tokens} tokens (~${pct}%). Commit frequently." >&2
+        echo "Note: Context at ${tokens} tokens (~${pct}%)." >&2
+        echo "BUDGET: Propose only small, bounded tasks. Commit before starting new work." >&2
         echo "" >&2
     fi
 }

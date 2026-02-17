@@ -85,6 +85,13 @@ Captured → Started Work ↔ Issues → Work Completed
 | Decommission | Remove obsolete code | Deployment Agent |
 | Inception | Explore problem, validate assumptions, go/no-go | Human / Any Agent |
 
+## Task Sizing Rules
+
+- **One task = one deliverable.** If a task has multiple independent spikes or deliverables, decompose it.
+- **One inception = one question.** An inception task should explore one problem and produce one go/no-go decision. "Umbrella inceptions" that bundle independent explorations create all-or-nothing decisions and coarse progress tracking.
+- **Target: fits in one session.** If a task's time-box exceeds 4 hours or requires 3+ sessions, it should be split.
+- **Decomposition signal:** 3+ spikes in an exploration plan, or 3+ independent problem domains, means the task is too big.
+
 ## Enforcement Tiers
 
 | Tier | Description | Bypass | Implementation |
@@ -362,6 +369,14 @@ Synthesizes current state from:
 - See **Sub-Agent Dispatch Protocol** below for detailed rules on managing sub-agent results
 - Prefer `fw resume quick` over `fw resume status` for routine checks
 - Prefer `git log --oneline -5` over `git log -5`
+
+### Work Proposal Rule
+- **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
+- Below 50% (100K tokens): proceed normally
+- 50-65% (100K-130K): propose only small, bounded tasks; commit first
+- Above 65% (130K+): propose only wrap-up actions (commit, learnings, handover)
+- Above 75% (150K+): emergency handover immediately, no new work
+- **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
 - A PostToolUse hook runs `checkpoint.sh` which reads **actual token usage** from the session JSONL transcript
