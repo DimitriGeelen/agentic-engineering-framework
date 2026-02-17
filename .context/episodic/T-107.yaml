@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-107: Initialize German pronunciation app project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T18:53:12Z
+# ============================================================================
+
+task_id: T-107
+task_name: "Initialize German pronunciation app project"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T08:54:42Z
+completed: 2026-02-17T18:53:12Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-02-17T19:53:02+01:00
+last_commit: 2026-02-17T19:53:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Initialize sprechloop project at /opt/001-sprechloop
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - ".tasks/active/T-107-initialize-german-pronunciation-app-proj.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T19:53:02"
+    action: "T-107: Initialize sprechloop project at /opt/001-sprechloop"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 598 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [external-project, pronunciation, german, bridge-task]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 598
+  commits: 2
+  files_changed: 8
+  lines_added: 429
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-107-initialize-german-pronunciation-app-proj.md
+generated_by: context-agent-hybrid
