@@ -188,3 +188,9 @@ decisions:
     date: 2026-02-16
     task: T-086
     rationale: "Manual story points meaningless for AI agents. Git data is objective. Learning loop comes from comparing similar completed tasks via fw metrics predict."
+
+  - id: D-021
+    decision: "Build dispatch infrastructure (protocol + templates + guidelines) instead of specialized agent types"
+    date: 2026-02-17
+    task: T-097
+    rationale: "Cannot create new Claude Code agent types. Generic agents handle 7 of 8 dispatches. Real problem is ad-hoc result management causing context explosion (T-073). Standardize usage via CLAUDE.md protocol and prompt templates."

@@ -197,4 +197,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-025
+    learning: "Sub-agent result management is the real Type A optimization, not agent specialization. Content generators must write to disk and return summaries; investigators return structured findings. Cap parallel dispatches at 5. Leave 40K token headroom."
+    source: T-097 inception evidence (8 dispatches across 96 tasks)
+    task: T-097
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

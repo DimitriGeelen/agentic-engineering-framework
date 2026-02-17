@@ -134,6 +134,7 @@ Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
 | Healing | `agents/healing/` | Error recovery | `fw healing diagnose T-XXX` |
 | Resume | `agents/resume/` | Post-compaction recovery | `fw resume status` |
 | Observe | `agents/observe/` | Capture anomalies | `fw observe "description"` |
+| Dispatch | `agents/dispatch/` | Sub-agent prompt templates | Read templates before dispatching |
 
 ## Session Protocols
 
