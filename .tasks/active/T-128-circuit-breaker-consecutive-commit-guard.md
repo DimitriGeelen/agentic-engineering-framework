@@ -5,12 +5,12 @@ description: >
   Addresses O-008. PostToolUse hook counts consecutive agent commits without user input. Warns after N.
 status: captured
 workflow_type: build
-horizon: next
+horizon: now
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-17T20:03:13Z
-last_update: 2026-02-17T20:03:13Z
+last_update: 2026-02-17T23:49:26Z
 date_finished: null
 ---
 
@@ -26,3 +26,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-128-circuit-breaker-consecutive-commit-guard.md
 - **Context:** Initial task creation
+
+### 2026-02-17T23:49:26Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
