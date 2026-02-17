@@ -124,7 +124,8 @@ show_help() {
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
-    echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project"
+    echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (fast, non-interactive)"
+    echo -e "  ${GREEN}setup${NC} [dir]          Guided 6-step project onboarding wizard"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"
@@ -793,6 +794,10 @@ print(len(tier0))
     init)
         source "$FW_LIB_DIR/init.sh"
         do_init "$@"
+        ;;
+    setup)
+        source "$FW_LIB_DIR/setup.sh"
+        do_setup "$@"
         ;;
     harvest)
         source "$FW_LIB_DIR/harvest.sh"
