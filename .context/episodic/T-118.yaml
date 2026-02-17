@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-118: Investigate and remediate silent error bypass behavior
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T15:11:12Z
+# ============================================================================
+
+task_id: T-118
+task_name: "Investigate and remediate silent error bypass behavior"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-17T14:43:20Z
+completed: 2026-02-17T15:11:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-17T15:45:32+01:00
+last_commit: 2026-02-17T16:11:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add error investigation protocol to CLAUDE.md, record L-037 FP-007. Deploy error-watchdog PostToolUse hook for Bash error detection
+
+# Key outcomes
+outcomes:
+  - Problem statement validated with historical evidence
+  - Root cause mechanisms categorized (3 categories, 7 instances)
+  - Error-watchdog PostToolUse hook built and tested
+  - Go/No-Go decision recorded
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Deploy error-watchdog PostToolUse hook for Bash error detection"
+    source: git-mined
+  - description: "Add error investigation protocol to CLAUDE.md, record L-037 FP-007"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/error-watchdog.sh"
+  - "CLAUDE.md"
+  - ".claude/settings.json"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/patterns.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/init.sh"
+  - ".tasks/active/T-118-investigate-and-remediate-silent-error-b.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T15:45:32"
+    action: "T-118: Add error investigation protocol to CLAUDE.md, record L-037 FP-007"
+  - time: "2026-02-17T16:11:01"
+    action: "T-118: Deploy error-watchdog PostToolUse hook for Bash error detection"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 27
+  commits: 2
+  files_changed: 10
+  lines_added: 268
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-118-investigate-and-remediate-silent-error-b.md
+generated_by: context-agent-hybrid
