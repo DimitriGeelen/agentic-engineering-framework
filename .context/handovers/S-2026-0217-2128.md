@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Built and completed T-125 (first-session orientation), T-126 (inception gate), T-127 (behavioral rules). All three fixes propagated via `fw init` into a fresh `/opt/001-sprechloop` project. Ready to run cycle 2 of the T-124 onboarding experiment — start a new Claude session in sprechloop and observe agent behavior.
 
 ## Work in Progress
 
@@ -22,35 +22,35 @@ session_narrative: ""
 
 ### T-124: Validate framework new-project onboarding via live sprechloop experiment
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Built T-125/T-126/T-127, deleted sprechloop, re-init from scratch
+- **Next step:** Run cycle 2 — start new Claude session in /opt/001-sprechloop, observe agent behavior per docs/cycle2-protocol.md
+- **Blockers:** None
+- **Insight:** Clean delete+reinit is the only honest test of onboarding fixes
 
 <!-- horizon: next -->
 
 ### T-128: Circuit breaker: consecutive-commit guardrail
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Task created in previous session
+- **Next step:** Build after cycle 2 results — may not be needed if behavioral rules suffice
+- **Blockers:** None
+- **Insight:** Deferred to see if T-127 behavioral rules + T-126 inception gate are sufficient
 
 ### T-129: Inception template: Technical Constraints section
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Task created in previous session
+- **Next step:** Add Technical Constraints section to inception.md template
+- **Blockers:** None
+- **Insight:** Deferred — tests constraint discovery via CLAUDE.md behavioral rules first
 
 <!-- horizon: later -->
 
 ### T-120: Review Google Context Engineering whitepaper against framework
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Parked
+- **Next step:** Read and compare when bandwidth allows
+- **Blockers:** None
+- **Insight:** Not urgent — T-124 experiment takes priority
 
 ## Inception Phases
 
@@ -66,40 +66,32 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **Clean delete+reinit over session reset** — User argued (correctly) that only a full delete+reinit tests whether fw init propagates all fixes. Session reset would skip the init flow.
+2. **Combined commit for T-125/T-126/T-127** — All three fixes are interdependent (all address cycle 1 observations). Shipped together for atomic validation.
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Previous session (O-011)** — Burned entire context on analysis/planning without implementing. Lesson: 20% analysis, 80% building.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. Will the behavioral rules in CLAUDE.md actually change agent behavior? Cycle 2 will answer this.
+2. Is 2-commit threshold for inception gate the right number? May need tuning after cycle 2.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- The sprechloop CLAUDE.md commit used "T-001" but T-001 doesn't exist yet — that's intentional (clean slate test)
+- Cycle 2 protocol is in `docs/cycle2-protocol.md` — use the exact user prompts specified there
+- L-039: Always commit BEFORE completing a task (work-completed moves file to completed/)
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Run cycle 2 of T-124: Start a new Claude session in `/opt/001-sprechloop`, follow the protocol in `docs/cycle2-protocol.md`, and observe whether the fixes changed agent behavior.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Modified: `agents/git/lib/hooks.sh` (inception gate), `agents/git/git.sh` (version bump), `agents/context/check-active-task.sh` (inception awareness), `agents/context/lib/init.sh` (first-session), `agents/resume/resume.sh` (first-session), `lib/templates/claude-project.md` (behavioral rules), `CLAUDE.md` (behavioral rules)
+- Created: `/opt/001-sprechloop/` (fresh project via fw init)
 
 ## Recent Commits
 
