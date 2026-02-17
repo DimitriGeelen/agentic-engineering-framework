@@ -8,7 +8,7 @@ This command enforces the core principle: "Nothing gets done without a task."
 ALWAYS use before:
 - Implementing a feature, bugfix, or refactor
 - Following a plan
-- Executing any skill that produces code changes (brainstorming → implementation, TDD, feature-dev, etc.)
+- Executing any skill that produces code changes
 
 ## Step 1: Check Context
 
@@ -51,7 +51,7 @@ Proceeding with implementation.
 
 ## Step 4: Proceed
 
-Now invoke whatever skills or workflows are needed (brainstorming, TDD, plans, etc.).
+Now proceed with implementation. Optionally use `/explore` or `/plan` if the task needs it.
 
 ## Rules
 

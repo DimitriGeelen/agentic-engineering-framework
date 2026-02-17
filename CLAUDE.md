@@ -42,7 +42,7 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 2. **User instructions** — Direct human instructions can override framework rules via Tier 2 (situational authorization with logging).
 3. **Skills/plugins** — Apply AFTER framework gates are satisfied. A skill that says "invoke before any response" means: after verifying an active task exists. Skills enhance workflows; they do not replace framework governance.
 
-**The practical rule:** Before following ANY skill workflow (brainstorming, TDD, executing-plans, feature-dev, etc.), first ensure a task exists and focus is set. If a skill's instructions conflict with creating a task first, the task wins.
+**The practical rule:** Before following ANY skill or plugin workflow, first ensure a task exists and focus is set. If a skill's instructions conflict with creating a task first, the task wins.
 
 **Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
 
@@ -513,7 +513,7 @@ fw bus clear T-XXX
 
 **Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
 
-**Sequential TDD** (T-058): Fresh agent per implementation task with review between. Use `superpowers:subagent-driven-development` skill.
+**Sequential TDD** (T-058): Fresh agent per implementation task with review between.
 
 ## Agent Behavioral Rules
 
@@ -546,6 +546,25 @@ For tasks involving hardware APIs (microphone, camera, GPS, Bluetooth):
 2. **List constraints in the exploration plan** before writing code
 3. **Test the API access path** in a minimal spike before building the full app
 
+### Verification Before Completion
+Before setting any task to `work-completed`:
+1. Run all commands in the task's `## Verification` section
+2. Check every acceptance criterion checkbox — all must be met
+3. If tests exist for the changed code, run them
+4. Report results to user with pass/fail evidence
+5. Do NOT call `fw task update --status work-completed` until all pass
+6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
+
+### Hypothesis-Driven Debugging
+When encountering errors or unexpected behavior:
+1. **State the symptom** in one sentence
+2. **Form one hypothesis** for the root cause
+3. **Design one test** to prove or disprove it (a command, a log check, a code read)
+4. Run the test and report the result
+5. If disproved, form the next hypothesis — max **3 hypotheses** before escalating to user
+6. Never shotgun-debug (trying random fixes without understanding the cause)
+7. After resolution, record the pattern: `fw healing resolve T-XXX --mitigation "what fixed it"`
+
 ## Session Start Protocol
 
 **Before beginning any work:**
@@ -559,7 +578,7 @@ For tasks involving hardware APIs (microphone, camera, GPS, Bluetooth):
 **Before ANY implementation (even if a skill says "start now"):**
 1. Verify a task exists for the work: `fw work-on "name" --type build` or `fw work-on T-XXX`
 2. Confirm focus is set in `.context/working/focus.yaml`
-3. THEN invoke skills (brainstorming, TDD, feature-dev, etc.)
+3. THEN proceed with implementation
 
 This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task. Use `/start-work` if unsure.
 
