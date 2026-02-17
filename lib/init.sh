@@ -351,6 +351,15 @@ generate_claude_code_config() {
             "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/checkpoint.sh post-tool"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__FRAMEWORK_ROOT__/agents/context/error-watchdog.sh"
+          }
+        ]
       }
     ]
   }
@@ -359,7 +368,7 @@ SJSON
         # Replace placeholders with actual paths
         sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
         sed -i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (Tier 0 + Tier 1 + checkpoint hooks)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (Tier 0 + Tier 1 + checkpoint + error-watchdog hooks)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi

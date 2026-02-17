@@ -212,3 +212,9 @@ decisions:
     date: 2026-02-17
     task: T-117
     rationale: "4-task validation proved: auto-complete for tasks with AC, git-derived for old-template tasks, full timeline/artifacts/challenges from git. Context cost: 1 bash call vs ~2000 tokens manual enrichment."
+
+  - id: D-025
+    decision: "GO on error-watchdog PostToolUse hook for Bash error detection. Two-layer enforcement: CLAUDE.md protocol (instructional) + error-watchdog.sh hook (structural). Detects high-confidence errors (exit 127, tracebacks, Permission denied) and injects investigation reminder. Conservative pattern list avoids false positives."
+    date: 2026-02-17
+    task: T-118
+    rationale: "7 systematic instances across 3 root cause mechanisms. Hook is low overhead (~25ms), follows framework philosophy of structural > instructional enforcement."
