@@ -58,17 +58,27 @@ import re, sys
 
 command = sys.stdin.read().strip()
 
+# Strip heredoc body contents to avoid false positives on embedded text.
+# Matches: <<[-]?['\"']?WORD['\"']? ... WORD (on own line)
+def strip_heredocs(cmd):
+    return re.sub(
+        r'(<<-?\s*)[\'\"]?(\w+)[\'\"]?([^\n]*\n)'
+        r'.*?'
+        r'(\n[ \t]*\2[ \t]*(?:\n|$))',
+        r'\1\2\3\4',
+        cmd,
+        flags=re.DOTALL,
+    )
+
 # Strip quoted string contents to avoid false positives on commit messages,
-# echo arguments, heredocs, and embedded Python/test code.
-# This is an approximation — perfect shell parsing is impossible in regex.
+# echo arguments, and embedded Python/test code.
 def strip_quotes(cmd):
-    # Remove single-quoted string contents (no escaping inside single quotes in sh)
     cmd = re.sub(r\"'[^']*'\", \"''\", cmd)
-    # Remove double-quoted string contents (approximate)
     cmd = re.sub(r'\"[^\"]*\"', '\"\"', cmd)
     return cmd
 
-command_stripped = strip_quotes(command)
+command_stripped = strip_heredocs(command)
+command_stripped = strip_quotes(command_stripped)
 
 # Tier 0 destructive patterns — high confidence, low false positive
 # Each tuple: (regex_pattern, risk_description)

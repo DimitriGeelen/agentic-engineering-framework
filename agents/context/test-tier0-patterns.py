@@ -5,6 +5,19 @@ Run: python3 agents/context/test-tier0-patterns.py
 import re, sys
 
 
+def strip_heredocs(cmd):
+    """Strip heredoc body contents to prevent false positives on embedded text.
+    Matches: <<[-]?['"]?WORD['"]? ... WORD (on own line)"""
+    return re.sub(
+        r'(<<-?\s*)[\'"]?(\w+)[\'"]?([^\n]*\n)'   # opener line
+        r'.*?'                                       # body (DOTALL non-greedy)
+        r'(\n[ \t]*\2[ \t]*(?:\n|$))',               # closer on own line
+        r'\1\2\3\4',                                  # keep opener+closer, strip body
+        cmd,
+        flags=re.DOTALL,
+    )
+
+
 def strip_quotes(cmd):
     """Strip quoted string contents to avoid false positives."""
     cmd = re.sub(r"'[^']*'", "''", cmd)
@@ -42,7 +55,8 @@ PATTERNS = [
 ]
 
 def check(cmd):
-    stripped = strip_quotes(cmd)
+    stripped = strip_heredocs(cmd)
+    stripped = strip_quotes(stripped)
     for pattern, desc in PATTERNS:
         if re.search(pattern, stripped):
             return desc
@@ -96,6 +110,21 @@ ALLOW_TESTS = [
     "git commit -m 'Add DROP TABLE detection'",
     'echo "git reset --hard is dangerous"',
     "echo 'docker system prune removes everything'",
+    # False positive prevention — patterns inside heredocs
+    "cat <<EOF\ngit push --force origin main\nEOF",
+    "cat <<'EOF'\nDROP TABLE users;\nEOF",
+    "python3 <<SCRIPT\nrm -rf /\nSCRIPT",
+    "cat <<-END\n\tgit reset --hard HEAD~1\n\tEND",
+]
+
+# Commands with heredocs that ALSO have real dangerous commands outside
+BLOCK_HEREDOC_TESTS = [
+    # Dangerous command AFTER heredoc
+    ("cat <<EOF\nhello\nEOF\ngit push --force origin main", "FORCE PUSH"),
+    # Dangerous command BEFORE heredoc
+    ("git push --force && cat <<EOF\nhello\nEOF", "FORCE PUSH"),
+    # Dangerous command on same line as heredoc opener
+    ("rm -rf / ; cat <<EOF\nhello\nEOF", "RM ROOT"),
 ]
 
 passed = 0
@@ -111,6 +140,18 @@ for cmd in BLOCK_TESTS:
     else:
         failed += 1
         print(f"  [FAIL] '{cmd}' -> SAFE (should be blocked)")
+
+print()
+print("=== SHOULD BLOCK (dangerous outside heredoc) ===")
+for cmd, expected_tag in BLOCK_HEREDOC_TESTS:
+    result = check(cmd)
+    ok = result != "SAFE" and expected_tag in result
+    if ok:
+        passed += 1
+        print(f"  [PASS] '{cmd[:60]}...' -> {result}")
+    else:
+        failed += 1
+        print(f"  [FAIL] '{cmd[:60]}...' -> {result} (expected {expected_tag})")
 
 print()
 print("=== SHOULD ALLOW ===")
