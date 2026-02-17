@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-114: Add closed task commit warning to commit-msg hook
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:39:23Z
+# ============================================================================
+
+task_id: T-114
+task_name: "Add closed task commit warning to commit-msg hook"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T13:37:06Z
+completed: 2026-02-17T14:39:22Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-17T15:39:13+01:00
+last_commit: 2026-02-17T15:39:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add closed task commit warning to commit-msg hook
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T15:39:13"
+    action: "T-114: Add closed task commit warning to commit-msg hook"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62
+  commits: 1
+  files_changed: 1
+  lines_added: 12
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-114-add-closed-task-commit-warning-to-commit.md
+generated_by: context-agent-hybrid
