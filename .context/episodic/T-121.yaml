@@ -26,13 +26,13 @@ summary: |
 
 # Key outcomes
 outcomes:
-  - `horizon` field in both templates (default.md, inception.md) with default `now`
-  - `create-task.sh` accepts `--horizon` flag
-  - `update-task.sh` accepts `--horizon` flag
-  - `handover.sh` sorts/filters Work in Progress by horizon (now first, later excluded from suggestions)
-  - `fw work-on` passes `--horizon` through to create-task
-  - Existing tasks tagged: T-111→now, T-107→next, T-120→later
-  - CLAUDE.md documents the horizon field
+  - "horizon field in both templates (default.md, inception.md) with default now"
+  - "create-task.sh accepts --horizon flag"
+  - "update-task.sh accepts --horizon flag"
+  - "handover.sh sorts Work in Progress by horizon (now first, later excluded from suggestions)"
+  - "fw work-on passes --horizon through to create-task"
+  - "Existing tasks tagged: T-111=now, T-107=next, T-120=later"
+  - "CLAUDE.md documents the horizon field"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
