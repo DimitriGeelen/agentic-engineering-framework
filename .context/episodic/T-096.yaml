@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-096: Update FRAMEWORK.md to reflect current framework state
+# ============================================================================
+# Generated: 2026-02-17T07:00:11Z
+
+task_id: T-096
+task_name: "Update FRAMEWORK.md to reflect current framework state"
+workflow_type: refactor
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T06:57:40Z
+completed: 2026-02-17T07:00:11Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  FRAMEWORK.md (the provider-neutral guide) was significantly outdated.
+  Updated to reflect: simplified task statuses (4 not 6), correct template name
+  (default.md not zzz-default.md), simplified body sections (Context+Updates not
+  Design Record/Spec Record/Test Files), enforcement implementation details,
+  fw CLI section, and "Setting Up a New Project" section. This supports D4
+  (Portability) — any agent reading FRAMEWORK.md now gets an accurate picture.
+
+# Key outcomes
+outcomes:
+  - "FRAMEWORK.md reflects actual framework state (not spec-era assumptions)"
+  - "Added fw CLI section and setup instructions for new projects"
+  - "Enforcement tiers show implementation status"
+
+# What worked well
+successes:
+  - description: "Systematic comparison against CLAUDE.md revealed all drift points"
+    why: "CLAUDE.md is kept current by active use; FRAMEWORK.md was written once and forgotten"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made
+decisions:
+  - decision: "Use fw commands throughout instead of raw agent paths"
+    rationale: "fw is the primary interface; raw paths are implementation detail"
+    alternatives_rejected: ["Show both fw and raw paths"]
+
+# Files modified
+artifacts:
+  created: []
+  modified:
+    - "FRAMEWORK.md — comprehensive update to match current framework state"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+  predecessor: [T-051, T-052]
+
+# Tags
+tags: [documentation, portability, framework, refactor]
+
+# Passive metrics
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 1
+  lines_added: 78
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-096-update-frameworkmd-to-reflect-current-fr.md
+generated_by: context-agent
