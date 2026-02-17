@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-135: Harden audit task quality checks — catch thin/stub tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T23:41:41Z
+# ============================================================================
+
+task_id: T-135
+task_name: "Harden audit task quality checks — catch thin/stub tasks"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-17T23:39:34Z
+completed: 2026-02-17T23:41:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T00:40:23+01:00
+last_commit: 2026-02-18T00:41:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Harden audit task quality checks — catch thin/stub tasks. Flesh out T-134 and T-135 task files — AC, verification, context
+
+# Key outcomes
+outcomes:
+  - "Quality Check 4: AC section with checkboxes required (non-captured, non-inception)"
+  - "Quality Check 5: Verification section required for started-work tasks"
+  - "Quality Check 6: Context section must not contain template placeholder"
+  - "Sprechloop thin tasks now trigger warnings"
+  - "Framework tasks with same issues also flagged (dog-fooding)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-134-replace-superpowers-with-framework-nativ.md"
+  - ".tasks/active/T-135-harden-audit-task-quality-checks--catch-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T00:40:23"
+    action: "T-135: Harden audit task quality checks — catch thin/stub tasks"
+  - time: "2026-02-18T00:41:20"
+    action: "T-135: Flesh out T-134 and T-135 task files — AC, verification, context"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 5
+  lines_added: 107
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-135-harden-audit-task-quality-checks--catch-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-134: Replace superpowers with framework-native behavioral rules and skills
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T23:41:25Z
+# ============================================================================
+
+task_id: T-134
+task_name: "Replace superpowers with framework-native behavioral rules and skills"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-17T23:31:32Z
+completed: 2026-02-17T23:41:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T00:33:47+01:00
+last_commit: 2026-02-18T00:33:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace superpowers with framework-native rules and skills
+
+# Key outcomes
+outcomes:
+  - "superpowers and feature-dev disabled in settings.json"
+  - "All superpowers/feature-dev references removed from CLAUDE.md"
+  - "All references removed from template (claude-project.md)"
+  - "All references removed from start-work skill"
+  - "Verification Before Completion behavioral rule added to CLAUDE.md + template"
+  - "Hypothesis-Driven Debugging behavioral rule added to CLAUDE.md + template"
+  - "/explore skill created (replaces brainstorming)"
+  - "/plan skill created (replaces writing-plans)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".claude/commands/explore.md"
+  - ".claude/commands/plan.md"
+  - ".claude/commands/start-work.md"
+  - "CLAUDE.md"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-131-watchtower-knowledge-pages-empty--surfac.md"
+  - ".tasks/active/T-132-watchtower-govern-pages--populate-direct.md"
+  - ".tasks/active/T-133-watchtower-docs-page--auto-discover-and-.md"
+  - ".tasks/active/T-134-replace-superpowers-with-framework-nativ.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T00:33:47"
+    action: "T-134: Replace superpowers with framework-native rules and skills"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 11
+  lines_added: 412
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-134-replace-superpowers-with-framework-nativ.md
+generated_by: context-agent-hybrid
