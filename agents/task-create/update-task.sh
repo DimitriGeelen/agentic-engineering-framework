@@ -40,6 +40,7 @@ NEW_OWNER=""
 NEW_TAGS=""
 ADD_TAGS=""
 REASON=""
+FORCE=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -48,6 +49,7 @@ while [[ $# -gt 0 ]]; do
         --tags) NEW_TAGS="$2"; shift 2 ;;
         --add-tag) ADD_TAGS="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
+        --force|-f) FORCE=true; shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
             echo ""
@@ -57,6 +59,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --tags        Replace tags (comma-separated)"
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
+            echo "  --force, -f   Bypass acceptance criteria gate on work-completed"
             echo "  -h, --help    Show this help"
             echo ""
             echo "Auto-triggers:"
@@ -133,6 +136,32 @@ if [ -n "$NEW_STATUS" ]; then
             echo "  started-work → issues | work-completed" >&2
             echo "  issues → started-work | work-completed" >&2
             exit 1
+        fi
+
+        # === Acceptance Criteria Gate (P-010) ===
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)
+            if [ -n "$AC_SECTION" ]; then
+                AC_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+                AC_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
+                AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
+
+                if [ "$AC_TOTAL" -gt 0 ] && [ "$AC_UNCHECKED" -gt 0 ]; then
+                    if [ "$FORCE" = true ]; then
+                        echo -e "${YELLOW}WARNING: $AC_UNCHECKED/$AC_TOTAL acceptance criteria unchecked (--force bypass)${NC}"
+                    else
+                        echo -e "${RED}ERROR: Cannot complete — $AC_UNCHECKED/$AC_TOTAL acceptance criteria unchecked:${NC}" >&2
+                        echo "$AC_SECTION" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                        echo "" >&2
+                        echo "Options:" >&2
+                        echo "  1. Check the criteria in the task file, then retry" >&2
+                        echo "  2. Use --force to bypass (logged)" >&2
+                        exit 1
+                    fi
+                elif [ "$AC_TOTAL" -gt 0 ]; then
+                    echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
+                fi
+            fi
         fi
 
         sed -i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
