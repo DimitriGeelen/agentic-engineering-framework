@@ -1,46 +1,40 @@
 ---
-session_id: S-2026-0217-1051
-timestamp: 2026-02-17T09:51:39Z
-predecessor: S-2026-0217-1018
-tasks_active: [T-107]
-tasks_touched: [T-101, T-102, T-103, T-104, T-105, T-106]
-tasks_completed: [T-101, T-102, T-103, T-104, T-105, T-106]
+session_id: S-2026-0217-1225
+timestamp: 2026-02-17T11:25:08Z
+predecessor: S-2026-0217-1051
+tasks_active: [T-107, T-109]
+tasks_touched: [T-109, T-107, T-XXX, T-XXX, T-089, T-092, T-086, T-101, T-097, T-105, T-081, T-098, T-095, T-082, T-084, T-076, T-094, T-104, T-080, T-090, T-088, T-074, T-102, T-093, T-087, T-100, T-085, T-079, T-103, T-083, T-075, T-096, T-106, T-099, T-108, T-091]
+tasks_completed: []
 uncommitted_changes: 0
 owner: claude-code
-session_narrative: "Ops session: set up framework repo on OneDev 13.1.5, created dedicated API token, documented installation workflow, closed T-101-T-106, fixed both audit warnings (inception type + volatile gitignore). Audit now 22 PASS / 0 WARN."
+session_narrative: ""
 ---
 
-# Session Handover: S-2026-0217-1051
+# Session Handover: S-2026-0217-1225
 
 ## Where We Are
 
-Framework is now published on OneDev and fully audit-clean. Created the `agentic-engineering-framework` project on OneDev, pushed master + v1.0.0 tag, documented the clone-to-PATH installation workflow, and fixed both standing audit warnings. T-101 through T-106 are all closed. Only T-107 (pronunciation app init) remains.
+[TODO: 2-3 sentences summarizing current state and immediate situation]
 
 ## Work in Progress
 
-### T-106: Set up central framework repository on dev server
-- **Status:** work-completed (commits 1eee40e, 559dfff)
-- **Last action:** Created project on OneDev 13.1.5, pushed code, created `agentic-framework` API token, added Installation section to FRAMEWORK.md, updated setup wizard cheat sheet, fixed audit warnings
-- **Next step:** Done — closed
-- **Blockers:** None
-- **Insight:** OneDev 13.1.5 uses HTTP Basic Auth only (username + access token as password). Bearer auth is NOT supported. Access tokens are 40-char random strings, not JWTs. The JWT token initially provided was not a OneDev token.
-
-### T-101 through T-105
-- **Status:** work-completed (closed this session, completed previous session S-2026-0217-1018)
-- **Last action:** Formally moved to work-completed status
-- **Next step:** Done
-- **Blockers:** None
-
 ### T-107: Initialize German pronunciation app project
-- **Status:** captured — bridge task
-- **Last action:** No work done this session
-- **Next step:** User decides project directory path, then run `fw setup /path/to/pronunciation-app`
-- **Blockers:** User decision on project directory path
-- **Insight:** All prerequisites (T-101-T-104) are complete. Framework is published on OneDev. This is the real-world validation task.
+- **Status:** captured
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+### T-109: Agent autonomy and communication architecture
+- **Status:** started-work
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
 ## Inception Phases
 
-**1 inception task(s) pending decision** — run `fw inception status` for details.
+**2 inception task(s) pending decision** — run `fw inception status` for details.
 
 ## Gaps Register
 
@@ -52,50 +46,48 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-1. **Use OneDev REST API with admin basic auth instead of JWT token**
-   - Why: JWT provided was not a OneDev access token. OneDev 13.1.5 uses HTTP Basic Auth with access tokens as passwords. Bearer auth not supported.
-   - Alternatives rejected: Bearer auth (returned 401), various header formats (all failed).
+[TODO: List key decisions with rationale and rejected alternatives]
 
-2. **Create dedicated `agentic-framework` token instead of reusing existing `Claude-Ring20` token**
-   - Why: Separation of concerns — framework operations get their own token. Existing tokens serve other purposes (CI, registry).
-   - Alternatives rejected: Reuse Claude-Ring20 token (works but mixes concerns).
-
-3. **Add `inception` to audit valid types instead of changing T-107's workflow_type**
-   - Why: `inception` is widely used: template, lib/inception.sh, web/blueprints/inception.py, CLAUDE.md, 4+ tasks. The audit was wrong, not the tasks.
-   - Alternatives rejected: Changing T-107 to `build` (would break inception tooling semantics).
+1. **[Decision]**
+   - Why: [rationale]
+   - Alternatives rejected: [what else was considered]
 
 ## Things Tried That Failed
 
-1. **Bearer auth with JWT token** — OneDev 13.1.5 does not support Bearer tokens for API auth. Returns "User unknown or credential incorrect". Tried: Bearer header, query param, X-Auth-Token header, basic auth with token as username, basic auth with empty username — all 401.
+[TODO: Document failed approaches to prevent repetition]
+
+1. **[Approach]** — [why it didn't work]
 
 ## Open Questions / Blockers
 
-1. Where should the pronunciation app project directory be? (User needs to decide path for T-107)
+[TODO: List unresolved questions and blockers]
+
+1. [Question or blocker]
 
 ## Gotchas / Warnings for Next Session
 
-- OneDev auth: use `curl -u admin:<token>` NOT `Bearer` header
-- Git credential store configured at `/root/.git-credentials` for OneDev remote
-- The `onedev` remote is configured (credential-free URL, creds in store)
-- T-101-T-105 tasks are still in `.tasks/active/` with work-completed status (not yet moved to `.tasks/completed/` — update-task.sh handles this on next status change)
+[TODO: Things the next session should watch out for]
+
+- [Gotcha]
 
 ## Suggested First Action
 
-Start T-107: ask user for pronunciation app project directory, then run `fw setup /path/to/pronunciation-app`. This validates the full framework stack end-to-end.
+[TODO: The single most important thing for next session to do first]
 
 ## Files Changed This Session
 
-- Modified: `FRAMEWORK.md` (added Installation section), `lib/setup.sh` (cheat sheet update), `agents/audit/audit.sh` (added inception to valid types), `.gitignore` (added .prev-token-reading)
-- Modified: `.tasks/active/T-101-*.md` through `.tasks/active/T-106-*.md` (status updates)
-- Deleted from tracking: `.context/working/.prev-token-reading`
+[TODO: List created and modified files]
+
+- Created:
+- Modified:
 
 ## Recent Commits
 
-- 559dfff T-106: Fix audit warnings — add inception type, gitignore volatile file
-- 1eee40e T-106: Set up framework repo on OneDev + document installation
-- f28eb85 T-012: Session handover S-2026-0217-1018 (filled)
-- ed98c89 T-012: Session handover S-2026-0217-1018
-- 3a87173 T-105: Improve fw harvest for cross-project learning
+- 4c889dc T-108: Learning — check context budget before proposing next work
+- b253cf1 T-108: Complete validation — episodic, learnings, close task
+- beca123 T-109: Inception — agent autonomy and communication architecture
+- a8e5a11 T-108: Research doc — inter-agent communication bus analysis
+- 9377b42 T-108: Fix 3 onboarding bugs found during dry-run validation
 
 ---
 
