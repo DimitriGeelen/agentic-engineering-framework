@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-17
-timestamp: 2026-02-17T09:50:42Z
+timestamp: 2026-02-17T10:09:51Z
 summary:
-  pass: 22
-  warn: 0
+  pass: 21
+  warn: 1
   fail: 0
 findings:
   - level: PASS
@@ -16,13 +16,14 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 7 active tasks are valid"
+    check: "All 1 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 97% (240/246 commits reference tasks)"
-  - level: PASS
-    check: "Working directory clean"
+    check: "Git traceability: 97% (241/247 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -40,7 +41,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 100 episodic summaries have quality content"
+    check: "All 106 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS

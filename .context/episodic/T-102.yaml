@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-102: Build comprehensive CLAUDE.md template for external projects
+# ============================================================================
+
+task_id: T-102
+task_name: "Build comprehensive CLAUDE.md template for external projects"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:53:24Z
+completed: 2026-02-17T09:44:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Created a comprehensive CLAUDE.md template containing 19 universal governance sections
+  (extracted from the 506-line framework CLAUDE.md). Reduced from 44-line thin cheat sheet
+  to 407-line resource that includes constitutional directives, enforcement tiers, escalation
+  ladder, context budget rules, session protocols, and complete fw command reference.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "lib/templates/claude-project.md created with all critical governance sections"
+  - "Generated CLAUDE.md includes enforcement tiers, escalation ladder, context budget, sub-agent dispatch protocol"
+  - "Generated projects receive 19 governance sections vs. 0 previously"
+  - "No framework-development-specific content in generated template"
+
+# What worked well
+successes:
+  - description: "Identified 19 reusable governance sections from monolithic 506-line CLAUDE.md"
+    why: "Systematic extraction of universal rules vs. framework-specific examples preserved quality"
+  - description: "Template substitution pattern scales to future project variations"
+    why: "Placeholder markers (__PROJECT_NAME__, __TECH_STACK__) support CLI generation logic"
+
+# Challenges encountered
+challenges:
+  - description: "Deciding scope: 350 lines universal vs. framework-dev-specific"
+    resolution: "Excluded self-referential examples (T-097) and framework metadata; kept all agent protocols"
+
+# Decisions made during this task
+decisions:
+  - decision: "Create lib/templates/claude-project.md rather than inline in generate_claude_md()"
+    rationale: "Separates concerns; template is now discoverable and maintainable; enables future versions"
+    alternatives_rejected: ["Inline generation (causes technical debt when updates needed)"]
+  - decision: "Include full Quick Reference table (8 agents, 30+ commands)"
+    rationale: "External project agents need same command reference as framework agents"
+    alternatives_rejected: ["Minimal reference (insufficient for real workflows)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - lib/templates/claude-project.md (407 lines)
+  modified:
+    - lib/init.sh (generate_claude_md function updated to use template)
+
+# Related tasks
+related_tasks:
+  blocked_by: []
+  blocks: [T-104]
+  spawned: []
+
+# Tags for retrieval
+tags: [critical, fw-init, claude-md, template, external-project, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 8
+  lines_added: 841
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-102-build-comprehensive-claudemd-template-fo.md
+generated_by: context-agent

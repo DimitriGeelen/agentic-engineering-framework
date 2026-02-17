@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-103: Harden fw init for external project use
+# ============================================================================
+
+task_id: T-103
+task_name: "Harden fw init for external project use"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:53:40Z
+completed: 2026-02-17T09:44:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Implemented all 9 hardening items to fix medium-severity gaps in fw init that degraded
+  external project experience. Key fixes: .gitignore for volatile context files, template
+  copying via glob, assumptions.yaml creation, .context/scans/ directory, watchtower guards,
+  error visibility (removed blanket stderr suppression), and .framework.yaml metadata enrichment.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "Added .context/working/.gitignore preventing tool-counter, focus.yaml, session.yaml from committing"
+  - "Template copying now uses glob for future-proof template additions"
+  - "assumptions.yaml created alongside patterns/decisions/learnings/practices"
+  - ".context/scans/ directory created for resume.sh and context init"
+  - "Git hook installation errors now visible (removed 2>/dev/null suppression)"
+  - "Watchtower guarded with PROJECT_ROOT == FRAMEWORK_ROOT check"
+  - ".framework.yaml now includes project_name, provider, initialized_at metadata"
+
+# What worked well
+successes:
+  - description: "Batching 9 related fixes into single task prevented fragmentation"
+    why: "All init.sh and context hardening items completed together; coherent testing surface"
+  - description: "Error visibility fix exposed previously hidden hook installation failures"
+    why: "Removed stderr suppression revealed problems before external projects deploy"
+
+# Challenges encountered
+challenges:
+  - description: "focus.yaml stub creation: decided to keep current behavior (check-active-task.sh allows with note)"
+    resolution: "Minimally disruptive approach; clear error message when missing"
+
+# Decisions made during this task
+decisions:
+  - decision: "Use glob for template copying instead of hardcoded names"
+    rationale: "Future-proofs template system; new .md files automatically included; no future maintenance"
+    alternatives_rejected: ["Hardcoded list (breaks with new templates)"]
+  - decision: "Remove 2>/dev/null blanket suppression from hook installation"
+    rationale: "Visibility is critical for external projects; errors indicate real problems"
+    alternatives_rejected: ["Selective error suppression (harder to maintain; same problem)"]
+  - decision: "Defer focus.yaml stub creation; rely on check-active-task.sh note"
+    rationale: "Already works; avoids false state file; clear message prevents confusion"
+    alternatives_rejected: ["Create empty focus.yaml (creates unnecessary state)"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - .context/working/.gitignore (volatile file list)
+    - .context/scans/ (directory created during init)
+  modified:
+    - lib/init.sh (9 hardening items implemented)
+    - agents/context/lib/init.sh (context-specific init)
+
+# Related tasks
+related_tasks:
+  blocked_by: [T-101]
+  blocks: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-init, hardening, external-project, context, init-robustness]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 9
+  lines_added: 496
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-103-harden-fw-init-for-external-project-use.md
+generated_by: context-agent

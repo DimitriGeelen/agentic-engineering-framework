@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-104: Build fw setup onboarding wizard
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+
+task_id: T-104
+task_name: "Build fw setup onboarding wizard"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:53:56Z
+completed: 2026-02-17T09:44:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Built a 6-step guided onboarding wizard (fw setup) that wraps fw init with breadcrumb
+  navigation for new users. Provides interactive flow through project identity, provider
+  selection, tech stack configuration, enforcement levels, optional first task, and
+  verification. Enables smooth framework adoption by external projects.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "fw setup wizard with 6 interactive steps implemented"
+  - "Idempotent sentinel checks prevent re-running completed steps"
+  - "Non-interactive mode with sensible defaults works for automated invocation"
+  - "fw doctor passes after setup completes"
+  - "All .framework.yaml metadata fields populated by setup"
+
+# What worked well
+successes:
+  - description: "Sentinel-based idempotency"
+    why: "Each step checks for completion markers; re-running skips done work, making partial completion safe"
+  - description: "Wrapper pattern over fw init"
+    why: "Kept fast path (fw init) and guided path (fw setup) separate, avoiding complexity bloat"
+  - description: "TTY detection for non-interactive mode"
+    why: "Automatic fallback to defaults enables agent/CI invocation without modification"
+
+# Challenges encountered
+challenges:
+  # No blocking challenges encountered; requirements were well-specified from code-architect design
+
+# Decisions made during this task
+decisions:
+  - decision: "fw setup wraps fw init rather than replacing it"
+    rationale: "Maintains backward compatibility; fast path for scripts unchanged; guided path for humans optional"
+    alternatives_rejected: ["Single consolidated init command", "Separate setup script outside fw"]
+  - decision: "Each step writes to disk before proceeding"
+    rationale: "Ensures partial completion is safe; recovering from interrupt preserves progress"
+    alternatives_rejected: ["Batch all writes at end", "In-memory accumulation"]
+
+# Files created or significantly modified
+artifacts:
+  created:
+    - "lib/setup.sh"
+  modified:
+    - "bin/fw"
+    - "lib/init.sh"
+
+# Related tasks
+related_tasks:
+  blocked_by: ["T-102 (CLAUDE.md template)", "T-103 (hardened init)"]
+  blocks: ["T-107 (pronunciation app init)"]
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-setup, wizard, onboarding, external-project, guidance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 9
+  lines_added: 914
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-104-build-fw-setup-onboarding-wizard.md
+generated_by: context-agent

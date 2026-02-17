@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-105: Improve fw harvest for cross-project learning
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+
+task_id: T-105
+task_name: "Improve fw harvest for cross-project learning"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:54:11Z
+completed: 2026-02-17T09:44:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Extended fw harvest to capture three missing knowledge sources: episodic memory
+  (completed task histories), graduated practices, and project-specific CLAUDE.md
+  additions. Added provenance tracking to identify which projects share patterns,
+  enabling better learning graduation and cross-project knowledge synthesis.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "harvest_episodics() function copies and anonymizes task histories"
+  - "harvest_practices() deduplicates and ingests graduated practices"
+  - "harvest_claude_additions() surfaces project-specific protocol extensions"
+  - "Provenance tracking added via harvest comments"
+  - "Syntax validation passed (bash -n)"
+
+# What worked well
+successes:
+  - description: "Modular function design"
+    why: "Each gap addressed by separate function; easy to test and extend individually"
+  - description: "Provenance tracking via comments"
+    why: "Lightweight mechanism captures cross-project pattern frequency without schema changes"
+  - description: "Zero blocking dependencies"
+    why: "Task was independent; could be executed immediately alongside other work"
+
+# Challenges encountered
+challenges:
+  # No challenges documented; implementation was straightforward
+
+# Decisions made during this task
+decisions:
+  - decision: "Episodic memory harvested from .context/episodic/T-*.yaml"
+    rationale: "Densest source of completed-task knowledge; rich with decisions, learnings, failure modes"
+    alternatives_rejected: ["Task file updates only", "Manual selection"]
+  - decision: "Provenance tracking via harvest log comments"
+    rationale: "Minimal overhead; enables answering 'how many projects saw this pattern'"
+    alternatives_rejected: ["New provenance table", "Separate tracking file"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "lib/harvest.sh"
+
+# Related tasks
+related_tasks:
+  blocked_by: []
+  blocks: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-harvest, cross-project, learning, episodic, knowledge-synthesis]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 2
+  files_changed: 8
+  lines_added: 602
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-105-improve-fw-harvest-for-cross-project-lea.md
+generated_by: context-agent

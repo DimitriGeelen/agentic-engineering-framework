@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-101: Fix critical hook PROJECT_ROOT bug for external projects
+# ============================================================================
+
+task_id: T-101
+task_name: "Fix critical hook PROJECT_ROOT bug for external projects"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:53:08Z
+completed: 2026-02-17T09:44:00Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Fixed a critical silent failure where hook commands in generated .claude/settings.json
+  did not set PROJECT_ROOT, causing enforcement to silently check the framework repo
+  state instead of the project's state. Solution: Added PROJECT_ROOT=__PROJECT_ROOT__
+  prefix to all three hook commands and implemented sed substitution in init.sh.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "Generated settings.json hooks correctly set PROJECT_ROOT=/path/to/project"
+  - "All three enforcement hooks (check-active-task.sh, check-tier0.sh, checkpoint.sh) read from project context"
+  - "Test verified: fw init /tmp/test-proj generates correct settings.json"
+
+# What worked well
+successes:
+  - description: "4-line focused change in lib/init.sh"
+    why: "Template placeholder approach (sed substitution) kept changes minimal and reversible"
+  - description: "Verification strategy caught invisible bug in first test run"
+    why: "grep PROJECT_ROOT directly exposed the silent failure before deployment"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made during this task
+decisions:
+  - decision: "Add __PROJECT_ROOT__ placeholder to hook commands and substitute via sed"
+    rationale: "Consistent with existing __FRAMEWORK_ROOT__ pattern; minimal code change; backwards compatible"
+    alternatives_rejected: ["Python-based substitution (overkill for 2 sed passes)"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - lib/init.sh (lines 262-298: generate_claude_code_config function)
+
+# Related tasks
+related_tasks:
+  blocked_by: []
+  blocks: [T-103, T-104, T-106, T-107]
+  spawned: []
+
+# Tags for retrieval
+tags: [critical, fw-init, hooks, external-project, silent-failure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 8
+  lines_added: 439
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-101-fix-critical-hook-projectroot-bug-for-ex.md
+generated_by: context-agent

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-106: Set up central framework repository on dev server
+# ============================================================================
+# STATUS: ENRICHED
+# ============================================================================
+
+task_id: T-106
+task_name: "Set up central framework repository on dev server"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T08:54:25Z
+completed: 2026-02-17T09:45:39Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Established framework as a git remote on OneDev dev server, enabling new users to clone
+  the framework and projects to reference it for distributed setup. Created dedicated API
+  token, documented clone/PATH workflow, and updated FRAMEWORK.md installation section.
+  Enables cross-project framework distribution and learning harvest push-back.
+
+# Key outcomes (from acceptance criteria)
+outcomes:
+  - "OneDev project created with master + v1.0.0 tag pushed"
+  - "Clone URL documented: https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git"
+  - "Dedicated API token (agentic-framework) created with owner permissions"
+  - "Git remote 'onedev' configured locally with credential store"
+  - "Installation section added to FRAMEWORK.md"
+  - "Setup wizard cheat sheet updated with framework source URL"
+
+# What worked well
+successes:
+  - description: "OneDev HTTP Basic Auth authentication"
+    why: "Correctly identified v13.1.5 limitation (Bearer unsupported); used username:access_token instead"
+  - description: "Dedicated token with granular permissions"
+    why: "Owner-level access enables framework maintainer to push updates; no expiry prevents maintenance friction"
+  - description: "Documentation-first approach"
+    why: "FRAMEWORK.md installation section guides users through clone → PATH → verify workflow"
+
+# Challenges encountered
+challenges:
+  - description: "OneDev API token confusion"
+    solution: "Initial JWT token provided was user authentication token, not OneDev access token. OneDev tokens are 40-char random strings. Created new agentic-framework token and verified with successful auth."
+
+# Decisions made during this task
+decisions:
+  - decision: "Use HTTP Basic Auth with username:access_token"
+    rationale: "OneDev v13.1.5 does not support Bearer tokens; Basic Auth is only mechanism"
+    alternatives_rejected: ["Bearer tokens", "SSH keys"]
+  - decision: "Credential store for token management"
+    rationale: "Avoids embedding tokens in git config; credential store is OS-native on Linux/Mac/Windows"
+    alternatives_rejected: ["Plain git config", "Environment variables"]
+  - decision: "PATH symlink vs. clone in known location"
+    rationale: "Recommended clone to controlled location; symlink to bin/fw is cleaner than PATH modification"
+    alternatives_rejected: ["Export PATH directly"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "FRAMEWORK.md (Installation section added)"
+    - ".git/config (onedev remote added)"
+    - "Setup wizard cheat sheet"
+
+# Related tasks
+related_tasks:
+  blocked_by: ["T-101", "T-102", "T-103"]
+  blocks: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [devops, git, distribution, dev-server, infrastructure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 3
+  files_changed: 13
+  lines_added: 521
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-106-set-up-central-framework-repository-on-d.md
+generated_by: context-agent
