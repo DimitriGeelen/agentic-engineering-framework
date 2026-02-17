@@ -111,12 +111,13 @@ do_commit() {
 
     # Do the commit
     if git -C "$PROJECT_ROOT" commit -m "$message" "${git_args[@]}"; then
-        # Update task timestamp
-        update_task_timestamp "$found_task"
-
-        local task_name
-        task_name=$(get_task_name "$found_task")
-        if [ -n "$task_name" ]; then
+        # Update task timestamp (only for active tasks)
+        local task_file_active
+        task_file_active=$(find "$TASKS_DIR/active" -name "${found_task}-*.md" -type f 2>/dev/null | head -1)
+        if [ -n "$task_file_active" ]; then
+            update_task_timestamp "$found_task"
+            local task_name
+            task_name=$(get_task_name "$found_task")
             echo ""
             echo -e "${GREEN}Task $found_task updated${NC} ($task_name)"
         fi
