@@ -236,6 +236,44 @@ for task_file in "$TASKS_DIR/active"/*.md; do
             fi
         fi
     fi
+
+    # Quality Check 4: Acceptance Criteria section exists with at least one checkbox
+    # Skip for captured tasks (not yet fleshed out) and inception tasks (use Go/No-Go instead)
+    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    if [ "$task_status" != "captured" ] && [ "$task_workflow" != "inception" ]; then
+        ac_checkboxes=$(grep -c '\- \[[ x]\]' "$task_file" 2>/dev/null || true)
+        ac_checkboxes=$(echo "$ac_checkboxes" | tr -d '[:space:]')
+        if [ "$ac_checkboxes" -eq 0 ]; then
+            warn "Task $task_id has no acceptance criteria checkboxes" \
+                 "Tasks in progress need measurable completion criteria" \
+                 "Add '## Acceptance Criteria' with checkboxes to $task_name"
+            quality_issues=$((quality_issues + 1))
+        fi
+    fi
+
+    # Quality Check 5: Verification section exists for started-work+ tasks
+    if [ "$task_status" = "started-work" ] || [ "$task_status" = "issues" ]; then
+        has_verification=$(grep -c '^## Verification' "$task_file" 2>/dev/null || true)
+        has_verification=$(echo "$has_verification" | tr -d '[:space:]')
+        if [ "$has_verification" -eq 0 ]; then
+            warn "Task $task_id has no ## Verification section" \
+                 "Verification commands enable the structural gate (P-011)" \
+                 "Add '## Verification' with shell commands to $task_name"
+            quality_issues=$((quality_issues + 1))
+        fi
+    fi
+
+    # Quality Check 6: Context section is not a template placeholder
+    if [ "$task_status" != "captured" ]; then
+        has_placeholder=$(grep -c '\[Link to design docs' "$task_file" 2>/dev/null || true)
+        has_placeholder=$(echo "$has_placeholder" | tr -d '[:space:]')
+        if [ "$has_placeholder" -gt 0 ]; then
+            warn "Task $task_id has unfilled placeholder in Context section" \
+                 "Context should describe the task's background, not contain template text" \
+                 "Replace placeholder in $task_name with actual context"
+            quality_issues=$((quality_issues + 1))
+        fi
+    fi
 done
 shopt -u nullglob
 
