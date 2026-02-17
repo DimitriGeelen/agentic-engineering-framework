@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-094: Harden Tier 0 hook — heredoc false-positive fix
+# ============================================================================
+# Generated: 2026-02-17T06:50:19Z
+
+task_id: T-094
+task_name: "Harden Tier 0 hook — heredoc false-positive fix"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T06:45:26Z
+completed: 2026-02-17T06:50:19Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Extended Tier 0 destructive command detection with heredoc body stripping.
+  The strip_quotes() function from T-092 handled quoted strings but heredoc
+  bodies (<<EOF...EOF) could still trigger false positives. Added strip_heredocs()
+  using DOTALL regex to remove heredoc body contents before pattern matching.
+  Test suite expanded from 40 to 47 cases — all passing.
+
+# Key outcomes
+outcomes:
+  - "Heredoc bodies stripped before pattern matching"
+  - "47/47 test cases passing including heredoc scenarios"
+  - "G-001 closed — all decided-build enforcement work complete"
+
+# What worked well
+successes:
+  - description: "strip_heredocs() regex worked correctly on first attempt"
+    why: "Careful analysis of DOTALL flag behavior and heredoc grammar before coding"
+  - description: "Verified bash-embedded Python escaping with targeted tests"
+    why: "Previous session's bootstrapping lesson (L-022) — test patterns directly, not through the hook"
+
+# Challenges encountered
+challenges:
+  - description: "Nested quoting: Python regex inside bash double quotes"
+    resolution: "Tested escaping empirically with printf | python3 to verify chars survive bash→Python transition"
+
+# Decisions made
+decisions:
+  - decision: "Strip heredocs BEFORE quotes in the processing chain"
+    rationale: "Heredocs can contain quotes; stripping them first prevents quote-stripper confusion"
+    alternatives_rejected: ["Strip after quotes", "Combined single-pass stripper"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "agents/context/check-tier0.sh — added strip_heredocs()"
+    - "agents/context/test-tier0-patterns.py — added strip_heredocs() + 7 new test cases"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+  predecessor: [T-092]
+
+# Tags for retrieval
+tags: [enforcement, tier0, false-positive, heredoc, testing]
+
+# Passive metrics
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 57
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-094-harden-tier-0-hook--heredoc-false-positi.md
+generated_by: context-agent

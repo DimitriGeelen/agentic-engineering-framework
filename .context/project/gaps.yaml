@@ -50,12 +50,20 @@ gaps:
       Detects: force push, hard reset, git clean, branch -D, rm -rf /, DROP TABLE,
       TRUNCATE, docker system prune, kubectl delete namespace.
       Approval flow: fw tier0 approve (one-time, 5-min expiry, logged to bypass-log.yaml).
-      36/36 pattern tests passing. Fast path: keyword pre-filter avoids Python overhead
-      for 95%+ of safe commands.
-    status: decided-build
+      47/47 pattern tests passing. Fast path: keyword pre-filter avoids Python overhead
+      for 95%+ of safe commands. T-094 added heredoc false-positive prevention.
+    resolution: >
+      All decided-build enforcement work complete:
+      Tier 0: check-tier0.sh (T-092, T-094) — destructive Bash command guard
+      Tier 1: check-active-task.sh (T-063) — Write/Edit blocked without active task
+      Tier 2: Partial — bypass logging exists via git agent, not yet formalized
+      Tier 3: Spec only — pre-approved categories not yet consumed by enforcement
+      Tiers 2+3 are low priority and tracked informally.
+    status: closed
     created: 2026-02-14
-    last_reviewed: 2026-02-16
+    last_reviewed: 2026-02-17
     trigger_fired_date: 2026-02-15
+    closed_date: 2026-02-17
 
   - id: G-002
     title: "Status transitions not validated"
