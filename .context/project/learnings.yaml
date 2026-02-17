@@ -293,4 +293,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-037
+    learning: "Agent defaults to 'work around errors' instead of 'investigate errors'. Three instances this session alone: (1) fw not found — silently switched to direct path, (2) sibling tool calls errored — no investigation, (3) paste -sd formatting bug — only caught during manual review. Root behavior: agent treats errors as friction to remove, not signals to investigate. This is a Level D ways-of-working gap requiring CLAUDE.md instruction changes."
+    source: P-010
+    task: T-118
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

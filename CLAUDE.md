@@ -114,7 +114,15 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 5. Record decisions in Decisions section ONLY when choosing between alternatives
 6. Updates section is auto-populated at completion — manual entries optional
 
-When encountering issues:
+When encountering errors or unexpected behavior (**NEVER silently work around them**):
+1. **STOP and investigate** — do not switch to an alternative path without understanding WHY the error occurred
+2. Report the error and your investigation findings to the user
+3. If the error is in framework tooling: fix it (this is higher priority than the current task)
+4. If the error is environmental: document it and inform the user
+5. Only after investigation may you proceed with an alternative approach
+6. If the error seems minor but you cannot explain it: that is a signal, not noise — investigate anyway
+
+When encountering task-level issues:
 1. Set status to `issues`
 2. Log error reference and healing loop suggestions
 3. Record resolution when fixed for pattern learning
