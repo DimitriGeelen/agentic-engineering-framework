@@ -211,8 +211,8 @@ do_generate_episodic() {
     # =========================================================================
     local summary_text=""
     if [ -n "$git_summary" ]; then
-        # Join commit messages into a narrative
-        summary_text=$(echo "$git_summary" | paste -sd '. ' | sed 's/\. $/./')
+        # Join commit messages into a narrative (period + space between each)
+        summary_text=$(echo "$git_summary" | awk '{if(NR>1) printf ". "; printf "%s", $0} END {print ""}')
     fi
     # Fall back to description if no git summary
     if [ -z "$summary_text" ]; then

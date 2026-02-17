@@ -1,74 +1,100 @@
 # ============================================================================
 # EPISODIC MEMORY - T-108: Validate fw setup onboarding end-to-end
 # ============================================================================
-# Generated: 2026-02-17T11:22:57Z
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:35:29Z
+# ============================================================================
 
 task_id: T-108
 task_name: "Validate fw setup onboarding end-to-end"
 workflow_type: build
-enrichment_status: complete
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
 
 # Timeline
 created: 2026-02-17T10:12:59Z
 completed: 2026-02-17T11:22:57Z
 duration_days: 0
 updates_count: 2
+first_commit: 2026-02-17T11:23:02+01:00
+last_commit: 2026-02-17T14:12:07+01:00
 
+# Summary (auto-generated from git commit messages)
 summary: |
-  Dry-ran the full fw setup onboarding wizard on a fictional test project (/opt/test-project),
-  discovered 3 bugs (provider sentinel, unbound $force variable, git identity check missing),
-  fixed all three, and verified the complete lifecycle (init, task create, commit, audit, complete).
-  Also produced a deep research document on inter-agent communication bus architecture (T-109).
+  Fix 3 onboarding bugs found during dry-run validation. Research doc — inter-agent communication bus analysis. Complete validation — episodic, learnings, close task. Learning — check context budget before proposing next work. Structural fixes — context budget rule, task sizing, T-109 decomposition. Fix misleading 'Task updated' message for completed tasks
 
+# Key outcomes
 outcomes:
-  - "3 onboarding bugs found and fixed in lib/setup.sh and lib/init.sh"
-  - "Full onboarding lifecycle validated: setup → task create → commit → audit → complete"
-  - "Research document produced: docs/reports/2026-02-17-agent-communication-bus-research.md"
-  - "T-109 inception task created for agent autonomy architecture"
+  - "Task completed"
 
-successes:
-  - description: "Dry-run on fictional project caught real bugs"
-    why: "Non-interactive and interactive paths exercise different code — testing both revealed the provider sentinel flaw that would have broken every real onboarding"
-  - description: "Parallel research agents produced comprehensive analysis"
-    why: "3 agents (OpenClaw, industry patterns, feasibility) ran concurrently, each focused on one aspect, returned structured summaries"
-
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Provider Step 2 was always skipped"
-    resolution: "Changed sentinel from CLAUDE.md line count to setup_provider_done flag"
-  - description: "init.sh generators crashed with unbound $force"
-    resolution: "Changed all $force references to ${force:-false}"
-  - description: "Git identity check crashed Step 6 under set -e"
-    resolution: "Added || true to git config commands"
+  - description: "Fix misleading 'Task updated' message for completed tasks"
+    source: git-mined
+  - description: "Structural fixes — context budget rule, task sizing, T-109 decomposition"
+    source: git-mined
+  - description: "Fix 3 onboarding bugs found during dry-run validation"
+    source: git-mined
 
+# Decisions (from task file Decisions section)
 decisions:
-  - decision: "Use setup_provider_done flag in .framework.yaml as Step 2 sentinel"
-    rationale: "CLAUDE.md line count was always >100 after Step 1 init, making Step 2 permanently skip"
-    alternatives_rejected: ["Check provider != generic (breaks intentionally generic projects)"]
-  - decision: "File-based result ledger rather than real-time message bus for agent communication"
-    rationale: "Agents are ephemeral — no listener exists for real-time messages. File-based fits existing architecture."
-    alternatives_rejected: ["Redis/NATS (violates portability)", "Named pipes (blocks ephemeral writers)", "SQLite (breaks YAML convention)"]
+  # No decisions recorded (mechanical task or old template)
 
+# Artifacts (auto-mined from git --name-only)
 artifacts:
-  created:
-    - "docs/reports/2026-02-17-agent-communication-bus-research.md"
-    - ".tasks/active/T-109-agent-autonomy-and-communication-archite.md"
-  modified:
-    - "lib/setup.sh (provider sentinel, git identity check, force flag in Step 2)"
-    - "lib/init.sh (${force:-false} in all generator functions)"
+  - "agents/context/checkpoint.sh"
+  - "agents/git/lib/commit.sh"
+  - "CLAUDE.md"
+  - ".context/episodic/T-108.yaml"
+  - ".context/handovers/S-2026-0217-1225.md"
+  - ".context/project/learnings.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/2026-02-17-agent-communication-bus-research.md"
+  - "lib/init.sh"
+  - "lib/setup.sh"
+  - ".tasks/active/T-108-validate-fw-setup-onboarding-end-to-end.md"
+  - ".tasks/active/T-109-agent-autonomy-and-communication-archite.md"
+  - ".tasks/active/T-110-agent-trigger-via-systemdpath.md"
+  - ".tasks/active/T-111-autonomous-compact-resume-lifecycle.md"
+  - ".tasks/completed/T-108-validate-fw-setup-onboarding-end-to-end.md"
 
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T11:23:02"
+    action: "T-108: Fix 3 onboarding bugs found during dry-run validation"
+  - time: "2026-02-17T11:49:51"
+    action: "T-108: Research doc — inter-agent communication bus analysis"
+  - time: "2026-02-17T12:24:37"
+    action: "T-108: Complete validation — episodic, learnings, close task"
+  - time: "2026-02-17T12:25:01"
+    action: "T-108: Learning — check context budget before proposing next work"
+  - time: "2026-02-17T12:33:13"
+    action: "T-108: Structural fixes — context budget rule, task sizing, T-109 decomposition"
+  - time: "2026-02-17T14:12:07"
+    action: "T-108: Fix misleading 'Task updated' message for completed tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 69 min
+
+# Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: [T-109]
+  spawned: []
 
-tags: [onboarding, validation, setup-wizard, agent-communication, research]
+# Tags for retrieval
+tags: []
 
+# Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 69
-  commits: 2
-  files_changed: 6
-  lines_added: 272
-  lines_removed: 23
+  commits: 6
+  files_changed: 16
+  lines_added: 561
+  lines_removed: 47
 
+# Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-108-validate-fw-setup-onboarding-end-to-end.md
-generated_by: context-agent
+generated_by: context-agent-hybrid

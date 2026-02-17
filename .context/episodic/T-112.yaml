@@ -1,79 +1,90 @@
 # ============================================================================
 # EPISODIC MEMORY - T-112: Document T-108 premature closure governance gap
 # ============================================================================
-# Generated: 2026-02-17T13:38:07Z
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:34:19Z
+# ============================================================================
 
 task_id: T-112
 task_name: "Document T-108 premature closure governance gap"
 workflow_type: build
-enrichment_status: complete
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
 
 # Timeline
 created: 2026-02-17T13:35:50Z
 completed: 2026-02-17T13:38:07Z
 duration_days: 0
 updates_count: 5
+first_commit: 2026-02-17T14:37:58+01:00
+last_commit: 2026-02-17T14:48:41+01:00
 
+# Summary (auto-generated from git commit messages)
 summary: |
-  User noticed T-108 in completed/ despite expecting open work. Dispatched 3 parallel forensic
-  agents that traced the full git lifecycle: T-108 was closed at 11:22 but 6 commits followed
-  over 173 minutes including framework governance changes and 2 new task spawns. Identified
-  5 governance violations and classified as Level D escalation (ways of working gap). Documented
-  findings via established process (learning, pattern, decision, research doc) and created
-  2 mitigation tasks. Also validated the documentation process works end-to-end.
+  Document T-108 premature closure governance gap.Complete — episodic enriched, task closed Promote L-034 to practice P-010 (acceptance criteria validation)
 
+# Key outcomes
 outcomes:
-  - "5 governance violations identified in task completion lifecycle"
-  - "Level D escalation: work-completed is a flag, not a gate"
-  - "L-034, FP-006, D-022 captured via fw context commands"
-  - "Research doc: docs/reports/2026-02-17-premature-task-closure-analysis.md"
-  - "T-113 created: acceptance criteria gate for task completion"
-  - "T-114 created: closed task commit warning in commit-msg hook"
-  - "Documentation process validated: learnings.yaml, patterns.yaml, decisions.yaml, docs/reports/ all working"
+  - Forensic investigation complete (3 agents, full git trace)
+  - Learning captured: L-034
+  - Failure pattern captured: FP-006
+  - Decision captured: D-022
+  - Research doc written: docs/reports/2026-02-17-premature-task-closure-analysis.md
+  - Mitigation task created: T-113 (acceptance criteria gate)
+  - Mitigation task created: T-114 (closed task commit warning)
 
-successes:
-  - description: "3 parallel forensic agents produced comprehensive evidence"
-    why: "Each agent focused on one aspect (task content, git lifecycle, scope analysis). Results converged without redundancy."
-  - description: "Established documentation process worked end-to-end"
-    why: "fw context add-learning, add-pattern, add-decision all functional. Research doc template in docs/reports/ followed. Process is validated."
-  - description: "User-driven discovery caught a structural gap"
-    why: "Agent would not have noticed this autonomously — the premature closure pattern is invisible from inside the session that does it."
-
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Reconstructing timeline from git history across sessions"
-    resolution: "Parallel agents with focused git forensic queries (diff-filter, log --grep, show --stat)"
+  # No challenges detected in commit messages
 
+# Decisions (from task file Decisions section)
 decisions:
-  - decision: "No deep multi-agent analysis on mitigations"
-    rationale: "Root cause already thorough. Mitigations are bounded shell changes to existing hooks. Better to create clear tasks than over-analyze."
-    alternatives_rejected: ["Deep multi-agent design session (context cost not justified for well-understood problems)"]
-  - decision: "Two highest-priority mitigations only (M-1, M-2)"
-    rationale: "M-3 (episodic refresh) and M-4 (update log convention) are lower priority. Ship the gate and warning first."
-    alternatives_rejected: ["All 4 mitigations as tasks (scope creep, lower 2 are nice-to-have)"]
+  # No decisions recorded (mechanical task or old template)
 
+# Artifacts (auto-mined from git --name-only)
 artifacts:
-  created:
-    - "docs/reports/2026-02-17-premature-task-closure-analysis.md"
-    - ".tasks/active/T-113-add-acceptance-criteria-gate-to-task-com.md"
-    - ".tasks/active/T-114-add-closed-task-commit-warning-to-commit.md"
-  modified:
-    - ".context/project/learnings.yaml (+L-034)"
-    - ".context/project/patterns.yaml (+FP-006)"
-    - ".context/project/decisions.yaml (+D-022)"
+  - ".context/episodic/T-112.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/practices.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/2026-02-17-premature-task-closure-analysis.md"
+  - ".tasks/active/T-112-document-t-108-premature-closure-governa.md"
+  - ".tasks/active/T-113-add-acceptance-criteria-gate-to-task-com.md"
+  - ".tasks/active/T-114-add-closed-task-commit-warning-to-commit.md"
+  - ".tasks/completed/T-112-document-t-108-premature-closure-governa.md"
 
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T14:37:58"
+    action: "T-112: Document T-108 premature closure governance gap"
+  - time: "2026-02-17T14:38:51"
+    action: "T-112: Complete — episodic enriched, task closed"
+  - time: "2026-02-17T14:48:41"
+    action: "T-112: Promote L-034 to practice P-010 (acceptance criteria validation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: [T-113, T-114]
+  spawned: []
 
-tags: [governance, forensics, task-lifecycle, premature-closure, documentation-process]
+# Tags for retrieval
+tags: []
 
+# Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 2
-  commits: 1
-  files_changed: 7
-  lines_added: 223
-  lines_removed: 1
+  commits: 3
+  files_changed: 11
+  lines_added: 482
+  lines_removed: 95
 
+# Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-112-document-t-108-premature-closure-governa.md
-generated_by: context-agent
+generated_by: context-agent-hybrid
