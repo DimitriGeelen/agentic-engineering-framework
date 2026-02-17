@@ -43,24 +43,26 @@ Agent    →  INITIATIVE   →  Can propose, request, suggest — never decides
 .tasks/
   active/      # In-progress tasks (e.g., T-042-add-oauth.md)
   completed/   # Finished tasks
-  templates/   # Task templates by workflow type
+  templates/   # Task templates (default.md, inception.md)
 ```
 
 ### Task File Format
 
-Tasks are Markdown with YAML frontmatter. Use `zzz-default.md` as template.
+Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 
 **Required frontmatter fields:**
 - `id`, `name`, `description`, `status`, `workflow_type`, `owner`, `created`, `last_update`
 
 **Body sections:**
-- Design Record, Specification Record, Test Files, Updates (chronological log)
+- Context (design docs, specs, predecessor tasks), Updates (chronological log)
 
 ### Task Lifecycle
 
 ```
-Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed
+Captured → Started Work ↔ Issues → Work Completed
 ```
+
+Four statuses: `captured`, `started-work`, `issues`, `work-completed`.
 
 ### Workflow Types
 
@@ -76,24 +78,24 @@ Captured → Refined → Started Work ↔ Issues/Blocked → Work Completed
 
 ## Enforcement Tiers
 
-| Tier | Description | Bypass |
-|------|-------------|--------|
-| 0 | Consequential actions (deploy, delete, destroy, firewall, secrets, db-migrate) | Never |
-| 1 | All standard operations (default) | Create task or escalate to Tier 2 |
-| 2 | Human situational authorization | Single-use, mandatory logging |
-| 3 | Pre-approved categories (health checks, status queries, git-status) | Configured |
+| Tier | Description | Bypass | Implementation |
+|------|-------------|--------|----------------|
+| 0 | Consequential actions (force push, hard reset, rm -rf /, DROP TABLE) | Human approval via `fw tier0 approve` | PreToolUse hook on Bash (check-tier0.sh) |
+| 1 | All standard operations (default) | Create task or escalate to Tier 2 | PreToolUse hook on Write/Edit (check-active-task.sh) |
+| 2 | Human situational authorization | Single-use, mandatory logging | Git --no-verify + bypass log |
+| 3 | Pre-approved categories (health checks, status queries, git-status) | Configured | Defined in 011-EnforcementConfig.md |
 
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking external workflows**):
-1. Check for existing task or create new one following `zzz-default.md` template
+1. Check for existing task or create new one following `default.md` template
 2. Set status to `started-work`
-3. Set focus on the task (provider-specific, e.g. `fw context focus T-XXX`)
+3. Set focus on the task: `fw context focus T-XXX`
 4. THEN proceed with implementation
 5. Log every action in Updates section with: action, output, context snapshot
 
 When encountering issues:
-1. Set status to `issues` or `blocked`
+1. Set status to `issues`
 2. Log error reference and healing loop suggestions
 3. Record resolution when fixed for pattern learning
 
@@ -122,52 +124,90 @@ Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
 
 | Agent | Location | Purpose | Command |
 |-------|----------|---------|---------|
-| Task Create | `agents/task-create/` | Create new tasks | `./agents/task-create/create-task.sh` |
-| Audit | `agents/audit/` | Check compliance | `./agents/audit/audit.sh` |
+| Task Create | `agents/task-create/` | Create new tasks | `fw task create --name "..." --type build` |
+| Task Update | `agents/task-create/` | Change task status | `fw task update T-XXX --status ...` |
+| Audit | `agents/audit/` | Check compliance | `fw audit` |
 | Session Capture | `agents/session-capture/` | Ensure nothing lost | See `AGENT.md` checklist |
-| Git | `agents/git/` | Enforce traceability | `./agents/git/git.sh commit -m "T-XXX: ..."` |
-| Handover | `agents/handover/` | Session continuity | `./agents/handover/handover.sh` |
-| Context | `agents/context/` | Manage memory fabric | `./agents/context/context.sh init` |
-| Healing | `agents/healing/` | Error recovery | `./agents/healing/healing.sh diagnose T-XXX` |
-| Resume | `agents/resume/` | Post-compaction recovery | `./agents/resume/resume.sh status` |
+| Git | `agents/git/` | Enforce traceability | `fw git commit -m "T-XXX: ..."` |
+| Handover | `agents/handover/` | Session continuity | `fw handover --commit` |
+| Context | `agents/context/` | Manage memory fabric | `fw context init` |
+| Healing | `agents/healing/` | Error recovery | `fw healing diagnose T-XXX` |
+| Resume | `agents/resume/` | Post-compaction recovery | `fw resume status` |
+| Observe | `agents/observe/` | Capture anomalies | `fw observe "description"` |
 
 ## Session Protocols
 
 ### Session Start
-1. Initialize context: `./agents/context/context.sh init`
+1. Initialize context: `fw context init`
 2. Read `.context/handovers/LATEST.md` to understand current state
 3. Review the "Suggested First Action" section
-4. Set focus: `./agents/context/context.sh focus T-XXX`
-5. Run `./metrics.sh` to see project status
+4. Set focus: `fw context focus T-XXX`
+5. Run `fw metrics` to see project status
 
 ### Mid-Session Recovery (after context compaction)
-1. Run resume: `./agents/resume/resume.sh status`
-2. Sync working memory: `./agents/resume/resume.sh sync`
+1. Run resume: `fw resume status`
+2. Sync working memory: `fw resume sync`
 3. Continue from recommendations
 
 ### Session End
 1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
-4. Generate handover: `./agents/handover/handover.sh`
+4. Generate handover: `fw handover --commit`
 5. Fill in the [TODO] sections in the handover document
-6. Commit all changes with task references
-7. Run `./metrics.sh` to verify state
+6. Run `fw metrics` to verify state
 
 **Do not end a session without generating a handover.**
+
+## fw CLI
+
+The `fw` command is the single entry point for all framework operations:
+
+```bash
+fw help              # Show all commands
+fw version           # Show version and paths
+fw doctor            # Check framework health
+fw audit             # Run compliance audit
+fw metrics           # Show project metrics
+fw context init      # Initialize session
+fw context focus T-XXX
+fw git commit -m "T-XXX: description"
+fw handover --commit # Generate and commit handover
+fw task create --name "Fix bug" --type build --owner human
+fw work-on "name" --type build  # Create task + set focus + start
+fw healing diagnose T-XXX
+fw promote suggest   # Check graduation candidates
+fw tier0 approve     # Approve a blocked destructive command
+```
 
 ## Quick Reference
 
 | Action | Command |
 |--------|---------|
-| Create task | `./agents/task-create/create-task.sh` |
-| Commit changes | `./agents/git/git.sh commit -m "T-XXX: description"` |
-| Install git hooks | `./agents/git/git.sh install-hooks` |
-| Run audit | `./agents/audit/audit.sh` |
-| View metrics | `./metrics.sh` |
-| Initialize session | `./agents/context/context.sh init` |
-| Set focus | `./agents/context/context.sh focus T-XXX` |
-| Diagnose issue | `./agents/healing/healing.sh diagnose T-XXX` |
-| Resume state | `./agents/resume/resume.sh status` |
-| Generate handover | `./agents/handover/handover.sh` |
+| **Start work** | `fw work-on "name" --type build` |
+| Resume task | `fw work-on T-XXX` |
+| Create task | `fw task create --name "..." --type build` |
+| Update status | `fw task update T-XXX --status ...` |
+| Commit changes | `fw git commit -m "T-XXX: description"` |
+| Install git hooks | `fw git install-hooks` |
+| Run audit | `fw audit` |
+| View metrics | `fw metrics` |
+| Initialize session | `fw context init` |
+| Set focus | `fw context focus T-XXX` |
+| Add learning | `fw context add-learning "..." --task T-XXX` |
+| Diagnose issue | `fw healing diagnose T-XXX` |
+| Resume state | `fw resume status` |
+| Generate handover | `fw handover --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` |
+| Approve Tier 0 | `fw tier0 approve` |
+| Project health | `fw doctor` |
+
+## Setting Up a New Project
+
+```bash
+fw init /path/to/project --provider claude  # or: cursor, generic
+cd /path/to/project
+fw doctor           # Verify setup
+fw context init     # Start first session
+fw work-on "First task" --type build
+```
