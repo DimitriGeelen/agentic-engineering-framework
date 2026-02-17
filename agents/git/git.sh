@@ -13,7 +13,7 @@ LIB_DIR="$SCRIPT_DIR/lib"
 source "$LIB_DIR/common.sh"
 
 # Version for hook compatibility checking
-VERSION="1.0"
+VERSION="1.2"
 
 show_help() {
     cat << EOF

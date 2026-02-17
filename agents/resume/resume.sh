@@ -270,6 +270,17 @@ cmd_quick() {
     IFS='|' read -r task_count task_list <<< "$(get_active_tasks)"
     IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
 
+    # First-session detection (T-125)
+    local commit_count
+    commit_count=$(git -C "$PROJECT_ROOT" rev-list --count HEAD 2>/dev/null || echo "0")
+    if [ ! -f "$HANDOVER_DIR/LATEST.md" ] && [ "$commit_count" -le 1 ]; then
+        echo "New project — no history. Run 'fw context init' to start."
+        if [ "$task_count" -gt 0 ]; then
+            echo "Active tasks: $task_count. Run 'fw work-on T-001' to begin."
+        fi
+        return
+    fi
+
     local summary=""
 
     if [ -n "$focus" ]; then

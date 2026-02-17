@@ -515,6 +515,37 @@ fw bus clear T-XXX
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between. Use `superpowers:subagent-driven-development` skill.
 
+## Agent Behavioral Rules
+
+These rules govern agent behavior during work. They are structural expectations, not suggestions.
+
+### Choice Presentation
+Always present choices as a **numbered or lettered list** so the user can reply with just the identifier (e.g., "1" or "b"). Never present options as prose paragraphs.
+
+### Commit Cadence and Check-In
+After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
+
+### Inception Discipline
+When the active task has `workflow_type: inception`:
+1. **State the phase** — Say "This is an inception/exploration task" before doing any work
+2. **Present the filled template** for review before executing any spikes or prototypes
+3. **Do not write build artifacts** (production code, full apps) before `fw inception decide T-XXX go`
+4. **The commit-msg hook enforces this** — after 2 exploration commits, further commits are blocked until a decision is recorded
+5. After a GO decision, **create separate build tasks** for implementation — do not continue building under the inception task ID
+
+### Web App Startup
+When building a web application:
+1. **Check port availability** before starting (`ss -tlnp | grep :PORT`)
+2. **Start the app** and report the URL to the user
+3. **Report access options** — localhost, LAN IP (for other devices), internet (if applicable)
+4. Never leave a built web app unstarted without informing the user
+
+### Constraint Discovery
+For tasks involving hardware APIs (microphone, camera, GPS, Bluetooth):
+1. **Research platform constraints first** before building (e.g., getUserMedia requires HTTPS or localhost)
+2. **List constraints in the exploration plan** before writing code
+3. **Test the API access path** in a minimal spike before building the full app
+
 ## Session Start Protocol
 
 **Before beginning any work:**

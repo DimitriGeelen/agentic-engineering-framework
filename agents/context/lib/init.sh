@@ -81,6 +81,37 @@ EOF
     echo "  $CONTEXT_DIR/working/focus.yaml"
     echo "  $CONTEXT_DIR/working/.tool-counter (reset to 0)"
 
+    # --- First-session detection (T-125) ---
+    local has_handover=false
+    local has_tasks=false
+    local has_commits=false
+    [ -f "$CONTEXT_DIR/handovers/LATEST.md" ] && has_handover=true
+    [ -n "$active_tasks" ] && has_tasks=true
+    local commit_count
+    commit_count=$(git -C "$PROJECT_ROOT" rev-list --count HEAD 2>/dev/null || echo "0")
+    [ "$commit_count" -gt 1 ] && has_commits=true
+
+    if [ "$has_handover" = false ] && [ "$has_commits" = false ]; then
+        echo ""
+        echo -e "${YELLOW}=== Welcome — First Session ===${NC}"
+        echo ""
+        echo "This looks like a new project. Here's how to get started:"
+        echo ""
+        echo "  1. Create your first task:"
+        echo "     fw task create --name 'Your task' --type build --owner human --start"
+        echo ""
+        echo "  2. Or start an inception (exploration):"
+        echo "     fw inception start 'Explore problem X'"
+        echo ""
+        echo "  3. Set focus and begin:"
+        echo "     fw context focus T-001"
+        echo ""
+        echo "  4. When done, generate handover:"
+        echo "     fw handover --commit"
+        echo ""
+        echo "  Run 'fw help' for all commands, 'fw doctor' to check setup."
+    fi
+
     # Auto-run watchtower scan (Phase 4)
     # Watchtower requires the web module which lives in the framework repo
     if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && python3 -c "import web.watchtower" 2>/dev/null; then

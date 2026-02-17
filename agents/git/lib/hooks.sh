@@ -47,7 +47,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.1
+# VERSION=1.2
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -78,9 +78,49 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     exit 1
 fi
 
-# Check if referenced task is closed (Tier 1 warning — does not block)
+# Extract task reference and project root
 TASK_REF=$(echo "$COMMIT_MSG" | grep -oE "T-[0-9]+" | head -1)
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+
+# --- Inception Gate (T-126) ---
+# Block commits on inception tasks after exploration threshold unless decision recorded
+if [ -n "$TASK_REF" ]; then
+    TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${TASK_REF}-*.md" -type f 2>/dev/null | head -1)
+    if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE"; then
+        # Check if a decision has been recorded by fw inception decide
+        HAS_DECISION=false
+        if grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$TASK_FILE" 2>/dev/null; then
+            HAS_DECISION=true
+        fi
+
+        if [ "$HAS_DECISION" = false ]; then
+            # Count existing commits for this inception task
+            INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+
+            if [ "$INCEPTION_COMMITS" -ge 2 ]; then
+                echo ""
+                echo "BLOCKED: Inception gate — $TASK_REF has no go/no-go decision"
+                echo ""
+                echo "This inception task has $INCEPTION_COMMITS commits but no decision."
+                echo "Inception tasks allow 2 exploration commits, then require a decision."
+                echo ""
+                echo "Record a decision:"
+                echo "  fw inception decide $TASK_REF go --rationale 'reason'"
+                echo "  fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo ""
+                echo "Emergency bypass: git commit --no-verify"
+                exit 1
+            else
+                echo ""
+                echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/2 before gate)"
+                echo "  After exploration: fw inception decide $TASK_REF go|no-go --rationale '...'"
+                echo ""
+            fi
+        fi
+    fi
+fi
+
+# Check if referenced task is closed (Tier 1 warning — does not block)
 if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev/null 2>&1; then
     echo ""
     echo "WARNING: Task $TASK_REF is closed (in .tasks/completed/)"
@@ -100,7 +140,7 @@ HOOK_EOF
 # post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.1
+# VERSION=1.2
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 

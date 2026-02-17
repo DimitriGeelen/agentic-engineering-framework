@@ -78,5 +78,14 @@ if [ -z "$CURRENT_TASK" ]; then
     exit 2
 fi
 
+# --- Inception awareness ---
+# If the active task is inception type with no decision, warn (don't block)
+TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${CURRENT_TASK}-*.md" -type f 2>/dev/null | head -1)
+if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
+    if ! grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$TASK_FILE" 2>/dev/null; then
+        echo "NOTE: Active task $CURRENT_TASK is inception (no decision yet). Ensure you are doing exploration, not building." >&2
+    fi
+fi
+
 # Active task exists — allow
 exit 0
