@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-119: Fix fw not in PATH for new shell sessions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:49:18Z
+# ============================================================================
+
+task_id: T-119
+task_name: "Fix fw not in PATH for new shell sessions"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T14:46:58Z
+completed: 2026-02-17T14:49:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-17T15:49:07+01:00
+last_commit: 2026-02-17T15:49:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fw not in PATH — resolve symlinks in bin/fw, add symlink step to fw init
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fw not in PATH — resolve symlinks in bin/fw, add symlink step to fw init"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/init.sh"
+  - ".tasks/active/T-119-fix-fw-not-in-path-for-new-shell-session.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T15:49:07"
+    action: "T-119: Fix fw not in PATH — resolve symlinks in bin/fw, add symlink step to fw init"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 5
+  lines_added: 47
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-119-fix-fw-not-in-path-for-new-shell-session.md
+generated_by: context-agent-hybrid
