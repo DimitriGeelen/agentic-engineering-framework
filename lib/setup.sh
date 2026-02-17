@@ -470,4 +470,9 @@ setup_step_verify() {
     echo "  fw doctor"
     echo "  fw audit"
     echo ""
+    echo "  # Update framework"
+    echo "  cd $FRAMEWORK_ROOT && git pull"
+    echo ""
+    echo -e "  Framework source: ${CYAN}https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework${NC}"
+    echo ""
 }

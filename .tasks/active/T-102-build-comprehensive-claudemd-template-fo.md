@@ -9,7 +9,7 @@ owner: agent
 tags: [critical, fw-init, claude-md, template, external-project]
 related_tasks: []
 created: 2026-02-17T08:53:24Z
-last_update: 2026-02-17T09:18:53Z
+last_update: 2026-02-17T09:44:00Z
 date_finished: null
 ---
 

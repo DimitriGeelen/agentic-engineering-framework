@@ -203,12 +203,66 @@ fw tier0 approve     # Approve a blocked destructive command
 | Approve Tier 0 | `fw tier0 approve` |
 | Project health | `fw doctor` |
 
+## Installation
+
+### 1. Clone the framework
+
+```bash
+git clone https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git
+```
+
+For git authentication, use your OneDev access token as the password in HTTP Basic Auth:
+```bash
+# Store credentials (one-time)
+git credential-store --file ~/.git-credentials store <<EOF
+protocol=https
+host=onedev.docker.ring20.geelenandcompany.com
+username=admin
+password=<your-access-token>
+EOF
+git config --global credential.helper 'store --file ~/.git-credentials'
+```
+
+Access tokens are managed at: `https://onedev.docker.ring20.geelenandcompany.com/~my/access-tokens`
+
+### 2. Add `fw` to your PATH
+
+```bash
+# Option A: Add to shell profile
+echo 'export PATH="/path/to/agentic-engineering-framework/bin:$PATH"' >> ~/.bashrc
+
+# Option B: Symlink
+ln -s /path/to/agentic-engineering-framework/bin/fw /usr/local/bin/fw
+```
+
+### 3. Verify installation
+
+```bash
+fw version
+fw doctor
+```
+
 ## Setting Up a New Project
 
 ```bash
+# Quick init (non-interactive)
 fw init /path/to/project --provider claude  # or: cursor, generic
+
+# Guided wizard (recommended for first project)
+fw setup /path/to/project
+
+# Then:
 cd /path/to/project
 fw doctor           # Verify setup
 fw context init     # Start first session
 fw work-on "First task" --type build
 ```
+
+### Updating the framework
+
+```bash
+cd /path/to/agentic-engineering-framework
+git pull
+```
+
+Existing projects pick up framework updates automatically — they reference the framework via `FRAMEWORK_ROOT` in `.framework.yaml`.
