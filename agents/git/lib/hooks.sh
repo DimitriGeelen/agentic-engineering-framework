@@ -47,7 +47,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.0
+# VERSION=1.1
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -76,6 +76,17 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo ""
     echo "Note: Bypasses should be logged with: ./agents/git/git.sh log-bypass"
     exit 1
+fi
+
+# Check if referenced task is closed (Tier 1 warning — does not block)
+TASK_REF=$(echo "$COMMIT_MSG" | grep -oE "T-[0-9]+" | head -1)
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev/null 2>&1; then
+    echo ""
+    echo "WARNING: Task $TASK_REF is closed (in .tasks/completed/)"
+    echo "  Consider: create a new task, or reopen this one."
+    echo "  Commit allowed (Tier 1 warning)."
+    echo ""
 fi
 
 exit 0
