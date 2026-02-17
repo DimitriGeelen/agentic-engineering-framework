@@ -277,4 +277,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-035
+    learning: "add-pattern awk script silently dropped entries for non-empty sections. Used prev~section but prev is last data line, not header. Pattern: always verify write operations actually wrote — a success message after a file operation is not proof the data landed. Test: grep for the added content after any append operation."
+    source: T-112 investigation
+    task: T-115
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

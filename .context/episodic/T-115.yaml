@@ -1,0 +1,64 @@
+# ============================================================================
+# EPISODIC MEMORY - T-115: Fix silent pattern drop bug in add-pattern command
+# ============================================================================
+# Generated: 2026-02-17T13:54:45Z
+
+task_id: T-115
+task_name: "Fix silent pattern drop bug in add-pattern command"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T13:54:04Z
+completed: 2026-02-17T13:54:45Z
+duration_days: 0
+updates_count: 2
+
+summary: |
+  Fixed a bug where `fw context add-pattern` silently dropped entries when appending
+  to non-empty sections in patterns.yaml. The awk script used `prev ~ section` to detect
+  section boundaries, but prev held the last data line, never the section header. The
+  command printed "Pattern added" regardless, masking the data loss. Found during T-112
+  investigation when FP-006 was "added" but missing from the file.
+
+outcomes:
+  - "Fixed awk logic in agents/context/lib/pattern.sh — now tracks in_section state"
+  - "Re-added FP-006 which was silently lost"
+  - "Captured L-035: verify write operations actually wrote"
+  - "No historical pattern loss detected (prior patterns were bulk-loaded, not via add-pattern)"
+
+successes:
+  - description: "Bug found organically by validating our own process output"
+    why: "Running healing.sh patterns after add-pattern revealed the discrepancy. Process validation catches process bugs."
+
+challenges:
+  - description: "awk script logic was subtly wrong — looked correct on cursory review"
+    resolution: "Traced the logic line by line. The prev variable tracked line N-1, but needed section header which could be N-50."
+
+decisions:
+  - decision: "Replace prev-tracking awk with in_section state machine"
+    rationale: "State machine correctly handles: empty sections ([] replacement), mid-file sections (insert before next header), and last section (insert at EOF)"
+    alternatives_rejected: ["sed-based insertion (fragile with multi-line entries)", "Python rewrite (overkill for this fix)"]
+
+artifacts:
+  created: []
+  modified:
+    - "agents/context/lib/pattern.sh (awk rewrite)"
+    - ".context/project/patterns.yaml (+FP-006 re-added)"
+
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+tags: [bug-fix, context-agent, awk, silent-failure, data-loss]
+
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 4
+  lines_added: 60
+  lines_removed: 22
+
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-115-fix-silent-pattern-drop-bug-in-add-patte.md
+generated_by: context-agent
