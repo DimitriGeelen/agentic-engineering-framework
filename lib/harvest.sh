@@ -95,6 +95,8 @@ do_harvest() {
     local new_patterns=0
     local new_learnings=0
     local new_decisions=0
+    local new_episodics=0
+    local new_practices=0
     local duplicates=0
 
     # --- Harvest Patterns ---
@@ -109,20 +111,34 @@ do_harvest() {
     echo -e "${YELLOW}Scanning decisions...${NC}"
     harvest_decisions "$project_context/decisions.yaml" "$framework_context/decisions.yaml" "$project_name"
 
+    # --- Harvest Episodics ---
+    echo -e "${YELLOW}Scanning episodic memory...${NC}"
+    harvest_episodics
+
+    # --- Harvest Practices ---
+    echo -e "${YELLOW}Scanning practices...${NC}"
+    harvest_practices "$project_context/practices.yaml" "$framework_context/practices.yaml" "$project_name"
+
+    # --- CLAUDE.md Additions ---
+    echo -e "${YELLOW}Scanning CLAUDE.md additions...${NC}"
+    harvest_claude_additions "$project_dir" "$project_name"
+
     # --- Summary ---
     echo ""
     echo -e "${BOLD}=== Harvest Summary ===${NC}"
     echo "  New patterns:   $new_patterns"
     echo "  New learnings:  $new_learnings"
     echo "  New decisions:  $new_decisions"
+    echo "  New episodics:  $new_episodics"
+    echo "  New practices:  $new_practices"
     echo "  Duplicates:     $duplicates"
 
     if [ "$dry_run" = true ]; then
         echo ""
         echo -e "${YELLOW}Dry run — no changes made to framework${NC}"
-    elif [ $((new_patterns + new_learnings + new_decisions)) -gt 0 ]; then
+    elif [ $((new_patterns + new_learnings + new_decisions + new_episodics + new_practices)) -gt 0 ]; then
         # Log the harvest
-        echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") | project=$project_name | patterns=$new_patterns learnings=$new_learnings decisions=$new_decisions" >> "$harvest_log"
+        echo "$(date -u +"%Y-%m-%dT%H:%M:%SZ") | project=$project_name | patterns=$new_patterns learnings=$new_learnings decisions=$new_decisions episodics=$new_episodics practices=$new_practices" >> "$harvest_log"
         echo ""
         echo -e "${GREEN}Harvested items added to framework .context/project/ files${NC}"
         echo "Review and commit: fw git commit -m \"T-035: Harvest from $project_name\""
@@ -338,5 +354,156 @@ harvest_decisions() {
 
     if [ $new_decisions -gt 0 ]; then
         echo -e "  ${YELLOW}NOTE${NC}  Decisions are project-specific — review manually for framework relevance"
+    fi
+}
+
+# --- Episodic Memory Harvesting ---
+harvest_episodics() {
+    local project_episodics="$project_dir/.context/episodic"
+    local framework_episodics="$FRAMEWORK_ROOT/.context/episodic/harvested"
+
+    if [ ! -d "$project_episodics" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No .context/episodic/ in project"
+        return
+    fi
+
+    local episodic_files
+    episodic_files=$(find "$project_episodics" -maxdepth 1 -name "T-*.yaml" 2>/dev/null || true)
+
+    if [ -z "$episodic_files" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No episodic files found in project"
+        return
+    fi
+
+    local dest_dir="$framework_episodics/$project_name"
+
+    if [ "$dry_run" != true ]; then
+        mkdir -p "$dest_dir"
+    fi
+
+    while IFS= read -r ep_file; do
+        [ -z "$ep_file" ] && continue
+        local ep_basename
+        ep_basename=$(basename "$ep_file")
+
+        if [ -f "$dest_dir/$ep_basename" ]; then
+            duplicates=$((duplicates + 1))
+            if [ "$verbose" = true ]; then
+                echo -e "  ${CYAN}DUP${NC}   Episodic: $ep_basename"
+            fi
+        else
+            new_episodics=$((new_episodics + 1))
+            echo -e "  ${GREEN}NEW${NC}   Episodic: $ep_basename (from $project_name)"
+
+            if [ "$dry_run" != true ]; then
+                # Copy with provenance header
+                {
+                    echo "# Harvested from $project_name on $(date -u +%Y-%m-%d)"
+                    cat "$ep_file"
+                } > "$dest_dir/$ep_basename"
+            fi
+        fi
+    done <<< "$episodic_files"
+}
+
+# --- Practice Harvesting ---
+harvest_practices() {
+    local project_file="$1"
+    local framework_file="$2"
+    local project_name="$3"
+
+    if [ ! -f "$project_file" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No practices.yaml in project"
+        return
+    fi
+
+    local project_practices
+    project_practices=$(grep "^    name:" "$project_file" 2>/dev/null | sed 's/.*name:[[:space:]]*//' | tr -d '"' || true)
+
+    if [ -z "$project_practices" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No practices found in project"
+        return
+    fi
+
+    local framework_practices=""
+    if [ -f "$framework_file" ]; then
+        framework_practices=$(grep "^    name:" "$framework_file" 2>/dev/null | sed 's/.*name:[[:space:]]*//' | tr -d '"' || true)
+    fi
+
+    while IFS= read -r practice; do
+        [ -z "$practice" ] && continue
+
+        if echo "$framework_practices" | grep -qF "$practice"; then
+            duplicates=$((duplicates + 1))
+            if [ "$verbose" = true ]; then
+                echo -e "  ${CYAN}DUP${NC}   Practice: $practice"
+            fi
+        else
+            new_practices=$((new_practices + 1))
+            echo -e "  ${GREEN}NEW${NC}   Practice: $practice (from $project_name)"
+
+            if [ "$dry_run" != true ] && [ -f "$framework_file" ]; then
+                # Append as candidate practice
+                cat >> "$framework_file" << PPEOF
+
+  # Harvested from $project_name on $(date -u +%Y-%m-%d)
+  - id: P-HARVEST-$(date +%s)
+    name: "$practice"
+    derived_from: "harvested"
+    description: "[Review and refine — harvested from $project_name]"
+    anti_pattern: "[To be defined]"
+    origin_task: "harvested"
+    origin_date: $(date -u +%Y-%m-%d)
+    status: candidate
+    applications: 1
+PPEOF
+            fi
+        fi
+    done <<< "$project_practices"
+}
+
+# --- CLAUDE.md Addition Detection ---
+harvest_claude_additions() {
+    local project_dir="$1"
+    local project_name="$2"
+    local project_claude="$project_dir/CLAUDE.md"
+    local template_claude="$FRAMEWORK_ROOT/lib/templates/claude-project.md"
+
+    if [ ! -f "$project_claude" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No CLAUDE.md in project"
+        return
+    fi
+
+    if [ ! -f "$template_claude" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No template claude-project.md in framework"
+        return
+    fi
+
+    # Extract ## headings from both files
+    local project_headings
+    project_headings=$(grep "^## " "$project_claude" 2>/dev/null | sort || true)
+
+    local template_headings
+    template_headings=$(grep "^## " "$template_claude" 2>/dev/null | sort || true)
+
+    if [ -z "$project_headings" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  No sections found in project CLAUDE.md"
+        return
+    fi
+
+    local found_new=false
+    while IFS= read -r heading; do
+        [ -z "$heading" ] && continue
+
+        if ! echo "$template_headings" | grep -qF "$heading"; then
+            found_new=true
+            echo -e "  ${GREEN}NEW${NC}   Section in project CLAUDE.md: $heading"
+        fi
+    done <<< "$project_headings"
+
+    if [ "$found_new" != true ]; then
+        echo -e "  ${CYAN}---${NC}   No new sections in project CLAUDE.md"
+    else
+        echo -e "  ${YELLOW}NOTE${NC}  Review new sections manually for framework inclusion"
     fi
 }
