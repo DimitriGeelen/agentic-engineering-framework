@@ -195,6 +195,17 @@
     font-size: 0.75rem;
     color: var(--pico-muted-color);
 }
+.kanban-card-meta .horizon-badge {
+    font-size: 0.65rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.horizon-now { background: #1b5e20; color: #fff; }
+.horizon-next { background: #e65100; color: #fff; }
+.horizon-later { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
 .advance-btn {
     display: inline-flex;
     align-items: center;
@@ -327,6 +338,7 @@ td .status-update-result {
             <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
             <div class="kanban-card-meta">
                 <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                {% if task.horizon %}<span class="horizon-badge horizon-{{ task.horizon }}">{{ task.horizon }}</span>{% endif %}
                 <span class="owner">{{ task.owner or 'unassigned' }}</span>
             </div>
         </article>
@@ -355,6 +367,7 @@ td .status-update-result {
             <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
             <div class="kanban-card-meta">
                 <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                {% if task.horizon %}<span class="horizon-badge horizon-{{ task.horizon }}">{{ task.horizon }}</span>{% endif %}
                 <span class="owner">{{ task.owner or 'unassigned' }}</span>
             </div>
         </article>
@@ -383,6 +396,7 @@ td .status-update-result {
             <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
             <div class="kanban-card-meta">
                 <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                {% if task.horizon %}<span class="horizon-badge horizon-{{ task.horizon }}">{{ task.horizon }}</span>{% endif %}
                 <span class="owner">{{ task.owner or 'unassigned' }}</span>
             </div>
         </article>
@@ -405,6 +419,7 @@ td .status-update-result {
             <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
             <div class="kanban-card-meta">
                 <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
+                {% if task.horizon %}<span class="horizon-badge horizon-{{ task.horizon }}">{{ task.horizon }}</span>{% endif %}
                 <span class="owner">{{ task.owner or 'unassigned' }}</span>
             </div>
         </article>
@@ -467,6 +482,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
             <th>ID</th>
             <th>Name</th>
             <th>Status</th>
+            <th>Horizon</th>
             <th>Type</th>
             <th>Owner</th>
             <th>Tags</th>
@@ -493,6 +509,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 </form>
                 <span class="status-update-result"></span>
             </td>
+            <td>{% if task.horizon %}<span class="horizon-badge horizon-{{ task.horizon }}">{{ task.horizon }}</span>{% endif %}</td>
             <td>{{ task.workflow_type or '' }}</td>
             <td>{{ task.owner or '' }}</td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>

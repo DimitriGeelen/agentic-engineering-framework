@@ -13,6 +13,12 @@
                     {% else %}{{ task.status }}{% endif %}
                 </td></tr>
                 <tr><th>Owner</th><td>{{ task.owner or 'unassigned' }}</td></tr>
+                <tr><th>Horizon</th><td>
+                    {% if task.horizon == 'now' %}<span style="color:#1b5e20;font-weight:600;">now</span>
+                    {% elif task.horizon == 'next' %}<span style="color:#e65100;font-weight:600;">next</span>
+                    {% elif task.horizon == 'later' %}<span style="color:var(--pico-muted-color);">later</span>
+                    {% else %}{{ task.horizon or '—' }}{% endif %}
+                </td></tr>
                 <tr><th>Workflow Type</th><td>{{ task.workflow_type or '' }}</td></tr>
                 <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
                 <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
