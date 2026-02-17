@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-095: End-to-end validation of fw init for external projects
+# ============================================================================
+# Generated: 2026-02-17T06:55:41Z
+
+task_id: T-095
+task_name: "End-to-end validation of fw init for external projects"
+workflow_type: test
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T06:50:26Z
+completed: 2026-02-17T06:55:41Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Ran full end-to-end validation of fw init --provider claude on a fresh git repo.
+  Tested the complete workflow: init → doctor → task create → commit (hook enforcement)
+  → context init → focus → task complete → handover → metrics. Found and fixed two bugs:
+  (1) metrics.sh ignored PROJECT_ROOT env var, always showing framework data;
+  (2) grep -c ... || echo 0 produced doubled "0\n0" output in 4 scripts (13 instances).
+  All fw commands work correctly for external projects after fixes.
+
+# Key outcomes
+outcomes:
+  - "Full fw init → task lifecycle validated end-to-end"
+  - "metrics.sh PROJECT_ROOT bug found and fixed"
+  - "grep -c || echo 0 doubled output fixed across 4 files (13 instances)"
+  - "Commit-msg hook correctly rejects taskless commits in external projects"
+
+# What worked well
+successes:
+  - description: "Systematic workflow testing caught bugs that unit tests wouldn't"
+    why: "The PROJECT_ROOT bug only manifests when running from framework root against external project"
+  - description: "Pattern-based bug hunting (grep -c || echo 0) found 9 more instances after initial fix"
+    why: "Same anti-pattern was copy-pasted across status.sh, episodic.sh, audit.sh"
+
+# Challenges encountered
+challenges:
+  - description: "git commit in temp project needed per-repo config (no global git identity)"
+    resolution: "Added git config user.email/name before first commit"
+
+# Decisions made
+decisions:
+  - decision: "Replace || echo 0 with || true globally, not just in metrics.sh"
+    rationale: "Same bug pattern; fixing only one file leaves time bombs in others"
+    alternatives_rejected: ["Fix only metrics.sh", "Use subshell with explicit default"]
+
+# Files created or significantly modified
+artifacts:
+  created: []
+  modified:
+    - "metrics.sh — PROJECT_ROOT env var + grep -c fix"
+    - "agents/context/lib/status.sh — grep -c fix (6 instances)"
+    - "agents/context/lib/episodic.sh — grep -c fix (1 instance)"
+    - "agents/audit/audit.sh — grep -c fix (2 instances)"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, external-project, fw-init, metrics, bug-fix]
+
+# Passive metrics
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 20
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-095-end-to-end-validation-of-fw-init-for-ext.md
+generated_by: context-agent
