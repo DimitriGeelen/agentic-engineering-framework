@@ -18,7 +18,29 @@ date_finished: null
 
 ## Context
 
-[Link to design docs, specs, or predecessor tasks]
+T-124 cycle 2 analysis revealed superpowers plugin was competing with framework governance — self-propagating skill chains, 1820-line plans for spike work, and over-planning. Deep evaluation showed feature-dev had the same problem. Decision: strip both, replace with lightweight behavioral rules + 2 framework-native skills.
+
+Evidence: session transcript analysis of sprechloop cycle 2 (agent-a694e15).
+
+## Acceptance Criteria
+
+- [x] superpowers and feature-dev disabled in settings.json
+- [x] All superpowers/feature-dev references removed from CLAUDE.md
+- [x] All references removed from template (claude-project.md)
+- [x] All references removed from start-work skill
+- [x] Verification Before Completion behavioral rule added to CLAUDE.md + template
+- [x] Hypothesis-Driven Debugging behavioral rule added to CLAUDE.md + template
+- [x] /explore skill created (replaces brainstorming)
+- [x] /plan skill created (replaces writing-plans)
+
+## Verification
+
+grep -qi 'superpowers\|feature-dev\|brainstorm\|writing-plans\|executing-plans' CLAUDE.md && exit 1 || true
+grep -qi 'superpowers\|feature-dev\|brainstorm\|writing-plans\|executing-plans' lib/templates/claude-project.md && exit 1 || true
+test -f .claude/commands/explore.md
+test -f .claude/commands/plan.md
+grep -q 'Verification Before Completion' CLAUDE.md
+grep -q 'Hypothesis-Driven Debugging' CLAUDE.md
 
 ## Updates
 

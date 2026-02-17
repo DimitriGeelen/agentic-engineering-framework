@@ -18,7 +18,22 @@ date_finished: null
 
 ## Context
 
-[Link to design docs, specs, or predecessor tasks]
+T-124 cycle 2: sprechloop agent created 11 tasks via subagent-driven-development skill. All passed audit despite having no acceptance criteria, no verification section, and template placeholder context. The audit's quality checks were too lenient — only checked description length and update count.
+
+## Acceptance Criteria
+
+- [x] Quality Check 4: AC section with checkboxes required (non-captured, non-inception)
+- [x] Quality Check 5: Verification section required for started-work tasks
+- [x] Quality Check 6: Context section must not contain template placeholder
+- [x] Sprechloop thin tasks now trigger warnings
+- [x] Framework tasks with same issues also flagged (dog-fooding)
+
+## Verification
+
+# Audit catches thin tasks (sprechloop T-008 has no AC)
+PROJECT_ROOT=/opt/001-sprechloop /opt/999-Agentic-Engineering-Framework/agents/audit/audit.sh 2>&1 | grep -q "has no acceptance criteria"
+# Inception tasks are exempt from AC check
+grep -q 'inception' agents/audit/audit.sh
 
 ## Updates
 
