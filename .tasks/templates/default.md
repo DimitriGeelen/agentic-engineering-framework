@@ -17,10 +17,25 @@ date_finished: null
 
 ## Context
 
-<!-- What is this task about? Link to design docs, specs, or predecessor tasks.
-     For substantial tasks: design authority, key decisions, dependencies.
-     For small fixes: one sentence of context is fine. -->
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+## Acceptance Criteria
+
+- [ ] [First criterion]
+- [ ] [Second criterion]
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Updates
 
-[Chronological log — every action, every output, every decision]
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->

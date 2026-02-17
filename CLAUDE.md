@@ -59,13 +59,16 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 ### Task File Format
 
-Tasks are Markdown with YAML frontmatter. Use `zzz-default.md` as template.
+Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 
 **Required frontmatter fields:**
 - `id`, `name`, `description`, `status`, `workflow_type`, `owner`, `created`, `last_update`
 
 **Body sections:**
-- Design Record, Specification Record, Test Files, Updates (chronological log)
+- Context (brief, link to design docs for substantial tasks)
+- Acceptance Criteria (checkboxes — completion gate)
+- Decisions (only when choosing between alternatives; most tasks have none)
+- Updates (auto-populated by git mining at completion; manual entries optional)
 
 ### Task Lifecycle
 
@@ -108,7 +111,8 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 2. Set status to `started-work`
 3. Set focus: `fw context focus T-XXX`
 4. THEN proceed with implementation (skills, code changes, etc.)
-5. Log every action in Updates section with: action, output, context snapshot
+5. Record decisions in Decisions section ONLY when choosing between alternatives
+6. Updates section is auto-populated at completion — manual entries optional
 
 When encountering issues:
 1. Set status to `issues`

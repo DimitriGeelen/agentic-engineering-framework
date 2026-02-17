@@ -31,6 +31,12 @@ date_finished: null
 
 <!-- What's IN scope for this exploration? What's explicitly OUT? -->
 
+## Acceptance Criteria
+
+- [ ] Problem statement validated
+- [ ] Assumptions tested
+- [ ] Go/No-Go decision made
+
 ## Go/No-Go Criteria
 
 **GO if:**
@@ -41,10 +47,22 @@ date_finished: null
 - [Criterion 1]
 - [Criterion 2]
 
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
-[Chronological log — every action, every output, every decision]
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
