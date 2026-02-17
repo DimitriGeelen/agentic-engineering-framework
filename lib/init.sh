@@ -269,7 +269,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/check-active-task.sh"
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/check-active-task.sh"
           }
         ]
       },
@@ -278,7 +278,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/check-tier0.sh"
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/check-tier0.sh"
           }
         ]
       }
@@ -289,7 +289,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/checkpoint.sh post-tool"
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/checkpoint.sh post-tool"
           }
         ]
       }
@@ -297,8 +297,9 @@ generate_claude_code_config() {
   }
 }
 SJSON
-        # Replace placeholder with actual framework path
+        # Replace placeholders with actual paths
         sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
+        sed -i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json (Tier 0 + Tier 1 + checkpoint hooks)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"

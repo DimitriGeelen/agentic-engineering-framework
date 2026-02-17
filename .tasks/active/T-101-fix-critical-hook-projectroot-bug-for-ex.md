@@ -3,7 +3,7 @@ id: T-101
 name: Fix critical hook PROJECT_ROOT bug for external projects
 description: >
   CRITICAL BUG: When fw init generates .claude/settings.json for external projects, the hook commands (check-active-task.sh, check-tier0.sh, checkpoint.sh) do not set PROJECT_ROOT. All three scripts fall back to FRAMEWORK_ROOT, meaning enforcement silently operates against the framework repo state, not the project. This is invisible — no errors, just wrong behavior. Fix: Add PROJECT_ROOT placeholder to generated settings.json hook commands and substitute via sed alongside FRAMEWORK_ROOT. Acceptance: hooks in generated settings.json include PROJECT_ROOT=/path/to/project prefix. Files: lib/init.sh (generate_claude_code_config function, lines 256-305).
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 tags: [critical, fw-init, hooks, external-project]
@@ -58,13 +58,18 @@ sed -i "s|__PROJECT_ROOT__|$target_dir|g" "$dir/.claude/settings.json"
 
 ### Acceptance Criteria
 
-- [ ] Generated settings.json hook commands include `PROJECT_ROOT=/path/to/project` prefix
-- [ ] check-active-task.sh reads focus.yaml from PROJECT, not FRAMEWORK
-- [ ] check-tier0.sh reads tier0 approval from PROJECT, not FRAMEWORK
-- [ ] checkpoint.sh reads token counter from PROJECT, not FRAMEWORK
-- [ ] Test: `fw init /tmp/test-proj --provider claude && grep PROJECT_ROOT /tmp/test-proj/.claude/settings.json`
+- [x] Generated settings.json hook commands include `PROJECT_ROOT=/path/to/project` prefix
+- [x] check-active-task.sh reads focus.yaml from PROJECT, not FRAMEWORK
+- [x] check-tier0.sh reads tier0 approval from PROJECT, not FRAMEWORK
+- [x] checkpoint.sh reads token counter from PROJECT, not FRAMEWORK
+- [x] Test: `fw init /tmp/test-proj --provider claude && grep PROJECT_ROOT /tmp/test-proj/.claude/settings.json`
 
 ## Updates
+
+### 2026-02-17T09:10:00Z — work-completed [claude-code]
+- **Action:** Added PROJECT_ROOT=__PROJECT_ROOT__ prefix to all 3 hook commands in generate_claude_code_config(). Added second sed pass for PROJECT_ROOT substitution.
+- **Output:** Verified: `grep PROJECT_ROOT /tmp/test-proj/.claude/settings.json` shows all 3 hooks correctly set PROJECT_ROOT=/tmp/test-proj
+- **Context:** 4-line change in lib/init.sh. All acceptance criteria met.
 
 ### 2026-02-17T08:53:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
