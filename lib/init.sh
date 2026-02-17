@@ -79,25 +79,48 @@ do_init() {
     mkdir -p "$target_dir/.context/project"
     mkdir -p "$target_dir/.context/episodic"
     mkdir -p "$target_dir/.context/handovers"
+    mkdir -p "$target_dir/.context/scans"
 
     echo -e "  ${GREEN}OK${NC}  .tasks/{active,completed,templates}"
-    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers}"
+    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans}"
 
-    # --- Copy task templates ---
-    if [ -f "$FRAMEWORK_ROOT/.tasks/templates/default.md" ]; then
-        cp "$FRAMEWORK_ROOT/.tasks/templates/default.md" "$target_dir/.tasks/templates/default.md"
-        echo -e "  ${GREEN}OK${NC}  Task template (default)"
-    fi
-    if [ -f "$FRAMEWORK_ROOT/.tasks/templates/inception.md" ]; then
-        cp "$FRAMEWORK_ROOT/.tasks/templates/inception.md" "$target_dir/.tasks/templates/inception.md"
-        echo -e "  ${GREEN}OK${NC}  Task template (inception)"
+    # --- .gitignore for volatile working memory files ---
+    cat > "$target_dir/.context/working/.gitignore" << 'WGIT'
+# Volatile session files — regenerated each session
+.tool-counter
+.prev-token-reading
+session.yaml
+focus.yaml
+tier0-approval
+WGIT
+    echo -e "  ${GREEN}OK${NC}  .context/working/.gitignore"
+
+    # --- Copy task templates (all .md files from framework templates) ---
+    local template_count=0
+    for tmpl in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
+        [ -f "$tmpl" ] || continue
+        cp "$tmpl" "$target_dir/.tasks/templates/$(basename "$tmpl")"
+        template_count=$((template_count + 1))
+    done
+    if [ "$template_count" -gt 0 ]; then
+        echo -e "  ${GREEN}OK${NC}  Task templates ($template_count copied)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  No task templates found in $FRAMEWORK_ROOT/.tasks/templates/"
     fi
 
     # --- Create .framework.yaml ---
+    local project_name
+    project_name=$(basename "$target_dir")
+    local init_timestamp
+    init_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
     cat > "$target_dir/.framework.yaml" << FYAML
 # Agentic Engineering Framework - Project Configuration
+project_name: $project_name
 framework_path: $FRAMEWORK_ROOT
 version: $FW_VERSION
+provider: $provider
+initialized_at: $init_timestamp
 FYAML
     echo -e "  ${GREEN}OK${NC}  .framework.yaml"
 
@@ -139,6 +162,16 @@ PRAML
         echo -e "  ${GREEN}OK${NC}  practices.yaml"
     fi
 
+    if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "$force" = true ]; then
+        cat > "$target_dir/.context/project/assumptions.yaml" << 'AYAML'
+# Project Assumptions - Tracked via inception workflow
+# Added via: fw assumption add "description" --task T-XXX
+# Validated via: fw assumption validate A-XXX --evidence "..."
+assumptions: []
+AYAML
+        echo -e "  ${GREEN}OK${NC}  assumptions.yaml"
+    fi
+
     # --- Generate provider config ---
     echo ""
     echo -e "${YELLOW}Generating provider config...${NC}"
@@ -167,7 +200,7 @@ PRAML
     echo ""
     if [ -d "$target_dir/.git" ]; then
         echo -e "${YELLOW}Installing git hooks...${NC}"
-        PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks 2>/dev/null && \
+        PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks && \
             echo -e "  ${GREEN}OK${NC}  Git hooks installed" || \
             echo -e "  ${YELLOW}WARN${NC}  Git hook installation failed (run manually: fw git install-hooks)"
     else
@@ -206,7 +239,17 @@ generate_claude_md() {
     local project_name
     project_name=$(basename "$dir")
 
-    cat > "$config_file" << CMDEOF
+    local template_file="$FRAMEWORK_ROOT/lib/templates/claude-project.md"
+
+    if [ -f "$template_file" ]; then
+        # Use comprehensive template with placeholder substitution
+        sed \
+            -e "s|__PROJECT_NAME__|$project_name|g" \
+            -e "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" \
+            "$template_file" > "$config_file"
+    else
+        # Fallback: inline minimal CLAUDE.md if template missing
+        cat > "$config_file" << CMDEOF
 # CLAUDE.md
 
 Project configuration for the Agentic Engineering Framework.
@@ -251,6 +294,7 @@ fw handover --commit                 # End-of-session handover
 **Start:** \`fw context init\` → read handover → \`fw context focus T-XXX\`
 **End:** session capture → \`fw handover --commit\`
 CMDEOF
+    fi
 }
 
 generate_claude_code_config() {
