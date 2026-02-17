@@ -80,9 +80,11 @@ do_init() {
     mkdir -p "$target_dir/.context/episodic"
     mkdir -p "$target_dir/.context/handovers"
     mkdir -p "$target_dir/.context/scans"
+    mkdir -p "$target_dir/.context/bus/results"
+    mkdir -p "$target_dir/.context/bus/blobs"
 
     echo -e "  ${GREEN}OK${NC}  .tasks/{active,completed,templates}"
-    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans}"
+    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans,bus}"
 
     # --- .gitignore for volatile working memory files ---
     cat > "$target_dir/.context/working/.gitignore" << 'WGIT'

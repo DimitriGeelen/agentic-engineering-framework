@@ -121,6 +121,7 @@ show_help() {
     echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
+    echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -649,6 +650,10 @@ case "$cmd" in
     assumption)
         source "$FW_LIB_DIR/assumption.sh"
         do_assumption "$@"
+        ;;
+    bus)
+        source "$FW_LIB_DIR/bus.sh"
+        do_bus "$@"
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"

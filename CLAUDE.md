@@ -444,13 +444,34 @@ When dispatching sub-agents, include in the prompt:
 4. **Constraints**: Don't modify files outside scope, don't return raw data
 5. **Token hint**: "Keep your response concise — the orchestrator has limited context budget"
 
+### Result Ledger (`fw bus`)
+
+The result ledger formalizes the "write to disk, return path + summary" convention into a protocol with typed YAML envelopes and automatic size gating. Use it for sub-agent dispatch:
+
+```bash
+# Sub-agent posts result (instead of returning full content)
+fw bus post --task T-XXX --agent explore --summary "Found 3 issues" --result "inline data"
+fw bus post --task T-XXX --agent code --summary "Wrote file" --blob /path/to/output
+
+# Orchestrator reads manifest (5 lines instead of 25KB)
+fw bus manifest T-XXX
+
+# Orchestrator reads specific result if needed
+fw bus read T-XXX R-001
+
+# Cleanup after task completion
+fw bus clear T-XXX
+```
+
+**Size gating:** Payloads < 2KB are inline. Payloads >= 2KB are auto-moved to `.context/bus/blobs/` and referenced. This prevents T-073-class context explosions (~97% context savings in simulation).
+
 ### Dispatch Patterns (from project history)
 
 **Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
 
 **Parallel Audit** (T-072): 3 agents review different artifact categories. Each returns pass/warn/fail summary. Combined into report.
 
-**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel.
+**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between. Use `superpowers:subagent-driven-development` skill.
 
@@ -507,6 +528,10 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Resume state | `fw resume status` | `./agents/resume/resume.sh status` |
 | Sync working memory | `fw resume sync` | `./agents/resume/resume.sh sync` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist | |
+| Post bus result | `fw bus post --task T-XXX --agent TYPE --summary "..."` | |
+| Read bus results | `fw bus read T-XXX [R-NNN]` | |
+| Bus manifest | `fw bus manifest [T-XXX]` | |
+| Clear bus channel | `fw bus clear T-XXX` | |
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |

@@ -3,3 +3,4 @@ __pycache__/
 .context/working/.transcript-path
 .context/working/.prev-token-reading
 .playwright-mcp/
+.context/bus/
