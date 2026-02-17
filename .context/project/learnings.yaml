@@ -309,4 +309,20 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-039
+    learning: "Commit before completing: always run fw git commit BEFORE fw task update --status work-completed. The work-completed trigger moves the task to completed/, so any subsequent commit referencing that task ID produces a Tier 1 warning (closed task). Correct order: commit → complete."
+    source: P-002
+    task: T-123
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-040
+    learning: "L-039 nuance: Completion artifacts (episodic YAML, completed/ task file) necessarily get committed after the task is closed — the Tier 1 warning is a false positive in this case. The real L-039 issue is committing WORK output after completing, not committing completion metadata."
+    source: P-002
+    task: T-107
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
