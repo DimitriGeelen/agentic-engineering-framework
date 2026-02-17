@@ -1,94 +1,124 @@
-# Project Practices - Operational patterns derived from directives
-# Machine-queryable format of 015-Practices.md
-# Added via: manual or fw context add-practice
-
 practices:
-  - id: P-001
-    name: "Measure What Exists, Not What Should Exist"
-    derived_from: D1
-    description: "Don't design metrics for systems that don't exist. Build the minimum system, use it, observe what's measurable, then define metrics from observed reality."
-    anti_pattern: "Spending days designing the perfect measurement system for something that doesn't exist yet."
-    origin_task: T-001
-    origin_date: 2026-02-13
-    status: active
-    applications: 7
-
-  - id: P-002
-    name: "Structural Enforcement Over Agent Discipline"
-    derived_from: D2
-    description: "Don't rely on agents or humans to remember and follow rules. Build gates, hooks, and checks that make non-compliance harder than compliance."
-    anti_pattern: "Writing rules in markdown and hoping agents read and follow them."
-    origin_task: T-001
-    origin_date: 2026-02-13
-    status: active
-    applications: 12
-
-  - id: P-003
-    name: "Adoption Before Measurement"
-    derived_from: D1
-    description: "Create and use the system before trying to measure it. You need usage data before metrics are meaningful."
-    anti_pattern: "Designing elaborate metrics dashboards before anyone uses the system."
-    origin_task: T-001
-    origin_date: 2026-02-13
-    status: active
-    applications: 5
-
-  - id: P-004
-    name: "Distinguish Existence from Quality"
-    derived_from: D2
-    description: "Counting files, fields, and checkboxes is easy but misleading. Design metrics that capture whether content is meaningful, not just present."
-    anti_pattern: "Celebrating 100% task coverage when tasks contain TBD and see ticket."
-    origin_task: T-001
-    origin_date: 2026-02-13
-    status: active
-    applications: 5
-
-  - id: P-005
-    name: "Bootstrap Exceptions Are First-Class"
-    derived_from: [D1, D2]
-    description: "Every system has moments that precede its own rules. Document these explicitly rather than pretending they don't exist."
-    anti_pattern: "Ignoring the initial rule-free period and hoping no one notices."
-    origin_task: T-003
-    origin_date: 2026-02-13
-    status: active
-    applications: 2
-
-  - id: P-006
-    name: "Hybrid Agent Architecture"
-    derived_from: [D3, D4]
-    description: "Build agents as two layers: bash scripts for mechanical operations (portable, reliable), markdown definitions for intelligence guidance (adaptable, documentable)."
-    anti_pattern: "Building agents as monolithic LLM prompts with no mechanical fallback."
-    origin_task: T-002
-    origin_date: 2026-02-13
-    status: active
-    applications: 7
-
-  - id: P-007
-    name: "Systematic Session Capture"
-    derived_from: [D1, D2]
-    description: "Before ending a session or changing focus, systematically scan the conversation for uncaptured work items, learnings, and decisions."
-    anti_pattern: "Creating tasks only for the immediate next step, losing everything else discussed."
-    origin_task: T-001
-    origin_date: 2026-02-13
-    status: active
-    applications: 1
-
-  - id: P-008
-    name: "Tasks Must Carry Executable Context"
-    derived_from: [D2, D1]
-    description: "A task assigned to an agent must contain enough context for the agent to execute without rediscovering the design: authority link, relevant sections, extracted key decisions, and concrete acceptance criteria."
-    anti_pattern: "Creating tasks with empty Design/Specification Records and expecting agents to figure out what to build."
-    origin_task: T-047
-    origin_date: 2026-02-14
-    status: active
-    applications: 8
-
-  - id: P-009
-    name: "Context Budget Awareness"
-    derived_from: [D1, D2]
-    description: "Treat context window as a finite, non-renewable resource. Commit early and often — each commit is a recovery checkpoint. Generate handovers AFTER work, never as skeletons. Use --emergency mode when context is critical."
-    anti_pattern: "Running 72 tool calls without committing, generating skeleton handovers with [TODO] placeholders, then losing all session context."
-    origin_task: T-059
-    origin_date: 2026-02-14
-    status: active
-    applications: 2
+- id: P-001
+  name: Measure What Exists, Not What Should Exist
+  derived_from: D1
+  description: Don't design metrics for systems that don't exist. Build the minimum
+    system, use it, observe what's measurable, then define metrics from observed reality.
+  anti_pattern: Spending days designing the perfect measurement system for something
+    that doesn't exist yet.
+  origin_task: T-001
+  origin_date: 2026-02-13
+  status: active
+  applications: 7
+- id: P-002
+  name: Structural Enforcement Over Agent Discipline
+  derived_from: D2
+  description: Don't rely on agents or humans to remember and follow rules. Build
+    gates, hooks, and checks that make non-compliance harder than compliance.
+  anti_pattern: Writing rules in markdown and hoping agents read and follow them.
+  origin_task: T-001
+  origin_date: 2026-02-13
+  status: active
+  applications: 12
+- id: P-003
+  name: Adoption Before Measurement
+  derived_from: D1
+  description: Create and use the system before trying to measure it. You need usage
+    data before metrics are meaningful.
+  anti_pattern: Designing elaborate metrics dashboards before anyone uses the system.
+  origin_task: T-001
+  origin_date: 2026-02-13
+  status: active
+  applications: 5
+- id: P-004
+  name: Distinguish Existence from Quality
+  derived_from: D2
+  description: Counting files, fields, and checkboxes is easy but misleading. Design
+    metrics that capture whether content is meaningful, not just present.
+  anti_pattern: Celebrating 100% task coverage when tasks contain TBD and see ticket.
+  origin_task: T-001
+  origin_date: 2026-02-13
+  status: active
+  applications: 5
+- id: P-005
+  name: Bootstrap Exceptions Are First-Class
+  derived_from:
+  - D1
+  - D2
+  description: Every system has moments that precede its own rules. Document these
+    explicitly rather than pretending they don't exist.
+  anti_pattern: Ignoring the initial rule-free period and hoping no one notices.
+  origin_task: T-003
+  origin_date: 2026-02-13
+  status: active
+  applications: 2
+- id: P-006
+  name: Hybrid Agent Architecture
+  derived_from:
+  - D3
+  - D4
+  description: 'Build agents as two layers: bash scripts for mechanical operations
+    (portable, reliable), markdown definitions for intelligence guidance (adaptable,
+    documentable).'
+  anti_pattern: Building agents as monolithic LLM prompts with no mechanical fallback.
+  origin_task: T-002
+  origin_date: 2026-02-13
+  status: active
+  applications: 7
+- id: P-007
+  name: Systematic Session Capture
+  derived_from:
+  - D1
+  - D2
+  description: Before ending a session or changing focus, systematically scan the
+    conversation for uncaptured work items, learnings, and decisions.
+  anti_pattern: Creating tasks only for the immediate next step, losing everything
+    else discussed.
+  origin_task: T-001
+  origin_date: 2026-02-13
+  status: active
+  applications: 1
+- id: P-008
+  name: Tasks Must Carry Executable Context
+  derived_from:
+  - D2
+  - D1
+  description: 'A task assigned to an agent must contain enough context for the agent
+    to execute without rediscovering the design: authority link, relevant sections,
+    extracted key decisions, and concrete acceptance criteria.'
+  anti_pattern: Creating tasks with empty Design/Specification Records and expecting
+    agents to figure out what to build.
+  origin_task: T-047
+  origin_date: 2026-02-14
+  status: active
+  applications: 8
+- id: P-009
+  name: Context Budget Awareness
+  derived_from:
+  - D1
+  - D2
+  description: Treat context window as a finite, non-renewable resource. Commit early
+    and often — each commit is a recovery checkpoint. Generate handovers AFTER work,
+    never as skeletons. Use --emergency mode when context is critical.
+  anti_pattern: Running 72 tool calls without committing, generating skeleton handovers
+    with [TODO] placeholders, then losing all session context.
+  origin_task: T-059
+  origin_date: 2026-02-14
+  status: active
+  applications: 2
+- id: P-010
+  name: Validate acceptance criteria before closing tasks
+  derived_from: D2
+  description: 'Task completion status (work-completed) is a flag, not a gate. T-108
+    was marked complete at 11:22 but 6 commits followed over 173 minutes including
+    substantive framework changes, 2 new task spawns, and a bug fix. The episodic
+    snapshot froze at closure time (claims 2 commits/69min, reality 6 commits/173min).
+    Root cause: no acceptance criteria validation before closure, no warning when
+    committing against closed task IDs. Critical for autonomous mode where no human
+    catches the pattern.'
+  anti_pattern: Added via context agent
+  origin_task: T-112
+  origin_date: '2026-02-17'
+  promoted_from: L-034
+  status: active
+  applications: 3
