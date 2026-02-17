@@ -262,21 +262,26 @@ HEREDOC
         echo "last_commit: $git_last_commit" >> "$episodic_file"
     fi
 
-    # Summary section
+    # Summary section (escape backticks and quotes for YAML safety)
+    local safe_summary=$(echo "$summary_text" | sed 's/`//g')
     cat >> "$episodic_file" << HEREDOC
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  $summary_text
+  $safe_summary
 
 # Key outcomes
 outcomes:
 HEREDOC
 
-    # Add outcomes from AC
+    # Add outcomes from AC (quote strings to prevent YAML-unsafe chars like backticks)
     if [ -n "$outcomes" ]; then
         echo "$outcomes" | while read -r line; do
-            [ -n "$line" ] && echo "  $line" >> "$episodic_file"
+            if [ -n "$line" ]; then
+                # Strip leading "- " then wrap in quotes
+                local text=$(echo "$line" | sed 's/^- //' | sed 's/"/\\"/g')
+                echo "  - \"$text\"" >> "$episodic_file"
+            fi
         done
     else
         echo "  - \"Task completed\"" >> "$episodic_file"
