@@ -82,9 +82,33 @@ The `horizon` field controls when a task should be considered for work:
 
 **Body sections:**
 - Context (brief, link to design docs for substantial tasks)
-- Acceptance Criteria (checkboxes — completion gate)
+- Acceptance Criteria (checkboxes — completion gate P-010)
+- Verification (shell commands — verification gate P-011, see below)
 - Decisions (only when choosing between alternatives; most tasks have none)
 - Updates (auto-populated by git mining at completion; manual entries optional)
+
+### Verification Gate (P-011)
+
+The `## Verification` section contains shell commands that **must pass** before `work-completed` is allowed. This is a structural gate — the framework runs the commands mechanically, not the agent self-assessing.
+
+**How it works:**
+1. Agent writes verification commands in `## Verification` while working (knows what to check)
+2. On `fw task update T-XXX --status work-completed`, update-task.sh extracts and runs each command
+3. If any command exits non-zero → completion is **blocked** (same as unchecked AC)
+4. `--force` bypasses the gate (with warning, logged)
+5. Tasks without `## Verification` pass through (backward compatible)
+
+**What to verify:**
+- YAML/JSON files parse correctly: `python3 -c "import yaml; yaml.safe_load(open('file'))"`
+- Web pages load: `curl -sf http://localhost:3000/page`
+- Commands succeed: `fw doctor`
+- Output contains expected content: `grep -q "expected" output.txt`
+
+**Rules:**
+- Lines starting with `#` are comments (skipped)
+- Empty lines are ignored
+- Each non-comment line is executed as a shell command
+- First 5 lines of failure output are shown for debugging
 
 ### Task Lifecycle
 

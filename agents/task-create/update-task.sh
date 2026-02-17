@@ -63,12 +63,12 @@ while [[ $# -gt 0 ]]; do
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --horizon     Priority horizon: now, next, later"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
-            echo "  --force, -f   Bypass acceptance criteria gate on work-completed"
+            echo "  --force, -f   Bypass acceptance criteria + verification gates on work-completed"
             echo "  -h, --help    Show this help"
             echo ""
             echo "Auto-triggers:"
             echo "  issues           → healing agent diagnose"
-            echo "  work-completed   → date_finished, move to completed/, episodic generation"
+            echo "  work-completed   → AC gate + verification gate, date_finished, move to completed/, episodic generation"
             exit 0
             ;;
         T-*) TASK_ID="$1"; shift ;;
@@ -165,6 +165,73 @@ if [ -n "$NEW_STATUS" ]; then
                     fi
                 elif [ "$AC_TOTAL" -gt 0 ]; then
                     echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
+                fi
+            fi
+        fi
+
+        # === Verification Gate (P-011) ===
+        # Runs shell commands from ## Verification section before allowing work-completed.
+        # Each non-comment, non-empty line is executed. If any exits non-zero, completion is blocked.
+        # Backward compatible: tasks without ## Verification pass through.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            VERIFY_SECTION=$(sed -n '/^## Verification/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)
+            # Strip the heading line itself
+            VERIFY_SECTION=$(echo "$VERIFY_SECTION" | tail -n +2)
+            # Extract executable lines (skip comments, empty lines, HTML comments)
+            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#|^\s*<!--|^\s*-->' || true)
+
+            if [ -n "$VERIFY_CMDS" ]; then
+                VERIFY_TOTAL=$(echo "$VERIFY_CMDS" | wc -l)
+                VERIFY_PASS=0
+                VERIFY_FAIL=0
+                VERIFY_FAILURES=""
+
+                echo ""
+                echo -e "${CYAN}=== Verification Gate (P-011) ===${NC}"
+                echo "Running $VERIFY_TOTAL verification command(s)..."
+                echo ""
+
+                while IFS= read -r cmd; do
+                    # Trim whitespace
+                    cmd=$(echo "$cmd" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+                    [ -z "$cmd" ] && continue
+
+                    # Display command (truncated for readability)
+                    DISPLAY_CMD="$cmd"
+                    if [ ${#DISPLAY_CMD} -gt 80 ]; then
+                        DISPLAY_CMD="${DISPLAY_CMD:0:77}..."
+                    fi
+
+                    if eval "$cmd" > /tmp/verify-$$.out 2>&1; then
+                        echo -e "  ${GREEN}PASS${NC}: $DISPLAY_CMD"
+                        VERIFY_PASS=$((VERIFY_PASS + 1))
+                    else
+                        EXIT_CODE=$?
+                        echo -e "  ${RED}FAIL${NC}: $DISPLAY_CMD (exit $EXIT_CODE)"
+                        # Show first 5 lines of output for context
+                        head -5 /tmp/verify-$$.out 2>/dev/null | sed 's/^/    /'
+                        VERIFY_FAIL=$((VERIFY_FAIL + 1))
+                        VERIFY_FAILURES="${VERIFY_FAILURES}\n  - $DISPLAY_CMD (exit $EXIT_CODE)"
+                    fi
+                    rm -f /tmp/verify-$$.out
+                done <<< "$VERIFY_CMDS"
+
+                echo ""
+                if [ "$VERIFY_FAIL" -gt 0 ]; then
+                    if [ "$FORCE" = true ]; then
+                        echo -e "${YELLOW}WARNING: $VERIFY_FAIL/$VERIFY_TOTAL verification(s) failed (--force bypass)${NC}"
+                    else
+                        echo -e "${RED}ERROR: Cannot complete — $VERIFY_FAIL/$VERIFY_TOTAL verification(s) failed:${NC}" >&2
+                        echo -e "$VERIFY_FAILURES" >&2
+                        echo "" >&2
+                        echo "Options:" >&2
+                        echo "  1. Fix the issues and retry" >&2
+                        echo "  2. Update ## Verification commands if they are wrong" >&2
+                        echo "  3. Use --force to bypass (logged)" >&2
+                        exit 1
+                    fi
+                else
+                    echo -e "${GREEN}Verification: $VERIFY_PASS/$VERIFY_TOTAL passed ✓${NC}"
                 fi
             fi
         fi

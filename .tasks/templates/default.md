@@ -25,6 +25,17 @@ date_finished: null
 - [ ] [First criterion]
 - [ ] [Second criterion]
 
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     Examples:
+       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
+       curl -sf http://localhost:3000/page
+       grep -q "expected_string" output_file.txt
+-->
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.

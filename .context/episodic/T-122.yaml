@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-122: Design pre-completion verification gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T16:46:29Z
+# ============================================================================
+
+task_id: T-122
+task_name: "Design pre-completion verification gate"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-17T16:36:39Z
+completed: 2026-02-17T16:46:29Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with evidence from 3+ tasks (T-108, T-118, T-121)"
+  - "At least 3 design options evaluated with trade-offs (4 evaluated: template section, post-AC hook, log file, two-phase)"
+  - "Go/No-Go decision made with rationale"
+  - "If GO: prototype built and tested (4 test cases: pass, fail, force-bypass, backward-compat)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-122-design-pre-completion-verification-gate.md
+generated_by: context-agent-hybrid
