@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-112: Document T-108 premature closure governance gap
+# ============================================================================
+# Generated: 2026-02-17T13:38:07Z
+
+task_id: T-112
+task_name: "Document T-108 premature closure governance gap"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T13:35:50Z
+completed: 2026-02-17T13:38:07Z
+duration_days: 0
+updates_count: 5
+
+summary: |
+  User noticed T-108 in completed/ despite expecting open work. Dispatched 3 parallel forensic
+  agents that traced the full git lifecycle: T-108 was closed at 11:22 but 6 commits followed
+  over 173 minutes including framework governance changes and 2 new task spawns. Identified
+  5 governance violations and classified as Level D escalation (ways of working gap). Documented
+  findings via established process (learning, pattern, decision, research doc) and created
+  2 mitigation tasks. Also validated the documentation process works end-to-end.
+
+outcomes:
+  - "5 governance violations identified in task completion lifecycle"
+  - "Level D escalation: work-completed is a flag, not a gate"
+  - "L-034, FP-006, D-022 captured via fw context commands"
+  - "Research doc: docs/reports/2026-02-17-premature-task-closure-analysis.md"
+  - "T-113 created: acceptance criteria gate for task completion"
+  - "T-114 created: closed task commit warning in commit-msg hook"
+  - "Documentation process validated: learnings.yaml, patterns.yaml, decisions.yaml, docs/reports/ all working"
+
+successes:
+  - description: "3 parallel forensic agents produced comprehensive evidence"
+    why: "Each agent focused on one aspect (task content, git lifecycle, scope analysis). Results converged without redundancy."
+  - description: "Established documentation process worked end-to-end"
+    why: "fw context add-learning, add-pattern, add-decision all functional. Research doc template in docs/reports/ followed. Process is validated."
+  - description: "User-driven discovery caught a structural gap"
+    why: "Agent would not have noticed this autonomously — the premature closure pattern is invisible from inside the session that does it."
+
+challenges:
+  - description: "Reconstructing timeline from git history across sessions"
+    resolution: "Parallel agents with focused git forensic queries (diff-filter, log --grep, show --stat)"
+
+decisions:
+  - decision: "No deep multi-agent analysis on mitigations"
+    rationale: "Root cause already thorough. Mitigations are bounded shell changes to existing hooks. Better to create clear tasks than over-analyze."
+    alternatives_rejected: ["Deep multi-agent design session (context cost not justified for well-understood problems)"]
+  - decision: "Two highest-priority mitigations only (M-1, M-2)"
+    rationale: "M-3 (episodic refresh) and M-4 (update log convention) are lower priority. Ship the gate and warning first."
+    alternatives_rejected: ["All 4 mitigations as tasks (scope creep, lower 2 are nice-to-have)"]
+
+artifacts:
+  created:
+    - "docs/reports/2026-02-17-premature-task-closure-analysis.md"
+    - ".tasks/active/T-113-add-acceptance-criteria-gate-to-task-com.md"
+    - ".tasks/active/T-114-add-closed-task-commit-warning-to-commit.md"
+  modified:
+    - ".context/project/learnings.yaml (+L-034)"
+    - ".context/project/patterns.yaml (+FP-006)"
+    - ".context/project/decisions.yaml (+D-022)"
+
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: [T-113, T-114]
+
+tags: [governance, forensics, task-lifecycle, premature-closure, documentation-process]
+
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 7
+  lines_added: 223
+  lines_removed: 1
+
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-112-document-t-108-premature-closure-governa.md
+generated_by: context-agent
