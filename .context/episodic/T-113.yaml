@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-113: Add acceptance criteria gate to task completion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:42:54Z
+# ============================================================================
+
+task_id: T-113
+task_name: "Add acceptance criteria gate to task completion"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T13:37:01Z
+completed: 2026-02-17T14:42:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-17T15:42:44+01:00
+last_commit: 2026-02-17T15:42:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add acceptance criteria gate to task completion
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T15:42:44"
+    action: "T-113: Add acceptance criteria gate to task completion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 65
+  commits: 1
+  files_changed: 1
+  lines_added: 29
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-113-add-acceptance-criteria-gate-to-task-com.md
+generated_by: context-agent-hybrid
