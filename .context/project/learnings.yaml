@@ -269,4 +269,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-034
+    learning: "Task completion status (work-completed) is a flag, not a gate. T-108 was marked complete at 11:22 but 6 commits followed over 173 minutes including substantive framework changes, 2 new task spawns, and a bug fix. The episodic snapshot froze at closure time (claims 2 commits/69min, reality 6 commits/173min). Root cause: no acceptance criteria validation before closure, no warning when committing against closed task IDs. Critical for autonomous mode where no human catches the pattern."
+    source: T-108 forensic investigation
+    task: T-112
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

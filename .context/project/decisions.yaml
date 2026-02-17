@@ -194,3 +194,9 @@ decisions:
     date: 2026-02-17
     task: T-097
     rationale: "Cannot create new Claude Code agent types. Generic agents handle 7 of 8 dispatches. Real problem is ad-hoc result management causing context explosion (T-073). Standardize usage via CLAUDE.md protocol and prompt templates."
+
+  - id: D-022
+    decision: "Implement acceptance criteria gate and closed-task commit warning as mitigations for premature closure"
+    date: 2026-02-17
+    task: T-112
+    rationale: "T-108 forensics showed work-completed is unvalidated flag. 5 governance violations found: premature closure, no update logging, post-closure commits allowed, stale episodic, orphaned decisions. Level D escalation — ways of working gap, not technique or tooling. Two highest-value mitigations: AC gate (prevents premature closure) and commit warning (makes post-closure work visible)."
