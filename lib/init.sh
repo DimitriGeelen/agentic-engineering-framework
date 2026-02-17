@@ -56,7 +56,7 @@ do_init() {
     }
 
     # Check if already initialized
-    if [ -f "$target_dir/.framework.yaml" ] && [ "$force" != true ]; then
+    if [ -f "$target_dir/.framework.yaml" ] && [ "${force:-false}" != true ]; then
         echo -e "${YELLOW}Project already initialized at $target_dir${NC}"
         echo "Use --force to reinitialize"
         return 1
@@ -125,7 +125,7 @@ FYAML
     echo -e "  ${GREEN}OK${NC}  .framework.yaml"
 
     # --- Create empty project memory files ---
-    if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "$force" = true ]; then
+    if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/patterns.yaml" << 'PYAML'
 # Project Patterns - Learned from experience
 # Categories: failure, success, workflow
@@ -135,7 +135,7 @@ PYAML
         echo -e "  ${GREEN}OK${NC}  patterns.yaml"
     fi
 
-    if [ ! -f "$target_dir/.context/project/decisions.yaml" ] || [ "$force" = true ]; then
+    if [ ! -f "$target_dir/.context/project/decisions.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/decisions.yaml" << 'DYAML'
 # Project Decisions - Architectural choices with rationale
 # Added via: fw context add-decision "description" --task T-XXX --rationale "why"
@@ -144,7 +144,7 @@ DYAML
         echo -e "  ${GREEN}OK${NC}  decisions.yaml"
     fi
 
-    if [ ! -f "$target_dir/.context/project/learnings.yaml" ] || [ "$force" = true ]; then
+    if [ ! -f "$target_dir/.context/project/learnings.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/learnings.yaml" << 'LYAML'
 # Project Learnings - Knowledge gained during development
 # Added via: fw context add-learning "description" --task T-XXX
@@ -153,7 +153,7 @@ LYAML
         echo -e "  ${GREEN}OK${NC}  learnings.yaml"
     fi
 
-    if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "$force" = true ]; then
+    if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/practices.yaml" << 'PRAML'
 # Project Practices - Graduated learnings (3+ applications)
 # Promoted via: fw promote L-XXX --name "practice name" --directive D1
@@ -162,7 +162,7 @@ PRAML
         echo -e "  ${GREEN}OK${NC}  practices.yaml"
     fi
 
-    if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "$force" = true ]; then
+    if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/assumptions.yaml" << 'AYAML'
 # Project Assumptions - Tracked via inception workflow
 # Added via: fw assumption add "description" --task T-XXX
@@ -231,7 +231,7 @@ generate_claude_md() {
     local dir="$1"
     local config_file="$dir/CLAUDE.md"
 
-    if [ -f "$config_file" ] && [ "$force" != true ]; then
+    if [ -f "$config_file" ] && [ "${force:-false}" != true ]; then
         echo -e "  ${YELLOW}SKIP${NC}  CLAUDE.md already exists (use --force to overwrite)"
         return
     fi
@@ -303,7 +303,7 @@ generate_claude_code_config() {
     # --- .claude/settings.json (PostToolUse hook for context protection) ---
     mkdir -p "$dir/.claude/commands"
 
-    if [ ! -f "$dir/.claude/settings.json" ] || [ "$force" = true ]; then
+    if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
         cat > "$dir/.claude/settings.json" << 'SJSON'
 {
   "hooks": {
@@ -350,7 +350,7 @@ SJSON
     fi
 
     # --- .claude/commands/resume.md (project-specific /resume) ---
-    if [ ! -f "$dir/.claude/commands/resume.md" ] || [ "$force" = true ]; then
+    if [ ! -f "$dir/.claude/commands/resume.md" ] || [ "${force:-false}" = true ]; then
         cat > "$dir/.claude/commands/resume.md" << 'RESUME'
 # /resume - Context Recovery for Agentic Engineering Framework
 
@@ -418,7 +418,7 @@ generate_cursorrules() {
     local dir="$1"
     local config_file="$dir/.cursorrules"
 
-    if [ -f "$config_file" ] && [ "$force" != true ]; then
+    if [ -f "$config_file" ] && [ "${force:-false}" != true ]; then
         echo -e "  ${YELLOW}SKIP${NC}  .cursorrules already exists (use --force to overwrite)"
         return
     fi

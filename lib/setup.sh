@@ -188,15 +188,13 @@ setup_step_provider() {
     echo -e "${BOLD}━━━ Step 2 of 6: Provider Selection ━━━${NC}"
     echo ""
 
-    # Sentinel check — if comprehensive CLAUDE.md exists (from template, >100 lines)
-    if [ -f "$dir/CLAUDE.md" ]; then
-        local line_count
-        line_count=$(wc -l < "$dir/CLAUDE.md")
-        if [ "$line_count" -gt 100 ]; then
-            echo -e "  ${CYAN}DONE${NC}  Provider config already generated (CLAUDE.md: ${line_count} lines)"
-            echo ""
-            return
-        fi
+    # Sentinel check — provider was explicitly selected by setup (not just init default)
+    if [ -f "$dir/.framework.yaml" ] && grep -q "^setup_provider_done: true" "$dir/.framework.yaml" 2>/dev/null; then
+        local existing_provider
+        existing_provider=$(grep "^provider:" "$dir/.framework.yaml" | sed 's/provider:[[:space:]]*//')
+        echo -e "  ${CYAN}DONE${NC}  Provider already selected: $existing_provider"
+        echo ""
+        return
     fi
 
     local provider="claude"
@@ -216,8 +214,9 @@ setup_step_provider() {
         esac
     fi
 
-    # Generate provider config
+    # Generate provider config (force=true to overwrite generic CLAUDE.md from Step 1)
     source "$FW_LIB_DIR/init.sh"
+    local force=true
     case "$provider" in
         claude)
             generate_claude_md "$dir"
@@ -231,12 +230,16 @@ setup_step_provider() {
             ;;
     esac
 
-    # Update .framework.yaml with provider
+    # Update .framework.yaml with provider + mark step done
     if [ -f "$dir/.framework.yaml" ]; then
         if grep -q "^provider:" "$dir/.framework.yaml"; then
             sed -i "s|^provider:.*|provider: $provider|" "$dir/.framework.yaml"
         else
             echo "provider: $provider" >> "$dir/.framework.yaml"
+        fi
+        # Sentinel: mark provider as explicitly selected by setup
+        if ! grep -q "^setup_provider_done:" "$dir/.framework.yaml"; then
+            echo "setup_provider_done: true" >> "$dir/.framework.yaml"
         fi
     fi
 
@@ -431,6 +434,19 @@ setup_step_verify() {
 
     echo -e "${BOLD}━━━ Step 6 of 6: Verification ━━━${NC}"
     echo ""
+
+    # Check git identity (required for commits)
+    local git_name git_email
+    git_name=$(cd "$dir" && git config user.name 2>/dev/null || git config --global user.name 2>/dev/null || true)
+    git_email=$(cd "$dir" && git config user.email 2>/dev/null || git config --global user.email 2>/dev/null || true)
+    if [ -z "$git_name" ] || [ -z "$git_email" ]; then
+        echo -e "  ${YELLOW}WARN${NC}  Git identity not configured (commits will fail)"
+        echo "        Run: git config --global user.name \"Your Name\""
+        echo "        Run: git config --global user.email \"you@example.com\""
+        echo ""
+    else
+        echo -e "  ${GREEN}OK${NC}  Git identity: $git_name <$git_email>"
+    fi
 
     # Run fw doctor
     echo -e "  ${YELLOW}Running fw doctor...${NC}"
