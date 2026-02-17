@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-111: Autonomous compact-resume lifecycle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T17:21:33Z
+# ============================================================================
+
+task_id: T-111
+task_name: "Autonomous compact-resume lifecycle"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-17T11:32:31Z
+completed: 2026-02-17T17:21:33Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "PreCompact hook wired and tested (pre-compact.sh, 106ms)"
+  - "SessionStart:compact hook wired and tested (post-compact-resume.sh, valid JSON output)"
+  - "Emergency handover completes in <10 seconds (106ms measured)"
+  - "One autonomous compact-resume cycle completes without losing structured context (deferred — hooks take effect next session; components verified individually)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 349 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 349
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-111-autonomous-compact-resume-lifecycle.md
+generated_by: context-agent-hybrid

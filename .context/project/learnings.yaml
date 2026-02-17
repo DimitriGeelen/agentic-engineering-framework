@@ -301,4 +301,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-038
+    learning: "Verification gate (P-011): structural enforcement beats advisory skills. update-task.sh now runs ## Verification commands before allowing work-completed. Advisory skill failed 3 times (T-108, T-118, T-121); structural gate catches bugs mechanically."
+    source: P-011
+    task: T-122
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
