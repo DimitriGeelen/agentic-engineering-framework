@@ -53,6 +53,14 @@ failure_patterns:
     occurrences_at_step: 0
     last_escalated: null
 
+
+  - id: FP-006
+    pattern: "Premature task closure with post-closure drift"
+    description: "Premature task closure with post-closure drift"
+    learned_from: T-112
+    date_learned: 2026-02-17
+    mitigation: "M-1: Acceptance criteria gate in update-task.sh. M-2: Closed task commit warning in commit-msg hook. M-3: Episodic refresh on post-closure commits."
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"

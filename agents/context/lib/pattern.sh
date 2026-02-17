@@ -114,36 +114,39 @@ EOF
     # Append to the correct section
     local temp_file=$(mktemp)
     awk -v section="${section}:" -v entry="$entry" '
+        BEGIN { in_section=0; inserted=0 }
         $0 ~ section {
+            in_section=1
             print
-            getline
-            if ($0 ~ /^\[\]$/) {
-                # Empty array, replace with entry
-                print ""
-                print entry
-            } else {
-                print
-            }
             next
         }
-        /^[a-z_]+_patterns:$/ && prev ~ section {
-            # Found next section, insert entry before
+        in_section && /^\[\]$/ {
+            # Empty array — replace with entry
+            print ""
+            print entry
+            in_section=0
+            inserted=1
+            next
+        }
+        in_section && /^[a-z_]+_patterns:/ {
+            # Reached next section — insert entry before it
+            print ""
             print entry
             print ""
+            in_section=0
+            inserted=1
         }
-        { prev=$0; print }
+        { print }
+        END {
+            # If target was last section, append at end
+            if (in_section && !inserted) {
+                print ""
+                print entry
+            }
+        }
     ' "$patterns_file" > "$temp_file"
 
-    # If section wasn't empty, we need different logic
-    if grep -q "^  - id: " "$temp_file"; then
-        mv "$temp_file" "$patterns_file"
-    else
-        # Simpler approach: find section and append
-        rm "$temp_file"
-        sed -i "/${section}:/a\\
-\\
-$entry" "$patterns_file"
-    fi
+    mv "$temp_file" "$patterns_file"
 
     echo -e "${GREEN}Pattern added: $id ($pattern_type)${NC}"
     echo "  $pattern_name"
