@@ -62,6 +62,7 @@ ERROR_PATTERNS = [
     'command not found',
     'Permission denied',
     'FATAL:',
+    'ERROR:',
     'Traceback (most recent',
     'panic:',
     'Segmentation fault',

@@ -120,6 +120,7 @@ if [ -n "$NEW_STATUS" ]; then
         VALID_TRANSITION=false
         case "$OLD_STATUS:$NEW_STATUS" in
             captured:started-work)       VALID_TRANSITION=true ;;
+            started-work:captured)       VALID_TRANSITION=true ;;  # Park: defer premature start
             started-work:issues)         VALID_TRANSITION=true ;;
             started-work:work-completed) VALID_TRANSITION=true ;;
             issues:started-work)         VALID_TRANSITION=true ;;
@@ -133,7 +134,7 @@ if [ -n "$NEW_STATUS" ]; then
             echo -e "${RED}ERROR: Invalid transition '$OLD_STATUS' → '$NEW_STATUS'${NC}" >&2
             echo "Valid transitions:" >&2
             echo "  captured → started-work" >&2
-            echo "  started-work → issues | work-completed" >&2
+            echo "  started-work → captured | issues | work-completed" >&2
             echo "  issues → started-work | work-completed" >&2
             exit 1
         fi
