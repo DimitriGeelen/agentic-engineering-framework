@@ -23,7 +23,9 @@ NC='\033[0m'
 
 # --- Path Resolution ---
 
-FW_BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve symlinks to find the real fw location
+FW_REAL_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
+FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 
 # Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/
 find_project_root() {

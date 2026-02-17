@@ -207,6 +207,21 @@ AYAML
         echo -e "  ${CYAN}SKIP${NC}  Git hooks (not a git repository)"
     fi
 
+    # --- Ensure fw is in PATH (symlink to /usr/local/bin) ---
+    echo ""
+    if ! command -v fw >/dev/null 2>&1; then
+        echo -e "${YELLOW}Setting up fw command...${NC}"
+        if [ -w /usr/local/bin ]; then
+            ln -sf "$FRAMEWORK_ROOT/bin/fw" /usr/local/bin/fw
+            echo -e "  ${GREEN}OK${NC}  Symlinked fw → /usr/local/bin/fw"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Cannot create symlink in /usr/local/bin (no write access)"
+            echo -e "         Add to PATH manually: export PATH=\"$FRAMEWORK_ROOT/bin:\$PATH\""
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  fw already in PATH ($(which fw))"
+    fi
+
     # --- Summary ---
     echo ""
     echo -e "${GREEN}=== Project Initialized ===${NC}"
