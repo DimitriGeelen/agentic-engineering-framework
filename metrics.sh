@@ -5,7 +5,7 @@
 set -e
 
 TASKS_DIR=".tasks"
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "$0")" && pwd)}"
 cd "$PROJECT_ROOT"
 
 echo "=== AGENTIC ENGINEERING FRAMEWORK - METRICS ==="
@@ -84,7 +84,7 @@ for f in "$TASKS_DIR/active"/*.md; do
     total_active=$((total_active + 1))
 
     # Count updates
-    updates=$(grep -c "^### " "$f" 2>/dev/null || echo 0)
+    updates=$(grep -c "^### " "$f" 2>/dev/null || true)
     updates=$(echo "$updates" | tr -d '[:space:]')
     total_updates=$((total_updates + updates))
 
@@ -112,12 +112,12 @@ completed_ac=0
 for f in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
     [ -f "$f" ] || continue
     # Check for acceptance criteria (lines with [ ] or [x])
-    ac_lines=$(grep -cE "^\s*-\s*\[[x ]\]" "$f" 2>/dev/null || echo 0)
+    ac_lines=$(grep -cE "^\s*-\s*\[[x ]\]" "$f" 2>/dev/null || true)
     ac_lines=$(echo "$ac_lines" | tr -d '[:space:]')
     if [ "$ac_lines" -gt 0 ]; then
         tasks_with_ac=$((tasks_with_ac + 1))
         total_ac=$((total_ac + ac_lines))
-        done_ac=$(grep -cE "^\s*-\s*\[x\]" "$f" 2>/dev/null || echo 0)
+        done_ac=$(grep -cE "^\s*-\s*\[x\]" "$f" 2>/dev/null || true)
         done_ac=$(echo "$done_ac" | tr -d '[:space:]')
         completed_ac=$((completed_ac + done_ac))
     fi
@@ -143,13 +143,13 @@ episodic_count=0
 decisions_count=0
 
 if [ -f "$CONTEXT_DIR/project/patterns.yaml" ]; then
-    patterns_count=$(grep -c "^  - id: [FSW]P-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || echo 0)
+    patterns_count=$(grep -c "^  - id: [FSW]P-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
 fi
 if [ -f "$CONTEXT_DIR/project/learnings.yaml" ]; then
-    learnings_count=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || echo 0)
+    learnings_count=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
 fi
 if [ -f "$CONTEXT_DIR/project/decisions.yaml" ]; then
-    decisions_count=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || echo 0)
+    decisions_count=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || true)
 fi
 if [ -d "$CONTEXT_DIR/episodic" ]; then
     episodic_count=$(find "$CONTEXT_DIR/episodic" -name "T-*.yaml" 2>/dev/null | wc -l | tr -d ' ')
