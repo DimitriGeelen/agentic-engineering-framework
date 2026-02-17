@@ -188,4 +188,13 @@ learnings:
     date: 2026-02-16
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-024
+    learning: "grep -c outputs '0' and exits 1 on no matches; || echo 0 inside $() produces doubled output '0
+0'. Use || true instead."
+    source: P-002
+    task: T-095
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

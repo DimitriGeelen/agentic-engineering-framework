@@ -1,0 +1,53 @@
+# Audit Results - 2026-02-17
+timestamp: 2026-02-17T06:44:30Z
+summary:
+  pass: 20
+  warn: 2
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: WARN
+    check: "No active tasks found"
+    mitigation: "Create tasks for ongoing work"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 97% (205/211 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: PASS
+    check: "Bypass log exists"
+  - level: PASS
+    check: "Commit-msg hook installed"
+  - level: PASS
+    check: "No Tier 0 violations detected"
+  - level: PASS
+    check: "Practices documented: 7 practice(s) in 015-Practices.md"
+  - level: PASS
+    check: "All practices have traceable origins"
+  - level: PASS
+    check: "All practice origins resolve to actual tasks"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 93 episodic summaries have quality content"
+  - level: PASS
+    check: "No orphaned episodic files"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
+  - level: PASS
+    check: "Gaps register: 1 watching, no triggers fired"
+  - level: PASS
+    check: "Graduation pipeline: 23 learnings, no promotions ready yet"
