@@ -13,7 +13,7 @@ owner: human
 tags: [onboarding, validation, sprechloop]
 related_tasks: [T-125, T-126, T-127, T-128, T-129]
 created: 2026-02-17T19:06:03Z
-last_update: 2026-02-17T20:15:00Z
+last_update: 2026-02-17T20:06:10Z
 date_finished: null
 ---
 

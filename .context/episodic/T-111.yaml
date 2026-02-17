@@ -26,7 +26,7 @@ outcomes:
   - "PreCompact hook wired and tested (pre-compact.sh, 106ms)"
   - "SessionStart:compact hook wired and tested (post-compact-resume.sh, valid JSON output)"
   - "Emergency handover completes in <10 seconds (106ms measured)"
-  - "One autonomous compact-resume cycle completes without losing structured context (deferred — hooks take effect next session; components verified individually)"
+  - "One autonomous compact-resume cycle completes without losing structured context (hooks fired on user-initiated /compact S-2026-0217-1833 — awaiting auto-compaction at ~160K for true validation)"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
