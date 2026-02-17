@@ -205,4 +205,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-026
+    learning: "Operational Reflection: when a practice repeats ad-hoc across 3+ tasks, mine episodic memory for evidence, assess codification value via inception, and if warranted implement protocol/templates. This is proactive Level D — improvement driven by success pattern analysis, not failure. Canonical example: T-097 sub-agent dispatch analysis."
+    source: T-097→T-098→T-099 workflow arc
+    task: T-100
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

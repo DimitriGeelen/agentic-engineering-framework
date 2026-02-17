@@ -128,6 +128,19 @@ Graduated response from tactical to structural:
 3. **C** — Improve tooling
 4. **D** — Change ways of working
 
+### Proactive Level D: Operational Reflection
+
+Not all improvement comes from failures. When you notice a practice repeating ad-hoc across 3+ tasks, consider codifying it:
+
+1. **Mine** episodic memory for evidence of the pattern (how often, what worked, what broke)
+2. **Assess** codification value — use inception go/no-go criteria
+3. **Codify** if warranted: protocol in CLAUDE.md, templates in agents/, guidelines
+4. **Record** as learning + decision + workflow pattern
+
+**Trigger:** An organic question about "how we do X" + 3+ instances in episodic memory.
+
+**Canonical example:** T-097 analyzed sub-agent dispatching across 96 tasks → discovered the real problem (result management, not agent specialization) → produced dispatch protocol (T-098) and prompt templates (T-099). The framework used its own episodic memory as the evidence base for an architectural decision.
+
 ## fw CLI (Primary Interface)
 
 The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
