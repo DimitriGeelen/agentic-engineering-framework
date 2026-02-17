@@ -218,3 +218,9 @@ decisions:
     date: 2026-02-17
     task: T-118
     rationale: "7 systematic instances across 3 root cause mechanisms. Hook is low overhead (~25ms), follows framework philosophy of structural > instructional enforcement."
+
+  - id: D-026
+    decision: "GO on result ledger (fw bus). Task-scoped YAML envelopes with 2KB size gating. T-073 simulation: 5 agents x 4.4KB, manifest is 500B (~97% savings). No new dependencies."
+    date: 2026-02-17
+    task: T-109
+    rationale: "Formalizes existing 'write to disk, return summary' convention into protocol with automatic size gating. Prevents context explosion structurally."
