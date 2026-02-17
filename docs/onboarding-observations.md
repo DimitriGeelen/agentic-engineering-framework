@@ -66,6 +66,13 @@ Source: T-124 (Document new-project onboarding tutorial)
 - **Impact:** The agent built a full web app without discovering this constraint during the inception spike. An inception task should surface blockers like this BEFORE building.
 - **Potential fix:** (1) Inception templates should include a "Technical Constraints" section that forces the agent to enumerate platform/browser limitations before building. (2) For web apps with hardware access (mic, camera, GPS), the inception spike should test the API access path FIRST, not build the full app and discover it later. (3) Framework could provide a "constraint checklist" for common web app patterns.
 
+### O-011: Analysis paralysis — agent burned entire context on planning, zero implementation
+- **When:** After cycle 1 observations were collected
+- **What happened:** Dispatched 3 analysis agents, wrote 3 docs, re-scoped T-124, created 5 child tasks, discussed strategy — consumed entire context window without implementing a single fix. The framework session itself exhibited the same runaway pattern (O-003/O-005) but for analysis instead of building.
+- **Impact:** Critical. Full session wasted on planning. Zero fixes shipped. User had to emergency-stop.
+- **Severity:** P0
+- **Potential fix:** Time-box analysis to 20% of session. After analysis, IMPLEMENT. "One cycle = one fix" not "one cycle = perfect plan."
+
 ---
 
 _Keep adding observations below as the session progresses._
