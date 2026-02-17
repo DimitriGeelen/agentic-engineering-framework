@@ -346,6 +346,7 @@ Synthesizes current state from:
 
 ### Agent Output Discipline
 - When using Task/Agent tools, request concise output (summaries, not raw data)
+- See **Sub-Agent Dispatch Protocol** below for detailed rules on managing sub-agent results
 - Prefer `fw resume quick` over `fw resume status` for routine checks
 - Prefer `git log --oneline -5` over `git log -5`
 
@@ -361,6 +362,57 @@ Synthesizes current state from:
 - If you see a CRITICAL warning from the checkpoint hook:
   immediately run `fw handover --emergency` and commit
 - Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
+
+## Sub-Agent Dispatch Protocol
+
+When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, etc.), follow these rules. Based on evidence from 96 tasks where 8 used sub-agents.
+
+### Result Management Rules
+
+**Content generators** (enrichment, file creation, report writing):
+- Sub-agent MUST write output to disk (Write tool), NOT return full content
+- Return only: file path + one-line summary (e.g., "Wrote .context/episodic/T-073.yaml — enriched from skeleton")
+- This prevents context explosion (T-073: 9 agents returning full YAML spiked context by 30K+ tokens)
+
+**Investigators/researchers** (codebase exploration, root cause analysis):
+- Return structured summaries with findings, NOT raw file contents
+- Format: numbered findings with file:line references
+- Keep return under 2K tokens per agent
+
+**Auditors/reviewers** (compliance checks, code review):
+- Write detailed report to file if >1K tokens
+- Return summary + file path to orchestrator
+- Include pass/warn/fail counts in summary
+
+### Dispatch Guidelines
+
+| Factor | Rule |
+|--------|------|
+| Max parallel agents | **5** (T-073 used 9 → context explosion; T-061 used 4, T-086 used 5 → fine) |
+| Token headroom | Leave **40K tokens** free for result ingestion before dispatching |
+| When parallel | Tasks are independent, no shared files, no sequential dependency |
+| When sequential | Tasks depend on prior results, or editing same files |
+| Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
+
+### Prompt Template Structure
+
+When dispatching sub-agents, include in the prompt:
+
+1. **Scope**: Exactly what to investigate/produce (one clear deliverable)
+2. **Framework context**: Relevant framework structure (task format, episodic template, etc.)
+3. **Output format**: How to return results (write to file vs. return summary)
+4. **Constraints**: Don't modify files outside scope, don't return raw data
+5. **Token hint**: "Keep your response concise — the orchestrator has limited context budget"
+
+### Dispatch Patterns (from project history)
+
+**Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
+
+**Parallel Audit** (T-072): 3 agents review different artifact categories. Each returns pass/warn/fail summary. Combined into report.
+
+**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel.
+
+**Sequential TDD** (T-058): Fresh agent per implementation task with review between. Use `superpowers:subagent-driven-development` skill.
 
 ## Session Start Protocol
 
