@@ -261,4 +261,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-033
+    learning: "Check context budget BEFORE proposing next work, not after. At 60%+ context, the only responsible options are: capture learnings, commit, handover. Proposing to start a spike and then discovering there's no room wastes the user's decision energy and erodes trust in agent judgment. Rule: check checkpoint.sh status before offering next-step options."
+    source: P-009
+    task: T-108
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
