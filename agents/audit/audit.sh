@@ -224,7 +224,7 @@ for task_file in "$TASKS_DIR/active"/*.md; do
     # Quality Check 3: Tasks older than 7 days should have > 1 update
     created_date=$(grep "^created:" "$task_file" | head -1 | cut -d: -f2- | tr -d ' ' | cut -dT -f1)
     if [ -n "$created_date" ]; then
-        created_ts=$(date -d "$created_date" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$created_date" +%s 2>/dev/null || echo 0)
+        created_ts=$(date -d "$created_date" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$created_date" +%s 2>/dev/null || true)
         now_ts=$(date +%s)
         age_days=$(( (now_ts - created_ts) / 86400 ))
         if [ "$age_days" -gt 7 ] && [ "$task_status" != "work-completed" ]; then
@@ -390,12 +390,12 @@ PRACTICES_MD="$PROJECT_ROOT/015-Practices.md"
 PRACTICES_YAML="$PROJECT_ROOT/.context/project/practices.yaml"
 
 if [ -f "$PRACTICES_MD" ]; then
-    practice_count=$(grep -c "^## P-[0-9]" "$PRACTICES_MD" 2>/dev/null || echo 0)
+    practice_count=$(grep -c "^## P-[0-9]" "$PRACTICES_MD" 2>/dev/null || true)
     if [ "$practice_count" -gt 0 ]; then
         pass "Practices documented: $practice_count practice(s) in 015-Practices.md"
 
         # Check if practices have origins
-        practices_with_origin=$(grep -c "Origin:" "$PRACTICES_MD" 2>/dev/null || echo 0)
+        practices_with_origin=$(grep -c "Origin:" "$PRACTICES_MD" 2>/dev/null || true)
         if [ "$practices_with_origin" -ge "$practice_count" ]; then
             pass "All practices have traceable origins"
 
@@ -434,7 +434,7 @@ import yaml
 with open('$PRACTICES_YAML') as f:
     data = yaml.safe_load(f) or {}
 print(len(data.get('practices', [])))
-" 2>/dev/null || echo 0)
+" 2>/dev/null || true)
     if [ "$practice_count" -gt 0 ]; then
         pass "Practices documented: $practice_count practice(s) in practices.yaml"
     else
@@ -574,7 +574,7 @@ with open('$INBOX_FILE') as f:
 blocks = re.split(r'\n  - ', content)
 urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)
 print(urgent)
-" 2>/dev/null || echo 0)
+" 2>/dev/null || true)
 
         # Check for stale observations (>7 days old)
         stale_obs=$(python3 -c "
@@ -597,7 +597,7 @@ for b in blocks[1:]:
         except:
             pass
 print(stale)
-" 2>/dev/null || echo 0)
+" 2>/dev/null || true)
 
         if [ "$urgent_obs" -gt 0 ]; then
             warn "$urgent_obs urgent observation(s) still pending" \

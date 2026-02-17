@@ -34,7 +34,7 @@ do_generate_episodic() {
 
     # Parse Updates section for timeline events
     local updates_section=$(sed -n '/^## Updates/,/^## /p' "$task_file" | head -n -1)
-    local update_count=$(echo "$updates_section" | grep -c "^### " || echo 0)
+    local update_count=$(echo "$updates_section" | grep -c "^### " || true)
     update_count=$(echo "$update_count" | tr -d '[:space:]')
 
     # Extract outcomes from acceptance criteria (look for [x] items)

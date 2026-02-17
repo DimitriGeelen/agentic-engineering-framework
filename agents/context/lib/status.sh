@@ -35,16 +35,16 @@ do_status() {
     local success_patterns=0
     local workflow_patterns=0
     if [ -f "$CONTEXT_DIR/project/patterns.yaml" ]; then
-        failure_patterns=$(grep -c "^  - id: FP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || echo 0)
-        success_patterns=$(grep -c "^  - id: SP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || echo 0)
-        workflow_patterns=$(grep -c "^  - id: WP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || echo 0)
+        failure_patterns=$(grep -c "^  - id: FP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
+        success_patterns=$(grep -c "^  - id: SP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
+        workflow_patterns=$(grep -c "^  - id: WP-" "$CONTEXT_DIR/project/patterns.yaml" 2>/dev/null || true)
     fi
     echo "Patterns: $failure_patterns failure, $success_patterns success, $workflow_patterns workflow"
 
     # Count decisions
     local decisions=0
     if [ -f "$CONTEXT_DIR/project/decisions.yaml" ]; then
-        decisions=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || echo 0)
+        decisions=$(grep -c "^  - id: D-" "$CONTEXT_DIR/project/decisions.yaml" 2>/dev/null || true)
     fi
     echo "Decisions: $decisions"
 
@@ -52,9 +52,9 @@ do_status() {
     local learnings=0
     local candidates=0
     if [ -f "$CONTEXT_DIR/project/learnings.yaml" ]; then
-        learnings=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || echo 0)
+        learnings=$(grep -c "^  - id: L-" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
         learnings=$(echo "$learnings" | tr -d '[:space:]')
-        candidates=$(grep -c "^  - observation:" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || echo 0)
+        candidates=$(grep -c "^  - observation:" "$CONTEXT_DIR/project/learnings.yaml" 2>/dev/null || true)
         candidates=$(echo "$candidates" | tr -d '[:space:]')
     fi
     echo "Learnings: $learnings (+ $candidates candidates)"
