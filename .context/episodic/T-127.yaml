@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-127: CLAUDE.md template sync + behavioral rules
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T20:25:12Z
+# ============================================================================
+
+task_id: T-127
+task_name: "CLAUDE.md template sync + behavioral rules"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T20:03:03Z
+completed: 2026-02-17T20:25:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-17T21:24:32+01:00
+last_commit: 2026-02-17T21:24:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-126: Inception gate + T-125: First-session orientation + T-127: Behavioral rules
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - "agents/context/lib/init.sh"
+  - "agents/git/git.sh"
+  - "agents/git/lib/hooks.sh"
+  - "agents/resume/resume.sh"
+  - "CLAUDE.md"
+  - "lib/templates/claude-project.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T21:24:32"
+    action: "T-126: Inception gate + T-125: First-session orientation + T-127: Behavioral rules"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 1
+  files_changed: 7
+  lines_added: 157
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-127-claudemd-template-sync--behavioral-rules.md
+generated_by: context-agent-hybrid
