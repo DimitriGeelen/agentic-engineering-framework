@@ -206,3 +206,9 @@ decisions:
     date: 2026-02-17
     task: T-117
     rationale: "58% empty task files prove Updates-as-log failed. 97% git traceability proves commits are the natural authority. Hybrid respects both: git for what happened (immutable, code-linked), task file for why (decisions, rejected alternatives). Estimated context cost: 0-200 tokens/task vs 500+ for full logging."
+
+  - id: D-024
+    decision: "GO on hybrid episodic: git-mined + task-file AC/decisions. Validated on T-115, T-112, T-108, T-116. Zero [TODO]s for mechanical sections."
+    date: 2026-02-17
+    task: T-117
+    rationale: "4-task validation proved: auto-complete for tasks with AC, git-derived for old-template tasks, full timeline/artifacts/challenges from git. Context cost: 1 bash call vs ~2000 tokens manual enrichment."

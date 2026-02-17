@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-117: Design hybrid task-file + git-mined episodic system
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T14:37:04Z
+# ============================================================================
+
+task_id: T-117
+task_name: "Design hybrid task-file + git-mined episodic system"
+workflow_type: design
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-17T14:15:26Z
+completed: 2026-02-17T14:37:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-17T15:17:22+01:00
+last_commit: 2026-02-17T15:36:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Design hybrid task-file + git-mined episodic system. Phase 1 — update task templates with AC, Decisions, demoted Updates. Phase 2 — enhance episodic generator with git-mining. Phase 3 — validate episodic generator on T-115, T-112, T-108, T-116
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/episodic.sh"
+  - "CLAUDE.md"
+  - ".context/episodic/T-108.yaml"
+  - ".context/episodic/T-112.yaml"
+  - ".context/episodic/T-115.yaml"
+  - ".context/episodic/T-116.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/2026-02-17-hybrid-episodic-design.md"
+  - "docs/reports/debate-adapt-to-git.md"
+  - "docs/reports/debate-enforce-task-logging.md"
+  - "docs/reports/debate-hybrid-synthesis.md"
+  - ".tasks/active/T-112-document-t-108-premature-closure-governa.md"
+  - ".tasks/active/T-115-fix-silent-pattern-drop-bug-in-add-patte.md"
+  - ".tasks/active/T-117-design-hybrid-task-file--git-mined-episo.md"
+  - ".tasks/completed/T-116-audit-completed-tasks-for-t-108-like-gov.md"
+  - ".tasks/templates/default.md"
+  - ".tasks/templates/inception.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T15:17:22"
+    action: "T-117: Design hybrid task-file + git-mined episodic system"
+  - time: "2026-02-17T15:31:30"
+    action: "T-117: Phase 1 — update task templates with AC, Decisions, demoted Updates"
+  - time: "2026-02-17T15:33:53"
+    action: "T-117: Phase 2 — enhance episodic generator with git-mining"
+  - time: "2026-02-17T15:36:06"
+    action: "T-117: Phase 3 — validate episodic generator on T-115, T-112, T-108, T-116"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 4
+  files_changed: 19
+  lines_added: 1080
+  lines_removed: 354
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-117-design-hybrid-task-file--git-mined-episo.md
+generated_by: context-agent-hybrid
