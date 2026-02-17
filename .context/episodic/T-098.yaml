@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-098: Add sub-agent dispatch protocol to CLAUDE.md
+# ============================================================================
+# Generated: 2026-02-17T07:52:24Z
+
+task_id: T-098
+task_name: "Add sub-agent dispatch protocol to CLAUDE.md"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T07:51:29Z
+completed: 2026-02-17T07:52:24Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Added a comprehensive "Sub-Agent Dispatch Protocol" section to CLAUDE.md based on
+  T-097 inception findings. Covers result management rules (content generators write
+  to disk, investigators return summaries), dispatch guidelines (max 5 parallel agents,
+  40K token headroom), prompt template structure, and the 4 dispatch patterns identified
+  across 96 tasks. Cross-referenced from existing Agent Output Discipline section.
+
+# Key outcomes
+outcomes:
+  - "New 'Sub-Agent Dispatch Protocol' section in CLAUDE.md (52 lines)"
+  - "Result management rules: generators write to disk, investigators summarize"
+  - "Dispatch guidelines: max 5 parallel, 40K headroom, background for large output"
+  - "4 dispatch patterns documented with task references"
+  - "Cross-reference added from Agent Output Discipline section"
+
+# What worked well
+successes:
+  - description: "Placed section between Context Budget Management and Session Start Protocol"
+    why: "Sub-agent dispatch is a context budget concern — natural reading flow"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made
+decisions:
+  - decision: "Document protocol in CLAUDE.md rather than separate file"
+    rationale: "CLAUDE.md is auto-loaded; every session gets the rules. Separate file would need explicit reading."
+    alternatives_rejected: ["agents/dispatch/PROTOCOL.md (not auto-loaded)", "FRAMEWORK.md (provider-neutral, no Claude Code specifics)"]
+
+# Files modified
+artifacts:
+  created: []
+  modified:
+    - "CLAUDE.md — added Sub-Agent Dispatch Protocol section"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+  predecessor: [T-097]
+
+# Tags
+tags: [multi-agent, dispatch, protocol, claude-md, type-a]
+
+# Passive metrics
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 1
+  lines_added: 52
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-098-add-sub-agent-dispatch-protocol-to-claud.md
+generated_by: context-agent

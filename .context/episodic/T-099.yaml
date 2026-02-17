@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-099: Create sub-agent dispatch prompt templates
+# ============================================================================
+# Generated: 2026-02-17T07:54:12Z
+
+task_id: T-099
+task_name: "Create sub-agent dispatch prompt templates"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T07:53:03Z
+completed: 2026-02-17T07:54:12Z
+duration_days: 0
+updates_count: 2
+
+# Summary
+summary: |
+  Created 4 reusable dispatch prompt templates in agents/dispatch/ for the patterns
+  identified in T-097: investigate (parallel research), enrich (content generation with
+  file-write convention), audit (review/compliance), and develop (sequential TDD). Each
+  template includes framework context, expected output format, anti-patterns, and evidence
+  from real task history. Added AGENT.md with usage guide and rules summary.
+
+# Key outcomes
+outcomes:
+  - "4 dispatch templates: investigate.md, enrich.md, audit.md, develop.md"
+  - "AGENT.md with template index, usage guide, and rules"
+  - "Each template includes real evidence (task references), anti-patterns, and token hints"
+  - "Enrich template explicitly warns against T-073 context explosion pattern"
+
+# What worked well
+successes:
+  - description: "Templates grounded in real evidence from task history"
+    why: "Every template references specific tasks (T-059, T-061, T-072, T-073, T-086) with outcomes — not abstract theory"
+
+# Challenges encountered
+challenges: []
+
+# Decisions made
+decisions:
+  - decision: "Use agents/dispatch/ directory (alongside other agent directories)"
+    rationale: "Follows existing pattern: agents/{name}/AGENT.md + supporting files"
+    alternatives_rejected: [".context/dispatch/ (not agent code)", "docs/dispatch/ (docs are rarely read)"]
+  - decision: "Templates as markdown patterns to adapt, not executable scripts"
+    rationale: "Can't programmatically dispatch Claude Code agents from bash. Templates are read by the orchestrator and adapted to specific tasks."
+    alternatives_rejected: ["Shell scripts with dispatch helpers (can't invoke Task tool from bash)"]
+
+# Files modified
+artifacts:
+  created:
+    - "agents/dispatch/AGENT.md"
+    - "agents/dispatch/investigate.md"
+    - "agents/dispatch/enrich.md"
+    - "agents/dispatch/audit.md"
+    - "agents/dispatch/develop.md"
+  modified: []
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+  predecessor: [T-097, T-098]
+
+# Tags
+tags: [multi-agent, dispatch, templates, type-a, sub-agents]
+
+# Passive metrics
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 5
+  lines_added: 279
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-099-create-sub-agent-dispatch-prompt-templat.md
+generated_by: context-agent
