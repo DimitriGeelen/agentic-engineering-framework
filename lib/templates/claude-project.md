@@ -51,6 +51,8 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 **The practical rule:** Before following ANY skill workflow (brainstorming, TDD, executing-plans, feature-dev, etc.), first ensure a task exists and focus is set. If a skill's instructions conflict with creating a task first, the task wins.
 
+**Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
+
 ## Task System
 
 ### File Structure
@@ -64,13 +66,56 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 ### Task File Format
 
-Tasks are Markdown with YAML frontmatter. Use `default.md` template in `.tasks/templates/`.
+Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 
 **Required frontmatter fields:**
-- `id`, `name`, `description`, `status`, `workflow_type`, `owner`, `created`, `last_update`
+- `id`, `name`, `description`, `status`, `workflow_type`, `horizon`, `owner`, `created`, `last_update`
+
+### Horizon (Priority Scheduling)
+
+The `horizon` field controls when a task should be considered for work:
+
+| Value | Meaning | Handover behavior |
+|-------|---------|-------------------|
+| `now` | Ready to work on (default) | Appears first in Work in Progress, eligible for Suggested First Action |
+| `next` | Ready after current work | Appears in Work in Progress, eligible for Suggested First Action |
+| `later` | Parked/backlog — not yet | Appears last in Work in Progress, excluded from Suggested First Action |
+
+**Rules:**
+- Default horizon is `now` (tasks created via `fw work-on` or `fw task create`)
+- Use `--horizon later` for tasks captured for future reference
+- Use `fw task update T-XXX --horizon now` to promote a backlog task
+- The handover agent sorts tasks by horizon and instructs the enricher to skip `later` tasks in suggestions
 
 **Body sections:**
-- Design Record, Specification Record, Test Files, Updates (chronological log)
+- Context (brief, link to design docs for substantial tasks)
+- Acceptance Criteria (checkboxes — completion gate P-010)
+- Verification (shell commands — verification gate P-011, see below)
+- Decisions (only when choosing between alternatives; most tasks have none)
+- Updates (auto-populated by git mining at completion; manual entries optional)
+
+### Verification Gate (P-011)
+
+The `## Verification` section contains shell commands that **must pass** before `work-completed` is allowed. This is a structural gate — the framework runs the commands mechanically, not the agent self-assessing.
+
+**How it works:**
+1. Agent writes verification commands in `## Verification` while working (knows what to check)
+2. On `fw task update T-XXX --status work-completed`, update-task.sh extracts and runs each command
+3. If any command exits non-zero → completion is **blocked** (same as unchecked AC)
+4. `--force` bypasses the gate (with warning, logged)
+5. Tasks without `## Verification` pass through (backward compatible)
+
+**What to verify:**
+- YAML/JSON files parse correctly: `python3 -c "import yaml; yaml.safe_load(open('file'))"`
+- Web pages load: `curl -sf http://localhost:3000/page`
+- Commands succeed: `fw doctor`
+- Output contains expected content: `grep -q "expected" output.txt`
+
+**Rules:**
+- Lines starting with `#` are comments (skipped)
+- Empty lines are ignored
+- Each non-comment line is executed as a shell command
+- First 5 lines of failure output are shown for debugging
 
 ### Task Lifecycle
 
@@ -90,25 +135,41 @@ Captured → Started Work ↔ Issues → Work Completed
 | Decommission | Remove obsolete code | Deployment Agent |
 | Inception | Explore problem, validate assumptions, go/no-go | Human / Any Agent |
 
+## Task Sizing Rules
+
+- **One task = one deliverable.** If a task has multiple independent spikes or deliverables, decompose it.
+- **One inception = one question.** An inception task should explore one problem and produce one go/no-go decision. "Umbrella inceptions" that bundle independent explorations create all-or-nothing decisions and coarse progress tracking.
+- **Target: fits in one session.** If a task's time-box exceeds 4 hours or requires 3+ sessions, it should be split.
+- **Decomposition signal:** 3+ spikes in an exploration plan, or 3+ independent problem domains, means the task is too big.
+
 ## Enforcement Tiers
 
 | Tier | Description | Bypass | Implementation |
 |------|-------------|--------|----------------|
-| 0 | Consequential actions (force push, hard reset, rm -rf /, DROP TABLE) | Human approval via `fw tier0 approve` | PreToolUse hook on Bash |
-| 1 | All standard operations (default) | Create task or escalate to Tier 2 | PreToolUse hook on Write/Edit |
-| 2 | Human situational authorization | Single-use, mandatory logging | Bypass log |
+| 0 | Consequential actions (force push, hard reset, rm -rf /, DROP TABLE) | Human approval via `fw tier0 approve` | PreToolUse hook on Bash (`check-tier0.sh`) |
+| 1 | All standard operations (default) | Create task or escalate to Tier 2 | PreToolUse hook on Write/Edit (`check-active-task.sh`) |
+| 2 | Human situational authorization | Single-use, mandatory logging | Partial (git --no-verify + bypass log) |
 | 3 | Pre-approved categories (health checks, status queries, git-status) | Configured | Spec only |
 
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking skills**):
-1. Check for existing task or create new one
+1. Check for existing task or create new one following `zzz-default.md` template
 2. Set status to `started-work`
 3. Set focus: `fw context focus T-XXX`
 4. THEN proceed with implementation (skills, code changes, etc.)
-5. Log every action in Updates section with: action, output, context snapshot
+5. Record decisions in Decisions section ONLY when choosing between alternatives
+6. Updates section is auto-populated at completion — manual entries optional
 
-When encountering issues:
+When encountering errors or unexpected behavior (**NEVER silently work around them**):
+1. **STOP and investigate** — do not switch to an alternative path without understanding WHY the error occurred
+2. Report the error and your investigation findings to the user
+3. If the error is in framework tooling: fix it (this is higher priority than the current task)
+4. If the error is environmental: document it and inform the user
+5. Only after investigation may you proceed with an alternative approach
+6. If the error seems minor but you cannot explain it: that is a signal, not noise — investigate anyway
+
+When encountering task-level issues:
 1. Set status to `issues`
 2. Log error reference and healing loop suggestions
 3. Record resolution when fixed for pattern learning
@@ -144,6 +205,206 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 **Trigger:** An organic question about "how we do X" + 3+ instances in episodic memory.
 
+## fw CLI (Primary Interface)
+
+The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
+
+```bash
+fw help              # Show all commands
+fw version           # Show version and paths
+fw doctor            # Check framework health
+fw audit             # Run compliance audit
+fw context init      # Initialize session
+fw git commit -m "T-XXX: description"
+fw handover --commit # Generate and commit handover
+fw task create --name "Fix bug" --type build --owner human
+```
+
+**Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
+
+## Agents
+
+The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance). All agents can be invoked directly or via `fw`.
+
+### Task Creation Agent
+
+**Location:** `agents/task-create/`
+
+**When to use:** Before starting any new work, create a task.
+
+```bash
+# Interactive mode
+./agents/task-create/create-task.sh
+
+# With arguments
+./agents/task-create/create-task.sh --name "Fix bug" --type build --owner human --start
+```
+
+### Task Update (with auto-triggers)
+
+**Location:** `agents/task-create/update-task.sh`
+
+**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
+
+```bash
+# Change status (auto-triggers healing if issues)
+fw task update T-015 --status issues --reason "API timeout"
+
+# Complete a task (auto: date_finished, move to completed/, generate episodic)
+fw task update T-015 --status work-completed
+
+# Change owner
+fw task update T-015 --owner human
+```
+
+### Audit Agent
+
+**Location:** `agents/audit/`
+
+**When to use:** Periodically check framework compliance. Run after completing work or when suspecting drift.
+
+```bash
+./agents/audit/audit.sh
+```
+
+**Exit codes:** 0=pass, 1=warnings, 2=failures
+
+### Session Capture Agent
+
+**Location:** `agents/session-capture/`
+
+**When to use:** MANDATORY before ending any session or switching context.
+
+Review the checklist in `agents/session-capture/AGENT.md` and ensure:
+- All discussed work has tasks
+- All decisions are recorded
+- All learnings are captured as practices
+- All open questions are tracked
+
+### Git Agent
+
+**Location:** `agents/git/`
+
+**When to use:** For all git operations that involve code changes. Enforces task traceability (P-002).
+
+```bash
+# Commit with task reference (required)
+./agents/git/git.sh commit -m "T-003: Add bypass log"
+
+# Task-aware status
+./agents/git/git.sh status
+
+# Install enforcement hooks (run once per repo)
+./agents/git/git.sh install-hooks
+
+# Log a bypass (when --no-verify was used)
+./agents/git/git.sh log-bypass --commit abc123 --reason "Emergency hotfix"
+
+# View task-filtered history
+./agents/git/git.sh log --task T-003
+./agents/git/git.sh log --traceability
+```
+
+### Handover Agent
+
+**Location:** `agents/handover/`
+
+**When to use:** MANDATORY at end of every session.
+
+```bash
+# Create handover (manual commit)
+./agents/handover/handover.sh
+
+# Create handover and auto-commit via git agent
+./agents/handover/handover.sh --commit
+```
+
+Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
+
+### Context Agent
+
+**Location:** `agents/context/`
+
+**When to use:** To manage the Context Fabric (persistent memory system).
+
+```bash
+# Initialize session (start of session)
+./agents/context/context.sh init
+
+# Show context state
+./agents/context/context.sh status
+
+# Set/show current focus
+./agents/context/context.sh focus T-005
+./agents/context/context.sh focus
+
+# Record a learning
+./agents/context/context.sh add-learning "Always validate inputs" --task T-014 --source P-001
+
+# Record a pattern (failure/success/workflow)
+./agents/context/context.sh add-pattern failure "API timeout" --task T-015 --mitigation "Add retry"
+
+# Record a decision
+./agents/context/context.sh add-decision "Use YAML" --task T-005 --rationale "Human readable"
+
+# Generate episodic summary for completed task
+./agents/context/context.sh generate-episodic T-014
+```
+
+Manages three memory types:
+- **Working Memory** — Session state, current focus, priorities
+- **Project Memory** — Patterns, decisions, learnings
+- **Episodic Memory** — Condensed task histories
+
+### Healing Agent
+
+**Location:** `agents/healing/`
+
+**When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
+
+```bash
+# Diagnose task issues and get recovery suggestions
+./agents/healing/healing.sh diagnose T-015
+
+# After fixing, record the resolution (adds pattern + learning)
+./agents/healing/healing.sh resolve T-015 --mitigation "Added retry logic"
+
+# Show all known failure patterns
+./agents/healing/healing.sh patterns
+
+# Check all tasks with issues
+./agents/healing/healing.sh suggest
+```
+
+The healing loop:
+1. **Classify** — Identifies failure type (code, dependency, environment, design, external)
+2. **Lookup** — Searches for similar patterns in patterns.yaml
+3. **Suggest** — Recommends recovery using Error Escalation Ladder
+4. **Log** — Records resolution as pattern for future learning
+
+### Resume Agent
+
+**Location:** `agents/resume/`
+
+**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
+
+```bash
+# Full state synthesis (use after compaction)
+./agents/resume/resume.sh status
+
+# Fix stale working memory
+./agents/resume/resume.sh sync
+
+# One-line summary
+./agents/resume/resume.sh quick
+```
+
+Synthesizes current state from:
+- **Handover** — "Where We Are" and suggested action
+- **Working Memory** — Session, focus, may be stale
+- **Git State** — Uncommitted changes, recent commits
+- **Tasks** — Active tasks with status
+
 ## Context Budget Management (P-009)
 
 **Context is a finite, non-renewable resource within a session.** Treat it like a battery gauge.
@@ -162,8 +423,25 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 ### Agent Output Discipline
 - When using Task/Agent tools, request concise output (summaries, not raw data)
+- See **Sub-Agent Dispatch Protocol** below for detailed rules on managing sub-agent results
 - Prefer `fw resume quick` over `fw resume status` for routine checks
 - Prefer `git log --oneline -5` over `git log -5`
+
+### Work Proposal Rule
+- **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
+- Below 50% (100K tokens): proceed normally
+- 50-65% (100K-130K): propose only small, bounded tasks; commit first
+- Above 65% (130K+): propose only wrap-up actions (commit, learnings, handover)
+- Above 75% (150K+): emergency handover immediately, no new work
+- **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
+
+### Automated Monitoring (Claude Code)
+- A PostToolUse hook runs `checkpoint.sh` which reads **actual token usage** from the session JSONL transcript
+- Warnings fire at: **100K** (note), **130K** (warning), **150K** (critical) — out of a 200K context window
+- Compaction (automatic context summarization) is observed at ~160K tokens — work context is lost
+- Token reading lags ~1 API call behind actual usage; thresholds are conservative to compensate
+- Check current usage: `./agents/context/checkpoint.sh status`
+- If no transcript is available, falls back to tool-call counting (less accurate)
 
 ### Emergency Protocol
 - If you see a CRITICAL warning from the checkpoint hook:
@@ -172,7 +450,7 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 ## Sub-Agent Dispatch Protocol
 
-When using Claude Code's Task tool to dispatch sub-agents, follow these rules to manage context budget.
+When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, etc.), follow these rules to manage context budget.
 
 ### Result Management Rules
 
@@ -199,6 +477,7 @@ When using Claude Code's Task tool to dispatch sub-agents, follow these rules to
 | Token headroom | Leave **40K tokens** free for result ingestion before dispatching |
 | When parallel | Tasks are independent, no shared files, no sequential dependency |
 | When sequential | Tasks depend on prior results, or editing same files |
+| Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
 
 ### Prompt Template Structure
 
@@ -210,134 +489,26 @@ When dispatching sub-agents, include in the prompt:
 4. **Constraints**: Don't modify files outside scope, don't return raw data
 5. **Token hint**: "Keep your response concise — the orchestrator has limited context budget"
 
-## fw CLI (Primary Interface)
+### Result Ledger (`fw bus`)
 
-The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
-
-```bash
-fw help              # Show all commands
-fw version           # Show version and paths
-fw doctor            # Check framework health
-fw audit             # Run compliance audit
-fw context init      # Initialize session
-fw git commit -m "T-XXX: description"
-fw handover --commit # Generate and commit handover
-fw task create --name "Fix bug" --type build --owner human
-```
-
-## Agents
-
-The framework includes agents for common operations. Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance). All agents can be invoked directly or via `fw`.
-
-### Task Creation Agent
-
-**When to use:** Before starting any new work, create a task.
+The result ledger formalizes the "write to disk, return path + summary" convention into a protocol with typed YAML envelopes and automatic size gating. Use it for sub-agent dispatch:
 
 ```bash
-fw task create --name "Fix bug" --type build --owner human
-fw work-on "Fix bug" --type build    # Create + set focus + start
-fw work-on T-XXX                     # Resume existing task
+# Sub-agent posts result (instead of returning full content)
+fw bus post --task T-XXX --agent explore --summary "Found 3 issues" --result "inline data"
+fw bus post --task T-XXX --agent code --summary "Wrote file" --blob /path/to/output
+
+# Orchestrator reads manifest (5 lines instead of 25KB)
+fw bus manifest T-XXX
+
+# Orchestrator reads specific result if needed
+fw bus read T-XXX R-001
+
+# Cleanup after task completion
+fw bus clear T-XXX
 ```
 
-### Task Update (with auto-triggers)
-
-**When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
-
-```bash
-fw task update T-XXX --status issues --reason "API timeout"
-fw task update T-XXX --status work-completed
-fw task update T-XXX --owner human
-```
-
-### Audit Agent
-
-**When to use:** Periodically check framework compliance. Run after completing work or when suspecting drift.
-
-```bash
-fw audit
-```
-
-**Exit codes:** 0=pass, 1=warnings, 2=failures
-
-### Session Capture Agent
-
-**When to use:** MANDATORY before ending any session or switching context.
-
-Ensure:
-- All discussed work has tasks
-- All decisions are recorded
-- All learnings are captured as practices
-- All open questions are tracked
-
-### Git Agent
-
-**When to use:** For all git operations that involve code changes. Enforces task traceability.
-
-```bash
-fw git commit -m "T-XXX: Add bypass log"
-fw git status
-fw git install-hooks
-fw git log-bypass --commit abc123 --reason "Emergency hotfix"
-fw git log --task T-003
-fw git log --traceability
-```
-
-### Handover Agent
-
-**When to use:** MANDATORY at end of every session.
-
-```bash
-fw handover              # Create handover (manual commit)
-fw handover --commit     # Create handover and auto-commit
-```
-
-Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
-
-### Context Agent
-
-**When to use:** To manage the Context Fabric (persistent memory system).
-
-```bash
-fw context init                                    # Initialize session
-fw context status                                  # Show context state
-fw context focus T-XXX                             # Set current focus
-fw context add-learning "..." --task T-XXX         # Record a learning
-fw context add-pattern failure "..." --task T-XXX  # Record a pattern
-fw context add-decision "..." --task T-XXX         # Record a decision
-fw context generate-episodic T-XXX                 # Generate episodic summary
-```
-
-Manages three memory types:
-- **Working Memory** — Session state, current focus, priorities
-- **Project Memory** — Patterns, decisions, learnings
-- **Episodic Memory** — Condensed task histories
-
-### Healing Agent
-
-**When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
-
-```bash
-fw healing diagnose T-XXX                          # Get recovery suggestions
-fw healing resolve T-XXX --mitigation "..."        # Record resolution
-fw healing patterns                                # Show known failure patterns
-fw healing suggest                                 # Check all tasks with issues
-```
-
-The healing loop:
-1. **Classify** — Identifies failure type (code, dependency, environment, design, external)
-2. **Lookup** — Searches for similar patterns in patterns.yaml
-3. **Suggest** — Recommends recovery using Error Escalation Ladder
-4. **Log** — Records resolution as pattern for future learning
-
-### Resume Agent
-
-**When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
-
-```bash
-fw resume status     # Full state synthesis
-fw resume sync       # Fix stale working memory
-fw resume quick      # One-line summary
-```
+**Size gating:** Payloads < 2KB are inline. Payloads >= 2KB are auto-moved to `.context/bus/blobs/` and referenced.
 
 ## Session Start Protocol
 
@@ -347,13 +518,14 @@ fw resume quick      # One-line summary
 3. Review the "Suggested First Action" section
 4. Set focus: `fw context focus T-XXX`
 5. Run `fw metrics` to see project status
+6. If handover feedback section exists, fill it in
 
 **Before ANY implementation (even if a skill says "start now"):**
 1. Verify a task exists for the work: `fw work-on "name" --type build` or `fw work-on T-XXX`
 2. Confirm focus is set in `.context/working/focus.yaml`
 3. THEN invoke skills (brainstorming, TDD, feature-dev, etc.)
 
-This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task.
+This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task. Use `/start-work` if unsure.
 
 **After context compaction (mid-session recovery):**
 1. Run resume: `fw resume status`
@@ -362,41 +534,56 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 
 ## Quick Reference
 
-| Action | Command |
-|--------|---------|
-| **Start work** | `fw work-on "name" --type build` |
-| Resume task | `fw work-on T-XXX` |
-| Create task | `fw task create` |
-| Create with tags | `fw task create --tags "ui,api"` |
-| Update task | `fw task update T-XXX --status ...` |
-| Commit changes | `fw git commit -m "T-XXX: ..."` |
-| Task-aware status | `fw git status` |
-| Install git hooks | `fw git install-hooks` |
-| Run audit | `fw audit` |
-| Show gaps | `fw gaps` |
-| Health check | `fw doctor` |
-| View metrics | `fw metrics` |
-| Predict effort | `fw metrics predict --type build` |
-| Initialize session | `fw context init` |
-| Set focus | `fw context focus T-XXX` |
-| Context status | `fw context status` |
-| Add learning | `fw context add-learning "..."` |
-| Diagnose issue | `fw healing diagnose T-XXX` |
-| Resolve issue | `fw healing resolve T-XXX` |
-| Show patterns | `fw healing patterns` |
-| Resume state | `fw resume status` |
-| Sync working memory | `fw resume sync` |
-| Generate handover | `fw handover` |
-| Handover + commit | `fw handover --commit` |
-| Start inception | `fw inception start "name"` |
-| Inception decide | `fw inception decide T-XXX go` |
-| Add assumption | `fw assumption add "..." --task T-XXX` |
-| Tier 0 approve | `fw tier0 approve` |
+| Action | fw command | Direct |
+|--------|-----------|--------|
+| **Start work** | **`fw work-on "name" --type build`** | Creates task + sets focus + starts work |
+| Resume task | `fw work-on T-XXX` | Sets focus + status to started-work |
+| Create task | `fw task create` | `./agents/task-create/create-task.sh` |
+| Create with tags | `fw task create --tags "ui,api"` | `create-task.sh --tags "..."` |
+| Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
+| Add tags | `fw task update T-XXX --add-tag "ui"` | `update-task.sh T-XXX --add-tag "..."` |
+| Set horizon | `fw task update T-XXX --horizon later` | `update-task.sh T-XXX --horizon later` |
+| Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
+| Task-aware status | `fw git status` | `./agents/git/git.sh status` |
+| Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
+| Run audit | `fw audit` | `./agents/audit/audit.sh` |
+| Show gaps | `fw gaps` | _(fw only)_ |
+| Health check | `fw doctor` | _(fw only)_ |
+| View metrics | `fw metrics` | `./metrics.sh` |
+| Predict effort | `fw metrics predict --type build` | _(fw only)_ |
+| Promotion candidates | `fw promote suggest` | _(fw only)_ |
+| Promote learning | `fw promote L-XXX --name "..." --directive D1` | _(fw only)_ |
+| Graduation status | `fw promote status` | _(fw only)_ |
+| Initialize session | `fw context init` | `./agents/context/context.sh init` |
+| Set focus | `fw context focus T-XXX` | `./agents/context/context.sh focus T-XXX` |
+| Context status | `fw context status` | `./agents/context/context.sh status` |
+| Add learning | `fw context add-learning "..."` | `./agents/context/context.sh add-learning "..."` |
+| Diagnose issue | `fw healing diagnose T-XXX` | `./agents/healing/healing.sh diagnose T-XXX` |
+| Resolve issue | `fw healing resolve T-XXX` | `./agents/healing/healing.sh resolve T-XXX` |
+| Show patterns | `fw healing patterns` | `./agents/healing/healing.sh patterns` |
+| Resume state | `fw resume status` | `./agents/resume/resume.sh status` |
+| Sync working memory | `fw resume sync` | `./agents/resume/resume.sh sync` |
+| Session capture | Review `agents/session-capture/AGENT.md` checklist | |
+| Post bus result | `fw bus post --task T-XXX --agent TYPE --summary "..."` | |
+| Read bus results | `fw bus read T-XXX [R-NNN]` | |
+| Bus manifest | `fw bus manifest [T-XXX]` | |
+| Clear bus channel | `fw bus clear T-XXX` | |
+| Generate handover | `fw handover` | `./agents/handover/handover.sh` |
+| Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
+| Read last handover | `cat .context/handovers/LATEST.md` | |
+| **Start inception** | **`fw inception start "name"`** | Creates inception task + sets focus |
+| Inception status | `fw inception status` | Lists active inception tasks |
+| Inception decide | `fw inception decide T-XXX go` | Records go/no-go with rationale |
+| Add assumption | `fw assumption add "..." --task T-XXX` | Register assumption |
+| Validate assumption | `fw assumption validate A-XXX --evidence "..."` | Mark validated |
+| List assumptions | `fw assumption list` | Show all by status |
+| Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
+| Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
 
 ## Session End Protocol
 
 **Before ending any session:**
-1. Run session capture checklist
+1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
 4. Generate handover: `fw handover`
