@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-108: Validate fw setup onboarding end-to-end
+# ============================================================================
+# Generated: 2026-02-17T11:22:57Z
+
+task_id: T-108
+task_name: "Validate fw setup onboarding end-to-end"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-02-17T10:12:59Z
+completed: 2026-02-17T11:22:57Z
+duration_days: 0
+updates_count: 2
+
+summary: |
+  Dry-ran the full fw setup onboarding wizard on a fictional test project (/opt/test-project),
+  discovered 3 bugs (provider sentinel, unbound $force variable, git identity check missing),
+  fixed all three, and verified the complete lifecycle (init, task create, commit, audit, complete).
+  Also produced a deep research document on inter-agent communication bus architecture (T-109).
+
+outcomes:
+  - "3 onboarding bugs found and fixed in lib/setup.sh and lib/init.sh"
+  - "Full onboarding lifecycle validated: setup → task create → commit → audit → complete"
+  - "Research document produced: docs/reports/2026-02-17-agent-communication-bus-research.md"
+  - "T-109 inception task created for agent autonomy architecture"
+
+successes:
+  - description: "Dry-run on fictional project caught real bugs"
+    why: "Non-interactive and interactive paths exercise different code — testing both revealed the provider sentinel flaw that would have broken every real onboarding"
+  - description: "Parallel research agents produced comprehensive analysis"
+    why: "3 agents (OpenClaw, industry patterns, feasibility) ran concurrently, each focused on one aspect, returned structured summaries"
+
+challenges:
+  - description: "Provider Step 2 was always skipped"
+    resolution: "Changed sentinel from CLAUDE.md line count to setup_provider_done flag"
+  - description: "init.sh generators crashed with unbound $force"
+    resolution: "Changed all $force references to ${force:-false}"
+  - description: "Git identity check crashed Step 6 under set -e"
+    resolution: "Added || true to git config commands"
+
+decisions:
+  - decision: "Use setup_provider_done flag in .framework.yaml as Step 2 sentinel"
+    rationale: "CLAUDE.md line count was always >100 after Step 1 init, making Step 2 permanently skip"
+    alternatives_rejected: ["Check provider != generic (breaks intentionally generic projects)"]
+  - decision: "File-based result ledger rather than real-time message bus for agent communication"
+    rationale: "Agents are ephemeral — no listener exists for real-time messages. File-based fits existing architecture."
+    alternatives_rejected: ["Redis/NATS (violates portability)", "Named pipes (blocks ephemeral writers)", "SQLite (breaks YAML convention)"]
+
+artifacts:
+  created:
+    - "docs/reports/2026-02-17-agent-communication-bus-research.md"
+    - ".tasks/active/T-109-agent-autonomy-and-communication-archite.md"
+  modified:
+    - "lib/setup.sh (provider sentinel, git identity check, force flag in Step 2)"
+    - "lib/init.sh (${force:-false} in all generator functions)"
+
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: [T-109]
+
+tags: [onboarding, validation, setup-wizard, agent-communication, research]
+
+metrics:
+  wall_clock_minutes: 69
+  commits: 2
+  files_changed: 6
+  lines_added: 272
+  lines_removed: 23
+
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-108-validate-fw-setup-onboarding-end-to-end.md
+generated_by: context-agent

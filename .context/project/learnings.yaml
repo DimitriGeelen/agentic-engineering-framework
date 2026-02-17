@@ -213,4 +213,52 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-027
+    learning: "fw setup: Step 2 sentinel must not rely on CLAUDE.md existence — Step 1 creates it via generic init, causing Step 2 to skip. Use explicit setup_provider_done flag in .framework.yaml instead."
+    source: P-002
+    task: T-108
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-028
+    learning: "init.sh generator functions (generate_claude_md, generate_claude_code_config, etc.) use $force variable that is only defined inside do_init scope. When called from setup.sh, ${force:-false} default is required or set -u crashes the script."
+    source: P-002
+    task: T-108
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-029
+    learning: "Dry-running onboarding on a fictional test project catches bugs that unit tests miss: sentinel logic, cross-function variable scope, git identity inheritance. Always validate wizard flows end-to-end before real use."
+    source: P-005
+    task: T-108
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-030
+    learning: "Research documents belong in docs/reports/ with YAML frontmatter (title, task, date, status, tags). The framework has docs/plans/ for designs and docs/reports/ for analysis, but no index or README. Consider adding docs/README.md with discovery guidelines."
+    source: P-002
+    task: T-109
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-031
+    learning: "Verbal/thinking-out-loud sessions with the user generate high-value architectural insights (e.g., autonomous compact-resume lifecycle) but risk losing the ideas in context. Pattern: when user thinks out loud, immediately synthesize their key points back to them, then capture as either a research doc or inception task before continuing."
+    source: P-009
+    task: T-109
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-032
+    learning: "When a session does both implementation (T-108 fixes) AND research/exploration (T-109 inception), context burns fast. The research agents alone consumed ~100K tokens of sub-agent budget. Split sessions: one for building, one for thinking. Or do research early while context is fresh."
+    source: P-009
+    task: T-012
+    date: 2026-02-17
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
