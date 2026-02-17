@@ -40,3 +40,30 @@ assumptions:
   linked_task: T-084
   created: '2026-02-16'
   resolved_date: '2026-02-16'
+- id: A-005
+  statement: Sub-agents would benefit from reading sibling results before starting
+    (pre-flight briefing)
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-109
+  created: '2026-02-17'
+  resolved_date: null
+- id: A-006
+  statement: The compact-resume cycle can be fully automated without losing critical
+    context
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-109
+  created: '2026-02-17'
+  resolved_date: null
+- id: A-007
+  statement: Claude Code CLI can be invoked programmatically by a systemd service
+    to start agent sessions
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-109
+  created: '2026-02-17'
+  resolved_date: null
