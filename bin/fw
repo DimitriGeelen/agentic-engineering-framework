@@ -774,9 +774,11 @@ print(len(tier0))
             # Build default args, then let explicit args override
             wo_has_desc=false
             wo_has_owner=false
+            wo_has_horizon=false
             for wo_arg in "$@"; do
                 [ "$wo_arg" = "--description" ] && wo_has_desc=true
                 [ "$wo_arg" = "--owner" ] && wo_has_owner=true
+                [ "$wo_arg" = "--horizon" ] && wo_has_horizon=true
             done
             wo_defaults=()
             [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")

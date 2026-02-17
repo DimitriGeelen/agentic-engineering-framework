@@ -6,6 +6,7 @@ description: >
 status: captured
 workflow_type:
 owner:
+horizon: now
 tags: []
 related_tasks: []
 created:

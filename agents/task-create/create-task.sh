@@ -18,6 +18,7 @@ NC='\033[0m' # No Color
 
 # Valid workflow types
 VALID_TYPES="specification design build test refactor decommission inception"
+VALID_HORIZONS="now next later"
 
 # Parse arguments
 NAME=""
@@ -26,6 +27,7 @@ WORKFLOW_TYPE=""
 OWNER=""
 TAGS=""
 RELATED=""
+HORIZON="now"
 START_WORK=false
 
 while [[ $# -gt 0 ]]; do
@@ -36,6 +38,7 @@ while [[ $# -gt 0 ]]; do
         --owner) OWNER="$2"; shift 2 ;;
         --tags) TAGS="$2"; shift 2 ;;
         --related) RELATED="$2"; shift 2 ;;
+        --horizon) HORIZON="$2"; shift 2 ;;
         --start) START_WORK=true; shift ;;
         -h|--help)
             echo "Usage: create-task.sh [options]"
@@ -47,6 +50,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --owner       Task owner (required)"
             echo "  --tags        Comma-separated tags (e.g. \"watchtower,ui,inception\")"
             echo "  --related     Comma-separated related task IDs (e.g. \"T-084,T-085\")"
+            echo "  --horizon     Priority horizon: now (default), next, later"
             echo "  --start       Set status to started-work instead of captured"
             echo "  -h, --help    Show this help"
             exit 0
@@ -86,6 +90,13 @@ fi
 if ! echo "$VALID_TYPES" | grep -qw "$WORKFLOW_TYPE"; then
     echo -e "${RED}ERROR: Invalid workflow type '$WORKFLOW_TYPE'${NC}"
     echo "Valid types: $VALID_TYPES"
+    exit 1
+fi
+
+# Validate horizon
+if ! echo "$VALID_HORIZONS" | grep -qw "$HORIZON"; then
+    echo -e "${RED}ERROR: Invalid horizon '$HORIZON'${NC}"
+    echo "Valid horizons: $VALID_HORIZONS"
     exit 1
 fi
 
@@ -163,6 +174,7 @@ t = t.replace('id: T-XXX', 'id: $TASK_ID')
 t = t.replace('name:', 'name: ' + sys.argv[1], 1)
 t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
 t = t.replace('status: captured', 'status: $STATUS')
+t = t.replace('horizon: now', 'horizon: $HORIZON')
 t = t.replace('owner:', 'owner: $OWNER', 1)
 t = t.replace('tags: []', 'tags: $TAGS_YAML')
 t = t.replace('related_tasks: []', 'related_tasks: $RELATED_YAML')
@@ -183,6 +195,7 @@ description: >
   $DESCRIPTION
 status: $STATUS
 workflow_type: $WORKFLOW_TYPE
+horizon: $HORIZON
 owner: $OWNER
 tags: $TAGS_YAML
 related_tasks: $RELATED_YAML

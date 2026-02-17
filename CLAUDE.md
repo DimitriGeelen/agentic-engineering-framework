@@ -62,7 +62,23 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 
 **Required frontmatter fields:**
-- `id`, `name`, `description`, `status`, `workflow_type`, `owner`, `created`, `last_update`
+- `id`, `name`, `description`, `status`, `workflow_type`, `horizon`, `owner`, `created`, `last_update`
+
+### Horizon (Priority Scheduling)
+
+The `horizon` field controls when a task should be considered for work:
+
+| Value | Meaning | Handover behavior |
+|-------|---------|-------------------|
+| `now` | Ready to work on (default) | Appears first in Work in Progress, eligible for Suggested First Action |
+| `next` | Ready after current work | Appears in Work in Progress, eligible for Suggested First Action |
+| `later` | Parked/backlog — not yet | Appears last in Work in Progress, excluded from Suggested First Action |
+
+**Rules:**
+- Default horizon is `now` (tasks created via `fw work-on` or `fw task create`)
+- Use `--horizon later` for tasks captured for future reference
+- Use `fw task update T-XXX --horizon now` to promote a backlog task
+- The handover agent sorts tasks by horizon and instructs the enricher to skip `later` tasks in suggestions
 
 **Body sections:**
 - Context (brief, link to design docs for substantial tasks)
@@ -507,6 +523,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Create with tags | `fw task create --tags "ui,api"` | `create-task.sh --tags "..."` |
 | Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
 | Add tags | `fw task update T-XXX --add-tag "ui"` | `update-task.sh T-XXX --add-tag "..."` |
+| Set horizon | `fw task update T-XXX --horizon later` | `update-task.sh T-XXX --horizon later` |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |

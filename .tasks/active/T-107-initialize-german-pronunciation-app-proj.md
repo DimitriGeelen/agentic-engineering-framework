@@ -5,12 +5,13 @@ description: >
   BRIDGE TASK: This is the transition from framework work to real-world project work. Initialize the German pronunciation training app as a separate project using the framework. CONTEXT: The app shows German text to a non-native speaker, they read it aloud, STT (Whisper) transcribes it, system compares transcription against original text, detects pronunciation errors, and generates targeted exercises. The clever insight: STT errors ARE the pronunciation signal — if Whisper cant understand you, native Germans probably cant either. This naturally prioritizes high-impact pronunciation issues. TECHNICAL DIRECTION: Web app (Python backend + simple frontend) for fastest MVP. Stack: FastAPI/Flask backend, Whisper for STT, Claude API for exercise generation, SQLite for progress tracking. Can access from iPhone via Safari. Native iOS rewrite later if concept validates. STEPS: (1) Create project directory. (2) Run fw setup (from T-104) to do guided onboarding. (3) Verify fw doctor passes. (4) Create first inception task IN THE NEW PROJECT (not here) to explore pronunciation engine design. (5) Validate the full framework loop: task create -> build -> commit -> handover -> harvest. DEPENDS ON: T-101 (hook fix), T-102 (CLAUDE.md template), T-103 (init hardening), T-104 (setup wizard). This task produces a working project scaffold. ALL subsequent app development tasks are created in the apps own .tasks/ directory, not in the framework repo. SEPARATION: After this task, framework work and app work are in separate repos with separate task numbering.
 
 status: captured
+horizon: next
 workflow_type: inception
 owner: human
 tags: [external-project, pronunciation, german, bridge-task]
 related_tasks: []
 created: 2026-02-17T08:54:42Z
-last_update: 2026-02-17T08:54:42Z
+last_update: 2026-02-17T16:12:44Z
 date_finished: null
 ---
 
@@ -92,3 +93,6 @@ Non-native German speakers (like the project owner) mispronounce words/syllables
 - **Context:** Initial task creation
 
 [Chronological log — every action, every output, every decision]
+
+### 2026-02-17T16:12:44Z — status-update [task-update-agent]
+- **Change:** horizon: unset → next

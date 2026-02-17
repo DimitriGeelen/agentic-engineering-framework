@@ -6,6 +6,7 @@ description: >
 status: captured
 workflow_type: inception
 owner:
+horizon: now
 tags: []
 related_tasks: []
 created:

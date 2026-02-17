@@ -27,6 +27,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 VALID_STATUSES="captured started-work issues work-completed"
+VALID_HORIZONS="now next later"
 
 # Check for help before positional args
 case "${1:-}" in
@@ -39,6 +40,7 @@ NEW_STATUS=""
 NEW_OWNER=""
 NEW_TAGS=""
 ADD_TAGS=""
+NEW_HORIZON=""
 REASON=""
 FORCE=false
 
@@ -48,6 +50,7 @@ while [[ $# -gt 0 ]]; do
         --owner|-o) NEW_OWNER="$2"; shift 2 ;;
         --tags) NEW_TAGS="$2"; shift 2 ;;
         --add-tag) ADD_TAGS="$2"; shift 2 ;;
+        --horizon) NEW_HORIZON="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
         --force|-f) FORCE=true; shift ;;
         -h|--help)
@@ -58,6 +61,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --owner, -o   New owner"
             echo "  --tags        Replace tags (comma-separated)"
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
+            echo "  --horizon     Priority horizon: now, next, later"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
             echo "  --force, -f   Bypass acceptance criteria gate on work-completed"
             echo "  -h, --help    Show this help"
@@ -177,6 +181,24 @@ if [ -n "$NEW_OWNER" ]; then
     sed -i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"
     CHANGES+=("owner: $OLD_OWNER → $NEW_OWNER")
+fi
+
+# Update horizon
+if [ -n "$NEW_HORIZON" ]; then
+    if ! echo "$VALID_HORIZONS" | grep -qw "$NEW_HORIZON"; then
+        echo -e "${RED}ERROR: Invalid horizon '$NEW_HORIZON'${NC}" >&2
+        echo "Valid horizons: $VALID_HORIZONS" >&2
+        exit 1
+    fi
+    OLD_HORIZON=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+    if [ -n "$OLD_HORIZON" ]; then
+        sed -i "s/^horizon:.*/horizon: $NEW_HORIZON/" "$TASK_FILE"
+    else
+        # Add horizon field after status line (for tasks created before this field existed)
+        sed -i "/^status:.*/a horizon: $NEW_HORIZON" "$TASK_FILE"
+    fi
+    echo "Horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON"
+    CHANGES+=("horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON")
 fi
 
 # Update tags (replace or add)

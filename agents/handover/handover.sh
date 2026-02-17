@@ -430,25 +430,44 @@ session_narrative: ""
 
 EOF
 
-# Add active tasks with their status
-shopt -s nullglob
-for f in "$TASKS_DIR/active"/*.md; do
-    [ -f "$f" ] || continue
-    task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-    task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
-    task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+# Add active tasks sorted by horizon (now > next > later)
+python3 << PYEOF >> "$HANDOVER_FILE"
+import os, re, glob
 
-    cat >> "$HANDOVER_FILE" << EOF
-### $task_id: $task_name
-- **Status:** $task_status
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+tasks_dir = "$TASKS_DIR/active"
+horizon_order = {'now': 0, 'next': 1, 'later': 2}
+tasks = []
 
-EOF
-done
-shopt -u nullglob
+for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
+    with open(f) as fh:
+        content = fh.read()
+    tid = re.search(r'^id:\s*(.+)', content, re.M)
+    tname = re.search(r'^name:\s*(.+)', content, re.M)
+    tstatus = re.search(r'^status:\s*(.+)', content, re.M)
+    thoriz = re.search(r'^horizon:\s*(.+)', content, re.M)
+    if not tid:
+        continue
+    h = thoriz.group(1).strip() if thoriz else 'now'
+    tasks.append((horizon_order.get(h, 0), tid.group(1).strip(),
+                  tname.group(1).strip() if tname else '',
+                  tstatus.group(1).strip() if tstatus else '',
+                  h))
+
+tasks.sort(key=lambda t: (t[0], t[1]))
+current_horizon = None
+for _, tid, tname, tstatus, h in tasks:
+    if h != current_horizon:
+        current_horizon = h
+        print(f'<!-- horizon: {h} -->')
+        print()
+    print(f'### {tid}: {tname}')
+    print(f'- **Status:** {tstatus} (horizon: {h})')
+    print(f'- **Last action:** [TODO: What was just done on this task]')
+    print(f'- **Next step:** [TODO: What should happen next]')
+    print(f'- **Blockers:** [TODO: Any blockers, or "None"]')
+    print(f'- **Insight:** [TODO: Key understanding gained, if any]')
+    print()
+PYEOF
 
 # Add inception section if any inception tasks exist
 inception_count=0
@@ -552,7 +571,7 @@ cat >> "$HANDOVER_FILE" << EOF
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first]
+[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
 
 ## Files Changed This Session
 

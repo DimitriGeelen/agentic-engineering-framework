@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-121: Add horizon field to task lifecycle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-17T16:16:07Z
+# ============================================================================
+
+task_id: T-121
+task_name: "Add horizon field to task lifecycle"
+workflow_type: build
+enrichment_status: enriched
+
+# Timeline
+created: 2026-02-17T16:07:24Z
+completed: 2026-02-17T16:16:07Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Added horizon: now|next|later field to task frontmatter. Distinguishes "ready to work on"
+  from "backlog/deferred" tasks. Templates, create-task, update-task, and handover agent all
+  updated. Handover sorts Work in Progress by horizon and excludes "later" from suggestions.
+  Motivated by T-120 being incorrectly suggested as primary action despite being parked.
+
+# Key outcomes
+outcomes:
+  - `horizon` field in both templates (default.md, inception.md) with default `now`
+  - `create-task.sh` accepts `--horizon` flag
+  - `update-task.sh` accepts `--horizon` flag
+  - `handover.sh` sorts/filters Work in Progress by horizon (now first, later excluded from suggestions)
+  - `fw work-on` passes `--horizon` through to create-task
+  - Existing tasks tagged: T-111→now, T-107→next, T-120→later
+  - CLAUDE.md documents the horizon field
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - "grep with set -euo pipefail: grep returns exit 1 on no match, killing script. Fixed with || true."
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  - "Clean scope: one field, 7 files, all testable immediately"
+  - "Python in handover for sorting avoids bash echo/sort/while subshell pitfalls"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [task-system, horizon, prioritization, handover]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-121-add-horizon-field-to-task-lifecycle.md
+generated_by: context-agent-hybrid
