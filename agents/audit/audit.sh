@@ -140,7 +140,7 @@ for task_file in "$TASKS_DIR/active"/*.md; do
 
     # Check workflow_type is valid
     wf_type=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    valid_types="specification design build test refactor decommission"
+    valid_types="specification design build test refactor decommission inception"
     if [ -n "$wf_type" ] && ! echo "$valid_types" | grep -qw "$wf_type"; then
         warn "Task $task_name has invalid workflow_type: $wf_type" \
              "Type '$wf_type' not in valid list" \

@@ -1,4 +1,5 @@
 __pycache__/
 .context/working/.tool-counter
 .context/working/.transcript-path
+.context/working/.prev-token-reading
 .playwright-mcp/

@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-17
-timestamp: 2026-02-17T09:37:11Z
+timestamp: 2026-02-17T09:50:21Z
 summary:
-  pass: 20
-  warn: 2
+  pass: 22
+  warn: 0
   fail: 0
 findings:
   - level: PASS
@@ -15,16 +15,14 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
-  - level: WARN
-    check: "Task T-107-initialize-german-pronunciation-app-proj.md has invalid workflow_type: inception"
-    mitigation: "Valid types: specification design build test refactor decommission"
+  - level: PASS
+    check: "All 7 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 97% (238/244 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
+    check: "Git traceability: 97% (240/246 commits reference tasks)"
+  - level: PASS
+    check: "Working directory clean"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
