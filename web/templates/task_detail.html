@@ -45,6 +45,20 @@
             </div>
         </form>
         <div id="status-result"></div>
+
+        <h4>Update Horizon</h4>
+        <form hx-post="/api/task/{{ task_id }}/horizon" hx-target="#horizon-result" hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="grid">
+                <select name="horizon">
+                    {% for h in ['now','next','later'] %}
+                    <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Update Horizon</button>
+            </div>
+        </form>
+        <div id="horizon-result"></div>
     </div>
 </div>
 

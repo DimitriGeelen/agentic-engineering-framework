@@ -180,12 +180,17 @@ def create_task():
     if owner not in allowed_owners:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
+    horizon = request.form.get("horizon", "now").strip()
+    if horizon not in ("now", "next", "later"):
+        return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
+
     try:
         cmd = [
             str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "create",
             "--name", name,
             "--type", workflow_type,
             "--owner", owner,
+            "--horizon", horizon,
         ]
         if description:
             cmd.extend(["--description", description])
@@ -204,6 +209,34 @@ def create_task():
             id_match = re_mod.search(r"(T-\d{3})", result.stdout)
             task_id = id_match.group(1) if id_match else "new task"
             return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
+        else:
+            return (
+                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
+                500,
+            )
+    except Exception as e:
+        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+
+
+@bp.route("/api/task/<task_id>/horizon", methods=["POST"])
+def update_task_horizon(task_id):
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    horizon = request.form.get("horizon", "")
+    if horizon not in ("now", "next", "later"):
+        return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
+
+    try:
+        result = subprocess.run(
+            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--horizon", horizon],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+        )
+        if result.returncode == 0:
+            return f'<p style="color: var(--pico-ins-color);">Horizon set to {horizon}</p>'
         else:
             return (
                 f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
