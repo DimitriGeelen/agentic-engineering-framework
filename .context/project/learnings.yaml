@@ -437,4 +437,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-055
+    learning: "Use general-purpose agent type (not Explore) when sub-agents need to write research to disk. Explore agents are read-only. Pattern: pre-define output path in docs/reports/T-XXX-topic.md, pass path in prompt with explicit 'Write to this file, return only summary' instruction. Validated in T-178 experiment: general-purpose agent wrote 505 lines/20KB directly to disk, returned one-line summary. Zero context bloat."
+    source: T-178 experiment
+    task: T-178
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
