@@ -373,4 +373,20 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-047
+    learning: "YAML init format must match add-* script expectations: init.sh created patterns: [] but pattern.sh expected failure_patterns: sections. Same issue with learnings/decisions: [] header creates invalid YAML when entries appended. Always verify round-trip: create file, add entry, parse result."
+    source: T-124
+    task: T-141
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-048
+    learning: "YAML frontmatter name field must be quoted if value contains colons — unquoted colons break yaml.safe_load silently (Watchtower skips task, no error shown)"
+    source: T-124
+    task: T-143
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
