@@ -440,15 +440,16 @@ Synthesizes current state from:
 - **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
 - **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
 - Escalation ladder: **120K** ok→warn (note), **150K** warn→urgent (warning), **170K** urgent→critical (**BLOCK**)
-- At critical, only git commit, fw handover, and read operations are allowed through the gate
+- At critical, allowed: git commit/add, fw handover/task, reading files, Write/Edit to `.context/` `.tasks/` `.claude/` (wrap-up paths). Blocked: Write/Edit to source files, general Bash
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`
 - If no transcript is available, fails open (PostToolUse fallback handles it)
 
-### Emergency Protocol
-- If you see a BUDGET GATE block: you are at critical. Only commit and handover are allowed.
+### Critical Protocol
+- If you see a BUDGET GATE block: you are at critical. Only wrap-up work is allowed.
+- **Allowed:** git commit/add, fw handover, fw task update, Write/Edit to .context/.tasks/.claude/, reading files
+- **Blocked:** Write/Edit to source files, general Bash commands
 - Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
-- The gate will physically prevent Write/Edit/Bash — you cannot work around it without `--no-verify` equivalent
 
 ## Sub-Agent Dispatch Protocol
 

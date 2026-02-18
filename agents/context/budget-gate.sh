@@ -72,13 +72,18 @@ if os.path.exists(status_file):
     except:
         pass
 
-# Output: LEVEL TOKENS AGE TOOL_NAME COMMAND_HASH
-# COMMAND_HASH: 'commit' if command matches allow-list, 'other' otherwise
+# Output: LEVEL TOKENS AGE TOOL_NAME CLASSIFICATION
+# Classification: 'allowed' for wrap-up/read ops, 'blocked' for new work
 import re
-is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|echo\s+0\s*>)', command)) if command else False
+is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+add|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume|task)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|handover\.sh|update-task\.sh|echo\s+0\s*>)', command)) if command else False
 is_read_tool = tool_name in ('Read', 'Glob', 'Grep')
 
-print(f'{level} {tokens} {age} {tool_name} {\"allowed\" if (is_allowed_cmd or is_read_tool) else \"blocked\"}')
+# At critical, allow Write/Edit to wrap-up paths (handover, tasks, context)
+# but block writing feature code. This distinguishes 'new work' from 'wrap-up'.
+file_path = data.get('tool_input', {}).get('file_path', '')
+is_wrapup_write = tool_name in ('Write', 'Edit') and any(p in file_path for p in ['.context/', '.tasks/', '.claude/']) if file_path else False
+
+print(f'{level} {tokens} {age} {tool_name} {\"allowed\" if (is_allowed_cmd or is_read_tool or is_wrapup_write) else \"blocked\"}')
 " 2>/dev/null)
 
 # Parse result
@@ -121,10 +126,11 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ] || [ "$STATUS_LEVEL" = "critical" ]
             echo "  Context is at ~$((STATUS_TOKENS * 100 / 200000))% of 200K window." >&2
             echo "  Compaction is imminent. New work WILL be lost." >&2
             echo "" >&2
-            echo "  ALLOWED: git commit, fw handover, reading files" >&2
-            echo "  BLOCKED: Write, Edit, Bash (except commit/handover)" >&2
+            echo "  ALLOWED: git commit, fw handover, reading files," >&2
+            echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
+            echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
             echo "" >&2
-            echo "  Action: Commit your work, then run 'fw handover --emergency'" >&2
+            echo "  Action: Commit your work, then run 'fw handover'" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             exit 2
@@ -221,12 +227,13 @@ case "$LEVEL" in
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
         echo "  Context is at ~$((TOKENS * 100 / 200000))% of 200K window." >&2
-        echo "  Compaction is imminent. New work WILL be lost." >&2
+        echo "  Context exhaustion imminent. New work WILL be lost." >&2
         echo "" >&2
-        echo "  ALLOWED: git commit, fw handover, reading files" >&2
-        echo "  BLOCKED: Write, Edit, Bash (except commit/handover)" >&2
+        echo "  ALLOWED: git commit, fw handover, reading files," >&2
+        echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
+        echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
         echo "" >&2
-        echo "  Action: Commit your work, then run 'fw handover --emergency'" >&2
+        echo "  Action: Commit your work, then run 'fw handover'" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
         exit 2
