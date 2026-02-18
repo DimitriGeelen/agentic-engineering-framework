@@ -12,3 +12,37 @@
 **Fix applied this cycle:** O-009 partially (manual CLAUDE.md sync in sprechloop + template update)
 **Cycle verdict:** FAIL (3x P0, 7x P1)
 **Notes:** Agent committed 6 times without user check-in. Full Flask web app built during inception phase. Go/no-go decision for T-001 never made. Browser API constraint (O-010) discovered only after full app was built. Template drift (O-009) was the silent root cause enabling all other governance failures.
+
+## Cycle 2 — 2026-02-17
+
+**Starting state:** Cycle 1 fixes applied (T-125, T-126, T-127 partially)
+**New observations:** Budget exhaustion (O-008 → T-128 circuit breaker, then T-136 auto-handover)
+**Cycle verdict:** FAIL (budget runaway: 25 handover commits in 10min from auto-handover loop)
+**Fixes:** T-128 (circuit breaker), T-136 (auto-handover with cooldown), T-137 (template enforcement)
+
+## Cycle 3 — 2026-02-18
+
+**Starting state:** Budget-gate.sh (T-139) built as hybrid PreToolUse+PostToolUse enforcement
+**New observations:** create-task.sh bypasses default.md template, knowledge capture commands don't write
+**Cycle verdict:** FAIL (task quality collapse: thin tasks, empty knowledge pages)
+**Fixes:** T-140 (inception: root cause analysis), T-141 (template wiring + knowledge YAML bugs + 21 tests)
+
+## Cycle 4 — 2026-02-18
+
+**Starting state:** T-141 complete, budget-gate active, knowledge backfilled
+**Observation window:** Full Watchtower portal audit on :3001 (sprechloop)
+**New observations:** 6 bugs (4x P0, 2x P1)
+
+| # | Priority | Bug | Fix Task |
+|---|----------|-----|----------|
+| 1 | P0 | add-pattern YAML format mismatch (patterns never wrote) | T-141 |
+| 2 | P0 | learnings/decisions `[]` header = invalid YAML | T-141 |
+| 3 | P0 | fw init missing directives.yaml + gaps.yaml | T-142 |
+| 4 | P0 | Unquoted colons in name: break YAML (16/23 tasks invisible) | T-143 |
+| 5 | P1 | add-pattern/learning/decision exit code 1 from trailing conditionals | T-141 |
+| 6 | P1 | Watchtower PROJECT_ROOT defaults to framework, not project | Manual restart |
+
+**Regressions:** None from prior fixes
+**Fixes applied:** T-141 (already done), T-142, T-143
+**Cycle verdict:** FAIL (6 bugs found, all fixed)
+**Notes:** After fixes, all Watchtower pages populated: Tasks (23/23), Learnings (15), Decisions (8), Patterns (5), Directives (4), Enforcement (4 tiers + hooks), Quality (16 pass / 5 warn), Metrics (dashboard populated). Test suite now at 22 tests. Pattern of bugs: init.sh incomplete (doesn't create all files), create-task.sh doesn't sanitize YAML values, knowledge capture scripts have format mismatches between init and add commands.
