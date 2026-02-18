@@ -3,18 +3,18 @@ session_id: S-2026-0219-0055
 timestamp: 2026-02-18T23:55:31Z
 predecessor: S-2026-0219-0025
 tasks_active: [T-120, T-130, T-151, T-162, T-172, T-173, T-175, T-176, T-177, T-178, T-179, T-180]
-tasks_touched: [T-176, T-151, T-179, T-180, T-178, T-162, T-173, T-172, T-175, T-177, T-120, T-XXX, T-166, T-140, T-176, T-155, T-145, T-132, T-139, T-153, T-152, T-097, T-149, T-131, T-181, T-126, T-144, T-045, T-171, T-182, T-142, T-165, T-129, T-148, T-157, T-173, T-128, T-133, T-156, T-136, T-163, T-174, T-137, T-146, T-161, T-164, T-154, T-169, T-175, T-168, T-158, T-143, T-141, T-159, T-170, T-167, T-147, T-138, T-125, T-124, T-160]
-tasks_completed: []
-uncommitted_changes: 15
+tasks_touched: [T-181, T-182]
+tasks_completed: [T-182, T-181]
+uncommitted_changes: 8
 owner: claude-code
-session_narrative: ""
+session_narrative: "Completed T-182 (handover reframing) and T-181 (web UI inline editing inception). Built and tested inline name editing, AC checkbox toggling, and description editing in the web UI."
 ---
 
 # Session Handover: S-2026-0219-0055
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed two tasks this session: T-182 (reframe handover messaging from panic to calm wrap-up — string changes across 4 files) and T-181 (web UI inline editing inception — GO decision after building working spike with name edit, AC checkboxes, description edit). The inline editing spike code is live and functional in the web UI at localhost:3000. T-173/T-175/T-176 stale active files were cleaned up. All pushed to remote.
 
 ## Work in Progress
 
@@ -22,91 +22,91 @@ session_narrative: ""
 
 ### T-151: "Investigate audit tasks as cronjobs"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Start investigation — is cron-based audit useful?
+- **Blockers:** None
+- **Insight:** None
 
 ### T-162: "Web edge case tests — subprocess timeouts, error parsing, malformed YAML"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Start writing tests in test_app.py
+- **Blockers:** None
+- **Insight:** None
 
 ### T-172: "Docs page — discover research docs, commands, and skills"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Continue docs page implementation
+- **Blockers:** None
+- **Insight:** None
 
 ### T-173: "Budget gate: always allow full handover, not just emergency skeleton"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** COMPLETED (stale active file — archived this session)
+- **Last action:** Archived to completed/ with episodic
+- **Next step:** None — done
+- **Blockers:** None
+- **Insight:** None
 
 <!-- horizon: next -->
 
 ### T-175: "Eliminate emergency/full handover distinction — single handover"
-- **Status:** started-work (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** COMPLETED (stale active file — archived this session)
+- **Last action:** Archived to completed/ with episodic
+- **Next step:** None — done
+- **Blockers:** None
+- **Insight:** None
 
 ### T-176: "Adjust budget gate thresholds for no-compaction architecture"
-- **Status:** started-work (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** COMPLETED (stale active file — archived this session)
+- **Last action:** Archived to completed/ with episodic
+- **Next step:** None — done
+- **Blockers:** None
+- **Insight:** None
 
 ### T-177: "Clean up compact hooks for manual-only use"
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Review compact hooks and simplify for manual-only use
+- **Blockers:** None
+- **Insight:** None
 
 ### T-178: "Research artifact persistence — governance and enforcement"
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Start inception exploration
+- **Blockers:** None
+- **Insight:** None
 
 ### T-179: "Auto-restart mechanism — handover then exit then auto-resume"
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Start inception exploration
+- **Blockers:** None
+- **Insight:** None
 
 <!-- horizon: later -->
 
 ### T-120: Review Google Context Engineering whitepaper against framework
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched
+- **Next step:** Backlog
+- **Blockers:** None
+- **Insight:** None
 
 ### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched
+- **Next step:** Backlog
+- **Blockers:** None
+- **Insight:** None
 
 ### T-180: "MCP orphan reaper — detect and kill zombie MCP processes"
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched
+- **Next step:** Backlog
+- **Blockers:** None
+- **Insight:** None
 
 ## Inception Phases
 
@@ -122,40 +122,44 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **T-181 GO — web UI inline editing is feasible**
+   - Why: All 3 go/no-go criteria met: frontmatter round-trips via regex, click-to-edit natural on 3+ field types, write-back sub-10ms
+   - Alternatives rejected: Full WYSIWYG markdown editor (out of scope), yaml.dump round-trip (formatting changes)
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **T-181: Use regex line editing instead of yaml.dump for frontmatter**
+   - Why: yaml.dump changes formatting (quote styles, key order, line wrapping). Regex preserves exact file format.
+   - Alternatives rejected: yaml.dump (destructive formatting), add --name to update-task.sh (slower to prototype)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Flask template caching** — templates didn't update after code changes because app wasn't in debug mode. Fixed by restarting Flask process.
+2. **JS blur/escape race condition** — pressing Escape in name edit triggered both Escape handler and blur handler, causing DOM error. Fixed with `done` flag guard.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. T-181 follow-up: should we create a build task to productionize the spike, or is the spike code sufficient as-is?
+2. T-173/T-175/T-176 still appear in some views as "started-work" despite being completed — the handover agent lists them because their files existed in active/ at session start.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Flask app needs restart after code changes (not running in debug mode). Kill PID then `python3 -m web.app &`
+- The inline editing spike code is functional but rough — e.g., description edit for multi-line `>` folded scalars uses regex that may not handle all edge cases
+- L-058: Framework-level edits require impact assessment before modifications
+- The inception commit gate (2 commits then blocked) worked correctly on T-181
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Create a build task from T-181's GO decision to productionize the inline editing features. The spike code works but could use polish: better error feedback, loading states, and handling edge cases in description multi-line editing.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Modified: `agents/context/budget-gate.sh` (T-182: reframe messaging)
+- Modified: `agents/context/checkpoint.sh` (T-182: reframe messaging)
+- Modified: `CLAUDE.md` (T-182: critical protocol reframing)
+- Modified: `lib/templates/claude-project.md` (T-182: mirror CLAUDE.md)
+- Modified: `web/blueprints/tasks.py` (T-181: inline editing API endpoints + helpers)
+- Modified: `web/templates/task_detail.html` (T-181: editable name, AC checkboxes, description edit)
+- Modified: `web/templates/tasks.html` (T-181: Kanban + list name editing, JS, CSS)
 
 ## Recent Commits
 
