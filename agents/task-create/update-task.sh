@@ -143,6 +143,18 @@ if [ -n "$NEW_STATUS" ]; then
             exit 1
         fi
 
+        # === Template Placeholder Warning (T-137) ===
+        # Warn when starting work if AC section still has placeholder text
+        if [ "$NEW_STATUS" = "started-work" ]; then
+            if grep -q '<!-- Replace with specific' "$TASK_FILE" 2>/dev/null; then
+                echo ""
+                echo -e "${YELLOW}WARNING: Acceptance Criteria still has placeholder text${NC}"
+                echo "  Fill in real criteria before completing this task."
+                echo "  The completion gate (P-010) will check them."
+                echo ""
+            fi
+        fi
+
         # === Acceptance Criteria Gate (P-010) ===
         if [ "$NEW_STATUS" = "work-completed" ]; then
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)

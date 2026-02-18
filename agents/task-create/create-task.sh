@@ -210,6 +210,16 @@ date_finished: null
 
 [Link to design docs, specs, or predecessor tasks]
 
+## Acceptance Criteria
+
+- [ ] <!-- Replace with specific, measurable criteria -->
+
+## Verification
+
+# Add shell commands that verify the work is done
+# Example: grep -q 'expected' output.txt
+# Example: python3 -c "import yaml; yaml.safe_load(open('file'))"
+
 ## Updates
 
 ### $TIMESTAMP — task-created [task-create-agent]
