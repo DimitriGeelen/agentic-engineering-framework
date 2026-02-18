@@ -405,4 +405,20 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-051
+    learning: "One bug = one task. When investigation reveals multiple bugs, create separate tasks even if they're in the same subsystem. Compounding independent bugs into one task (T-149) destroys causality traceability, dilutes episodic memory, and makes regression isolation impossible. Related root causes can share a parent reference but each fix needs its own chain. Same applies to features: one feature = one task."
+    source: T-149 retrospective
+    task: T-149
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-052
+    learning: "When investigation reveals a structural flaw (not a typo), register as gap before fixing. Gaps persist in gaps.yaml (visible in Watchtower, checked by audit, surfaced by resume). Completed tasks archive to completed/ and become invisible. The pattern from T-148/T-149: found 4 bugs + 1 systemic flaw, fixed all without registering gaps — knowledge was immediately buried."
+    source: T-149 retrospective
+    task: T-149
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

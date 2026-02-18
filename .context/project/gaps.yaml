@@ -179,3 +179,38 @@ gaps:
     created: 2026-02-14
     last_reviewed: 2026-02-14
     closed_date: 2026-02-14
+
+  - id: G-007
+    title: "Budget gate non-functional for shared-tooling projects"
+    description: >
+      budget-gate.sh, pre-compact.sh, and post-compact-resume.sh all used
+      FRAMEWORK_ROOT for project-specific paths (.context/, .tasks/, JSONL
+      transcripts). In shared-tooling mode (PROJECT_ROOT != FRAMEWORK_ROOT),
+      this caused: (1) transcript discovery read the wrong project's tokens,
+      (2) pre-compact reset the framework's counter instead of the project's,
+      (3) post-compact resume injected framework context into project sessions,
+      (4) stale critical status failed open on 4/5 tool calls. Net effect:
+      budget monitoring was non-functional for sprechloop despite hooks being
+      wired. Contributed to the 14-compaction cascade (L-050).
+    spec_reference: "CLAUDE.md §Context Budget Management (P-009)"
+    severity: high
+    evidence_collected: >
+      T-148 investigation: sprechloop had no .budget-status file. Manual test
+      of budget-gate.sh with PROJECT_ROOT=/opt/001-sprechloop returned 124K
+      tokens — from the framework's active session, not sprechloop's (which
+      had no active session). 3 scripts affected: budget-gate.sh (transcript
+      discovery + stale fail-open), pre-compact.sh (FRAMEWORK_ROOT reset),
+      post-compact-resume.sh (FRAMEWORK_ROOT for all project reads). Audit of
+      remaining agent scripts confirmed these were the only 3 affected — other
+      scripts already use PROJECT_ROOT correctly.
+    resolution: >
+      T-149 fixed all 4 bugs: (1) transcript discovery scoped to project's
+      Claude Code directory via path encoding, (2) pre-compact.sh uses
+      PROJECT_ROOT for counter/status reset, (3) stale critical status still
+      blocks (no fail-open at critical level), (4) post-compact-resume.sh uses
+      PROJECT_ROOT for handover/tasks/git reads. Audit confirmed no remaining
+      FRAMEWORK_ROOT misuse in other agent scripts.
+    status: closed
+    created: 2026-02-18
+    last_reviewed: 2026-02-18
+    closed_date: 2026-02-18
