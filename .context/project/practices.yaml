@@ -122,3 +122,34 @@ practices:
   promoted_from: L-034
   status: active
   applications: 3
+- id: P-011
+  name: Validate acceptance criteria before task closure
+  derived_from: D2
+  description: 'Task completion status (work-completed) is a flag, not a gate. T-108
+    was marked complete at 11:22 but 6 commits followed over 173 minutes including
+    substantive framework changes, 2 new task spawns, and a bug fix. The episodic
+    snapshot froze at closure time (claims 2 commits/69min, reality 6 commits/173min).
+    Root cause: no acceptance criteria validation before closure, no warning when
+    committing against closed task IDs. Critical for autonomous mode where no human
+    catches the pattern.'
+  anti_pattern: Added via context agent
+  scope: project
+  origin_task: T-112
+  origin_date: '2026-02-17'
+  promoted_from: L-034
+  status: active
+  applications: 6
+- id: P-012
+  name: Structural enforcement over markdown instructions
+  derived_from: D1
+  description: 'Plugins that claim absolute authority (using-superpowers: ''YOU DO
+    NOT HAVE A CHOICE'') will override framework rules written in CLAUDE.md when they
+    conflict. Structural enforcement (P-002) must be actual code gates, not markdown
+    instructions. Gap G-001 decision trigger has fired.'
+  anti_pattern: Added via context agent
+  scope: project
+  origin_task: T-061
+  origin_date: '2026-02-15'
+  promoted_from: L-013
+  status: active
+  applications: 5

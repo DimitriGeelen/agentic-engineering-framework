@@ -235,18 +235,30 @@ gaps:
       Session effectively crashed for 12m40s. Root cause: (1) prompts didn't
       include write-to-file instructions per template rule, (2) TaskOutput returns
       raw transcript not agent final answer, (3) no hook or gate prevents this.
+
+      T-170 (2026-02-18): Third instance — Playwright browser_navigate and
+      browser_snapshot return full accessibility tree for all 168 kanban tasks
+      (~30-50K tokens per call). 5+ calls in one session consumed 150K+ tokens,
+      causing repeated compactions (15 emergency handovers in 24h). Same root
+      cause: uncontrolled context intake from tool results. Mitigation: use
+      browser_run_code for navigation, browser_take_screenshot for visuals,
+      never browser_snapshot on pages with large DOM.
     decision_trigger: >
-      Second instance of sub-agent context explosion (first was T-073 with 9 agents).
-      Pattern has now repeated despite protocol being documented. Discipline alone
-      is insufficient — structural enforcement needed.
+      Third instance of context explosion from uncontrolled tool output (T-073
+      sub-agents, T-158 TaskOutput, T-170 Playwright snapshots). Pattern is
+      confirmed: any tool that returns unbounded content will eventually crash
+      the session. Discipline alone is proven insufficient across 3 incidents.
+    trigger_fired: true
+    trigger_fired_date: 2026-02-18
     trigger_check:
       type: manual
-      hint: "Monitor for context spikes after Task tool dispatches"
+      hint: "Monitor for context spikes after Task tool dispatches or Playwright calls"
     possible_enforcement:
       - "PreToolUse hook on Task tool: warn if >3 parallel bg agents"
       - "PostToolUse hook on TaskOutput: warn if result >5K chars"
       - "Agent prompt linter: check for 'write to file' in bg agent prompts"
       - "Make fw bus post the ONLY way to return bg agent results"
-    status: watching
+      - "Practice: never use browser_snapshot/browser_navigate on data-heavy pages"
+    status: decided-build
     created: 2026-02-18
     last_reviewed: 2026-02-18

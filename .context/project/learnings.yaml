@@ -429,4 +429,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-054
+    learning: "Playwright browser_navigate and browser_snapshot return full accessibility trees — on data-heavy pages (168 tasks x 6 dropdowns) this is 30-50K tokens per call. Use browser_run_code for navigation and browser_take_screenshot for visual checks. Never use browser_snapshot on pages with large DOM."
+    source: G-008
+    task: T-170
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
