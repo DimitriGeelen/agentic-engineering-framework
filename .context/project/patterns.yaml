@@ -69,6 +69,14 @@ failure_patterns:
     date_learned: 2026-02-17
     mitigation: "CLAUDE.md now has explicit error investigation protocol: STOP, investigate, report, fix, then proceed. Never silently switch to alternative path."
 
+
+  - id: FP-008
+    pattern: "Auto-handover runaway loop — 25 commits in 10min"
+    description: "Auto-handover runaway loop — 25 commits in 10min"
+    learned_from: T-136
+    date_learned: 2026-02-18
+    mitigation: "Added 10min cooldown file (.handover-cooldown) with unix timestamp"
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"

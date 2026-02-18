@@ -325,4 +325,12 @@ learnings:
     date: 2026-02-17
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-041
+    learning: "Auto-triggered actions in hooks MUST have cooldown/debounce — without it, any action that fires on a condition that persists (like token count > threshold) will run on every subsequent invocation, creating runaway loops. T-136 caused 25 handover commits in 10min. Fix: cooldown file with timestamp."
+    source: T-136 runaway in sprechloop cycle 3
+    task: T-136
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
