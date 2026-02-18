@@ -63,13 +63,16 @@ do_add_decision() {
     fi
     local id=$(printf "D-%03d" $next_id)
 
-    # Ensure decisions file exists
+    # Ensure decisions file exists with correct format
     if [ ! -f "$decisions_file" ]; then
         cat > "$decisions_file" << 'EOF'
-# Project Memory - Decisions
-
+# Project Decisions - Architectural choices with rationale
+# Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 decisions:
 EOF
+    elif grep -q '^decisions: \[\]' "$decisions_file"; then
+        # Migrate old empty-array format: decisions: [] -> decisions:
+        sed -i 's/^decisions: \[\]/decisions:/' "$decisions_file"
     fi
 
     # Build YAML entry
@@ -105,4 +108,5 @@ $rejected_yaml"
     echo "  $decision"
     [ -n "$task" ] && echo "  Task: $task"
     [ -n "$rationale" ] && echo "  Rationale: $rationale"
+    return 0
 }

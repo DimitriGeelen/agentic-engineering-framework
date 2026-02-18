@@ -83,10 +83,12 @@ do_add_pattern() {
     fi
     local id=$(printf "%s-%03d" "$prefix" $next_id)
 
-    # Ensure patterns file exists
+    # Ensure patterns file exists with correct section format
     if [ ! -f "$patterns_file" ]; then
         cat > "$patterns_file" << 'EOF'
-# Project Memory - Patterns
+# Project Patterns - Learned from experience
+# Categories: failure, success, workflow
+# Added via: fw context add-pattern <type> "name" --task T-XXX
 
 failure_patterns: []
 
@@ -94,6 +96,9 @@ success_patterns: []
 
 workflow_patterns: []
 EOF
+    elif grep -q '^patterns: \[\]' "$patterns_file" && ! grep -q 'failure_patterns:' "$patterns_file"; then
+        # Migrate old single-key format to three-section format
+        sed -i 's/^patterns: \[\]/\nfailure_patterns: []\n\nsuccess_patterns: []\n\nworkflow_patterns: []/' "$patterns_file"
     fi
 
     # Build YAML entry
@@ -113,24 +118,25 @@ EOF
 
     # Append to the correct section
     local temp_file=$(mktemp)
-    awk -v section="${section}:" -v entry="$entry" '
+    awk -v section="${section}" -v entry="$entry" '
         BEGIN { in_section=0; inserted=0 }
-        $0 ~ section {
+        $0 ~ section ":" && !inserted {
             in_section=1
+            # Handle inline empty array: "section: []" -> "section:" + entry
+            if ($0 ~ /\[\]/) {
+                sub(/\[\]/, "")
+                sub(/[[:space:]]+$/, "")  # trim trailing whitespace
+                print
+                print entry
+                in_section=0
+                inserted=1
+                next
+            }
             print
-            next
-        }
-        in_section && /^\[\]$/ {
-            # Empty array — replace with entry
-            print ""
-            print entry
-            in_section=0
-            inserted=1
             next
         }
         in_section && /^[a-z_]+_patterns:/ {
             # Reached next section — insert entry before it
-            print ""
             print entry
             print ""
             in_section=0
@@ -138,9 +144,7 @@ EOF
         }
         { print }
         END {
-            # If target was last section, append at end
             if (in_section && !inserted) {
-                print ""
                 print entry
             }
         }
@@ -152,4 +156,5 @@ EOF
     echo "  $pattern_name"
     [ -n "$task" ] && echo "  From: $task"
     [ -n "$mitigation" ] && echo "  Mitigation: $mitigation"
+    return 0
 }

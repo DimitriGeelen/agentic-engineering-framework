@@ -132,7 +132,12 @@ FYAML
 # Project Patterns - Learned from experience
 # Categories: failure, success, workflow
 # Added via: fw context add-pattern <type> "name" --task T-XXX
-patterns: []
+
+failure_patterns: []
+
+success_patterns: []
+
+workflow_patterns: []
 PYAML
         echo -e "  ${GREEN}OK${NC}  patterns.yaml"
     fi
@@ -141,7 +146,7 @@ PYAML
         cat > "$target_dir/.context/project/decisions.yaml" << 'DYAML'
 # Project Decisions - Architectural choices with rationale
 # Added via: fw context add-decision "description" --task T-XXX --rationale "why"
-decisions: []
+decisions:
 DYAML
         echo -e "  ${GREEN}OK${NC}  decisions.yaml"
     fi
@@ -150,7 +155,7 @@ DYAML
         cat > "$target_dir/.context/project/learnings.yaml" << 'LYAML'
 # Project Learnings - Knowledge gained during development
 # Added via: fw context add-learning "description" --task T-XXX
-learnings: []
+learnings:
 LYAML
         echo -e "  ${GREEN}OK${NC}  learnings.yaml"
     fi

@@ -48,13 +48,16 @@ do_add_learning() {
     fi
     local id=$(printf "L-%03d" $next_id)
 
-    # Append to learnings file
+    # Ensure learnings file exists with correct format
     if [ ! -f "$learnings_file" ]; then
         cat > "$learnings_file" << EOF
-# Project Memory - Learnings
-
+# Project Learnings - Knowledge gained during development
+# Added via: fw context add-learning "description" --task T-XXX
 learnings:
 EOF
+    elif grep -q '^learnings: \[\]' "$learnings_file"; then
+        # Migrate old empty-array format: learnings: [] -> learnings:
+        sed -i 's/^learnings: \[\]/learnings:/' "$learnings_file"
     fi
 
     # Insert new learning before the candidates section
@@ -92,4 +95,5 @@ EOF
     echo "  $learning"
     [ -n "$task" ] && echo "  Task: $task"
     [ -n "$source" ] && echo "  Source: $source"
+    return 0
 }
