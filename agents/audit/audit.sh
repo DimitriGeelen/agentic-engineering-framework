@@ -747,6 +747,66 @@ fi
 echo ""
 
 # ============================================
+# SECTION 8b: HANDOVER OPEN QUESTIONS (G-002)
+# ============================================
+echo "=== HANDOVER OPEN QUESTIONS CHECK ==="
+
+HANDOVER_FILE="$CONTEXT_DIR/handovers/LATEST.md"
+
+if [ -f "$HANDOVER_FILE" ]; then
+    # Extract open questions section (between ## Open Questions and next ##)
+    open_questions=$(sed -n '/^## Open Questions/,/^## /p' "$HANDOVER_FILE" | grep -v "^## " | grep -v "^\[TODO" | grep -v "^$" | grep -v "^1\. \[Question")
+
+    if [ -n "$open_questions" ]; then
+        # Count real items (numbered lines or bullet points with content)
+        oq_count=$(echo "$open_questions" | grep -cE "^[0-9]+\.|^- " 2>/dev/null) || oq_count=0
+
+        if [ "$oq_count" -gt 0 ]; then
+            # Check how many are tracked in gaps.yaml or tasks
+            untracked=0
+            while IFS= read -r line; do
+                # Extract the question text (strip numbering/bullets)
+                question=$(echo "$line" | sed 's/^[0-9]*\.\s*//; s/^- //')
+                [ -z "$question" ] && continue
+
+                # Check if any keyword from the question appears in gaps or active tasks
+                tracked=false
+                for keyword in $(echo "$question" | tr ' ' '\n' | grep -E '^[A-Z]' | head -3); do
+                    if grep -qi "$keyword" "$CONTEXT_DIR/project/gaps.yaml" 2>/dev/null; then
+                        tracked=true
+                        break
+                    fi
+                    if grep -rqi "$keyword" "$TASKS_DIR/active/" 2>/dev/null; then
+                        tracked=true
+                        break
+                    fi
+                done
+
+                if [ "$tracked" = false ]; then
+                    untracked=$((untracked + 1))
+                fi
+            done <<< "$(echo "$open_questions" | grep -E "^[0-9]+\.|^- ")"
+
+            if [ "$untracked" -gt 0 ]; then
+                warn "Handover has $untracked open question(s) with no matching gap or task" \
+                     "$untracked of $oq_count open questions in LATEST.md appear untracked" \
+                     "Register via 'fw gaps add' or 'fw task create' — see LATEST.md Open Questions section"
+            else
+                pass "Handover open questions: $oq_count tracked in gaps/tasks"
+            fi
+        else
+            pass "Handover open questions: none (section empty or template placeholder)"
+        fi
+    else
+        pass "Handover open questions: none"
+    fi
+else
+    echo -e "  ${CYAN}SKIP${NC}  No handover file found"
+fi
+
+echo ""
+
+# ============================================
 # SECTION 9: GRADUATION PIPELINE CHECK
 # ============================================
 echo "=== GRADUATION PIPELINE CHECKS ==="

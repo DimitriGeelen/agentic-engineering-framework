@@ -135,6 +135,16 @@ cmd_status() {
             echo -e "${BOLD}Suggested Action:${NC}"
             echo "$suggested" | sed 's/^/  /'
         fi
+
+        # Check for untracked open questions (G-002)
+        local open_questions=$(sed -n '/^## Open Questions/,/^## /p' "$HANDOVER_DIR/LATEST.md" | grep -E "^[0-9]+\.|^- " | grep -v "\[Question" | grep -v "\[TODO")
+        if [ -n "$open_questions" ]; then
+            local oq_count=$(echo "$open_questions" | wc -l | tr -d ' ')
+            echo ""
+            echo -e "${YELLOW}${BOLD}Unresolved Open Questions ($oq_count):${NC}"
+            echo "$open_questions" | sed 's/^/  /'
+            echo -e "  ${YELLOW}→ Register as gap ('fw gaps add') or task ('fw task create')${NC}"
+        fi
     else
         echo -e "${YELLOW}No handover found${NC}"
     fi
