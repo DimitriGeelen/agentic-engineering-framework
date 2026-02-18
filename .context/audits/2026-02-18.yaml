@@ -1,5 +1,5 @@
 # Audit Results - 2026-02-18
-timestamp: 2026-02-18T15:11:22Z
+timestamp: 2026-02-18T15:40:34Z
 summary:
   pass: 20
   warn: 6
@@ -16,7 +16,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 12 active tasks are valid"
+    check: "All 9 active tasks are valid"
   - level: WARN
     check: "Task T-154 has short description (44 chars)"
     mitigation: "Expand description in T-154-kanban-card-inline-owner-selector.md"
@@ -30,7 +30,7 @@ findings:
     check: "Task T-157 has no updates but status is started-work"
     mitigation: "Add update entry to T-157-show-active-project-name-at-top-of-watch.md"
   - level: PASS
-    check: "Git traceability: 97% (415/424 commits reference tasks)"
+    check: "Git traceability: 97% (425/434 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -51,7 +51,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 153 episodic summaries have quality content"
+    check: "All 156 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
