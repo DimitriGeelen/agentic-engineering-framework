@@ -190,6 +190,8 @@
     <!-- Ambient Status Strip -->
     {% if ambient %}
     <div class="ambient-strip container-fluid">
+        <span title="{{ project_root }}"><strong>{{ project_root.split('/')[-1] }}</strong></span>
+        <span class="sep">|</span>
         <span>{{ ambient.focus_task or 'No focus' }}</span>
         <span class="sep">|</span>
         <span>Session: {{ ambient.session_age or 'unknown' }}</span>

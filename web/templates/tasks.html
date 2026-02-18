@@ -246,7 +246,7 @@
     min-width: 0;
     width: auto;
 }
-td .status-update-result, td .horizon-update-result {
+td .status-update-result, td .horizon-update-result, td .type-update-result, td .owner-update-result {
     font-size: 0.75rem;
 }
 
@@ -263,6 +263,48 @@ td .status-update-result, td .horizon-update-result {
     min-width: 0;
     width: auto;
     cursor: pointer;
+}
+
+/* ── Inline Owner Select (Kanban + List) ──────────────── */
+.inline-owner-select {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.7rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+    cursor: pointer;
+    color: var(--pico-muted-color);
+}
+
+/* ── Inline Type Select (Kanban + List) ───────────────── */
+.inline-type-select {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.7rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+    cursor: pointer;
+    color: var(--pico-muted-color);
+}
+
+/* ── Inline Status Select (Kanban) ────────────────────── */
+.inline-kanban-status-select {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.7rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+    cursor: pointer;
+    font-weight: 600;
 }
 </style>
 
@@ -341,39 +383,66 @@ td .status-update-result, td .horizon-update-result {
 {% set completed = tasks|selectattr('status', 'equalto', 'work-completed')|list %}
 
 <div class="kanban-board">
+    {# ── Kanban card macro ─────────────────────────────────── #}
+    {% macro kanban_card(task) %}
+    <article class="kanban-card">
+        <div class="kanban-card-header">
+            <a href="/tasks/{{ task.id }}" class="kanban-card-id"
+               hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+            <form hx-post="/api/task/{{ task.id }}/status" style="margin:0;padding:0;display:inline;"
+                  hx-target="closest .kanban-card" hx-swap="none">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="inline-kanban-status-select"
+                        onchange="this.form.requestSubmit()">
+                    {% for s in ['captured','started-work','issues','work-completed'] %}
+                    <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+        <div class="kanban-card-meta">
+            <form hx-post="/api/task/{{ task.id }}/type" style="margin:0;padding:0;display:inline;"
+                  hx-target="closest .kanban-card" hx-swap="none">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="type" class="inline-type-select"
+                        onchange="this.form.requestSubmit()">
+                    {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
+                    <option value="{{ t }}" {% if task.workflow_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
+                  hx-target="closest .kanban-card" hx-swap="none">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="horizon" class="inline-horizon-select horizon-select"
+                        onchange="this.form.requestSubmit()">
+                    {% for h in ['now','next','later'] %}
+                    <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <form hx-post="/api/task/{{ task.id }}/owner" style="margin:0;padding:0;display:inline;"
+                  hx-target="closest .kanban-card" hx-swap="none">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="owner" class="inline-owner-select"
+                        onchange="this.form.requestSubmit()">
+                    {% for o in ['human','claude-code'] %}
+                    <option value="{{ o }}" {% if task.owner == o %}selected{% endif %}>{{ o }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </article>
+    {% endmacro %}
+
     <!-- Captured -->
     <div class="kanban-column" data-status="captured">
         <div class="kanban-column-header">
             Captured <span class="count">({{ captured|length }})</span>
         </div>
         {% for task in captured %}
-        <article class="kanban-card">
-            <div class="kanban-card-header">
-                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
-                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
-                      hx-vals='{"status":"started-work"}' style="margin:0;padding:0;">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="status" value="started-work">
-                    <button type="submit" class="advance-btn" title="Start work">&#9654;</button>
-                </form>
-            </div>
-            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
-            <div class="kanban-card-meta">
-                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
-                <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
-                      hx-target="closest .kanban-card" hx-swap="none">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="horizon" class="inline-horizon-select horizon-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for h in ['now','next','later'] %}
-                        <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                <span class="owner">{{ task.owner or 'unassigned' }}</span>
-            </div>
-        </article>
+        {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
@@ -385,33 +454,7 @@ td .status-update-result, td .horizon-update-result {
             In Progress <span class="count">({{ in_progress|length }})</span>
         </div>
         {% for task in in_progress %}
-        <article class="kanban-card">
-            <div class="kanban-card-header">
-                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
-                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
-                      hx-vals='{"status":"work-completed"}' style="margin:0;padding:0;">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="status" value="work-completed">
-                    <button type="submit" class="advance-btn" title="Complete">&#9654;</button>
-                </form>
-            </div>
-            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
-            <div class="kanban-card-meta">
-                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
-                <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
-                      hx-target="closest .kanban-card" hx-swap="none">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="horizon" class="inline-horizon-select horizon-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for h in ['now','next','later'] %}
-                        <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                <span class="owner">{{ task.owner or 'unassigned' }}</span>
-            </div>
-        </article>
+        {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
@@ -423,33 +466,7 @@ td .status-update-result, td .horizon-update-result {
             Issues <span class="count">({{ issues|length }})</span>
         </div>
         {% for task in issues %}
-        <article class="kanban-card">
-            <div class="kanban-card-header">
-                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
-                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-                <form hx-post="/api/task/{{ task.id }}/status" hx-target="#content" hx-swap="innerHTML"
-                      hx-vals='{"status":"started-work"}' style="margin:0;padding:0;">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="status" value="started-work">
-                    <button type="submit" class="advance-btn" title="Retry">&#9654;</button>
-                </form>
-            </div>
-            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
-            <div class="kanban-card-meta">
-                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
-                <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
-                      hx-target="closest .kanban-card" hx-swap="none">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="horizon" class="inline-horizon-select horizon-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for h in ['now','next','later'] %}
-                        <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                <span class="owner">{{ task.owner or 'unassigned' }}</span>
-            </div>
-        </article>
+        {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
@@ -461,27 +478,7 @@ td .status-update-result, td .horizon-update-result {
             Completed <span class="count">({{ completed|length }})</span>
         </div>
         {% for task in completed %}
-        <article class="kanban-card">
-            <div class="kanban-card-header">
-                <a href="/tasks/{{ task.id }}" class="kanban-card-id"
-                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-            </div>
-            <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
-            <div class="kanban-card-meta">
-                <span class="badge">{{ task.workflow_type or 'untyped' }}</span>
-                <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
-                      hx-target="closest .kanban-card" hx-swap="none">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="horizon" class="inline-horizon-select horizon-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for h in ['now','next','later'] %}
-                        <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                <span class="owner">{{ task.owner or 'unassigned' }}</span>
-            </div>
-        </article>
+        {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
@@ -494,9 +491,13 @@ document.addEventListener('htmx:afterRequest', function(event) {
     var form = event.detail.elt;
     if (!form || !event.detail.successful) return;
 
-    // Reload board after kanban advance button
+    // Reload board after kanban inline selectors (status change moves cards between columns)
     if (form.closest && form.closest('.kanban-card')) {
-        htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'});
+        var select = form.querySelector('select');
+        if (select && select.name === 'status') {
+            // Status change — reload whole board since card moves columns
+            htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'});
+        }
         return;
     }
 
@@ -595,8 +596,36 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 </form>
                 <span class="horizon-update-result"></span>
             </td>
-            <td>{{ task.workflow_type or '' }}</td>
-            <td>{{ task.owner or '' }}</td>
+            <td>
+                <form hx-post="/api/task/{{ task.id }}/type"
+                      hx-target="next .type-update-result"
+                      hx-swap="innerHTML"
+                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <select name="type" class="inline-status-select"
+                            onchange="this.form.requestSubmit()">
+                        {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
+                        <option value="{{ t }}" {% if task.workflow_type == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <span class="type-update-result"></span>
+            </td>
+            <td>
+                <form hx-post="/api/task/{{ task.id }}/owner"
+                      hx-target="next .owner-update-result"
+                      hx-swap="innerHTML"
+                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <select name="owner" class="inline-status-select"
+                            onchange="this.form.requestSubmit()">
+                        {% for o in ['human','claude-code'] %}
+                        <option value="{{ o }}" {% if task.owner == o %}selected{% endif %}>{{ o }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <span class="owner-update-result"></span>
+            </td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>
         </tr>
         {% endfor %}

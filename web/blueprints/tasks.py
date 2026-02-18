@@ -249,6 +249,63 @@ def update_task_horizon(task_id):
         return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
 
 
+@bp.route("/api/task/<task_id>/owner", methods=["POST"])
+def update_task_owner(task_id):
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    owner = request.form.get("owner", "")
+    if owner not in ("human", "claude-code"):
+        return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
+
+    try:
+        result = subprocess.run(
+            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--owner", owner],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+        )
+        if result.returncode == 0:
+            return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
+        else:
+            return (
+                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
+                500,
+            )
+    except Exception as e:
+        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+
+
+@bp.route("/api/task/<task_id>/type", methods=["POST"])
+def update_task_type(task_id):
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    wtype = request.form.get("type", "")
+    allowed = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
+    if wtype not in allowed:
+        return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
+
+    try:
+        result = subprocess.run(
+            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--type", wtype],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+        )
+        if result.returncode == 0:
+            return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
+        else:
+            return (
+                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
+                500,
+            )
+    except Exception as e:
+        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+
+
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
 def update_task_status(task_id):
     if not re_mod.match(r"^T-\d{3}$", task_id):

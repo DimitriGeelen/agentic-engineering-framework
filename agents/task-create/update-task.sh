@@ -41,8 +41,11 @@ NEW_OWNER=""
 NEW_TAGS=""
 ADD_TAGS=""
 NEW_HORIZON=""
+NEW_TYPE=""
 REASON=""
 FORCE=false
+
+VALID_TYPES="build test refactor specification design decommission inception"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -51,6 +54,7 @@ while [[ $# -gt 0 ]]; do
         --tags) NEW_TAGS="$2"; shift 2 ;;
         --add-tag) ADD_TAGS="$2"; shift 2 ;;
         --horizon) NEW_HORIZON="$2"; shift 2 ;;
+        --type|-t) NEW_TYPE="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
         --force|-f) FORCE=true; shift ;;
         -h|--help)
@@ -59,6 +63,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --status, -s  New status ($VALID_STATUSES)"
             echo "  --owner, -o   New owner"
+            echo "  --type, -t    Workflow type ($VALID_TYPES)"
             echo "  --tags        Replace tags (comma-separated)"
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --horizon     Priority horizon: now, next, later"
@@ -266,6 +271,19 @@ if [ -n "$NEW_OWNER" ]; then
     sed -i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"
     CHANGES+=("owner: $OLD_OWNER → $NEW_OWNER")
+fi
+
+# Update workflow type
+if [ -n "$NEW_TYPE" ]; then
+    if ! echo "$VALID_TYPES" | grep -qw "$NEW_TYPE"; then
+        echo -e "${RED}ERROR: Invalid workflow type '$NEW_TYPE'${NC}" >&2
+        echo "Valid types: $VALID_TYPES" >&2
+        exit 1
+    fi
+    OLD_TYPE=$(grep "^workflow_type:" "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//')
+    sed -i "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
+    echo "Type:    ${OLD_TYPE:-unset} → $NEW_TYPE"
+    CHANGES+=("workflow_type: ${OLD_TYPE:-unset} → $NEW_TYPE")
 fi
 
 # Update horizon
