@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-174: Investigate: can handover replace compaction entirely?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T18:51:17Z
+# ============================================================================
+
+task_id: T-174
+task_name: "Investigate: can handover replace compaction entirely?"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T18:24:39Z
+completed: 2026-02-18T18:51:17Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option B — disable compaction, rely on handovers + `fw resume`"
+    rationale: "3-agent investigation confirmed: (1) `autoCompactEnabled: false` already set and working, (2) budget gate provides structural enforcement at 150K, (3) emergency handover captures tasks/git/commits automatically, (4) compaction's lossy summary is strictly inferior to structured handover, (5) eliminating compaction buffer reclaims ~20-30K usable tokens"
+    alternatives_rejected: ["Option A (status quo — compaction causes T-145/T-148/cascade issues), Option C (feed handover to compaction API — CLI doesn't expose `instructions` param), Option D (auto-restart — is just Option B reframed)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-174-investigate-can-handover-replace-compact.md
+generated_by: context-agent-hybrid
