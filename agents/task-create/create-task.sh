@@ -171,7 +171,7 @@ import sys
 with open('$TASKS_DIR/templates/inception.md') as f:
     t = f.read()
 t = t.replace('id: T-XXX', 'id: $TASK_ID')
-t = t.replace('name:', 'name: ' + sys.argv[1], 1)
+t = t.replace('name:', 'name: \"' + sys.argv[1].replace('\"', '\\\\\"') + '\"', 1)
 t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
 t = t.replace('status: captured', 'status: $STATUS')
 t = t.replace('horizon: now', 'horizon: $HORIZON')
@@ -192,7 +192,7 @@ import sys
 with open('$TASKS_DIR/templates/default.md') as f:
     t = f.read()
 t = t.replace('id: T-XXX', 'id: $TASK_ID')
-t = t.replace('name:', 'name: ' + sys.argv[1], 1)
+t = t.replace('name:', 'name: \"' + sys.argv[1].replace('\"', '\\\\\"') + '\"', 1)
 t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
 t = t.replace('status: captured', 'status: $STATUS')
 t = t.replace('workflow_type:', 'workflow_type: $WORKFLOW_TYPE', 1)
