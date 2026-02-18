@@ -82,7 +82,7 @@ do_inception_start() {
         "$AGENTS_DIR/context/context.sh" focus "$task_id"
         echo ""
         echo -e "${YELLOW}Next steps:${NC}"
-        echo "1. Fill in Problem Statement, Exploration Plan, Go/No-Go Criteria"
+        echo "1. Fill in Problem Statement, Technical Constraints, Exploration Plan, Go/No-Go Criteria"
         echo "2. Register assumptions: fw assumption add 'Users want X' --task $task_id"
         echo "3. Conduct exploration (spikes, prototypes, research)"
         echo "4. Record decision: fw inception decide $task_id go|no-go --rationale '...'"

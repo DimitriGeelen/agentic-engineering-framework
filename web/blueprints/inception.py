@@ -179,6 +179,7 @@ def inception_detail(task_id):
         "problem": _md(_extract_section(task_body, "Problem Statement")),
         "assumptions_text": _md(_extract_section(task_body, "Assumptions")),
         "exploration": _md(_extract_section(task_body, "Exploration Plan")),
+        "constraints": _md(_extract_section(task_body, "Technical Constraints")),
         "scope": _md(_extract_section(task_body, "Scope Fence")),
         "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
         "decision": _md(_extract_section(task_body, "Decision")),

@@ -28,6 +28,14 @@ date_finished: null
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
 
+## Technical Constraints
+
+<!-- What platform, browser, network, or hardware constraints apply?
+     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
+     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
+     For infrastructure: network topology, firewall rules, latency bounds.
+     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+
 ## Scope Fence
 
 <!-- What's IN scope for this exploration? What's explicitly OUT? -->
