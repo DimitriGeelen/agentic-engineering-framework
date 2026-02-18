@@ -1,0 +1,67 @@
+# ============================================================================
+# EPISODIC MEMORY - T-157: Show active project name at top of Watchtower
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+# Limited data sources. Review and fill missing sections manually.
+# Generated: 2026-02-18T16:06:40Z
+# ============================================================================
+
+task_id: T-157
+task_name: "Show active project name at top of Watchtower"
+workflow_type: inception
+enrichment_status: pending  # No git commits or AC found — needs manual enrichment
+
+# Timeline
+created: 2026-02-18T12:50:23Z
+completed: 2026-02-18T16:06:40Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 196
+  commits: 1
+  files_changed: 10
+  lines_added: 450
+  lines_removed: 136
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-157-show-active-project-name-at-top-of-watch.md
+generated_by: context-agent-hybrid

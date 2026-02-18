@@ -1,21 +1,21 @@
 ---
-id: T-157
-name: "Show active project name at top of Watchtower"
+id: T-155
+name: "Kanban card inline status selector at top"
 description: >
-  Inception: Show active project name at top of Watchtower
+  Inception: Kanban card inline status selector at top
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
 related_tasks: []
-created: 2026-02-18T12:50:23Z
-last_update: 2026-02-18T12:50:23Z
-date_finished: null
+created: 2026-02-18T12:50:18Z
+last_update: 2026-02-18T16:06:39Z
+date_finished: 2026-02-18T16:06:39Z
 ---
 
-# T-157: Show active project name at top of Watchtower
+# T-155: Kanban card inline status selector at top
 
 ## Problem Statement
 
@@ -94,3 +94,6 @@ date_finished: null
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Trivial UI change following horizon selector pattern
+
+### 2026-02-18T16:06:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

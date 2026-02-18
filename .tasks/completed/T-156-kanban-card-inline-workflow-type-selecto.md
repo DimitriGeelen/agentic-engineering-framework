@@ -4,15 +4,15 @@ name: "Kanban card inline workflow type selector"
 description: >
   Inception: Kanban card inline workflow type selector
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T12:50:21Z
-last_update: 2026-02-18T12:50:21Z
-date_finished: null
+last_update: 2026-02-18T16:06:40Z
+date_finished: 2026-02-18T16:06:40Z
 ---
 
 # T-156: Kanban card inline workflow type selector
@@ -94,3 +94,6 @@ date_finished: null
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Trivial UI change following horizon selector pattern
+
+### 2026-02-18T16:06:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
