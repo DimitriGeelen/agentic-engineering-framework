@@ -15,3 +15,9 @@ bypasses:
     authorized_by: human
     reason: "T-124 inception experiment mid-flight — cycle 2 findings commit, not a decision point"
     retroactive_task: null
+  - timestamp: 2026-02-18T06:19:59Z
+    action: "T-124: Cycle 3 protocol — test structural enforcement fixes"
+    commit: 839cc88
+    authorized_by: human
+    reason: "T-124 inception mid-experiment — cycle 3 prep commit"
+    retroactive_task: null

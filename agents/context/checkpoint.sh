@@ -106,11 +106,32 @@ warn_by_tokens() {
 
         # --- Auto-trigger emergency handover (T-136) ---
         # Agent cannot be trusted to act on warnings at 150K+.
-        # Guard against re-entry (handover commit triggers post-commit → checkpoint).
+        # Two guards:
+        #   1. Re-entry lock: prevents recursive triggering within one checkpoint run
+        #   2. Cooldown file: prevents re-firing for 10 minutes after last handover
+        #      (Bug fix: without cooldown, every subsequent tool call re-triggers
+        #       because tokens stay above 150K — caused 23 handover commits in sprechloop)
         local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
-        if [ ! -f "$handover_lock" ]; then
+        local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
+        local COOLDOWN_SECONDS=600  # 10 minutes
+
+        local should_fire=true
+        if [ -f "$handover_lock" ]; then
+            should_fire=false
+        elif [ -f "$handover_cooldown" ]; then
+            local last_fired
+            last_fired=$(cat "$handover_cooldown" 2>/dev/null | tr -d '[:space:]')
+            local now
+            now=$(date +%s)
+            if [ -n "$last_fired" ] && [ $((now - last_fired)) -lt "$COOLDOWN_SECONDS" ]; then
+                should_fire=false
+            fi
+        fi
+
+        if [ "$should_fire" = true ]; then
             echo "AUTO-HANDOVER: Triggering emergency handover..." >&2
             echo "1" > "$handover_lock"
+            date +%s > "$handover_cooldown"
             if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency 2>&1 | tail -5 >&2; then
                 echo "AUTO-HANDOVER: Emergency handover committed." >&2
             else
