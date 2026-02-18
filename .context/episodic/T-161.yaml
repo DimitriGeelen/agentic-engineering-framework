@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-161: Hook and gate integration tests — 5 critical enforcement scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T15:24:49Z
+# ============================================================================
+
+task_id: T-161
+task_name: "Hook and gate integration tests — 5 critical enforcement scripts"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T13:30:45Z
+completed: 2026-02-18T15:24:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T16:24:27+01:00
+last_commit: 2026-02-18T16:24:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog
+
+# Key outcomes
+outcomes:
+  - "Integration tests for `check-active-task.sh` (blocks Write/Edit without active task) — 19 tests"
+  - "Integration tests for `check-tier0.sh` (blocks destructive commands) — 34 tests"
+  - "Integration tests for `error-watchdog.sh` (detects bash errors in PostToolUse) — 23 tests"
+  - "All integration tests pass: `bats tests/integration/` — 76/76"
+  - "Minimum 25 test cases — 76 total"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-161-hook-and-gate-integration-tests--5-criti.md"
+  - "tests/integration/check_active_task.bats"
+  - "tests/integration/check_tier0.bats"
+  - "tests/integration/error_watchdog.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T16:24:27"
+    action: "T-161: Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 113 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 113
+  commits: 1
+  files_changed: 4
+  lines_added: 779
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-161-hook-and-gate-integration-tests--5-criti.md
+generated_by: context-agent-hybrid

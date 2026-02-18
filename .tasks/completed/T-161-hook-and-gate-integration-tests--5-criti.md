@@ -4,15 +4,15 @@ name: "Hook and gate integration tests — 5 critical enforcement scripts"
 description: >
   Write integration tests for: budget-gate.sh, check-active-task.sh, check-tier0.sh (extend existing), checkpoint.sh, error-watchdog.sh. Requires mock JSONL transcripts, mock git repos, mock focus.yaml. These are critical path — 0% coverage currently. Ref: T-158, /tmp/T-158-hooks-and-bugs.md
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:45Z
-last_update: 2026-02-18T13:30:45Z
-date_finished: null
+last_update: 2026-02-18T15:24:36Z
+date_finished: 2026-02-18T15:24:36Z
 ---
 
 # T-161: Hook and gate integration tests — 5 critical enforcement scripts
@@ -50,3 +50,6 @@ bats tests/integration/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-161-hook-and-gate-integration-tests--5-criti.md
 - **Context:** Initial task creation
+
+### 2026-02-18T15:24:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
