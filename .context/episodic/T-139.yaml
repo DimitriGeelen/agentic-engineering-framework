@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-139: Build budget-gate.sh PreToolUse hook (hybrid budget enforcement)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T07:36:29Z
+# ============================================================================
+
+task_id: T-139
+task_name: "Build budget-gate.sh PreToolUse hook (hybrid budget enforcement)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-18T07:29:16Z
+completed: 2026-02-18T07:36:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T08:36:23+01:00
+last_commit: 2026-02-18T08:36:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Build budget-gate.sh PreToolUse hook — hybrid budget enforcement
+
+# Key outcomes
+outcomes:
+  - "`agents/context/budget-gate.sh` exists and is executable"
+  - "budget-gate.sh reads token usage and returns exit 2 at critical (>=150K)"
+  - "budget-gate.sh allows git/handover commands even at critical level"
+  - "budget-gate.sh writes `.budget-status` file with level and timestamp"
+  - "budget-gate.sh completes in <100ms (PreToolUse must be fast)"
+  - "Settings.json has PreToolUse hook for Write|Edit|Bash targeting budget-gate.sh"
+  - "PostToolUse checkpoint.sh retained as fallback (not removed)"
+  - "Commit counter removed from commit-msg and post-commit hook templates"
+  - "CLAUDE.md updated with new budget enforcement docs"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - "agents/context/lib/init.sh"
+  - "agents/git/git.sh"
+  - "agents/git/lib/hooks.sh"
+  - "CLAUDE.md"
+  - ".claude/settings.json"
+  - ".context/episodic/T-138.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-139-build-budget-gatesh-pretooluse-hook-hybr.md"
+  - ".tasks/completed/T-138-redesign-context-budget-cron-based-monit.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T08:36:23"
+    action: "T-139: Build budget-gate.sh PreToolUse hook — hybrid budget enforcement"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 12
+  lines_added: 411
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-139-build-budget-gatesh-pretooluse-hook-hybr.md
+generated_by: context-agent-hybrid
