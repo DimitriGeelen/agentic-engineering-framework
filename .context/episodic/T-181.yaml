@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-181: Web UI inline editing — edit tasks, docs, and artifacts in-browser
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T23:51:25Z
+# ============================================================================
+
+task_id: T-181
+task_name: "Web UI inline editing — edit tasks, docs, and artifacts in-browser"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T21:32:01Z
+completed: 2026-02-18T23:51:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-18T22:32:51+01:00
+last_commit: 2026-02-19T00:47:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — web UI inline editing investigation. Spike 2+3 — inline name editing, AC checkboxes, description editing
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-181-web-ui-inline-editing--edit-tasks-docs-a.md"
+  - "web/blueprints/tasks.py"
+  - "web/templates/task_detail.html"
+  - "web/templates/tasks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T22:32:51"
+    action: "T-181: Inception — web UI inline editing investigation"
+  - time: "2026-02-19T00:47:50"
+    action: "T-181: Spike 2+3 — inline name editing, AC checkboxes, description editing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 139 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 139
+  commits: 2
+  files_changed: 4
+  lines_added: 530
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-181-web-ui-inline-editing--edit-tasks-docs-a.md
+generated_by: context-agent-hybrid

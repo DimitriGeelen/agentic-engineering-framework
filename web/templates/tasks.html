@@ -560,38 +560,41 @@ function startKanbanNameEdit(span, taskId) {
     input.type = 'text';
     input.value = current;
     input.className = 'kanban-name-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        span.title = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
 
     function save() {
+        if (done) return;
         var newName = input.value.trim();
         if (!newName || newName === current) {
-            span.textContent = current;
-            input.replaceWith(span);
+            finish(current);
             return;
         }
         var fd = new FormData();
         fd.append('name', newName);
-        var csrf = input.closest('.kanban-card').querySelector('input[name="_csrf_token"]');
-        if (csrf) fd.append('_csrf_token', csrf.value);
+        var csrfEl = input.closest('.kanban-card');
+        var csrf = csrfEl ? csrfEl.querySelector('input[name="_csrf_token"]') : null;
+        if (csrf) { fd.append('_csrf_token', csrf.value); }
+        else {
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta) fd.append('_csrf_token', meta.content);
+        }
         fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
-            .then(function(r) {
-                if (r.ok) {
-                    span.textContent = newName;
-                    span.title = newName;
-                } else {
-                    span.textContent = current;
-                }
-                input.replaceWith(span);
-            })
-            .catch(function() {
-                span.textContent = current;
-                input.replaceWith(span);
-            });
+            .then(function(r) { finish(r.ok ? newName : current); })
+            .catch(function() { finish(current); });
     }
 
     input.addEventListener('blur', save);
     input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); save(); }
-        if (e.key === 'Escape') { span.textContent = current; input.replaceWith(span); }
+        if (e.key === 'Escape') { finish(current); }
     });
     // Prevent card link navigation when clicking the input
     input.addEventListener('click', function(e) { e.stopPropagation(); });

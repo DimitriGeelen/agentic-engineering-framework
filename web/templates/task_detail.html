@@ -263,29 +263,34 @@ function startNameEdit(span, taskId) {
     input.type = 'text';
     input.value = current;
     input.className = 'name-edit-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
 
     function save() {
+        if (done) return;
         var newName = input.value.trim();
         if (!newName || newName === current) {
-            input.replaceWith(span);
+            finish(current);
             return;
         }
         var fd = new FormData();
         fd.append('name', newName);
         fd.append('_csrf_token', '{{ csrf_token() }}');
         fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
-            .then(function(r) { return r.text(); })
-            .then(function() {
-                span.textContent = newName;
-                input.replaceWith(span);
-            })
-            .catch(function() { input.replaceWith(span); });
+            .then(function(r) { finish(r.ok ? newName : current); })
+            .catch(function() { finish(current); });
     }
 
     input.addEventListener('blur', save);
     input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') { e.preventDefault(); save(); }
-        if (e.key === 'Escape') { input.replaceWith(span); }
+        if (e.key === 'Escape') { finish(current); }
     });
 
     span.replaceWith(input);
