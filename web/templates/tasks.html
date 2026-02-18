@@ -1,20 +1,31 @@
 <style>
 /* ── Full-width override for tasks page ────────────────── */
 main.container:has(.kanban-board),
-main.container:has(.task-actions) {
+main.container:has(.tasks-toolbar) {
     max-width: 100% !important;
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
 }
-/* Tighter header for tasks page */
-.tasks-page-header {
+/* Tighter toolbar for tasks page */
+.tasks-toolbar {
     display: flex !important;
-    align-items: baseline;
+    align-items: center;
+    justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
-.tasks-page-header h1 { margin: 0 !important; font-size: 1.75rem; }
-.tasks-page-header p { color: var(--pico-muted-color); margin: 0 !important; font-size: 0.95rem; }
+.tasks-toolbar-left {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+.tasks-toolbar-left h1 { margin: 0 !important; font-size: 1.5rem; }
+.tasks-toolbar-left .task-count { color: var(--pico-muted-color); font-size: 0.85rem; }
+.tasks-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
 
 /* ── View Toggle ────────────────────────────────────────── */
 .view-toggle {
@@ -25,8 +36,8 @@ main.container:has(.task-actions) {
     overflow: hidden;
 }
 .view-toggle a {
-    padding: 0.35rem 0.9rem;
-    font-size: 0.875rem;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
     text-decoration: none;
     color: var(--pico-color);
     background: transparent;
@@ -40,40 +51,35 @@ main.container:has(.task-actions) {
     color: var(--pico-primary-inverse);
 }
 
-/* ── Task Actions Bar ───────────────────────────────────── */
-.task-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-.task-actions-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
 /* ── Create Task Form ───────────────────────────────────── */
 .create-task-panel {
-    margin-bottom: 0.75rem;
+    margin: 0;
 }
 .create-task-panel summary {
     cursor: pointer;
     font-weight: 600;
-    padding: 0.5rem 0.75rem;
+    padding: 0.3rem 0.65rem;
     background: var(--pico-primary);
     color: var(--pico-primary-inverse);
     border-radius: var(--pico-border-radius);
     display: inline-block;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     list-style: none;
+    white-space: nowrap;
 }
 .create-task-panel summary::-webkit-details-marker { display: none; }
 .create-task-panel summary::marker { content: ""; }
 .create-task-panel[open] summary {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0;
+}
+/* Form drops below toolbar when open */
+.create-task-form-wrapper {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 10;
+    width: min(600px, 90vw);
+    margin-top: 0.25rem;
 }
 .create-task-form {
     padding: 1rem;
@@ -341,64 +347,68 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 }
 </style>
 
-<div class="tasks-page-header">
-    <h1>Tasks</h1>
-    <p>{{ tasks|length }} tasks</p>
-    <div class="view-toggle">
+<div class="tasks-toolbar">
+    <div class="tasks-toolbar-left">
+        <h1>Tasks</h1>
+        <span class="task-count">{{ tasks|length }}</span>
+    </div>
+    <div class="tasks-toolbar-right">
+        <div class="view-toggle">
             <a href="/tasks?view=board"
                hx-get="/tasks?view=board" hx-target="#content" hx-push-url="true"
                class="{% if view == 'board' %}active{% endif %}">Board</a>
             <a href="/tasks?view=list"
                hx-get="/tasks?view=list" hx-target="#content" hx-push-url="true"
                class="{% if view == 'list' %}active{% endif %}">List</a>
-    </div>
-</div>
-
-<!-- Create Task -->
-<details class="create-task-panel">
-    <summary>+ Create Task</summary>
-    <div class="create-task-form">
-        <form id="create-task-form" hx-post="/api/task/create" hx-target="#create-result" hx-swap="innerHTML">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
-                <div>
-                    <label for="task-name">Name</label>
-                    <input type="text" id="task-name" name="name" placeholder="Task name" required>
-                </div>
-                <div>
-                    <label for="task-type">Type</label>
-                    <select id="task-type" name="type">
-                        <option value="build">build</option>
-                        <option value="test">test</option>
-                        <option value="refactor">refactor</option>
-                        <option value="specification">specification</option>
-                        <option value="design">design</option>
-                        <option value="decommission">decommission</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="task-owner">Owner</label>
-                    <select id="task-owner" name="owner">
-                        <option value="human">human</option>
-                        <option value="claude-code">claude-code</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="task-horizon">Horizon</label>
-                    <select id="task-horizon" name="horizon">
-                        <option value="now">now</option>
-                        <option value="next">next</option>
-                        <option value="later">later</option>
-                    </select>
+        </div>
+        <details class="create-task-panel" style="position:relative;">
+            <summary>+ New</summary>
+            <div class="create-task-form-wrapper">
+                <div class="create-task-form">
+                    <form id="create-task-form" hx-post="/api/task/create" hx-target="#create-result" hx-swap="innerHTML">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr 1fr;">
+                            <div>
+                                <label for="task-name">Name</label>
+                                <input type="text" id="task-name" name="name" placeholder="Task name" required>
+                            </div>
+                            <div>
+                                <label for="task-type">Type</label>
+                                <select id="task-type" name="type">
+                                    <option value="build">build</option>
+                                    <option value="test">test</option>
+                                    <option value="refactor">refactor</option>
+                                    <option value="specification">specification</option>
+                                    <option value="design">design</option>
+                                    <option value="decommission">decommission</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="task-owner">Owner</label>
+                                <select id="task-owner" name="owner">
+                                    <option value="human">human</option>
+                                    <option value="claude-code">claude-code</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="task-horizon">Horizon</label>
+                                <select id="task-horizon" name="horizon">
+                                    <option value="now">now</option>
+                                    <option value="next">next</option>
+                                    <option value="later">later</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label for="task-desc">Description</label>
+                        <textarea id="task-desc" name="description" placeholder="Optional description"></textarea>
+                        <button type="submit">Create</button>
+                    </form>
+                    <div id="create-result"></div>
                 </div>
             </div>
-            <label for="task-desc">Description</label>
-            <textarea id="task-desc" name="description" placeholder="Optional description"></textarea>
-            <button type="submit">Create Task</button>
-        </form>
-        <div id="create-result"></div>
+        </details>
     </div>
-</details>
+</div>
 
 {% if view == 'board' %}
 <!-- ════════════════════════════════════════════════════════
