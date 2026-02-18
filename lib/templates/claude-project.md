@@ -138,6 +138,7 @@ Captured → Started Work ↔ Issues → Work Completed
 ## Task Sizing Rules
 
 - **One task = one deliverable.** If a task has multiple independent spikes or deliverables, decompose it.
+- **One bug = one task.** Never compound multiple independent bugs into a single ticket. Each bug has its own root cause, fix, and regression test. Compounding destroys causality traceability and dilutes episodic memory.
 - **One inception = one question.** An inception task should explore one problem and produce one go/no-go decision. "Umbrella inceptions" that bundle independent explorations create all-or-nothing decisions and coarse progress tracking.
 - **Target: fits in one session.** If a task's time-box exceeds 4 hours or requires 3+ sessions, it should be split.
 - **Decomposition signal:** 3+ spikes in an exploration plan, or 3+ independent problem domains, means the task is too big.

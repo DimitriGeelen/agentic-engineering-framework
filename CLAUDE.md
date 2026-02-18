@@ -131,6 +131,7 @@ Captured → Started Work ↔ Issues → Work Completed
 ## Task Sizing Rules
 
 - **One task = one deliverable.** If a task has multiple independent spikes or deliverables, decompose it.
+- **One bug = one task.** Never compound multiple independent bugs into a single ticket. Each bug has its own root cause, fix, and regression test. Compounding destroys causality traceability and dilutes episodic memory.
 - **One inception = one question.** An inception task should explore one problem and produce one go/no-go decision. "Umbrella inceptions" that bundle independent explorations create all-or-nothing decisions and coarse progress tracking.
 - **Target: fits in one session.** If a task's time-box exceeds 4 hours or requires 3+ sessions, it should be split.
 - **Decomposition signal:** 3+ spikes in an exploration plan, or 3+ independent problem domains, means the task is too big.
@@ -161,6 +162,11 @@ When encountering errors or unexpected behavior (**NEVER silently work around th
 4. If the error is environmental: document it and inform the user
 5. Only after investigation may you proceed with an alternative approach
 6. If the error seems minor but you cannot explain it: that is a signal, not noise — investigate anyway
+
+When discovering structural flaws (bugs in framework tooling, spec-reality gaps):
+1. **Register first, fix second.** Add the flaw to `gaps.yaml` BEFORE or alongside the fix
+2. Gaps persist in the register (visible in Watchtower, checked by audit); completed tasks archive and become invisible
+3. Each independent bug gets its own task (see Task Sizing Rules: "One bug = one task")
 
 When encountering task-level issues:
 1. Set status to `issues`
