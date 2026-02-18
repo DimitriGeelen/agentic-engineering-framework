@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-153: "Sync task atomization rule to sprechloop CLAUDE.md"
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T12:48:56Z
+# ============================================================================
+
+task_id: T-153
+task_name: ""Sync task atomization rule to sprechloop CLAUDE.md""
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T12:40:10Z
+completed: 2026-02-18T12:48:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T13:42:26+01:00
+last_commit: 2026-02-18T13:42:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Codify L-051/L-052 — one bug = one task + register gaps before fixing
+
+# Key outcomes
+outcomes:
+  - "\"One bug = one task\" rule added to framework CLAUDE.md Task Sizing Rules"
+  - "\"One bug = one task\" rule added to lib/templates/claude-project.md"
+  - "\"One bug = one task\" rule added to sprechloop CLAUDE.md"
+  - "\"Register first, fix second\" protocol added to framework CLAUDE.md Working with Tasks"
+  - "\"Register first, fix second\" protocol added to sprechloop CLAUDE.md Working with Tasks"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Codify L-051/L-052 — one bug = one task + register gaps before fixing"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/working/focus.yaml"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-153-sync-task-atomization-rule-to-sprechloop.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T13:42:26"
+    action: "T-153: Codify L-051/L-052 — one bug = one task + register gaps before fixing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 4
+  lines_added: 64
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-153-sync-task-atomization-rule-to-sprechloop.md
+generated_by: context-agent-hybrid
