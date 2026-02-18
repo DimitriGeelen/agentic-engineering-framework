@@ -28,6 +28,13 @@
             margin-right: 1rem;
             text-decoration: none;
             color: var(--pico-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        nav.site-nav .brand img {
+            height: 1.4rem;
+            width: auto;
         }
         nav.site-nav .brand:hover { text-decoration: none; opacity: 0.85; }
         nav.site-nav .spacer { flex: 1; }
@@ -140,7 +147,7 @@
         <ul>
             <li>
                 <a href="{{ url_for('core.index') }}" class="brand"
-                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Watchtower</a>
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">Watchtower</a>
             </li>
 
             {% for group_name, items in nav_groups %}
