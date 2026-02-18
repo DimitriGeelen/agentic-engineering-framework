@@ -25,11 +25,11 @@ CONTEXT_DIR="$PROJECT_ROOT/.context"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
-# Token thresholds (200K context window, compaction observed at ~160K)
-# Conservative due to ~10-30K lag in token readings
-TOKEN_WARN=100000      # ~50% — informational
-TOKEN_URGENT=130000    # ~65% — commit + consider checkpoint
-TOKEN_CRITICAL=150000  # ~75% — compaction imminent, handover NOW
+# Token thresholds (200K context window, autoCompact disabled — D-027)
+# 170K critical leaves 30K for handover routine (commit + handover generation)
+TOKEN_WARN=120000      # ~60% — informational
+TOKEN_URGENT=150000    # ~75% — commit + consider checkpoint
+TOKEN_CRITICAL=170000  # ~85% — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=5

@@ -430,16 +430,16 @@ Synthesizes current state from:
 
 ### Work Proposal Rule
 - **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
-- Below 50% (100K tokens): proceed normally
-- 50-65% (100K-130K): propose only small, bounded tasks; commit first
-- Above 65% (130K+): propose only wrap-up actions (commit, learnings, handover)
-- Above 75% (150K+): emergency handover immediately, no new work
+- Below 60% (120K tokens): proceed normally
+- 60-75% (120K-150K): propose only small, bounded tasks; commit first
+- Above 75% (150K+): propose only wrap-up actions (commit, learnings, handover)
+- Above 85% (170K+): handover immediately, no new work
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
 - **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
 - **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
-- Escalation ladder: **100K** ok→warn (note), **130K** warn→urgent (warning), **150K** urgent→critical (**BLOCK**)
+- Escalation ladder: **120K** ok→warn (note), **150K** warn→urgent (warning), **170K** urgent→critical (**BLOCK**)
 - At critical, only git commit, fw handover, and read operations are allowed through the gate
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`

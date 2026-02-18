@@ -26,10 +26,11 @@ CONTEXT_DIR="$PROJECT_ROOT/.context"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
-# Token thresholds (200K context window)
-TOKEN_WARN=100000      # ~50%
-TOKEN_URGENT=130000    # ~65%
-TOKEN_CRITICAL=150000  # ~75%
+# Token thresholds (200K context window, autoCompact disabled — D-027)
+# 170K critical leaves 30K for handover routine (commit + handover generation)
+TOKEN_WARN=120000      # ~60%
+TOKEN_URGENT=150000    # ~75%
+TOKEN_CRITICAL=170000  # ~85%
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=5
