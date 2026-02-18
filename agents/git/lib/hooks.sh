@@ -47,7 +47,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.2
+# VERSION=1.3
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -129,6 +129,29 @@ if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev
     echo ""
 fi
 
+# --- Circuit Breaker (T-128) ---
+# Block commits after N consecutive commits without user check-in
+COMMIT_COUNTER_FILE="$PROJECT_ROOT/.context/working/.commit-counter"
+CIRCUIT_BREAKER_THRESHOLD=3
+
+if [ -f "$COMMIT_COUNTER_FILE" ]; then
+    CONSECUTIVE=$(cat "$COMMIT_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+    CONSECUTIVE=${CONSECUTIVE:-0}
+    if [ "$CONSECUTIVE" -ge "$CIRCUIT_BREAKER_THRESHOLD" ]; then
+        echo ""
+        echo "CIRCUIT BREAKER: $CONSECUTIVE consecutive commits without user check-in"
+        echo ""
+        echo "Stop and check in with the user before continuing."
+        echo "Show them what you've done and ask if they want to continue."
+        echo ""
+        echo "After user confirms, reset the counter:"
+        echo "  echo 0 > $COMMIT_COUNTER_FILE"
+        echo ""
+        echo "Emergency bypass: git commit --no-verify"
+        exit 1
+    fi
+fi
+
 exit 0
 HOOK_EOF
 
@@ -140,7 +163,7 @@ HOOK_EOF
 # post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.2
+# VERSION=1.3
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -161,6 +184,17 @@ fi
 COUNTER_FILE="$PROJECT_ROOT/.context/working/.tool-counter"
 if [ -f "$COUNTER_FILE" ]; then
     echo "0" > "$COUNTER_FILE"
+fi
+
+# --- Circuit Breaker: increment commit counter (T-128) ---
+COMMIT_COUNTER_FILE="$PROJECT_ROOT/.context/working/.commit-counter"
+CURRENT_COUNT=$(cat "$COMMIT_COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+CURRENT_COUNT=${CURRENT_COUNT:-0}
+CURRENT_COUNT=$((CURRENT_COUNT + 1))
+echo "$CURRENT_COUNT" > "$COMMIT_COUNTER_FILE"
+if [ "$CURRENT_COUNT" -ge 2 ]; then
+    echo ""
+    echo "NOTE: $CURRENT_COUNT consecutive commits without user check-in (circuit breaker at 3)"
 fi
 
 # --- Handover staleness check ---

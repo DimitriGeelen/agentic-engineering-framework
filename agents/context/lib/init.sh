@@ -69,6 +69,9 @@ EOF
     # Reset tool counter (P-009 context protection)
     echo "0" > "$CONTEXT_DIR/working/.tool-counter"
 
+    # Reset commit counter (T-128 circuit breaker)
+    echo "0" > "$CONTEXT_DIR/working/.commit-counter"
+
     echo -e "${GREEN}=== Session Initialized ===${NC}"
     echo "Session ID: $session_id"
     echo "Start time: $timestamp"

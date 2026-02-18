@@ -520,6 +520,8 @@ Always present choices as a **numbered or lettered list** so the user can reply 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
+**Structural enforcement (T-128):** The commit-msg hook tracks consecutive commits via `.context/working/.commit-counter`. After 3 consecutive commits without user check-in, the hook **blocks** further commits. The post-commit hook shows a warning at 2. To reset after user confirms: `echo 0 > .context/working/.commit-counter`. The counter also resets on `fw context init`.
+
 ### Inception Discipline
 When the active task has `workflow_type: inception`:
 1. **State the phase** — Say "This is an inception/exploration task" before doing any work
