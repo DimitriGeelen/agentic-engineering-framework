@@ -397,4 +397,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-050
+    learning: "Compaction cascade: without budget gate, heavy code generation fills context repeatedly — each compaction triggers emergency handover + commit, but CLAUDE.md (29KB) + resume context + summary leaves near-zero headroom, causing immediate re-compaction. Sprechloop had 14 cascading compactions in 13 minutes building 7 modules. Root cause: G-001 (missing budget hooks). Mitigated by: (1) G-001 fix — budget gate now wired for all projects via fw init, (2) T-148 — timeline collapses emergency runs + pre-compact deduplicates commits within 5 min, (3) budget gate blocks work at 75% before hard compaction wall."
+    source: T-148 investigation
+    task: T-148
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
