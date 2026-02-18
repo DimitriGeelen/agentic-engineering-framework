@@ -7,7 +7,7 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:27Z
@@ -19,23 +19,25 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-158 inception GO: 44 bash scripts (10,182 LOC), zero test framework. Audit at `/tmp/T-158-bash-audit.md`.
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] bats-core installed and functional (`bats --version`)
+- [x] `tests/` directory structure: `unit/`, `integration/`, `fixtures/`
+- [x] `tests/test_helper.bash` with common setup (FRAMEWORK_ROOT, temp dirs, cleanup)
+- [x] At least 1 sample unit test passes (`bats tests/unit/`)
+- [x] `fw test` command runs all bats tests and reports results
+- [x] ShellCheck installed and functional (`shellcheck --version`)
+- [x] `fw test --lint` runs ShellCheck on all framework `.sh` files
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bats --version
+shellcheck --version
+bats tests/unit/
+fw test --lint 2>&1 | head -5
+fw test 2>&1 | head -10
 
 ## Decisions
 

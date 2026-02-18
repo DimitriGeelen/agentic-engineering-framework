@@ -147,7 +147,7 @@ show_help() {
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
-    echo -e "  ${GREEN}test${NC}                  Run framework test suite"
+    echo -e "  ${GREEN}test${NC} [suite]           Run tests (all|unit|integration|web|lint)"
     echo -e "  ${GREEN}version${NC}              Show version information"
     echo -e "  ${GREEN}help${NC}                 Show this help"
     echo ""
@@ -1438,12 +1438,119 @@ PYPREDICT
         esac
         ;;
     test)
-        if ! python3 -c "import pytest" 2>/dev/null; then
-            echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
-            echo "  pip install pytest" >&2
-            exit 1
-        fi
-        cd "$FRAMEWORK_ROOT" && exec python3 -m pytest web/test_app.py -v "$@"
+        _test_exit=0
+
+        case "${1:-all}" in
+            --lint|lint)
+                # ShellCheck linting
+                if ! command -v shellcheck >/dev/null 2>&1; then
+                    echo -e "${RED}ERROR: shellcheck is not installed${NC}" >&2
+                    exit 1
+                fi
+                echo -e "${BOLD}=== ShellCheck Lint ===${NC}"
+                _lint_files=()
+                while IFS= read -r -d '' f; do
+                    _lint_files+=("$f")
+                done < <(find "$FRAMEWORK_ROOT" -name "*.sh" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/test_helper*" -print0)
+                _lint_fail=0
+                _lint_pass=0
+                _lint_warn=0
+                for f in "${_lint_files[@]}"; do
+                    _rel="${f#$FRAMEWORK_ROOT/}"
+                    _sc_output=$(shellcheck -S warning "$f" 2>&1) && {
+                        _lint_pass=$((_lint_pass + 1))
+                    } || {
+                        _severity="warning"
+                        echo "$_sc_output" | grep -q "error" && _severity="error"
+                        if [ "$_severity" = "error" ]; then
+                            echo -e "  ${RED}FAIL${NC} $_rel"
+                            _lint_fail=$((_lint_fail + 1))
+                        else
+                            echo -e "  ${YELLOW}WARN${NC} $_rel"
+                            _lint_warn=$((_lint_warn + 1))
+                        fi
+                        echo "$_sc_output" | head -5 | sed 's/^/       /'
+                    }
+                done
+                echo ""
+                echo -e "${BOLD}Lint:${NC} ${_lint_pass} pass, ${_lint_warn} warn, ${_lint_fail} fail (${#_lint_files[@]} files)"
+                [ "$_lint_fail" -gt 0 ] && _test_exit=1
+                ;;
+            --unit|unit)
+                # Bats unit tests only
+                if ! command -v bats >/dev/null 2>&1; then
+                    echo -e "${RED}ERROR: bats is not installed${NC}" >&2
+                    exit 1
+                fi
+                echo -e "${BOLD}=== Bats Unit Tests ===${NC}"
+                bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                ;;
+            --integration|integration)
+                # Bats integration tests only
+                if ! command -v bats >/dev/null 2>&1; then
+                    echo -e "${RED}ERROR: bats is not installed${NC}" >&2
+                    exit 1
+                fi
+                echo -e "${BOLD}=== Bats Integration Tests ===${NC}"
+                if [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
+                    bats "$FRAMEWORK_ROOT/tests/integration/" || _test_exit=1
+                else
+                    echo "  No integration tests found."
+                fi
+                ;;
+            --web|web)
+                # Pytest web tests
+                if ! python3 -c "import pytest" 2>/dev/null; then
+                    echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
+                    exit 1
+                fi
+                echo -e "${BOLD}=== Web Tests (pytest) ===${NC}"
+                cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                ;;
+            all)
+                # Run everything
+                echo -e "${BOLD}=== Framework Test Suite ===${NC}"
+                echo ""
+
+                # 1. Bats unit tests
+                if command -v bats >/dev/null 2>&1; then
+                    echo -e "${BOLD}--- Bats Unit Tests ---${NC}"
+                    bats "$FRAMEWORK_ROOT/tests/unit/" || _test_exit=1
+                    echo ""
+                else
+                    echo -e "${YELLOW}SKIP: bats not installed${NC}"
+                fi
+
+                # 2. Bats integration tests
+                if command -v bats >/dev/null 2>&1; then
+                    if [ -d "$FRAMEWORK_ROOT/tests/integration/" ] && ls "$FRAMEWORK_ROOT/tests/integration/"*.bats >/dev/null 2>&1; then
+                        echo -e "${BOLD}--- Bats Integration Tests ---${NC}"
+                        bats "$FRAMEWORK_ROOT/tests/integration/" || _test_exit=1
+                        echo ""
+                    fi
+                fi
+
+                # 3. Pytest web tests
+                if python3 -c "import pytest" 2>/dev/null; then
+                    echo -e "${BOLD}--- Web Tests (pytest) ---${NC}"
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
+                    echo ""
+                else
+                    echo -e "${YELLOW}SKIP: pytest not installed${NC}"
+                fi
+                ;;
+            *)
+                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|lint]"
+                echo ""
+                echo "  all           Run all tests (default)"
+                echo "  unit          Bats unit tests only"
+                echo "  integration   Bats integration tests only"
+                echo "  web           Pytest web tests only"
+                echo "  lint          ShellCheck linting on all .sh files"
+                exit 0
+                ;;
+        esac
+        exit $_test_exit
         ;;
     version|-v|--version)
         show_version
