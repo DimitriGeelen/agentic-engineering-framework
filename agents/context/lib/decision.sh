@@ -79,6 +79,7 @@ EOF
     local entry="
   - id: $id
     decision: \"$decision\"
+    scope: project
     date: $date
     task: ${task:-unknown}
     rationale: \"${rationale:-Not specified}\""

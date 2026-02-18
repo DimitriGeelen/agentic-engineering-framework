@@ -105,6 +105,7 @@ EOF
     local entry="  - id: $id
     pattern: \"$pattern_name\"
     description: \"${description:-$pattern_name}\"
+    scope: project
     learned_from: ${task:-unknown}
     date_learned: $date"
 

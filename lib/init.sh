@@ -127,28 +127,55 @@ FYAML
     echo -e "  ${GREEN}OK${NC}  .framework.yaml"
 
     # --- Create empty project memory files ---
-    if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "${force:-false}" = true ]; then
-        cat > "$target_dir/.context/project/patterns.yaml" << 'PYAML'
-# Project Patterns - Learned from experience
-# Categories: failure, success, workflow
-# Added via: fw context add-pattern <type> "name" --task T-XXX
+    # --- Seed governance files from framework (universal items) ---
+    # Practices, decisions, and patterns are seeded with universal framework
+    # governance data. Items marked scope: universal apply to all projects.
+    # Project-specific items can be added via fw context add-* commands.
+    # See T-164 for the analysis behind what gets inherited.
 
-failure_patterns: []
-
-success_patterns: []
-
-workflow_patterns: []
-PYAML
-        echo -e "  ${GREEN}OK${NC}  patterns.yaml"
+    if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "${force:-false}" = true ]; then
+        if [ -f "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" ]; then
+            cp "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" "$target_dir/.context/project/practices.yaml"
+            echo -e "  ${GREEN}OK${NC}  practices.yaml (10 universal practices seeded)"
+        else
+            cat > "$target_dir/.context/project/practices.yaml" << 'PRAML'
+# Project Practices - Graduated learnings (3+ applications)
+# Promoted via: fw promote L-XXX --name "practice name" --directive D1
+practices: []
+PRAML
+            echo -e "  ${YELLOW}WARN${NC}  practices.yaml (empty — seed file not found)"
+        fi
     fi
 
     if [ ! -f "$target_dir/.context/project/decisions.yaml" ] || [ "${force:-false}" = true ]; then
-        cat > "$target_dir/.context/project/decisions.yaml" << 'DYAML'
+        if [ -f "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" ]; then
+            cp "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" "$target_dir/.context/project/decisions.yaml"
+            echo -e "  ${GREEN}OK${NC}  decisions.yaml (18 universal decisions seeded)"
+        else
+            cat > "$target_dir/.context/project/decisions.yaml" << 'DYAML'
 # Project Decisions - Architectural choices with rationale
 # Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 decisions:
 DYAML
-        echo -e "  ${GREEN}OK${NC}  decisions.yaml"
+            echo -e "  ${YELLOW}WARN${NC}  decisions.yaml (empty — seed file not found)"
+        fi
+    fi
+
+    if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "${force:-false}" = true ]; then
+        if [ -f "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" ]; then
+            cp "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" "$target_dir/.context/project/patterns.yaml"
+            echo -e "  ${GREEN}OK${NC}  patterns.yaml (12 universal patterns seeded)"
+        else
+            cat > "$target_dir/.context/project/patterns.yaml" << 'PYAML'
+# Project Patterns - Learned from experience
+# Categories: failure, success, workflow
+# Added via: fw context add-pattern <type> "name" --task T-XXX
+failure_patterns: []
+success_patterns: []
+workflow_patterns: []
+PYAML
+            echo -e "  ${YELLOW}WARN${NC}  patterns.yaml (empty — seed file not found)"
+        fi
     fi
 
     if [ ! -f "$target_dir/.context/project/learnings.yaml" ] || [ "${force:-false}" = true ]; then
@@ -158,15 +185,6 @@ DYAML
 learnings:
 LYAML
         echo -e "  ${GREEN}OK${NC}  learnings.yaml"
-    fi
-
-    if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "${force:-false}" = true ]; then
-        cat > "$target_dir/.context/project/practices.yaml" << 'PRAML'
-# Project Practices - Graduated learnings (3+ applications)
-# Promoted via: fw promote L-XXX --name "practice name" --directive D1
-practices: []
-PRAML
-        echo -e "  ${GREEN}OK${NC}  practices.yaml"
     fi
 
     if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "${force:-false}" = true ]; then

@@ -289,6 +289,7 @@ elif subcmd.startswith('L-'):
         'derived_from': directive,
         'description': learning.get('learning', ''),
         'anti_pattern': learning.get('context', ''),
+        'scope': 'project',
         'origin_task': learning.get('task', ''),
         'origin_date': str(learning.get('date', datetime.now().strftime('%Y-%m-%d'))),
         'promoted_from': learning_id,
