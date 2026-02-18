@@ -1,4 +1,21 @@
 <style>
+/* ── Full-width override for tasks page ────────────────── */
+main.container:has(.kanban-board),
+main.container:has(.task-actions) {
+    max-width: 100% !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+/* Tighter header for tasks page */
+.tasks-page-header {
+    display: flex !important;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.tasks-page-header h1 { margin: 0 !important; font-size: 1.75rem; }
+.tasks-page-header p { color: var(--pico-muted-color); margin: 0 !important; font-size: 0.95rem; }
+
 /* ── View Toggle ────────────────────────────────────────── */
 .view-toggle {
     display: inline-flex;
@@ -40,7 +57,7 @@
 
 /* ── Create Task Form ───────────────────────────────────── */
 .create-task-panel {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 .create-task-panel summary {
     cursor: pointer;
@@ -82,13 +99,13 @@
 /* ── Kanban Board ───────────────────────────────────────── */
 .kanban-board {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
     align-items: start;
 }
 @media (max-width: 992px) {
     .kanban-board {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 @media (max-width: 576px) {
@@ -98,17 +115,18 @@
 }
 
 .kanban-column {
-    min-height: 8rem;
+    min-height: 4rem;
     background: var(--pico-card-background-color);
     border: 1px solid var(--pico-muted-border-color);
     border-radius: var(--pico-border-radius);
-    padding: 0.75rem;
+    padding: 0.5rem;
+    overflow: hidden;
 }
 .kanban-column-header {
     font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.35rem;
     border-bottom: 2px solid var(--pico-muted-border-color);
     display: flex;
     align-items: center;
@@ -136,9 +154,9 @@
 
 /* ── Kanban Cards ───────────────────────────────────────── */
 .kanban-card {
-    margin: 0 0 0.5rem 0;
-    padding: 0.6rem 0.75rem;
-    font-size: 0.85rem;
+    margin: 0 0 0.35rem 0;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
     border-radius: var(--pico-border-radius);
     border: 1px solid var(--pico-muted-border-color);
     background: var(--pico-background-color);
@@ -160,7 +178,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
+}
+/* ── Completed column cap ──────────────────────────────── */
+.kanban-column[data-status="work-completed"] .kanban-card:nth-child(n+12) {
+    display: none;
+}
+.kanban-overflow-note {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color);
+    text-align: center;
+    padding: 0.25rem 0;
+    font-style: italic;
 }
 .kanban-card-id {
     font-weight: 700;
@@ -173,9 +202,13 @@
 }
 .kanban-card-name {
     display: block;
-    margin-bottom: 0.35rem;
-    line-height: 1.3;
+    margin-bottom: 0.2rem;
+    line-height: 1.25;
     color: var(--pico-color);
+    font-size: 0.78rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .kanban-card-meta {
     display: flex;
@@ -308,22 +341,16 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 }
 </style>
 
-<div class="page-header">
+<div class="tasks-page-header">
     <h1>Tasks</h1>
     <p>{{ tasks|length }} tasks</p>
-</div>
-
-<!-- Task Actions Bar -->
-<div class="task-actions">
-    <div class="task-actions-left">
-        <div class="view-toggle">
+    <div class="view-toggle">
             <a href="/tasks?view=board"
                hx-get="/tasks?view=board" hx-target="#content" hx-push-url="true"
                class="{% if view == 'board' %}active{% endif %}">Board</a>
             <a href="/tasks?view=list"
                hx-get="/tasks?view=list" hx-target="#content" hx-push-url="true"
                class="{% if view == 'list' %}active{% endif %}">List</a>
-        </div>
     </div>
 </div>
 
@@ -400,7 +427,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                 </select>
             </form>
         </div>
-        <span class="kanban-card-name">{{ task.name[:50] }}{% if task.name|length > 50 %}...{% endif %}</span>
+        <span class="kanban-card-name" title="{{ task.name }}">{{ task.name }}</span>
         <div class="kanban-card-meta">
             <form hx-post="/api/task/{{ task.id }}/type" style="margin:0;padding:0;display:inline;"
                   hx-target="closest .kanban-card" hx-swap="none">
@@ -472,16 +499,24 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {% endfor %}
     </div>
 
-    <!-- Completed -->
+    <!-- Completed (capped at 10, most recent first) -->
     <div class="kanban-column" data-status="work-completed">
         <div class="kanban-column-header">
             Completed <span class="count">({{ completed|length }})</span>
         </div>
-        {% for task in completed %}
+        {% for task in completed[:10] %}
         {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
+        {% if completed|length > 10 %}
+        <div class="kanban-overflow-note">
+            <a href="/tasks?view=list&status=work-completed"
+               hx-get="/tasks?view=list&status=work-completed" hx-target="#content" hx-push-url="true">
+                +{{ completed|length - 10 }} more &rarr;
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -496,7 +531,9 @@ document.addEventListener('htmx:afterRequest', function(event) {
         var select = form.querySelector('select');
         if (select && select.name === 'status') {
             // Status change — reload whole board since card moves columns
-            htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'});
+            htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'}).then(function() {
+                window.scrollTo(0, 0);
+            });
         }
         return;
     }

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-167: Kanban UI creature comforts — equal columns, full-width, project label right, status refresh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T17:20:58Z
+# ============================================================================
+
+task_id: T-167
+task_name: "Kanban UI creature comforts — equal columns, full-width, project label right, status refresh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T16:11:42Z
+completed: 2026-02-18T17:20:55Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-18T17:58:48+01:00
+last_commit: 2026-02-18T17:58:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  WIP — kanban UI improvements analysis complete, changes ready to apply
+
+# Key outcomes
+outcomes:
+  - "Kanban columns equal 25% width (minmax(0, 1fr))"
+  - "Full-width layout overriding Pico container max-width"
+  - "Project name label moved to right side of ambient strip"
+  - "Auto-refresh board on status change with scroll to top"
+  - "Compact cards (reduced padding, ellipsis truncation)"
+  - "Completed column capped at 10 with \"+N more\" link"
+  - "Compact page header (title + count + toggle inline)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-02-18.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-167-kanban-ui-creature-comforts--equal-colum.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T17:58:48"
+    action: "T-167: WIP — kanban UI improvements analysis complete, changes ready to apply"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 1
+  files_changed: 6
+  lines_added: 13
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-167-kanban-ui-creature-comforts--equal-colum.md
+generated_by: context-agent-hybrid

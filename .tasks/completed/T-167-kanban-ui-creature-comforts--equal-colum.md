@@ -4,38 +4,39 @@ name: "Kanban UI creature comforts — equal columns, full-width, project label 
 description: >
   Batch of 4 small UI tweaks: (1) Kanban columns equal 25% width, (2) Full-width layout using max screen space aligned with Watchtower header, (3) Move project name label to right side of ambient strip, (4) Auto-refresh board on status change with scroll to top not bottom
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: next
 tags: []
 related_tasks: []
 created: 2026-02-18T16:11:42Z
-last_update: 2026-02-18T16:57:17Z
-date_finished: null
+last_update: 2026-02-18T17:20:55Z
+date_finished: 2026-02-18T17:20:55Z
 ---
 
 # T-167: Kanban UI creature comforts — equal columns, full-width, project label right, status refresh
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Batch of 4 kanban UI tweaks to improve screen real estate at 1920x1080.
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Kanban columns equal 25% width (minmax(0, 1fr))
+- [x] Full-width layout overriding Pico container max-width
+- [x] Project name label moved to right side of ambient strip
+- [x] Auto-refresh board on status change with scroll to top
+- [x] Compact cards (reduced padding, ellipsis truncation)
+- [x] Completed column capped at 10 with "+N more" link
+- [x] Compact page header (title + count + toggle inline)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+curl -sf http://localhost:3000/tasks?view=board | grep -q "tasks-page-header"
+curl -sf http://localhost:3000/tasks?view=board | grep -q "minmax(0, 1fr)"
+curl -sf http://localhost:3000/tasks?view=board | grep -q "scrollTo(0, 0)"
+curl -sf http://localhost:3000/tasks?view=board | grep -q "+152 more"
 
 ## Decisions
 
@@ -57,3 +58,6 @@ date_finished: null
 
 ### 2026-02-18T16:57:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-18T17:20:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
