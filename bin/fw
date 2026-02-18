@@ -128,6 +128,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (fast, non-interactive)"
+    echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${GREEN}setup${NC} [dir]          Guided 6-step project onboarding wizard"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
@@ -166,6 +167,7 @@ show_help() {
     echo '  fw task create --name "Fix bug" --type build --owner human'
     echo "  fw resume status"
     echo "  fw init /path/to/project --provider claude"
+    echo "  fw upgrade /path/to/project --dry-run"
     echo "  fw harvest /path/to/project --dry-run"
 }
 
@@ -825,6 +827,11 @@ print(len(tier0))
     init)
         source "$FW_LIB_DIR/init.sh"
         do_init "$@"
+        ;;
+    upgrade)
+        source "$FW_LIB_DIR/init.sh"
+        source "$FW_LIB_DIR/upgrade.sh"
+        do_upgrade "$@"
         ;;
     setup)
         source "$FW_LIB_DIR/setup.sh"
