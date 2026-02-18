@@ -1,6 +1,6 @@
 ---
 id: T-131
-name: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions
+name: "Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions"
 description: >
   Watchtower Knowledge nav (Learnings, Graduation, Patterns, Decisions) shows empty when viewing a project. Investigate: (1) Should framework-level knowledge (learnings.yaml, patterns.yaml, decisions.yaml from the framework repo) be inherited/visible in project Watchtower views? (2) Should projects auto-create seed knowledge from framework? (3) Should there be a fallback chain: project knowledge → framework knowledge? The framework has 40+ learnings, 7 failure patterns, and 15+ decisions that are relevant to ALL projects using it.
 

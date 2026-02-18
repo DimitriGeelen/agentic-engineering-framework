@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-143
-task_name: ""Fix create-task.sh: quote name field to prevent YAML errors from colons""
+task_name: "Fix create-task.sh: quote name field to prevent YAML errors from colons"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 

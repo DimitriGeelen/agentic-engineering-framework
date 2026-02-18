@@ -145,8 +145,11 @@ def task_detail(task_id):
     episodic = None
     episodic_file = PROJECT_ROOT / ".context" / "episodic" / f"{task_id}.yaml"
     if episodic_file.exists():
-        with open(episodic_file) as f:
-            episodic = yaml.safe_load(f)
+        try:
+            with open(episodic_file) as f:
+                episodic = yaml.safe_load(f)
+        except yaml.YAMLError:
+            episodic = None
 
     status_options = ["captured", "started-work", "issues", "work-completed"]
 

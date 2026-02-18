@@ -82,7 +82,7 @@ do_generate_episodic() {
     # =========================================================================
     # Extract frontmatter fields
     # =========================================================================
-    local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
+    local task_name=$(grep "^name:" "$task_file" | sed 's/name: //;s/^"//;s/"$//')
     local workflow_type=$(grep "^workflow_type:" "$task_file" | sed 's/workflow_type: //')
     local created=$(grep "^created:" "$task_file" | sed 's/created: //')
     local last_update=$(grep "^last_update:" "$task_file" | sed 's/last_update: //')

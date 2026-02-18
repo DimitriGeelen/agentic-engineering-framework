@@ -212,7 +212,7 @@ else
     cat > "$FILEPATH" << EOF
 ---
 id: $TASK_ID
-name: $NAME
+name: "$NAME"
 description: >
   $DESCRIPTION
 status: $STATUS

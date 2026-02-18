@@ -1,6 +1,6 @@
 ---
 id: T-045
-name: Web UI foundation: Flask + htmx + fw serve
+name: "Web UI foundation: Flask + htmx + fw serve"
 description: >
   Set up the web UI project structure. Python Flask backend, htmx (single 14kb JS file) for interactivity, server-rendered HTML. Add fw serve command to bin/fw that starts local server on localhost:3000. Basic layout with navigation matching the page set: Dashboard, Project, Directives, Timeline, Tasks, Decisions, Learnings, Gaps, Search. No page content yet — just skeleton with nav and routing. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Technology Decision (Python + htmx), Four-Layer Architecture, Web UI Pages (full set), Architecture diagram.
 status: work-completed

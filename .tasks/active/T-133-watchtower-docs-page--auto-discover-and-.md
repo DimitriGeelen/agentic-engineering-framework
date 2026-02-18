@@ -1,6 +1,6 @@
 ---
 id: T-133
-name: Watchtower: Docs page — auto-discover and surface project design docs
+name: "Watchtower: Docs page — auto-discover and surface project design docs"
 description: >
   Watchtower Docs nav link exists but page is empty. Investigate: (1) Auto-discover docs from docs/ and docs/plans/ directories (design docs, inception plans, ADRs). (2) Surface CLAUDE.md and FRAMEWORK.md as top-level project docs. (3) Index docs with metadata (title, date, related task, type). (4) For projects like sprechloop: the inception plan (1820 lines) and design doc (339 lines) should automatically appear here. Consider: should this be a file-system scan on page load, or a build-time index?
 

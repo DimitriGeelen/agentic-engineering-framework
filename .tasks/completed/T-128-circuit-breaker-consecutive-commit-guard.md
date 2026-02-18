@@ -1,6 +1,6 @@
 ---
 id: T-128
-name: Circuit breaker: consecutive-commit guardrail
+name: "Circuit breaker: consecutive-commit guardrail"
 description: >
   Addresses O-008. PostToolUse hook counts consecutive agent commits without user input. Warns after N.
 status: work-completed

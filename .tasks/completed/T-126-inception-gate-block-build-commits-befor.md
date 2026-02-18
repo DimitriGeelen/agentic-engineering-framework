@@ -1,6 +1,6 @@
 ---
 id: T-126
-name: Inception gate: block build commits before fw inception decide
+name: "Inception gate: block build commits before fw inception decide"
 description: >
   Addresses O-003, O-005. MOST CRITICAL. Structural gate in commit-msg hook for inception tasks.
 status: work-completed

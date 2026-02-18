@@ -1,6 +1,6 @@
 ---
 id: T-129
-name: Inception template: Technical Constraints section
+name: "Inception template: Technical Constraints section"
 description: >
   Addresses O-010. Add mandatory Technical Constraints section to inception.md template. Forces agent to enumerate platform/browser/network constraints before building.
 status: work-completed

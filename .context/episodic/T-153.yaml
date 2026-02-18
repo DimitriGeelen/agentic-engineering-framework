@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-153
-task_name: ""Sync task atomization rule to sprechloop CLAUDE.md""
+task_name: "Sync task atomization rule to sprechloop CLAUDE.md"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 

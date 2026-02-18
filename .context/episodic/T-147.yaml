@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-147
-task_name: ""Fix G-002: Auto-detect untracked handover open questions at resume + audit""
+task_name: "Fix G-002: Auto-detect untracked handover open questions at resume + audit"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 

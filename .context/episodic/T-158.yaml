@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-158
-task_name: ""Testing strategy for Agentic Engineering Framework""
+task_name: "Testing strategy for Agentic Engineering Framework"
 workflow_type: inception
 enrichment_status: complete  # AC checked + decisions recorded
 

@@ -1,6 +1,6 @@
 ---
 id: T-097
-name: Deep reflection: Type A multi-agent optimization and specialized sub-agents
+name: "Deep reflection: Type A multi-agent optimization and specialized sub-agents"
 description: >
   Deep reflection: Type A multi-agent optimization and specialized sub-agents
 

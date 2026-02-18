@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-145
-task_name: ""Budget gate locks fresh sessions after compaction — JSONL accumulates""
+task_name: "Budget gate locks fresh sessions after compaction — JSONL accumulates"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 

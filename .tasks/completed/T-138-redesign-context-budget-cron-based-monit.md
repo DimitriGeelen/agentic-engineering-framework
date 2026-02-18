@@ -1,6 +1,6 @@
 ---
 id: T-138
-name: Redesign context budget: cron-based monitor + PreToolUse enforcement
+name: "Redesign context budget: cron-based monitor + PreToolUse enforcement"
 description: >
   Redesign context budget: cron-based monitor + PreToolUse enforcement
 status: work-completed

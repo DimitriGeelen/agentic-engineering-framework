@@ -1,6 +1,6 @@
 ---
 id: T-125
-name: First-session orientation: detect empty state, guide new users
+name: "First-session orientation: detect empty state, guide new users"
 description: >
   Addresses O-001, O-004. Add first-session detection to context.sh init and resume.sh quick.
 status: work-completed
