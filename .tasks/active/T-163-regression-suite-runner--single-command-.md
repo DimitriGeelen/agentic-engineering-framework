@@ -4,7 +4,7 @@ name: "Regression suite runner — single command to validate framework health"
 description: >
   Create fw test command that runs: ShellCheck on all .sh files, bats unit tests, bats integration tests, pytest web tests, test-tier0-patterns.py. Report: pass/fail/skip counts, coverage summary. Integrate with fw doctor (add test check). Consider pre-push hook integration. Ref: T-158
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -19,23 +19,20 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-159/T-160/T-161 built test infrastructure and tests. This task wires the single-command runner and doctor integration.
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw test` runs all suites (unit + integration + web) — done in T-159
+- [x] `fw test unit` / `fw test integration` / `fw test web` / `fw test lint` — done in T-159
+- [x] `fw doctor` reports test infrastructure status (bats count, shellcheck)
+- [x] `fw test` help shows available sub-commands
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+fw doctor 2>&1 | grep -q "Test infrastructure"
+fw test unit
+fw test help 2>&1 | grep -q "integration"
 
 ## Decisions
 
