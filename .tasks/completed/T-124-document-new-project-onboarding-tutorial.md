@@ -6,15 +6,15 @@ description: >
   Protocol: fresh session → observe → document O-XXX → analyze → fix → verify → repeat.
   Done when two consecutive cycles produce zero new P0/P1 observations.
   Tutorial documentation is a downstream task, spawned only on GO decision.
-status: started-work
+status: work-completed
 workflow_type: inception
 horizon: now
 owner: human
 tags: [onboarding, validation, sprechloop]
 related_tasks: [T-125, T-126, T-127, T-128, T-129]
 created: 2026-02-17T19:06:03Z
-last_update: 2026-02-17T20:06:10Z
-date_finished: null
+last_update: 2026-02-18T09:44:40Z
+date_finished: 2026-02-18T09:44:40Z
 ---
 
 # T-124: Validate framework new-project onboarding via live sprechloop experiment
@@ -59,10 +59,10 @@ See `docs/cycle2-protocol.md` for detailed protocol.
 
 ## Acceptance Criteria
 
-- [ ] All P0 observations have completed fix tasks (T-126, T-127)
-- [ ] Two consecutive PASS cycles (zero new P0/P1)
-- [ ] No regressions in final two cycles
-- [ ] Fresh `fw init` project includes all governance sections
+- [x] All P0 observations have completed fix tasks (T-126, T-127)
+- [x] Two consecutive PASS cycles (zero new P0/P1)
+- [x] No regressions in final two cycles
+- [x] Fresh `fw init` project includes all governance sections
 
 ## Go/No-Go Criteria
 
@@ -78,10 +78,11 @@ grep -q "Task Sizing" lib/templates/claude-project.md
 
 ## Decisions
 
-### 2026-02-17 — Re-scope from build to inception
-- **Chose:** Inception workflow with multi-cycle experiment protocol
-- **Why:** We're discovering what works, not building something already designed
-- **Rejected:** Keep as build task (wrong framing — we don't know what to build yet)
+**Decision**: GO
+
+**Rationale**: Two consecutive clean Watchtower audits (cycles 5-6). All 14 pages pass on sprechloop :3001. 6 cycles total: 4 FAIL (found and fixed 12+ bugs across init.sh, create-task.sh, knowledge capture, budget-gate), 2 PASS. Framework onboarding produces a fully functional monitored project.
+
+**Date**: 2026-02-18T09:43:43Z
 
 ## Evidence
 
@@ -100,3 +101,11 @@ grep -q "Task Sizing" lib/templates/claude-project.md
 ### 2026-02-17T20:15:00Z — re-scoped [human + agent]
 - **Action:** Re-scoped from build to inception after cycle 1 analysis
 - **Context:** 10 observations (3x P0), 3 root causes identified, 5 child tasks designed
+
+### 2026-02-18T09:43:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Two consecutive clean Watchtower audits (cycles 5-6). All 14 pages pass on sprechloop :3001. 6 cycles total: 4 FAIL (found and fixed 12+ bugs across init.sh, create-task.sh, knowledge capture, budget-gate), 2 PASS. Framework onboarding produces a fully functional monitored project.
+
+### 2026-02-18T09:44:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-124: Validate framework new-project onboarding via live sprechloop experiment
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T09:44:40Z
+# ============================================================================
+
+task_id: T-124
+task_name: "Validate framework new-project onboarding via live sprechloop experiment"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-17T19:06:03Z
+completed: 2026-02-18T09:44:40Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-02-17T20:42:22+01:00
+last_commit: 2026-02-18T07:19:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Sync CLAUDE.md template with framework CLAUDE.md (O-009 fix). Re-scope to inception, create child tasks T-125–T-129, document cycle 1. O-011 analysis paralysis — session burned on planning, zero implementation. Commit housekeeping from previous sessions. Cycle 2 findings — promote T-128, create T-136 and T-137. Cycle 3 protocol — test structural enforcement fixes
+
+# Key outcomes
+outcomes:
+  - "All P0 observations have completed fix tasks (T-126, T-127)"
+  - "Two consecutive PASS cycles (zero new P0/P1)"
+  - "No regressions in final two cycles"
+  - "Fresh `fw init` project includes all governance sections"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Cycle 3 protocol — test structural enforcement fixes"
+    source: git-mined
+  - description: "Sync CLAUDE.md template with framework CLAUDE.md (O-009 fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-111.yaml"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/cycle2-protocol.md"
+  - "docs/cycle3-protocol.md"
+  - "docs/observation-analysis.md"
+  - "docs/onboarding-cycles.md"
+  - "docs/onboarding-observations.md"
+  - "docs/task-structure-proposal.md"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-107-initialize-german-pronunciation-app-proj.md"
+  - ".tasks/active/T-124-document-new-project-onboarding-tutorial.md"
+  - ".tasks/active/T-125-first-session-orientation-detect-empty-s.md"
+  - ".tasks/active/T-126-inception-gate-block-build-commits-befor.md"
+  - ".tasks/active/T-127-claudemd-template-sync--behavioral-rules.md"
+  - ".tasks/active/T-128-circuit-breaker-consecutive-commit-guard.md"
+  - ".tasks/active/T-129-inception-template-technical-constraints.md"
+  - ".tasks/active/T-136-auto-trigger-handover-at-critical-contex.md"
+  - ".tasks/active/T-137-task-template-enforcement--require-ac-an.md"
+  - ".tasks/completed/T-111-autonomous-compact-resume-lifecycle.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T20:42:22"
+    action: "T-124: Sync CLAUDE.md template with framework CLAUDE.md (O-009 fix)"
+  - time: "2026-02-17T21:03:53"
+    action: "T-124: Re-scope to inception, create child tasks T-125–T-129, document cycle 1"
+  - time: "2026-02-17T21:06:10"
+    action: "T-124: O-011 analysis paralysis — session burned on planning, zero implementation"
+  - time: "2026-02-17T21:17:51"
+    action: "T-124: Commit housekeeping from previous sessions"
+  - time: "2026-02-18T00:54:56"
+    action: "T-124: Cycle 2 findings — promote T-128, create T-136 and T-137"
+  - time: "2026-02-18T07:19:59"
+    action: "T-124: Cycle 3 protocol — test structural enforcement fixes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 878 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [onboarding, validation, sprechloop]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 878
+  commits: 6
+  files_changed: 21
+  lines_added: 1065
+  lines_removed: 247
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-124-document-new-project-onboarding-tutorial.md
+generated_by: context-agent-hybrid
