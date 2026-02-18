@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-18
-timestamp: 2026-02-17T23:40:08Z
+timestamp: 2026-02-18T07:49:01Z
 summary:
-  pass: 19
-  warn: 8
+  pass: 20
+  warn: 2
   fail: 0
 findings:
   - level: PASS
@@ -16,27 +16,11 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 10 active tasks are valid"
-  - level: WARN
-    check: "Task T-134 has no acceptance criteria checkboxes"
-    mitigation: "Add '## Acceptance Criteria' with checkboxes to T-134-replace-superpowers-with-framework-nativ.md"
-  - level: WARN
-    check: "Task T-134 has no ## Verification section"
-    mitigation: "Add '## Verification' with shell commands to T-134-replace-superpowers-with-framework-nativ.md"
-  - level: WARN
-    check: "Task T-134 has unfilled placeholder in Context section"
-    mitigation: "Replace placeholder in T-134-replace-superpowers-with-framework-nativ.md with actual context"
-  - level: WARN
-    check: "Task T-135 has no acceptance criteria checkboxes"
-    mitigation: "Add '## Acceptance Criteria' with checkboxes to T-135-harden-audit-task-quality-checks--catch-.md"
-  - level: WARN
-    check: "Task T-135 has no ## Verification section"
-    mitigation: "Add '## Verification' with shell commands to T-135-harden-audit-task-quality-checks--catch-.md"
-  - level: WARN
-    check: "Task T-135 has unfilled placeholder in Context section"
-    mitigation: "Replace placeholder in T-135-harden-audit-task-quality-checks--catch-.md with actual context"
+    check: "All 7 active tasks are valid"
   - level: PASS
-    check: "Git traceability: 98% (321/327 commits reference tasks)"
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 98% (348/354 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -57,7 +41,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 125 episodic summaries have quality content"
+    check: "All 132 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
