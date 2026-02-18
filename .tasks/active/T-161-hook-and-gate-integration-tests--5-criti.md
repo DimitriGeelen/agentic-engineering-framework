@@ -4,7 +4,7 @@ name: "Hook and gate integration tests — 5 critical enforcement scripts"
 description: >
   Write integration tests for: budget-gate.sh, check-active-task.sh, check-tier0.sh (extend existing), checkpoint.sh, error-watchdog.sh. Requires mock JSONL transcripts, mock git repos, mock focus.yaml. These are critical path — 0% coverage currently. Ref: T-158, /tmp/T-158-hooks-and-bugs.md
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -19,23 +19,19 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Critical-path hooks with 0% test coverage. These enforce budget gating, task-first, tier-0, and error detection.
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Integration tests for `check-active-task.sh` (blocks Write/Edit without active task) — 19 tests
+- [x] Integration tests for `check-tier0.sh` (blocks destructive commands) — 34 tests
+- [x] Integration tests for `error-watchdog.sh` (detects bash errors in PostToolUse) — 23 tests
+- [x] All integration tests pass: `bats tests/integration/` — 76/76
+- [x] Minimum 25 test cases — 76 total
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bats tests/integration/
 
 ## Decisions
 
