@@ -179,6 +179,44 @@ AYAML
         echo -e "  ${GREEN}OK${NC}  assumptions.yaml"
     fi
 
+    if [ ! -f "$target_dir/.context/project/directives.yaml" ] || [ "${force:-false}" = true ]; then
+        cat > "$target_dir/.context/project/directives.yaml" << 'DRYAML'
+# Project Directives - Constitutional principles (priority order)
+# These are stable anchors — changes require human sovereignty approval
+
+directives:
+  - id: D1
+    name: "Antifragility"
+    statement: "The system must get stronger under stress, not merely survive it."
+    priority: 1
+
+  - id: D2
+    name: "Reliability"
+    statement: "The system must behave predictably and consistently under known conditions."
+    priority: 2
+
+  - id: D3
+    name: "Usability"
+    statement: "The framework must be a joy to use, extend, and debug."
+    priority: 3
+
+  - id: D4
+    name: "Portability"
+    statement: "The framework must not be captive to any single provider, language, or environment."
+    priority: 4
+DRYAML
+        echo -e "  ${GREEN}OK${NC}  directives.yaml"
+    fi
+
+    if [ ! -f "$target_dir/.context/project/gaps.yaml" ] || [ "${force:-false}" = true ]; then
+        cat > "$target_dir/.context/project/gaps.yaml" << 'GYAML'
+# Gaps Register — Spec-Reality gaps with decision triggers
+# Status: watching | decided-build | decided-simplify | decided-defer | closed
+gaps: []
+GYAML
+        echo -e "  ${GREEN}OK${NC}  gaps.yaml"
+    fi
+
     # --- Generate provider config ---
     echo ""
     echo -e "${YELLOW}Generating provider config...${NC}"
