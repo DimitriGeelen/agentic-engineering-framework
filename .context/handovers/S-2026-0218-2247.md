@@ -4,7 +4,7 @@ timestamp: 2026-02-18T21:47:57Z
 predecessor: S-2026-0218-2240
 tasks_active: [T-120, T-130, T-151, T-162, T-172, T-173, T-175, T-176, T-177, T-178, T-179, T-180, T-181, T-182]
 tasks_touched: [T-176, T-151, T-179, T-180, T-178, T-181, T-182, T-162, T-173, T-172, T-175, T-177, T-120, T-XXX, T-166, T-134, T-140, T-176, T-155, T-145, T-132, T-139, T-153, T-152, T-097, T-149, T-135, T-131, T-126, T-144, T-045, T-171, T-142, T-165, T-129, T-148, T-157, T-173, T-128, T-133, T-156, T-136, T-163, T-174, T-137, T-146, T-161, T-164, T-154, T-169, T-175, T-168, T-158, T-143, T-141, T-159, T-170, T-167, T-147, T-138, T-125, T-124, T-160]
-tasks_completed: []
+tasks_completed: [T-176, T-173, T-175]
 uncommitted_changes: 13
 owner: claude-code
 session_narrative: ""
@@ -14,113 +14,38 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed 3 post-compaction architecture tasks (T-176, T-173, T-175). Created T-181 inception (web UI inline editing). T-182 (handover reframing) attempted, reverted due to missing impact assessment, then redone properly — task file has full impact assessment and decisions, ready to execute next session. Note: T-173/T-175/T-176 show in active list but are actually completed.
 
 ## Work in Progress
 
 <!-- horizon: now -->
 
-### T-162: "Web edge case tests — subprocess timeouts, error parsing, malformed YAML"
-- **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-173: "Budget gate: always allow full handover, not just emergency skeleton"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-182: "Reframe handover messaging from emergency panic to calm wrap-up"
+- **Status:** started-work — impact assessment done, changes NOT yet executed
+- **Last action:** Full impact assessment completed. 4 files, string/comment changes only, zero logic. Three open questions decided. First attempt reverted after user caught missing review process.
+- **Next step:** Execute the string changes per impact assessment in task file, verify, complete
+- **Blockers:** None — just needs execution
+- **Insight:** Framework-level edits need explicit impact assessment before any changes
 
 ### T-181: "Web UI inline editing — edit tasks, docs, and artifacts in-browser"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** started-work (inception) — problem statement and spikes defined
+- **Next step:** Start Spike 1 (inventory editable surfaces)
 
-### T-182: "Reframe handover messaging from emergency panic to calm wrap-up"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-162: "Web edge case tests"
+- **Status:** captured — not touched
+
+### T-173, T-175, T-176: COMPLETED this session
+- T-176: Thresholds 100K/130K/150K → 120K/150K/170K
+- T-173: Wrap-up Write/Edit to .context/.tasks/.claude/ allowed at critical
+- T-175: Emergency mode removed, single handover type, --emergency deprecated
 
 <!-- horizon: next -->
 
-### T-151: "Investigate audit tasks as cronjobs"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-172: "Docs page — discover research docs, commands, and skills"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-175: "Eliminate emergency/full handover distinction — single handover"
-- **Status:** started-work (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-176: "Adjust budget gate thresholds for no-compaction architecture"
-- **Status:** started-work (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-177: "Clean up compact hooks for manual-only use"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-178: "Research artifact persistence — governance and enforcement"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-179: "Auto-restart mechanism — handover then exit then auto-resume"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-151, T-172, T-177, T-178, T-179: Not touched this session
 
 <!-- horizon: later -->
 
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-180: "MCP orphan reaper — detect and kill zombie MCP processes"
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-120, T-130, T-180: Parked
 
 ## Inception Phases
 
@@ -136,40 +61,33 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **Keep --checkpoint mode** — different purpose (mid-session snapshots), not emergency-related
+2. **No fw doctor task freshness check** — status quo adequate per empirical evidence
+3. **Keep auto-handover at critical** — agents can't be trusted on warnings alone (L-013/L-038)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **T-182 first attempt: editing framework files without impact assessment** — jumped into editing CLAUDE.md, budget-gate.sh, checkpoint.sh without first surveying blast radius or presenting changes for review. User caught it. Reverted with `git revert`. Redone properly with impact assessment in task file.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+None — T-182 is ready to execute with reviewed impact assessment.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- T-175 file still in .tasks/active/ despite being completed (stale copy from revert interaction — check and clean up)
+- Budget status cache can go stale after threshold changes — may need manual reset of .budget-status
+- **NEW LEARNING**: Framework-level edits (CLAUDE.md, hooks, agents) require impact assessment and user review before any changes. Record as learning/practice.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+**T-182: Execute the handover reframing** — impact assessment is done and in the task file. Just execute the 4-file string changes, verify, complete. Small bounded task (~10 min).
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Completed: T-176, T-173, T-175
+- Created: T-181 (inception), T-182 (with impact assessment)
+- Modified: budget-gate.sh, checkpoint.sh, handover.sh, pre-compact.sh, CLAUDE.md, lib/templates/claude-project.md, bin/fw, practices.yaml
 
 ## Recent Commits
 
