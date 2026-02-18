@@ -389,4 +389,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-049
+    learning: "Budget gate deadlock after compaction: stale .budget-status blocks fw context init (the reset command), creating circular lock. Fix: expand gate allowlist to include fw context init, fw resume, git status/log/diff; reset budget state in pre-compact.sh"
+    source: T-145 investigation
+    task: T-145
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
