@@ -39,7 +39,8 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - docs/reports/T-174-compaction-vs-handover.md  # Full 3-agent research + synthesis
+  - docs/reports/T-174-compaction-vs-handover.md  # Full 3-agent research + synthesis (compaction internals, gap analysis, architectural options)
+  - docs/reports/T-174-crash-resilience-analysis.md  # Crash resilience validation — task system as primary memory
 
 # Timeline (auto-mined from git log)
 git_timeline:
