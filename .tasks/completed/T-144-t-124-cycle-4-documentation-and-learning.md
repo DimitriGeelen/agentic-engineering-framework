@@ -4,38 +4,34 @@ name: "T-124 cycle 4 documentation and learnings"
 description: >
   T-124 cycle 4 documentation and learnings
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T09:16:23Z
-last_update: 2026-02-18T09:17:50Z
-date_finished: null
+last_update: 2026-02-18T09:37:48Z
+date_finished: 2026-02-18T09:37:48Z
 ---
 
 # T-144: T-124 cycle 4 documentation and learnings
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Document cycle 4 findings from T-124 onboarding experiment and record learnings. See `docs/onboarding-cycles.md`.
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cycle 4 documented in onboarding-cycles.md with bug table and verdict
+- [x] L-047 (YAML round-trip verification) recorded in learnings.yaml
+- [x] L-048 (quote colons in name field) recorded in learnings.yaml
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q "Cycle 4" docs/onboarding-cycles.md
+grep -q "L-047" .context/project/learnings.yaml
+grep -q "L-048" .context/project/learnings.yaml
 
 ## Decisions
 
@@ -54,3 +50,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-144-t-124-cycle-4-documentation-and-learning.md
 - **Context:** Initial task creation
+
+### 2026-02-18T09:37:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
