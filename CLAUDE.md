@@ -446,11 +446,10 @@ Synthesizes current state from:
 - If no transcript is available, fails open (PostToolUse fallback handles it)
 
 ### Critical Protocol
-At critical budget level, the session is wrapping up. Your remaining context is reserved for committing work and generating a handover. This is not an emergency — your task files already contain all essential state (decisions, AC, verification, code in git). The handover adds navigational convenience for the next session.
-
+- If you see a BUDGET GATE block: you are at critical. Only wrap-up work is allowed.
 - **Allowed:** git commit/add, fw handover, fw task update, Write/Edit to .context/.tasks/.claude/, reading files
 - **Blocked:** Write/Edit to source files, general Bash commands
-- Do not start new work — commit what you have, then handover
+- Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
 
 ## Sub-Agent Dispatch Protocol
 
