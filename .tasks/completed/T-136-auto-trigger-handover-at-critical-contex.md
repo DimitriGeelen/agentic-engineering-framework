@@ -3,15 +3,15 @@ id: T-136
 name: Auto-trigger handover at critical context threshold
 description: >
   checkpoint.sh fires warnings at 150K tokens but the agent ignores them. Sprechloop cycle 2 reached 152K with no handover. Change: at CRITICAL threshold, checkpoint.sh should auto-run 'fw handover --emergency --commit' instead of just printing a warning. The agent cannot be trusted to act on warnings — structural enforcement is required (L-013, L-038).
-status: started-work
+status: work-completed
 workflow_type: build
 horizon: now
 owner: human
 tags: []
 related_tasks: []
 created: 2026-02-17T23:49:33Z
-last_update: 2026-02-18T00:04:08Z
-date_finished: null
+last_update: 2026-02-18T06:17:01Z
+date_finished: 2026-02-18T06:17:01Z
 ---
 
 # T-136: Auto-trigger handover at critical context threshold
@@ -24,10 +24,10 @@ Sprechloop cycle 2: agent reached 152K tokens without triggering handover despit
 
 ## Acceptance Criteria
 
-- [ ] checkpoint.sh auto-runs `fw handover --emergency` at CRITICAL threshold
-- [ ] Re-entry guard prevents recursive handover triggering
-- [ ] Lock file is cleaned up after handover (success or failure)
-- [ ] Failure falls back to manual instructions
+- [x] checkpoint.sh auto-runs `fw handover --emergency` at CRITICAL threshold
+- [x] Re-entry guard prevents recursive handover triggering
+- [x] Lock file is cleaned up after handover (success or failure)
+- [x] Failure falls back to manual instructions
 
 ## Verification
 
@@ -47,3 +47,6 @@ grep -q 'rm -f.*handover_lock' agents/context/checkpoint.sh
 
 ### 2026-02-18T00:04:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-18T06:17:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

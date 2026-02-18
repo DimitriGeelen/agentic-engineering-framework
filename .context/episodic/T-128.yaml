@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-128: Circuit breaker: consecutive-commit guardrail
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T06:16:57Z
+# ============================================================================
+
+task_id: T-128
+task_name: "Circuit breaker: consecutive-commit guardrail"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-17T20:03:13Z
+completed: 2026-02-18T06:16:57Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-02-18T01:04:02+01:00
+last_commit: 2026-02-18T01:04:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Implement circuit breaker — consecutive-commit guardrail
+
+# Key outcomes
+outcomes:
+  - "post-commit hook increments `.commit-counter` after every commit"
+  - "post-commit hook shows NOTE at 2+ consecutive commits"
+  - "commit-msg hook BLOCKS at 3+ consecutive commits with clear instructions"
+  - "`fw context init` resets `.commit-counter` to 0"
+  - "Hook templates in `agents/git/lib/hooks.sh` match installed hooks"
+  - "CLAUDE.md documents the structural enforcement"
+  - "Template (`lib/templates/claude-project.md`) matches CLAUDE.md"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/init.sh"
+  - "agents/git/lib/hooks.sh"
+  - "CLAUDE.md"
+  - ".context/working/.commit-counter"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-128-circuit-breaker-consecutive-commit-guard.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T01:04:02"
+    action: "T-128: Implement circuit breaker — consecutive-commit guardrail"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 613 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 613
+  commits: 1
+  files_changed: 6
+  lines_added: 77
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-128-circuit-breaker-consecutive-commit-guard.md
+generated_by: context-agent-hybrid

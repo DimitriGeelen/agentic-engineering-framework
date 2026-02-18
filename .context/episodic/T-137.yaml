@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-137: Task template enforcement — require AC and Verification on creation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T06:17:05Z
+# ============================================================================
+
+task_id: T-137
+task_name: "Task template enforcement — require AC and Verification on creation"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-17T23:49:42Z
+completed: 2026-02-18T06:17:04Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-18T01:06:28+01:00
+last_commit: 2026-02-18T01:06:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Task template enforcement — AC and Verification on creation
+
+# Key outcomes
+outcomes:
+  - "create-task.sh default template includes `## Acceptance Criteria` with placeholder checkbox"
+  - "create-task.sh default template includes `## Verification` with comment examples"
+  - "update-task.sh warns on started-work transition if AC has placeholder text"
+  - "Warning does NOT block (warns only)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/create-task.sh"
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-137-task-template-enforcement--require-ac-an.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T01:06:28"
+    action: "T-137: Task template enforcement — AC and Verification on creation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 387 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 387
+  commits: 2
+  files_changed: 5
+  lines_added: 105
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-137-task-template-enforcement--require-ac-an.md
+generated_by: context-agent-hybrid

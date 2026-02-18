@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-136: Auto-trigger handover at critical context threshold
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T06:17:01Z
+# ============================================================================
+
+task_id: T-136
+task_name: "Auto-trigger handover at critical context threshold"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-17T23:49:33Z
+completed: 2026-02-18T06:17:01Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-18T01:05:12+01:00
+last_commit: 2026-02-18T01:05:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Auto-trigger emergency handover at critical context threshold
+
+# Key outcomes
+outcomes:
+  - "checkpoint.sh auto-runs `fw handover --emergency` at CRITICAL threshold"
+  - "Re-entry guard prevents recursive handover triggering"
+  - "Lock file is cleaned up after handover (success or failure)"
+  - "Failure falls back to manual instructions"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/checkpoint.sh"
+  - ".tasks/active/T-136-auto-trigger-handover-at-critical-contex.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T01:05:12"
+    action: "T-136: Auto-trigger emergency handover at critical context threshold"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 387 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 387
+  commits: 2
+  files_changed: 4
+  lines_added: 100
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-136-auto-trigger-handover-at-critical-contex.md
+generated_by: context-agent-hybrid

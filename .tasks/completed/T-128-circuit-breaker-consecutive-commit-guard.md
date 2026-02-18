@@ -3,15 +3,15 @@ id: T-128
 name: Circuit breaker: consecutive-commit guardrail
 description: >
   Addresses O-008. PostToolUse hook counts consecutive agent commits without user input. Warns after N.
-status: started-work
+status: work-completed
 workflow_type: build
 horizon: now
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-17T20:03:13Z
-last_update: 2026-02-18T00:01:55Z
-date_finished: null
+last_update: 2026-02-18T06:16:57Z
+date_finished: 2026-02-18T06:16:57Z
 ---
 
 # T-128: Circuit breaker: consecutive-commit guardrail
@@ -24,13 +24,13 @@ Sprechloop cycle 2 revealed: agent chained 6 tasks with zero user check-in over 
 
 ## Acceptance Criteria
 
-- [ ] post-commit hook increments `.commit-counter` after every commit
-- [ ] post-commit hook shows NOTE at 2+ consecutive commits
-- [ ] commit-msg hook BLOCKS at 3+ consecutive commits with clear instructions
-- [ ] `fw context init` resets `.commit-counter` to 0
-- [ ] Hook templates in `agents/git/lib/hooks.sh` match installed hooks
-- [ ] CLAUDE.md documents the structural enforcement
-- [ ] Template (`lib/templates/claude-project.md`) matches CLAUDE.md
+- [x] post-commit hook increments `.commit-counter` after every commit
+- [x] post-commit hook shows NOTE at 2+ consecutive commits
+- [x] commit-msg hook BLOCKS at 3+ consecutive commits with clear instructions
+- [x] `fw context init` resets `.commit-counter` to 0
+- [x] Hook templates in `agents/git/lib/hooks.sh` match installed hooks
+- [x] CLAUDE.md documents the structural enforcement
+- [x] Template (`lib/templates/claude-project.md`) matches CLAUDE.md
 
 ## Verification
 
@@ -59,3 +59,6 @@ grep -q 'T-128' CLAUDE.md
 
 ### 2026-02-18T00:01:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-18T06:16:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
