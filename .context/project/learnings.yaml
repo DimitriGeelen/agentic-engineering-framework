@@ -349,4 +349,28 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-044
+    learning: "Before building new controls, verify existing ones are wired up. The sprechloop knowledge gap was caused by create-task.sh using a hardcoded heredoc instead of default.md template — the rich template existed but was never applied. Diagnosis before invention."
+    source: unknown
+    task: T-140
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-045
+    learning: "Always add verification tests when implementing framework changes. A test that creates a task and checks for expected sections would have caught the template bypass immediately. Tests are structural enforcement for implementations."
+    source: unknown
+    task: T-140
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-046
+    learning: "Verification gate (P-011) treats HTML comments inside <!-- --> as executable commands. The extraction regex only skips lines starting with # — not HTML comment blocks. This caused inception task completion to fail on template guidance text. Need to fix the extraction in update-task.sh."
+    source: unknown
+    task: T-140
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
