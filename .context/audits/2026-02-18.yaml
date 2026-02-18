@@ -1,7 +1,7 @@
 # Audit Results - 2026-02-18
-timestamp: 2026-02-18T07:49:01Z
+timestamp: 2026-02-18T10:10:21Z
 summary:
-  pass: 20
+  pass: 21
   warn: 2
   fail: 0
 findings:
@@ -16,11 +16,11 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 7 active tasks are valid"
+    check: "All 5 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (348/354 commits reference tasks)"
+    check: "Git traceability: 97% (377/385 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -41,13 +41,15 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 132 episodic summaries have quality content"
+    check: "All 142 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
   - level: PASS
     check: "Gaps register: 1 watching, no triggers fired"
+  - level: PASS
+    check: "Handover open questions: none"
   - level: WARN
     check: "Learnings ready for promotion — review graduation candidates"
     mitigation: "Run: fw promote suggest"
