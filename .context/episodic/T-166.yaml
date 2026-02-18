@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-166: Implement governance inheritance in fw init — seed practices, decisions, and patterns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T14:38:28Z
+# ============================================================================
+
+task_id: T-166
+task_name: "Implement governance inheritance in fw init — seed practices, decisions, and patterns"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T14:32:22Z
+completed: 2026-02-18T14:38:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T15:38:11+01:00
+last_commit: 2026-02-18T15:38:11+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Implement governance inheritance — seed practices, decisions, patterns in fw init
+
+# Key outcomes
+outcomes:
+  - "Seed files created: `lib/seeds/{practices,decisions,patterns}.yaml` with scope tags"
+  - "`fw init` copies seeds instead of empty governance files"
+  - "New governance items default to `scope: project` (pattern.sh, decision.sh, promote.sh)"
+  - "Sprechloop retroactively seeded with universal governance"
+  - "All seed YAML files parse correctly (10 practices, 18 decisions, 12 patterns)"
+  - "`fw init --force` on test directory seeds governance correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Curated seed files in `lib/seeds/` with `scope: universal` tags"
+    rationale: "Explicit control over what gets inherited. No filter logic needed at init time. Forward-compatible — new items tagged `scope: project` by default, promoted to universal manually."
+    alternatives_rejected: ["Copy framework files and filter (fragile filter logic), Copy as-is (includes project-specific items), Reference symlinks (breaks portability)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/decision.sh"
+  - "agents/context/lib/pattern.sh"
+  - "lib/init.sh"
+  - "lib/promote.sh"
+  - "lib/seeds/decisions.yaml"
+  - "lib/seeds/patterns.yaml"
+  - "lib/seeds/practices.yaml"
+  - ".tasks/active/T-166-implement-governance-inheritance-in-fw-i.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T15:38:11"
+    action: "T-166: Implement governance inheritance — seed practices, decisions, patterns in fw init"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 8
+  lines_added: 526
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-166-implement-governance-inheritance-in-fw-i.md
+generated_by: context-agent-hybrid
