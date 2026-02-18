@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-165: Fix 20 broken Watchtower task links — YAML quoting bugs in task and episodic files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T14:05:24Z
+# ============================================================================
+
+task_id: T-165
+task_name: "Fix 20 broken Watchtower task links — YAML quoting bugs in task and episodic files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T14:02:02Z
+completed: 2026-02-18T14:05:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T15:05:00+01:00
+last_commit: 2026-02-18T15:05:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix 20 broken Watchtower task links — YAML quoting bugs
+
+# Key outcomes
+outcomes:
+  - "All 20 broken task links fixed (10 x 500, 10 x 404)"
+  - "Root cause fixed in episodic.sh (strip existing quotes before re-quoting)"
+  - "Root cause fixed in create-task.sh (quote name in fallback template)"
+  - "Defensive fix in tasks.py (try/except on episodic YAML loading)"
+  - "Full sweep: 164/164 task links return 200"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 20 broken Watchtower task links — YAML quoting bugs"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/episodic.sh"
+  - "agents/task-create/create-task.sh"
+  - ".context/episodic/T-143.yaml"
+  - ".context/episodic/T-144.yaml"
+  - ".context/episodic/T-145.yaml"
+  - ".context/episodic/T-146.yaml"
+  - ".context/episodic/T-147.yaml"
+  - ".context/episodic/T-148.yaml"
+  - ".context/episodic/T-149.yaml"
+  - ".context/episodic/T-152.yaml"
+  - ".context/episodic/T-153.yaml"
+  - ".context/episodic/T-158.yaml"
+  - ".tasks/active/T-133-watchtower-docs-page--auto-discover-and-.md"
+  - ".tasks/active/T-165-fix-20-broken-watchtower-task-links--yam.md"
+  - ".tasks/completed/T-045-web-ui-foundation-flask--htmx--fw-serve.md"
+  - ".tasks/completed/T-097-deep-reflection-type-a-multi-agent-optim.md"
+  - ".tasks/completed/T-125-first-session-orientation-detect-empty-s.md"
+  - ".tasks/completed/T-126-inception-gate-block-build-commits-befor.md"
+  - ".tasks/completed/T-128-circuit-breaker-consecutive-commit-guard.md"
+  - ".tasks/completed/T-129-inception-template-technical-constraints.md"
+  - ".tasks/completed/T-131-watchtower-knowledge-pages-empty--surfac.md"
+  - ".tasks/completed/T-132-watchtower-govern-pages--populate-direct.md"
+  - ".tasks/completed/T-138-redesign-context-budget-cron-based-monit.md"
+  - "web/blueprints/tasks.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T15:05:00"
+    action: "T-165: Fix 20 broken Watchtower task links — YAML quoting bugs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 24
+  lines_added: 83
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-165-fix-20-broken-watchtower-task-links--yam.md
+generated_by: context-agent-hybrid

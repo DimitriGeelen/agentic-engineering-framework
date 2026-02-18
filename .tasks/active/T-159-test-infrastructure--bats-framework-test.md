@@ -7,11 +7,11 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:27Z
-last_update: 2026-02-18T13:30:27Z
+last_update: 2026-02-18T13:59:20Z
 date_finished: null
 ---
 
@@ -54,3 +54,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-159-test-infrastructure--bats-framework-test.md
 - **Context:** Initial task creation
+
+### 2026-02-18T13:59:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
