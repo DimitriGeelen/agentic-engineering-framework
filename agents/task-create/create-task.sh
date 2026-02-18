@@ -185,8 +185,30 @@ t = t.replace('[Chronological log', '### $TIMESTAMP — task-created [task-creat
 with open('$FILEPATH', 'w') as f:
     f.write(t)
 " "$NAME" "$DESCRIPTION"
+elif [ -f "$TASKS_DIR/templates/default.md" ]; then
+    # Use default template — replace placeholders via Python (safe with special chars)
+    python3 -c "
+import sys
+with open('$TASKS_DIR/templates/default.md') as f:
+    t = f.read()
+t = t.replace('id: T-XXX', 'id: $TASK_ID')
+t = t.replace('name:', 'name: ' + sys.argv[1], 1)
+t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
+t = t.replace('status: captured', 'status: $STATUS')
+t = t.replace('workflow_type:', 'workflow_type: $WORKFLOW_TYPE', 1)
+t = t.replace('owner:', 'owner: $OWNER', 1)
+t = t.replace('horizon: now', 'horizon: $HORIZON')
+t = t.replace('tags: []', 'tags: $TAGS_YAML')
+t = t.replace('related_tasks: []', 'related_tasks: $RELATED_YAML')
+t = t.replace('created:', 'created: $TIMESTAMP', 1)
+t = t.replace('last_update:', 'last_update: $TIMESTAMP', 1)
+t = t.replace('# T-XXX: [Task Name]', '# $TASK_ID: ' + sys.argv[1])
+t = t.replace('<!-- Auto-populated by git mining at task completion.\\n     Manual entries optional during execution. -->', '### $TIMESTAMP — task-created [task-create-agent]\n- **Action:** Created task via task-create agent\n- **Output:** $FILEPATH\n- **Context:** Initial task creation')
+with open('$FILEPATH', 'w') as f:
+    f.write(t)
+" "$NAME" "$DESCRIPTION"
 else
-    # Default template
+    # Fallback: minimal inline template (only if default.md missing)
     cat > "$FILEPATH" << EOF
 ---
 id: $TASK_ID
@@ -208,17 +230,11 @@ date_finished: null
 
 ## Context
 
-[Link to design docs, specs, or predecessor tasks]
-
 ## Acceptance Criteria
 
-- [ ] <!-- Replace with specific, measurable criteria -->
+- [ ] [Criterion]
 
 ## Verification
-
-# Add shell commands that verify the work is done
-# Example: grep -q 'expected' output.txt
-# Example: python3 -c "import yaml; yaml.safe_load(open('file'))"
 
 ## Updates
 

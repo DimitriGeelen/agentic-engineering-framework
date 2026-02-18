@@ -189,8 +189,14 @@ if [ -n "$NEW_STATUS" ]; then
             VERIFY_SECTION=$(sed -n '/^## Verification/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)
             # Strip the heading line itself
             VERIFY_SECTION=$(echo "$VERIFY_SECTION" | tail -n +2)
-            # Extract executable lines (skip comments, empty lines, HTML comments)
-            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#|^\s*<!--|^\s*-->' || true)
+            # Strip HTML comment blocks (<!-- ... -->) then skip empty/comment lines
+            VERIFY_SECTION=$(echo "$VERIFY_SECTION" | python3 -c "
+import sys, re
+text = sys.stdin.read()
+text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+print(text)
+" 2>/dev/null || echo "$VERIFY_SECTION")
+            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#' || true)
 
             if [ -n "$VERIFY_CMDS" ]; then
                 VERIFY_TOTAL=$(echo "$VERIFY_CMDS" | wc -l)
