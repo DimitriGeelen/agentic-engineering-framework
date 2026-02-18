@@ -214,3 +214,39 @@ gaps:
     created: 2026-02-18
     last_reviewed: 2026-02-18
     closed_date: 2026-02-18
+
+  - id: G-008
+    title: "Sub-agent dispatch protocol has no structural enforcement"
+    description: >
+      CLAUDE.md §Sub-Agent Dispatch Protocol defines clear rules: investigators
+      must keep returns under 2K tokens, prompts must include output format and
+      write-to-file instructions, background agents should write to disk not
+      return content. But nothing enforces this — an agent can launch 4 background
+      Explore agents with "return a summary" prompts, call TaskOutput on all 4,
+      and flood the context with 4×30K chars of raw JSONL transcript. This caused
+      a 12-minute hang and effective session crash during T-158.
+    spec_reference: "CLAUDE.md §Sub-Agent Dispatch Protocol"
+    severity: medium
+    evidence_collected: >
+      T-158 (2026-02-18): 4 background Explore agents launched with prompts saying
+      "Return structured summary. Keep under 2K tokens." TaskOutput returned raw
+      JSONL transcripts at 30,156 chars each (120K total). Model produced 0 output
+      tokens after ingesting this, then emitted stop_sequence with no content.
+      Session effectively crashed for 12m40s. Root cause: (1) prompts didn't
+      include write-to-file instructions per template rule, (2) TaskOutput returns
+      raw transcript not agent final answer, (3) no hook or gate prevents this.
+    decision_trigger: >
+      Second instance of sub-agent context explosion (first was T-073 with 9 agents).
+      Pattern has now repeated despite protocol being documented. Discipline alone
+      is insufficient — structural enforcement needed.
+    trigger_check:
+      type: manual
+      hint: "Monitor for context spikes after Task tool dispatches"
+    possible_enforcement:
+      - "PreToolUse hook on Task tool: warn if >3 parallel bg agents"
+      - "PostToolUse hook on TaskOutput: warn if result >5K chars"
+      - "Agent prompt linter: check for 'write to file' in bg agent prompts"
+      - "Make fw bus post the ONLY way to return bg agent results"
+    status: watching
+    created: 2026-02-18
+    last_reviewed: 2026-02-18

@@ -421,4 +421,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-053
+    learning: "Always include write-to-file output instructions in sub-agent prompts. 'Return summary' in prompt + run_in_background + TaskOutput = raw JSONL transcript flooding context (30K chars × N agents). Correct pattern: tell agent to write to file path, then Read the file. Or use fw bus post."
+    source: T-158 crash investigation
+    task: T-158
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
