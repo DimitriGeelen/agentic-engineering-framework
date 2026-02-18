@@ -1,8 +1,8 @@
 # Audit Results - 2026-02-18
-timestamp: 2026-02-18T14:55:13Z
+timestamp: 2026-02-18T15:11:22Z
 summary:
-  pass: 19
-  warn: 7
+  pass: 20
+  warn: 6
   fail: 0
 findings:
   - level: PASS
@@ -16,7 +16,7 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 13 active tasks are valid"
+    check: "All 12 active tasks are valid"
   - level: WARN
     check: "Task T-154 has short description (44 chars)"
     mitigation: "Expand description in T-154-kanban-card-inline-owner-selector.md"
@@ -30,7 +30,7 @@ findings:
     check: "Task T-157 has no updates but status is started-work"
     mitigation: "Add update entry to T-157-show-active-project-name-at-top-of-watch.md"
   - level: PASS
-    check: "Git traceability: 97% (411/420 commits reference tasks)"
+    check: "Git traceability: 97% (415/424 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -51,16 +51,15 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 152 episodic summaries have quality content"
+    check: "All 153 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
   - level: PASS
     check: "Gaps register: 2 watching, no triggers fired"
-  - level: WARN
-    check: "Handover has 2 open question(s) with no matching gap or task"
-    mitigation: "Register via 'fw gaps add' or 'fw task create' — see LATEST.md Open Questions section"
+  - level: PASS
+    check: "Handover open questions: none"
   - level: WARN
     check: "Learnings ready for promotion — review graduation candidates"
     mitigation: "Run: fw promote suggest"
