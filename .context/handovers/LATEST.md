@@ -14,71 +14,43 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed T-141 (knowledge YAML bugs, 21 tests), T-142 (init.sh missing directives/gaps), T-143 (name field quoting, 22 tests). Sprechloop Watchtower on :3001 now fully functional — all pages populated. Cycle 4 documented: 6 bugs found and fixed, FAIL verdict. T-124 inception gate blocking commits — needs go/no-go decision (7+ commits without one). T-131/T-132 can likely be closed as superseded by the fixes in T-141/T-142.
 
 ## Work in Progress
 
 <!-- horizon: now -->
 
 ### T-124: Validate framework new-project onboarding via live sprechloop experiment
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** started-work (inception, horizon: now)
+- **Last action:** Cycle 4 complete — 6 bugs found and fixed, all Watchtower pages now working
+- **Next step:** Run cycle 5 (should be first clean cycle), then cycle 6 for two-consecutive-PASS requirement. Then record go/no-go decision.
+- **Blockers:** Inception commit gate blocking T-124 commits (7+ without decision). Need to decide or commit fixes under child tasks.
+- **Insight:** Pattern of bugs is consistent: init.sh incomplete, create-task.sh doesn't sanitize YAML, knowledge scripts have format mismatches. All fixable, no fundamental design issues.
 
-### T-144: "T-124 cycle 4 documentation and learnings"
+### T-144: T-124 cycle 4 documentation and learnings
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Documented cycles 2-4 in onboarding-cycles.md, recorded L-047 and L-048
+- **Next step:** Complete task (AC/verification filled)
+- **Blockers:** None
+- **Insight:** N/A
 
 <!-- horizon: next -->
 
 ### T-129: Inception template: Technical Constraints section
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** No work this session
+- **Next step:** Wait for T-124 to complete
 
 <!-- horizon: later -->
 
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-120, T-130, T-133: Research/investigation tasks (horizon: later)
+- No work this session
 
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-131: Watchtower Knowledge pages empty
+- **Superseded** by T-141 fixes — knowledge pages now populated. Consider closing.
 
-### T-131: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-132: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-133: Watchtower: Docs page — auto-discover and surface project design docs
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-132: Watchtower Govern pages empty
+- **Superseded** by T-142 fixes — govern pages now populated. Consider closing.
 
 ## Inception Phases
 
@@ -94,40 +66,31 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+No formal decisions — all work was bug fixing driven by T-124 cycle 4 observations.
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+Nothing failed — all fixes worked on first attempt with tests to prove it.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. T-124 inception gate is blocking commits (7+ without go/no-go). Need to either record decision or continue creating child tasks for fixes.
+2. Watchtower `PROJECT_ROOT` needs to be set via env var when starting — no persistent config. Consider adding to `fw serve` or `.framework.yaml`.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Sprechloop Watchtower :3001 was manually restarted with `PROJECT_ROOT=/opt/001-sprechloop FW_PORT=3001 python3 -m web.app`. It won't survive a reboot.
+- T-131 and T-132 are likely superseded by the fixes done this session — review and close them.
+- The test suite is at `tests/test-knowledge-capture.sh` (22 tests). Run it after any changes to knowledge capture scripts.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Complete T-144 (fill AC/verification, close). Then run cycle 5 on sprechloop Watchtower — verify no new bugs. If clean, run cycle 6. Two consecutive PASS cycles → record T-124 GO decision.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `tests/test-knowledge-capture.sh`, `/opt/001-sprechloop/.context/project/directives.yaml`, `/opt/001-sprechloop/.context/project/gaps.yaml`
+- Modified: `agents/context/lib/pattern.sh`, `agents/context/lib/learning.sh`, `agents/context/lib/decision.sh`, `lib/init.sh`, `agents/task-create/create-task.sh`, `docs/onboarding-cycles.md`, 16 sprechloop task files (quoted names)
 
 ## Recent Commits
 
