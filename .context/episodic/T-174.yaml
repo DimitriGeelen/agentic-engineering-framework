@@ -19,7 +19,11 @@ updates_count: 3
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  3-agent investigation confirmed Option B: disable compaction, rely on handovers + fw resume.
+  autoCompactEnabled:false already set. Budget gate provides structural enforcement.
+  Crash resilience analysis validated task system as primary memory (~95% survives zero-handover crash).
+  Spawned 5 build/inception tasks: T-175 (single handover), T-176 (thresholds), T-177 (hooks cleanup),
+  T-178 (research persistence enforcement), T-179 (auto-restart mechanism).
 
 # Key outcomes
 outcomes:
@@ -44,7 +48,9 @@ artifacts:
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - "1fcb323 T-174: Inception GO — handover replaces compaction as primary context preservation"
+  - "90bb39d T-174: Persist research doc, update T-175/T-178/T-179 with investigation insights"
+  - "7ea07d8 T-174: Persist crash resilience research (proving the point about T-178)"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
@@ -56,7 +62,7 @@ successes:
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: [T-175, T-176, T-177]
+  spawned: [T-175, T-176, T-177, T-178, T-179]
 
 # Tags for retrieval
 tags: []

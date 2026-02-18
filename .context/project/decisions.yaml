@@ -224,3 +224,17 @@ decisions:
     date: 2026-02-17
     task: T-109
     rationale: "Formalizes existing 'write to disk, return summary' convention into protocol with automatic size gating. Prevents context explosion structurally."
+
+  - id: D-027
+    decision: "Disable compaction, rely on handovers (Option B)"
+    scope: project
+    date: 2026-02-18
+    task: T-174
+    rationale: "3-agent investigation: autoCompactEnabled:false already set, budget gate enforces at 150K, emergency handover auto-captures tasks/git/commits, compaction lossy summary inferior to structured handover. Rejected: Option A (causes T-145/T-148), Option C (CLI blocks), Option D (is Option B reframed)"
+
+  - id: D-028
+    decision: "Eliminate emergency/full handover distinction — single handover"
+    scope: project
+    date: 2026-02-18
+    task: T-175
+    rationale: "Crash resilience analysis proved task system is primary memory (~95% survives zero-handover crash). With budget gate at 170K leaving 30K, there is always room for full handover. Emergency skeleton was a safety net that is no longer needed — the task system (task files, git, episodic, project memory) IS the safety net."

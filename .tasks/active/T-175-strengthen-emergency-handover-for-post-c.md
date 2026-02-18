@@ -15,11 +15,11 @@ last_update: 2026-02-18T18:51:26Z
 date_finished: null
 ---
 
-# T-175: Strengthen emergency handover for post-compaction world
+# T-175: Eliminate emergency/full handover distinction — single handover
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+REVISED scope from original "strengthen emergency handover." Filename mismatch: file is `T-175-strengthen-emergency-handover-for-post-c.md` but task is now about eliminating the distinction. See docs/reports/T-174-crash-resilience-analysis.md and docs/reports/T-174-compaction-vs-handover.md for research backing this decision.
 
 ## Acceptance Criteria
 

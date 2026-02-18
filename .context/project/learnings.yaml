@@ -445,4 +445,20 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-056
+    learning: "Task system (task files, git, episodic, project memory) is the primary durable memory, not handover. ~95% of state survives a zero-handover crash. Handover is convenience (saves ~2min of fw resume synthesis), not safety. Emergency handover is unnecessary if budget gate leaves room for full handover."
+    source: T-174 crash resilience analysis
+    task: T-174
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-057
+    learning: "fw bus (result ledger) has never been used despite being designed (D-026), built (T-109), and documented in CLAUDE.md. 5+ sub-agent dispatches this session bypassed it. The bus workflow (fw bus post/read/manifest) may have too much friction vs simple Write-to-file. Evidence: .context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks."
+    source: T-178 observation
+    task: T-178
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

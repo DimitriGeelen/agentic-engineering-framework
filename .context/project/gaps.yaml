@@ -262,3 +262,35 @@ gaps:
     status: decided-build
     created: 2026-02-18
     last_reviewed: 2026-02-18
+
+  - id: G-009
+    title: "Research artifact persistence has no structural enforcement"
+    description: >
+      Sub-agent dispatch protocol (CLAUDE.md) says content generators "MUST write to disk"
+      and investigators should use fw bus. Reality: fw bus has NEVER been used (empty dirs).
+      5+ agents dispatched in session S-2026-0218-1920 returned full content to orchestrator
+      context — would have been lost without human intervention. L-055 validated that
+      general-purpose agents CAN write to disk when instructed. The protocol exists but
+      nothing enforces it. Related to G-008 (context explosion) but specifically about
+      knowledge loss, not token management.
+    severity: medium
+    evidence:
+      - "T-174: 3 agent outputs manually saved to docs/reports/ after user caught the gap"
+      - "T-178 experiment: Explore agents can't write (read-only); general-purpose can"
+      - ".context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks"
+      - "fw bus designed (D-026), built (T-109), documented in CLAUDE.md — never used"
+    trigger_check:
+      type: count
+      threshold: 3
+      hint: "Monitor for sub-agent dispatches that don't persist results to disk"
+    trigger_fired: true
+    trigger_fired_date: 2026-02-18
+    possible_enforcement:
+      - "Use general-purpose agent type for all research (not Explore)"
+      - "Orchestrator pre-defines output path and includes in prompt"
+      - "Audit check: inception tasks must have docs/reports/ artifact"
+      - "PostToolUse hook on Task: verify file was written if prompt included output path"
+    status: decided-build
+    related_task: T-178
+    created: 2026-02-18
+    last_reviewed: 2026-02-18

@@ -19,7 +19,7 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+With compaction disabled (T-174), sessions end when the budget gate forces handover at critical. The user must then manually run `claude -c` to start a new session. This breaks autonomous workflow. Can we make the transition seamless — handover completes, session ends, new session starts automatically with `fw resume`? Preliminary research in docs/reports/T-179-session-restart-mechanisms.md found: `claude -c` resumes most recent session, no native auto-restart exists, external tool `claude-auto-resume` exists on GitHub, flag-file approach (`.context/working/.session-ended` + wrapper script) is viable.
 
 ## Assumptions
 
