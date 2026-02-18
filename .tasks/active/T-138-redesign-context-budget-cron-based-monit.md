@@ -18,17 +18,20 @@ date_finished: null
 
 ## Context
 
-[Link to design docs, specs, or predecessor tasks]
+Current budget system failed catastrophically in sprechloop cycle 3 (25 handover commits in 10min) and in this session (agent at 80%/160K tokens, never checked once). Root cause: PostToolUse hooks run inside the agent's loop — agent controls when they fire and can ignore warnings. Commit counters measure the wrong metric.
 
-## Acceptance Criteria
+Inception findings: `docs/T-138-inception-findings.md`
+- 11 flaws in current system (3 critical)
+- Cron + PreToolUse design proposed
+- Portability concern: hybrid approach recommended (cron optional, PostToolUse fallback)
+- Go/no-go decision: PENDING
 
-- [ ] <!-- Replace with specific, measurable criteria -->
+## Go/No-Go Criteria
 
-## Verification
-
-# Add shell commands that verify the work is done
-# Example: grep -q 'expected' output.txt
-# Example: python3 -c "import yaml; yaml.safe_load(open('file'))"
+- [ ] Decision on approach: pure cron vs hybrid (keep PostToolUse as fallback)
+- [ ] Decision on portability: accept Linux-only cron or require cross-platform
+- [ ] Prototype budget-gate.sh (PreToolUse hook) to validate exit-code-2 blocking works
+- [ ] Record decision via `fw inception decide T-138 go|no-go`
 
 ## Updates
 
