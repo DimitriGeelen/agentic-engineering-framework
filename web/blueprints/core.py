@@ -253,27 +253,66 @@ def index():
 
 @bp.route("/project")
 def project():
-    docs = []
+    categories = {}
+    skip = {".git", ".tasks", ".context", "node_modules", ".pytest_cache", ".playwright-mcp", "__pycache__"}
+
+    def _add(cat, path):
+        rel = path.relative_to(PROJECT_ROOT)
+        doc_id = str(rel).replace("/", "--").removesuffix(".md")
+        categories.setdefault(cat, []).append({
+            "name": path.stem,
+            "path": str(rel),
+            "doc_id": doc_id,
+        })
+
+    # Governance: CLAUDE.md, FRAMEWORK.md, numbered specs (0*.md)
+    for name in ("CLAUDE.md", "FRAMEWORK.md"):
+        p = PROJECT_ROOT / name
+        if p.exists():
+            _add("Governance", p)
     for f in sorted(PROJECT_ROOT.glob("0*.md")):
-        docs.append({"name": f.stem, "filename": f.name})
-    fw_md = PROJECT_ROOT / "FRAMEWORK.md"
-    if fw_md.exists():
-        docs.append({"name": "FRAMEWORK", "filename": "FRAMEWORK.md"})
-    return render_page("project.html", page_title="Project Documentation", docs=docs)
+        _add("Governance", f)
+
+    # Design docs: docs/ and docs/plans/
+    docs_dir = PROJECT_ROOT / "docs"
+    if docs_dir.is_dir():
+        for f in sorted(docs_dir.rglob("*.md")):
+            if not any(part in skip for part in f.parts):
+                _add("Design", f)
+
+    # Agent docs: agents/*/AGENT.md
+    agents_dir = PROJECT_ROOT / "agents"
+    if agents_dir.is_dir():
+        for f in sorted(agents_dir.glob("*/AGENT.md")):
+            _add("Agents", f)
+
+    # Project docs: remaining root .md files
+    seen = {d["path"] for cat_docs in categories.values() for d in cat_docs}
+    for f in sorted(PROJECT_ROOT.glob("*.md")):
+        rel = str(f.relative_to(PROJECT_ROOT))
+        if rel not in seen and f.stem != "zzz-default":
+            _add("Project", f)
+
+    return render_page("project.html", page_title="Project Documentation", categories=categories)
 
 
 @bp.route("/project/<doc>")
 def project_doc(doc):
-    if not re_mod.match(r"^[A-Za-z0-9_-]+$", doc):
+    if not re_mod.match(r"^[A-Za-z0-9_.-]+$", doc):
         abort(404)
 
-    candidates = [PROJECT_ROOT / f"{doc}.md", PROJECT_ROOT / f"{doc}"]
-    doc_path = None
-    for c in candidates:
-        if c.exists() and c.suffix == ".md":
-            doc_path = c
-            break
-    if not doc_path:
+    # Support -- as path separator for subdirectory docs
+    rel_path = doc.replace("--", "/") + ".md"
+    doc_path = PROJECT_ROOT / rel_path
+    if not doc_path.exists() or not doc_path.suffix == ".md":
+        # Fallback: try direct match
+        doc_path = PROJECT_ROOT / f"{doc}.md"
+    if not doc_path.exists():
+        abort(404)
+    # Ensure path is within PROJECT_ROOT
+    try:
+        doc_path.resolve().relative_to(PROJECT_ROOT.resolve())
+    except ValueError:
         abort(404)
 
     content_md = doc_path.read_text()
@@ -282,7 +321,7 @@ def project_doc(doc):
     )
 
     return render_page(
-        "project_doc.html", page_title=doc, doc_name=doc_path.stem, html_content=html_content
+        "project_doc.html", page_title=doc_path.stem, doc_name=doc_path.stem, html_content=html_content
     )
 
 

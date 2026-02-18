@@ -1,33 +1,68 @@
+<style>
+.docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.docs-category h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid var(--pico-primary);
+    color: var(--pico-primary);
+}
+.docs-category ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.docs-category li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+.docs-category li:last-child { border-bottom: none; }
+.docs-category a {
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.docs-category .doc-path {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color);
+    margin-left: 0.5rem;
+}
+</style>
+
 <div class="page-header">
     <h1>{{ page_title }}</h1>
-    <p>Browse and read project documentation files rendered from Markdown.</p>
+    <p>Auto-discovered project documentation.</p>
 </div>
 
-{% if docs %}
-<table role="grid">
-    <thead>
-        <tr>
-            <th>Document</th>
-            <th>Filename</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for doc in docs %}
-        <tr>
-            <td>
-                <a href="{{ url_for('core.project_doc', doc=doc.name) }}"
+{% if categories %}
+<div class="docs-grid">
+    {% for cat_name, docs in categories.items() %}
+    <div class="docs-category">
+        <h3>{{ cat_name }} <small style="font-weight:normal; color: var(--pico-muted-color)">({{ docs|length }})</small></h3>
+        <ul>
+            {% for doc in docs %}
+            <li>
+                <a href="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
+                   hx-get="{{ url_for('core.project_doc', doc=doc.doc_id) }}"
                    hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                     {{ doc.name }}
                 </a>
-            </td>
-            <td><code>{{ doc.filename }}</code></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                {% if '/' in doc.path %}
+                <span class="doc-path">{{ doc.path }}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
 {% else %}
 <div class="coming-soon">
     <h3>No Documents Found</h3>
-    <p>No project documentation files (0*.md, FRAMEWORK.md) were found in the project root.</p>
+    <p>No Markdown documentation files found in the project.</p>
 </div>
 {% endif %}
