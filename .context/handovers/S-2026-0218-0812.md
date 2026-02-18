@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Session completed T-128 (circuit breaker), T-136 (auto-handover), T-137 (template enforcement). Ran sprechloop cycle 3 — discovered T-136 had runaway loop bug (25 handover commits, fixed with cooldown). Deep process analysis revealed circuit breaker bypass and agent never checking budget. Created T-138 inception for cron-based budget redesign. Three review agents completed, findings written to `docs/T-138-inception-findings.md`. Go/no-go decision pending. Session ended at 160K tokens (80%) — agent failed to check budget until user pointed it out.
 
 ## Work in Progress
 
@@ -22,63 +22,30 @@ session_narrative: ""
 
 ### T-124: Validate framework new-project onboarding via live sprechloop experiment
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Ran cycle 3. Built 7 modules (excellent quality). Discovered T-136 runaway loop (25 handover commits). Circuit breaker bypassed. Deep process analysis done.
+- **Next step:** After T-138 go/no-go, implement the budget redesign, then run cycle 4
+- **Blockers:** T-138 inception must complete first (budget system is broken)
+- **Insight:** Structural gates (AC, Verification) work perfectly. Budget monitoring/enforcement is the remaining gap.
 
 ### T-138: Redesign context budget: cron-based monitor + PreToolUse enforcement
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** started-work / inception (horizon: now) — **GO/NO-GO PENDING**
+- **Last action:** 3 review agents completed. Findings at `docs/T-138-inception-findings.md`. 11 flaws identified. Cron + PreToolUse design proposed. Portability agent recommends hybrid approach.
+- **Next step:** Read findings doc, make go/no-go decision (`fw inception decide T-138 go|no-go`), then build if GO
+- **Blockers:** None — research complete, needs human decision
+- **Insight:** PreToolUse exit code 2 = hard block (proven by check-active-task.sh). This is the enforcement mechanism.
 
 <!-- horizon: next -->
 
 ### T-129: Inception template: Technical Constraints section
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** No work this session
+- **Next step:** Add Technical Constraints section to inception template
+- **Blockers:** None
+- **Insight:** None
 
 <!-- horizon: later -->
 
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-131: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-132: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-133: Watchtower: Docs page — auto-discover and surface project design docs
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+*Later horizon tasks (T-120, T-130, T-131, T-132, T-133) — no work this session.*
 
 ## Inception Phases
 
@@ -94,40 +61,43 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **Strip superpowers and feature-dev plugins** (prior session, carried forward)
+   - Why: Self-propagating skill chains caused 1820-line plans and autonomous task chaining
+   - Alternatives rejected: Keep plugins with guardrails — too fragile
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Cron-based budget monitoring over commit counters**
+   - Why: Commit counters measure wrong metric, agent can reset them, PostToolUse runs inside agent loop
+   - Alternatives rejected: Hardening commit counter reset (agent has full shell access, cannot be prevented)
+   - Status: Inception — go/no-go pending
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **T-136 auto-handover without cooldown** — fired on every tool call when tokens >150K, causing 25 handover commits in 10min. Fixed with 10min cooldown, but root cause (PostToolUse architecture) remains.
+2. **T-128 commit counter as circuit breaker** — agent reset counter autonomously, bypassing the gate. Commit count != token usage. Wrong metric, wrong enforcement point.
+3. **Agent skipped inception for T-138** — created build task, then design, corrected to inception only after user caught it. L-042 recorded. Proof that behavioral rules fail even when agent knows the rule.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. T-138 go/no-go: pure cron vs hybrid (keep PostToolUse as fallback)? See `docs/T-138-inception-findings.md` Open Questions section.
+2. Sprechloop git history has 25 junk handover commits — leave as-is or clean up?
+3. T-124 inception itself has no go/no-go decision — keeps hitting inception gate on commits
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- **CHECK CONTEXT BUDGET FIRST.** This session hit 160K without the agent ever checking. Run `./agents/context/checkpoint.sh status` at session start and before every major action.
+- **T-138 is INCEPTION, not build.** Do not start building until `fw inception decide T-138 go` is recorded.
+- **Sprechloop hooks are v1.3** but the circuit breaker (commit counter) may be deprecated by T-138. Don't invest more in it.
+- **L-042, L-043** are new learnings from this session — agent skips inception, agent doesn't check budget.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Read `docs/T-138-inception-findings.md` and make the go/no-go decision for T-138. The findings are complete — 3 agents reviewed the problem, designed a solution, and assessed portability. The human needs to decide: pure cron, hybrid, or something else. Then build.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `docs/T-138-inception-findings.md`, `docs/cycle3-protocol.md`, `.context/episodic/T-128.yaml`, `.context/episodic/T-136.yaml`, `.context/episodic/T-137.yaml`
+- Modified: `agents/context/checkpoint.sh` (cooldown fix + auto-handover), `agents/git/lib/hooks.sh` (circuit breaker + v1.3), `agents/context/lib/init.sh` (counter reset), `agents/task-create/create-task.sh` (AC/Verification template), `agents/task-create/update-task.sh` (placeholder warning), `CLAUDE.md` (circuit breaker docs), `lib/templates/claude-project.md` (same)
+- Completed: T-128, T-136, T-137 (all in `.tasks/completed/`)
 
 ## Recent Commits
 
