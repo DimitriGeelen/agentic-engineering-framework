@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed T-129 (inception template Technical Constraints section). Then deep-dived into sprechloop emergency handover noise: investigated root cause (compaction cascade from missing budget gate), fixed timeline collapse (T-148), then discovered budget-gate.sh was fundamentally broken for multi-project setups — fixed 4 bugs (T-149), registered G-007, and recorded 3 learnings (L-050, L-051, L-052). User coached agent on framework discipline: register gaps before fixing, one bug = one task.
 
 ## Work in Progress
 
@@ -22,24 +22,24 @@ session_narrative: ""
 
 ### T-150: "Investigate audit tasks as cronjobs"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Read task file and begin investigation
+- **Blockers:** None
+- **Insight:** None yet
 
 ### T-151: "Investigate audit tasks as cronjobs"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Continue investigation
+- **Blockers:** None
+- **Insight:** None yet
 
 ### T-152: "enhance task manager for human"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Read task file and scope the work
+- **Blockers:** None
+- **Insight:** None yet
 
 <!-- horizon: later -->
 
