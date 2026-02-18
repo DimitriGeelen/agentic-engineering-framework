@@ -4,15 +4,15 @@ name: Watchtower: Govern pages — populate directives/enforcement/gaps/quality 
 description: >
   Watchtower Govern nav (Directives, Enforcement, Gaps, Quality, Metrics) shows empty for projects. Investigate: (1) Directives should pull the Four Constitutional Directives + Authority Model from CLAUDE.md/FRAMEWORK.md — these are universal. (2) Enforcement should show hook installation status, Tier 0/1/2 config, commit-msg gate status for the project. (3) Gaps should run fw gaps equivalent against the project. (4) Quality should show fw audit results. These are not project-specific data — they're framework governance applied TO the project.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: later
 tags: []
 related_tasks: []
 created: 2026-02-17T23:30:24Z
-last_update: 2026-02-17T23:30:24Z
-date_finished: null
+last_update: 2026-02-18T09:38:18Z
+date_finished: 2026-02-18T09:38:18Z
 ---
 
 # T-132: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework
@@ -76,3 +76,9 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-02-18T09:38:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-18T09:38:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
