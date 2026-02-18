@@ -446,10 +446,10 @@ Synthesizes current state from:
 - If no transcript is available, fails open (PostToolUse fallback handles it)
 
 ### Critical Protocol
-- If you see a BUDGET GATE block: you are at critical. Only wrap-up work is allowed.
+- If you see a SESSION WRAPPING UP block: the session is wrapping up. Only wrap-up work is allowed.
 - **Allowed:** git commit/add, fw handover, fw task update, Write/Edit to .context/.tasks/.claude/, reading files
 - **Blocked:** Write/Edit to source files, general Bash commands
-- Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
+- Wrap up calmly — task files already have all essential state from continuous capture
 
 ## Sub-Agent Dispatch Protocol
 

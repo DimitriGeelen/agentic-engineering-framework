@@ -120,11 +120,11 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ] || [ "$STATUS_LEVEL" = "critical" ]
             fi
             echo "" >&2
             echo "══════════════════════════════════════════════════════════" >&2
-            echo "  BUDGET GATE — Context Critical (~${STATUS_TOKENS} tokens)" >&2
+            echo "  SESSION WRAPPING UP (~${STATUS_TOKENS} tokens)" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             echo "  Context is at ~$((STATUS_TOKENS * 100 / 200000))% of 200K window." >&2
-            echo "  Compaction is imminent. New work WILL be lost." >&2
+            echo "  Task files already have all essential state. Time to wrap up." >&2
             echo "" >&2
             echo "  ALLOWED: git commit, fw handover, reading files," >&2
             echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
@@ -223,11 +223,11 @@ case "$LEVEL" in
         fi
         echo "" >&2
         echo "══════════════════════════════════════════════════════════" >&2
-        echo "  BUDGET GATE — Context Critical (${TOKENS} tokens)" >&2
+        echo "  SESSION WRAPPING UP (${TOKENS} tokens)" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
         echo "  Context is at ~$((TOKENS * 100 / 200000))% of 200K window." >&2
-        echo "  Context exhaustion imminent. New work WILL be lost." >&2
+        echo "  Task files already have all essential state. Time to wrap up." >&2
         echo "" >&2
         echo "  ALLOWED: git commit, fw handover, reading files," >&2
         echo "           Write/Edit to .context/ .tasks/ .claude/" >&2

@@ -99,12 +99,12 @@ warn_by_tokens() {
     if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "CRITICAL: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
-        echo "Compaction imminent — work will be summarized." >&2
+        echo "Session wrapping up: ${tokens} tokens (~${pct}% of 200K)." >&2
+        echo "Task files have all essential state. Commit and handover." >&2
         echo "===========================================" >&2
         echo "" >&2
 
-        # --- Auto-trigger emergency handover (T-136) ---
+        # --- Auto-trigger handover at critical (T-136) ---
         # Agent cannot be trusted to act on warnings at 150K+.
         # Two guards:
         #   1. Re-entry lock: prevents recursive triggering within one checkpoint run

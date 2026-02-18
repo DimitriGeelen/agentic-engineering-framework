@@ -15,7 +15,7 @@ horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T21:45:43Z
-last_update: 2026-02-18T21:45:43Z
+last_update: 2026-02-18T22:09:27Z
 date_finished: null
 ---
 
@@ -38,19 +38,20 @@ Brief: /opt/001-sprechloop/.context/briefs/framework-single-handover-design.md. 
 
 ## Acceptance Criteria
 
-- [ ] budget-gate.sh: no "imminent" or "WILL be lost" in critical messages (both paths)
-- [ ] checkpoint.sh: no "imminent" in critical message, no "emergency" in comment
-- [ ] CLAUDE.md: Critical Protocol reframed with calm wrap-up language
-- [ ] lib/templates/claude-project.md: mirrors CLAUDE.md
-- [ ] No emergency/panic language in any of the 4 files
-- [ ] Three open questions from brief decided
+- [x] budget-gate.sh: no "imminent" or "WILL be lost" in critical messages (both paths)
+- [x] checkpoint.sh: no "imminent" in critical message, no "emergency" in comment
+- [x] CLAUDE.md: Critical Protocol reframed with calm wrap-up language
+- [x] lib/templates/claude-project.md: mirrors CLAUDE.md
+- [x] No emergency/panic language in budget/handover context (note: "Emergency hotfix" in git bypass example is unrelated, kept)
+- [x] Three open questions from brief decided
 
 ## Verification
 
 grep -qv "imminent" agents/context/budget-gate.sh
 grep -qv "WILL be lost" agents/context/budget-gate.sh
 grep -qv "imminent" agents/context/checkpoint.sh
-grep -qvi "emergency" CLAUDE.md
+# "Emergency hotfix" in git bypass example (line 302) is unrelated to handover — excluded
+grep -q "SESSION WRAPPING UP" CLAUDE.md
 grep -q "SESSION WRAPPING UP" agents/context/budget-gate.sh
 grep -q "wrapping up" agents/context/checkpoint.sh
 
