@@ -122,7 +122,8 @@ practices:
   description: >
     Treat context window as a finite, non-renewable resource. Commit early
     and often — each commit is a recovery checkpoint. Generate handovers AFTER work,
-    never as skeletons. Use --emergency mode when context is critical.
+    never as skeletons. At critical budget level, the gate allows wrap-up operations
+    (handover, task updates) while blocking new work.
   anti_pattern: >
     Running 72 tool calls without committing, generating skeleton handovers
     with [TODO] placeholders, then losing all session context.

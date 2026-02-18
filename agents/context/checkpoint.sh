@@ -129,13 +129,13 @@ warn_by_tokens() {
         fi
 
         if [ "$should_fire" = true ]; then
-            echo "AUTO-HANDOVER: Triggering emergency handover..." >&2
+            echo "AUTO-HANDOVER: Triggering handover..." >&2
             echo "1" > "$handover_lock"
             date +%s > "$handover_cooldown"
-            if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency 2>&1 | tail -5 >&2; then
-                echo "AUTO-HANDOVER: Emergency handover committed." >&2
+            if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
+                echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
             else
-                echo "AUTO-HANDOVER: Failed — run 'fw handover --emergency' manually." >&2
+                echo "AUTO-HANDOVER: Failed — run 'fw handover' manually." >&2
             fi
             rm -f "$handover_lock"
         fi
@@ -180,7 +180,7 @@ warn_by_calls() {
         echo "" >&2
         echo "===========================================" >&2
         echo "CRITICAL: $count tool calls since last commit (no token data)." >&2
-        echo "ACTION: Commit now, then 'fw handover --emergency'." >&2
+        echo "ACTION: Commit now, then 'fw handover'." >&2
         echo "===========================================" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_URGENT" ]; then

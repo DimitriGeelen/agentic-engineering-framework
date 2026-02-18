@@ -42,11 +42,11 @@ Validate that token-aware context monitoring works in a real session.
    - LATEST.md NOT overwritten
    - Tool call counter resets to 0
 
-### Phase 6: Emergency Handover (only if context gets high)
-1. If token warnings appear, run: `fw handover --emergency`
+### Phase 6: Handover at Critical (only if context gets high)
+1. If token warnings appear, run: `fw handover`
 2. **Expected**:
-   - Handover file with 0 [TODO] sections
-   - All data machine-gathered
+   - Full handover with [TODO] sections for agent enrichment
+   - Machine-gathered task list and git state
    - Auto-committed
 
 ## Results (2026-02-14)
