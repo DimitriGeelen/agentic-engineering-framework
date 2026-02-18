@@ -4,14 +4,14 @@ name: "Kanban UI creature comforts — equal columns, full-width, project label 
 description: >
   Batch of 4 small UI tweaks: (1) Kanban columns equal 25% width, (2) Full-width layout using max screen space aligned with Watchtower header, (3) Move project name label to right side of ambient strip, (4) Auto-refresh board on status change with scroll to top not bottom
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
 tags: []
 related_tasks: []
 created: 2026-02-18T16:11:42Z
-last_update: 2026-02-18T16:11:42Z
+last_update: 2026-02-18T16:57:17Z
 date_finished: null
 ---
 
@@ -54,3 +54,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-167-kanban-ui-creature-comforts--equal-colum.md
 - **Context:** Initial task creation
+
+### 2026-02-18T16:57:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
