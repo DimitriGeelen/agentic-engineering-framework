@@ -101,9 +101,23 @@ warn_by_tokens() {
         echo "===========================================" >&2
         echo "CRITICAL: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
         echo "Compaction imminent — work will be summarized." >&2
-        echo "ACTION: Commit now, then 'fw handover --emergency'." >&2
         echo "===========================================" >&2
         echo "" >&2
+
+        # --- Auto-trigger emergency handover (T-136) ---
+        # Agent cannot be trusted to act on warnings at 150K+.
+        # Guard against re-entry (handover commit triggers post-commit → checkpoint).
+        local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
+        if [ ! -f "$handover_lock" ]; then
+            echo "AUTO-HANDOVER: Triggering emergency handover..." >&2
+            echo "1" > "$handover_lock"
+            if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency 2>&1 | tail -5 >&2; then
+                echo "AUTO-HANDOVER: Emergency handover committed." >&2
+            else
+                echo "AUTO-HANDOVER: Failed — run 'fw handover --emergency' manually." >&2
+            fi
+            rm -f "$handover_lock"
+        fi
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
