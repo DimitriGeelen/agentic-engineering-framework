@@ -69,8 +69,9 @@ EOF
     # Reset tool counter (P-009 context protection)
     echo "0" > "$CONTEXT_DIR/working/.tool-counter"
 
-    # Reset commit counter (T-128 circuit breaker)
-    echo "0" > "$CONTEXT_DIR/working/.commit-counter"
+    # Reset budget gate counter (T-139 budget enforcement)
+    echo "0" > "$CONTEXT_DIR/working/.budget-gate-counter"
+    rm -f "$CONTEXT_DIR/working/.budget-status"
 
     echo -e "${GREEN}=== Session Initialized ===${NC}"
     echo "Session ID: $session_id"

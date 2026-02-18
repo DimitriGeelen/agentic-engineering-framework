@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-138: Redesign context budget: cron-based monitor + PreToolUse enforcement
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T07:29:10Z
+# ============================================================================
+
+task_id: T-138
+task_name: "Redesign context budget: cron-based monitor + PreToolUse enforcement"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-02-18T07:02:20Z
+completed: 2026-02-18T07:29:09Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-02-18T08:09:07+01:00
+last_commit: 2026-02-18T08:11:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception task + L-042/L-043 — agent skipped inception, never checked budget. Inception findings written to disk + task file fleshed out
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/T-138-inception-findings.md"
+  - ".tasks/active/T-138-redesign-context-budget-cron-based-monit.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T08:09:07"
+    action: "T-138: Inception task + L-042/L-043 — agent skipped inception, never checked budget"
+  - time: "2026-02-18T08:11:54"
+    action: "T-138: Inception findings written to disk + task file fleshed out"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 5
+  lines_added: 196
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-138-redesign-context-budget-cron-based-monit.md
+generated_by: context-agent-hybrid

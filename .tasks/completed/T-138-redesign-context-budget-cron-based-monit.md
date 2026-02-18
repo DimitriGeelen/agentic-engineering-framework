@@ -3,15 +3,15 @@ id: T-138
 name: Redesign context budget: cron-based monitor + PreToolUse enforcement
 description: >
   Redesign context budget: cron-based monitor + PreToolUse enforcement
-status: started-work
+status: work-completed
 workflow_type: inception
 horizon: now
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-18T07:02:20Z
-last_update: 2026-02-18T07:03:58Z
-date_finished: null
+last_update: 2026-02-18T07:29:09Z
+date_finished: 2026-02-18T07:29:09Z
 ---
 
 # T-138: Redesign context budget: cron-based monitor + PreToolUse enforcement
@@ -45,3 +45,12 @@ Inception findings: `docs/T-138-inception-findings.md`
 
 ### 2026-02-18T07:03:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-18T07:29:09Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Hybrid approach: build PreToolUse budget-gate.sh as primary enforcement, keep PostToolUse checkpoint.sh as fallback during transition. Defer cron to separate task. User decision.
+
+### 2026-02-18T07:29:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

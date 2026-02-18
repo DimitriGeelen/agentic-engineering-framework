@@ -40,6 +40,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/budget-gate.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [

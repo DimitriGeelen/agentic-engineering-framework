@@ -431,17 +431,18 @@ Synthesizes current state from:
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
-- A PostToolUse hook runs `checkpoint.sh` which reads **actual token usage** from the session JSONL transcript
-- Warnings fire at: **100K** (note), **130K** (warning), **150K** (critical) — out of a 200K context window
-- Compaction (automatic context summarization) is observed at ~160K tokens — work context is lost
-- Token reading lags ~1 API call behind actual usage; thresholds are conservative to compensate
+- **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
+- **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
+- Escalation ladder: **100K** ok→warn (note), **130K** warn→urgent (warning), **150K** urgent→critical (**BLOCK**)
+- At critical, only git commit, fw handover, and read operations are allowed through the gate
+- Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`
-- If no transcript is available, falls back to tool-call counting (less accurate)
+- If no transcript is available, fails open (PostToolUse fallback handles it)
 
 ### Emergency Protocol
-- If you see a CRITICAL warning from the checkpoint hook:
-  immediately run `fw handover --emergency` and commit
+- If you see a BUDGET GATE block: you are at critical. Only commit and handover are allowed.
 - Do NOT try to "finish one more thing" — context exhaustion is sudden, not gradual
+- The gate will physically prevent Write/Edit/Bash — you cannot work around it without `--no-verify` equivalent
 
 ## Sub-Agent Dispatch Protocol
 
@@ -525,7 +526,7 @@ Always present choices as a **numbered or lettered list** so the user can reply 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
-**Structural enforcement (T-128):** The commit-msg hook tracks consecutive commits via `.context/working/.commit-counter`. After 3 consecutive commits without user check-in, the hook **blocks** further commits. The post-commit hook shows a warning at 2. To reset after user confirms: `echo 0 > .context/working/.commit-counter`. The counter also resets on `fw context init`.
+**Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=150K tokens, ~75%). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
 
 ### Inception Discipline
 When the active task has `workflow_type: inception`:
