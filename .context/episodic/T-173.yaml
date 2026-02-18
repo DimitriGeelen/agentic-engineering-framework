@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-173: Budget gate: always allow full handover, not just emergency skeleton
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T21:23:45Z
+# ============================================================================
+
+task_id: T-173
+task_name: "Budget gate: always allow full handover, not just emergency skeleton"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T18:24:33Z
+completed: 2026-02-18T21:23:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-18T22:23:39+01:00
+last_commit: 2026-02-18T22:23:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Allow wrap-up operations (handover, task updates) at critical budget level
+
+# Key outcomes
+outcomes:
+  - "Write/Edit to .context/ paths allowed at critical level"
+  - "Write/Edit to .tasks/ paths allowed at critical level"
+  - "Write/Edit to .claude/ paths allowed at critical level"
+  - "Write/Edit to source files still blocked at critical level"
+  - "Bash allow-list includes git add, fw task, handover.sh, update-task.sh"
+  - "Critical message updated to reflect new allowed operations"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - "CLAUDE.md"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-173-budget-gate-always-allow-full-handover-n.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T22:23:39"
+    action: "T-173: Allow wrap-up operations (handover, task updates) at critical budget level"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 179 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 179
+  commits: 1
+  files_changed: 4
+  lines_added: 50
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-173-budget-gate-always-allow-full-handover-n.md
+generated_by: context-agent-hybrid
