@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-182: Reframe handover messaging from emergency panic to calm wrap-up
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T23:20:28Z
+# ============================================================================
+
+task_id: T-182
+task_name: "Reframe handover messaging from emergency panic to calm wrap-up"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T21:45:43Z
+completed: 2026-02-18T23:20:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T22:39:25+01:00
+last_commit: 2026-02-19T00:20:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reframe handover from emergency panic to calm wrap-up. Task with impact assessment — handover reframing (not yet executed). Record L-058 — framework-level edits require impact assessment. Reframe handover messaging from emergency panic to calm wrap-up
+
+# Key outcomes
+outcomes:
+  - "budget-gate.sh: no \"imminent\" or \"WILL be lost\" in critical messages (both paths)"
+  - "checkpoint.sh: no \"imminent\" in critical message, no \"emergency\" in comment"
+  - "CLAUDE.md: Critical Protocol reframed with calm wrap-up language"
+  - "lib/templates/claude-project.md: mirrors CLAUDE.md"
+  - "No emergency/panic language in budget/handover context (note: \"Emergency hotfix\" in git bypass example is unrelated, kept)"
+  - "Three open questions from brief decided"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Keep as-is"
+    rationale: "Different purpose (mid-session snapshots, doesn't replace LATEST.md). Not emergency-related."
+    alternatives_rejected: ["Remove (still has value for long sessions)"]
+    chose: "Not now (Option C — status quo)"
+    rationale: "Brief recommends: \"empirical evidence shows task discipline holds without mechanical enforcement.\" Brief instruction: \"Do NOT add mechanical task-freshness enforcement yet.\""
+    alternatives_rejected: ["Commit-cadence check (Option A), time-based reminder (Option B)"]
+    chose: "Keep auto-handover"
+    rationale: "L-013/L-038: agents cannot be trusted to act on warnings. T-136 built specifically because agent ignored critical warnings."
+    alternatives_rejected: ["Block-only + instruct (reverts to trusting agent discipline, which failed empirically)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - "agents/context/checkpoint.sh"
+  - "CLAUDE.md"
+  - ".context/project/learnings.yaml"
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-182-reframe-handover-from-emergency-panic-to.md"
+  - ".tasks/active/T-182-reframe-handover-messaging-from-emergenc.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T22:39:25"
+    action: "T-182: Reframe handover from emergency panic to calm wrap-up"
+  - time: "2026-02-18T22:47:52"
+    action: "T-182: Task with impact assessment — handover reframing (not yet executed)"
+  - time: "2026-02-18T22:56:20"
+    action: "T-182: Record L-058 — framework-level edits require impact assessment"
+  - time: "2026-02-19T00:20:22"
+    action: "T-182: Reframe handover messaging from emergency panic to calm wrap-up"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 94
+  commits: 7
+  files_changed: 7
+  lines_added: 216
+  lines_removed: 128
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-182-reframe-handover-messaging-from-emergenc.md
+generated_by: context-agent-hybrid
