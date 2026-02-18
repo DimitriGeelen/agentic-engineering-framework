@@ -461,4 +461,12 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-058
+    learning: "Framework-level edits (CLAUDE.md, hooks, agents, budget-gate) require explicit change impact assessment before any modifications. Present: (1) which files, (2) what changes, (3) what could break, (4) blast radius. Get user approval before editing. Evidence: T-182 first attempt edited 4 core files without review — user caught it, reverted."
+    source: T-182 revert incident
+    task: T-182
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
