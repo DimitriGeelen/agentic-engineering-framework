@@ -1,73 +1,146 @@
 ---
 session_id: S-2026-0218-0913
-timestamp: 2026-02-18T08:13:47Z
-type: emergency
-predecessor: S-2026-0218-0838
+timestamp: 2026-02-18T08:13:52Z
+predecessor: S-2026-0218-0913
 tasks_active: [T-120, T-124, T-129, T-130, T-131, T-132, T-133, T-141]
-uncommitted_changes: 2
+tasks_touched: [T-132, T-131, T-129, T-130, T-133, T-141, T-120, T-124, T-XXX, T-XXX, T-134, T-140, T-118, T-101, T-109, T-139, T-105, T-122, T-123, T-135, T-127, T-126, T-104, T-107, T-114, T-113, T-116, T-119, T-128, T-117, T-110, T-136, T-115, T-102, T-111, T-137, T-112, T-103, T-106, T-138, T-125, T-108, T-121]
+tasks_completed: []
+uncommitted_changes: 1
 owner: claude-code
+session_narrative: ""
 ---
 
-# EMERGENCY Handover: S-2026-0218-0913
-
-> Auto-generated due to context exhaustion risk. No manual sections.
+# Session Handover: S-2026-0218-0913
 
 ## Where We Are
 
-Emergency handover on branch `master` with 2 uncommitted change(s).
+[TODO: 2-3 sentences summarizing current state and immediate situation]
 
-## Active Tasks
+## Work in Progress
 
-- **T-120**: Review Google Context Engineering whitepaper against framework (captured)
-- **T-124**: Validate framework new-project onboarding via live sprechloop experiment (started-work)
-- **T-129**: Inception template: Technical Constraints section (captured)
-- **T-130**: Investigate GSD (get-shit-done) for usable concepts, skills, patterns (captured)
-- **T-131**: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions (captured)
-- **T-132**: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework (captured)
-- **T-133**: Watchtower: Docs page — auto-discover and surface project design docs (captured)
-- **T-141**: Fix create-task.sh template wiring + backfill sprechloop knowledge + add tests (started-work)
+<!-- horizon: now -->
 
-## Uncommitted Changes
+### T-124: Validate framework new-project onboarding via live sprechloop experiment
+- **Status:** started-work (horizon: now)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
-```
- M .context/working/.handover-cooldown
-?? .context/working/.handover-in-progress
-```
+### T-141: Fix create-task.sh template wiring + backfill sprechloop knowledge + add tests
+- **Status:** started-work (horizon: now)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
-## Recent Commits (with stats)
+<!-- horizon: next -->
 
-```
-f50db82 T-141: Template fix + verification gate fix + T-140/T-141 task artifacts
- .context/audits/2026-02-18.yaml       | 32 ++++++++------------------------
- .context/working/.budget-gate-counter |  1 +
- .context/working/.budget-status       |  1 +
- .context/working/.compact-log         |  1 +
- .context/working/focus.yaml           |  2 +-
- .context/working/session.yaml         |  2 +-
- 6 files changed, 13 insertions(+), 26 deletions(-)
-7c4dcc0 T-141: Fix create-task.sh to use default.md template + fix P-011 HTML comments
- agents/task-create/create-task.sh | 32 ++++++++++++++++++++++++--------
- agents/task-create/update-task.sh | 10 ++++++++--
- 2 files changed, 32 insertions(+), 10 deletions(-)
-f0ad798 T-140: Inception complete — template wiring root cause + L-044/L-045/L-046
- .context/episodic/T-140.yaml                       | 68 +++++++++++++++
- .context/project/learnings.yaml                    | 24 ++++++
- ...141-fix-create-tasksh-template-wiring--backf.md | 38 +++++++++
- ...140-fix-sprechloop-knowledge-gap--backfill--.md | 97 ++++++++++++++++++++++
- 4 files changed, 227 insertions(+)
-24ced2e T-012: Enriched handover S-2026-0218-0838 — all TODO sections filled
- .context/handovers/LATEST.md           | 88 +++++++++++-----------------------
- .context/handovers/S-2026-0218-0838.md | 88 +++++++++++-----------------------
- 2 files changed, 54 insertions(+), 122 deletions(-)
-2a4b23a T-012: Session handover S-2026-0218-0838
- .context/handovers/LATEST.md           | 192 ++++++++++++++++++++++-----------
- .context/handovers/S-2026-0218-0838.md | 139 ++++++++++++++++++++++++
- 2 files changed, 271 insertions(+), 60 deletions(-)
-```
+### T-129: Inception template: Technical Constraints section
+- **Status:** captured (horizon: next)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
 
-## Recovery Instructions
+<!-- horizon: later -->
 
-1. Run `fw resume status` to synthesize full state
-2. Check git log for recent work: `git log --oneline -10`
-3. Review uncommitted changes above
-4. Check active task files for inline updates
+### T-120: Review Google Context Engineering whitepaper against framework
+- **Status:** captured (horizon: later)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
+- **Status:** captured (horizon: later)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+### T-131: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions
+- **Status:** captured (horizon: later)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+### T-132: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework
+- **Status:** captured (horizon: later)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+### T-133: Watchtower: Docs page — auto-discover and surface project design docs
+- **Status:** captured (horizon: later)
+- **Last action:** [TODO: What was just done on this task]
+- **Next step:** [TODO: What should happen next]
+- **Blockers:** [TODO: Any blockers, or "None"]
+- **Insight:** [TODO: Key understanding gained, if any]
+
+## Inception Phases
+
+**6 inception task(s) pending decision** — run `fw inception status` for details.
+
+## Gaps Register
+
+**1 spec-reality gap(s) being watched** — see `.context/project/gaps.yaml`
+
+- **G-004** [low]: Multi-agent collaboration untested
+
+Run `fw audit` to check if any trigger conditions are met.
+
+## Decisions Made This Session
+
+[TODO: List key decisions with rationale and rejected alternatives]
+
+1. **[Decision]**
+   - Why: [rationale]
+   - Alternatives rejected: [what else was considered]
+
+## Things Tried That Failed
+
+[TODO: Document failed approaches to prevent repetition]
+
+1. **[Approach]** — [why it didn't work]
+
+## Open Questions / Blockers
+
+[TODO: List unresolved questions and blockers]
+
+1. [Question or blocker]
+
+## Gotchas / Warnings for Next Session
+
+[TODO: Things the next session should watch out for]
+
+- [Gotcha]
+
+## Suggested First Action
+
+[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+
+## Files Changed This Session
+
+[TODO: List created and modified files]
+
+- Created:
+- Modified:
+
+## Recent Commits
+
+- a8d2da5 T-012: Emergency handover S-2026-0218-0913
+- f50db82 T-141: Template fix + verification gate fix + T-140/T-141 task artifacts
+- 7c4dcc0 T-141: Fix create-task.sh to use default.md template + fix P-011 HTML comments
+- f0ad798 T-140: Inception complete — template wiring root cause + L-044/L-045/L-046
+- 24ced2e T-012: Enriched handover S-2026-0218-0838 — all TODO sections filled
+
+---
+
+## Handover Quality Feedback (for next session to complete)
+
+- Did this handover help? [ ]
+- What was missing?
+- What was unnecessary?
