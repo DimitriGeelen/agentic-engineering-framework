@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Session resumed after context compaction. Completed T-153 (sprechloop CLAUDE.md sync). Created 4 Watchtower kanban UX inception tasks (T-154-157). Ran deep testing strategy inception (T-158) with 3 parallel research agents — resulted in GO decision and 5 remediation build/test tasks (T-159-163). Investigated a session crash caused by sub-agent dispatch protocol violation (L-053, G-008). Created governance inheritance inception (T-164) after discovering sprechloop has 0 practices despite 33 tasks. All work committed, all research persisted.
 
 ## Work in Progress
 
@@ -22,105 +22,87 @@ session_narrative: ""
 
 ### T-154: "Kanban card inline owner selector"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created as inception task — no exploration started
+- **Next step:** Explore owner values (human/agent/other), UX placement, backend endpoint
+- **Blockers:** None
+- **Insight:** T-152 established the inline dropdown pattern (horizon selector) — reuse same HTMX form pattern
 
 ### T-155: "Kanban card inline status selector at top"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created as inception task — no exploration started
+- **Next step:** Explore valid status transitions, UX of card moving between columns, placement at top of card
+- **Blockers:** None
+- **Insight:** Status changes move cards between kanban columns — need to handle DOM update after change
 
 ### T-156: "Kanban card inline workflow type selector"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created as inception task — no exploration started
+- **Next step:** Explore whether workflow type should be mutable after creation, which types to offer
+- **Blockers:** None
+- **Insight:** workflow_type is usually set once at creation — changing it may need validation rules
 
 ### T-157: "Show active project name at top of Watchtower"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created as inception task — no exploration started
+- **Next step:** Explore detection method (.framework.yaml, git remote, directory name), styling
+- **Blockers:** None
+- **Insight:** shared.py already resolves PROJECT_ROOT — project name derivable from there
 
 ### T-159: "Test infrastructure — bats framework, test runner, fw test command"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created from T-158 GO decision — no implementation started
+- **Next step:** Install bats, create tests/ directory structure, wire `fw test` command
+- **Blockers:** None — T-160/T-161/T-162 depend on this
+- **Insight:** Research in `.context/research/T-158-bash-audit.md` — 44 scripts, 10 EASY targets
 
 ### T-160: "Bash unit tests — 10 EASY scripts (pure logic, no I/O)"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created from T-158 — depends on T-159 (test infrastructure)
+- **Next step:** After T-159: write bats tests for diagnose.sh, log.sh, focus.sh, common.sh first (highest ROI)
+- **Blockers:** T-159 must complete first
+- **Insight:** 569 lines of pure logic, 100% testable without mocking
 
 ### T-161: "Hook and gate integration tests — 5 critical enforcement scripts"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created from T-158 — depends on T-159 (test infrastructure)
+- **Next step:** After T-159: mock JSONL transcripts for budget-gate.sh, mock focus.yaml for check-active-task.sh
+- **Blockers:** T-159 must complete first
+- **Insight:** 0% coverage on critical path — highest risk area. test-tier0-patterns.py (47 tests) shows the pattern
 
 ### T-162: "Web edge case tests — subprocess timeouts, error parsing, malformed YAML"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created from T-158 — independent of T-159 (uses existing pytest)
+- **Next step:** Extend test_app.py with subprocess.TimeoutExpired mocks for all 18 fw CLI calls
+- **Blockers:** None — can start independently
+- **Insight:** Research in `.context/research/T-158-web-audit.md` — 38 routes, 18 subprocess calls
 
 ### T-163: "Regression suite runner — single command to validate framework health"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Created from T-158 — depends on T-160/T-161/T-162
+- **Next step:** After tests exist: create `fw test` that runs ShellCheck + bats + pytest + tier0 patterns
+- **Blockers:** T-160, T-161, T-162 should have tests first
+- **Insight:** Should integrate with fw doctor (add test check) and consider pre-push hook
 
 ### T-164: "Governance inheritance — should fw init seed practices and patterns from framework"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Deep analysis completed — framework has 149 governance entries, sprechloop has 37. All 10 practices are universal but not inherited. Task enriched with findings.
+- **Next step:** Evaluate inheritance models (copy vs reference vs tiered), spike `fw init` changes
+- **Blockers:** None
+- **Insight:** Research in `.context/research/T-164-framework-governance.md` and `T-164-sprechloop-governance.md`. Three categories: inherited (practices, patterns), seeded (failure patterns), project-specific (decisions, learnings)
 
 <!-- horizon: next -->
 
 ### T-151: "Investigate audit tasks as cronjobs"
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Demoted from started-work to captured, horizon now → next (human-owned specification task)
+- **Next step:** Human to define which enforcement rules / quality checks are good cron candidates
+- **Blockers:** None — waiting for human specification
+- **Insight:** Related to T-158 testing work — cron-based audit checks complement regression tests
 
 <!-- horizon: later -->
 
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-133: Watchtower: Docs page — auto-discover and surface project design docs
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-120, T-130, T-133 — Backlog (horizon: later)
+- All captured, no work done this session. Parked for future consideration.
 
 ## Inception Phases
 
@@ -137,40 +119,38 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **T-158: GO on testing strategy** — 8/10 historical bugs preventable, 0% critical path coverage, directives D1+D2 demand it
+   - Rejected: status quo (usage-based validation) — survivorship bias, no regression prevention
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **4 background agents with TaskOutput retrieval** — Crashed session for 12m40s. Each agent returned 30K chars of raw JSONL transcript via TaskOutput. Root cause: prompts said "return summary" instead of "write to file". Correct pattern: agents write to disk, orchestrator reads files. Documented in `.context/research/T-158-crash-investigation.md`, registered as L-053 + G-008.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. T-164: Which inheritance model for practices? (copy vs reference vs tiered) — needs spike
+2. T-154-157: Should all 4 kanban UX tasks be done as one batch or individually? User preference.
+3. T-159: bats installation method — apt-get vs git clone vs npm?
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Web servers running on :3000 and :3001 — may need restart if Flask templates changed
+- T-160/T-161 depend on T-159 (test infrastructure) — don't start them before T-159 is done
+- T-162 is independent — can start in parallel with T-159
+- Sub-agent dispatch: ALWAYS tell agents to write to files, NEVER use TaskOutput for large results
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+**Start T-159** (test infrastructure) — it unblocks T-160, T-161, and T-163. Install bats, create `tests/` directory structure, wire `fw test`. This is the foundation for the entire testing remediation.
+
+Alternatively, if the user wants UX work first: batch T-154-157 kanban enhancements (all follow the T-152 horizon dropdown pattern).
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `.context/research/T-158-bash-audit.md`, `T-158-web-audit.md`, `T-158-hooks-and-bugs.md`, `T-158-crash-investigation.md`, `T-164-framework-governance.md`, `T-164-sprechloop-governance.md`
+- Created: `.tasks/active/T-154` through `T-164` (11 new tasks), `.tasks/completed/T-158`
+- Created: `.context/episodic/T-153.yaml`, `T-158.yaml`
+- Modified: `CLAUDE.md` (T-153 rules), `/opt/001-sprechloop/CLAUDE.md` (T-153 sync), `.context/project/gaps.yaml` (G-008), `.context/project/learnings.yaml` (L-053)
 
 ## Recent Commits
 
