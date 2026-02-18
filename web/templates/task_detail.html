@@ -1,5 +1,66 @@
+<style>
+/* ── Inline name editing ──────────────────────────────── */
+.editable-name {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--pico-muted-border-color);
+    transition: border-color 0.15s;
+}
+.editable-name:hover {
+    border-bottom-color: var(--pico-primary);
+}
+.name-edit-input {
+    font-size: inherit;
+    font-weight: inherit;
+    padding: 0.1rem 0.3rem;
+    margin: 0;
+    width: 100%;
+    border: 1px solid var(--pico-primary);
+    border-radius: var(--pico-border-radius);
+    background: var(--pico-background-color);
+}
+/* ── AC checkboxes ────────────────────────────────────── */
+.ac-list {
+    list-style: none;
+    padding-left: 0;
+}
+.ac-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+}
+.ac-list li input[type="checkbox"] {
+    margin-top: 0.2rem;
+    cursor: pointer;
+}
+.ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+/* ── Description editing ──────────────────────────────── */
+.editable-desc {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--pico-border-radius);
+    transition: background 0.15s;
+}
+.editable-desc:hover {
+    background: var(--pico-primary-focus);
+}
+.desc-edit-textarea {
+    width: 100%;
+    min-height: 4rem;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    margin: 0;
+}
+</style>
+
 <div class="page-header">
-    <h1>{{ task.id }}: {{ task.name }}</h1>
+    <h1 id="task-title">
+        {{ task.id }}:
+        <span class="editable-name"
+              onclick="startNameEdit(this, '{{ task_id }}')"
+              title="Click to edit">{{ task.name }}</span>
+    </h1>
 </div>
 
 <!-- Task metadata -->
@@ -62,11 +123,46 @@
     </div>
 </div>
 
-<!-- Description -->
+<!-- Description (click to edit) -->
 {% if task.description %}
 <details open>
     <summary><strong>Description</strong></summary>
-    <p>{{ task.description }}</p>
+    <div id="desc-display">
+        <p class="editable-desc" onclick="startDescEdit('{{ task_id }}')" title="Click to edit">{{ task.description }}</p>
+    </div>
+    <div id="desc-edit" style="display:none;">
+        <form hx-post="/api/task/{{ task_id }}/description" hx-target="#desc-result" hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <textarea name="description" class="desc-edit-textarea">{{ task.description }}</textarea>
+            <div style="display:flex;gap:0.5rem;margin-top:0.25rem;">
+                <button type="submit" style="padding:0.3rem 0.75rem;font-size:0.8rem;">Save</button>
+                <button type="button" onclick="cancelDescEdit()" class="outline" style="padding:0.3rem 0.75rem;font-size:0.8rem;">Cancel</button>
+            </div>
+        </form>
+        <div id="desc-result"></div>
+    </div>
+</details>
+{% endif %}
+
+<!-- Acceptance Criteria (interactive checkboxes) -->
+{% if ac_items %}
+<details open>
+    <summary><strong>Acceptance Criteria</strong> <small>({{ ac_items|selectattr(1)|list|length }}/{{ ac_items|length }})</small></summary>
+    <ul class="ac-list">
+        {% for line_idx, checked, text in ac_items %}
+        <li>
+            <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input" hx-swap="outerHTML"
+                  style="margin:0;padding:0;display:inline;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ line_idx }}">
+                <input type="checkbox" {% if checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
+            <span class="{% if checked %}ac-checked{% endif %}">{{ text }}</span>
+        </li>
+        {% endfor %}
+    </ul>
 </details>
 {% endif %}
 
@@ -158,3 +254,52 @@
     <pre><code>{{ task_content }}</code></pre>
 </details>
 {% endif %}
+
+<script>
+/* ── Inline name editing ──────────────────────────────── */
+function startNameEdit(span, taskId) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'name-edit-input';
+
+    function save() {
+        var newName = input.value.trim();
+        if (!newName || newName === current) {
+            input.replaceWith(span);
+            return;
+        }
+        var fd = new FormData();
+        fd.append('name', newName);
+        fd.append('_csrf_token', '{{ csrf_token() }}');
+        fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
+            .then(function(r) { return r.text(); })
+            .then(function() {
+                span.textContent = newName;
+                input.replaceWith(span);
+            })
+            .catch(function() { input.replaceWith(span); });
+    }
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { input.replaceWith(span); }
+    });
+
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+
+/* ── Description editing ──────────────────────────────── */
+function startDescEdit(taskId) {
+    document.getElementById('desc-display').style.display = 'none';
+    document.getElementById('desc-edit').style.display = 'block';
+}
+function cancelDescEdit() {
+    document.getElementById('desc-edit').style.display = 'none';
+    document.getElementById('desc-display').style.display = 'block';
+}
+</script>

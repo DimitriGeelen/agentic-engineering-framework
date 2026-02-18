@@ -273,6 +273,26 @@ main.container:has(.tasks-toolbar) {
     text-align: center;
     padding: 1rem 0;
 }
+/* ── Editable name on Kanban cards ─────────────────────── */
+.editable-kanban-name {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s;
+}
+.editable-kanban-name:hover {
+    border-bottom-color: var(--pico-primary);
+    white-space: normal;
+}
+.kanban-name-input {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.2rem;
+    margin: 0;
+    width: 100%;
+    border: 1px solid var(--pico-primary);
+    border-radius: 3px;
+    background: var(--pico-background-color);
+    line-height: 1.25;
+}
 
 /* ── List View Inline Status ────────────────────────────── */
 .inline-status-select {
@@ -437,7 +457,8 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                 </select>
             </form>
         </div>
-        <span class="kanban-card-name" title="{{ task.name }}">{{ task.name }}</span>
+        <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
+              onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
         <div class="kanban-card-meta">
             <form hx-post="/api/task/{{ task.id }}/type" style="margin:0;padding:0;display:inline;"
                   hx-target="closest .kanban-card" hx-swap="none">
@@ -530,8 +551,56 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     </div>
 </div>
 
-<!-- Reload after status/create actions -->
+<!-- Inline editing + reload after actions -->
 <script>
+/* ── Kanban card name editing ─────────────────────────── */
+function startKanbanNameEdit(span, taskId) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'kanban-name-input';
+
+    function save() {
+        var newName = input.value.trim();
+        if (!newName || newName === current) {
+            span.textContent = current;
+            input.replaceWith(span);
+            return;
+        }
+        var fd = new FormData();
+        fd.append('name', newName);
+        var csrf = input.closest('.kanban-card').querySelector('input[name="_csrf_token"]');
+        if (csrf) fd.append('_csrf_token', csrf.value);
+        fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
+            .then(function(r) {
+                if (r.ok) {
+                    span.textContent = newName;
+                    span.title = newName;
+                } else {
+                    span.textContent = current;
+                }
+                input.replaceWith(span);
+            })
+            .catch(function() {
+                span.textContent = current;
+                input.replaceWith(span);
+            });
+    }
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { span.textContent = current; input.replaceWith(span); }
+    });
+    // Prevent card link navigation when clicking the input
+    input.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+
 document.addEventListener('htmx:afterRequest', function(event) {
     var form = event.detail.elt;
     if (!form || !event.detail.successful) return;
@@ -612,7 +681,9 @@ document.addEventListener('htmx:afterRequest', function(event) {
         <tr>
             <td><a href="/tasks/{{ task.id }}"
                    hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a></td>
-            <td>{{ task.name }}</td>
+            <td><span class="editable-kanban-name" style="white-space:normal;"
+                      onclick="startKanbanNameEdit(this, '{{ task.id }}')"
+                      title="Click to edit">{{ task.name }}</span></td>
             <td>
                 <form hx-post="/api/task/{{ task.id }}/status"
                       hx-target="next .status-update-result"

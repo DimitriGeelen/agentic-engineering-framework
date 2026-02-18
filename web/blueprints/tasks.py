@@ -3,6 +3,7 @@
 import os
 import re as re_mod
 import subprocess
+from datetime import datetime, timezone
 
 import yaml
 from flask import Blueprint, abort, request
@@ -10,6 +11,97 @@ from flask import Blueprint, abort, request
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
 bp = Blueprint("tasks", __name__)
+
+
+# ---------------------------------------------------------------------------
+# Helpers — file finding and frontmatter editing (T-181 spike)
+# ---------------------------------------------------------------------------
+
+def _find_task_file(task_id):
+    """Find the task markdown file by ID. Returns Path or None."""
+    for location in ["active", "completed"]:
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if task_dir.exists():
+            for f in task_dir.glob(f"{task_id}-*.md"):
+                return f
+    return None
+
+
+def _update_frontmatter_field(file_path, field, value):
+    """Update a single-line YAML frontmatter field using regex.
+
+    Uses line-level replacement to avoid yaml.dump() formatting changes.
+    Only works for simple scalar fields (name, description single-line, etc.).
+    Returns (success, error_message).
+    """
+    content = file_path.read_text()
+    fm_match = re_mod.match(r"^(---\n)(.*?)(\n---)", content, re_mod.DOTALL)
+    if not fm_match:
+        return False, "Cannot parse frontmatter"
+
+    frontmatter = fm_match.group(2)
+
+    # Escape value for YAML — wrap in quotes if it contains special chars
+    if any(c in str(value) for c in ':{}[]&*?|->!%@`,"\'#'):
+        safe_value = '"' + str(value).replace('\\', '\\\\').replace('"', '\\"') + '"'
+    else:
+        safe_value = str(value)
+
+    # Replace the field line (handles both quoted and unquoted values)
+    pattern = re_mod.compile(rf'^({re_mod.escape(field)}:\s*).*$', re_mod.MULTILINE)
+    if not pattern.search(frontmatter):
+        return False, f"Field '{field}' not found in frontmatter"
+
+    new_frontmatter = pattern.sub(rf'\g<1>{safe_value}', frontmatter, count=1)
+
+    # Also update last_update timestamp
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts_pattern = re_mod.compile(r'^(last_update:\s*).*$', re_mod.MULTILINE)
+    new_frontmatter = ts_pattern.sub(rf'\g<1>{ts}', new_frontmatter)
+
+    new_content = fm_match.group(1) + new_frontmatter + fm_match.group(3) + content[fm_match.end():]
+    file_path.write_text(new_content)
+    return True, None
+
+
+def _parse_acceptance_criteria(body_text):
+    """Parse AC checkboxes from task body. Returns list of (line_idx, checked, text)."""
+    criteria = []
+    for i, line in enumerate(body_text.split('\n')):
+        m = re_mod.match(r'^- \[([ xX])\] (.+)$', line)
+        if m:
+            criteria.append((i, m.group(1).lower() == 'x', m.group(2)))
+    return criteria
+
+
+def _toggle_ac_line(file_path, line_idx):
+    """Toggle an AC checkbox at a specific line index in the body.
+
+    Returns (success, new_state, error_message).
+    """
+    content = file_path.read_text()
+    fm_match = re_mod.match(r"^---\n.*?\n---\n", content, re_mod.DOTALL)
+    if not fm_match:
+        return False, False, "Cannot parse file"
+
+    body_start = fm_match.end()
+    body = content[body_start:]
+    lines = body.split('\n')
+
+    if line_idx < 0 or line_idx >= len(lines):
+        return False, False, "Line index out of range"
+
+    line = lines[line_idx]
+    m = re_mod.match(r'^(- \[)([ xX])(\] .+)$', line)
+    if not m:
+        return False, False, "Not an AC checkbox line"
+
+    new_state = m.group(2).strip() == ''  # toggle: unchecked → checked
+    lines[line_idx] = m.group(1) + ('x' if new_state else ' ') + m.group(3)
+
+    new_content = content[:body_start] + '\n'.join(lines)
+    file_path.write_text(new_content)
+    return True, new_state, None
 
 
 @bp.route("/tasks")
@@ -153,6 +245,9 @@ def task_detail(task_id):
 
     status_options = ["captured", "started-work", "issues", "work-completed"]
 
+    # Parse AC checkboxes for interactive rendering
+    ac_items = _parse_acceptance_criteria(task_content)
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -161,6 +256,7 @@ def task_detail(task_id):
         episodic=episodic,
         task_id=task_id,
         status_options=status_options,
+        ac_items=ac_items,
     )
 
 
@@ -333,3 +429,104 @@ def update_task_status(task_id):
             )
     except Exception as e:
         return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+
+
+# ---------------------------------------------------------------------------
+# Inline editing API endpoints (T-181 spike)
+# ---------------------------------------------------------------------------
+
+@bp.route("/api/task/<task_id>/name", methods=["POST"])
+def update_task_name(task_id):
+    """Update task name via regex frontmatter editing."""
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    name = request.form.get("name", "").strip()
+    if not name:
+        return '<p style="color: var(--pico-del-color);">Name cannot be empty</p>', 400
+    if len(name) > 200:
+        return '<p style="color: var(--pico-del-color);">Name too long (max 200)</p>', 400
+
+    task_file = _find_task_file(task_id)
+    if not task_file:
+        abort(404)
+
+    ok, err = _update_frontmatter_field(task_file, "name", name)
+    if ok:
+        return f'<span class="kanban-card-name" title="{name}">{name}</span>'
+    return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500
+
+
+@bp.route("/api/task/<task_id>/toggle-ac", methods=["POST"])
+def toggle_ac(task_id):
+    """Toggle an acceptance criteria checkbox."""
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    try:
+        line_idx = int(request.form.get("line", "-1"))
+    except (TypeError, ValueError):
+        return '<p style="color: var(--pico-del-color);">Invalid line index</p>', 400
+
+    task_file = _find_task_file(task_id)
+    if not task_file:
+        abort(404)
+
+    ok, new_state, err = _toggle_ac_line(task_file, line_idx)
+    if ok:
+        checked_attr = "checked" if new_state else ""
+        return f'<input type="checkbox" {checked_attr} disabled style="margin:0;">'
+    return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500
+
+
+@bp.route("/api/task/<task_id>/description", methods=["POST"])
+def update_task_description(task_id):
+    """Update task description (single-line only for now)."""
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    desc = request.form.get("description", "").strip()
+    if not desc:
+        return '<p style="color: var(--pico-del-color);">Description cannot be empty</p>', 400
+
+    task_file = _find_task_file(task_id)
+    if not task_file:
+        abort(404)
+
+    # For multi-line descriptions (using > or |), we need to replace the whole block.
+    # For now, only handle the simple single-line case as a spike.
+    content = task_file.read_text()
+    fm_match = re_mod.match(r"^(---\n)(.*?)(\n---)", content, re_mod.DOTALL)
+    if not fm_match:
+        return '<p style="color: var(--pico-del-color);">Cannot parse frontmatter</p>', 500
+
+    frontmatter = fm_match.group(2)
+
+    # Replace description block — handles both single-line and multi-line (> folded)
+    # Pattern: description: > \n  indented lines... (until next non-indented key)
+    # Or: description: "single line"
+    desc_pattern = re_mod.compile(
+        r'^description:.*?(?=\n[a-z_]+:|\Z)', re_mod.MULTILINE | re_mod.DOTALL
+    )
+    if not desc_pattern.search(frontmatter):
+        return '<p style="color: var(--pico-del-color);">Description field not found</p>', 500
+
+    # Use folded scalar for multi-line, plain for single-line
+    if '\n' in desc or len(desc) > 80:
+        # Folded scalar style
+        indented = '\n'.join('  ' + line for line in desc.split('\n'))
+        new_desc = f'description: >\n{indented}'
+    else:
+        safe = '"' + desc.replace('\\', '\\\\').replace('"', '\\"') + '"'
+        new_desc = f'description: {safe}'
+
+    new_frontmatter = desc_pattern.sub(new_desc, frontmatter, count=1)
+
+    # Update last_update
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts_pattern = re_mod.compile(r'^(last_update:\s*).*$', re_mod.MULTILINE)
+    new_frontmatter = ts_pattern.sub(rf'\g<1>{ts}', new_frontmatter)
+
+    new_content = fm_match.group(1) + new_frontmatter + fm_match.group(3) + content[fm_match.end():]
+    task_file.write_text(new_content)
+    return f'<p style="color: var(--pico-ins-color);">Description updated</p>'
