@@ -234,10 +234,12 @@ GYAML
         generic)
             generate_claude_md "$target_dir"
             echo -e "  ${GREEN}OK${NC}  CLAUDE.md (generic — works with any provider)"
+            generate_claude_code_config "$target_dir"
             ;;
         *)
             echo -e "  ${YELLOW}WARN${NC}  Unknown provider '$provider', using generic"
             generate_claude_md "$target_dir"
+            generate_claude_code_config "$target_dir"
             ;;
     esac
 
