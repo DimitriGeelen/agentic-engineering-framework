@@ -4,15 +4,15 @@ name: "Bash unit tests — 10 EASY scripts (pure logic, no I/O)"
 description: >
   Write bats unit tests for the 10 EASY-rated scripts: context.sh, log.sh, healing.sh, focus.sh, common.sh, bus-handler.sh, status.sh (git), suggest.sh, pre-compact.sh, diagnose.sh. Target: 569 lines covered, 100% of pure logic. Ref: T-158, /tmp/T-158-bash-audit.md
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:41Z
-last_update: 2026-02-18T13:30:41Z
-date_finished: null
+last_update: 2026-02-18T15:16:45Z
+date_finished: 2026-02-18T15:16:45Z
 ---
 
 # T-160: Bash unit tests — 10 EASY scripts (pure logic, no I/O)
@@ -52,3 +52,6 @@ bats tests/unit/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-160-bash-unit-tests--10-easy-scripts-pure-lo.md
 - **Context:** Initial task creation
+
+### 2026-02-18T15:16:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
