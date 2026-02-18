@@ -198,6 +198,31 @@ else
     echo "  SKIP default.md template not found"
 fi
 
+# --- Test 10: task names with colons produce valid YAML ---
+echo ""
+echo "Test 10: Task names with colons are quoted in frontmatter"
+
+rm -f "$TEST_PROJECT/.tasks/active/"T-*.md 2>/dev/null
+PROJECT_ROOT="$TEST_PROJECT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" --name "Spike: test colon handling" --type build --owner human --description "Verify colons" >/dev/null 2>&1
+TASK_FILE=$(ls "$TEST_PROJECT/.tasks/active/"T-*.md 2>/dev/null | head -1)
+if [ -n "$TASK_FILE" ]; then
+    python3 -c "
+import yaml, re, sys
+text = open('$TASK_FILE').read()
+fm = re.match(r'^---\n(.*?)\n---', text, re.DOTALL)
+if fm:
+    data = yaml.safe_load(fm.group(1))
+    assert isinstance(data, dict), 'frontmatter not a dict'
+    assert 'Spike' in data.get('name', ''), f'name wrong: {data.get(\"name\")}'
+    print('ok')
+else:
+    print('no frontmatter')
+    sys.exit(1)
+" 2>/dev/null && pass "task with colon in name parses as valid YAML" || fail "task with colon in name breaks YAML"
+else
+    fail "no task file created for colon test"
+fi
+
 # --- Summary ---
 echo ""
 echo "=== Results: $PASS passed, $FAIL failed ==="
