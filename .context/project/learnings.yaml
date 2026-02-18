@@ -333,4 +333,20 @@ learnings:
     date: 2026-02-18
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-042
+    learning: "Agent itself skipped inception for T-138 (cron budget redesign) — created build task, then design, never inception. This happened IN THE SAME SESSION where we analyzed 54 commits of the sprechloop agent doing the exact same thing. Proof that L-038 is correct: behavioral rules fail even when the agent knows the rule, can recite it, and just finished analyzing violations of it. The inception gate (structural enforcement) is the only reliable prevention."
+    source: T-138 inception skip — self-inflicted
+    task: T-138
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
+
+  - id: L-043
+    learning: "Agent must check context budget (checkpoint.sh status) at EVERY decision point — before spawning agents, before starting new work, before proposing next steps. In this session, agent never checked budget once despite being at 80% (160K tokens) while doing heavy multi-agent dispatches. The budget monitoring system we are redesigning failed to protect the very session designing its replacement."
+    source: T-138 session — zero budget checks
+    task: T-138
+    date: 2026-02-18
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
