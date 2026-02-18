@@ -1,154 +1,74 @@
 ---
 session_id: S-2026-0218-1629
-timestamp: 2026-02-18T15:29:00Z
-predecessor: S-2026-0218-1556
+timestamp: 2026-02-18T15:29:04Z
+type: emergency
+predecessor: S-2026-0218-1629
 tasks_active: [T-120, T-130, T-133, T-151, T-154, T-155, T-156, T-157, T-162]
-tasks_touched: [T-155, T-151, T-162, T-130, T-157, T-133, T-156, T-154, T-120, T-XXX, T-XXX, T-166, T-134, T-140, T-145, T-132, T-139, T-153, T-152, T-097, T-122, T-123, T-149, T-135, T-127, T-131, T-126, T-144, T-045, T-107, T-142, T-165, T-129, T-148, T-128, T-110, T-136, T-163, T-111, T-137, T-146, T-161, T-164, T-158, T-143, T-141, T-159, T-147, T-138, T-125, T-124, T-121, T-160]
-tasks_completed: []
-uncommitted_changes: 4
+uncommitted_changes: 6
 owner: claude-code
-session_narrative: ""
 ---
 
-# Session Handover: S-2026-0218-1629
+# EMERGENCY Handover: S-2026-0218-1629
+
+> Auto-generated due to context exhaustion risk. No manual sections.
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Emergency handover on branch `master` with 6 uncommitted change(s).
 
-## Work in Progress
+## Active Tasks
 
-<!-- horizon: now -->
+- **T-120**: Review Google Context Engineering whitepaper against framework (captured)
+- **T-130**: Investigate GSD (get-shit-done) for usable concepts, skills, patterns (captured)
+- **T-133**: "Watchtower: Docs page — auto-discover and surface project design docs" (captured)
+- **T-151**: "Investigate audit tasks as cronjobs" (captured)
+- **T-154**: "Kanban card inline owner selector" (started-work)
+- **T-155**: "Kanban card inline status selector at top" (started-work)
+- **T-156**: "Kanban card inline workflow type selector" (started-work)
+- **T-157**: "Show active project name at top of Watchtower" (started-work)
+- **T-162**: "Web edge case tests — subprocess timeouts, error parsing, malformed YAML" (captured)
 
-### T-154: "Kanban card inline owner selector"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+## Uncommitted Changes
 
-### T-155: "Kanban card inline status selector at top"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+```
+ M .context/audits/2026-02-18.yaml
+ M .context/working/.budget-gate-counter
+ M .context/working/.budget-status
+ M .context/working/.handover-cooldown
+ M .context/working/focus.yaml
+?? .context/working/.handover-in-progress
+```
 
-### T-156: "Kanban card inline workflow type selector"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+## Recent Commits (with stats)
 
-### T-157: "Show active project name at top of Watchtower"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+```
+7667857 T-012: Session handover S-2026-0218-1629
+ .context/handovers/LATEST.md           | 231 +++++++++++++++++++++------------
+ .context/handovers/S-2026-0218-1629.md | 154 ++++++++++++++++++++++
+ 2 files changed, 301 insertions(+), 84 deletions(-)
+257e4ce T-163: Complete — regression suite runner with doctor integration
+ .context/episodic/T-163.yaml                       | 77 ++++++++++++++++++++++
+ ...163-regression-suite-runner--single-command-.md |  9 ++-
+ 2 files changed, 83 insertions(+), 3 deletions(-)
+00aa01c T-163: Regression suite runner — fw doctor test check, fw test help
+ ...163-regression-suite-runner--single-command-.md | 21 +++++++++------------
+ bin/fw                                             | 22 ++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 12 deletions(-)
+0229bfb T-161: Complete — 76 integration tests for critical hooks, all passing
+ .context/episodic/T-161.yaml                       | 81 ++++++++++++++++++++++
+ ...161-hook-and-gate-integration-tests--5-criti.md |  9 ++-
+ 2 files changed, 87 insertions(+), 3 deletions(-)
+8eab7a2 T-161: Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog
+ ...161-hook-and-gate-integration-tests--5-criti.md |  20 +-
+ tests/integration/check_active_task.bats           | 267 +++++++++++++++++++++
+ tests/integration/check_tier0.bats                 | 266 ++++++++++++++++++++
+ tests/integration/error_watchdog.bats              | 238 ++++++++++++++++++
+ 4 files changed, 779 insertions(+), 12 deletions(-)
+```
 
-### T-162: "Web edge case tests — subprocess timeouts, error parsing, malformed YAML"
-- **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+## Recovery Instructions
 
-<!-- horizon: next -->
-
-### T-151: "Investigate audit tasks as cronjobs"
-- **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-<!-- horizon: later -->
-
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-133: "Watchtower: Docs page — auto-discover and surface project design docs"
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-## Inception Phases
-
-**7 inception task(s) pending decision** — run `fw inception status` for details.
-
-## Gaps Register
-
-**2 spec-reality gap(s) being watched** — see `.context/project/gaps.yaml`
-
-- **G-004** [low]: Multi-agent collaboration untested
-- **G-008** [medium]: Sub-agent dispatch protocol has no structural enforcement
-
-Run `fw audit` to check if any trigger conditions are met.
-
-## Decisions Made This Session
-
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
-
-## Things Tried That Failed
-
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
-
-## Open Questions / Blockers
-
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
-
-## Gotchas / Warnings for Next Session
-
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
-
-## Suggested First Action
-
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
-
-## Files Changed This Session
-
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
-
-## Recent Commits
-
-- 257e4ce T-163: Complete — regression suite runner with doctor integration
-- 00aa01c T-163: Regression suite runner — fw doctor test check, fw test help
-- 0229bfb T-161: Complete — 76 integration tests for critical hooks, all passing
-- 8eab7a2 T-161: Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog
-- b5c1690 T-160: Complete — 84 bats unit tests, all passing
-
----
-
-## Handover Quality Feedback (for next session to complete)
-
-- Did this handover help? [ ]
-- What was missing?
-- What was unnecessary?
+1. Run `fw resume status` to synthesize full state
+2. Check git log for recent work: `git log --oneline -10`
+3. Review uncommitted changes above
+4. Check active task files for inline updates
