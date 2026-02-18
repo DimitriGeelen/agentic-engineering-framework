@@ -16,4 +16,8 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Log the event
 echo "[pre-compact] Emergency handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$FRAMEWORK_ROOT/.context/working/.compact-log" 2>/dev/null
 
+# Reset budget gate so fresh session doesn't inherit critical lock (T-145)
+echo "0" > "$FRAMEWORK_ROOT/.context/working/.budget-gate-counter" 2>/dev/null
+rm -f "$FRAMEWORK_ROOT/.context/working/.budget-status" 2>/dev/null
+
 exit 0

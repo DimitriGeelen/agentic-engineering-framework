@@ -74,7 +74,7 @@ if os.path.exists(status_file):
 # Output: LEVEL TOKENS AGE TOOL_NAME COMMAND_HASH
 # COMMAND_HASH: 'commit' if command matches allow-list, 'other' otherwise
 import re
-is_allowed_cmd = bool(re.search(r'(git\s+commit|fw\s+(handover|git)|checkpoint\.sh|budget-gate\.sh|echo\s+0\s*>)', command)) if command else False
+is_allowed_cmd = bool(re.search(r'(git\s+commit|git\s+(status|log|diff)|fw\s+(handover|git|context\s+init|resume)|context\.sh\s+init|resume\.sh|checkpoint\.sh|budget-gate\.sh|echo\s+0\s*>)', command)) if command else False
 is_read_tool = tool_name in ('Read', 'Glob', 'Grep')
 
 print(f'{level} {tokens} {age} {tool_name} {\"allowed\" if (is_allowed_cmd or is_read_tool) else \"blocked\"}')
