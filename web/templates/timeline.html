@@ -4,12 +4,13 @@
 </div>
 
 {% for session in sessions %}
-<article>
+<article{% if session.is_emergency %} style="opacity: 0.6; border-left: 3px solid var(--pico-del-color); padding-left: 0.75rem;"{% endif %}>
     <details>
         <summary>
+            {% if session.is_emergency %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; background: var(--pico-del-color); color: white; border-radius: 3px;">emergency</mark> {% endif %}
             <strong>{{ session.id }}</strong>
             <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
-            — {% if session.narrative_short %}{{ session.narrative_short }} ({{ session.touched_count }} tasks){% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
+            — {% if session.narrative_short %}{{ session.narrative_short }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
         </summary>
 
         <!-- Level 2: Session narrative + task list -->
@@ -18,6 +19,7 @@
             <blockquote>{{ session.narrative }}</blockquote>
             {% endif %}
 
+            {% if session.tasks_touched %}
             <h4>Tasks Touched</h4>
             <ul>
                 {% for t in session.tasks_touched %}
@@ -27,6 +29,7 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% endif %}
 
             {% if session.tasks_completed %}
             <h4>Tasks Completed</h4>

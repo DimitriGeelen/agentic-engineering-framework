@@ -43,6 +43,46 @@ def _truncate(text, max_len=100):
     return truncated + "..."
 
 
+def _collapse_emergency_runs(sessions):
+    """Collapse consecutive emergency handovers into single summary entries."""
+    collapsed = []
+    emergency_run = []
+
+    def flush_run():
+        if not emergency_run:
+            return
+        if len(emergency_run) == 1:
+            collapsed.append(emergency_run[0])
+        else:
+            # Merge run into one summary entry (list is newest-first)
+            first_ts = emergency_run[-1]["timestamp"]
+            last_ts = emergency_run[0]["timestamp"]
+            count = len(emergency_run)
+            collapsed.append({
+                "id": f"{emergency_run[-1]['id']} ... {emergency_run[0]['id']}",
+                "timestamp": first_ts,
+                "tasks_touched": [],
+                "tasks_completed": [],
+                "touched_count": 0,
+                "completed_count": 0,
+                "narrative": f"{count} emergency handovers from {first_ts[:16]} to {last_ts[:16]} (context compactions during heavy work)",
+                "narrative_short": f"{count} emergency handovers collapsed",
+                "predecessor": emergency_run[-1].get("predecessor", ""),
+                "is_emergency": True,
+                "emergency_count": count,
+            })
+
+    for s in sessions:
+        if s.get("is_emergency"):
+            emergency_run.append(s)
+        else:
+            flush_run()
+            emergency_run = []
+            collapsed.append(s)
+    flush_run()
+    return collapsed
+
+
 @bp.route("/timeline")
 def timeline():
     handovers_dir = PROJECT_ROOT / ".context" / "handovers"
@@ -67,6 +107,8 @@ def timeline():
             tasks_touched = fm.get("tasks_touched", []) or []
             tasks_completed = fm.get("tasks_completed", []) or []
 
+            is_emergency = fm.get("type") == "emergency"
+
             # Enrich task IDs with names
             touched_rich = [
                 {"id": t, "name": task_names.get(t, "")} for t in tasks_touched
@@ -86,8 +128,11 @@ def timeline():
                     "narrative": narrative,
                     "narrative_short": _truncate(narrative),
                     "predecessor": fm.get("predecessor", ""),
+                    "is_emergency": is_emergency,
                 }
             )
+
+    sessions = _collapse_emergency_runs(sessions)
 
     return render_page("timeline.html", page_title="Timeline", sessions=sessions)
 

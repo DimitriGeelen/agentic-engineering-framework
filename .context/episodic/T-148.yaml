@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-148: "Fix emergency handover noise in timeline and pre-compact"
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T11:27:50Z
+# ============================================================================
+
+task_id: T-148
+task_name: ""Fix emergency handover noise in timeline and pre-compact""
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T11:25:04Z
+completed: 2026-02-18T11:27:50Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Timeline collapses consecutive emergency handovers into a single summary entry"
+  - "Collapsed entry shows count and time range"
+  - "Isolated emergency handovers show individually with visual badge"
+  - "pre-compact.sh deduplicates: skips commit if last commit was emergency handover within 5 minutes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Deduplicate (skip commit if last commit was emergency within 5 min)"
+    rationale: "Emergency handovers must commit for safety (context survival), but rapid-fire compactions create noise. Deduplication preserves the first commit per burst while eliminating duplicates."
+    alternatives_rejected: ["--no-commit always (undermines emergency handover safety purpose)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-148-fix-emergency-handover-noise-in-timeline.md
+generated_by: context-agent-hybrid

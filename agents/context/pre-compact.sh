@@ -11,7 +11,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Generate emergency handover (fast — ~100ms, no LLM needed)
-"$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency 2>/dev/null
+# Deduplicate: skip commit if last commit was an emergency handover within 5 minutes
+LAST_COMMIT_MSG=$(cd "$PROJECT_ROOT" && git log -1 --format="%s" 2>/dev/null)
+LAST_COMMIT_AGE=$(cd "$PROJECT_ROOT" && git log -1 --format="%ct" 2>/dev/null)
+NOW=$(date +%s)
+SKIP_COMMIT=false
+if echo "$LAST_COMMIT_MSG" | grep -q "Emergency handover" 2>/dev/null; then
+    if [ -n "$LAST_COMMIT_AGE" ] && [ $((NOW - LAST_COMMIT_AGE)) -lt 300 ]; then
+        SKIP_COMMIT=true
+    fi
+fi
+
+if [ "$SKIP_COMMIT" = "true" ]; then
+    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency --no-commit 2>/dev/null
+else
+    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --emergency 2>/dev/null
+fi
 
 # Log the event
 echo "[pre-compact] Emergency handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$FRAMEWORK_ROOT/.context/working/.compact-log" 2>/dev/null
