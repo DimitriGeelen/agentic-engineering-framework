@@ -39,7 +39,7 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - docs/reports/T-174-compaction-vs-handover.md  # Full 3-agent research + synthesis
 
 # Timeline (auto-mined from git log)
 git_timeline:
@@ -47,13 +47,15 @@ git_timeline:
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 26 min
+  - "3-agent parallel dispatch produced comprehensive research in ~45 seconds"
+  - "Discovery that autoCompactEnabled:false was already set validated the approach"
+  - "Gap analysis identified exactly what handovers need to fully replace compaction"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: []
+  spawned: [T-175, T-176, T-177]
 
 # Tags for retrieval
 tags: []

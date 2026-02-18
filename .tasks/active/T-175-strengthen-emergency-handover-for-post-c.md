@@ -1,8 +1,8 @@
 ---
 id: T-175
-name: "Strengthen emergency handover for post-compaction world"
+name: "Eliminate emergency/full handover distinction — single handover"
 description: >
-  From T-174 GO decision. Emergency handover (handover.sh --emergency) needs to capture more context now that it replaces compaction as the primary context preservation mechanism. Add: (1) Current focus task from focus.yaml, (2) git diff summary (staged + unstaged, truncated to ~50 lines), (3) Session narrative from session.yaml if available, (4) Investigation summaries section template for manual handovers. Goal: emergency handover should be as informative as a manual handover for context recovery via fw resume.
+  REVISED from T-174 investigation. Original goal was to strengthen emergency handover. New insight: with budget gate at 170K (T-176) leaving 30K for handover, there's always enough room for a FULL handover. The task system (task files, git, episodic, project memory) is the real safety net — ~95% of state survives even a zero-handover crash. Therefore: (1) Eliminate the --emergency flag and emergency mode from handover.sh. (2) Always generate a full-quality handover. (3) The budget gate at critical forces handover, but it should be the SAME full handover. (4) If handover somehow can't complete, fw resume status reconstructs from durable state anyway. See docs/reports/T-174-compaction-vs-handover.md for full research.
 
 status: captured
 workflow_type: build
