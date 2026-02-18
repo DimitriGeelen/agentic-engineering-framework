@@ -9,3 +9,9 @@ bypasses:
     authorized_by: human
     reason: "Bootstrap exception - task system did not exist prior to this commit"
     retroactive_task: null
+  - timestamp: 2026-02-17T23:55:01Z
+    action: "T-124: Cycle 2 findings — promote T-128, create T-136 and T-137"
+    commit: c53d74c
+    authorized_by: human
+    reason: "T-124 inception experiment mid-flight — cycle 2 findings commit, not a decision point"
+    retroactive_task: null
