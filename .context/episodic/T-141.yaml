@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-141: Fix create-task.sh template wiring + backfill sprechloop knowledge + add tests
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T08:32:17Z
+# ============================================================================
+
+task_id: T-141
+task_name: "Fix create-task.sh template wiring + backfill sprechloop knowledge + add tests"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-18T08:07:34Z
+completed: 2026-02-18T08:32:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-18T09:11:47+01:00
+last_commit: 2026-02-18T09:31:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix create-task.sh to use default.md template + fix P-011 HTML comments. Template fix + verification gate fix + T-140/T-141 task artifacts. Fix knowledge capture YAML bugs + add test suite (21 tests)
+
+# Key outcomes
+outcomes:
+  - "create-task.sh uses default.md template for non-inception tasks"
+  - "P-011 verification gate strips HTML comment blocks before extracting commands"
+  - "add-pattern writes to patterns.yaml and produces valid YAML"
+  - "add-learning writes to learnings.yaml and produces valid YAML"
+  - "add-decision writes to decisions.yaml and produces valid YAML"
+  - "init.sh creates YAML files in format compatible with add-* commands"
+  - "Old format migration: `patterns: []` auto-converts to sectioned format"
+  - "Old format migration: `learnings: []` / `decisions: []` auto-converts"
+  - "Sprechloop knowledge backfill: 15 learnings, 8 decisions, 5 patterns — all parseable"
+  - "Test suite: tests/test-knowledge-capture.sh (21 tests, all pass)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix knowledge capture YAML bugs + add test suite (21 tests)"
+    source: git-mined
+  - description: "Template fix + verification gate fix + T-140/T-141 task artifacts"
+    source: git-mined
+  - description: "Fix create-task.sh to use default.md template + fix P-011 HTML comments"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/decision.sh"
+  - "agents/context/lib/learning.sh"
+  - "agents/context/lib/pattern.sh"
+  - "agents/task-create/create-task.sh"
+  - "agents/task-create/update-task.sh"
+  - ".context/audits/2026-02-18.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "lib/init.sh"
+  - "tests/test-knowledge-capture.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-18T09:11:47"
+    action: "T-141: Fix create-task.sh to use default.md template + fix P-011 HTML comments"
+  - time: "2026-02-18T09:13:47"
+    action: "T-141: Template fix + verification gate fix + T-140/T-141 task artifacts"
+  - time: "2026-02-18T09:31:45"
+    action: "T-141: Fix knowledge capture YAML bugs + add test suite (21 tests)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 3
+  files_changed: 13
+  lines_added: 291
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-141-fix-create-tasksh-template-wiring--backf.md
+generated_by: context-agent-hybrid
