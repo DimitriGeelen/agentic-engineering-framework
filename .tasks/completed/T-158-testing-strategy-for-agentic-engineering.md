@@ -9,7 +9,7 @@ workflow_type: inception
 owner: human
 horizon: now
 tags: []
-related_tasks: []
+related_tasks: [T-159, T-160, T-161, T-162, T-163]
 created: 2026-02-18T12:52:24Z
 last_update: 2026-02-18T13:30:10Z
 date_finished: 2026-02-18T13:30:10Z
@@ -29,10 +29,25 @@ The Agentic Engineering Framework has **10,182 lines of bash** and **5,375 lines
 
 ## Exploration Plan
 
-Three parallel audits completed:
-1. Bash script inventory + testability rating → /tmp/T-158-bash-audit.md
-2. Web UI route/endpoint audit → /tmp/T-158-web-audit.md
-3. Hook/gate inventory + historical bug analysis → /tmp/T-158-hooks-and-bugs.md
+Three parallel audits completed (reports in .context/research/):
+1. Bash script inventory + testability rating → `.context/research/T-158-bash-audit.md`
+2. Web UI route/endpoint audit → `.context/research/T-158-web-audit.md`
+3. Hook/gate inventory + historical bug analysis → `.context/research/T-158-hooks-and-bugs.md`
+
+### Key Findings
+- **44 bash scripts**, 10,182 LOC: 10 EASY (23%), 18 MEDIUM (41%), 16 HARD (36%)
+- **59% of LOC** is tightly coupled side effects (HARD category)
+- **38 web routes**, 26 templates, 5,375 LOC Python
+- **Existing tests**: test-tier0-patterns.py (47 tests), test_app.py (38 tests), test_scan.py
+- **10 historical bugs** found; **8/10 preventable** by automated tests
+- **5 critical-path hooks** (budget-gate, check-active-task, check-tier0, checkpoint, error-watchdog) — **0 tests**
+
+### Spawned Build Tasks
+- T-159: Test infrastructure — bats framework, test runner, `fw test` command
+- T-160: Bash unit tests — 10 EASY scripts (pure logic, 569 LOC)
+- T-161: Hook/gate integration tests — 5 critical enforcement scripts
+- T-162: Web edge case tests — subprocess timeouts, error parsing, malformed YAML
+- T-163: Regression suite runner — single `fw test` command
 
 ## Technical Constraints
 
