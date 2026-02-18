@@ -99,13 +99,13 @@ warn_by_tokens() {
     if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "CRITICAL: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
-        echo "Compaction imminent — work will be summarized." >&2
+        echo "Session wrapping up: ${tokens} tokens (~${pct}% of 200K)." >&2
+        echo "Task files have all essential state. Commit and handover." >&2
         echo "===========================================" >&2
         echo "" >&2
 
-        # --- Auto-trigger emergency handover (T-136) ---
-        # Agent cannot be trusted to act on warnings at 150K+.
+        # --- Auto-trigger handover at critical (T-136, reframed T-182) ---
+        # Structural enforcement: agent may not act on warnings alone (L-013).
         # Two guards:
         #   1. Re-entry lock: prevents recursive triggering within one checkpoint run
         #   2. Cooldown file: prevents re-firing for 10 minutes after last handover
@@ -179,8 +179,8 @@ warn_by_calls() {
     if [ "$count" -ge "$CALL_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "CRITICAL: $count tool calls since last commit (no token data)." >&2
-        echo "ACTION: Commit now, then 'fw handover'." >&2
+        echo "Session wrapping up: $count tool calls since last commit (no token data)." >&2
+        echo "Commit your work, then run 'fw handover'." >&2
         echo "===========================================" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_URGENT" ]; then
