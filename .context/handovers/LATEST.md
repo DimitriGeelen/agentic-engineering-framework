@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed T-138 inception (GO — hybrid) and T-139 build (budget-gate.sh PreToolUse hook). The new budget enforcement system is committed and will activate next session. Sprechloop synced to framework v1.4 (hooks + CLAUDE.md). Ready for T-124 cycle 4 to validate the budget gate works in practice.
 
 ## Work in Progress
 
@@ -22,56 +22,23 @@ session_narrative: ""
 
 ### T-124: Validate framework new-project onboarding via live sprechloop experiment
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Synced framework v1.4 to sprechloop (hooks + CLAUDE.md). Budget-gate.sh committed. Sprechloop has v1.4 hooks (no commit counter).
+- **Next step:** Run cycle 4 of the sprechloop experiment. This cycle should validate: (1) budget-gate blocks at critical, (2) no runaway handover commits, (3) quality gates still work. Start a new Claude Code session in sprechloop to activate the PreToolUse hook.
+- **Blockers:** Budget-gate.sh only activates next session (hooks snapshot at start). Must restart Claude Code in sprechloop.
+- **Insight:** Structural enforcement works. Quality gates (AC, Verification) are 100% effective. Budget enforcement was the remaining gap — now addressed by PreToolUse blocking.
 
 <!-- horizon: next -->
 
 ### T-129: Inception template: Technical Constraints section
 - **Status:** captured (horizon: next)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** No work this session
+- **Next step:** Add Technical Constraints section to inception template
+- **Blockers:** None
+- **Insight:** None
 
 <!-- horizon: later -->
 
-### T-120: Review Google Context Engineering whitepaper against framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-131: Watchtower: Knowledge pages empty — surface framework learnings/patterns/decisions
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-132: Watchtower: Govern pages — populate directives/enforcement/gaps/quality from framework
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-### T-133: Watchtower: Docs page — auto-discover and surface project design docs
-- **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+*Later horizon tasks (T-120, T-130, T-131, T-132, T-133) — no work this session.*
 
 ## Inception Phases
 
@@ -87,40 +54,39 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **T-138 GO — hybrid approach**
+   - Why: PreToolUse is the proven enforcement mechanism (exit 2 = hard block), keep PostToolUse as fallback for portability
+   - Alternatives rejected: Pure cron (portability concern), full cron+PreToolUse in one pass (over-scoped), no-go (problem is real)
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Deprecate commit counter (T-128) in favor of budget-gate**
+   - Why: Commit counter measured wrong metric (commits != tokens), agent could reset it, bypassed in sprechloop cycle 3
+   - Alternatives rejected: Harden counter reset (agent has full shell access, can't be prevented)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+Nothing failed this session — clean build from inception findings.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. Budget-gate.sh is committed but won't activate until next session (hooks snapshot at session start). Need to restart Claude Code to test.
+2. Sprechloop has 25 junk handover commits from cycle 3 — still not cleaned up. Leave as-is?
+3. Future task: cron-based monitoring was deferred (optional accuracy supplement to budget-gate).
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- **Budget-gate activates THIS session** — it's in `.claude/settings.json` and will run as PreToolUse hook. If it blocks unexpectedly, check `.context/working/.budget-status`.
+- **Hooks v1.4** — no more commit counter. The post-commit hook no longer increments `.commit-counter`.
+- **Sprechloop synced to v1.4** — hooks + CLAUDE.md updated. Ready for cycle 4.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Start a new Claude Code session in `/opt/001-sprechloop` to run T-124 cycle 4. The budget-gate.sh PreToolUse hook will activate on session start. Test: (1) build something, (2) let tokens rise, (3) observe budget-gate warn/block behavior, (4) verify clean handover at end.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `agents/context/budget-gate.sh`, `.context/episodic/T-138.yaml`, `.context/episodic/T-139.yaml`
+- Modified: `.claude/settings.json` (added PreToolUse budget-gate), `agents/git/lib/hooks.sh` (v1.4, removed commit counter), `agents/git/git.sh` (version bump), `agents/context/lib/init.sh` (reset budget-gate counter instead of commit counter), `CLAUDE.md` (budget enforcement docs), `lib/templates/claude-project.md` (same)
+- Completed: T-138 (inception → GO), T-139 (build → work-completed)
 
 ## Recent Commits
 
