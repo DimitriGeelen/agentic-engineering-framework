@@ -9,6 +9,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 
 # Generate emergency handover (fast — ~100ms, no LLM needed)
 # Deduplicate: skip commit if last commit was an emergency handover within 5 minutes
@@ -29,10 +30,10 @@ else
 fi
 
 # Log the event
-echo "[pre-compact] Emergency handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$FRAMEWORK_ROOT/.context/working/.compact-log" 2>/dev/null
+echo "[pre-compact] Emergency handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
 
-# Reset budget gate so fresh session doesn't inherit critical lock (T-145)
-echo "0" > "$FRAMEWORK_ROOT/.context/working/.budget-gate-counter" 2>/dev/null
-rm -f "$FRAMEWORK_ROOT/.context/working/.budget-status" 2>/dev/null
+# Reset budget gate for THIS project so fresh session doesn't inherit critical lock (T-145)
+echo "0" > "$PROJECT_ROOT/.context/working/.budget-gate-counter" 2>/dev/null
+rm -f "$PROJECT_ROOT/.context/working/.budget-status" 2>/dev/null
 
 exit 0

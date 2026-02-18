@@ -7,8 +7,9 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-LATEST="$FRAMEWORK_ROOT/.context/handovers/LATEST.md"
-FOCUS_FILE="$FRAMEWORK_ROOT/.context/working/focus.yaml"
+PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
+FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
 # Build context string
 CONTEXT=""
@@ -49,7 +50,7 @@ fi
 
 # Active tasks summary
 TASK_SUMMARY=""
-for f in "$FRAMEWORK_ROOT/.tasks/active"/*.md; do
+for f in "$PROJECT_ROOT/.tasks/active"/*.md; do
     [ -f "$f" ] || continue
     tid=$(grep "^id:" "$f" | head -1 | sed 's/id:[[:space:]]*//')
     tname=$(grep "^name:" "$f" | head -1 | sed 's/name:[[:space:]]*//')
@@ -67,9 +68,9 @@ ${TASK_SUMMARY}
 fi
 
 # Git state
-BRANCH=$(git -C "$FRAMEWORK_ROOT" branch --show-current 2>/dev/null)
-LAST_COMMIT=$(git -C "$FRAMEWORK_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
-UNCOMMITTED=$(git -C "$FRAMEWORK_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+BRANCH=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
+LAST_COMMIT=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
+UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 
 CONTEXT="${CONTEXT}
 ## Git State

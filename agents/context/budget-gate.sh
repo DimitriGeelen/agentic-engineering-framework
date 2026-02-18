@@ -94,7 +94,8 @@ STATUS_AGE=${STATUS_AGE:-999}
 CMD_CLASS=${CMD_CLASS:-blocked}
 
 # --- Fast path: use cached status if fresh ---
-if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
+# Even stale status enforces critical (Bug 3 fix: stale critical still blocks)
+if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ] || [ "$STATUS_LEVEL" = "critical" ]; then
     case "$STATUS_LEVEL" in
         ok)
             exit 0
@@ -144,8 +145,14 @@ if [ $((GATE_COUNT % RECHECK_INTERVAL)) -ne 1 ] && [ "$GATE_COUNT" -ne 1 ]; then
     exit 0
 fi
 
-# Find transcript and read tokens
-TRANSCRIPT=$(find ~/.claude/projects -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+# Find transcript — scoped to THIS project's Claude Code directory
+# Claude Code encodes project paths: /opt/foo → -opt-foo in ~/.claude/projects/
+PROJECT_DIR_NAME=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
+TRANSCRIPT=""
+if [ -d "$PROJECT_JSONL_DIR" ]; then
+    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
     exit 0

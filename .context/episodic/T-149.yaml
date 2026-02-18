@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-149: "Fix budget-gate.sh — 4 bugs: transcript discovery, pre-compact reset, stale fail-open, project isolation"
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-18T11:55:04Z
+# ============================================================================
+
+task_id: T-149
+task_name: ""Fix budget-gate.sh — 4 bugs: transcript discovery, pre-compact reset, stale fail-open, project isolation""
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-18T11:52:32Z
+completed: 2026-02-18T11:55:04Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Bug 1: Transcript discovery scoped to project's Claude Code directory (not global search)"
+  - "Bug 2: pre-compact.sh resets PROJECT_ROOT counter/status (not FRAMEWORK_ROOT)"
+  - "Bug 3: Stale critical status still blocks (no fail-open at critical)"
+  - "Bug 4: post-compact-resume.sh uses PROJECT_ROOT for handover/tasks/git reads"
+  - "Allowed commands (git commit, fw handover, Read) pass through at critical level"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-149-fix-budget-gatesh--4-bugs-transcript-dis.md
+generated_by: context-agent-hybrid
