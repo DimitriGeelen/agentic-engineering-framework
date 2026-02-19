@@ -4,15 +4,15 @@ name: "Docs page — discover research docs, commands, and skills"
 description: >
   Extend T-171 docs discovery to also surface: (1) Research/exploration artifacts — agent investigation outputs, spike results (spikes/), inception findings. (2) Claude Code commands (.claude/commands/*.md). (3) Skills definitions. Consider adding these as new categories alongside Governance/Design/Agents/Project.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T18:11:20Z
-last_update: 2026-02-19T00:02:34Z
-date_finished: null
+last_update: 2026-02-19T00:07:32Z
+date_finished: 2026-02-19T00:07:32Z
 ---
 
 # T-172: Docs page — discover research docs, commands, and skills
@@ -58,3 +58,6 @@ curl -sf http://localhost:3000/project/.context--episodic--T-182 | grep -q "yaml
 
 ### 2026-02-19T00:02:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-19T00:07:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

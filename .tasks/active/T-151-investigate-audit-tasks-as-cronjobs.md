@@ -7,11 +7,11 @@ description: >
 status: captured
 workflow_type: specification
 owner: human
-horizon: next
+horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T12:05:00Z
-last_update: 2026-02-18T13:38:12Z
+last_update: 2026-02-18T23:22:43Z
 date_finished: null
 ---
 
@@ -63,3 +63,6 @@ date_finished: null
 
 ### 2026-02-18T13:38:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-02-18T23:22:43Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
