@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T16:24:56Z
+last_update: 2026-02-19T16:32:11Z
 date_finished: null
 ---
 
