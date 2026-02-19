@@ -1,6 +1,17 @@
 #!/bin/bash
 # Audit Agent - Mechanical Compliance Checks
 # Evaluates framework compliance against specifications
+#
+# Usage:
+#   audit.sh                              # Full audit with terminal output
+#   audit.sh --section structure,quality   # Run only specified sections
+#   audit.sh --output /path/to/dir        # Write YAML report to custom dir
+#   audit.sh --quiet                      # Suppress terminal output (cron-friendly)
+#   audit.sh --cron                       # Shorthand for --output .context/audits/cron --quiet
+#   audit.sh schedule install|remove|status  # Manage cron schedule
+#
+# Sections: structure, compliance, quality, traceability, enforcement,
+#           learning, episodic, observations, gaps, handover, graduation
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -8,6 +19,130 @@ PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 CONTEXT_DIR="$PROJECT_ROOT/.context"
 AUDITS_DIR="$CONTEXT_DIR/audits"
+
+# --- Schedule Subcommand (dispatch before heavy init) ---
+if [ "${1:-}" = "schedule" ]; then
+    shift
+    CRON_FILE="/etc/cron.d/agentic-audit"
+    FW_PATH="$(readlink -f "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "$FRAMEWORK_ROOT/bin/fw")"
+
+    case "${1:-status}" in
+        install)
+            if ! command -v crontab >/dev/null 2>&1 && [ ! -d /etc/cron.d ]; then
+                echo "ERROR: cron not available on this system" >&2
+                exit 1
+            fi
+            mkdir -p "$CONTEXT_DIR/audits/cron"
+            cat > "$CRON_FILE" << CRONEOF
+# Agentic Engineering Framework — Scheduled Audits (T-184)
+# Installed by: fw audit schedule install
+# Manages: periodic quality checks independent of agent sessions
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# Task quality + structure integrity (every 30 min)
+*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality --cron 2>/dev/null
+
+# Git traceability + episodic completeness (hourly)
+0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic --cron 2>/dev/null
+
+# Observations + gaps (every 6 hours)
+0 */6 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section observations,gaps --cron 2>/dev/null
+
+# Full audit (daily at 8am)
+0 8 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --cron 2>/dev/null
+
+# Retention: prune cron audit files older than 7 days (daily at 9am)
+0 9 * * * root find "$CONTEXT_DIR/audits/cron" -name "*.yaml" -mtime +7 -delete 2>/dev/null
+CRONEOF
+            chmod 644 "$CRON_FILE"
+            echo "Cron schedule installed: $CRON_FILE"
+            echo ""
+            echo "Schedule:"
+            echo "  Every 30min: structure, compliance, quality"
+            echo "  Hourly:      traceability, episodic"
+            echo "  Every 6h:    observations, gaps"
+            echo "  Daily 8am:   full audit"
+            echo "  Daily 9am:   retention cleanup (>7 days)"
+            echo ""
+            echo "Reports: $CONTEXT_DIR/audits/cron/"
+            ;;
+        remove)
+            if [ -f "$CRON_FILE" ]; then
+                rm -f "$CRON_FILE"
+                echo "Cron schedule removed: $CRON_FILE"
+            else
+                echo "No cron schedule installed."
+            fi
+            ;;
+        status)
+            if [ -f "$CRON_FILE" ]; then
+                echo "Cron schedule: INSTALLED ($CRON_FILE)"
+                echo ""
+                grep -v "^#" "$CRON_FILE" | grep -v "^$" | grep -v "^SHELL\|^PATH" | while read -r line; do
+                    echo "  $line"
+                done
+                echo ""
+                # Show latest cron audit
+                local_latest=$(ls -t "$CONTEXT_DIR/audits/cron/"*.yaml 2>/dev/null | head -1)
+                if [ -n "$local_latest" ]; then
+                    echo "Latest cron audit: $(basename "$local_latest")"
+                    grep -E "^  (pass|warn|fail):" "$local_latest" 2>/dev/null | sed 's/^/  /'
+                else
+                    echo "No cron audit reports yet."
+                fi
+            else
+                echo "Cron schedule: NOT INSTALLED"
+                echo ""
+                echo "Install with: fw audit schedule install"
+            fi
+            ;;
+        *)
+            echo "Usage: fw audit schedule {install|remove|status}"
+            exit 1
+            ;;
+    esac
+    exit 0
+fi
+
+# --- Argument Parsing ---
+SECTIONS=""       # Comma-separated section names (empty = all)
+OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
+QUIET=false       # Suppress terminal output
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --section|--sections) SECTIONS="$2"; shift 2 ;;
+        --output) OUTPUT_DIR="$2"; shift 2 ;;
+        --quiet) QUIET=true; shift ;;
+        --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        -h|--help)
+            echo "Usage: audit.sh [options]"
+            echo ""
+            echo "Options:"
+            echo "  --section NAMES   Comma-separated sections to run (default: all)"
+            echo "  --output DIR      Write YAML report to custom directory"
+            echo "  --quiet           Suppress terminal output (for cron)"
+            echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
+            echo ""
+            echo "Sections: structure, compliance, quality, traceability, enforcement,"
+            echo "          learning, episodic, observations, gaps, handover, graduation"
+            echo ""
+            echo "Subcommands:"
+            echo "  schedule install  Install cron entries for periodic audits"
+            echo "  schedule remove   Remove cron entries"
+            echo "  schedule status   Show current schedule and latest results"
+            exit 0
+            ;;
+        *) shift ;;
+    esac
+done
+
+# Section filter: returns 0 (true) if section should run
+should_run_section() {
+    [ -z "$SECTIONS" ] && return 0
+    echo ",$SECTIONS," | grep -q ",$1,"
+}
 
 # Colors
 RED='\033[0;31m'
@@ -30,6 +165,7 @@ declare -a FINDINGS
 # Timestamp for this audit
 AUDIT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 AUDIT_DATE=$(date +"%Y-%m-%d")
+AUDIT_DATETIME=$(date +"%Y-%m-%d-%H%M")
 
 # Logging functions
 pass() {
@@ -56,15 +192,22 @@ fail() {
     FINDINGS+=("FAIL|$1|$3")
 }
 
+# Quiet mode: suppress terminal output (findings still collected for YAML)
+if [ "$QUIET" = true ]; then
+    exec 3>&1 1>/dev/null
+fi
+
 # Header
 echo "=== AUDIT REPORT ==="
 echo "Timestamp: $(date -Iseconds)"
 echo "Project: $PROJECT_ROOT"
+[ -n "$SECTIONS" ] && echo "Sections: $SECTIONS"
 echo ""
 
 # ============================================
 # SECTION 1: STRUCTURE CHECKS
 # ============================================
+if should_run_section "structure"; then
 echo "=== STRUCTURE CHECKS ==="
 
 # Check .tasks/ directory
@@ -97,10 +240,12 @@ else
 fi
 
 echo ""
+fi # end structure
 
 # ============================================
 # SECTION 2: TASK COMPLIANCE CHECKS
 # ============================================
+if should_run_section "compliance"; then
 echo "=== TASK COMPLIANCE CHECKS ==="
 
 # Required frontmatter fields
@@ -175,10 +320,12 @@ else
 fi
 
 echo ""
+fi # end compliance
 
 # ============================================
 # SECTION 2B: TASK QUALITY CHECKS (P-001, P-004)
 # ============================================
+if should_run_section "quality"; then
 echo "=== TASK QUALITY CHECKS ==="
 
 quality_issues=0
@@ -282,10 +429,12 @@ if [ "$quality_issues" -eq 0 ]; then
 fi
 
 echo ""
+fi # end quality
 
 # ============================================
 # SECTION 3: GIT TRACEABILITY CHECKS
 # ============================================
+if should_run_section "traceability"; then
 echo "=== GIT TRACEABILITY CHECKS ==="
 
 if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
@@ -347,10 +496,12 @@ else
 fi
 
 echo ""
+fi # end traceability
 
 # ============================================
 # SECTION 4: ENFORCEMENT CHECKS
 # ============================================
+if should_run_section "enforcement"; then
 echo "=== ENFORCEMENT CHECKS ==="
 
 # Check for bypass log
@@ -417,10 +568,12 @@ if [ "$tier0_violations" -eq 0 ]; then
 fi
 
 echo ""
+fi # end enforcement
 
 # ============================================
 # SECTION 5: LEARNING CAPTURE CHECKS
 # ============================================
+if should_run_section "learning"; then
 echo "=== LEARNING CAPTURE CHECKS ==="
 
 # Check practices file (supports both 015-Practices.md and practices.yaml)
@@ -485,10 +638,12 @@ else
 fi
 
 echo ""
+fi # end learning
 
 # ============================================
 # SECTION 6: EPISODIC MEMORY CHECKS
 # ============================================
+if should_run_section "episodic"; then
 echo "=== EPISODIC MEMORY CHECKS ==="
 
 episodic_dir="$CONTEXT_DIR/episodic"
@@ -589,10 +744,12 @@ if [ "$orphaned_episodic" -eq 0 ] && [ -d "$episodic_dir" ]; then
 fi
 
 echo ""
+fi # end episodic
 
 # ============================================
 # SECTION 7: OBSERVATION INBOX CHECKS
 # ============================================
+if should_run_section "observations"; then
 echo "=== OBSERVATION INBOX CHECKS ==="
 
 INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
@@ -660,10 +817,12 @@ else
 fi
 
 echo ""
+fi # end observations
 
 # ============================================
 # SECTION 8: GAPS REGISTER CHECKS
 # ============================================
+if should_run_section "gaps"; then
 echo "=== GAPS REGISTER CHECKS ==="
 
 GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
@@ -745,10 +904,12 @@ else
 fi
 
 echo ""
+fi # end gaps
 
 # ============================================
 # SECTION 8b: HANDOVER OPEN QUESTIONS (G-002)
 # ============================================
+if should_run_section "handover"; then
 echo "=== HANDOVER OPEN QUESTIONS CHECK ==="
 
 HANDOVER_FILE="$CONTEXT_DIR/handovers/LATEST.md"
@@ -805,10 +966,12 @@ else
 fi
 
 echo ""
+fi # end handover
 
 # ============================================
 # SECTION 9: GRADUATION PIPELINE CHECK
 # ============================================
+if should_run_section "graduation"; then
 echo "=== GRADUATION PIPELINE CHECKS ==="
 
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
@@ -836,9 +999,10 @@ else
 fi
 
 echo ""
+fi # end graduation
 
 # ============================================
-# SUMMARY
+# SUMMARY (always runs)
 # ============================================
 echo "=== SUMMARY ==="
 echo -e "${GREEN}Pass:${NC} $PASS_COUNT"
@@ -853,19 +1017,25 @@ if [ ${#PRIORITY_ACTIONS[@]} -gt 0 ]; then
 fi
 
 # ============================================
-# SECTION 6: ANTIFRAGILE LEARNING (D1)
+# YAML OUTPUT (always runs)
 # ============================================
 
-# Ensure audits directory exists
-mkdir -p "$AUDITS_DIR"
+# Determine output directory and filename
+EFFECTIVE_OUTPUT_DIR="${OUTPUT_DIR:-$AUDITS_DIR}"
+mkdir -p "$EFFECTIVE_OUTPUT_DIR"
 
-# Save this audit's results
-AUDIT_FILE="$AUDITS_DIR/$AUDIT_DATE.yaml"
+# Cron audits use datetime filenames (multiple per day); manual audits use date
+if [ -n "$OUTPUT_DIR" ]; then
+    AUDIT_FILE="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATETIME.yaml"
+else
+    AUDIT_FILE="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATE.yaml"
+fi
 
 # Build YAML content
 {
-    echo "# Audit Results - $AUDIT_DATE"
+    echo "# Audit Results - $AUDIT_DATETIME"
     echo "timestamp: $AUDIT_TIMESTAMP"
+    [ -n "$SECTIONS" ] && echo "sections: \"$SECTIONS\""
     echo "summary:"
     echo "  pass: $PASS_COUNT"
     echo "  warn: $WARN_COUNT"
@@ -882,6 +1052,9 @@ AUDIT_FILE="$AUDITS_DIR/$AUDIT_DATE.yaml"
         fi
     done
 } > "$AUDIT_FILE"
+
+# Update LATEST symlink in output dir
+ln -sf "$(basename "$AUDIT_FILE")" "$EFFECTIVE_OUTPUT_DIR/LATEST-CRON.yaml" 2>/dev/null || true
 
 # Trend detection: Compare with previous audits
 echo ""
@@ -944,8 +1117,18 @@ fi
 echo ""
 echo "Audit saved to: $AUDIT_FILE"
 
+# Retention: prune cron audit files older than 7 days
+if [ -n "$OUTPUT_DIR" ] && [ -d "$OUTPUT_DIR" ]; then
+    find "$OUTPUT_DIR" -name "*.yaml" -mtime +7 -delete 2>/dev/null || true
+fi
+
 echo ""
 echo "=== END AUDIT ==="
+
+# Restore stdout if quiet mode was active
+if [ "$QUIET" = true ]; then
+    exec 1>&3
+fi
 
 # Exit code based on findings
 if [ $FAIL_COUNT -gt 0 ]; then
