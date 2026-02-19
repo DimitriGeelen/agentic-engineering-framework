@@ -1053,8 +1053,10 @@ fi
     done
 } > "$AUDIT_FILE"
 
-# Update LATEST symlink in output dir
-ln -sf "$(basename "$AUDIT_FILE")" "$EFFECTIVE_OUTPUT_DIR/LATEST-CRON.yaml" 2>/dev/null || true
+# Update LATEST-CRON symlink (only in custom output dirs, not default audits)
+if [ -n "$OUTPUT_DIR" ]; then
+    ln -sf "$(basename "$AUDIT_FILE")" "$EFFECTIVE_OUTPUT_DIR/LATEST-CRON.yaml" 2>/dev/null || true
+fi
 
 # Trend detection: Compare with previous audits
 echo ""
