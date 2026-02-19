@@ -542,6 +542,7 @@ When the active task has `workflow_type: inception`:
 3. **Do not write build artifacts** (production code, full apps) before `fw inception decide T-XXX go`
 4. **The commit-msg hook enforces this** — after 2 exploration commits, further commits are blocked until a decision is recorded
 5. After a GO decision, **create separate build tasks** for implementation — do not continue building under the inception task ID
+6. **Research artifact first (C-001)** — When starting inception work, create `docs/reports/T-XXX-*.md` BEFORE conducting research. Update the file incrementally as dialogue produces findings. Commit after each dialogue segment. The thinking trail IS the artifact — conversations are ephemeral, files are permanent. (Origin: T-194 — 7 existing controls for research persistence all failed because none enforced capture at the point research happens.)
 
 ### Web App Startup
 When building a web application:

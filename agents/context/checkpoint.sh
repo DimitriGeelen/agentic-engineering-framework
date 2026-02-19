@@ -233,6 +233,45 @@ case "${1:-}" in
             fi
         fi
 
+        # --- Research Capture Checkpoint (C-003, T-194) ---
+        # Every 20 tool calls, check if focused inception task has uncommitted research
+        INCEPTION_RESEARCH_INTERVAL=20
+        if [ $((count % INCEPTION_RESEARCH_INTERVAL)) -eq 0 ]; then
+            FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
+            if [ -f "$FOCUS_FILE" ]; then
+                focus_task=$(grep '^task_id:' "$FOCUS_FILE" 2>/dev/null | sed 's/task_id: *//' | tr -d ' "') || true
+                if [ -n "$focus_task" ]; then
+                    focus_task_file=$(find "$PROJECT_ROOT/.tasks" -name "${focus_task}-*" -type f 2>/dev/null | head -1)
+                    if [ -n "$focus_task_file" ] && grep -q "^workflow_type: inception" "$focus_task_file" 2>/dev/null; then
+                        # Check if research artifact has uncommitted changes or exists in working tree
+                        has_research_change=$(git -C "$PROJECT_ROOT" diff --name-only 2>/dev/null | grep "^docs/reports/${focus_task}" || true)
+                        has_staged_research=$(git -C "$PROJECT_ROOT" diff --cached --name-only 2>/dev/null | grep "^docs/reports/${focus_task}" || true)
+                        if [ -z "$has_research_change" ] && [ -z "$has_staged_research" ]; then
+                            # Also check if artifact exists at all
+                            has_artifact=$(find "$PROJECT_ROOT/docs/reports/" -name "${focus_task}-*" -type f 2>/dev/null | head -1)
+                            if [ -z "$has_artifact" ]; then
+                                echo "" >&2
+                                echo "NOTE: Inception checkpoint (C-003) — $count tool calls on $focus_task, no research artifact in docs/reports/" >&2
+                                echo "  Create: docs/reports/${focus_task}-*.md (the thinking trail IS the artifact)" >&2
+                                echo "" >&2
+                            else
+                                # Artifact exists but hasn't been modified — might be stale
+                                artifact_age=$(( $(date +%s) - $(stat -c %Y "$has_artifact" 2>/dev/null || echo 0) ))
+                                if [ "$artifact_age" -gt 1800 ]; then  # 30 min
+                                    echo "" >&2
+                                    echo "NOTE: Inception checkpoint (C-003) — research artifact for $focus_task not updated in $((artifact_age / 60))min" >&2
+                                    echo "  Consider updating: $has_artifact" >&2
+                                    echo "" >&2
+                                fi
+                            fi
+                            # Log the prompt
+                            echo "$(date -Iseconds) $focus_task prompted counter=$count" >> "$CONTEXT_DIR/working/.inception-checkpoint-log" 2>/dev/null || true
+                        fi
+                    fi
+                fi
+            fi
+        fi
+
         exit 0
         ;;
     reset)

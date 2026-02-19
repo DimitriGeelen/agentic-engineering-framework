@@ -11,7 +11,8 @@
 #   audit.sh schedule install|remove|status  # Manage cron schedule
 #
 # Sections: structure, compliance, quality, traceability, enforcement,
-#           learning, episodic, observations, gaps, handover, graduation
+#           learning, episodic, observations, gaps, handover, graduation,
+#           research, oe-research
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -40,8 +41,8 @@ if [ "${1:-}" = "schedule" ]; then
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 
-# Task quality + structure integrity (every 30 min)
-*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality --cron 2>/dev/null
+# Task quality + structure integrity + research OE (every 30 min)
+*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality,oe-research --cron 2>/dev/null
 
 # Git traceability + episodic completeness (hourly)
 0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic --cron 2>/dev/null
@@ -59,7 +60,7 @@ CRONEOF
             echo "Cron schedule installed: $CRON_FILE"
             echo ""
             echo "Schedule:"
-            echo "  Every 30min: structure, compliance, quality"
+            echo "  Every 30min: structure, compliance, quality, oe-research"
             echo "  Hourly:      traceability, episodic"
             echo "  Every 6h:    observations, gaps"
             echo "  Daily 8am:   full audit"
@@ -1063,6 +1064,94 @@ fi
 
 echo ""
 fi # end research
+
+# ============================================
+# SECTION 11: RESEARCH PERSISTENCE OE TESTS (C-001/C-002/C-003, T-194)
+# ============================================
+if should_run_section "oe-research"; then
+echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
+
+# C-001 OE: Active inception tasks with started-work should have docs/reports/ artifact
+c001_missing=0
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active"/*.md; do
+    [ -f "$task_file" ] || continue
+    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    [ "$task_workflow" != "inception" ] && continue
+    task_status=$(grep "^status:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    [ "$task_status" != "started-work" ] && continue
+    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    [ -z "$task_id" ] && continue
+
+    artifact=$(find "$PROJECT_ROOT/docs/reports/" -name "${task_id}-*" -type f 2>/dev/null | head -1)
+    if [ -z "$artifact" ]; then
+        warn "C-001: Inception $task_id has no research artifact in docs/reports/" \
+             "Active inception task without persisted research" \
+             "Create docs/reports/${task_id}-*.md — the thinking trail IS the artifact"
+        c001_missing=$((c001_missing + 1))
+    else
+        # Check artifact is referenced in task Updates section
+        artifact_ref=$(grep -c 'docs/reports/' "$task_file" 2>/dev/null || true)
+        artifact_ref=$(echo "$artifact_ref" | tr -d '[:space:]')
+        if [ "$artifact_ref" -eq 0 ]; then
+            warn "C-001: Inception $task_id has artifact but task doesn't reference it" \
+                 "$(basename "$artifact") exists but not linked in task Updates" \
+                 "Add artifact reference to ## Updates section of $task_id"
+        fi
+    fi
+done
+shopt -u nullglob
+
+if [ "$c001_missing" -eq 0 ]; then
+    inception_active=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/active/" 2>/dev/null | while read f; do grep -l "^status: started-work" "$f" 2>/dev/null; done | wc -l | tr -d ' ')
+    if [ "$inception_active" -gt 0 ]; then
+        pass "C-001: All $inception_active active inceptions have research artifacts"
+    else
+        pass "C-001: No active inception tasks to check"
+    fi
+fi
+
+# C-002 OE: Check commit-msg hook has research artifact check installed
+if grep -q "inception-research-warnings" "$PROJECT_ROOT/.git/hooks/commit-msg" 2>/dev/null; then
+    pass "C-002: commit-msg hook has research artifact check"
+else
+    warn "C-002: commit-msg hook missing research artifact check" \
+         "Hook at .git/hooks/commit-msg doesn't contain C-002 gate" \
+         "Reinstall hooks: fw git install-hooks (or manually add C-002)"
+fi
+
+# C-002 OE: Check warning log for recent inception commits without research
+WARN_LOG="$CONTEXT_DIR/working/.inception-research-warnings"
+if [ -f "$WARN_LOG" ]; then
+    recent_warns=$(grep "$(date +%Y-%m-%d)" "$WARN_LOG" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$recent_warns" -gt 0 ]; then
+        warn "C-002: $recent_warns inception commit(s) today without docs/reports/ artifact" \
+             "Warnings logged in .inception-research-warnings" \
+             "Review commits and ensure research is persisted"
+    else
+        pass "C-002: No research warnings today"
+    fi
+else
+    pass "C-002: No research warnings logged (clean or first run)"
+fi
+
+# C-003 OE: Check checkpoint hook is wired and firing
+CHECKPOINT_LOG="$CONTEXT_DIR/working/.inception-checkpoint-log"
+if grep -q "inception-research-counter\|INCEPTION_RESEARCH_INTERVAL\|C-003" "$PROJECT_ROOT/agents/context/checkpoint.sh" 2>/dev/null; then
+    pass "C-003: Research checkpoint logic present in checkpoint.sh"
+else
+    warn "C-003: Research checkpoint logic missing from checkpoint.sh" \
+         "checkpoint.sh doesn't contain C-003 inception research check" \
+         "Add C-003 research checkpoint to checkpoint.sh post-tool handler"
+fi
+
+if [ -f "$CHECKPOINT_LOG" ]; then
+    today_prompts=$(grep "$(date +%Y-%m-%d)" "$CHECKPOINT_LOG" 2>/dev/null | wc -l | tr -d ' ')
+    echo "       C-003 checkpoint prompts today: $today_prompts"
+fi
+
+echo ""
+fi # end oe-research
 
 # ============================================
 # SUMMARY (always runs)
