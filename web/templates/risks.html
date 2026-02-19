@@ -54,8 +54,32 @@
 
 <div class="page-header">
     <h1>{{ page_title }}</h1>
-    <p>ISO 27001-aligned risk and issue register. Three-register model: risks (forward), issues (backward), gaps (present).</p>
+    <p>Three-register assurance model for framework governance. Risks are forward-looking (what could go wrong), issues are backward-looking (what did go wrong), gaps are present-tense (spec vs reality).</p>
 </div>
+
+<!-- About This Page -->
+<details style="margin-bottom: 2rem;">
+    <summary style="font-weight: 600;">About this page</summary>
+    <div style="font-size: 0.875rem; padding-top: 0.5rem;">
+        <p><strong>Scoring model:</strong> Likelihood (1-5: Rare &rarr; Almost certain) &times; Impact (1-5: Negligible &rarr; Severe) = Score (1-25).<br>
+        Ranking thresholds: <span class="badge badge-low">LOW</span> 1-4, <span class="badge badge-medium">MEDIUM</span> 5-9, <span class="badge badge-high">HIGH</span> 10-16, <span class="badge badge-urgent">URGENT</span> 17-25.</p>
+        <p><strong>Control status:</strong>
+            <span class="badge badge-closed">CLOSED</span> = mitigated,
+            <span class="badge badge-build">BUILD</span> = control designed but not yet built,
+            <span class="badge badge-ack">ACK</span> = acknowledged / accepted risk,
+            <span class="badge badge-watching">WATCH</span> = monitoring for change.</p>
+        <p><strong>Constitutional Directives:</strong> Risk management is driven by D1 (Antifragility &mdash; failures are learning events) and D2 (Reliability &mdash; auditable, no silent failures).</p>
+        <p><strong>Artifacts:</strong></p>
+        <ul style="margin: 0;">
+            <li><a href="/project/docs--reports--T-194-assurance-genesis-discussion" hx-get="/project/docs--reports--T-194-assurance-genesis-discussion" hx-target="#content" hx-push-url="true">Genesis discussion</a> &mdash; how the assurance model was designed (T-194)</li>
+            <li><a href="/project/docs--reports--T-194-risk-landscape" hx-get="/project/docs--reports--T-194-risk-landscape" hx-target="#content" hx-push-url="true">Risk landscape analysis</a> &mdash; methodology, evidence mining, cross-cutting patterns</li>
+            <li><a href="/project/docs--reports--T-194-control-register" hx-get="/project/docs--reports--T-194-control-register" hx-target="#content" hx-push-url="true">Control register design</a> &mdash; schema decisions, control inventory, design adequacy</li>
+        </ul>
+        <p style="color: var(--pico-muted-color); margin-top: 0.5rem;">
+            Data sources: <code>.context/project/risks.yaml</code>, <code>.context/project/issues.yaml</code>, <code>.context/project/gaps.yaml</code>
+        </p>
+    </div>
+</details>
 
 <!-- Three Register Overview -->
 <div class="three-register">

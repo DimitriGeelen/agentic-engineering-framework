@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T16:33:00Z
+last_update: 2026-02-19T16:34:26Z
 date_finished: null
 ---
 
@@ -221,7 +221,16 @@ test -f docs/reports/T-194-control-register.md
 - **Three-register model:** risks.yaml (forward), issues.yaml (backward), gaps.yaml (present)
 - **Artifact updated:** `docs/reports/T-194-risk-landscape.md` with decision and model
 
-### 2026-02-19 — Watchtower risks page (WIP)
-- **Created:** `web/blueprints/risks.py` — blueprint with risk/issue/gap loading and stats
-- **TODO:** `web/templates/risks.html` (template), `web/app.py` (registration), `web/shared.py` (nav entry)
-- **Stopped at:** Context 87% — template not yet created
+### 2026-02-19 — Watchtower risks page completed
+- **Created:** `web/templates/risks.html` — heatmap, open risks table, issues section, watching gaps
+- **Wired:** `web/app.py` (blueprint registration), `web/shared.py` (nav entry under Govern)
+- **Commit:** 5d74e78
+
+### 2026-02-19 — Phase 2a: Control register schema designed
+- **Artifact:** `docs/reports/T-194-control-register.md` (Phase 2 sections filled)
+- **Updated inventory:** 20 controls (up from 11) + 3 experimental (C-001/C-002/C-003)
+- **Agent research:** 2 parallel agents — ISO 27001 SoA patterns + AEF schema reflection
+- **Human correction:** "Not doing ISO 27001 — keep it fit for use, check Constitutional Directives"
+- **Schema agreed:** 8 fields (id, name, type, impl, blocking, mitigates, status, failure_mode)
+- **Key decisions:** D-Phase2-001 (Constitutional Directives anchor), D-Phase2-002 (failure_mode kept for D1), D-Phase2-003 (design adequacy in report not schema), D-Phase2-004 (CTL-XXX IDs)
+- **Next:** Phase 2b — populate controls.yaml with all 20+ controls
