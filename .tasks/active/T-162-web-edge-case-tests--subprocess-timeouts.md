@@ -11,7 +11,7 @@ horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:49Z
-last_update: 2026-02-19T00:08:59Z
+last_update: 2026-02-19T00:14:10Z
 date_finished: null
 ---
 
@@ -32,7 +32,7 @@ date_finished: null
 
 ## Verification
 
-python3 -m pytest web/test_app.py -v --tb=short -q 2>&1 | tail -5 | grep -q "passed"
+python3 -m pytest web/test_app.py -k "Subprocess or Malformed or Missing or Empty" -q 2>&1 | tail -3 | grep -q "24 passed"
 
 ## Decisions
 
