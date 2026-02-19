@@ -43,7 +43,7 @@ do_add_learning() {
     # Get next ID
     local next_id=1
     if [ -f "$learnings_file" ]; then
-        local max_id=$(grep "^  - id: L-" "$learnings_file" | sed 's/.*L-0*//' | sort -n | tail -1)
+        local max_id=$(grep "^- id: L-" "$learnings_file" | sed 's/.*L-0*//' | sort -n | tail -1)
         [ -n "$max_id" ] && next_id=$((max_id + 1))
     fi
     local id=$(printf "L-%03d" $next_id)
@@ -64,27 +64,25 @@ EOF
     local temp_file=$(mktemp)
     awk -v id="$id" -v learning="$learning" -v source="${source:-unknown}" -v task="${task:-unknown}" -v date="$date" '
         /^# Candidate learnings/ || /^candidates:/ {
-            print ""
-            print "  - id: " id
-            print "    learning: \"" learning "\""
-            print "    source: " source
-            print "    task: " task
-            print "    date: " date
-            print "    context: \"Added via context agent\""
-            print "    application: \"TBD\""
+            print "- id: " id
+            print "  learning: \"" learning "\""
+            print "  source: " source
+            print "  task: " task
+            print "  date: " date
+            print "  context: Added via context agent"
+            print "  application: TBD"
             found=1
         }
         { print }
         END {
             if (!found) {
-                print ""
-                print "  - id: " id
-                print "    learning: \"" learning "\""
-                print "    source: " source
-                print "    task: " task
-                print "    date: " date
-                print "    context: \"Added via context agent\""
-                print "    application: \"TBD\""
+                print "- id: " id
+                print "  learning: \"" learning "\""
+                print "  source: " source
+                print "  task: " task
+                print "  date: " date
+                print "  context: Added via context agent"
+                print "  application: TBD"
             }
         }
     ' "$learnings_file" > "$temp_file"

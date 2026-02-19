@@ -498,28 +498,25 @@ learnings:
   date: 2026-02-18
   context: Added via context agent
   application: TBD
-
-  - id: L-001
-    learning: "The thinking trail IS the artifact. Research, discussions, dead ends, and decision rationale are the durable output — not just the final design. Every step of the intellectual process must be persisted as a first-class artifact with cross-references. If the thinking trail is lost, the final deliverable is an unjustified assertion."
-    source: Human principle, Component Fabric genesis discussion
-    task: T-191
-    date: 2026-02-19
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-002
-    learning: "Inception commit gate (2 commits then decide) assumes short inceptions. For deep multi-session inceptions (5-10 sessions like T-191), this forces premature go/no-go decisions or repeated --no-verify bypasses. Need either: configurable commit limit per task, or a 'phase gate' that unlocks N more commits without a final decision."
-    source: T-191 inception gate collision
-    task: T-191
-    date: 2026-02-19
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-003
-    learning: "When naming AC verification categories, use responsibility-based labels (Agent/Human) not nature-based labels (automated/manual). ACs can migrate between categories when automation is added — the boundary is fluid, not inherent."
-    source: T-192 inception discussion
-    task: T-192
-    date: 2026-02-19
-    context: "Added via context agent"
-    application: "TBD"
+- id: L-059
+  learning: "The thinking trail IS the artifact. Research, discussions, dead ends, and decision rationale are the durable output — not just the final design. Every step of the intellectual process must be persisted as a first-class artifact with cross-references. If the thinking trail is lost, the final deliverable is an unjustified assertion."
+  source: Human principle, Component Fabric genesis discussion
+  task: T-191
+  date: 2026-02-19
+  context: Added via context agent
+  application: TBD
+- id: L-060
+  learning: "Inception commit gate (2 commits then decide) assumes short inceptions. For deep multi-session inceptions (5-10 sessions like T-191), this forces premature go/no-go decisions or repeated --no-verify bypasses. Need either: configurable commit limit per task, or a 'phase gate' that unlocks N more commits without a final decision."
+  source: T-191 inception gate collision
+  task: T-191
+  date: 2026-02-19
+  context: Added via context agent
+  application: TBD
+- id: L-061
+  learning: "When naming AC verification categories, use responsibility-based labels (Agent/Human) not nature-based labels (automated/manual). ACs can migrate between categories when automation is added — the boundary is fluid, not inherent."
+  source: T-192 inception discussion
+  task: T-192
+  date: 2026-02-19
+  context: Added via context agent
+  application: TBD
 candidates: []
