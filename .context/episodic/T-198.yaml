@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-198: R-033 remediation — human sovereignty structural control
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T22:33:53Z
+# ============================================================================
+
+task_id: T-198
+task_name: "R-033 remediation — human sovereignty structural control"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T19:29:23Z
+completed: 2026-02-19T22:33:52Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Completion gate: `--status work-completed` blocked when `owner: human` (exit 1)"
+  - "Owner protection: `--owner <non-human>` blocked when current `owner: human` (exit 1)"
+  - "Both gates bypassed with `--force` (with warning)"
+  - "Partial-complete re-run path (same status, line 126) unaffected by sovereignty gate"
+  - "CTL-026 registered in controls.yaml"
+  - "R-033 updated: controls [CTL-025, CTL-026], status implemented"
+  - "OE test for CTL-026 in audit.sh"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option D (sticky owner) + Option A (completion gate)"
+    rationale: "D prevents circumvention (agent can't just change owner first), A blocks the completion. Together they form a two-layer defense."
+    alternatives_rejected: ["Option B (workflow-type gate — too blunt, blocks legitimate inception completion); Option C (interaction tracking — too complex for bash, hard to audit)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 184 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [assurance, risk-remediation, t-194-go]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 184
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-198-r-033-remediation--human-sovereignty-str.md
+generated_by: context-agent-hybrid

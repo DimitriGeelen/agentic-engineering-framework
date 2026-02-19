@@ -1558,6 +1558,21 @@ for task_file in "$TASKS_DIR/active/"T-*.md; do
 done
 shopt -u nullglob
 
+# CTL-026 OE: Human Sovereignty Gate — update-task.sh has both gate checks
+if grep -q 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
+    if grep -q 'human ownership is protected' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
+        pass "CTL-026: Human sovereignty gate present (completion + owner protection)"
+    else
+        warn "CTL-026: Completion gate present but owner protection missing" \
+             "update-task.sh has sovereignty gate but not owner protection" \
+             "Check update-task.sh for R-033 owner protection logic"
+    fi
+else
+    fail "CTL-026: Human sovereignty gate missing from update-task.sh" \
+         "update-task.sh does not contain sovereignty gate" \
+         "Re-implement R-033 gates in update-task.sh"
+fi
+
 echo ""
 fi # end oe-daily
 

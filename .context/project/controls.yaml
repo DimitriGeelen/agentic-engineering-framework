@@ -260,3 +260,12 @@ controls:
     mitigates: [R-002, R-033]
     status: active
     failure_mode: "Tasks without ### Agent / ### Human headers fall through to legacy behavior (all ACs blocking); agent could mislabel ACs at authoring time"
+
+  - id: CTL-026
+    name: Human Sovereignty Gate (R-033)
+    type: structural
+    impl: "agents/task-create/update-task.sh (owner protection + completion gate)"
+    blocking: true
+    mitigates: [R-033]
+    status: active
+    failure_mode: "Agent uses --force to bypass; tasks created with owner: agent that should be owner: human"

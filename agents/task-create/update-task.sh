@@ -190,6 +190,24 @@ if [ -n "$NEW_STATUS" ]; then
             fi
         fi
 
+        # === Human Sovereignty Gate (R-033/T-198) ===
+        # Block agent from completing human-owned tasks without human interaction.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            CURRENT_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+            if [ "$CURRENT_OWNER" = "human" ]; then
+                if [ "$FORCE" = true ]; then
+                    echo -e "${YELLOW}WARNING: Completing human-owned task (--force bypass)${NC}"
+                else
+                    echo -e "${RED}ERROR: Cannot complete human-owned task — sovereignty gate (R-033)${NC}" >&2
+                    echo "Task $TASK_ID has owner: human. Only the human can complete it." >&2
+                    echo "Options:" >&2
+                    echo "  1. Human completes: fw task update $TASK_ID --status work-completed --force" >&2
+                    echo "  2. Reassign first: fw task update $TASK_ID --owner agent --force" >&2
+                    exit 1
+                fi
+            fi
+        fi
+
         # === Acceptance Criteria Gate (P-010) ===
         # T-193: Supports ### Agent / ### Human AC split.
         # When split headers present: gate only on Agent ACs, report Human ACs informatively.
@@ -343,6 +361,17 @@ fi
 # Update owner
 if [ -n "$NEW_OWNER" ]; then
     OLD_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    # T-198/R-033: Owner protection — owner: human is sticky
+    if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then
+        if [ "$FORCE" = true ]; then
+            echo -e "${YELLOW}WARNING: Overriding human ownership (--force bypass)${NC}"
+        else
+            echo -e "${RED}ERROR: Cannot change owner from 'human' — human ownership is protected (R-033)${NC}" >&2
+            echo "Only the human can reassign human-owned tasks." >&2
+            echo "Use --force to bypass (logged)." >&2
+            exit 1
+        fi
+    fi
     sed -i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"
     CHANGES+=("owner: $OLD_OWNER → $NEW_OWNER")

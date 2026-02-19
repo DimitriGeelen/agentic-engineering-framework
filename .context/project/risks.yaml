@@ -436,9 +436,9 @@ risks:
     score: 12
     ranking: high
     evidence: [T-151, T-194]
-    controls: [CTL-025]
-    control_status: partial
-    residual_notes: "CTL-025 partial-complete keeps human-AC tasks in active/ with owner:human. T-198 addresses remaining gap: structural gate preventing agent from completing human-owned tasks without dialogue."
+    controls: [CTL-025, CTL-026]
+    control_status: implemented
+    residual_notes: "CTL-025 partial-complete + CTL-026 sovereignty gate. Residual: agent could use --force, or create task with wrong owner."
 
   # === ARCHITECTURE ===
   - id: R-034
