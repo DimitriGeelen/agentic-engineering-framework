@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T15:53:34Z
+last_update: 2026-02-19T16:00:29Z
 date_finished: null
 ---
 
@@ -190,3 +190,10 @@ test -f docs/reports/T-194-control-register.md
 - **Finding:** 7 controls exist for research persistence. ALL failed: post-hoc (check at completion), advisory (agent must remember), scope-limited (sub-agents only, not main-thread), or unused (fw bus — dead code). Zero structural enforcement for main-thread conversation capture.
 - **Key insight:** Control Design ≠ Operational Effectiveness. Controls designed for sub-agent outputs, but real risk is main-thread conversation research loss.
 - **Candidates:** 6 remediation options (A-F) identified. T-191 provides positive evidence for Option D (live document pattern). Human decision: document, plan, experiment, validate.
+
+### 2026-02-19 — Phase 0c: Experiment specification
+- **Artifact:** `docs/reports/T-194-research-persistence-experiment-spec.md`
+- **Design:** Three controls (C-001 live document, C-002 commit gate, C-003 checkpoint prompt) each with ISO 27001 four-layer design: Risk → Control → OE Test → Audit. All defined before building.
+- **Experiment:** T-194 itself as test subject across Phases 1-3 (3-5 sessions). Measuring capture completeness, control effectiveness, false positive rate, friction, OE test reliability.
+- **Build order:** C-001 (CLAUDE.md rule, immediate) → C-002 (commit-msg hook, ~15 lines) → C-003 (checkpoint hook, ~30 lines) → OE tests (~50 lines) → cron integration.
+- **Human decision:** Write it up, then build and experiment on T-194.
