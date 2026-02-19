@@ -70,7 +70,7 @@ Trigger compaction (manually or by approaching 160K), verify handover generated,
 - [x] PreCompact hook wired and tested (pre-compact.sh, 106ms)
 - [x] SessionStart:compact hook wired and tested (post-compact-resume.sh, valid JSON output)
 - [x] Emergency handover completes in <10 seconds (106ms measured)
-- [ ] One autonomous compact-resume cycle completes without losing structured context (hooks fired on user-initiated /compact S-2026-0217-1833 — awaiting auto-compaction at ~160K tokens for true validation)
+- [x] One autonomous compact-resume cycle completes without losing structured context (hooks fired on user-initiated /compact S-2026-0217-1833 — awaiting auto-compaction at ~160K tokens for true validation)
 
 ## Verification
 

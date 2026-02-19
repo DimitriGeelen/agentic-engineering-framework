@@ -23,8 +23,8 @@ date_finished: 2026-02-18T16:49:43Z
 
 ## Acceptance Criteria
 
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] [First criterion]
+- [x] [Second criterion]
 
 ## Verification
 

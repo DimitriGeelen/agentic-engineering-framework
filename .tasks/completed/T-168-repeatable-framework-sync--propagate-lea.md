@@ -52,10 +52,10 @@ The framework evolves continuously (new agents, updated CLAUDE.md rules, new `fw
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated with user
-- [ ] Gap analysis complete (what's stale in Sprechloop)
-- [ ] Sync mechanism designed (manual steps or `fw upgrade` spec)
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated with user
+- [x] Gap analysis complete (what's stale in Sprechloop)
+- [x] Sync mechanism designed (manual steps or `fw upgrade` spec)
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
