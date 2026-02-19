@@ -4,15 +4,15 @@ name: "Web edge case tests — subprocess timeouts, error parsing, malformed YAM
 description: >
   Extend test_app.py with: subprocess.TimeoutExpired handling for all 18 fw CLI calls, stderr error parsing, malformed YAML input (corrupt assumptions.yaml, gaps.yaml), missing .context directories, empty task files. Ref: T-158, /tmp/T-158-web-audit.md
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:49Z
-last_update: 2026-02-19T00:14:10Z
-date_finished: null
+last_update: 2026-02-19T00:14:51Z
+date_finished: 2026-02-19T00:14:51Z
 ---
 
 # T-162: Web edge case tests — subprocess timeouts, error parsing, malformed YAML
@@ -54,3 +54,6 @@ python3 -m pytest web/test_app.py -k "Subprocess or Malformed or Missing or Empt
 
 ### 2026-02-19T00:08:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-19T00:14:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
