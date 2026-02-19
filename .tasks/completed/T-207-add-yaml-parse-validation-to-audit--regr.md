@@ -4,15 +4,15 @@ name: "Add YAML parse validation to audit — regression test for all project YA
 description: >
   Add YAML parse validation to audit — regression test for all project YAML files
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-19T22:59:03Z
-last_update: 2026-02-19T22:59:03Z
-date_finished: null
+last_update: 2026-02-19T23:01:50Z
+date_finished: 2026-02-19T23:01:50Z
 ---
 
 # T-207: Add YAML parse validation to audit — regression test for all project YAML files
@@ -32,7 +32,7 @@ T-206 fix revealed: learnings.yaml was broken for unknown time, Watchtower showe
 ## Verification
 
 # Audit structure section runs clean
-fw audit --section structure 2>&1 | grep -q "project YAML files parse correctly"
+bash -c 'fw audit --section structure 2>&1 | grep -c "project YAML files parse correctly" > /dev/null'
 # CTL-027 registered
 grep -q "CTL-027" .context/project/controls.yaml
 
@@ -53,3 +53,6 @@ grep -q "CTL-027" .context/project/controls.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-207-add-yaml-parse-validation-to-audit--regr.md
 - **Context:** Initial task creation
+
+### 2026-02-19T23:01:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
