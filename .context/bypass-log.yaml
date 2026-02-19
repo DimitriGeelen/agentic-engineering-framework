@@ -27,3 +27,15 @@ bypasses:
     authorized_by: human
     reason: "T-191 is a 5-10 session inception; the 2-commit inception gate is designed for short inceptions and is too restrictive for deep multi-session explorations. Research artifact (Phase 1a, 299 lines) cannot wait for a premature go/no-go decision."
     retroactive_task: null
+  - timestamp: 2026-02-19T12:51:41Z
+    action: "T-191: Phase 1b — AEF budget management subsystem topology map"
+    commit: 0b8fbb5
+    authorized_by: human
+    reason: "T-191 inception gate: multi-session inception (Phase 1b), logged per L-002"
+    retroactive_task: null
+  - timestamp: 2026-02-19T13:13:21Z
+    action: "T-191: Phase 1c — UI component documentation patterns research"
+    commit: e5d93df
+    authorized_by: human
+    reason: "T-191 inception gate: multi-session inception (Phase 1c), logged per L-002"
+    retroactive_task: null

@@ -138,14 +138,26 @@ test -f docs/reports/T-191-cf-architecture-proposal.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-02-19 — Separate card types for scripts vs UI
+- **Chose:** Different card schemas for CLI scripts and UI components
+- **Why:** Scripts have stdin/stdout interfaces; UI components have routes, templates, htmx attributes. The "component" concept is fundamentally different.
+- **Rejected:** Single universal card schema — too lossy for either domain
+
+### 2026-02-19 — UI component = route + template + inline JS triple
+- **Chose:** Document the full vertical chain for htmx apps (element → htmx attribute → API endpoint → backend effect → response fragment)
+- **Why:** In server-rendered htmx apps, "component" is not a file — it's a triple spanning Python, HTML, and inline JS. This is the soft coupling of the UI world.
+
+### 2026-02-19 — data-component / data-action HTML attributes
+- **Chose:** Add `data-component` and `data-action` attributes to templates as stable machine handles
+- **Why:** Low cost, survives CSS refactors, compatible with Playwright selectors, gives agents unambiguous element identification
+
+### 2026-02-19 — Interaction flows as first-class artifacts
+- **Chose:** Separate flow documents referencing components, not embedded in component cards
+- **Why:** Flows span multiple components (e.g., create task involves form + API + redirect)
+
+### 2026-02-19 — Template inheritance IS the component tree
+- **Chose:** For htmx/Jinja2 apps, `{% extends %}` / `{% include %}` / `{% block %}` defines the hierarchy
+- **Why:** This is the actual import graph equivalent — no point inventing a parallel structure
 
 ## Decision
 
@@ -153,5 +165,14 @@ test -f docs/reports/T-191-cf-architecture-proposal.md
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-02-19 — Phase 1b complete
+- **Artifact:** `docs/reports/T-191-cf-aef-topology-sample.md` (423 lines)
+- **Findings:** 11 components, 14 soft coupling points, 3 interaction flows in budget management subsystem. Soft coupling is the dominant dependency type (~56%). Auto-generation covers ~40%; human/AI review needed for rest.
+
+### 2026-02-19 — Phase 1c complete
+- **Artifact:** `docs/reports/T-191-cf-research-ui-patterns.md` (352 lines)
+- **Findings:** No component registry exists for Flask/htmx apps. Proposed UI component card schema, interaction flow format, and `data-component`/`data-action` attribute convention. 11 sources surveyed.
+
+### 2026-02-19 — Phase 1 (Research) complete
+- All three Phase 1 artifacts delivered: research landscape (1a), topology sample (1b), UI patterns (1c)
+- Next: Phase 2 (Use Case Deep Dives)

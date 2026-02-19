@@ -514,4 +514,12 @@ learnings:
     date: 2026-02-19
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-003
+    learning: "When naming AC verification categories, use responsibility-based labels (Agent/Human) not nature-based labels (automated/manual). ACs can migrate between categories when automation is added — the boundary is fluid, not inherent."
+    source: T-192 inception discussion
+    task: T-192
+    date: 2026-02-19
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
