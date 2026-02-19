@@ -121,6 +121,7 @@ show_help() {
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
+    echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -316,6 +317,19 @@ do_doctor() {
     else
         echo -e "  ${YELLOW}WARN${NC}  shellcheck not installed"
         warnings=$((warnings + 1))
+    fi
+
+    # Check N: Orphaned MCP processes (T-180)
+    local orphan_count
+    orphan_count=$(ps -eo pid,ppid,args 2>/dev/null | \
+                   awk '$2 == 1' | \
+                   grep -cE "(npm exec.*(mcp|context7|playwright))|(node .*(mcp|context7))" || echo 0)
+    orphan_count=$(echo "$orphan_count" | tr -d '[:space:]')
+    if [ "$orphan_count" -gt 0 ]; then
+        echo -e "  ${YELLOW}WARN${NC}  $orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
+        warnings=$((warnings + 1))
+    else
+        echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
 
     # Summary
@@ -677,6 +691,31 @@ case "$cmd" in
     bus)
         source "$FW_LIB_DIR/bus.sh"
         do_bus "$@"
+        ;;
+    mcp)
+        mcp_subcmd="${1:-}"
+        shift || true
+        case "$mcp_subcmd" in
+            reap)
+                exec "$AGENTS_DIR/mcp/mcp-reaper.sh" "$@"
+                ;;
+            ""|help|-h|--help)
+                echo -e "${BOLD}fw mcp${NC} — MCP server process management"
+                echo ""
+                echo "Subcommands:"
+                echo "  reap [--dry-run] [--force] [--age N] [--quiet]   Kill orphaned MCP processes"
+                echo ""
+                echo "Examples:"
+                echo "  fw mcp reap              # Interactive: detect + confirm"
+                echo "  fw mcp reap --dry-run    # Detection only"
+                echo "  fw mcp reap --force      # Kill without confirmation"
+                ;;
+            *)
+                echo -e "${RED}Unknown mcp subcommand: $mcp_subcmd${NC}"
+                echo "Run 'fw mcp help' for usage"
+                exit 1
+                ;;
+        esac
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
