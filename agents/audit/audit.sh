@@ -35,14 +35,16 @@ if [ "${1:-}" = "schedule" ]; then
             fi
             mkdir -p "$CONTEXT_DIR/audits/cron"
             cat > "$CRON_FILE" << CRONEOF
-# Agentic Engineering Framework — Scheduled Audits (T-184)
+# Agentic Engineering Framework — Scheduled Audits (T-184 + T-196)
 # Installed by: fw audit schedule install
-# Manages: periodic quality checks independent of agent sessions
+# Two audit tracks: Structural (project well-formed) + OE (controls working)
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 
-# Task quality + structure integrity + research OE (every 30 min)
-*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality,oe-research --cron 2>/dev/null
+# === STRUCTURAL AUDITS (project well-formed) ===
+
+# Task quality + structure integrity (every 30 min)
+*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality --cron 2>/dev/null
 
 # Git traceability + episodic completeness (hourly)
 0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic --cron 2>/dev/null
@@ -50,7 +52,23 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Observations + gaps (every 6 hours)
 0 */6 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section observations,gaps --cron 2>/dev/null
 
-# Full audit (daily at 8am)
+# === OE AUDITS (controls working — T-195/T-196) ===
+
+# Fast OE checks: CTL-001,003,004,018 + research CTL-014,021,022,023 (every 30 min)
+15,45 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-fast,oe-research --cron 2>/dev/null
+
+# Hourly OE checks: CTL-008,020 (hourly, offset from structural)
+30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-hourly --cron 2>/dev/null
+
+# Daily OE checks: CTL-002,005,006,007,009,010,011,012,013,019 (daily at 7am)
+0 7 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-daily --cron 2>/dev/null
+
+# Weekly OE checks: CTL-016 (Monday 9am)
+0 9 * * 1 root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-weekly --cron 2>/dev/null
+
+# === FULL + MAINTENANCE ===
+
+# Full audit — all sections (daily at 8am)
 0 8 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --cron 2>/dev/null
 
 # Retention: prune cron audit files older than 7 days (daily at 9am)
@@ -60,10 +78,14 @@ CRONEOF
             echo "Cron schedule installed: $CRON_FILE"
             echo ""
             echo "Schedule:"
-            echo "  Every 30min: structure, compliance, quality, oe-research"
-            echo "  Hourly:      traceability, episodic"
-            echo "  Every 6h:    observations, gaps"
-            echo "  Daily 8am:   full audit"
+            echo "  Every 30min: structure, compliance, quality (structural)"
+            echo "  :15/:45:     oe-fast, oe-research (OE — control verification)"
+            echo "  Hourly:      traceability, episodic (structural)"
+            echo "  :30:         oe-hourly (OE — git + cron checks)"
+            echo "  Every 6h:    observations, gaps (structural)"
+            echo "  Daily 7am:   oe-daily (OE — deep control checks)"
+            echo "  Daily 8am:   full audit (all sections)"
+            echo "  Monday 9am:  oe-weekly (OE — behavioral patterns)"
             echo "  Daily 9am:   retention cleanup (>7 days)"
             echo ""
             echo "Reports: $CONTEXT_DIR/audits/cron/"
