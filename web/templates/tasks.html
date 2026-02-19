@@ -577,6 +577,7 @@ function startKanbanNameEdit(span, taskId) {
             finish(current);
             return;
         }
+        input.classList.add('wt-saving');
         var fd = new FormData();
         fd.append('name', newName);
         var csrfEl = input.closest('.kanban-card');
@@ -587,8 +588,11 @@ function startKanbanNameEdit(span, taskId) {
             if (meta) fd.append('_csrf_token', meta.content);
         }
         fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
-            .then(function(r) { finish(r.ok ? newName : current); })
-            .catch(function() { finish(current); });
+            .then(function(r) {
+                if (r.ok) { finish(newName); showToast('Name saved', 'success'); }
+                else { r.text().then(function(t) { showToast(t.replace(/<[^>]*>/g,'').trim() || 'Save failed', 'error'); }); finish(current); }
+            })
+            .catch(function() { showToast('Network error', 'error'); finish(current); });
     }
 
     input.addEventListener('blur', save);

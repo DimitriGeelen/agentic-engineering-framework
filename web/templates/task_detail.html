@@ -52,6 +52,25 @@
     padding: 0.5rem;
     margin: 0;
 }
+/* ── Detail page inline selects ──────────────────────── */
+.detail-meta-table { max-width: 32rem; }
+.detail-meta-table th { width: 8rem; font-weight: 600; font-size: 0.9rem; }
+.detail-meta-table td { font-size: 0.9rem; }
+.inline-status-select {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.85rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+    cursor: pointer;
+}
+.detail-inline-result {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
 </style>
 
 <div class="page-header">
@@ -63,65 +82,64 @@
     </h1>
 </div>
 
-<!-- Task metadata -->
-<div class="grid">
-    <div>
-        <table>
-            <tbody>
-                <tr><th>Status</th><td>
-                    {% if task.status == 'work-completed' %}<mark>{{ task.status }}</mark>
-                    {% elif task.status == 'issues' %}<span style="color: var(--pico-del-color);">{{ task.status }}</span>
-                    {% else %}{{ task.status }}{% endif %}
-                </td></tr>
-                <tr><th>Owner</th><td>{{ task.owner or 'unassigned' }}</td></tr>
-                <tr><th>Horizon</th><td>
-                    {% if task.horizon == 'now' %}<span style="color:#1b5e20;font-weight:600;">now</span>
-                    {% elif task.horizon == 'next' %}<span style="color:#e65100;font-weight:600;">next</span>
-                    {% elif task.horizon == 'later' %}<span style="color:var(--pico-muted-color);">later</span>
-                    {% else %}{{ task.horizon or '—' }}{% endif %}
-                </td></tr>
-                <tr><th>Workflow Type</th><td>{{ task.workflow_type or '' }}</td></tr>
-                <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
-                <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
-                {% if task.date_finished %}
-                <tr><th>Finished</th><td>{{ task.date_finished }}</td></tr>
-                {% endif %}
-                {% if task.priority %}
-                <tr><th>Priority</th><td>{{ task.priority }}</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
-    </div>
-    <div>
-        <h4>Update Status</h4>
-        <form hx-post="/api/task/{{ task_id }}/status" hx-target="#status-result" hx-swap="innerHTML">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <div class="grid">
-                <select name="status">
+<!-- Task metadata — all fields are inline-editable -->
+<table class="detail-meta-table">
+    <tbody>
+        <tr><th>Status</th><td>
+            <form hx-post="/api/task/{{ task_id }}/status" hx-target="#status-result" hx-swap="innerHTML"
+                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="status" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for s in status_options %}
                     <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit">Update Status</button>
-            </div>
-        </form>
-        <div id="status-result"></div>
-
-        <h4>Update Horizon</h4>
-        <form hx-post="/api/task/{{ task_id }}/horizon" hx-target="#horizon-result" hx-swap="innerHTML">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <div class="grid">
-                <select name="horizon">
+            </form>
+            <span id="status-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Owner</th><td>
+            <form hx-post="/api/task/{{ task_id }}/owner" hx-target="#owner-result" hx-swap="innerHTML"
+                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="owner" class="inline-status-select" onchange="this.form.requestSubmit()">
+                    {% for o in ['human','claude-code'] %}
+                    <option value="{{ o }}" {% if task.owner == o %}selected{% endif %}>{{ o }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <span id="owner-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Horizon</th><td>
+            <form hx-post="/api/task/{{ task_id }}/horizon" hx-target="#horizon-result" hx-swap="innerHTML"
+                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="horizon" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for h in ['now','next','later'] %}
                     <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit">Update Horizon</button>
-            </div>
-        </form>
-        <div id="horizon-result"></div>
-    </div>
-</div>
+            </form>
+            <span id="horizon-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Workflow Type</th><td>
+            <form hx-post="/api/task/{{ task_id }}/type" hx-target="#type-result" hx-swap="innerHTML"
+                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <select name="type" class="inline-status-select" onchange="this.form.requestSubmit()">
+                    {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
+                    <option value="{{ t }}" {% if task.workflow_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            <span id="type-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
+        <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
+        {% if task.date_finished %}
+        <tr><th>Finished</th><td>{{ task.date_finished }}</td></tr>
+        {% endif %}
+    </tbody>
+</table>
 
 <!-- Description (click to edit) -->
 {% if task.description %}
@@ -279,12 +297,16 @@ function startNameEdit(span, taskId) {
             finish(current);
             return;
         }
+        input.classList.add('wt-saving');
         var fd = new FormData();
         fd.append('name', newName);
         fd.append('_csrf_token', '{{ csrf_token() }}');
         fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
-            .then(function(r) { finish(r.ok ? newName : current); })
-            .catch(function() { finish(current); });
+            .then(function(r) {
+                if (r.ok) { finish(newName); showToast('Name saved', 'success'); }
+                else { r.text().then(function(t) { showToast(t.replace(/<[^>]*>/g,'').trim() || 'Save failed', 'error'); }); finish(current); }
+            })
+            .catch(function() { showToast('Network error', 'error'); finish(current); });
     }
 
     input.addEventListener('blur', save);
@@ -307,4 +329,24 @@ function cancelDescEdit() {
     document.getElementById('desc-edit').style.display = 'none';
     document.getElementById('desc-display').style.display = 'block';
 }
+
+/* ── Auto-clear result spans after a delay ───────────── */
+document.addEventListener('htmx:afterRequest', function(evt) {
+    var target = evt.detail.target;
+    if (target && target.classList && target.classList.contains('detail-inline-result')) {
+        if (evt.detail.successful) {
+            showToast('Saved', 'success');
+        }
+        setTimeout(function() { target.textContent = ''; }, 3000);
+    }
+    // After description save, swap display back
+    if (target && target.id === 'desc-result' && evt.detail.successful) {
+        showToast('Description saved', 'success');
+        setTimeout(function() {
+            cancelDescEdit();
+            // Reload to show updated description
+            htmx.ajax('GET', window.location.pathname, {target: '#content', swap: 'innerHTML'});
+        }, 500);
+    }
+});
 </script>

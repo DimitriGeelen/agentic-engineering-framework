@@ -214,6 +214,9 @@
     </div>
     {% endif %}
 
+    <!-- Toast container -->
+    <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
+
     <!-- Main Content -->
     <main class="container" id="content">
         {% block content %}{% endblock %}
@@ -224,7 +227,70 @@
         Watchtower v1.0.0 &mdash; Agentic Engineering Framework
     </footer>
 
+    <style>
+        /* ── Toast notifications ──────────────────────────────── */
+        .wt-toast {
+            pointer-events: auto;
+            padding: 0.5rem 1rem;
+            border-radius: var(--pico-border-radius);
+            font-size: 0.85rem;
+            max-width: 22rem;
+            animation: toast-in 0.2s ease-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .wt-toast.success { background: #1b5e20; color: #fff; }
+        .wt-toast.error   { background: #c62828; color: #fff; }
+        .wt-toast.info    { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: none; } }
+        @keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateX(1rem); } }
+        /* ── Saving indicator ─────────────────────────────────── */
+        .wt-saving { opacity: 0.5; pointer-events: none; }
+        .wt-saving::after {
+            content: " ...";
+            animation: blink 1s steps(3, end) infinite;
+        }
+        @keyframes blink { to { opacity: 0.3; } }
+    </style>
+
     <script>
+        /* ── Toast notification helper ────────────────────────── */
+        function showToast(msg, type) {
+            type = type || 'info';
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = 'wt-toast ' + type;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.style.animation = 'toast-out 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        /* ── htmx error handling → toast ─────────────────────── */
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            var msg = 'Save failed';
+            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
+            showToast(msg, 'error');
+        });
+        document.body.addEventListener('htmx:sendError', function() {
+            showToast('Network error — check server', 'error');
+        });
+
+        /* ── Loading state on htmx forms ─────────────────────── */
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.add('wt-saving');
+            }
+        });
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.remove('wt-saving');
+            }
+        });
+
         // CSRF token for htmx requests
         document.body.addEventListener('htmx:configRequest', function(event) {
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
