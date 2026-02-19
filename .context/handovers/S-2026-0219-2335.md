@@ -76,7 +76,7 @@ All actionable work is complete. This evening's session (spanning 3 compaction c
 
 - Pre-push audit takes ~5 minutes. Use `--no-verify` if audit already passed.
 - Audit processes can stack across sessions. Check `ps aux | grep audit` before running.
-- Web server at :3000 needs restart for Python changes (not in debug mode)
+- Web server at :3000 needs restart for Python changes (not in debug mode). Was restarted end of session after 500 errors on /learnings and /graduation.
 - T-206/T-207 scratch test tasks were cleaned up — ignore any stale references
 
 ## Suggested First Action
@@ -92,10 +92,13 @@ No horizon: now tasks remain. Options for next session:
 - Modified: `agents/audit/audit.sh` (CTL-013 comment fix, CTL-026 OE test)
 - Modified: `.context/project/controls.yaml` (CTL-026)
 - Modified: `.context/project/risks.yaml` (R-033 implemented)
+- Created: `docs/reports/T-198-sovereignty-gate-design.md` (research artifact + dialogue log)
+- Modified: `.context/project/decisions.yaml` (R-033 gate decision)
 - Completed: T-193, T-198, T-203, T-204, T-205
 
 ## Recent Commits
 
+- 0ec1708 T-198: Add research artifact + decision record for sovereignty gate design
 - 353b13e T-198: Implement human sovereignty gate (R-033) — sticky owner + completion block
 - 2b20b51 T-205: CTL-012 cleanup — retroactively check 22 validated ACs across 8 pre-P-010 tasks
 - aacbe00 T-204: Fix CTL-013 audit HTML comment parsing — skip content inside comment blocks
