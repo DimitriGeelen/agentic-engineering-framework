@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T16:00:29Z
+last_update: 2026-02-19T16:10:16Z
 date_finished: null
 ---
 
@@ -197,3 +197,12 @@ test -f docs/reports/T-194-control-register.md
 - **Experiment:** T-194 itself as test subject across Phases 1-3 (3-5 sessions). Measuring capture completeness, control effectiveness, false positive rate, friction, OE test reliability.
 - **Build order:** C-001 (CLAUDE.md rule, immediate) → C-002 (commit-msg hook, ~15 lines) → C-003 (checkpoint hook, ~30 lines) → OE tests (~50 lines) → cron integration.
 - **Human decision:** Write it up, then build and experiment on T-194.
+
+### 2026-02-19 — Experiment build: 3 controls + OE tests deployed
+- **C-001 (live document rule):** Added to CLAUDE.md Inception Discipline section, rule #6. Behavioral, not enforced by hook.
+- **C-002 (commit gate):** Added to `.git/hooks/commit-msg`. Warns on inception commits without docs/reports/ in diff. Logs to `.context/working/.inception-research-warnings`.
+- **C-003 (checkpoint prompt):** Added to `agents/context/checkpoint.sh` post-tool handler. Every 20 tool calls, checks if focused inception task has research artifact. Warns if missing or stale (>30min).
+- **OE tests:** Added as audit Section 11 (`oe-research`). Tests C-001 (artifact exists + linked), C-002 (hook installed + warning count), C-003 (logic present + prompt count).
+- **Cron:** Reinstalled with `oe-research` in 30-minute schedule.
+- **First OE result:** T-190 flagged — active inception with no research artifact. T-191 and T-194 pass.
+- **Total implementation:** ~130 lines across CLAUDE.md, commit-msg, checkpoint.sh, audit.sh.
