@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T08:12:27Z
+# ============================================================================
+
+task_id: T-130
+task_name: "Investigate GSD (get-shit-done) for usable concepts, skills, patterns"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-17T20:37:02Z
+completed: 2026-02-19T08:12:27Z
+duration_days: 2
+updates_count: 7
+first_commit: 2026-02-17T21:37:12+01:00
+last_commit: 2026-02-17T21:37:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create investigation task for GSD framework (horizon: later)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-130-investigate-gsd-get-shit-done-for-usable.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-17T21:37:12"
+    action: "T-130: Create investigation task for GSD framework (horizon: later)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2135 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2135
+  commits: 1
+  files_changed: 1
+  lines_added: 78
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-130-investigate-gsd-get-shit-done-for-usable.md
+generated_by: context-agent-hybrid
