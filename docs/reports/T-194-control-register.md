@@ -231,6 +231,131 @@ R-033 (human sovereignty), R-023 (hook config), R-024 (UI parse errors), R-036 (
 4. **R-011**: Revive fw bus or build alternative size gating for sub-agent output
 5. **Ad-hoc mitigations**: Decide whether to formalize the 12 closed-but-uncontrolled risks into controls, or accept them as "fixed" with residual risk
 
+## Phase 3: OE Test Design
+
+**Date:** 2026-02-19
+**Question per control:** "What observable effect proves this control is working in practice?"
+
+### OE Test Register
+
+Each test classified as:
+- **A** = automatable (cron/script)
+- **S** = session-log analysis (needs transcript)
+- **M** = manual review (human required)
+
+#### Layer 1: PreToolUse Hooks
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-001 | Task-First Gate | Focus file exists when Write/Edit succeed | Check: recent commits touch source files → focus.yaml had value at that time | A | 30min |
+| CTL-002 | Tier 0 Guard | Hook script exists + settings.json matcher correct | `test -x agents/context/check-tier0.sh && grep -q 'check-tier0' .claude/settings.json` | A | daily |
+| CTL-003 | Budget Gate | `.budget-status` file < 5min old during active session | `find .context/working/.budget-status -mmin -5` (only meaningful during session) | A | 30min |
+
+#### Layer 2: PostToolUse Hooks
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-004 | Context Checkpoint | Tool counter resets on commit | `.tool-counter` = 0 after most recent commit (post-commit hook resets it) | A | 30min |
+| CTL-005 | Error Watchdog | Hook script exists + settings.json matcher correct | `test -x agents/context/error-watchdog.sh && grep -q 'error-watchdog' .claude/settings.json` | A | daily |
+
+#### Layer 3: SessionStart Hooks
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-006 | Pre-Compact Handover | Handover exists within 5min of each compaction | Check `.compact-log` timestamps vs handover timestamps — each compaction should have a handover | A | daily |
+| CTL-007 | Post-Compact Resume | Settings.json contains resume hook config | `grep -q 'post-compact-resume' .claude/settings.json` | A | daily |
+
+#### Layer 4: Git Hooks
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-008 | Task Reference Gate | All recent commits have T-XXX prefix | `git log --oneline -20` → count without T-XXX → ratio | A | hourly |
+| CTL-009 | Inception Commit Gate | Active inception tasks with >2 commits have decision OR bypass logged | Cross-check inception tasks vs commit count vs decision file | A | daily |
+| CTL-010 | Bypass Detector | All --no-verify commits appear in bypass-log.yaml | Compare `git log --oneline` (missing T-XXX) vs bypass-log entries | A | daily |
+| CTL-011 | Audit Push Gate | Hook file exists + is executable | `test -x .git/hooks/pre-push` | A | daily |
+| CTL-022 | Research Warning (C-002) | Inception commits without docs/reports/ logged to warning file | Check `.inception-research-warnings` has entries when expected | A | 30min |
+
+#### Layer 5: Script Gates
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-012 | AC Gate (P-010) | No completed task has unchecked ACs | Scan `.tasks/completed/` for `- [ ]` in AC section | A | daily |
+| CTL-013 | Verification Gate (P-011) | Completed tasks with `## Verification` have all commands passing | Re-run verification commands for recently completed tasks | A | daily |
+
+#### Layer 6: Behavioral Rules
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-014 | Inception Discipline | Active inception tasks have docs/reports/T-XXX-*.md | `test -f docs/reports/T-XXX-*` for each active inception | A | 30min |
+| CTL-015 | Pre-Completion Check | N/A — subsumed by CTL-013 OE test | (if verification gate passes, pre-completion check is moot) | — | — |
+| CTL-016 | Hypothesis Debugging | Error patterns resolved with mitigation recorded | Check healing patterns for recent resolutions | S | weekly |
+| CTL-017 | Commit Cadence | Commits happen at least every 20 tool calls | Compare `.tool-counter` max between commits (from git log timestamps) | S | session |
+| CTL-021 | Live Document Rule (C-001) | Same as CTL-014 | Research artifact exists + linked in task Updates | A | 30min |
+
+#### Cross-cutting / Infrastructure
+
+| CTL | Control | OE Test | How | Type | Freq |
+|-----|---------|---------|-----|------|------|
+| CTL-018 | Token Budget Monitor | Budget status file exists, valid JSON, level field present | `python3 -c "import json; d=json.load(open('.context/working/.budget-status')); assert 'level' in d"` | A | 30min |
+| CTL-019 | Auto-Restart | claude-fw wrapper exists + is executable | `test -x bin/claude-fw` | A | daily |
+| CTL-020 | Continuous Audit | Cron audit files produced within last hour | `find .context/audits/cron -name '*.yaml' -mmin -60` (during active cron) | A | hourly |
+| CTL-023 | Checkpoint Prompt (C-003) | Checkpoint log shows research prompts fired | Check `.inception-checkpoint-log` for recent entries | A | 30min |
+
+### OE Test Classification Summary
+
+| Type | Count | Controls |
+|------|-------|----------|
+| **A** (automatable) | 20 | CTL-001 through CTL-014, CTL-018-023 |
+| **S** (session-log) | 2 | CTL-016, CTL-017 |
+| **M** (manual) | 0 | — |
+| **Skipped** | 1 | CTL-015 (subsumed by CTL-013) |
+
+**20 of 23 controls can be OE-tested automatically.** This exceeds the go/no-go criterion (>= 8 of 11 → now 20 of 23).
+
+### Proposed Cron Redesign
+
+Current cron runs **audit sections** (structure, compliance, quality, etc.). The redesign runs **OE tests grouped by frequency**:
+
+```
+# === OE Tests (T-194 Phase 3 redesign) ===
+
+# Every 30 min: fast checks (file existence, freshness, research artifacts)
+*/30 * * * *  fw audit --section oe-fast --cron
+# Tests: CTL-001, CTL-003, CTL-004, CTL-014/021, CTL-018, CTL-022, CTL-023
+
+# Hourly: git-based checks (traceability, audit output freshness)
+0 * * * *     fw audit --section oe-hourly --cron
+# Tests: CTL-008, CTL-020
+
+# Daily: deep checks (hook installation, bypass reconciliation, AC gate, verification re-run)
+0 8 * * *     fw audit --section oe-daily --cron
+# Tests: CTL-002, CTL-005, CTL-006, CTL-007, CTL-009, CTL-010, CTL-011, CTL-012, CTL-013, CTL-019
+
+# Weekly: behavioral/session analysis
+0 9 * * 1     fw audit --section oe-weekly --cron
+# Tests: CTL-016 (healing patterns)
+
+# Keep existing structural audits for compliance
+*/30 * * * *  fw audit --section structure,compliance,quality --cron
+0 * * * *     fw audit --section traceability,episodic --cron
+0 */6 * * *   fw audit --section observations,gaps --cron
+0 8 * * *     fw audit --section full --cron
+
+# Retention
+0 9 * * *     find .context/audits/cron -name '*.yaml' -mtime +7 -delete
+```
+
+### Key Design Decisions
+
+**D-Phase3-001: OE tests are outcome-based, not simulation-based.**
+We test "did the control produce its expected effect?" (outcome) rather than "can we trigger the control?" (simulation). Outcome tests are cheaper, run without a session, and detect both control failures AND bypass.
+
+**D-Phase3-002: Session-log tests (CTL-016, CTL-017) run within sessions, not cron.**
+These require transcript analysis. They belong in checkpoint.sh (PostToolUse), not cron. Cron can't read active sessions.
+
+**D-Phase3-003: Structural audit sections preserved alongside OE tests.**
+The current structure/compliance/quality checks are still valuable — they catch different things than OE tests. OE tests verify controls work; structural audits verify the project is well-formed. Both needed.
+
 ## Dialogue Log
 
 ### 2026-02-19 — Schema design conversation

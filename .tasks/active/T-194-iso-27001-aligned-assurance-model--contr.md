@@ -251,3 +251,12 @@ test -f docs/reports/T-194-control-register.md
 - **Finding:** R-033 (score 12, human sovereignty) has NO control at all
 - **Recommendations:** 5 actions for Phase 3 (R-033 structural gate, R-023 config validator, R-010 blocking promotion, R-011 size gating, ad-hoc formalization)
 - **Next:** Human review of assessment, then Phase 3 (OE test design)
+
+### 2026-02-19 — Phase 3: OE test design
+- **Artifact updated:** `docs/reports/T-194-control-register.md` — full OE test register
+- **OE tests designed:** 22 of 23 controls (CTL-015 subsumed by CTL-013)
+- **Classification:** 20 automatable (cron), 2 session-log, 0 manual
+- **Exceeds go/no-go:** 20/23 automatable vs criterion of >=8/11
+- **Cron redesign:** 4 OE tiers (30min/hourly/daily/weekly) alongside existing structural audits
+- **Key decisions:** D-Phase3-001 (outcome-based tests), D-Phase3-002 (session tests in checkpoint.sh), D-Phase3-003 (structural audits preserved)
+- **Next:** Phase 3d — human review of OE tests, then Phase 4 (discovery layer) or Phase 5 (decision)
