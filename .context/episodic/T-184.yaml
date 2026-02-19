@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-184: Implement cron-based audit scheduling (T-151 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T07:11:50Z
+# ============================================================================
+
+task_id: T-184
+task_name: "Implement cron-based audit scheduling (T-151 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T07:01:37Z
+completed: 2026-02-19T07:11:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-19T08:10:43+01:00
+last_commit: 2026-02-19T08:11:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Implement cron-based audit scheduling — section filtering, quiet mode, schedule management. Fix LATEST-CRON symlink to only create in custom output dirs
+
+# Key outcomes
+outcomes:
+  - "`fw audit --section structure,quality` runs only specified sections"
+  - "`fw audit --output /path/to/dir` writes YAML report to custom directory"
+  - "`fw audit --quiet` suppresses terminal output (cron-friendly)"
+  - "`fw audit schedule install` installs cron entries to `/etc/cron.d/agentic-audit`"
+  - "`fw audit schedule remove` removes cron entries"
+  - "`fw audit schedule status` shows current schedule"
+  - "`fw context init` reads and displays latest cron audit findings when available"
+  - "Retention policy: cron audit files older than 7 days are auto-pruned"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix LATEST-CRON symlink to only create in custom output dirs"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/context/lib/init.sh"
+  - ".context/audits/2026-02-19.yaml"
+  - ".context/audits/cron/2026-02-19-0806.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".tasks/active/T-184-implement-cron-based-audit-scheduling-t-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-19T08:10:43"
+    action: "T-184: Implement cron-based audit scheduling — section filtering, quiet mode, schedule management"
+  - time: "2026-02-19T08:11:15"
+    action: "T-184: Fix LATEST-CRON symlink to only create in custom output dirs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 6
+  lines_added: 342
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-184-implement-cron-based-audit-scheduling-t-.md
+generated_by: context-agent-hybrid
