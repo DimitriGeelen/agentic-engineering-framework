@@ -36,6 +36,7 @@ NAV_GROUPS = [
     ("Govern", [
         ("Directives",  "core.directives",                    None),
         ("Enforcement", "enforcement.enforcement_dashboard",  None),
+        ("Risks",       "risks.risk_register",                None),
         ("Gaps",        "discovery.gaps",                     None),
         ("Quality",     "quality.quality_gate",               None),
         ("Metrics",     "metrics.project_metrics",            None),
