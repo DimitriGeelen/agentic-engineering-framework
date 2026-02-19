@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T15:51:28Z
+last_update: 2026-02-19T15:53:34Z
 date_finished: null
 ---
 
@@ -183,3 +183,10 @@ test -f docs/reports/T-194-control-register.md
 - **Artifact:** `docs/reports/T-194-assurance-genesis-discussion.md`
 - **Content:** T-151 timeline analysis, three-layer model evolution, ISO 27001 mapping, control inventory (11 controls, 9 without OE), OE test examples, discovery capability gap analysis, 5 open questions for Phase 1
 - **Key insight:** Layer 2 (cron audits) is NOT redundant — it's defense-in-depth for when hooks silently fail (observed multiple times in AEF history)
+
+### 2026-02-19 — Phase 0b: Research persistence failure analysis
+- **Artifact:** `docs/reports/T-194-research-persistence-failure-analysis.md`
+- **Trigger:** T-194 genesis discussion almost lost — human caught it
+- **Finding:** 7 controls exist for research persistence. ALL failed: post-hoc (check at completion), advisory (agent must remember), scope-limited (sub-agents only, not main-thread), or unused (fw bus — dead code). Zero structural enforcement for main-thread conversation capture.
+- **Key insight:** Control Design ≠ Operational Effectiveness. Controls designed for sub-agent outputs, but real risk is main-thread conversation research loss.
+- **Candidates:** 6 remediation options (A-F) identified. T-191 provides positive evidence for Option D (live document pattern). Human decision: document, plan, experiment, validate.
