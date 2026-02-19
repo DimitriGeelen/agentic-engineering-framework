@@ -1,0 +1,99 @@
+# Issue Register — Past incidents and materialized risks (T-194)
+# An issue = a risk that materialized. Links back to risks.yaml via related_risk.
+#
+# Schema:
+#   id: I-XXX
+#   title: Short description of what happened
+#   date: When it occurred (YYYY-MM-DD)
+#   related_risk: R-XXX (from risks.yaml)
+#   related_tasks: [T-XXX] (tasks where it was observed/fixed)
+#   description: What happened
+#   impact: What was the consequence
+#   resolution: What was done to fix it
+#   status: resolved|open|recurring
+#
+# Distinction from risks.yaml:
+#   risks.yaml = forward-looking (what COULD go wrong, with L×I scoring)
+#   issues.yaml = backward-looking (what DID go wrong, with resolution)
+
+issues:
+  # === RECENT / OPEN ===
+  - id: I-001
+    title: "T-151 spec completed by agent in 2 minutes without human consultation"
+    date: 2026-02-19
+    related_risk: R-033
+    related_tasks: [T-151, T-194]
+    description: "Specification task (owner: human) went from started-work to work-completed in 2 minutes. Agent wrote the investigation, GO recommendation, scheduling model, and cron decisions — all without human dialogue."
+    impact: "Cron system (T-184) built from flawed spec. Wrong problem solved (structural checks on timer vs OE testing). Human sovereignty violated."
+    resolution: "Reopened T-151/T-184, parked. Created T-194 inception with human-dialogue-mandatory decision."
+    status: resolved
+
+  - id: I-002
+    title: "T-194 genesis discussion almost lost — 7 controls failed"
+    date: 2026-02-19
+    related_risk: R-010
+    related_tasks: [T-194, T-178, T-185, T-190]
+    description: "Rich dialogue (ISO 27001 mapping, control inventory, OE test design) generated but not persisted. Human caught it with 'is our discovery documented?' All 7 existing research persistence controls failed."
+    impact: "Would have lost: T-151 timeline analysis, three-layer model, ISO 27001 mapping, control inventory, OE test examples, discovery gap analysis."
+    resolution: "Built C-001/C-002/C-003 controls with OE tests. Experiment running on T-194."
+    status: resolved
+
+  - id: I-003
+    title: "T-057 behavior ACs checked by agent without observation"
+    date: 2026-02-18
+    related_risk: R-002
+    related_tasks: [T-057, T-192, T-193]
+    description: "Agent checked 7/8 behavior acceptance criteria (UI/UX) based on code existence, not actual human observation. P-010 gate forced the agent to check them or be blocked."
+    impact: "Quality assurance falsified. Work declared complete without actual verification of user-facing behavior."
+    resolution: "T-192 inception (GO). T-193 build task created (### Agent / ### Human AC sections). Not yet implemented."
+    status: open
+
+  - id: I-004
+    title: "T-078 context at 177K tokens (88%) with zero warnings"
+    date: 2026-02-17
+    related_risk: R-005
+    related_tasks: [T-078]
+    description: "Session reached 177K of 200K token limit. Budget monitoring reported 0 tokens due to stale transcript cache from previous session and synthetic model entries from compaction."
+    impact: "Session nearly lost. No handover generated. Near-miss for complete work loss."
+    resolution: "Removed transcript cache entirely. Added synthetic entry filtering. Increased tail window to 2MB. Added compaction detection."
+    status: resolved
+
+  - id: I-005
+    title: "T-059 context exhaustion — skeleton handover useless for recovery"
+    date: 2026-02-15
+    related_risk: R-004
+    related_tasks: [T-059, FP-004]
+    description: "72 tool calls consumed context. Agent outputs (268K-532K bytes) were primary consumer. Handover was skeleton with [TODO] placeholders — useless for recovery."
+    impact: "Complete session context lost. Recovery required manual reconstruction."
+    resolution: "Built P-009 budget management (tool counter, token monitoring, auto-handover at critical). Budget gate blocks at 150K+."
+    status: resolved
+
+  - id: I-006
+    title: "Sprechloop 14 cascading compactions in 13 minutes"
+    date: 2026-02-17
+    related_risk: R-007
+    related_tasks: [T-136, T-148, T-149]
+    description: "Budget warning triggered handover → handover increased tokens → triggered another warning → cascade. 14 compactions in 13 minutes before manual intervention."
+    impact: "Session destroyed. All working context lost repeatedly. Project unusable for 13 minutes."
+    resolution: "T-136 cooldown (10 min between handovers). T-148 dedup. T-149 project isolation."
+    status: resolved
+
+  - id: I-007
+    title: "T-141 init.sh overwrote patterns.yaml with wrong format"
+    date: 2026-02-18
+    related_risk: R-014
+    related_tasks: [T-141, L-047]
+    description: "init.sh created patterns.yaml with `patterns: []` but pattern.sh expected `failure_patterns:`, `success_patterns:`, etc. Existing patterns silently lost."
+    impact: "All failure and success patterns lost. Downstream healing agent couldn't find patterns."
+    resolution: "Fixed format in init.sh. Added L-047 round-trip verification learning. 21-test suite."
+    status: resolved
+
+  - id: I-008
+    title: "Sub-agent results never persisted via fw bus — dead protocol"
+    date: 2026-02-18
+    related_risk: R-010
+    related_tasks: [T-174, G-009, T-178]
+    description: "fw bus designed, built, documented across 190+ tasks — never used once. 5+ sub-agent dispatches returned full content to context instead of writing to disk. Would have been lost without human intervention."
+    impact: "Research findings at risk of loss on every sub-agent dispatch. Protocol exists on paper but has zero adoption."
+    resolution: "T-178 GO for audit check + resume integration (partial). T-194 C-001/C-002/C-003 (broader fix). fw bus remains unused."
+    status: open

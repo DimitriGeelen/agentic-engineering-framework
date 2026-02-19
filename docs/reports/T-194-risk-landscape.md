@@ -164,19 +164,28 @@ Risks where human review/approval is bypassed or absent.
 - **Why:** Human wants visual risk register with scoring, heatmap, and control status
 - **Status:** Planned — blueprint + template to build
 
-## Phase 1b: Risks vs Issues (dialogue in progress)
+### Risks vs Issues — separate files
+- **Chose:** Option A — separate files: `risks.yaml` (forward-looking) + `issues.yaml` (past incidents)
+- **Why:** Human decision. Clean separation of concerns: risks = what could happen (L×I scored, linked to controls), issues = what did happen (incident detail, resolution, status)
+- **Implemented:** `.context/project/issues.yaml` — 8 issues extracted (recent/significant incidents)
+- **Schema:** Each issue has: id, title, date, related_risk, related_tasks, description, impact, resolution, status
 
-Human raised: "we should also differentiate between issues and risks."
+### Three-register model (emerged from dialogue)
 
-ISO 27001 distinction:
-- **Risk:** Future-oriented. Something that *could* go wrong. L×I scoring, linked to controls.
-- **Issue:** Past-oriented. Something that *has* gone wrong. A materialized risk or operational problem.
+| Register | File | Purpose | Time orientation |
+|----------|------|---------|-----------------|
+| **Risks** | `.context/project/risks.yaml` | What could go wrong, L×I scored | Forward |
+| **Issues** | `.context/project/issues.yaml` | What did go wrong, with resolution | Backward |
+| **Gaps** | `.context/project/gaps.yaml` | Spec vs reality mismatches | Present |
 
-Current register mixes both — many entries are issues (T-078, T-059, T-141) where controls were built. Open question: separate files, combined with incidents field, or status-based?
+These are complementary:
+- A **gap** is detected → may become a **risk** if unaddressed → may become an **issue** if it materializes
+- An **issue** is analyzed → root cause identifies a **risk** → control is designed
+- A **risk** with high score → proactive control built → prevents future **issues**
 
 ## Open Questions
 
-1. Risk vs Issue separation: separate files, combined, or status-based?
-2. Categories: keep 9 or consolidate? (Human: no opinion yet)
-3. Watchtower risk page: heatmap layout? What controls to surface?
-4. Relationship between risks.yaml and gaps.yaml going forward
+1. Categories: keep 9 or consolidate? (Human: no opinion yet)
+2. Watchtower risk page: heatmap layout? What controls to surface?
+3. Should issues.yaml include all historical incidents or only recent/significant?
+4. How do gaps.yaml, risks.yaml, and issues.yaml cross-reference each other?
