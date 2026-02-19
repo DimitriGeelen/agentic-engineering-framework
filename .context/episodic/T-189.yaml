@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-189: Memory consolidation protocol — automated dedup and staleness pruning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T09:12:23Z
+# ============================================================================
+
+task_id: T-189
+task_name: "Memory consolidation protocol — automated dedup and staleness pruning"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T09:07:11Z
+completed: 2026-02-19T09:12:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-19T10:12:18+01:00
+last_commit: 2026-02-19T10:12:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Memory consolidation protocol — fw consolidate scan/apply/report
+
+# Key outcomes
+outcomes:
+  - "`fw consolidate scan` analyzes learnings.yaml and detects duplicate clusters via text similarity"
+  - "`fw consolidate scan` detects stale learnings (TBD application, superseded by later entries)"
+  - "`fw consolidate scan` generates a consolidation report in `.context/working/consolidation-report.yaml`"
+  - "`fw consolidate apply` merges duplicates and prunes stale entries with backup"
+  - "Dry-run is default — `scan` never modifies source files"
+  - "Patterns.yaml is also scanned for duplicates"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Jaccard similarity on word tokens with dual-field comparison (primary field + combined fields), threshold 0.35"
+    rationale: "Deterministic (D2), no external dependencies (D4), catches confirmed duplicates (L-006/L-017, L-007/L-024) while avoiding false positives (L-002/L-038 at 0.105)"
+    alternatives_rejected: ["LLM-based comparison (non-deterministic), embedding similarity (requires external library), threshold 0.25 (too many false positives)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/consolidate.py"
+  - "bin/fw"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-189-memory-consolidation-protocol--automated.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-19T10:12:18"
+    action: "T-189: Memory consolidation protocol — fw consolidate scan/apply/report"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 1034
+  lines_removed: 466
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-189-memory-consolidation-protocol--automated.md
+generated_by: context-agent-hybrid
