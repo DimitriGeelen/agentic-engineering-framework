@@ -176,6 +176,20 @@ if nd:
         echo ""
     fi
 
+    # Research artifacts (docs/reports/) — T-185
+    local reports_dir="$PROJECT_ROOT/docs/reports"
+    if [ -d "$reports_dir" ]; then
+        local recent_reports
+        recent_reports=$(find "$reports_dir" -name "*.md" -mtime -7 -type f 2>/dev/null | sort -r | head -5)
+        if [ -n "$recent_reports" ]; then
+            echo -e "${BOLD}Recent Research (docs/reports/, last 7 days):${NC}"
+            while IFS= read -r report; do
+                echo "  - $(basename "$report")"
+            done <<< "$recent_reports"
+            echo ""
+        fi
+    fi
+
     # Recommendations
     echo -e "${BOLD}${CYAN}Recommendations:${NC}"
     if [ "$task_count" -eq 0 ]; then

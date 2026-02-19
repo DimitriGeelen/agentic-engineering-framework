@@ -1002,6 +1002,69 @@ echo ""
 fi # end graduation
 
 # ============================================
+# SECTION 10: INCEPTION RESEARCH ARTIFACT CHECK (T-178/T-185)
+# ============================================
+if should_run_section "research"; then
+echo "=== INCEPTION RESEARCH CHECKS ==="
+
+# Check completed inception tasks for research artifacts in docs/reports/
+missing_research=0
+if [ -d "$TASKS_DIR/completed" ] && [ -d "$PROJECT_ROOT/docs/reports" ]; then
+    shopt -s nullglob
+    for task_file in "$TASKS_DIR/completed"/*.md; do
+        [ -f "$task_file" ] || continue
+        task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+        [ "$task_workflow" != "inception" ] && continue
+
+        task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+        [ -z "$task_id" ] && continue
+
+        # Check if any docs/reports/ file references this task ID
+        has_artifact=false
+        for report in "$PROJECT_ROOT/docs/reports"/*.md; do
+            if echo "$(basename "$report")" | grep -qi "$task_id"; then
+                has_artifact=true
+                break
+            fi
+        done
+
+        # Also check if task body mentions docs/reports/
+        if [ "$has_artifact" = false ]; then
+            if grep -q "docs/reports/" "$task_file" 2>/dev/null; then
+                has_artifact=true
+            fi
+        fi
+
+        # Also check episodic for artifact references
+        if [ "$has_artifact" = false ] && [ -f "$CONTEXT_DIR/episodic/${task_id}.yaml" ]; then
+            if grep -q "docs/reports/" "$CONTEXT_DIR/episodic/${task_id}.yaml" 2>/dev/null; then
+                has_artifact=true
+            fi
+        fi
+
+        if [ "$has_artifact" = false ]; then
+            warn "Inception task $task_id has no research artifact in docs/reports/" \
+                 "Completed inception with no persisted research output" \
+                 "Save research findings: docs/reports/${task_id}-*.md"
+            missing_research=$((missing_research + 1))
+        fi
+    done
+    shopt -u nullglob
+fi
+
+if [ "$missing_research" -eq 0 ]; then
+    inception_count=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/completed/" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$inception_count" -gt 0 ]; then
+        pass "All $inception_count completed inceptions have research artifacts"
+    else
+        pass "No completed inception tasks to check"
+    fi
+fi
+
+echo ""
+fi # end research
+
+# ============================================
 # SUMMARY (always runs)
 # ============================================
 echo "=== SUMMARY ==="
