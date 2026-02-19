@@ -1,5 +1,5 @@
-# Audit Results - 2026-02-18
-timestamp: 2026-02-18T21:56:25Z
+# Audit Results - 2026-02-19
+timestamp: 2026-02-18T23:56:21Z
 summary:
   pass: 20
   warn: 3
@@ -16,12 +16,11 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 14 active tasks are valid"
-  - level: WARN
-    check: "Task T-181 has no updates but status is started-work"
-    mitigation: "Add update entry to T-181-web-ui-inline-editing--edit-tasks-docs-a.md"
+    check: "All 12 active tasks are valid"
   - level: PASS
-    check: "Git traceability: 98% (468/477 commits reference tasks)"
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 98% (477/486 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -42,15 +41,16 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 170 episodic summaries have quality content"
+    check: "All 172 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
   - level: PASS
     check: "Gaps register: 1 watching, no triggers fired"
-  - level: PASS
-    check: "Handover open questions: none (section empty or template placeholder)"
+  - level: WARN
+    check: "Handover has 2 open question(s) with no matching gap or task"
+    mitigation: "Register via 'fw gaps add' or 'fw task create' — see LATEST.md Open Questions section"
   - level: WARN
     check: "Learnings ready for promotion — review graduation candidates"
     mitigation: "Run: fw promote suggest"
