@@ -1,0 +1,342 @@
+generated: '2026-02-19T09:12:23Z'
+threshold: 0.35
+sources:
+  learnings: /opt/999-Agentic-Engineering-Framework/.context/project/learnings.yaml
+  patterns: /opt/999-Agentic-Engineering-Framework/.context/project/patterns.yaml
+summary:
+  total_learnings: 56
+  total_patterns: 15
+  duplicate_clusters_learnings: 0
+  duplicate_entries_learnings: 0
+  duplicate_clusters_patterns: 0
+  duplicate_entries_patterns: 0
+  stale_entries: 37
+duplicate_clusters:
+  learnings: []
+  patterns: []
+stale_entries:
+- id: L-021
+  text: yaml.safe_load converts ISO timestamps to datetime objects — handle both str and datetime when parsing
+  reasons:
+  - application field is TBD or empty
+- id: L-022
+  text: PreToolUse hooks fire on ALL tool calls including test commands — write pattern tests as standalone files that test
+    rege
+  reasons:
+  - application field is TBD or empty
+- id: L-023
+  text: 'Bash command text includes quoted arguments (commit messages, echo args) — strip quoted content before pattern matching '
+  reasons:
+  - application field is TBD or empty
+- id: L-025
+  text: 'Sub-agent result management is the real Type A optimization, not agent specialization. Content generators must write
+    to '
+  reasons:
+  - application field is TBD or empty
+- id: L-026
+  text: 'Operational Reflection: when a practice repeats ad-hoc across 3+ tasks, mine episodic memory for evidence, assess
+    codifi'
+  reasons:
+  - application field is TBD or empty
+- id: L-027
+  text: 'fw setup: Step 2 sentinel must not rely on CLAUDE.md existence — Step 1 creates it via generic init, causing Step
+    2 to s'
+  reasons:
+  - application field is TBD or empty
+- id: L-028
+  text: init.sh generator functions (generate_claude_md, generate_claude_code_config, etc.) use $force variable that is only
+    def
+  reasons:
+  - application field is TBD or empty
+- id: L-029
+  text: 'Dry-running onboarding on a fictional test project catches bugs that unit tests miss: sentinel logic, cross-function
+    var'
+  reasons:
+  - application field is TBD or empty
+- id: L-030
+  text: Research documents belong in docs/reports/ with YAML frontmatter (title, task, date, status, tags). The framework
+    has do
+  reasons:
+  - application field is TBD or empty
+- id: L-031
+  text: Verbal/thinking-out-loud sessions with the user generate high-value architectural insights (e.g., autonomous compact-res
+  reasons:
+  - application field is TBD or empty
+- id: L-032
+  text: When a session does both implementation (T-108 fixes) AND research/exploration (T-109 inception), context burns fast.
+    Th
+  reasons:
+  - application field is TBD or empty
+- id: L-033
+  text: 'Check context budget BEFORE proposing next work, not after. At 60%+ context, the only responsible options are: capture
+    l'
+  reasons:
+  - application field is TBD or empty
+- id: L-034
+  text: Task completion status (work-completed) is a flag, not a gate. T-108 was marked complete at 11:22 but 6 commits followed
+  reasons:
+  - application field is TBD or empty
+- id: L-035
+  text: add-pattern awk script silently dropped entries for non-empty sections. Used prev~section but prev is last data line,
+    no
+  reasons:
+  - application field is TBD or empty
+- id: L-036
+  text: 'Git commit messages are sufficient for auto-generating episodic summaries, challenges, and artifacts — removing 80%+
+    of '
+  reasons:
+  - application field is TBD or empty
+- id: L-037
+  text: 'Agent defaults to ''work around errors'' instead of ''investigate errors''. Three instances this session alone: (1)
+    fw not f'
+  reasons:
+  - application field is TBD or empty
+- id: L-038
+  text: 'Verification gate (P-011): structural enforcement beats advisory skills. update-task.sh now runs ## Verification
+    command'
+  reasons:
+  - application field is TBD or empty
+- id: L-039
+  text: 'Commit before completing: always run fw git commit BEFORE fw task update --status work-completed. The work-completed
+    tri'
+  reasons:
+  - application field is TBD or empty
+- id: L-040
+  text: 'L-039 nuance: Completion artifacts (episodic YAML, completed/ task file) necessarily get committed after the task
+    is clo'
+  reasons:
+  - application field is TBD or empty
+- id: L-041
+  text: Auto-triggered actions in hooks MUST have cooldown/debounce — without it, any action that fires on a condition that
+    pers
+  reasons:
+  - application field is TBD or empty
+- id: L-042
+  text: Agent itself skipped inception for T-138 (cron budget redesign) — created build task, then design, never inception.
+    This
+  reasons:
+  - application field is TBD or empty
+- id: L-043
+  text: Agent must check context budget (checkpoint.sh status) at EVERY decision point — before spawning agents, before starting
+  reasons:
+  - application field is TBD or empty
+- id: L-044
+  text: Before building new controls, verify existing ones are wired up. The sprechloop knowledge gap was caused by create-task.
+  reasons:
+  - application field is TBD or empty
+- id: L-045
+  text: Always add verification tests when implementing framework changes. A test that creates a task and checks for expected
+    se
+  reasons:
+  - application field is TBD or empty
+- id: L-046
+  text: Verification gate (P-011) treats HTML comments inside <!-- --> as executable commands. The extraction regex only skips
+    l
+  reasons:
+  - application field is TBD or empty
+- id: L-047
+  text: 'YAML init format must match add-* script expectations: init.sh created patterns: [] but pattern.sh expected failure_patt'
+  reasons:
+  - application field is TBD or empty
+- id: L-048
+  text: YAML frontmatter name field must be quoted if value contains colons — unquoted colons break yaml.safe_load silently
+    (Wat
+  reasons:
+  - application field is TBD or empty
+- id: L-049
+  text: 'Budget gate deadlock after compaction: stale .budget-status blocks fw context init (the reset command), creating
+    circula'
+  reasons:
+  - application field is TBD or empty
+- id: L-050
+  text: 'Compaction cascade: without budget gate, heavy code generation fills context repeatedly — each compaction triggers
+    emerg'
+  reasons:
+  - application field is TBD or empty
+- id: L-051
+  text: One bug = one task. When investigation reveals multiple bugs, create separate tasks even if they're in the same subsyste
+  reasons:
+  - application field is TBD or empty
+- id: L-052
+  text: When investigation reveals a structural flaw (not a typo), register as gap before fixing. Gaps persist in gaps.yaml
+    (vis
+  reasons:
+  - application field is TBD or empty
+- id: L-053
+  text: 'Always include write-to-file output instructions in sub-agent prompts. ''Return summary'' in prompt + run_in_background
+    + '
+  reasons:
+  - application field is TBD or empty
+- id: L-054
+  text: Playwright browser_navigate and browser_snapshot return full accessibility trees — on data-heavy pages (168 tasks
+    x 6 dr
+  reasons:
+  - application field is TBD or empty
+- id: L-055
+  text: Use general-purpose agent type (not Explore) when sub-agents need to write research to disk. Explore agents are read-onl
+  reasons:
+  - application field is TBD or empty
+- id: L-056
+  text: Task system (task files, git, episodic, project memory) is the primary durable memory, not handover. ~95% of state
+    survi
+  reasons:
+  - application field is TBD or empty
+- id: L-057
+  text: fw bus (result ledger) has never been used despite being designed (D-026), built (T-109), and documented in CLAUDE.md.
+    5
+  reasons:
+  - application field is TBD or empty
+- id: L-058
+  text: Framework-level edits (CLAUDE.md, hooks, agents, budget-gate) require explicit change impact assessment before any
+    modif
+  reasons:
+  - application field is TBD or empty
+recommendations:
+- action: enrich_or_prune
+  target: learnings
+  id: L-021
+  reason: L-021 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-022
+  reason: L-022 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-023
+  reason: L-023 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-025
+  reason: L-025 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-026
+  reason: L-026 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-027
+  reason: L-027 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-028
+  reason: L-028 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-029
+  reason: L-029 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-030
+  reason: L-030 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-031
+  reason: L-031 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-032
+  reason: L-032 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-033
+  reason: L-033 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-034
+  reason: L-034 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-035
+  reason: L-035 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-036
+  reason: L-036 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-037
+  reason: L-037 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-038
+  reason: L-038 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-039
+  reason: L-039 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-040
+  reason: L-040 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-041
+  reason: L-041 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-042
+  reason: L-042 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-043
+  reason: L-043 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-044
+  reason: L-044 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-045
+  reason: L-045 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-046
+  reason: L-046 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-047
+  reason: L-047 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-048
+  reason: L-048 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-049
+  reason: L-049 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-050
+  reason: L-050 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-051
+  reason: L-051 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-052
+  reason: L-052 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-053
+  reason: L-053 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-054
+  reason: L-054 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-055
+  reason: L-055 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-056
+  reason: L-056 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-057
+  reason: L-057 has TBD application — enrich with context or prune
+- action: enrich_or_prune
+  target: learnings
+  id: L-058
+  reason: L-058 has TBD application — enrich with context or prune

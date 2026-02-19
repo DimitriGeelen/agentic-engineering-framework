@@ -1,8 +1,8 @@
-# Audit Results - 2026-02-19-0807
-timestamp: 2026-02-19T07:07:27Z
+# Audit Results - 2026-02-19-1118
+timestamp: 2026-02-19T10:18:32Z
 summary:
   pass: 21
-  warn: 2
+  warn: 21
   fail: 0
 findings:
   - level: PASS
@@ -16,11 +16,12 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 6 active tasks are valid"
+    check: "All 2 active tasks are valid"
+  - level: WARN
+    check: "Task T-190 has no updates but status is started-work"
+    mitigation: "Add update entry to T-190-investigate-sub-agent-research-persisten.md"
   - level: PASS
-    check: "All active tasks meet quality thresholds"
-  - level: PASS
-    check: "Git traceability: 98% (494/503 commits reference tasks)"
+    check: "Git traceability: 98% (525/534 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -41,7 +42,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 177 episodic summaries have quality content"
+    check: "All 188 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -50,6 +51,62 @@ findings:
     check: "Gaps register: 1 watching, no triggers fired"
   - level: PASS
     check: "Handover open questions: none"
+  - level: PASS
+    check: "Graduation pipeline: 2 learnings (threshold: 20)"
   - level: WARN
-    check: "Learnings ready for promotion — review graduation candidates"
-    mitigation: "Run: fw promote suggest"
+    check: "Inception task T-084 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-084-*.md"
+  - level: WARN
+    check: "Inception task T-097 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-097-*.md"
+  - level: WARN
+    check: "Inception task T-107 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-107-*.md"
+  - level: WARN
+    check: "Inception task T-118 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-118-*.md"
+  - level: WARN
+    check: "Inception task T-122 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-122-*.md"
+  - level: WARN
+    check: "Inception task T-124 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-124-*.md"
+  - level: WARN
+    check: "Inception task T-131 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-131-*.md"
+  - level: WARN
+    check: "Inception task T-132 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-132-*.md"
+  - level: WARN
+    check: "Inception task T-133 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-133-*.md"
+  - level: WARN
+    check: "Inception task T-138 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-138-*.md"
+  - level: WARN
+    check: "Inception task T-140 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-140-*.md"
+  - level: WARN
+    check: "Inception task T-154 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-154-*.md"
+  - level: WARN
+    check: "Inception task T-155 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-155-*.md"
+  - level: WARN
+    check: "Inception task T-156 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-156-*.md"
+  - level: WARN
+    check: "Inception task T-157 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-157-*.md"
+  - level: WARN
+    check: "Inception task T-158 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-158-*.md"
+  - level: WARN
+    check: "Inception task T-164 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-164-*.md"
+  - level: WARN
+    check: "Inception task T-168 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-168-*.md"
+  - level: WARN
+    check: "Inception task T-181 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-181-*.md"
