@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-151: Investigate audit tasks as cronjobs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T00:29:08Z
+# ============================================================================
+
+task_id: T-151
+task_name: "Investigate audit tasks as cronjobs"
+workflow_type: specification
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-18T12:05:00Z
+completed: 2026-02-19T00:29:08Z
+duration_days: 1
+updates_count: 7
+first_commit: 2026-02-19T01:29:04+01:00
+last_commit: 2026-02-19T01:29:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Investigation complete — cron-based audit scheduling analysis
+
+# Key outcomes
+outcomes:
+  - "Inventory of existing quality checks and their current trigger mechanisms"
+  - "Analysis of which checks are good cron candidates vs session-only"
+  - "Proposed scheduling model (frequencies, report format, consumption pattern)"
+  - "Recommendation: go/no-go with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "System cron / systemd timers"
+    rationale: "Zero dependencies, battle-tested, works when no Claude session is active"
+    alternatives_rejected: ["In-process scheduling (APScheduler/celery) — adds dependencies, only runs when app is up; file-watcher based — overcomplicated for periodic checks"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-151-investigate-audit-tasks-as-cronjobs.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-19T01:29:04"
+    action: "T-151: Investigation complete — cron-based audit scheduling analysis"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 744 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 744
+  commits: 1
+  files_changed: 1
+  lines_added: 94
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-151-investigate-audit-tasks-as-cronjobs.md
+generated_by: context-agent-hybrid
