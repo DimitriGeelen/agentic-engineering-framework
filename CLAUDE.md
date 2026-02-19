@@ -592,6 +592,13 @@ When encountering errors or unexpected behavior:
 
 This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task. Use `/start-work` if unsure.
 
+**Manual compaction (`/compact`):**
+- Auto-compaction is disabled by design (D-027 — compaction destroys working memory)
+- `/compact` is available for manual use when context is high and you want a clean slate
+- The PreCompact hook automatically generates a handover before compaction
+- The SessionStart:compact hook reinjects structured context into the fresh session
+- After compaction, follow the recovery steps below
+
 **After context compaction (mid-session recovery):**
 1. Run resume: `fw resume status`
 2. Sync working memory: `fw resume sync`

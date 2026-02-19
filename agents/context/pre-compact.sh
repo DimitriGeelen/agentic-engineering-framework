@@ -1,12 +1,13 @@
 #!/bin/bash
 # Pre-Compaction Hook — Save structured context before lossy compaction
-# Fires on PreCompact (both auto and manual). Cannot block compaction.
+# Fires on PreCompact — manual /compact only (auto-compaction disabled per D-027).
 #
 # Generates a handover so that SessionStart:compact can
 # reinject structured context into the fresh session.
 #
 # Part of: T-111 (Autonomous compact-resume lifecycle)
 # Updated: T-175 (D-028 — single handover, no emergency distinction)
+# Updated: T-177 (manual-only cleanup, D-027 documentation)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -31,7 +32,7 @@ else
 fi
 
 # Log the event
-echo "[pre-compact] Handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
+echo "[pre-compact] [manual] Handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
 
 # Reset budget gate for THIS project so fresh session doesn't inherit critical lock (T-145)
 echo "0" > "$PROJECT_ROOT/.context/working/.budget-gate-counter" 2>/dev/null

@@ -156,6 +156,8 @@ warn_by_tokens() {
 # Detect compaction: if previous reading was >100K and current is 0 or <10K,
 # context was just compacted (summarized). This is a critical event because
 # the agent's working memory has been destroyed.
+# Note: Still useful with auto-compaction disabled (D-027) — detects manual /compact
+# events and alerts the agent to run resume. Not dead code.
 detect_compaction() {
     local tokens="$1"
     if [ -f "$PREV_TOKENS_FILE" ]; then
