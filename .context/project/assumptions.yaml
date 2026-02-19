@@ -67,3 +67,57 @@ assumptions:
   linked_task: T-109
   created: '2026-02-17'
   resolved_date: null
+- id: A-008
+  statement: A structural topology (component + dependency registry) provides more
+    navigation value than enhanced grep/search
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
+- id: A-009
+  statement: Adaptive granularity (file-level default, deeper where earned) avoids
+    over-documentation
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
+- id: A-010
+  statement: UI elements and interaction flows CAN be made machine-readable without
+    visual rendering
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
+- id: A-011
+  statement: Retroactive validation (cron-based drift detection) is sufficient alongside
+    proactive enforcement
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
+- id: A-012
+  statement: The overhead of maintaining component registration is low enough to not
+    impede development velocity
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
+- id: A-013
+  statement: Component Fabric can be file-based and portable (D4) — no infrastructure
+    dependencies
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-191
+  created: '2026-02-19'
+  resolved_date: null
