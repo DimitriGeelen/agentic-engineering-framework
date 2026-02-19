@@ -263,6 +263,37 @@ else
          "Copy zzz-default.md to .tasks/templates/default.md"
 fi
 
+# Validate all project YAML files parse correctly (T-207 regression test)
+yaml_fail_count=0
+yaml_pass_count=0
+for yf in "$PROJECT_ROOT/.context/project/"*.yaml; do
+    [ -f "$yf" ] || continue
+    yf_name=$(basename "$yf")
+    parse_err=$(python3 -c "
+import yaml, sys
+try:
+    with open('$yf') as f:
+        data = yaml.safe_load(f)
+    if data is None:
+        print('empty-file'); sys.exit(1)
+    elif not isinstance(data, dict):
+        print('not-a-mapping'); sys.exit(1)
+except yaml.YAMLError as e:
+    print(str(e).split(chr(10))[0]); sys.exit(1)
+" 2>&1)
+    if [ $? -eq 0 ]; then
+        yaml_pass_count=$((yaml_pass_count + 1))
+    else
+        yaml_fail_count=$((yaml_fail_count + 1))
+        fail "YAML parse error: $yf_name" \
+             "$parse_err" \
+             "Fix the YAML syntax in .context/project/$yf_name"
+    fi
+done
+if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
+    pass "All $yaml_pass_count project YAML files parse correctly"
+fi
+
 echo ""
 fi # end structure
 

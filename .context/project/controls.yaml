@@ -269,3 +269,14 @@ controls:
     mitigates: [R-033]
     status: active
     failure_mode: "Agent uses --force to bypass; tasks created with owner: agent that should be owner: human"
+
+  # === REGRESSION (T-207) ===
+
+  - id: CTL-027
+    name: Project YAML Parse Validation
+    type: auditor
+    impl: "agents/audit/audit.sh (structure section — YAML parse check)"
+    blocking: false
+    mitigates: [R-015]
+    status: active
+    failure_mode: "Only catches on next audit run — damage (silent empty data) may persist until then; python3 must be available"
