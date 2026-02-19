@@ -651,6 +651,16 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | List assumptions | `fw assumption list` | Show all by status |
 | Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
 | Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
+| **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
+| No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
+
+## Auto-Restart (T-179)
+
+When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts with `claude -c`. The `SessionStart:resume` hook then injects handover context into the fresh session.
+
+**Flow:** Budget critical → auto-handover → signal file → claude exits → wrapper detects → `sleep 3` → `claude -c` → context injected → `/resume` ready.
+
+**Safety:** 5-minute TTL on signal files, max 5 consecutive restarts, 3-second cancel window, opt-out via `--no-restart`.
 
 ## Session End Protocol
 
