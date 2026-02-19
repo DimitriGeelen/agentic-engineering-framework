@@ -3,470 +3,499 @@
 # Used by agents to improve future work.
 
 learnings:
-  - id: L-001
-    learning: "Measure what exists, not what should exist"
-    source: P-001
-    task: T-014
-    date: 2026-02-13
-    context: "Audit was checking for existence of files, not quality of content"
-    application: "Always add quality heuristics alongside existence checks"
-
-  - id: L-002
-    learning: "Structural enforcement over agent discipline"
-    source: P-002
-    task: T-013
-    date: 2026-02-13
-    context: "Git hooks enforce task refs, not agent willpower"
-    application: "When you need something to always happen, use a hook/gate"
-
-  - id: L-003
-    learning: "Healthy dysfunction indicates framework value"
-    source: T-014
-    task: T-014
-    date: 2026-02-13
-    context: "Audit found issues with itself, proving it works"
-    application: "Self-critique capability is a feature, not a bug"
-
-  - id: L-004
-    learning: "Only update active tasks to avoid timestamp loops"
-    source: T-013
-    task: T-013
-    date: 2026-02-13
-    context: "Git agent updated completed tasks causing endless uncommitted changes"
-    application: "Check task status before updating metadata"
-
-  - id: L-005
-    learning: "Automation that produces sub-human-quality output must fail visibly, not succeed quietly"
-    source: Multi-agent review
-    task: T-015
-    date: 2026-02-13
-    context: "Added via context agent"
-    application: "Quality gates should reject, not accept-and-warn"
-
-  - id: L-006
-    learning: "Classifier keyword ordering determines accuracy — check specific types before generic"
-    source: healing-loop
-    task: T-028
-    date: 2026-02-13
-    context: "E-005 found classifier checked 'code' before 'dependency', causing misclassification"
-    application: "When building keyword classifiers, order from most-specific to least-specific"
-
-  - id: L-007
-    learning: "grep -c || echo 0 produces multi-line output — use ) || var=0 instead"
-    source: T-041
-    task: T-041
-    date: 2026-02-14
-    context: "grep -c returns 0 with exit code 1 when no matches; || echo 0 appends a second '0', making the variable '0\\n0' which breaks integer comparisons"
-    application: "Use var=$(grep -c ... 2>/dev/null) || var=0 — the fallback assignment only runs on failure, doesn't contaminate stdout"
-
-  - id: L-008
-    learning: "((x++)) crashes under set -e when x=0 — use x=$((x + 1))"
-    source: T-033
-    task: T-033
-    date: 2026-02-14
-    context: "((0++)) evaluates to 0 (falsy), returning exit code 1 which triggers set -e"
-    application: "Never use ((var++)) in set -e scripts — use var=$((var + 1)) which always returns 0"
-
-  - id: L-009
-    learning: "Claude Code JSONL transcript contains per-message token usage at message.usage"
-    source: T-059
-    task: T-059
-    date: 2026-02-14
-    context: "Transcript at ~/.claude/projects/*/UUID.jsonl has input_tokens, cache_read_input_tokens, cache_creation_input_tokens in every assistant message. Effective context = sum of all three."
-    application: "Use tail -c 2000000 + python3 JSON parse to read context size in O(1) time regardless of transcript size (500K was too small when sub-agent results bloat transcript end)"
-
-  - id: L-010
-    learning: "Claude Code compaction occurs at ~155-165K tokens — context is summarized, not preserved"
-    source: T-059
-    task: T-059
-    date: 2026-02-14
-    context: "Analyzed 4103 API calls across sessions. Peak context before compaction consistently 155K-165K. Post-compaction drops to ~40-50K (summary). Work context is lost."
-    application: "Set warning thresholds well below 155K (100K/130K/150K) to give time to commit and handover"
-
-  - id: L-011
-    learning: "Token reading from JSONL lags ~1 API call behind actual usage"
-    source: T-059
-    task: T-059
-    date: 2026-02-14
-    context: "The usage data records what the PREVIOUS call consumed. By the time the hook reads it, current call has already added more. Observed lag ~10-30K tokens."
-    application: "Never set thresholds close to the compaction limit — maintain at least 30K buffer"
-
-  - id: L-012
-    learning: "grep for 'input_tokens' in JSONL matches command text, not just usage data"
-    source: T-059
-    task: T-059
-    date: 2026-02-14
-    context: "Commands that reference input_tokens (like analyzing token usage) get recorded in JSONL tool_use entries. grep can't distinguish usage data from command text."
-    application: "Use proper JSON parsing (python3) to extract message.usage, not grep patterns"
-
-
-  - id: L-013
-    learning: "Plugins that claim absolute authority (using-superpowers: 'YOU DO NOT HAVE A CHOICE') will override framework rules written in CLAUDE.md when they conflict. Structural enforcement (P-002) must be actual code gates, not markdown instructions. Gap G-001 decision trigger has fired."
-    source: P-002
-    task: T-061
-    date: 2026-02-15
-    context: "Added via context agent"
-    application: "Built PreToolUse hook (T-063) to structurally block Write/Edit without active task. Added instruction precedence to CLAUDE.md (T-062). Created /start-work skill (T-065)."
-
-  - id: L-014
-    learning: "Caching optimizations that don't validate session identity are dangerous — stale cache causes safety systems to read wrong data"
-    source: T-078
-    task: T-078
-    date: 2026-02-16
-    context: "checkpoint.sh cached transcript path across sessions. It validated file existence but not recency, causing it to read an old session's token count while the current session hit 177K tokens with zero warnings."
-    application: "Removed transcript cache entirely. Always find most-recent file (~33ms, acceptable). Safety systems must never cache identity-dependent state across session boundaries."
-
-  - id: L-015
-    learning: "Context recovery after compaction takes ~16 seconds using resume agent + handover — but LATEST.md must be committed immediately or it will be stale with TODO placeholders"
-    source: E-003
-    task: T-022
-    date: 2026-02-13
-    context: "Experiment simulated compaction by pretending to start fresh. Resume agent showed focus task, status, and uncommitted changes. Handover 'Where We Are' section provided full session state."
-    application: "Always commit handover immediately after generation. Resume agent warns when LATEST.md contains TODO placeholders."
-
-  - id: L-016
-    learning: "Enforcement gates are load-bearing, not theater — removing the git commit-msg hook caused traceability to drop from 97% to 88% in just 5 commits"
-    source: E-004
-    task: T-024
-    date: 2026-02-13
-    context: "Experiment E-004 disabled git hook, made 5 commits without task refs, measured degradation. Audit detected both the missing hook AND the traceability drop."
-    application: "Never remove enforcement gates without evidence they are redundant. Preventive (hooks) and detective (audit) controls serve different roles — both are needed."
-
-  - id: L-017
-    learning: "Healing loop classifier is keyword-order-dependent — check specific types before generic"
-    source: E-005
-    task: T-025
-    date: 2026-02-13
-    context: "Two tasks with similar dependency failures tested the loop. Classifier checked 'code' before 'dependency', causing misclassification. Pattern matching lacks relevance filtering."
-    application: "When building keyword classifiers, order from most-specific to least-specific. Add type-based filtering to pattern matching."
-
-  - id: L-018
-    learning: "Evidence-driven lifecycle decisions are obvious and debate-free — 50 tasks of data made removing 'refined' and 'blocked' statuses a no-brainer"
-    source: T-051
-    task: T-051
-    date: 2026-02-14
-    context: "Both 'refined' and 'blocked' had exactly 0 uses across 50 tasks. 'Issues' covered all blocking scenarios. Data eliminated speculation entirely."
-    application: "Defer lifecycle and process decisions until sufficient usage data exists. Let the evidence decide."
-
-  - id: L-019
-    learning: "Splitting a monolithic file into blueprints/modules eliminates concurrent-modification risk when multiple agents work simultaneously"
-    source: T-054
-    task: T-054
-    date: 2026-02-14
-    context: "web/app.py was 700 lines and had been modified by 4 agents simultaneously. Splitting into 4 blueprints meant each agent could work on an independent file."
-    application: "When a file exceeds ~500 lines or is modified by multiple agents, split by domain."
-
-  - id: L-020
-    learning: "Making compliance easier than non-compliance is the most effective enforcement strategy — fw work-on reduced 3 manual steps to 1"
-    source: T-064
-    task: T-064
-    date: 2026-02-15
-    context: "T-061 identified compliance friction as a key bypass vector. The 3-step manual process was more work than just skipping. fw work-on collapses this to one command."
-    application: "When enforcement is being bypassed due to friction, reduce the compliant path to fewer steps than the non-compliant path."
-
-
-  - id: L-021
-    learning: "yaml.safe_load converts ISO timestamps to datetime objects — handle both str and datetime when parsing"
-    source: backfill debugging
-    task: T-086
-    date: 2026-02-16
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-022
-    learning: "PreToolUse hooks fire on ALL tool calls including test commands — write pattern tests as standalone files that test regex logic directly"
-    source: P-002
-    task: T-092
-    date: 2026-02-16
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-023
-    learning: "Bash command text includes quoted arguments (commit messages, echo args) — strip quoted content before pattern matching to prevent false positives"
-    source: P-002
-    task: T-092
-    date: 2026-02-16
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-024
-    learning: "grep -c outputs '0' and exits 1 on no matches; || echo 0 inside $() produces doubled output '0
-0'. Use || true instead."
-    source: P-002
-    task: T-095
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-025
-    learning: "Sub-agent result management is the real Type A optimization, not agent specialization. Content generators must write to disk and return summaries; investigators return structured findings. Cap parallel dispatches at 5. Leave 40K token headroom."
-    source: T-097 inception evidence (8 dispatches across 96 tasks)
-    task: T-097
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-026
-    learning: "Operational Reflection: when a practice repeats ad-hoc across 3+ tasks, mine episodic memory for evidence, assess codification value via inception, and if warranted implement protocol/templates. This is proactive Level D — improvement driven by success pattern analysis, not failure. Canonical example: T-097 sub-agent dispatch analysis."
-    source: T-097→T-098→T-099 workflow arc
-    task: T-100
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-027
-    learning: "fw setup: Step 2 sentinel must not rely on CLAUDE.md existence — Step 1 creates it via generic init, causing Step 2 to skip. Use explicit setup_provider_done flag in .framework.yaml instead."
-    source: P-002
-    task: T-108
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-028
-    learning: "init.sh generator functions (generate_claude_md, generate_claude_code_config, etc.) use $force variable that is only defined inside do_init scope. When called from setup.sh, ${force:-false} default is required or set -u crashes the script."
-    source: P-002
-    task: T-108
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-029
-    learning: "Dry-running onboarding on a fictional test project catches bugs that unit tests miss: sentinel logic, cross-function variable scope, git identity inheritance. Always validate wizard flows end-to-end before real use."
-    source: P-005
-    task: T-108
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-030
-    learning: "Research documents belong in docs/reports/ with YAML frontmatter (title, task, date, status, tags). The framework has docs/plans/ for designs and docs/reports/ for analysis, but no index or README. Consider adding docs/README.md with discovery guidelines."
-    source: P-002
-    task: T-109
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-031
-    learning: "Verbal/thinking-out-loud sessions with the user generate high-value architectural insights (e.g., autonomous compact-resume lifecycle) but risk losing the ideas in context. Pattern: when user thinks out loud, immediately synthesize their key points back to them, then capture as either a research doc or inception task before continuing."
-    source: P-009
-    task: T-109
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-032
-    learning: "When a session does both implementation (T-108 fixes) AND research/exploration (T-109 inception), context burns fast. The research agents alone consumed ~100K tokens of sub-agent budget. Split sessions: one for building, one for thinking. Or do research early while context is fresh."
-    source: P-009
-    task: T-012
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-033
-    learning: "Check context budget BEFORE proposing next work, not after. At 60%+ context, the only responsible options are: capture learnings, commit, handover. Proposing to start a spike and then discovering there's no room wastes the user's decision energy and erodes trust in agent judgment. Rule: check checkpoint.sh status before offering next-step options."
-    source: P-009
-    task: T-108
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-034
-    learning: "Task completion status (work-completed) is a flag, not a gate. T-108 was marked complete at 11:22 but 6 commits followed over 173 minutes including substantive framework changes, 2 new task spawns, and a bug fix. The episodic snapshot froze at closure time (claims 2 commits/69min, reality 6 commits/173min). Root cause: no acceptance criteria validation before closure, no warning when committing against closed task IDs. Critical for autonomous mode where no human catches the pattern."
-    source: T-108 forensic investigation
-    task: T-112
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-035
-    learning: "add-pattern awk script silently dropped entries for non-empty sections. Used prev~section but prev is last data line, not header. Pattern: always verify write operations actually wrote — a success message after a file operation is not proof the data landed. Test: grep for the added content after any append operation."
-    source: T-112 investigation
-    task: T-115
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-036
-    learning: "Git commit messages are sufficient for auto-generating episodic summaries, challenges, and artifacts — removing 80%+ of [TODO] placeholders. The remaining [TODO] (successes.why) genuinely requires judgment."
-    source: D-023
-    task: T-117
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-037
-    learning: "Agent defaults to 'work around errors' instead of 'investigate errors'. Three instances this session alone: (1) fw not found — silently switched to direct path, (2) sibling tool calls errored — no investigation, (3) paste -sd formatting bug — only caught during manual review. Root behavior: agent treats errors as friction to remove, not signals to investigate. This is a Level D ways-of-working gap requiring CLAUDE.md instruction changes."
-    source: P-010
-    task: T-118
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-038
-    learning: "Verification gate (P-011): structural enforcement beats advisory skills. update-task.sh now runs ## Verification commands before allowing work-completed. Advisory skill failed 3 times (T-108, T-118, T-121); structural gate catches bugs mechanically."
-    source: P-011
-    task: T-122
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-039
-    learning: "Commit before completing: always run fw git commit BEFORE fw task update --status work-completed. The work-completed trigger moves the task to completed/, so any subsequent commit referencing that task ID produces a Tier 1 warning (closed task). Correct order: commit → complete."
-    source: P-002
-    task: T-123
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-040
-    learning: "L-039 nuance: Completion artifacts (episodic YAML, completed/ task file) necessarily get committed after the task is closed — the Tier 1 warning is a false positive in this case. The real L-039 issue is committing WORK output after completing, not committing completion metadata."
-    source: P-002
-    task: T-107
-    date: 2026-02-17
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-041
-    learning: "Auto-triggered actions in hooks MUST have cooldown/debounce — without it, any action that fires on a condition that persists (like token count > threshold) will run on every subsequent invocation, creating runaway loops. T-136 caused 25 handover commits in 10min. Fix: cooldown file with timestamp."
-    source: T-136 runaway in sprechloop cycle 3
-    task: T-136
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-042
-    learning: "Agent itself skipped inception for T-138 (cron budget redesign) — created build task, then design, never inception. This happened IN THE SAME SESSION where we analyzed 54 commits of the sprechloop agent doing the exact same thing. Proof that L-038 is correct: behavioral rules fail even when the agent knows the rule, can recite it, and just finished analyzing violations of it. The inception gate (structural enforcement) is the only reliable prevention."
-    source: T-138 inception skip — self-inflicted
-    task: T-138
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-043
-    learning: "Agent must check context budget (checkpoint.sh status) at EVERY decision point — before spawning agents, before starting new work, before proposing next steps. In this session, agent never checked budget once despite being at 80% (160K tokens) while doing heavy multi-agent dispatches. The budget monitoring system we are redesigning failed to protect the very session designing its replacement."
-    source: T-138 session — zero budget checks
-    task: T-138
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-044
-    learning: "Before building new controls, verify existing ones are wired up. The sprechloop knowledge gap was caused by create-task.sh using a hardcoded heredoc instead of default.md template — the rich template existed but was never applied. Diagnosis before invention."
-    source: unknown
-    task: T-140
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-045
-    learning: "Always add verification tests when implementing framework changes. A test that creates a task and checks for expected sections would have caught the template bypass immediately. Tests are structural enforcement for implementations."
-    source: unknown
-    task: T-140
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-046
-    learning: "Verification gate (P-011) treats HTML comments inside <!-- --> as executable commands. The extraction regex only skips lines starting with # — not HTML comment blocks. This caused inception task completion to fail on template guidance text. Need to fix the extraction in update-task.sh."
-    source: unknown
-    task: T-140
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-047
-    learning: "YAML init format must match add-* script expectations: init.sh created patterns: [] but pattern.sh expected failure_patterns: sections. Same issue with learnings/decisions: [] header creates invalid YAML when entries appended. Always verify round-trip: create file, add entry, parse result."
-    source: T-124
-    task: T-141
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-048
-    learning: "YAML frontmatter name field must be quoted if value contains colons — unquoted colons break yaml.safe_load silently (Watchtower skips task, no error shown)"
-    source: T-124
-    task: T-143
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-049
-    learning: "Budget gate deadlock after compaction: stale .budget-status blocks fw context init (the reset command), creating circular lock. Fix: expand gate allowlist to include fw context init, fw resume, git status/log/diff; reset budget state in pre-compact.sh"
-    source: T-145 investigation
-    task: T-145
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-050
-    learning: "Compaction cascade: without budget gate, heavy code generation fills context repeatedly — each compaction triggers emergency handover + commit, but CLAUDE.md (29KB) + resume context + summary leaves near-zero headroom, causing immediate re-compaction. Sprechloop had 14 cascading compactions in 13 minutes building 7 modules. Root cause: G-001 (missing budget hooks). Mitigated by: (1) G-001 fix — budget gate now wired for all projects via fw init, (2) T-148 — timeline collapses emergency runs + pre-compact deduplicates commits within 5 min, (3) budget gate blocks work at 75% before hard compaction wall."
-    source: T-148 investigation
-    task: T-148
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-051
-    learning: "One bug = one task. When investigation reveals multiple bugs, create separate tasks even if they're in the same subsystem. Compounding independent bugs into one task (T-149) destroys causality traceability, dilutes episodic memory, and makes regression isolation impossible. Related root causes can share a parent reference but each fix needs its own chain. Same applies to features: one feature = one task."
-    source: T-149 retrospective
-    task: T-149
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-052
-    learning: "When investigation reveals a structural flaw (not a typo), register as gap before fixing. Gaps persist in gaps.yaml (visible in Watchtower, checked by audit, surfaced by resume). Completed tasks archive to completed/ and become invisible. The pattern from T-148/T-149: found 4 bugs + 1 systemic flaw, fixed all without registering gaps — knowledge was immediately buried."
-    source: T-149 retrospective
-    task: T-149
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-053
-    learning: "Always include write-to-file output instructions in sub-agent prompts. 'Return summary' in prompt + run_in_background + TaskOutput = raw JSONL transcript flooding context (30K chars × N agents). Correct pattern: tell agent to write to file path, then Read the file. Or use fw bus post."
-    source: T-158 crash investigation
-    task: T-158
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-054
-    learning: "Playwright browser_navigate and browser_snapshot return full accessibility trees — on data-heavy pages (168 tasks x 6 dropdowns) this is 30-50K tokens per call. Use browser_run_code for navigation and browser_take_screenshot for visual checks. Never use browser_snapshot on pages with large DOM."
-    source: G-008
-    task: T-170
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-055
-    learning: "Use general-purpose agent type (not Explore) when sub-agents need to write research to disk. Explore agents are read-only. Pattern: pre-define output path in docs/reports/T-XXX-topic.md, pass path in prompt with explicit 'Write to this file, return only summary' instruction. Validated in T-178 experiment: general-purpose agent wrote 505 lines/20KB directly to disk, returned one-line summary. Zero context bloat."
-    source: T-178 experiment
-    task: T-178
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-056
-    learning: "Task system (task files, git, episodic, project memory) is the primary durable memory, not handover. ~95% of state survives a zero-handover crash. Handover is convenience (saves ~2min of fw resume synthesis), not safety. Emergency handover is unnecessary if budget gate leaves room for full handover."
-    source: T-174 crash resilience analysis
-    task: T-174
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-057
-    learning: "fw bus (result ledger) has never been used despite being designed (D-026), built (T-109), and documented in CLAUDE.md. 5+ sub-agent dispatches this session bypassed it. The bus workflow (fw bus post/read/manifest) may have too much friction vs simple Write-to-file. Evidence: .context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks."
-    source: T-178 observation
-    task: T-178
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
-
-  - id: L-058
-    learning: "Framework-level edits (CLAUDE.md, hooks, agents, budget-gate) require explicit change impact assessment before any modifications. Present: (1) which files, (2) what changes, (3) what could break, (4) blast radius. Get user approval before editing. Evidence: T-182 first attempt edited 4 core files without review — user caught it, reverted."
-    source: T-182 revert incident
-    task: T-182
-    date: 2026-02-18
-    context: "Added via context agent"
-    application: "TBD"
+- id: L-001
+  learning: Measure what exists, not what should exist
+  source: P-001
+  task: T-014
+  date: 2026-02-13
+  context: Audit was checking for existence of files, not quality of content
+  application: Always add quality heuristics alongside existence checks
+- id: L-002
+  learning: Structural enforcement over agent discipline
+  source: P-002
+  task: T-013
+  date: 2026-02-13
+  context: Git hooks enforce task refs, not agent willpower
+  application: When you need something to always happen, use a hook/gate
+- id: L-003
+  learning: Healthy dysfunction indicates framework value
+  source: T-014
+  task: T-014
+  date: 2026-02-13
+  context: Audit found issues with itself, proving it works
+  application: Self-critique capability is a feature, not a bug
+- id: L-004
+  learning: Only update active tasks to avoid timestamp loops
+  source: T-013
+  task: T-013
+  date: 2026-02-13
+  context: Git agent updated completed tasks causing endless uncommitted changes
+  application: Check task status before updating metadata
+- id: L-005
+  learning: Automation that produces sub-human-quality output must fail visibly, not succeed quietly
+  source: Multi-agent review
+  task: T-015
+  date: 2026-02-13
+  context: Added via context agent
+  application: Quality gates should reject, not accept-and-warn
+- id: L-007
+  learning: grep -c || echo 0 produces multi-line output — use ) || var=0 instead
+  source: T-041
+  task: T-041
+  date: 2026-02-14
+  context: grep -c returns 0 with exit code 1 when no matches; || echo 0 appends a second '0', making the variable '0\n0'
+    which breaks integer comparisons
+  application: Use var=$(grep -c ... 2>/dev/null) || var=0 — the fallback assignment only runs on failure, doesn't contaminate
+    stdout
+- id: L-008
+  learning: ((x++)) crashes under set -e when x=0 — use x=$((x + 1))
+  source: T-033
+  task: T-033
+  date: 2026-02-14
+  context: ((0++)) evaluates to 0 (falsy), returning exit code 1 which triggers set -e
+  application: Never use ((var++)) in set -e scripts — use var=$((var + 1)) which always returns 0
+- id: L-009
+  learning: Claude Code JSONL transcript contains per-message token usage at message.usage
+  source: T-059
+  task: T-059
+  date: 2026-02-14
+  context: Transcript at ~/.claude/projects/*/UUID.jsonl has input_tokens, cache_read_input_tokens, cache_creation_input_tokens
+    in every assistant message. Effective context = sum of all three.
+  application: Use tail -c 2000000 + python3 JSON parse to read context size in O(1) time regardless of transcript size (500K
+    was too small when sub-agent results bloat transcript end)
+- id: L-010
+  learning: Claude Code compaction occurs at ~155-165K tokens — context is summarized, not preserved
+  source: T-059
+  task: T-059
+  date: 2026-02-14
+  context: Analyzed 4103 API calls across sessions. Peak context before compaction consistently 155K-165K. Post-compaction
+    drops to ~40-50K (summary). Work context is lost.
+  application: Set warning thresholds well below 155K (100K/130K/150K) to give time to commit and handover
+- id: L-011
+  learning: Token reading from JSONL lags ~1 API call behind actual usage
+  source: T-059
+  task: T-059
+  date: 2026-02-14
+  context: The usage data records what the PREVIOUS call consumed. By the time the hook reads it, current call has already
+    added more. Observed lag ~10-30K tokens.
+  application: Never set thresholds close to the compaction limit — maintain at least 30K buffer
+- id: L-012
+  learning: grep for 'input_tokens' in JSONL matches command text, not just usage data
+  source: T-059
+  task: T-059
+  date: 2026-02-14
+  context: Commands that reference input_tokens (like analyzing token usage) get recorded in JSONL tool_use entries. grep
+    can't distinguish usage data from command text.
+  application: Use proper JSON parsing (python3) to extract message.usage, not grep patterns
+- id: L-013
+  learning: 'Plugins that claim absolute authority (using-superpowers: ''YOU DO NOT HAVE A CHOICE'') will override framework
+    rules written in CLAUDE.md when they conflict. Structural enforcement (P-002) must be actual code gates, not markdown
+    instructions. Gap G-001 decision trigger has fired.'
+  source: P-002
+  task: T-061
+  date: 2026-02-15
+  context: Added via context agent
+  application: Built PreToolUse hook (T-063) to structurally block Write/Edit without active task. Added instruction precedence
+    to CLAUDE.md (T-062). Created /start-work skill (T-065).
+- id: L-014
+  learning: Caching optimizations that don't validate session identity are dangerous — stale cache causes safety systems to
+    read wrong data
+  source: T-078
+  task: T-078
+  date: 2026-02-16
+  context: checkpoint.sh cached transcript path across sessions. It validated file existence but not recency, causing it to
+    read an old session's token count while the current session hit 177K tokens with zero warnings.
+  application: Removed transcript cache entirely. Always find most-recent file (~33ms, acceptable). Safety systems must never
+    cache identity-dependent state across session boundaries.
+- id: L-015
+  learning: Context recovery after compaction takes ~16 seconds using resume agent + handover — but LATEST.md must be committed
+    immediately or it will be stale with TODO placeholders
+  source: E-003
+  task: T-022
+  date: 2026-02-13
+  context: Experiment simulated compaction by pretending to start fresh. Resume agent showed focus task, status, and uncommitted
+    changes. Handover 'Where We Are' section provided full session state.
+  application: Always commit handover immediately after generation. Resume agent warns when LATEST.md contains TODO placeholders.
+- id: L-016
+  learning: Enforcement gates are load-bearing, not theater — removing the git commit-msg hook caused traceability to drop
+    from 97% to 88% in just 5 commits
+  source: E-004
+  task: T-024
+  date: 2026-02-13
+  context: Experiment E-004 disabled git hook, made 5 commits without task refs, measured degradation. Audit detected both
+    the missing hook AND the traceability drop.
+  application: Never remove enforcement gates without evidence they are redundant. Preventive (hooks) and detective (audit)
+    controls serve different roles — both are needed.
+- id: L-017
+  learning: Healing loop classifier is keyword-order-dependent — check specific types before generic
+  source: E-005
+  task: T-025
+  date: 2026-02-13
+  context: Two tasks with similar dependency failures tested the loop. Classifier checked 'code' before 'dependency', causing
+    misclassification. Pattern matching lacks relevance filtering.
+  application: When building keyword classifiers, order from most-specific to least-specific. Add type-based filtering to
+    pattern matching.
+- id: L-018
+  learning: Evidence-driven lifecycle decisions are obvious and debate-free — 50 tasks of data made removing 'refined' and
+    'blocked' statuses a no-brainer
+  source: T-051
+  task: T-051
+  date: 2026-02-14
+  context: Both 'refined' and 'blocked' had exactly 0 uses across 50 tasks. 'Issues' covered all blocking scenarios. Data
+    eliminated speculation entirely.
+  application: Defer lifecycle and process decisions until sufficient usage data exists. Let the evidence decide.
+- id: L-019
+  learning: Splitting a monolithic file into blueprints/modules eliminates concurrent-modification risk when multiple agents
+    work simultaneously
+  source: T-054
+  task: T-054
+  date: 2026-02-14
+  context: web/app.py was 700 lines and had been modified by 4 agents simultaneously. Splitting into 4 blueprints meant each
+    agent could work on an independent file.
+  application: When a file exceeds ~500 lines or is modified by multiple agents, split by domain.
+- id: L-020
+  learning: Making compliance easier than non-compliance is the most effective enforcement strategy — fw work-on reduced 3
+    manual steps to 1
+  source: T-064
+  task: T-064
+  date: 2026-02-15
+  context: T-061 identified compliance friction as a key bypass vector. The 3-step manual process was more work than just
+    skipping. fw work-on collapses this to one command.
+  application: When enforcement is being bypassed due to friction, reduce the compliant path to fewer steps than the non-compliant
+    path.
+- id: L-021
+  learning: yaml.safe_load converts ISO timestamps to datetime objects — handle both str and datetime when parsing
+  source: backfill debugging
+  task: T-086
+  date: 2026-02-16
+  context: Added via context agent
+  application: TBD
+- id: L-022
+  learning: PreToolUse hooks fire on ALL tool calls including test commands — write pattern tests as standalone files that
+    test regex logic directly
+  source: P-002
+  task: T-092
+  date: 2026-02-16
+  context: Added via context agent
+  application: TBD
+- id: L-023
+  learning: Bash command text includes quoted arguments (commit messages, echo args) — strip quoted content before pattern
+    matching to prevent false positives
+  source: P-002
+  task: T-092
+  date: 2026-02-16
+  context: Added via context agent
+  application: TBD
+- id: L-025
+  learning: Sub-agent result management is the real Type A optimization, not agent specialization. Content generators must
+    write to disk and return summaries; investigators return structured findings. Cap parallel dispatches at 5. Leave 40K
+    token headroom.
+  source: T-097 inception evidence (8 dispatches across 96 tasks)
+  task: T-097
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-026
+  learning: 'Operational Reflection: when a practice repeats ad-hoc across 3+ tasks, mine episodic memory for evidence, assess
+    codification value via inception, and if warranted implement protocol/templates. This is proactive Level D — improvement
+    driven by success pattern analysis, not failure. Canonical example: T-097 sub-agent dispatch analysis.'
+  source: T-097→T-098→T-099 workflow arc
+  task: T-100
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-027
+  learning: 'fw setup: Step 2 sentinel must not rely on CLAUDE.md existence — Step 1 creates it via generic init, causing
+    Step 2 to skip. Use explicit setup_provider_done flag in .framework.yaml instead.'
+  source: P-002
+  task: T-108
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-028
+  learning: init.sh generator functions (generate_claude_md, generate_claude_code_config, etc.) use $force variable that is
+    only defined inside do_init scope. When called from setup.sh, ${force:-false} default is required or set -u crashes the
+    script.
+  source: P-002
+  task: T-108
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-029
+  learning: 'Dry-running onboarding on a fictional test project catches bugs that unit tests miss: sentinel logic, cross-function
+    variable scope, git identity inheritance. Always validate wizard flows end-to-end before real use.'
+  source: P-005
+  task: T-108
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-030
+  learning: Research documents belong in docs/reports/ with YAML frontmatter (title, task, date, status, tags). The framework
+    has docs/plans/ for designs and docs/reports/ for analysis, but no index or README. Consider adding docs/README.md with
+    discovery guidelines.
+  source: P-002
+  task: T-109
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-031
+  learning: 'Verbal/thinking-out-loud sessions with the user generate high-value architectural insights (e.g., autonomous
+    compact-resume lifecycle) but risk losing the ideas in context. Pattern: when user thinks out loud, immediately synthesize
+    their key points back to them, then capture as either a research doc or inception task before continuing.'
+  source: P-009
+  task: T-109
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-032
+  learning: 'When a session does both implementation (T-108 fixes) AND research/exploration (T-109 inception), context burns
+    fast. The research agents alone consumed ~100K tokens of sub-agent budget. Split sessions: one for building, one for thinking.
+    Or do research early while context is fresh.'
+  source: P-009
+  task: T-012
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-033
+  learning: 'Check context budget BEFORE proposing next work, not after. At 60%+ context, the only responsible options are:
+    capture learnings, commit, handover. Proposing to start a spike and then discovering there''s no room wastes the user''s
+    decision energy and erodes trust in agent judgment. Rule: check checkpoint.sh status before offering next-step options.'
+  source: P-009
+  task: T-108
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-034
+  learning: 'Task completion status (work-completed) is a flag, not a gate. T-108 was marked complete at 11:22 but 6 commits
+    followed over 173 minutes including substantive framework changes, 2 new task spawns, and a bug fix. The episodic snapshot
+    froze at closure time (claims 2 commits/69min, reality 6 commits/173min). Root cause: no acceptance criteria validation
+    before closure, no warning when committing against closed task IDs. Critical for autonomous mode where no human catches
+    the pattern.'
+  source: T-108 forensic investigation
+  task: T-112
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-035
+  learning: 'add-pattern awk script silently dropped entries for non-empty sections. Used prev~section but prev is last data
+    line, not header. Pattern: always verify write operations actually wrote — a success message after a file operation is
+    not proof the data landed. Test: grep for the added content after any append operation.'
+  source: T-112 investigation
+  task: T-115
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-036
+  learning: Git commit messages are sufficient for auto-generating episodic summaries, challenges, and artifacts — removing
+    80%+ of [TODO] placeholders. The remaining [TODO] (successes.why) genuinely requires judgment.
+  source: D-023
+  task: T-117
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-037
+  learning: 'Agent defaults to ''work around errors'' instead of ''investigate errors''. Three instances this session alone:
+    (1) fw not found — silently switched to direct path, (2) sibling tool calls errored — no investigation, (3) paste -sd
+    formatting bug — only caught during manual review. Root behavior: agent treats errors as friction to remove, not signals
+    to investigate. This is a Level D ways-of-working gap requiring CLAUDE.md instruction changes.'
+  source: P-010
+  task: T-118
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-038
+  learning: 'Verification gate (P-011): structural enforcement beats advisory skills. update-task.sh now runs ## Verification
+    commands before allowing work-completed. Advisory skill failed 3 times (T-108, T-118, T-121); structural gate catches
+    bugs mechanically.'
+  source: P-011
+  task: T-122
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-039
+  learning: 'Commit before completing: always run fw git commit BEFORE fw task update --status work-completed. The work-completed
+    trigger moves the task to completed/, so any subsequent commit referencing that task ID produces a Tier 1 warning (closed
+    task). Correct order: commit → complete.'
+  source: P-002
+  task: T-123
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-040
+  learning: 'L-039 nuance: Completion artifacts (episodic YAML, completed/ task file) necessarily get committed after the
+    task is closed — the Tier 1 warning is a false positive in this case. The real L-039 issue is committing WORK output after
+    completing, not committing completion metadata.'
+  source: P-002
+  task: T-107
+  date: 2026-02-17
+  context: Added via context agent
+  application: TBD
+- id: L-041
+  learning: 'Auto-triggered actions in hooks MUST have cooldown/debounce — without it, any action that fires on a condition
+    that persists (like token count > threshold) will run on every subsequent invocation, creating runaway loops. T-136 caused
+    25 handover commits in 10min. Fix: cooldown file with timestamp.'
+  source: T-136 runaway in sprechloop cycle 3
+  task: T-136
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-042
+  learning: 'Agent itself skipped inception for T-138 (cron budget redesign) — created build task, then design, never inception.
+    This happened IN THE SAME SESSION where we analyzed 54 commits of the sprechloop agent doing the exact same thing. Proof
+    that L-038 is correct: behavioral rules fail even when the agent knows the rule, can recite it, and just finished analyzing
+    violations of it. The inception gate (structural enforcement) is the only reliable prevention.'
+  source: T-138 inception skip — self-inflicted
+  task: T-138
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-043
+  learning: Agent must check context budget (checkpoint.sh status) at EVERY decision point — before spawning agents, before
+    starting new work, before proposing next steps. In this session, agent never checked budget once despite being at 80%
+    (160K tokens) while doing heavy multi-agent dispatches. The budget monitoring system we are redesigning failed to protect
+    the very session designing its replacement.
+  source: T-138 session — zero budget checks
+  task: T-138
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-044
+  learning: Before building new controls, verify existing ones are wired up. The sprechloop knowledge gap was caused by create-task.sh
+    using a hardcoded heredoc instead of default.md template — the rich template existed but was never applied. Diagnosis
+    before invention.
+  source: unknown
+  task: T-140
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-045
+  learning: Always add verification tests when implementing framework changes. A test that creates a task and checks for expected
+    sections would have caught the template bypass immediately. Tests are structural enforcement for implementations.
+  source: unknown
+  task: T-140
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-046
+  learning: 'Verification gate (P-011) treats HTML comments inside <!-- --> as executable commands. The extraction regex only
+    skips lines starting with # — not HTML comment blocks. This caused inception task completion to fail on template guidance
+    text. Need to fix the extraction in update-task.sh.'
+  source: unknown
+  task: T-140
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-047
+  learning: 'YAML init format must match add-* script expectations: init.sh created patterns: [] but pattern.sh expected failure_patterns:
+    sections. Same issue with learnings/decisions: [] header creates invalid YAML when entries appended. Always verify round-trip:
+    create file, add entry, parse result.'
+  source: T-124
+  task: T-141
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-048
+  learning: YAML frontmatter name field must be quoted if value contains colons — unquoted colons break yaml.safe_load silently
+    (Watchtower skips task, no error shown)
+  source: T-124
+  task: T-143
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-049
+  learning: 'Budget gate deadlock after compaction: stale .budget-status blocks fw context init (the reset command), creating
+    circular lock. Fix: expand gate allowlist to include fw context init, fw resume, git status/log/diff; reset budget state
+    in pre-compact.sh'
+  source: T-145 investigation
+  task: T-145
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-050
+  learning: 'Compaction cascade: without budget gate, heavy code generation fills context repeatedly — each compaction triggers
+    emergency handover + commit, but CLAUDE.md (29KB) + resume context + summary leaves near-zero headroom, causing immediate
+    re-compaction. Sprechloop had 14 cascading compactions in 13 minutes building 7 modules. Root cause: G-001 (missing budget
+    hooks). Mitigated by: (1) G-001 fix — budget gate now wired for all projects via fw init, (2) T-148 — timeline collapses
+    emergency runs + pre-compact deduplicates commits within 5 min, (3) budget gate blocks work at 75% before hard compaction
+    wall.'
+  source: T-148 investigation
+  task: T-148
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-051
+  learning: 'One bug = one task. When investigation reveals multiple bugs, create separate tasks even if they''re in the same
+    subsystem. Compounding independent bugs into one task (T-149) destroys causality traceability, dilutes episodic memory,
+    and makes regression isolation impossible. Related root causes can share a parent reference but each fix needs its own
+    chain. Same applies to features: one feature = one task.'
+  source: T-149 retrospective
+  task: T-149
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-052
+  learning: 'When investigation reveals a structural flaw (not a typo), register as gap before fixing. Gaps persist in gaps.yaml
+    (visible in Watchtower, checked by audit, surfaced by resume). Completed tasks archive to completed/ and become invisible.
+    The pattern from T-148/T-149: found 4 bugs + 1 systemic flaw, fixed all without registering gaps — knowledge was immediately
+    buried.'
+  source: T-149 retrospective
+  task: T-149
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-053
+  learning: 'Always include write-to-file output instructions in sub-agent prompts. ''Return summary'' in prompt + run_in_background
+    + TaskOutput = raw JSONL transcript flooding context (30K chars × N agents). Correct pattern: tell agent to write to file
+    path, then Read the file. Or use fw bus post.'
+  source: T-158 crash investigation
+  task: T-158
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-054
+  learning: Playwright browser_navigate and browser_snapshot return full accessibility trees — on data-heavy pages (168 tasks
+    x 6 dropdowns) this is 30-50K tokens per call. Use browser_run_code for navigation and browser_take_screenshot for visual
+    checks. Never use browser_snapshot on pages with large DOM.
+  source: G-008
+  task: T-170
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-055
+  learning: 'Use general-purpose agent type (not Explore) when sub-agents need to write research to disk. Explore agents are
+    read-only. Pattern: pre-define output path in docs/reports/T-XXX-topic.md, pass path in prompt with explicit ''Write to
+    this file, return only summary'' instruction. Validated in T-178 experiment: general-purpose agent wrote 505 lines/20KB
+    directly to disk, returned one-line summary. Zero context bloat.'
+  source: T-178 experiment
+  task: T-178
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-056
+  learning: Task system (task files, git, episodic, project memory) is the primary durable memory, not handover. ~95% of state
+    survives a zero-handover crash. Handover is convenience (saves ~2min of fw resume synthesis), not safety. Emergency handover
+    is unnecessary if budget gate leaves room for full handover.
+  source: T-174 crash resilience analysis
+  task: T-174
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-057
+  learning: 'fw bus (result ledger) has never been used despite being designed (D-026), built (T-109), and documented in CLAUDE.md.
+    5+ sub-agent dispatches this session bypassed it. The bus workflow (fw bus post/read/manifest) may have too much friction
+    vs simple Write-to-file. Evidence: .context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks.'
+  source: T-178 observation
+  task: T-178
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
+- id: L-058
+  learning: 'Framework-level edits (CLAUDE.md, hooks, agents, budget-gate) require explicit change impact assessment before
+    any modifications. Present: (1) which files, (2) what changes, (3) what could break, (4) blast radius. Get user approval
+    before editing. Evidence: T-182 first attempt edited 4 core files without review — user caught it, reverted.'
+  source: T-182 revert incident
+  task: T-182
+  date: 2026-02-18
+  context: Added via context agent
+  application: TBD
 candidates: []
