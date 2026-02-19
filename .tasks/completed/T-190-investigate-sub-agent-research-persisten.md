@@ -4,15 +4,15 @@ name: "Investigate sub-agent research persistence — ensure agent findings are 
 description: >
   Inception: Investigate sub-agent research persistence — ensure agent findings are saved to docs/reports for traceability
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-19T09:12:32Z
-last_update: 2026-02-19T09:13:09Z
-date_finished: null
+last_update: 2026-02-19T20:58:30Z
+date_finished: 2026-02-19T20:58:30Z
 ---
 
 # T-190: Investigate sub-agent research persistence — ensure agent findings are saved to docs/reports for traceability
@@ -48,9 +48,9 @@ None — this is a workflow/convention change, not infrastructure.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated — confirmed by T-194 experiment: 19/20 completed inception tasks had no research artifact
+- [x] Assumptions tested — CTL-021/022/023 from T-194 provide structural enforcement with low friction
+- [x] Go/No-Go decision made — NO-GO: subsumed by CTL-021/022/023
 
 ## Go/No-Go Criteria
 
@@ -72,20 +72,34 @@ None — this is a workflow/convention change, not infrastructure.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: Subsumed by CTL-021/022/023 from T-194. The research persistence controls (C-001: artifact-first, C-002: commit-msg warning, C-003: checkpoint prompt) structurally enforce the same outcome this task aimed to investigate. No additional mechanism needed.
+
+**Date**: 2026-02-19T20:58:30Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Subsumed by CTL-021/022/023 from T-194. The research persistence controls (C-001: artifact-first, C-002: commit-msg warning, C-003: checkpoint prompt) structurally enforce the same outcome this task aimed to investigate. No additional mechanism needed.
+
+**Date**: 2026-02-19T20:58:30Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-02-19T20:58:14Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Subsumed by CTL-021/022/023 from T-194. The research persistence controls (C-001: artifact-first, C-002: commit-msg warning, C-003: checkpoint prompt) structurally enforce the same outcome this task aimed to investigate. No additional mechanism needed.
+
+### 2026-02-19T20:58:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Subsumed by CTL-021/022/023 from T-194. The research persistence controls (C-001: artifact-first, C-002: commit-msg warning, C-003: checkpoint prompt) structurally enforce the same outcome this task aimed to investigate. No additional mechanism needed.
+
+### 2026-02-19T20:58:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

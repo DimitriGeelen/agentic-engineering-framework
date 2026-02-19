@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-02-19T00:29:08Z
+# Generated: 2026-02-19T20:57:12Z
 # ============================================================================
 
 task_id: T-151
@@ -13,15 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-02-18T12:05:00Z
-completed: 2026-02-19T00:29:08Z
+completed: 2026-02-19T20:57:11Z
 duration_days: 1
-updates_count: 7
+updates_count: 9
 first_commit: 2026-02-19T01:29:04+01:00
-last_commit: 2026-02-19T01:29:04+01:00
+last_commit: 2026-02-19T01:29:14+01:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Investigation complete — cron-based audit scheduling analysis
+  Investigation complete — cron-based audit scheduling analysis. Task completed — episodic generated
 
 # Key outcomes
 outcomes:
@@ -42,16 +42,20 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
+  - ".context/episodic/T-151.yaml"
   - ".tasks/active/T-151-investigate-audit-tasks-as-cronjobs.md"
+  - ".tasks/completed/T-151-investigate-audit-tasks-as-cronjobs.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-02-19T01:29:04"
     action: "T-151: Investigation complete — cron-based audit scheduling analysis"
+  - time: "2026-02-19T01:29:14"
+    action: "T-151: Task completed — episodic generated"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 744 min
+  # Completed successfully in 2 commit(s), 1972 min
 
 # Related tasks
 related_tasks:
@@ -64,10 +68,10 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 744
-  commits: 1
-  files_changed: 1
-  lines_added: 94
+  wall_clock_minutes: 1972
+  commits: 2
+  files_changed: 3
+  lines_added: 313
   lines_removed: 21
 
 # Metadata
