@@ -145,9 +145,9 @@ risks:
     score: 9
     ranking: medium
     evidence: [L-031, L-032]
-    controls: []
-    control_status: closed
-    residual_notes: "Depends on agent discipline + budget gate as backstop"
+    controls: [CTL-003, CTL-018, CTL-019]
+    control_status: implemented
+    residual_notes: "Budget gate (CTL-003) blocks at 75%, checkpoint (CTL-018) warns earlier, auto-restart (CTL-019) recovers. Residual: research still consumes tokens; mitigation is visibility not prevention."
 
   # === KNOWLEDGE LOSS ===
   - id: R-010
@@ -160,8 +160,8 @@ risks:
     ranking: high
     evidence: [G-009, T-174, T-178, T-185, T-194]
     controls: [CTL-014, CTL-021, CTL-022, CTL-023]
-    control_status: decided-build
-    residual_notes: "Experiment running on T-194. 7 prior controls all failed. New controls untested."
+    control_status: implemented
+    residual_notes: "T-194 experiment PASS (7/7 metrics). CTL-021 (artifact-first) primary effective control. CTL-022/023 safety nets. Residual: dialogue reasoning only captured when explicitly logged (C-001 extension added)."
 
   - id: R-011
     title: "Sub-agent output explosion exhausts context"
@@ -173,8 +173,8 @@ risks:
     ranking: high
     evidence: [G-008, T-073, T-158, T-170]
     controls: [CTL-021, CTL-023]
-    control_status: decided-build
-    residual_notes: "Protocol advisory only. fw bus never adopted. Structural enforcement missing."
+    control_status: implemented
+    residual_notes: "Dispatch protocol + fw bus exist. CTL-021/023 enforce artifact persistence. Residual: bus auto-size-gating advisory not structural; N>5 parallel agents still possible."
 
   - id: R-012
     title: "Significant work after task closure becomes invisible"
