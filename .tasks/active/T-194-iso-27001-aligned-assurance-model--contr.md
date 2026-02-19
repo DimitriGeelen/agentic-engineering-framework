@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T15:50:03Z
+last_update: 2026-02-19T15:51:28Z
 date_finished: null
 ---
 
@@ -178,3 +178,8 @@ test -f docs/reports/T-194-control-register.md
 ### 2026-02-19T15:50:03Z — task-created [inception-start]
 - **Action:** Created inception from T-151/T-184 review
 - **Context:** Reviewing T-151 revealed agent completed specification without human dialogue. Cron system (T-184) reruns structural checks instead of OE testing. ISO 27001 model proposed during review dialogue.
+
+### 2026-02-19 — Phase 0: Genesis discussion (thinking trail)
+- **Artifact:** `docs/reports/T-194-assurance-genesis-discussion.md`
+- **Content:** T-151 timeline analysis, three-layer model evolution, ISO 27001 mapping, control inventory (11 controls, 9 without OE), OE test examples, discovery capability gap analysis, 5 open questions for Phase 1
+- **Key insight:** Layer 2 (cron audits) is NOT redundant — it's defense-in-depth for when hooks silently fail (observed multiple times in AEF history)
