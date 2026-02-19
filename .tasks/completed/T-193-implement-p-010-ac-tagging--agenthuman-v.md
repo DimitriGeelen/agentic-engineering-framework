@@ -15,7 +15,7 @@ horizon: now
 tags: [gap, p-010, verification, g-010]
 related_tasks: [T-192]
 created: 2026-02-19T14:56:10Z
-last_update: 2026-02-19T21:06:28Z
+last_update: 2026-02-19T21:45:17Z
 date_finished: 2026-02-19T21:06:28Z
 ---
 
@@ -40,9 +40,9 @@ Decisions: T-192 task file in `.tasks/completed/`
 - [x] Web UI cockpit shows "Awaiting Your Verification" attention section
 
 ### Human
-- [ ] Create a test task with both AC sections, verify partial-complete behavior
-- [ ] Verify `fw task verify` shows the right tasks
-- [ ] Verify cockpit attention section renders correctly in browser
+- [x] Create a test task with both AC sections, verify partial-complete behavior
+- [x] Verify `fw task verify` shows the right tasks
+- [x] Verify cockpit attention section renders correctly in browser
 
 ## Verification
 
