@@ -308,3 +308,54 @@ This experiment runs DURING T-194 Phases 1-3. The research being captured IS the
 - Using the results to inform T-194's own OE test design (meta-level)
 
 This is intentionally recursive — the best way to test a research persistence control is to use it while doing research.
+
+---
+
+## Experiment Conclusions
+
+**Date:** 2026-02-19 (post T-194 completion)
+**Duration:** T-194 ran across ~4 sessions, Phases 0-5.
+
+### Metrics Assessment
+
+| Metric | Target | Actual | Verdict |
+|--------|--------|--------|---------|
+| **Capture completeness** | >90% | ~95% — 5 artifacts, 1219 lines, 11 commits, all phases covered. Dialogue log captures schema design conversation. Phase 1 risk decisions captured. | **PASS** |
+| **C-001 effectiveness** | File within first 5 tool calls | Phase 0: genesis artifact created during initial research. Phase 2: control register artifact created at start of Phase 2a. Pattern: artifact created early in each research phase. | **PASS** |
+| **C-002 effectiveness** | <2 warnings per session | **0 warnings total.** C-002 never fired because C-001 was effective — artifacts always existed before inception commits. This is the intended hierarchy: C-001 prevents the condition C-002 detects. | **PASS (never needed)** |
+| **C-003 effectiveness** | Prompt→capture >50% | **0 prompts total.** C-003 checkpoint never fired because research artifacts were always recently modified. Same explanation: C-001's behavioral compliance prevented the trigger condition. | **PASS (never needed)** |
+| **False positive rate** | <20% | 0% — no false fires from any control. | **PASS** |
+| **Friction** | Acceptable | C-001 (live document rule) became natural workflow — write findings as we go. Zero friction observed. C-002/C-003 invisible (never fired). | **PASS** |
+| **OE test reliability** | Zero false negatives | OE tests (oe-research section) correctly flagged T-190 as missing artifact while T-194 and T-191 passed. Accurate detection. | **PASS** |
+
+### Key Findings
+
+1. **C-001 (behavioral rule) was the primary effective control.** The live document rule changed agent behavior sufficiently that C-002 and C-003 never needed to fire. This contradicts the Phase 0b finding that "behavioral controls always fail" — when the behavior is natural (write as you go) rather than burdensome (remember to save), compliance is high.
+
+2. **C-002 and C-003 are untested as corrective controls.** They never fired on T-194. Their value is as safety nets for when C-001 compliance degrades (new agent instance, different task type, agent under cognitive load). We cannot assess their corrective effectiveness from this experiment alone.
+
+3. **Dialogue capture is the weakest link.** While decisions and research findings are well-captured (95%), the actual dialogue flow (human questions → agent proposals → human corrections) is only captured for Phase 2a (schema design). Other phases have decisions but not the dialogue that led to them. The live document pattern works for structured findings but doesn't naturally capture conversational dynamics.
+
+4. **The experiment was its own best evidence.** T-194 produced 1219 lines of research artifacts across 5 files, with 11 commits touching those files. Compare with T-151 (the triggering incident): zero research artifacts, agent completed specification in 2 minutes without human dialogue.
+
+### Exit Decisions
+
+| Control | Decision | Rationale |
+|---------|----------|-----------|
+| **C-001 (Live Document)** | **ADOPT as CTL-021** | Primary effective control. Zero friction. Natural workflow. Already promoted to controls.yaml. |
+| **C-002 (Commit Gate)** | **ADOPT as CTL-022** | Untested as corrective, but cheap to maintain (~15 lines in commit-msg). Safety net value. Already promoted to controls.yaml. |
+| **C-003 (Checkpoint)** | **ADOPT as CTL-023 (partial)** | Implementation incomplete (spec says fire every 20 tool calls on inception work; actual behavior uncertain). Keep as-is, revisit if C-001 compliance degrades. |
+
+### Generalization
+
+**Can these controls extend beyond inception tasks?**
+
+- **C-001:** Yes, for any research-heavy task. The "create artifact before researching" pattern applies whenever conversation-generated knowledge needs persistence. Could generalize to: any task with `workflow_type: inception|specification|design` and `tags: [research]`.
+- **C-002:** Already scoped to inception only. Could generalize to any workflow_type that produces research artifacts.
+- **C-003:** Depends on C-001 compliance rate. If C-001 works well (as observed), C-003 adds marginal value. Keep inception-scoped.
+
+### Dialogue Capture Gap
+
+The experiment revealed that **structured findings** are well-captured (controls, schemas, assessments) but **dialogic reasoning** (the back-and-forth that produces decisions) is only captured when explicitly logged. The Phase 2a dialogue log (human questions, answers, course correction, outcome) is the gold standard — but it required deliberate effort, not structural enforcement.
+
+**Recommendation:** Add to C-001 rule: "For phases involving human dialogue, include a Dialogue Log section in the research artifact. Record: human questions posed, answers given, course corrections, and outcome." This extends C-001 from "capture findings" to "capture the reasoning trail."
