@@ -401,3 +401,69 @@ The current structure/compliance/quality checks are still valuable — they catc
 - **Chose:** CTL-001 through CTL-020+ with sequential numbering
 - **Why:** Consistent with R-XXX, I-XXX, G-XXX patterns. Uniquely identifiable. Enables cross-register linking.
 - **Follow-up:** Normalize risks.yaml `controls` field from script names to CTL-XXX IDs once register populated
+
+## Phase 5: Go/No-Go Decision
+
+**Date:** 2026-02-19
+**Decision:** **GO**
+
+### Evidence Summary
+
+| Phase | Deliverable | Key Finding |
+|-------|------------|-------------|
+| Phase 0 | Genesis discussion + experiment spec | ISO 27001 model applicable; 7 existing research controls all failed; 3 experimental controls (C-001/C-002/C-003) deployed |
+| Phase 1 | Risk landscape (38 risks, L×I scored) | Three-register model (risks/issues/gaps), 11 open risks, silent failures dominate |
+| Phase 2a | Control register schema (8 fields) | Constitutional Directive-anchored, not ISO 27001; failure_mode field for D1 |
+| Phase 2b | 23 controls populated in controls.yaml | 10 blocking, 13 warn-only; 12/23 warn-only is systemic weakness |
+| Phase 2c | Design adequacy assessment | 56% formal coverage; inverted risk-control correlation (highest risks = weakest controls) |
+| Phase 3 | OE test design (22/23 controls) | 20 automatable, 2 session-log; 4-tier cron redesign proposed |
+
+### Go/No-Go Criteria Assessment
+
+**GO criteria (all met):**
+
+| Criterion | Assessment | Evidence |
+|-----------|-----------|----------|
+| Model maps cleanly to AEF | **YES** | Adapted from ISO 27001 to Constitutional Directives (D-Phase2-001). 8-field schema, not 15. Four-register model (risks/controls/issues/gaps) natural to AEF's existing structure. |
+| Control register is low-overhead | **YES** | 8 fields × 23 controls = 184 data points. Flat YAML, greppable. No nested objects. Maintenance: add CTL-XXX when building new controls. |
+| OE tests automatable for >= 8/11 controls | **YES (exceeded)** | 20/23 automatable (87%), vs criterion of >=8/11 (73%). All use cron + bash + existing tooling. |
+| Redesigned cron materially better | **YES** | Current: reruns structural checks. Proposed: OE tests verify controls actually work + structural preserved. Catches different failure classes (control failure vs project malformation). |
+
+**NO-GO criteria (none triggered):**
+
+| Criterion | Assessment | Evidence |
+|-----------|-----------|----------|
+| Formalization overhead exceeds value | **No** | 8-field schema is lean (D3). Dropped 7 ISO fields that didn't serve D1-D4. |
+| OE requires infrastructure beyond cron+bash | **No** | All 20 automatable tests use existing tools: `test -f`, `grep`, `git log`, `python3 -c`, `find`. |
+| Risk register duplicates gaps.yaml | **No** | Three-register separation established: risks (forward, scored), issues (backward, resolved), gaps (present, spec-reality). Fundamentally different. |
+| Model too rigid for weekly evolution | **No** | Schema deliberately minimal. Controls added by appending to controls.yaml. No migration needed for existing tooling. |
+
+### Phase 4 Decision
+
+Phase 4 (discovery layer design) was planned as a separate session. **Defer to a follow-up inception task.** Phases 1-3 provide sufficient evidence for GO. The discovery layer is additive value (insight generation), not foundational (risk/control/OE). Building OE tests first creates the evidence base that discovery would analyze.
+
+### Build Tasks (Post-GO)
+
+The GO decision produces these build tasks:
+
+1. **Implement OE test suite** — Add `oe-fast`, `oe-hourly`, `oe-daily`, `oe-weekly` audit sections to audit.sh. 20 automatable tests.
+2. **Redesign cron schedule** — Add OE tiers to `/etc/cron.d/agentic-audit`. Preserve existing structural audits.
+3. **Normalize risk-control linking** — Migrate risks.yaml `controls` field from script names to CTL-XXX IDs.
+4. **R-033 remediation** — Design structural control for human sovereignty (highest uncontrolled risk, score 12).
+5. **R-023 remediation** — Build hook config validator in `fw doctor`.
+6. **Phase 4 inception** — Discovery layer design (pattern detection, omission finding, insight surfacing).
+
+### Decision Rationale
+
+The evidence overwhelmingly supports GO:
+- The model adapted naturally to AEF's Constitutional Directives
+- The control register exposed structural weaknesses invisible before formalization (inverted risk-control correlation, 12/23 warn-only, R-033 completely uncontrolled)
+- OE test automation is feasible with existing infrastructure
+- The research experiment (C-001/C-002/C-003) itself demonstrated the model works — we used ISO 27001's four-layer design to build controls for research persistence, and those controls worked during this inception
+
+**The formalization effort has already paid for itself** in findings that improve the framework. Building OE tests extends this value from one-time assessment to continuous assurance.
+
+### D-Phase5-001 — GO with deferred Phase 4
+- **Chose:** GO for build tasks 1-5; Phase 4 deferred to separate inception
+- **Why:** Phases 1-3 provide sufficient evidence. OE tests (build) need to exist before discovery (insight) has data to analyze. Sequencing: build foundations first.
+- **Rejected:** (a) Continue to Phase 4 before deciding — delays build with no blocking dependency. (b) NO-GO — no criteria triggered, evidence strong.

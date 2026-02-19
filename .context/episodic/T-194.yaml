@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T19:29:04Z
+# ============================================================================
+
+task_id: T-194
+task_name: "ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T15:50:03Z
+completed: 2026-02-19T19:29:03Z
+duration_days: 0
+updates_count: 15
+first_commit: 2026-02-19T16:51:28+01:00
+last_commit: 2026-02-19T20:14:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — ISO 27001-aligned assurance model (from T-151/T-184 review). Phase 0 — genesis discussion artifact (T-151 review, ISO 27001 mapping, control inventory). Phase 0b — research persistence failure analysis (7 controls, all failed). Phase 0c — research persistence experiment spec (3 controls, OE tests, protocol). Build — C-001 (live doc rule), C-002 (commit gate), C-003 (checkpoint prompt), OE tests. Task update — experiment build record, first OE result (T-190 flagged). Phase 1a — risk landscape (38 risks, 9 categories, from 194 tasks). Phase 1a — risk register (38 risks scored, 9 categories) + risk landscape artifact. Phase 1a — decisions documented (scoring model, risk vs issue discussion). Phase 1b — issues register (8 incidents) + three-register model decision. WIP — risks blueprint (partial), save before context critical. Session wrap — task updated, handover filled, context 87%. Watchtower risks page — heatmap, open risks table, issues, gaps. Phase 2a — schema design dialogue documented, risks page enriched. Phase 2b — control register populated (23 controls, 8 fields each). Phase 2c — design adequacy assessment (56% coverage, inverted risk-control correlation). Phase 3 — OE test design (20/23 automatable, cron redesign proposed)
+
+# Key outcomes
+outcomes:
+  - "Risk landscape mapped from observed incidents to risk categories"
+  - "Control register designed and populated for all current controls"
+  - "Design adequacy assessed for each control"
+  - "OE test designed for each control with observable effects defined"
+  - "Cron schedule redesigned around OE testing"
+  - "Discovery layer capabilities defined (descoped: deferred to follow-up inception — D-Phase5-001)"
+  - "All research persisted in docs/reports/T-194-*"
+  - "Go/No-Go decision made with full rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Watchtower risks page — heatmap, open risks table, issues, gaps"
+    source: git-mined
+  - description: "Phase 1b — issues register (8 incidents) + three-register model decision"
+    source: git-mined
+  - description: "Phase 1a — decisions documented (scoring model, risk vs issue discussion)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/context/checkpoint.sh"
+  - "CLAUDE.md"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0219-1608.md"
+  - ".context/handovers/S-2026-0219-1733.md"
+  - ".context/project/controls.yaml"
+  - ".context/project/issues.yaml"
+  - ".context/project/risks.yaml"
+  - "docs/reports/T-194-assurance-genesis-discussion.md"
+  - "docs/reports/T-194-control-register.md"
+  - "docs/reports/T-194-research-persistence-experiment-spec.md"
+  - "docs/reports/T-194-research-persistence-failure-analysis.md"
+  - "docs/reports/T-194-risk-landscape.md"
+  - ".tasks/active/T-151-investigate-audit-tasks-as-cronjobs.md"
+  - ".tasks/active/T-184-implement-cron-based-audit-scheduling-t-.md"
+  - ".tasks/active/T-194-iso-27001-aligned-assurance-model--contr.md"
+  - "web/app.py"
+  - "web/blueprints/risks.py"
+  - "web/shared.py"
+  - "web/templates/risks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-19T16:51:28"
+    action: "T-194: Inception — ISO 27001-aligned assurance model (from T-151/T-184 review)"
+  - time: "2026-02-19T16:53:34"
+    action: "T-194: Phase 0 — genesis discussion artifact (T-151 review, ISO 27001 mapping, control inventory)"
+  - time: "2026-02-19T17:00:29"
+    action: "T-194: Phase 0b — research persistence failure analysis (7 controls, all failed)"
+  - time: "2026-02-19T17:07:40"
+    action: "T-194: Phase 0c — research persistence experiment spec (3 controls, OE tests, protocol)"
+  - time: "2026-02-19T17:10:16"
+    action: "T-194: Build — C-001 (live doc rule), C-002 (commit gate), C-003 (checkpoint prompt), OE tests"
+  - time: "2026-02-19T17:10:39"
+    action: "T-194: Task update — experiment build record, first OE result (T-190 flagged)"
+  - time: "2026-02-19T17:16:26"
+    action: "T-194: Phase 1a — risk landscape (38 risks, 9 categories, from 194 tasks)"
+  - time: "2026-02-19T17:24:56"
+    action: "T-194: Phase 1a — risk register (38 risks scored, 9 categories) + risk landscape artifact"
+  - time: "2026-02-19T17:25:46"
+    action: "T-194: Phase 1a — decisions documented (scoring model, risk vs issue discussion)"
+  - time: "2026-02-19T17:32:11"
+    action: "T-194: Phase 1b — issues register (8 incidents) + three-register model decision"
+  - time: "2026-02-19T17:33:00"
+    action: "T-194: WIP — risks blueprint (partial), save before context critical"
+  - time: "2026-02-19T17:34:26"
+    action: "T-194: Session wrap — task updated, handover filled, context 87%"
+  - time: "2026-02-19T18:33:29"
+    action: "T-194: Watchtower risks page — heatmap, open risks table, issues, gaps"
+  - time: "2026-02-19T19:58:50"
+    action: "T-194: Phase 2a — schema design dialogue documented, risks page enriched"
+  - time: "2026-02-19T20:05:25"
+    action: "T-194: Phase 2b — control register populated (23 controls, 8 fields each)"
+  - time: "2026-02-19T20:09:32"
+    action: "T-194: Phase 2c — design adequacy assessment (56% coverage, inverted risk-control correlation)"
+  - time: "2026-02-19T20:14:13"
+    action: "T-194: Phase 3 — OE test design (20/23 automatable, cron redesign proposed)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 17 commit(s), 219 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [iso27001, assurance, controls, antifragility, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 219
+  commits: 17
+  files_changed: 21
+  lines_added: 3303
+  lines_removed: 246
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-194-iso-27001-aligned-assurance-model--contr.md
+generated_by: context-agent-hybrid
