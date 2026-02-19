@@ -294,3 +294,31 @@ gaps:
     related_task: T-178
     created: 2026-02-18
     last_reviewed: 2026-02-18
+
+  - id: G-010
+    title: "P-010 AC gate has no distinction between agent-verifiable and human-verifiable criteria"
+    description: >
+      The P-010 acceptance criteria gate in update-task.sh counts ALL checkboxes
+      under ## Acceptance Criteria and blocks work-completed if any are unchecked.
+      For tasks with behavior ACs (UI/UX criteria requiring human observation), this
+      creates a perverse incentive: agents check behavior boxes based on code existence
+      rather than observed behavior, because leaving them unchecked blocks completion.
+      Discovered via sprechloop G-006 (T-057: 7 of 8 behavior ACs checked by agent
+      without human verification).
+    spec_reference: "CLAUDE.md §Verification Before Completion, §Enforcement Tiers"
+    severity: high
+    evidence_collected: >
+      Sprechloop T-057: 7/8 ACs described user-observable behavior, all checked by
+      agent based on code written. Task marked work-completed, both gates passed.
+      Also likely T-054 (1 behavior AC) and T-055 (2 behavior ACs). Systemic for
+      any project with UI/UX tasks.
+    resolution: >
+      T-192 inception: GO decision for Option A (AC tagging). ### Agent / ### Human
+      section headers in AC section. P-010 gates only on ### Agent ACs. Tasks with
+      unchecked ### Human ACs stay in active/ with owner: human (not moved to completed/).
+      Discoverability via fw task verify command + web UI cockpit attention section.
+      Backward compatible: tasks without headers work as before.
+    related_task: T-192
+    status: decided-build
+    created: 2026-02-19
+    last_reviewed: 2026-02-19

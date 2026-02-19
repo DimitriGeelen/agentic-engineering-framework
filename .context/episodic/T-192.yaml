@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-192: G-006 remediation — behavior verification gap in P-010 AC gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T14:53:23Z
+# ============================================================================
+
+task_id: T-192
+task_name: "G-006 remediation — behavior verification gap in P-010 AC gate"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T13:18:27Z
+completed: 2026-02-19T14:53:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-19T14:19:12+01:00
+last_commit: 2026-02-19T14:19:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — G-006 behavior verification gap in P-010 AC gate
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "All options evaluated with pros/cons/risks"
+  - "Recommendation presented with rationale"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option A (AC tagging) with enhancements"
+    rationale: "Targets root cause (P-010 can't distinguish AC types), backward compatible, lowest effort, removes perverse incentive structurally"
+    alternatives_rejected: [""]
+    chose: "`### Agent` / `### Human` as section headers"
+    rationale: "Acknowledges that the boundary is fluid — a behavior AC becomes agent-verifiable when Playwright is added. The naming is about current responsibility, not inherent nature."
+    chose: "Don't move task to completed/ when human ACs are unchecked"
+    rationale: "User raised visibility concern — tasks with unchecked human ACs would vanish into completed/. Keeping them in active/ makes them structurally visible in task lists, handovers, and web UI without adding a new status."
+    chose: "`fw task verify` command + cockpit attention section + task board visual marker"
+    rationale: "Three layers of visibility (dashboard, CLI, in-context) so human can't miss tasks needing their testing"
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-192-g-006-remediation--behavior-verification.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-19T14:19:12"
+    action: "T-192: Inception — G-006 behavior verification gap in P-010 AC gate"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gap, p-010, verification, cross-project]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 94
+  commits: 1
+  files_changed: 1
+  lines_added: 108
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-192-g-006-remediation--behavior-verification.md
+generated_by: context-agent-hybrid
