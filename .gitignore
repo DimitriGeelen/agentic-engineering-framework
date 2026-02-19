@@ -4,3 +4,6 @@ __pycache__/
 .context/working/.prev-token-reading
 .playwright-mcp/
 .context/bus/
+
+# Temporary screenshots
+*.png
