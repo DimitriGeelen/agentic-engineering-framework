@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T16:10:16Z
+last_update: 2026-02-19T16:24:56Z
 date_finished: null
 ---
 
@@ -206,3 +206,12 @@ test -f docs/reports/T-194-control-register.md
 - **Cron:** Reinstalled with `oe-research` in 30-minute schedule.
 - **First OE result:** T-190 flagged — active inception with no research artifact. T-191 and T-194 pass.
 - **Total implementation:** ~130 lines across CLAUDE.md, commit-msg, checkpoint.sh, audit.sh.
+
+### 2026-02-19 — Phase 1a: Risk landscape mapped
+- **Artifact:** `docs/reports/T-194-risk-landscape.md` (updated with decisions)
+- **Risk register:** `.context/project/risks.yaml` — 38 risks, 9 categories, all scored (L×I)
+- **Method:** Mined patterns.yaml (14), learnings.yaml (58), gaps.yaml (10), 190 episodics, CLAUDE.md
+- **Key findings:** 27 closed, 11 open. Silent failures dominate. Structural > procedural. Defense-in-depth essential. Safety mechanisms create new risks.
+- **Scoring model:** Likelihood (1-5) × Impact (1-5) = Score (1-25) → Low/Medium/High/Urgent (human-approved)
+- **Human decision:** Formal scoring, separate risks.yaml, Watchtower page under Govern
+- **Open:** Risk vs Issue distinction (human raised, options presented, pending decision)

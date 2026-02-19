@@ -147,9 +147,36 @@ Risks where human review/approval is bypassed or absent.
 | R-033 | Human-owned tasks auto-completed | High | T-194 human-dialogue mandate |
 | R-036 | Multi-agent untested | Low | First real test |
 
-## Open Questions for Phase 1b
+## Phase 1a Decisions (from dialogue)
 
-1. Are these 9 risk categories the right taxonomy? Should we consolidate or split?
-2. Should we formalize this as a risk register (with likelihood × impact scoring)?
-3. Which open risks should be prioritized for control design?
-4. Does `gaps.yaml` evolve into the risk register, or do we keep them separate?
+### Risk scoring model — formal L×I matrix
+- **Chose:** Likelihood (1-5) × Impact (1-5) = Score (1-25), mapped to Low/Medium/High/Urgent
+- **Why:** Human requested formal scoring per ISO 27001 standard, not qualitative
+- **Implemented:** `.context/project/risks.yaml` with all 38 risks scored
+
+### Risk register as separate file
+- **Chose:** New `.context/project/risks.yaml` (separate from gaps.yaml)
+- **Why:** Different purpose — gaps.yaml tracks spec-reality gaps; risks.yaml tracks forward-looking risk assessment with controls and scoring
+- **Gaps.yaml:** Continues as-is for spec-reality gaps; risks.yaml links to gaps where relevant
+
+### Watchtower page under Govern
+- **Chose:** New "Risks" page under Govern section in Watchtower
+- **Why:** Human wants visual risk register with scoring, heatmap, and control status
+- **Status:** Planned — blueprint + template to build
+
+## Phase 1b: Risks vs Issues (dialogue in progress)
+
+Human raised: "we should also differentiate between issues and risks."
+
+ISO 27001 distinction:
+- **Risk:** Future-oriented. Something that *could* go wrong. L×I scoring, linked to controls.
+- **Issue:** Past-oriented. Something that *has* gone wrong. A materialized risk or operational problem.
+
+Current register mixes both — many entries are issues (T-078, T-059, T-141) where controls were built. Open question: separate files, combined with incidents field, or status-based?
+
+## Open Questions
+
+1. Risk vs Issue separation: separate files, combined, or status-based?
+2. Categories: keep 9 or consolidate? (Human: no opinion yet)
+3. Watchtower risk page: heatmap layout? What controls to surface?
+4. Relationship between risks.yaml and gaps.yaml going forward
