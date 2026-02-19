@@ -1,0 +1,121 @@
+#!/bin/bash
+# claude-fw — Claude Code wrapper with auto-restart support
+#
+# Runs claude normally, then checks for a restart signal file
+# written by checkpoint.sh when auto-handover fires at critical budget.
+# If found (and fresh), auto-restarts with `claude -c` to continue.
+#
+# Usage:
+#   claude-fw [claude-args...]          # Run with auto-restart enabled
+#   claude-fw --no-restart [args...]    # Run without auto-restart
+#
+# The restart signal file is .context/working/.restart-requested
+# Written by: checkpoint.sh auto-handover at critical budget (T-186)
+# Consumed by: this script on claude exit
+#
+# Part of: Agentic Engineering Framework (T-179 auto-restart, T-187 wrapper)
+
+set -euo pipefail
+
+# Parse our flags (before passing rest to claude)
+AUTO_RESTART=true
+CLAUDE_ARGS=()
+
+for arg in "$@"; do
+    case "$arg" in
+        --no-restart)
+            AUTO_RESTART=false
+            ;;
+        *)
+            CLAUDE_ARGS+=("$arg")
+            ;;
+    esac
+done
+
+# Signal file location (relative to git root)
+find_signal_file() {
+    local git_root
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
+    echo "$git_root/.context/working/.restart-requested"
+}
+
+# Check if signal file is fresh (< 5 minutes old)
+is_signal_fresh() {
+    local signal_file="$1"
+    [ -f "$signal_file" ] || return 1
+
+    local file_mtime now age
+    file_mtime=$(stat -c %Y "$signal_file" 2>/dev/null) || return 1
+    now=$(date +%s)
+    age=$((now - file_mtime))
+
+    if [ "$age" -lt 300 ]; then
+        return 0  # Fresh
+    else
+        return 1  # Stale
+    fi
+}
+
+# Main loop
+restart_count=0
+MAX_RESTARTS=5  # Safety valve — don't loop forever
+
+while true; do
+    # Run claude with user's arguments
+    set +e
+    command claude "${CLAUDE_ARGS[@]}"
+    exit_code=$?
+    set -e
+
+    # Don't auto-restart if disabled
+    if [ "$AUTO_RESTART" = false ]; then
+        exit "$exit_code"
+    fi
+
+    # Check for restart signal
+    signal_file=$(find_signal_file 2>/dev/null) || {
+        # Not in a git repo — no signal file possible
+        exit "$exit_code"
+    }
+
+    if [ -f "$signal_file" ] && is_signal_fresh "$signal_file"; then
+        restart_count=$((restart_count + 1))
+
+        if [ "$restart_count" -ge "$MAX_RESTARTS" ]; then
+            echo ""
+            echo "claude-fw: Max restarts ($MAX_RESTARTS) reached. Stopping."
+            echo "  Remove $signal_file to reset, then run 'claude -c' manually."
+            rm -f "$signal_file"
+            exit 0
+        fi
+
+        # Read signal metadata for display
+        local_session=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); print(d.get('session_id','?'))" 2>/dev/null) || local_session="?"
+        local_tokens=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); print(d.get('tokens',0))" 2>/dev/null) || local_tokens="?"
+
+        echo ""
+        echo "claude-fw: Auto-restart #${restart_count} (session: ${local_session}, tokens: ${local_tokens})"
+        echo "  Handover committed. Continuing in 3 seconds..."
+        echo "  Press Ctrl+C to cancel."
+        echo ""
+
+        # Clean up signal before restart
+        rm -f "$signal_file"
+
+        # Brief pause for user to cancel
+        sleep 3
+
+        # Continue with -c flag (resume most recent session)
+        CLAUDE_ARGS=("-c")
+    elif [ -f "$signal_file" ]; then
+        # Stale signal — clean up and exit
+        local_age=$(( $(date +%s) - $(stat -c %Y "$signal_file" 2>/dev/null || echo 0) ))
+        echo ""
+        echo "claude-fw: Stale restart signal (${local_age}s old). Ignoring."
+        rm -f "$signal_file"
+        exit "$exit_code"
+    else
+        # No signal — normal exit
+        exit "$exit_code"
+    fi
+done
