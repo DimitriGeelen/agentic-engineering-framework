@@ -134,6 +134,16 @@ warn_by_tokens() {
             date +%s > "$handover_cooldown"
             if "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
                 echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
+                # T-186: Write restart signal for wrapper script (T-179 auto-restart)
+                local restart_signal="$CONTEXT_DIR/working/.restart-requested"
+                local session_id=""
+                if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+                    session_id=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+                fi
+                cat > "$restart_signal" << SIGNAL_EOF
+{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_auto_handover","tokens":${tokens:-0}}
+SIGNAL_EOF
+                echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
             else
                 echo "AUTO-HANDOVER: Failed — run 'fw handover' manually." >&2
             fi
@@ -233,6 +243,7 @@ case "${1:-}" in
         ensure_counter
         echo "0" > "$COUNTER_FILE"
         rm -f "$PREV_TOKENS_FILE"
+        rm -f "$CONTEXT_DIR/working/.restart-requested"  # T-186: clean up restart signal
         echo "Counter reset."
         ;;
     status)
