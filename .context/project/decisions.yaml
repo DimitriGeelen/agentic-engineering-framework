@@ -238,3 +238,10 @@ decisions:
     date: 2026-02-18
     task: T-175
     rationale: "Crash resilience analysis proved task system is primary memory (~95% survives zero-handover crash). With budget gate at 170K leaving 30K, there is always room for full handover. Emergency skeleton was a safety net that is no longer needed — the task system (task files, git, episodic, project memory) IS the safety net."
+
+  - id: D-029
+    decision: "R-033 sovereignty gate: sticky owner (D) + completion block (A)"
+    scope: project
+    date: 2026-02-19
+    task: T-198
+    rationale: "Two-layer defense: D prevents circumvention, A blocks completion. Simple, auditable, bash-implementable. Rejected: B (too blunt), C (too complex)."
