@@ -20,6 +20,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/agents/context/post-compact-resume.sh"
           }
         ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/post-compact-resume.sh"
+          }
+        ]
       }
     ],
     "PreToolUse": [

@@ -1,9 +1,13 @@
 #!/bin/bash
-# Post-Compaction Resume Hook — Reinject structured context after compaction
-# Fires on SessionStart with matcher "compact".
+# Session Resume Hook — Reinject structured context on session recovery
+# Fires on SessionStart with matchers "compact" and "resume" (T-188).
 # Outputs additionalContext JSON so Claude has framework state immediately.
 #
-# Part of: T-111 (Autonomous compact-resume lifecycle)
+# Triggers:
+#   - After /compact (manual compaction recovery)
+#   - After claude -c (session continuation, including auto-restart via T-179)
+#
+# Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -79,7 +83,7 @@ CONTEXT="${CONTEXT}
 - Uncommitted: ${UNCOMMITTED} files
 
 ---
-*This context was auto-injected by the post-compaction resume hook (T-111). Run \`fw resume status\` for full details.*
+*This context was auto-injected by the session resume hook (T-111/T-188). Run \`fw resume status\` for full details.*
 "
 
 # Output JSON with additionalContext for Claude Code
