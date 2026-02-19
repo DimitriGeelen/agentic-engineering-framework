@@ -256,11 +256,13 @@ def project():
     categories = {}
     skip = {".git", ".tasks", ".context", "node_modules", ".pytest_cache", ".playwright-mcp", "__pycache__"}
 
-    def _add(cat, path):
+    def _add(cat, path, display_name=None):
         rel = path.relative_to(PROJECT_ROOT)
-        doc_id = str(rel).replace("/", "--").removesuffix(".md")
+        doc_id = str(rel).replace("/", "--")
+        for suffix in (".md", ".yaml", ".yml"):
+            doc_id = doc_id.removesuffix(suffix)
         categories.setdefault(cat, []).append({
-            "name": path.stem,
+            "name": display_name or path.stem,
             "path": str(rel),
             "doc_id": doc_id,
         })
@@ -293,6 +295,30 @@ def project():
         if rel not in seen and f.stem != "zzz-default":
             _add("Project", f)
 
+    # Commands: .claude/commands/*.md
+    commands_dir = PROJECT_ROOT / ".claude" / "commands"
+    if commands_dir.is_dir():
+        for f in sorted(commands_dir.glob("*.md")):
+            _add("Commands", f)
+
+    # Research: recent episodic summaries (.context/episodic/T-*.yaml)
+    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
+    if episodic_dir.is_dir():
+        def _task_num(f):
+            m = re_mod.search(r"T-(\d+)", f.stem)
+            return int(m.group(1)) if m else 0
+        episodics = sorted(episodic_dir.glob("T-*.yaml"), key=_task_num, reverse=True)
+        for f in episodics[:25]:
+            name = f.stem
+            try:
+                header = f.read_text(encoding="utf-8")[:800]
+                m = re_mod.search(r'task_name:\s*"(.+?)"', header)
+                if m:
+                    name = f"{f.stem}: {m.group(1)[:60]}"
+            except Exception:
+                pass
+            _add("Research", f, display_name=name)
+
     return render_page("project.html", page_title="Project Documentation", categories=categories)
 
 
@@ -302,10 +328,15 @@ def project_doc(doc):
         abort(404)
 
     # Support -- as path separator for subdirectory docs
-    rel_path = doc.replace("--", "/") + ".md"
-    doc_path = PROJECT_ROOT / rel_path
-    if not doc_path.exists() or not doc_path.suffix == ".md":
-        # Fallback: try direct match
+    rel_base = doc.replace("--", "/")
+    doc_path = None
+    for ext in (".md", ".yaml", ".yml"):
+        candidate = PROJECT_ROOT / (rel_base + ext)
+        if candidate.exists():
+            doc_path = candidate
+            break
+    if doc_path is None:
+        # Fallback: try direct .md match without -- expansion
         doc_path = PROJECT_ROOT / f"{doc}.md"
     if not doc_path.exists():
         abort(404)
@@ -316,6 +347,8 @@ def project_doc(doc):
         abort(404)
 
     content_md = doc_path.read_text()
+    if doc_path.suffix in (".yaml", ".yml"):
+        content_md = f"```yaml\n{content_md}\n```"
     html_content = markdown2.markdown(
         content_md, extras=["tables", "fenced-code-blocks", "code-friendly"]
     )
