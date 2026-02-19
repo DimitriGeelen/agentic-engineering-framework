@@ -18,7 +18,7 @@ horizon: now
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T16:32:11Z
+last_update: 2026-02-19T16:33:00Z
 date_finished: null
 ---
 
@@ -214,4 +214,14 @@ test -f docs/reports/T-194-control-register.md
 - **Key findings:** 27 closed, 11 open. Silent failures dominate. Structural > procedural. Defense-in-depth essential. Safety mechanisms create new risks.
 - **Scoring model:** Likelihood (1-5) × Impact (1-5) = Score (1-25) → Low/Medium/High/Urgent (human-approved)
 - **Human decision:** Formal scoring, separate risks.yaml, Watchtower page under Govern
-- **Open:** Risk vs Issue distinction (human raised, options presented, pending decision)
+- **Decided:** Risk vs Issue separation (human chose option A: separate files)
+
+### 2026-02-19 — Phase 1b: Risks vs Issues separated
+- **Issue register:** `.context/project/issues.yaml` — 8 incidents with resolution status
+- **Three-register model:** risks.yaml (forward), issues.yaml (backward), gaps.yaml (present)
+- **Artifact updated:** `docs/reports/T-194-risk-landscape.md` with decision and model
+
+### 2026-02-19 — Watchtower risks page (WIP)
+- **Created:** `web/blueprints/risks.py` — blueprint with risk/issue/gap loading and stats
+- **TODO:** `web/templates/risks.html` (template), `web/app.py` (registration), `web/shared.py` (nav entry)
+- **Stopped at:** Context 87% — template not yet created
