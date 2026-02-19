@@ -11,7 +11,7 @@ horizon: next
 tags: []
 related_tasks: []
 created: 2026-02-19T00:02:28Z
-last_update: 2026-02-19T00:25:23Z
+last_update: 2026-02-19T00:26:08Z
 date_finished: null
 ---
 
@@ -32,11 +32,11 @@ Productionize the T-181 spike for inline editing on the web UI. Spike works but 
 ## Verification
 
 # Detail page loads with inline dropdowns
-curl -sf http://localhost:3000/tasks/T-183 | grep -q "inline-status-select"
+curl -sf http://localhost:3000/tasks/T-183 -o /tmp/t183-check.html && grep -q "inline-status-select" /tmp/t183-check.html
 # Task list board loads
-curl -sf http://localhost:3000/tasks?view=board | grep -q "kanban-board"
+curl -sf http://localhost:3000/tasks?view=board -o /tmp/board-check.html && grep -q "kanban-board" /tmp/board-check.html
 # Task list view loads
-curl -sf http://localhost:3000/tasks?view=list | grep -q "inline-status-select"
+curl -sf "http://localhost:3000/tasks?view=list" -o /tmp/list-check.html && grep -q "inline-status-select" /tmp/list-check.html
 
 ## Decisions
 
