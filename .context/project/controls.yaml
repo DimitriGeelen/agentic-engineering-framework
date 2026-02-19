@@ -1,0 +1,240 @@
+# Control Register — Agentic Engineering Framework
+# Schema: 8 fields, flat YAML, greppable (D-Phase2-001)
+# Origin: T-194 Phase 2b
+#
+# id:           CTL-XXX (unique, sequential)
+# name:         Short human name
+# type:         pretooluse|posttooluse|sessionstart|git_hook|script_gate|behavioral|monitoring|infrastructure|auditor
+# impl:         File path or CLAUDE.md §section
+# blocking:     true = prevents action, false = warns/logs
+# mitigates:    [R-XXX] references to risks.yaml
+# status:       active|partial|planned|disabled
+# failure_mode: How this control breaks (D1: antifragility)
+
+controls:
+  # === PRETOOLUSE HOOKS (Layer 1: Prevention) ===
+
+  - id: CTL-001
+    name: Task-First Gate
+    type: pretooluse
+    impl: agents/context/check-active-task.sh
+    blocking: true
+    mitigates: [R-001, R-003, R-005]
+    status: active
+    failure_mode: "Hook config missing or wrong matcher in .claude/settings.json → silently doesn't fire"
+
+  - id: CTL-002
+    name: Tier 0 Guard
+    type: pretooluse
+    impl: agents/context/check-tier0.sh
+    blocking: true
+    mitigates: [R-037]
+    status: active
+    failure_mode: "Pattern list incomplete → new destructive command not caught; regex false positive blocks safe commands"
+
+  - id: CTL-003
+    name: Budget Gate
+    type: pretooluse
+    impl: agents/context/budget-gate.sh
+    blocking: true
+    mitigates: [R-006, R-007, R-008]
+    status: active
+    failure_mode: "Transcript file missing or unreadable → fails open (no blocking); stale cache (90s TTL) → delayed reaction"
+
+  # === POSTTOOLUSE HOOKS (Layer 2: Detection) ===
+
+  - id: CTL-004
+    name: Context Checkpoint
+    type: posttooluse
+    impl: agents/context/checkpoint.sh
+    blocking: false
+    mitigates: [R-006, R-007, R-008]
+    status: active
+    failure_mode: "Agent ignores warning JSON → no effect; auto-handover signal not consumed if not using claude-fw wrapper"
+
+  - id: CTL-005
+    name: Error Watchdog
+    type: posttooluse
+    impl: agents/context/error-watchdog.sh
+    blocking: false
+    mitigates: [R-016, R-017]
+    status: active
+    failure_mode: "stderr pattern list incomplete → novel error types not caught; agent reads but ignores additionalContext"
+
+  # === SESSIONSTART HOOKS (Layer 3: Continuity) ===
+
+  - id: CTL-006
+    name: Pre-Compact Handover
+    type: sessionstart
+    impl: agents/context/pre-compact.sh
+    blocking: false
+    mitigates: [R-006, R-009]
+    status: active
+    failure_mode: "Handover template has unfilled TODOs → next session gets stale skeleton; hook not triggered on crash/timeout"
+
+  - id: CTL-007
+    name: Post-Compact Resume
+    type: sessionstart
+    impl: agents/context/post-compact-resume.sh
+    blocking: false
+    mitigates: [R-006, R-009]
+    status: active
+    failure_mode: "LATEST.md stale or unfilled → injected context is useless; agent ignores injected context and starts fresh"
+
+  # === GIT HOOKS (Layer 4: Commit-time enforcement) ===
+
+  - id: CTL-008
+    name: Task Reference Gate
+    type: git_hook
+    impl: ".git/hooks/commit-msg (line ~21)"
+    blocking: true
+    mitigates: [R-004, R-005]
+    status: active
+    failure_mode: "Hook not installed (new clone) → no enforcement; --no-verify bypasses all git hooks"
+
+  - id: CTL-009
+    name: Inception Commit Gate
+    type: git_hook
+    impl: ".git/hooks/commit-msg (line ~40)"
+    blocking: true
+    mitigates: [R-003, R-014]
+    status: active
+    failure_mode: "Allows 2 commits before blocking → agent can build once without gate; --no-verify bypasses"
+
+  - id: CTL-010
+    name: Bypass Detector
+    type: git_hook
+    impl: ".git/hooks/post-commit"
+    blocking: false
+    mitigates: [R-004, R-005]
+    status: active
+    failure_mode: "Only warns after the fact → bypass already committed; agent can ignore warning"
+
+  - id: CTL-011
+    name: Audit Push Gate
+    type: git_hook
+    impl: ".git/hooks/pre-push"
+    blocking: true
+    mitigates: [R-019, R-020]
+    status: active
+    failure_mode: "Audit itself has false passes → gate passes despite real issues; --no-verify bypasses"
+
+  # === SCRIPT GATES (Layer 5: Task completion guards) ===
+
+  - id: CTL-012
+    name: AC Completion Gate (P-010)
+    type: script_gate
+    impl: "agents/task-create/update-task.sh:163"
+    blocking: true
+    mitigates: [R-002, R-015]
+    status: active
+    failure_mode: "Agent checks own ACs without observation → gate passes but quality not verified; --force bypasses"
+
+  - id: CTL-013
+    name: Verification Gate (P-011)
+    type: script_gate
+    impl: "agents/task-create/update-task.sh:189"
+    blocking: true
+    mitigates: [R-015, R-018]
+    status: active
+    failure_mode: "Verification commands missing from task → gate passes vacuously; commands too weak to catch real issues"
+
+  # === BEHAVIORAL RULES (Layer 6: Agent instruction) ===
+
+  - id: CTL-014
+    name: Inception Discipline
+    type: behavioral
+    impl: "CLAUDE.md §Inception Discipline"
+    blocking: false
+    mitigates: [R-003, R-010, R-014]
+    status: active
+    failure_mode: "Agent ignores rule (no structural enforcement beyond CTL-009); new agent instance doesn't read CLAUDE.md"
+
+  - id: CTL-015
+    name: Pre-Completion Check
+    type: behavioral
+    impl: "CLAUDE.md §Verification Before Completion"
+    blocking: false
+    mitigates: [R-015]
+    status: active
+    failure_mode: "Agent skips manual check, relies on CTL-013 gate → discovers failures late in the flow"
+
+  - id: CTL-016
+    name: Hypothesis Debugging
+    type: behavioral
+    impl: "CLAUDE.md §Hypothesis-Driven Debugging"
+    blocking: false
+    mitigates: [R-016, R-017]
+    status: active
+    failure_mode: "Agent shotgun-debugs despite rule; CTL-005 (error watchdog) partially backstops but can't enforce methodology"
+
+  - id: CTL-017
+    name: Commit Cadence
+    type: behavioral
+    impl: "CLAUDE.md §Context Budget Management"
+    blocking: false
+    mitigates: [R-006, R-007]
+    status: active
+    failure_mode: "Agent forgets to commit → work lost if context exhausts; CTL-004 reminds but can't force commit"
+
+  # === MONITORING (Cross-cutting) ===
+
+  - id: CTL-018
+    name: Token Budget Monitor
+    type: monitoring
+    impl: "budget-gate.sh + checkpoint.sh (dual-hook)"
+    blocking: true
+    mitigates: [R-006, R-007, R-008]
+    status: active
+    failure_mode: "Transcript unavailable → fails open; cache stale → 90s blind spot; thresholds too aggressive → blocks productive work"
+
+  # === INFRASTRUCTURE ===
+
+  - id: CTL-019
+    name: Auto-Restart
+    type: infrastructure
+    impl: "checkpoint.sh + claude-fw wrapper"
+    blocking: false
+    mitigates: [R-006, R-009]
+    status: active
+    failure_mode: "Not using claude-fw wrapper → signal file ignored; 5 consecutive restarts → gives up; 5-min TTL on signal → missed if slow exit"
+
+  # === AUDITOR ===
+
+  - id: CTL-020
+    name: Continuous Audit
+    type: auditor
+    impl: "agents/audit/audit.sh (13 sections)"
+    blocking: true
+    mitigates: [R-019, R-020, R-021, R-022]
+    status: active
+    failure_mode: "Audit sections have false passes → compliance appears better than reality; cron not running → no periodic checks"
+
+  # === EXPERIMENTAL (T-194) ===
+
+  - id: CTL-021
+    name: Live Document Rule (C-001)
+    type: behavioral
+    impl: "CLAUDE.md §Inception Discipline #6"
+    blocking: false
+    mitigates: [R-010, R-011]
+    status: active
+    failure_mode: "Agent ignores rule — no structural enforcement; only CTL-022 warning and CTL-023 prompt backstop"
+
+  - id: CTL-022
+    name: Research Artifact Warning (C-002)
+    type: git_hook
+    impl: ".git/hooks/commit-msg (line ~78)"
+    blocking: false
+    mitigates: [R-010]
+    status: active
+    failure_mode: "Warning only (non-blocking) → agent can proceed without artifact; --no-verify bypasses entirely"
+
+  - id: CTL-023
+    name: Checkpoint Research Prompt (C-003)
+    type: posttooluse
+    impl: "agents/context/checkpoint.sh (research section)"
+    blocking: false
+    mitigates: [R-010, R-011]
+    status: partial
+    failure_mode: "Agent dismisses prompt; only fires every 20 tool calls → research gap can grow before check"

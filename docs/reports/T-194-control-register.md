@@ -130,7 +130,36 @@ This reframed the schema design from "ISO 27001 alignment" to "Constitutional Di
 
 ## Phase 2b: Register Population
 
-<!-- TODO: Populate controls.yaml after commit of schema decision -->
+**File:** `.context/project/controls.yaml`
+**Date:** 2026-02-19
+**Controls populated:** 23 (CTL-001 through CTL-023)
+
+### Population Summary
+
+| Type | Count | Blocking | IDs |
+|------|-------|----------|-----|
+| PreToolUse | 3 | 3 | CTL-001, CTL-002, CTL-003 |
+| PostToolUse | 3 | 0 | CTL-004, CTL-005, CTL-023 |
+| SessionStart | 2 | 0 | CTL-006, CTL-007 |
+| Git Hook | 4 | 2 | CTL-008, CTL-009, CTL-010, CTL-022 |
+| Script Gate | 2 | 2 | CTL-012, CTL-013 |
+| Behavioral | 5 | 0 | CTL-014, CTL-015, CTL-016, CTL-017, CTL-021 |
+| Monitoring | 1 | 1 | CTL-018 |
+| Infrastructure | 1 | 0 | CTL-019 |
+| Auditor | 1 | 1 | CTL-020 |
+| Git Hook (warn) | 1 | 0 | CTL-011 (blocks push, not commit) |
+| **Total** | **23** | **9 blocking** | |
+
+### Risk Coverage
+
+Every risk in risks.yaml should be mitigated by at least one control. Coverage check deferred to Phase 2c (design adequacy assessment).
+
+### Observations During Population
+
+1. **Failure modes are revealing** — writing them exposed that many controls share a common failure mode: "agent can ignore non-blocking warning." This is a systemic weakness in the warn-only controls (12 of 23).
+2. **Behavioral controls lack structural enforcement** — CTL-014 through CTL-017 and CTL-021 rely on agent compliance. Only CTL-009 (inception commit gate) provides structural backstop for CTL-014.
+3. **--no-verify is a universal bypass** — 4 git hook controls (CTL-008, CTL-009, CTL-010, CTL-022) are all neutralized by a single flag. Compensating control: bypass-log.yaml audit trail (CTL-010 detects post-commit).
+4. **Experimental controls (CTL-021-023)** — C-001/C-002/C-003 from the T-194 experiment. Promoted to CTL IDs since they are deployed and active.
 
 ## Phase 2c: Design Adequacy Assessment
 

@@ -81,12 +81,17 @@
     </div>
 </details>
 
-<!-- Three Register Overview -->
-<div class="three-register">
+<!-- Four Register Overview -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
     <div class="register-card">
         <div class="rname">Risks</div>
         <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ total_risks }}</div>
         <div class="rdesc">Forward-looking &middot; L&times;I scored</div>
+    </div>
+    <div class="register-card">
+        <div class="rname">Controls</div>
+        <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ total_controls }}</div>
+        <div class="rdesc">{{ controls_active }} active &middot; {{ controls_blocking }} blocking</div>
     </div>
     <div class="register-card">
         <div class="rname">Issues</div>
@@ -285,6 +290,63 @@
     </table>
     </div>
 </details>
+
+<!-- Controls Section -->
+{% if controls %}
+<h2>Controls ({{ total_controls }})</h2>
+<p style="font-size: 0.875rem; color: var(--pico-muted-color);">
+    Enforcement mechanisms that mitigate risks. See <a href="/enforcement" hx-get="/enforcement" hx-target="#content" hx-push-url="true">Enforcement page</a> for hook status.
+    Schema: 8 fields per control, anchored on Constitutional Directives (D-Phase2-001).
+</p>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+    {% for ctype, count in control_by_type | dictsort %}
+    <div class="cat-chip">
+        <span>{{ ctype | replace('_', ' ') | capitalize }}</span>
+        <span class="cat-count">{{ count }}</span>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="overflow-x: auto;">
+<table class="risk-table" role="grid">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Control</th>
+            <th>Type</th>
+            <th>Blocking</th>
+            <th>Mitigates</th>
+            <th>Status</th>
+            <th>Failure Mode</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for c in controls %}
+        <tr>
+            <td><code>{{ c.id }}</code></td>
+            <td>{{ c.name }}</td>
+            <td><small>{{ c.type | replace('_', ' ') }}</small></td>
+            <td style="text-align: center;">
+                {% if c.blocking %}<span class="badge badge-high">GATE</span>
+                {% else %}<span class="badge badge-watching">WARN</span>
+                {% endif %}
+            </td>
+            <td><small>{{ c.mitigates | join(', ') if c.mitigates else 'None' }}</small></td>
+            <td>
+                {% if c.status == 'active' %}<span class="badge badge-resolved">ACTIVE</span>
+                {% elif c.status == 'partial' %}<span class="badge badge-medium">PARTIAL</span>
+                {% elif c.status == 'planned' %}<span class="badge badge-build">PLANNED</span>
+                {% else %}<span class="badge badge-closed">{{ c.status | upper }}</span>
+                {% endif %}
+            </td>
+            <td><small style="color: var(--pico-muted-color);">{{ c.failure_mode | default('Unknown') }}</small></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endif %}
 
 <!-- Issues Section -->
 <h2>Issues ({{ total_issues }})</h2>

@@ -1,4 +1,4 @@
-"""Risks blueprint — ISO 27001-aligned risk and issue register (T-194)."""
+"""Risks blueprint — three-register assurance model (T-194)."""
 
 import yaml
 from flask import Blueprint
@@ -25,10 +25,12 @@ def risk_register():
     risks_data = _load_yaml("risks.yaml")
     issues_data = _load_yaml("issues.yaml")
     gaps_data = _load_yaml("gaps.yaml")
+    controls_data = _load_yaml("controls.yaml")
 
     risks = risks_data.get("risks", [])
     issues = issues_data.get("issues", [])
     gaps = gaps_data.get("gaps", [])
+    controls = controls_data.get("controls", [])
 
     # Compute summary stats
     risk_by_ranking = {"urgent": 0, "high": 0, "medium": 0, "low": 0}
@@ -58,11 +60,20 @@ def risk_register():
     # Gaps stats
     watching_gaps = [g for g in gaps if g.get("status") == "watching"]
 
+    # Control stats
+    controls_active = [c for c in controls if c.get("status") == "active"]
+    controls_blocking = [c for c in controls if c.get("blocking")]
+    control_by_type = {}
+    for c in controls:
+        ctype = c.get("type", "unknown")
+        control_by_type[ctype] = control_by_type.get(ctype, 0) + 1
+
     return render_page(
         "risks.html",
         page_title="Risk Register",
         risks=risks,
         issues=issues,
+        controls=controls,
         open_risks=open_risks,
         risk_by_ranking=risk_by_ranking,
         risk_by_status=risk_by_status,
@@ -72,4 +83,8 @@ def risk_register():
         watching_gaps=watching_gaps,
         total_risks=len(risks),
         total_issues=len(issues),
+        total_controls=len(controls),
+        controls_active=len(controls_active),
+        controls_blocking=len(controls_blocking),
+        control_by_type=control_by_type,
     )

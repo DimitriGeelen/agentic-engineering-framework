@@ -234,3 +234,10 @@ test -f docs/reports/T-194-control-register.md
 - **Schema agreed:** 8 fields (id, name, type, impl, blocking, mitigates, status, failure_mode)
 - **Key decisions:** D-Phase2-001 (Constitutional Directives anchor), D-Phase2-002 (failure_mode kept for D1), D-Phase2-003 (design adequacy in report not schema), D-Phase2-004 (CTL-XXX IDs)
 - **Next:** Phase 2b — populate controls.yaml with all 20+ controls
+
+### 2026-02-19 — Phase 2b: Control register populated
+- **File:** `.context/project/controls.yaml` — 23 controls (CTL-001 through CTL-023)
+- **Artifact updated:** `docs/reports/T-194-control-register.md` with population summary, observations
+- **Watchtower enriched:** Risks page now shows controls section with type breakdown, blocking/warn badges, failure modes
+- **Key observations:** 12/23 are warn-only (systemic weakness), behavioral controls lack structural enforcement, --no-verify is universal git hook bypass
+- **Next:** Phase 2c — design adequacy assessment
