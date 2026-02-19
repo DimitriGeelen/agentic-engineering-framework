@@ -96,6 +96,13 @@ Run `fw audit` to check if any trigger conditions are met.
 3. **OE and structural cron offset by 15 minutes**
    - Why: Avoid concurrent execution. Structural at :00/:30, OE at :15/:45.
 
+4. **C-001/C-002/C-003 experiment concluded — all ADOPT**
+   - Why: All 7 metrics PASS. C-001 (live document) was primary effective control. C-002/C-003 never fired (C-001 prevented trigger conditions). All promoted to CTL-021/022/023.
+   - Written up in: `docs/reports/T-194-research-persistence-experiment-spec.md` (Experiment Conclusions section)
+
+5. **Dialogue log rule added to CLAUDE.md (C-001 extension)**
+   - Why: Experiment found 95% of findings captured but conversational reasoning only logged in Phase 2a. Rule 7 in Inception Discipline now requires `## Dialogue Log` section for phases with human dialogue.
+
 ## Things Tried That Failed
 
 1. **curl pipe in verification gate** — `curl | grep` fails with exit 23 in update-task.sh's shell context. Fixed by using python3 urllib instead.
@@ -125,11 +132,16 @@ Run `fw audit` to check if any trigger conditions are met.
 - Modified: `.context/project/risks.yaml` (controls field normalized to CTL-XXX IDs)
 - Modified: `.context/project/controls.yaml` (added CTL-024, now 24 controls)
 - Modified: `docs/reports/T-194-control-register.md` (Phase 5 Go/No-Go assessment)
+- Modified: `docs/reports/T-194-research-persistence-experiment-spec.md` (Experiment Conclusions section added)
+- Modified: `CLAUDE.md` (Rule 7: dialogue log extension to C-001)
 - Created: `.tasks/active/T-195-*.md` through `T-200-*.md` (6 build tasks from GO decision)
 - Completed: T-194, T-195, T-196, T-197, T-199
 
 ## Recent Commits
 
+- 381377d T-012: Commit working state — cron audits, task moves, session context
+- 241234d T-194: Add dialogue log rule (C-001 extension) to Inception Discipline
+- bf10078 T-194: Experiment conclusions — C-001/C-002/C-003 results documented
 - 3dc6956 T-199: R-023 remediation — hook config validator in fw doctor
 - 49d1a5b T-196: Redesign cron schedule — dual-track structural + OE audits
 - dea06e4 T-195: Implement OE test audit sections — 17 new tests across 4 tiers
