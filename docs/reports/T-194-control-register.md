@@ -166,7 +166,70 @@ Every risk in risks.yaml should be mitigated by at least one control. Coverage c
 Assessment lives here (not in controls.yaml) because it is cross-register reasoning:
 "Given risk R-XXX, does control CTL-XXX sufficiently mitigate it?"
 
-<!-- TODO: Assessment per control after population -->
+**Date:** 2026-02-19
+
+### Coverage Summary
+
+| Metric | Value |
+|--------|-------|
+| Total risks | 37 |
+| Risks with CTL-XXX controls | 21 (56%) |
+| Risks without formal controls | 16 (44%) |
+| Of unmitigated: closed (ad-hoc fix) | 12 |
+| Of unmitigated: open (no control) | 4 |
+
+**Gap: 44% of risks have no formal control in the register.** Many are "closed" via ad-hoc fixes (learnings, one-time patches) that aren't tracked as controls. This is a structural finding — the framework has more mitigations than the control register captures, but those mitigations aren't observable, testable, or auditable.
+
+### Assessment by Risk (score >= 8 or status != closed)
+
+Rating: **S** = sufficient, **P** = partial, **I** = insufficient, **N** = no control
+
+| Risk | Score | Controls | Rating | Rationale |
+|------|-------|----------|--------|-----------|
+| R-002 (human ACs falsified) | 16 HIGH | CTL-012 (blocking) | **P** | Gate checks checkbox state, not WHO checked it. Agent can check its own behavioral ACs. T-193 (tagging) not yet built. |
+| R-010 (research lost) | 16 HIGH | CTL-014, CTL-021, CTL-022, CTL-023 (all warn) | **P** | 4 controls but zero blocking. Agent can ignore all 4. Experiment running — too early to assess effectiveness. |
+| R-011 (sub-agent explosion) | 12 HIGH | CTL-021, CTL-023 (warn) | **I** | Controls target research persistence, not sub-agent output size. fw bus (designed for this) never adopted. No size gating. |
+| R-033 (human tasks auto-completed) | 12 HIGH | none | **N** | No control exists. The T-194 "human-dialogue-mandatory" decision is a one-time statement, not a reusable control. |
+| R-004 (context destroyed) | 10 HIGH | CTL-008 (blocking), CTL-010 (warn) | **S** | Budget gate + auto-handover + auto-restart provide defense-in-depth. Residual: unfilled handover TODOs. |
+| R-005 (monitoring fails silently) | 10 HIGH | CTL-001, CTL-008 (blocking), CTL-010 (warn) | **S** | Multiple fixes (cache removal, synthetic filtering, 2MB tail). Tested. Conservative thresholds compensate for lag. |
+| R-023 (hook config fails) | 10 HIGH | none | **N** | No validation tool. Correct format documented in MEMORY.md but a typo in settings.json silently disables ALL hooks. |
+| R-018 (YAML silently lost) | 9 MED | CTL-013 (blocking) | **P** | Verification gate catches bad YAML only if task has verification commands that parse it. No general schema validation. |
+| R-024 (UI drops data) | 9 MED | none | **N** | Same root cause as R-018. No parsing error surfaced to user. |
+| R-036 (multi-agent untested) | 9 MED | none | **N** | Watching — no mitigation until first multi-agent task. Acceptable for now. |
+| R-032 (inception gate conflict) | 8 MED | none | **N** | --no-verify is the workaround. Logged but not controlled. Needs configurable threshold. |
+| R-003 (no inception) | 9 MED | CTL-001, CTL-009 (blocking), CTL-014 (warn) | **S** | Structural gate after 2 commits + task-first gate. Agent can build once without gate, but risk is small. |
+| R-001 (governance override) | 8 MED | CTL-001 (blocking) | **S** | PreToolUse hook is structural. Precedence rules in CLAUDE.md. New plugins still a residual. |
+
+### Design Adequacy Summary
+
+| Rating | Count | Risks |
+|--------|-------|-------|
+| **S** (sufficient) | 4 | R-004, R-005, R-003, R-001 |
+| **P** (partial) | 3 | R-002, R-010, R-018 |
+| **I** (insufficient) | 1 | R-011 |
+| **N** (no control) | 5 | R-033, R-023, R-024, R-036, R-032 |
+
+### Key Findings
+
+**Finding 1: High-risk items have the weakest controls.**
+The two highest-scoring open risks (R-002 at 16, R-010 at 16) have only partial controls. R-033 (score 12) has NO control at all. This is inverted — control investment should correlate with risk score.
+
+**Finding 2: Warn-only controls cluster on the highest risks.**
+R-010 has 4 controls — more than any other risk — but all 4 are non-blocking. The defense-in-depth is breadth without depth. A single structural gate would be more effective than 4 warnings.
+
+**Finding 3: 5 risks have no formal control.**
+R-033 (human sovereignty), R-023 (hook config), R-024 (UI parse errors), R-036 (multi-agent), R-032 (inception gate conflict). These are known gaps but uncontrolled.
+
+**Finding 4: Ad-hoc mitigations aren't observable.**
+12 "closed" risks have mitigations (learnings, patches) but these aren't in controls.yaml. They can't be OE-tested. If the patch regresses, nothing detects it.
+
+### Recommendations for Phase 3
+
+1. **R-033**: Design a structural control — `owner: human` + `workflow_type: spec|inception` → require human interaction before status change
+2. **R-023**: Build a hook config validator — `fw doctor` should parse `.claude/settings.json` and verify hook structure
+3. **R-010**: Consider promoting one of the 4 warn-only controls to blocking (e.g., CTL-022 could block instead of warn)
+4. **R-011**: Revive fw bus or build alternative size gating for sub-agent output
+5. **Ad-hoc mitigations**: Decide whether to formalize the 12 closed-but-uncontrolled risks into controls, or accept them as "fixed" with residual risk
 
 ## Dialogue Log
 

@@ -241,3 +241,13 @@ test -f docs/reports/T-194-control-register.md
 - **Watchtower enriched:** Risks page now shows controls section with type breakdown, blocking/warn badges, failure modes
 - **Key observations:** 12/23 are warn-only (systemic weakness), behavioral controls lack structural enforcement, --no-verify is universal git hook bypass
 - **Next:** Phase 2c — design adequacy assessment
+
+### 2026-02-19 — Phase 2c: Design adequacy assessment
+- **Artifact updated:** `docs/reports/T-194-control-register.md` — full assessment
+- **Coverage:** 21/37 risks (56%) have formal controls; 16 (44%) rely on ad-hoc fixes
+- **Assessed:** 13 risks (score >= 8 or open): 4 sufficient, 3 partial, 1 insufficient, 5 no control
+- **Key finding:** High-risk items have the weakest controls — inverted correlation
+- **Finding:** R-010 (score 16) has 4 controls but all warn-only — breadth without depth
+- **Finding:** R-033 (score 12, human sovereignty) has NO control at all
+- **Recommendations:** 5 actions for Phase 3 (R-033 structural gate, R-023 config validator, R-010 blocking promotion, R-011 size gating, ad-hoc formalization)
+- **Next:** Human review of assessment, then Phase 3 (OE test design)
