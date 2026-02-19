@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-197: Normalize risk-control linking (CTL-XXX IDs)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T19:33:33Z
+# ============================================================================
+
+task_id: T-197
+task_name: "Normalize risk-control linking (CTL-XXX IDs)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T19:29:19Z
+completed: 2026-02-19T19:33:32Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "All controls: fields in risks.yaml use CTL-XXX IDs (not script names)"
+  - "Reverse map derived from controls.yaml mitigates field"
+  - "YAML parses clean after changes"
+  - "Inline comments preserved (scoring context)"
+  - "Watchtower page renders correctly with normalized data"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [assurance, normalization, t-194-go]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-197-normalize-risk-control-linking-ctl-xxx-i.md
+generated_by: context-agent-hybrid

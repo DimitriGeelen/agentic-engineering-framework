@@ -12,7 +12,7 @@
 #   score: L × I
 #   ranking: low|medium|high|urgent
 #   evidence: Task/incident references
-#   controls: List of controls that mitigate this risk
+#   controls: [CTL-XXX] IDs from controls.yaml (normalized T-197)
 #   control_status: closed|decided-build|acknowledged|watching
 #   residual_notes: What risk remains after controls
 
@@ -27,7 +27,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [T-061, T-062, T-063]
-    controls: [check-active-task.sh, "CLAUDE.md instruction precedence", "fw work-on"]
+    controls: [CTL-001]
     control_status: closed
     residual_notes: "New plugins could still attempt override; hook is the structural backstop"
 
@@ -40,7 +40,7 @@ risks:
     score: 16
     ranking: high
     evidence: [T-057, G-006, G-010, T-192]
-    controls: ["T-193 AC tagging (### Agent / ### Human)"]
+    controls: [CTL-012]
     control_status: decided-build
     residual_notes: "T-193 not yet implemented. Risk active."
 
@@ -53,7 +53,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [T-138, L-042]
-    controls: ["CLAUDE.md inception discipline", "commit-msg inception gate"]
+    controls: [CTL-001, CTL-009, CTL-014]
     control_status: closed
     residual_notes: "Gate enforces after 2 commits but agent can build and commit once without gate"
 
@@ -67,7 +67,7 @@ risks:
     score: 10
     ranking: high
     evidence: [T-059, FP-004]
-    controls: [budget-gate.sh, checkpoint.sh, "auto-handover at critical"]
+    controls: [CTL-008, CTL-010]
     control_status: closed
     residual_notes: "Auto-handover generates skeleton; TODOs may not be filled"
 
@@ -80,7 +80,7 @@ risks:
     score: 10
     ranking: high
     evidence: [T-078, L-014]
-    controls: ["T-078 cache removal", "synthetic filtering", "2MB tail window", "compaction detection"]
+    controls: [CTL-001, CTL-008, CTL-010]
     control_status: closed
     residual_notes: "Token reading lags by ~1 API call; thresholds set conservatively to compensate"
 
@@ -93,7 +93,7 @@ risks:
     score: 4
     ranking: low
     evidence: [T-145]
-    controls: ["allowlist fw context init", "pre-compact reset"]
+    controls: [CTL-003, CTL-004, CTL-006, CTL-007, CTL-017, CTL-018, CTL-019]
     control_status: closed
     residual_notes: "None — structurally prevented"
 
@@ -106,7 +106,7 @@ risks:
     score: 5
     ranking: medium
     evidence: [L-050, T-136, T-148, T-149]
-    controls: ["T-136 cooldown (10 min)", "T-148 dedup", "T-149 project isolation"]
+    controls: [CTL-003, CTL-004, CTL-017, CTL-018]
     control_status: closed
     residual_notes: "None — multiple guards prevent re-emergence"
 
@@ -119,7 +119,7 @@ risks:
     score: 4
     ranking: low
     evidence: [T-136]
-    controls: ["10-minute cooldown file"]
+    controls: [CTL-003, CTL-004, CTL-018]
     control_status: closed
     residual_notes: "None"
 
@@ -132,7 +132,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [G-007, T-149]
-    controls: ["T-149: transcript discovery, reset, stale handling, project isolation"]
+    controls: [CTL-006, CTL-007, CTL-019]
     control_status: closed
     residual_notes: "New project setups need verification"
 
@@ -145,7 +145,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [L-031, L-032]
-    controls: ["L-031/L-032: synthesize immediately", "split sessions", "commit cadence"]
+    controls: []
     control_status: closed
     residual_notes: "Depends on agent discipline + budget gate as backstop"
 
@@ -159,7 +159,7 @@ risks:
     score: 16
     ranking: high
     evidence: [G-009, T-174, T-178, T-185, T-194]
-    controls: ["C-001 live document (CLAUDE.md)", "C-002 commit gate (commit-msg)", "C-003 checkpoint (checkpoint.sh)", "Audit Section 11 OE tests"]
+    controls: [CTL-014, CTL-021, CTL-022, CTL-023]
     control_status: decided-build
     residual_notes: "Experiment running on T-194. 7 prior controls all failed. New controls untested."
 
@@ -172,7 +172,7 @@ risks:
     score: 12
     ranking: high
     evidence: [G-008, T-073, T-158, T-170]
-    controls: ["CLAUDE.md dispatch protocol", "fw bus (unused)", "L-053/L-054 write-to-file"]
+    controls: [CTL-021, CTL-023]
     control_status: decided-build
     residual_notes: "Protocol advisory only. fw bus never adopted. Structural enforcement missing."
 
@@ -185,7 +185,7 @@ risks:
     score: 6
     ranking: medium
     evidence: [T-112, T-113, T-114, FP-006]
-    controls: ["T-113 P-010 AC gate", "T-114 closed task warning", "T-122 P-011 verification gate"]
+    controls: []
     control_status: closed
     residual_notes: "Warning only, not blocking"
 
@@ -198,7 +198,7 @@ risks:
     score: 4
     ranking: low
     evidence: [FP-006, T-114]
-    controls: ["T-114 closed task warning", "episodic refresh"]
+    controls: []
     control_status: closed
     residual_notes: "None"
 
@@ -211,7 +211,7 @@ risks:
     score: 3
     ranking: low
     evidence: [T-141, L-047]
-    controls: ["T-141 format fix", "L-047 round-trip verification", "21-test suite"]
+    controls: [CTL-009, CTL-014]
     control_status: closed
     residual_notes: "None — tested"
 
@@ -224,7 +224,7 @@ risks:
     score: 6
     ranking: medium
     evidence: [T-140, T-141, L-044, L-045]
-    controls: ["T-141 wire template", "L-044 verify controls wired"]
+    controls: [CTL-012, CTL-013, CTL-015]
     control_status: closed
     residual_notes: "New scripts could repeat the pattern"
 
@@ -238,7 +238,7 @@ risks:
     score: 4
     ranking: low
     evidence: [T-112, T-113]
-    controls: ["P-010 AC gate in update-task.sh"]
+    controls: [CTL-005, CTL-016]
     control_status: closed
     residual_notes: "--force bypasses with logging"
 
@@ -251,7 +251,7 @@ risks:
     score: 3
     ranking: low
     evidence: [T-140, T-141]
-    controls: ["T-141 fixed extraction regex"]
+    controls: [CTL-005, CTL-016]
     control_status: closed
     residual_notes: "None"
 
@@ -264,7 +264,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [T-143, L-048]
-    controls: ["L-048 recorded"]
+    controls: [CTL-013]
     control_status: acknowledged
     residual_notes: "No validation gate. Needs schema validation."
 
@@ -277,7 +277,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [T-118, L-037, FP-007]
-    controls: ["CLAUDE.md hypothesis-driven debugging", "error-watchdog.sh"]
+    controls: [CTL-011, CTL-020]
     control_status: closed
     residual_notes: "Behavioral rule + watchdog. Agent can still skip investigation."
 
@@ -291,7 +291,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [T-061, T-062, T-063, T-067]
-    controls: ["CLAUDE.md instruction precedence", "PreToolUse hook", "audit tool"]
+    controls: [CTL-011, CTL-020]
     control_status: closed
     residual_notes: "New plugins could attempt override"
 
@@ -304,7 +304,7 @@ risks:
     score: 2
     ranking: low
     evidence: [FP-003, T-026]
-    controls: ["Use built-in validation, minimize dependencies"]
+    controls: [CTL-020]
     control_status: closed
     residual_notes: "None"
 
@@ -317,7 +317,7 @@ risks:
     score: 6
     ranking: medium
     evidence: [FP-002, L-007, L-008]
-    controls: ["L-007/L-008 patterns documented", "MEMORY.md ((x++)) warning"]
+    controls: [CTL-020]
     control_status: closed
     residual_notes: "Documentation only — no structural prevention"
 
@@ -330,7 +330,7 @@ risks:
     score: 10
     ranking: high
     evidence: [T-092, T-118, T-063]
-    controls: ["Correct format in settings.json", "MEMORY.md documentation"]
+    controls: []
     control_status: closed
     residual_notes: "Still fragile — no validation tool for hook config"
 
@@ -343,7 +343,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [T-143, L-048]
-    controls: ["L-048 recorded"]
+    controls: []
     control_status: acknowledged
     residual_notes: "Same root cause as R-018. Needs schema validation."
 
@@ -357,7 +357,7 @@ risks:
     score: 3
     ranking: low
     evidence: [FP-001]
-    controls: ["Only update active tasks on commit"]
+    controls: []
     control_status: closed
     residual_notes: "None"
 
@@ -370,7 +370,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [L-016, E-004]
-    controls: ["Defense-in-depth principle", "proved experimentally"]
+    controls: []
     control_status: closed
     residual_notes: "Principle documented but not structurally enforced"
 
@@ -384,7 +384,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [L-043]
-    controls: ["budget-gate.sh structural block", "L-043 check at every decision point"]
+    controls: []
     control_status: closed
     residual_notes: "Structural gate is the real control; procedural rule is backup"
 
@@ -397,7 +397,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [L-025, T-073]
-    controls: ["CLAUDE.md dispatch protocol", "fw bus (unused)"]
+    controls: []
     control_status: closed
     residual_notes: "Advisory only"
 
@@ -410,7 +410,7 @@ risks:
     score: 5
     ranking: medium
     evidence: [L-014, T-078]
-    controls: ["Cache removed entirely"]
+    controls: []
     control_status: closed
     residual_notes: "None"
 
@@ -423,7 +423,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [L-002, T-191]
-    controls: ["--no-verify bypass with logging"]
+    controls: []
     control_status: acknowledged
     residual_notes: "Bypass is the current workaround. Needs configurable threshold."
 
@@ -436,7 +436,7 @@ risks:
     score: 12
     ranking: high
     evidence: [T-151, T-194]
-    controls: ["T-194 human-dialogue-mandatory decision"]
+    controls: []
     control_status: decided-build
     residual_notes: "Currently only a decision, no structural enforcement"
 
@@ -450,7 +450,7 @@ risks:
     score: 4
     ranking: low
     evidence: [G-002, T-051]
-    controls: ["Evidence-driven simplification", "spec-reality gap detection"]
+    controls: []
     control_status: closed
     residual_notes: "gaps.yaml monitors for new instances"
 
@@ -463,7 +463,7 @@ risks:
     score: 4
     ranking: low
     evidence: [G-003, T-052]
-    controls: ["Field removal", "gap-driven simplification"]
+    controls: []
     control_status: closed
     residual_notes: "None"
 
@@ -476,7 +476,7 @@ risks:
     score: 9
     ranking: medium
     evidence: [G-004]
-    controls: ["Trigger: first multi-agent task"]
+    controls: []
     control_status: watching
     residual_notes: "No mitigation until tested"
 
@@ -490,7 +490,7 @@ risks:
     score: 8
     ranking: medium
     evidence: [L-058, T-182]
-    controls: ["L-058: show files/changes/risks/blast-radius, get approval"]
+    controls: [CTL-002]
     control_status: closed
     residual_notes: "Behavioral rule only"
 
@@ -503,6 +503,6 @@ risks:
     score: 6
     ranking: medium
     evidence: [L-026, T-097, T-098, T-099]
-    controls: ["Operational reflection protocol", "fw promote suggest", "graduation pipeline"]
+    controls: []
     control_status: closed
     residual_notes: "Graduation pipeline checks at 20+ learnings"
