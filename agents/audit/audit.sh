@@ -1474,8 +1474,9 @@ for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
     task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
 
-    # Extract verification commands
+    # Extract verification commands (skip HTML comment blocks)
     in_verify=false
+    in_comment=false
     verify_cmds=()
     while IFS= read -r line; do
         if echo "$line" | grep -q "^## Verification"; then
@@ -1486,11 +1487,22 @@ for task_file in $recent_completed; do
             break
         fi
         if [ "$in_verify" = true ]; then
+            # Track HTML comment blocks (<!-- ... -->)
+            if echo "$line" | grep -q '<!--'; then
+                if ! echo "$line" | grep -q '-->'; then
+                    in_comment=true
+                fi
+                continue
+            fi
+            if [ "$in_comment" = true ]; then
+                if echo "$line" | grep -q '-->'; then
+                    in_comment=false
+                fi
+                continue
+            fi
             trimmed=$(echo "$line" | sed 's/^[[:space:]]*//')
             [ -z "$trimmed" ] && continue
             echo "$trimmed" | grep -q '^#' && continue
-            echo "$trimmed" | grep -q '^<!--' && continue
-            echo "$trimmed" | grep -q '^-->' && continue
             verify_cmds+=("$trimmed")
         fi
     done < "$task_file"

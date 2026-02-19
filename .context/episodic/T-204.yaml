@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-204: Fix CTL-013 audit HTML comment parsing — skips opening/closing but not content inside comment blocks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T21:56:06Z
+# ============================================================================
+
+task_id: T-204
+task_name: "Fix CTL-013 audit HTML comment parsing — skips opening/closing but not content inside comment blocks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T21:52:41Z
+completed: 2026-02-19T21:55:21Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "CTL-013 parser in audit.sh tracks HTML comment block state (in_comment flag)"
+  - "Lines inside `<!-- ... -->` blocks are skipped entirely"
+  - "T-203 and T-202 no longer produce false verification warnings"
+  - "Audit passes with 0 CTL-013 warnings for tasks with only template comments"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-204-fix-ctl-013-audit-html-comment-parsing--.md
+generated_by: context-agent-hybrid
