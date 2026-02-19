@@ -38,9 +38,12 @@ def decisions():
 
     dec_file = PROJECT_ROOT / ".context" / "project" / "decisions.yaml"
     if dec_file.exists():
-        with open(dec_file) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(dec_file) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             for d in data.get("decisions", []):
                 all_decisions.append(
                     {
@@ -69,17 +72,23 @@ def learnings():
     learnings_list = []
     lf = PROJECT_ROOT / ".context" / "project" / "learnings.yaml"
     if lf.exists():
-        with open(lf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(lf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             learnings_list = data.get("learnings", [])
 
     patterns_grouped = {"failure": [], "success": [], "workflow": []}
     pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
     if pf.exists():
-        with open(pf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(pf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             patterns_grouped["failure"] = data.get("failure_patterns", [])
             patterns_grouped["success"] = data.get("success_patterns", [])
             patterns_grouped["workflow"] = data.get("workflow_patterns", [])
@@ -87,9 +96,12 @@ def learnings():
     practices_list = []
     prf = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
     if prf.exists():
-        with open(prf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(prf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             practices_list = data.get("practices", [])
 
     return render_page(
@@ -106,9 +118,12 @@ def gaps():
     gaps_list = []
     gf = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
     if gf.exists():
-        with open(gf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(gf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             gaps_list = data.get("gaps", [])
 
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
@@ -184,9 +199,12 @@ def patterns():
     all_patterns = []
     pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
     if pf.exists():
-        with open(pf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(pf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             for p in data.get("failure_patterns", []):
                 p["_type"] = "failure"
                 all_patterns.append(p)
@@ -271,18 +289,24 @@ def graduation():
     learnings_list = []
     lf = PROJECT_ROOT / ".context" / "project" / "learnings.yaml"
     if lf.exists():
-        with open(lf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(lf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             learnings_list = data.get("learnings", [])
 
     # Load practices
     practices_list = []
     prf = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
     if prf.exists():
-        with open(prf) as f:
-            data = yaml.safe_load(f)
-        if data:
+        try:
+            with open(prf) as f:
+                data = yaml.safe_load(f)
+        except yaml.YAMLError:
+            data = None
+        if isinstance(data, dict):
             practices_list = data.get("practices", [])
 
     # Build promoted set

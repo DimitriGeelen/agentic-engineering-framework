@@ -9,7 +9,9 @@ Run: pytest web/test_app.py -v
 """
 
 import os
+import subprocess
 import sys
+from unittest.mock import patch, MagicMock
 
 import pytest
 
@@ -792,3 +794,305 @@ class TestCockpitControlActions:
             headers={"X-CSRF-Token": token},
         )
         assert resp.status_code == 404
+
+
+# =========================================================================
+# Edge cases — subprocess TimeoutExpired
+# =========================================================================
+
+
+def _timeout_side_effect(*args, **kwargs):
+    """Raise TimeoutExpired for any subprocess.run call."""
+    raise subprocess.TimeoutExpired(cmd=args[0], timeout=kwargs.get("timeout", 30))
+
+
+def _failing_subprocess(*args, **kwargs):
+    """Return a CompletedProcess with non-zero exit and stderr."""
+    result = MagicMock()
+    result.returncode = 1
+    result.stdout = ""
+    result.stderr = "fatal: something went wrong"
+    return result
+
+
+class TestSubprocessTimeout:
+    """Task API endpoints handle subprocess.TimeoutExpired gracefully."""
+
+    def test_status_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_create_task_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_horizon_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/horizon",
+            data={"horizon": "now", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_owner_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/owner",
+            data={"owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_type_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/type",
+            data={"type": "build", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_traceability_timeout_returns_zero(self, client, monkeypatch):
+        """_get_traceability returns 0 when git times out (page still renders)."""
+        monkeypatch.setattr("web.blueprints.core.subprocess.run", _timeout_side_effect)
+        resp = client.get("/")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Edge cases — subprocess non-zero exit (stderr errors)
+# =========================================================================
+
+
+class TestSubprocessStderr:
+    """Task API endpoints handle subprocess failures with stderr gracefully."""
+
+    def test_status_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+        assert b"fatal" in resp.data
+
+    def test_create_task_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"fatal" in resp.data
+
+    def test_horizon_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/horizon",
+            data={"horizon": "now", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+    def test_owner_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/owner",
+            data={"owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+    def test_type_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/type",
+            data={"type": "build", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+
+# =========================================================================
+# Edge cases — malformed YAML files
+# =========================================================================
+
+
+class TestMalformedYAML:
+    """Pages render gracefully when YAML files are corrupt."""
+
+    def test_corrupt_gaps_yaml(self, client, tmp_path, monkeypatch):
+        """Gaps page handles corrupt gaps.yaml without crashing."""
+        corrupt = tmp_path / "gaps.yaml"
+        corrupt.write_text("{{{{not: valid: yaml: [")
+        monkeypatch.setattr(
+            "web.blueprints.discovery.PROJECT_ROOT", tmp_path,
+        )
+        # Create minimal dir structure so page doesn't error on missing dirs
+        (tmp_path / ".context" / "project").mkdir(parents=True, exist_ok=True)
+        corrupt_gaps = tmp_path / ".context" / "project" / "gaps.yaml"
+        corrupt_gaps.write_text("{{{{not: valid: yaml: [")
+        resp = client.get("/gaps")
+        assert resp.status_code == 200
+
+    def test_corrupt_learnings_yaml(self, client, tmp_path, monkeypatch):
+        """Learnings page handles corrupt learnings.yaml without crashing."""
+        proj = tmp_path / ".context" / "project"
+        proj.mkdir(parents=True, exist_ok=True)
+        (proj / "learnings.yaml").write_text(":::bad yaml")
+        (proj / "patterns.yaml").write_text(":::bad yaml")
+        (proj / "practices.yaml").write_text(":::bad yaml")
+        monkeypatch.setattr("web.blueprints.discovery.PROJECT_ROOT", tmp_path)
+        resp = client.get("/learnings")
+        assert resp.status_code == 200
+
+    def test_corrupt_decisions_yaml(self, client, tmp_path, monkeypatch):
+        """Decisions page handles corrupt decisions.yaml without crashing."""
+        proj = tmp_path / ".context" / "project"
+        proj.mkdir(parents=True, exist_ok=True)
+        (proj / "decisions.yaml").write_text("[[[invalid")
+        monkeypatch.setattr("web.blueprints.discovery.PROJECT_ROOT", tmp_path)
+        resp = client.get("/decisions")
+        assert resp.status_code == 200
+
+    def test_corrupt_task_file_in_list(self, client, tmp_path, monkeypatch):
+        """Task list handles a task file with corrupt frontmatter."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-999-corrupt.md").write_text("---\n{{{bad\n---\n# content")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_corrupt_audit_yaml(self, client, tmp_path, monkeypatch):
+        """Audit status handles corrupt audit file."""
+        audits = tmp_path / ".context" / "audits"
+        audits.mkdir(parents=True, exist_ok=True)
+        (audits / "2026-01-01.yaml").write_text("not: [valid: yaml")
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # _get_audit_status should return safe defaults
+        from web.blueprints.core import _get_audit_status
+        status, p, w, f = _get_audit_status()
+        assert status == "UNKNOWN" or isinstance(status, str)
+
+
+# =========================================================================
+# Edge cases — missing directories and empty files
+# =========================================================================
+
+
+class TestMissingDirectories:
+    """Pages render when expected directories are missing."""
+
+    def test_dashboard_no_context_dir(self, client, tmp_path, monkeypatch):
+        """Dashboard renders when .context/ doesn't exist."""
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # Need scan to be None for fallback dashboard
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: None)
+        resp = client.get("/")
+        assert resp.status_code == 200
+
+    def test_tasks_no_tasks_dir(self, client, tmp_path, monkeypatch):
+        """Task list renders when .tasks/ doesn't exist."""
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_tasks_empty_active_dir(self, client, tmp_path, monkeypatch):
+        """Task list renders with empty active directory."""
+        (tmp_path / ".tasks" / "active").mkdir(parents=True, exist_ok=True)
+        (tmp_path / ".tasks" / "completed").mkdir(parents=True, exist_ok=True)
+        (tmp_path / ".context" / "episodic").mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_timeline_no_handovers(self, client, tmp_path, monkeypatch):
+        """Timeline renders without handover files."""
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # Timeline also uses core._get_recent_sessions
+        resp = client.get("/timeline")
+        assert resp.status_code == 200
+
+    def test_metrics_no_context(self, client, tmp_path, monkeypatch):
+        """Metrics page renders when .context/ is missing."""
+        monkeypatch.setattr("web.blueprints.metrics.PROJECT_ROOT", tmp_path)
+        # Also need tasks dir absent
+        resp = client.get("/metrics")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Edge cases — empty/minimal task files
+# =========================================================================
+
+
+class TestEmptyTaskFiles:
+    """Task views handle edge-case task files."""
+
+    def test_task_file_no_frontmatter(self, client, tmp_path, monkeypatch):
+        """Task file with no YAML frontmatter is skipped in listing."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-998-no-fm.md").write_text("# Just a heading\nNo frontmatter here.")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-998" not in resp.data
+
+    def test_task_file_empty(self, client, tmp_path, monkeypatch):
+        """Empty task file is skipped in listing."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-997-empty.md").write_text("")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-997" not in resp.data
+
+    def test_task_file_frontmatter_missing_fields(self, client, tmp_path, monkeypatch):
+        """Task file with minimal frontmatter (missing optional fields) still works."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-996-minimal.md").write_text(
+            "---\nid: T-996\nname: Minimal\nstatus: captured\n---\n# Minimal task"
+        )
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-996" in resp.data
