@@ -39,3 +39,15 @@ bypasses:
     authorized_by: human
     reason: "T-191 inception gate: multi-session inception (Phase 1c), logged per L-002"
     retroactive_task: null
+  - timestamp: 2026-02-19T15:53:40Z
+    action: "T-194: Phase 0 — genesis discussion artifact (T-151 review, ISO 27001 mapping, control inventory)"
+    commit: 9dd306d
+    authorized_by: human
+    reason: "Inception task T-194 Phase 0 research artifact — inception gate bypass per L-002"
+    retroactive_task: null
+  - timestamp: 2026-02-19T17:33:35Z
+    action: "T-194: Watchtower risks page — heatmap, open risks table, issues, gaps"
+    commit: 5d74e78
+    authorized_by: human
+    reason: "Inception gate: T-194 Watchtower risks page is Phase 1 build artifact, not a new exploration commit"
+    retroactive_task: null
