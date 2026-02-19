@@ -127,7 +127,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
-            echo "          learning, episodic, observations, gaps, handover, graduation"
+            echo "          learning, episodic, observations, gaps, handover, graduation,"
+            echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly"
             echo ""
             echo "Subcommands:"
             echo "  schedule install  Install cron entries for periodic audits"
@@ -1152,6 +1153,392 @@ fi
 
 echo ""
 fi # end oe-research
+
+# ============================================
+# OE-FAST: Controls checked every 30 minutes (T-195)
+# CTL-001, CTL-003, CTL-004, CTL-018
+# ============================================
+if should_run_section "oe-fast"; then
+echo "=== OE-FAST: 30-MINUTE CONTROL CHECKS ==="
+
+# CTL-001 OE: Task-First Gate — focus file exists when source commits happen
+FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
+if [ -f "$FOCUS_FILE" ]; then
+    focus_task=$(grep "^current_task:" "$FOCUS_FILE" 2>/dev/null | head -1 | sed 's/current_task: *//' | tr -d ' "')
+    if [ -n "$focus_task" ] && [ "$focus_task" != "null" ] && [ "$focus_task" != "~" ]; then
+        pass "CTL-001: Focus file has active task ($focus_task)"
+    else
+        # Only warn if there's evidence of recent activity
+        recent_commits=$(git -C "$PROJECT_ROOT" log --oneline --since="30 minutes ago" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$recent_commits" -gt 0 ]; then
+            warn "CTL-001: Focus file empty but $recent_commits commit(s) in last 30min" \
+                 "Task-first gate may not be firing" \
+                 "Check .claude/settings.json hook configuration for check-active-task"
+        else
+            pass "CTL-001: Focus file empty (no recent activity — expected)"
+        fi
+    fi
+else
+    warn "CTL-001: Focus file missing ($FOCUS_FILE)" \
+         "Task-first gate may not be creating focus state" \
+         "Run: fw context focus T-XXX"
+fi
+
+# CTL-003 OE: Budget Gate — status file is fresh during active session
+BUDGET_FILE="$CONTEXT_DIR/working/.budget-status"
+if [ -f "$BUDGET_FILE" ]; then
+    budget_age=$(find "$BUDGET_FILE" -mmin -5 2>/dev/null)
+    if [ -n "$budget_age" ]; then
+        pass "CTL-003: Budget status file fresh (< 5min old)"
+    else
+        # Not necessarily an error — no active session means stale file is fine
+        budget_mtime=$(stat -c %Y "$BUDGET_FILE" 2>/dev/null || echo 0)
+        now=$(date +%s)
+        age_min=$(( (now - budget_mtime) / 60 ))
+        if [ "$age_min" -gt 120 ]; then
+            pass "CTL-003: Budget status file stale (${age_min}min — no active session)"
+        else
+            warn "CTL-003: Budget status file stale (${age_min}min old)" \
+                 "Budget gate may not be running during active session" \
+                 "Check PreToolUse hook wiring for budget-gate.sh"
+        fi
+    fi
+else
+    pass "CTL-003: Budget status file absent (no active session)"
+fi
+
+# CTL-004 OE: Context Checkpoint — tool counter behavior
+TOOL_COUNTER="$CONTEXT_DIR/working/.tool-counter"
+if [ -f "$TOOL_COUNTER" ]; then
+    counter_val=$(cat "$TOOL_COUNTER" 2>/dev/null | tr -d '[:space:]')
+    counter_val=${counter_val:-0}
+    # After a commit, post-commit hook resets to 0. High values without recent commit = checkpoint working
+    last_commit_age=$(git -C "$PROJECT_ROOT" log -1 --format="%cr" 2>/dev/null || echo "unknown")
+    pass "CTL-004: Tool counter at $counter_val (last commit: $last_commit_age)"
+else
+    pass "CTL-004: Tool counter absent (session not active or first run)"
+fi
+
+# CTL-018 OE: Token Budget Monitor — status file valid JSON
+if [ -f "$BUDGET_FILE" ]; then
+    if python3 -c "import json; d=json.load(open('$BUDGET_FILE')); assert 'level' in d" 2>/dev/null; then
+        budget_level=$(python3 -c "import json; print(json.load(open('$BUDGET_FILE'))['level'])" 2>/dev/null)
+        pass "CTL-018: Budget status valid JSON (level: $budget_level)"
+    else
+        fail "CTL-018: Budget status file is not valid JSON or missing 'level' field" \
+             "$BUDGET_FILE content: $(head -1 "$BUDGET_FILE" 2>/dev/null)" \
+             "Investigate budget-gate.sh output format"
+    fi
+else
+    pass "CTL-018: Budget status absent (no active session — expected)"
+fi
+
+echo ""
+fi # end oe-fast
+
+# ============================================
+# OE-HOURLY: Controls checked every hour (T-195)
+# CTL-008, CTL-020
+# ============================================
+if should_run_section "oe-hourly"; then
+echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
+
+# CTL-008 OE: Task Reference Gate — recent commits have T-XXX prefix
+total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | wc -l | tr -d ' ')
+if [ "$total_recent" -gt 0 ]; then
+    without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    without_task=$(echo "$without_task" | tr -d '[:space:]')
+    ratio=$(( (total_recent - without_task) * 100 / total_recent ))
+    if [ "$ratio" -ge 95 ]; then
+        pass "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)"
+    elif [ "$ratio" -ge 80 ]; then
+        warn "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
+             "$(git -C "$PROJECT_ROOT" log --oneline -20 | grep -v '^[a-f0-9]* T-' | head -3)" \
+             "Ensure all commits use T-XXX prefix (commit-msg hook)"
+    else
+        fail "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
+             "Many commits missing task references — hook may not be installed" \
+             "Run: fw git install-hooks"
+    fi
+else
+    pass "CTL-008: No commits to check"
+fi
+
+# CTL-020 OE: Continuous Audit — cron audit files produced recently
+CRON_DIR="$AUDITS_DIR/cron"
+if [ -d "$CRON_DIR" ]; then
+    recent_cron=$(find "$CRON_DIR" -name '*.yaml' -mmin -60 -not -name 'LATEST*' 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$recent_cron" -gt 0 ]; then
+        pass "CTL-020: $recent_cron cron audit file(s) in last hour"
+    else
+        warn "CTL-020: No cron audit files in last hour" \
+             "$(ls -lt "$CRON_DIR"/*.yaml 2>/dev/null | head -1)" \
+             "Check cron schedule: crontab -l | grep agentic; cat /etc/cron.d/agentic-audit"
+    fi
+else
+    warn "CTL-020: Cron audit directory missing ($CRON_DIR)" \
+         "Directory not created" \
+         "Run: fw audit schedule install"
+fi
+
+echo ""
+fi # end oe-hourly
+
+# ============================================
+# OE-DAILY: Controls checked once per day (T-195)
+# CTL-002, CTL-005, CTL-006, CTL-007, CTL-009, CTL-010, CTL-011, CTL-012, CTL-013, CTL-019
+# ============================================
+if should_run_section "oe-daily"; then
+echo "=== OE-DAILY: DAILY CONTROL CHECKS ==="
+
+# CTL-002 OE: Tier 0 Guard — hook script exists + settings wired
+if [ -x "$FRAMEWORK_ROOT/agents/context/check-tier0.sh" ]; then
+    if grep -q 'check-tier0' "$PROJECT_ROOT/.claude/settings.json" 2>/dev/null; then
+        pass "CTL-002: Tier 0 guard installed and wired in settings.json"
+    else
+        warn "CTL-002: Tier 0 guard script exists but not wired in settings.json" \
+             "check-tier0.sh exists but settings.json doesn't reference it" \
+             "Add PreToolUse Bash hook for check-tier0.sh in .claude/settings.json"
+    fi
+else
+    fail "CTL-002: Tier 0 guard script missing or not executable" \
+         "$FRAMEWORK_ROOT/agents/context/check-tier0.sh" \
+         "Restore check-tier0.sh from git"
+fi
+
+# CTL-005 OE: Error Watchdog — hook script exists + settings wired
+if [ -x "$FRAMEWORK_ROOT/agents/context/error-watchdog.sh" ]; then
+    if grep -q 'error-watchdog' "$PROJECT_ROOT/.claude/settings.json" 2>/dev/null; then
+        pass "CTL-005: Error watchdog installed and wired in settings.json"
+    else
+        warn "CTL-005: Error watchdog script exists but not wired in settings.json" \
+             "error-watchdog.sh exists but settings.json doesn't reference it" \
+             "Add PostToolUse hook for error-watchdog.sh in .claude/settings.json"
+    fi
+else
+    fail "CTL-005: Error watchdog script missing or not executable" \
+         "$FRAMEWORK_ROOT/agents/context/error-watchdog.sh" \
+         "Restore error-watchdog.sh from git"
+fi
+
+# CTL-006 OE: Pre-Compact Handover — handover exists near compaction events
+COMPACT_LOG="$CONTEXT_DIR/working/.compact-log"
+if [ -f "$COMPACT_LOG" ]; then
+    # Check each compaction has a handover within ~5min
+    compact_count=$(wc -l < "$COMPACT_LOG" 2>/dev/null | tr -d ' ')
+    handover_count=$(ls -1 "$CONTEXT_DIR/handovers/S-"*.md 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$handover_count" -ge "$compact_count" ] || [ "$compact_count" -eq 0 ]; then
+        pass "CTL-006: Handover coverage for compactions ($handover_count handovers, $compact_count compactions)"
+    else
+        warn "CTL-006: Fewer handovers ($handover_count) than compactions ($compact_count)" \
+             "Some compactions may not have triggered pre-compact handover" \
+             "Check pre-compact.sh hook configuration in .claude/settings.json"
+    fi
+else
+    pass "CTL-006: No compact log (no compactions recorded)"
+fi
+
+# CTL-007 OE: Post-Compact Resume — settings.json has resume hook
+if grep -q 'post-compact-resume\|SessionStart' "$PROJECT_ROOT/.claude/settings.json" 2>/dev/null; then
+    pass "CTL-007: Post-compact resume hook configured in settings.json"
+else
+    warn "CTL-007: Post-compact resume hook not found in settings.json" \
+         "SessionStart hook missing" \
+         "Add SessionStart:compact hook for post-compact-resume.sh"
+fi
+
+# CTL-009 OE: Inception Commit Gate — active inceptions with >2 commits have decision or bypass
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
+    [ -f "$task_file" ] || continue
+    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    [ "$task_workflow" != "inception" ] && continue
+    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    [ -z "$task_id" ] && continue
+
+    # Count commits for this task
+    task_commits=$(git -C "$PROJECT_ROOT" log --oneline --all --grep="$task_id" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$task_commits" -gt 2 ]; then
+        # Check for decision
+        has_decision=$(grep -c "inception-decision\|fw inception decide\|Decision:.*GO\|Decision:.*NO-GO" "$task_file" 2>/dev/null || true)
+        has_decision=$(echo "$has_decision" | tr -d '[:space:]')
+        # Check for bypass log entries
+        has_bypass=$(grep -c "$task_id" "$CONTEXT_DIR/bypass-log.yaml" 2>/dev/null || true)
+        has_bypass=$(echo "$has_bypass" | tr -d '[:space:]')
+        if [ "$has_decision" -gt 0 ]; then
+            pass "CTL-009: Inception $task_id has decision ($task_commits commits)"
+        elif [ "$has_bypass" -gt 0 ]; then
+            warn "CTL-009: Inception $task_id using bypasses ($task_commits commits, $has_bypass bypasses, no decision)" \
+                 "Inception gate bypassed via --no-verify" \
+                 "Record decision: fw inception decide $task_id go|no-go"
+        else
+            fail "CTL-009: Inception $task_id has $task_commits commits but no decision or bypass log" \
+                 "Inception commit gate may not be installed" \
+                 "Run: fw git install-hooks"
+        fi
+    fi
+done
+shopt -u nullglob
+
+# CTL-010 OE: Bypass Detector — --no-verify commits appear in bypass-log
+BYPASS_LOG="$CONTEXT_DIR/bypass-log.yaml"
+if [ -f "$BYPASS_LOG" ]; then
+    bypass_count=$(grep -c "commit:" "$BYPASS_LOG" 2>/dev/null || true)
+    bypass_count=$(echo "$bypass_count" | tr -d '[:space:]')
+    if [ "$bypass_count" -gt 0 ]; then
+        pass "CTL-010: Bypass log has $bypass_count entries (post-commit detector working)"
+    else
+        pass "CTL-010: Bypass log exists but empty (no bypasses detected)"
+    fi
+else
+    # Check if any commits lack T-XXX (potential unlogged bypasses)
+    no_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    no_task=$(echo "$no_task" | tr -d '[:space:]')
+    if [ "$no_task" -gt 0 ]; then
+        warn "CTL-010: No bypass log but $no_task commit(s) without T-XXX prefix" \
+             "post-commit hook may not be creating bypass-log.yaml" \
+             "Check .git/hooks/post-commit exists and is executable"
+    else
+        pass "CTL-010: No bypass log needed (all commits have task references)"
+    fi
+fi
+
+# CTL-011 OE: Audit Push Gate — pre-push hook installed
+if [ -x "$PROJECT_ROOT/.git/hooks/pre-push" ]; then
+    pass "CTL-011: pre-push hook installed and executable"
+else
+    warn "CTL-011: pre-push hook missing or not executable" \
+         "$PROJECT_ROOT/.git/hooks/pre-push" \
+         "Run: fw git install-hooks"
+fi
+
+# CTL-012 OE: AC Gate — no completed task has unchecked ACs
+ac_fail=0
+shopt -s nullglob
+for task_file in "$TASKS_DIR/completed"/*.md; do
+    [ -f "$task_file" ] || continue
+    # Check for unchecked ACs in Acceptance Criteria section
+    in_ac=false
+    while IFS= read -r line; do
+        if echo "$line" | grep -q "^## Acceptance Criteria"; then
+            in_ac=true
+            continue
+        fi
+        if echo "$line" | grep -q "^## " && [ "$in_ac" = true ]; then
+            break
+        fi
+        if [ "$in_ac" = true ] && echo "$line" | grep -q '^\- \[ \]'; then
+            task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+            warn "CTL-012: Completed task $task_id has unchecked AC" \
+                 "$(echo "$line" | head -c 80)" \
+                 "Review task completion — AC gate may have been bypassed"
+            ac_fail=$((ac_fail + 1))
+            break
+        fi
+    done < "$task_file"
+done
+shopt -u nullglob
+if [ "$ac_fail" -eq 0 ]; then
+    completed_count=$(ls -1 "$TASKS_DIR/completed"/*.md 2>/dev/null | wc -l | tr -d ' ')
+    pass "CTL-012: All $completed_count completed tasks have checked ACs"
+fi
+
+# CTL-013 OE: Verification Gate — spot-check recently completed tasks
+# (Full re-run of all verification is expensive; check latest 3)
+verify_fail=0
+shopt -s nullglob
+recent_completed=$(ls -t "$TASKS_DIR/completed"/*.md 2>/dev/null | head -3)
+for task_file in $recent_completed; do
+    [ -f "$task_file" ] || continue
+    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+
+    # Extract verification commands
+    in_verify=false
+    verify_cmds=()
+    while IFS= read -r line; do
+        if echo "$line" | grep -q "^## Verification"; then
+            in_verify=true
+            continue
+        fi
+        if echo "$line" | grep -q "^## " && [ "$in_verify" = true ]; then
+            break
+        fi
+        if [ "$in_verify" = true ]; then
+            trimmed=$(echo "$line" | sed 's/^[[:space:]]*//')
+            [ -z "$trimmed" ] && continue
+            echo "$trimmed" | grep -q '^#' && continue
+            echo "$trimmed" | grep -q '^<!--' && continue
+            echo "$trimmed" | grep -q '^-->' && continue
+            verify_cmds+=("$trimmed")
+        fi
+    done < "$task_file"
+
+    if [ ${#verify_cmds[@]} -gt 0 ]; then
+        cmd_pass=0
+        cmd_fail=0
+        for cmd in "${verify_cmds[@]}"; do
+            if eval "$cmd" >/dev/null 2>&1; then
+                cmd_pass=$((cmd_pass + 1))
+            else
+                cmd_fail=$((cmd_fail + 1))
+            fi
+        done
+        if [ "$cmd_fail" -eq 0 ]; then
+            pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
+        else
+            warn "CTL-013: $task_id verification re-run: $cmd_fail command(s) failing" \
+                 "Verification commands that passed at completion now fail" \
+                 "Review $task_id — environment may have changed"
+            verify_fail=$((verify_fail + 1))
+        fi
+    fi
+done
+shopt -u nullglob
+
+# CTL-019 OE: Auto-Restart — claude-fw wrapper exists
+if [ -x "$FRAMEWORK_ROOT/bin/claude-fw" ]; then
+    pass "CTL-019: claude-fw wrapper installed and executable"
+else
+    warn "CTL-019: claude-fw wrapper missing or not executable" \
+         "$FRAMEWORK_ROOT/bin/claude-fw" \
+         "Auto-restart won't work without claude-fw wrapper"
+fi
+
+echo ""
+fi # end oe-daily
+
+# ============================================
+# OE-WEEKLY: Controls checked once per week (T-195)
+# CTL-016
+# ============================================
+if should_run_section "oe-weekly"; then
+echo "=== OE-WEEKLY: WEEKLY CONTROL CHECKS ==="
+
+# CTL-016 OE: Hypothesis Debugging — healing patterns resolved with mitigation
+PATTERNS_FILE="$CONTEXT_DIR/project/patterns.yaml"
+if [ -f "$PATTERNS_FILE" ]; then
+    total_patterns=$(grep -c "^  - type:" "$PATTERNS_FILE" 2>/dev/null || true)
+    total_patterns=$(echo "$total_patterns" | tr -d '[:space:]')
+    with_mitigation=$(grep -c "mitigation:" "$PATTERNS_FILE" 2>/dev/null || true)
+    with_mitigation=$(echo "$with_mitigation" | tr -d '[:space:]')
+    if [ "$total_patterns" -gt 0 ]; then
+        ratio=$(( with_mitigation * 100 / total_patterns ))
+        if [ "$ratio" -ge 80 ]; then
+            pass "CTL-016: ${ratio}% of failure patterns have mitigations ($with_mitigation/$total_patterns)"
+        else
+            warn "CTL-016: Only ${ratio}% of failure patterns have mitigations ($with_mitigation/$total_patterns)" \
+                 "Failure patterns without recorded resolutions" \
+                 "Run: fw healing patterns — review unmitigated patterns"
+        fi
+    else
+        pass "CTL-016: No failure patterns recorded"
+    fi
+else
+    pass "CTL-016: No patterns file (first run or clean project)"
+fi
+
+echo ""
+fi # end oe-weekly
 
 # ============================================
 # SUMMARY (always runs)

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-195: Implement OE test audit sections (T-194 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T19:38:17Z
+# ============================================================================
+
+task_id: T-195
+task_name: "Implement OE test audit sections (T-194 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T19:29:14Z
+completed: 2026-02-19T19:37:45Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "oe-fast section runs and tests CTL-001, CTL-003, CTL-004, CTL-018"
+  - "oe-hourly section runs and tests CTL-008, CTL-020"
+  - "oe-daily section runs and tests CTL-002, CTL-005, CTL-006, CTL-007, CTL-009, CTL-010, CTL-011, CTL-012, CTL-013, CTL-019"
+  - "oe-weekly section runs and tests CTL-016"
+  - "All tests outcome-based (D-Phase3-001)"
+  - "Help text updated with new sections"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [assurance, oe-testing, t-194-go]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-195-implement-oe-test-audit-sections-t-194-g.md
+generated_by: context-agent-hybrid
