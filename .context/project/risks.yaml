@@ -40,9 +40,9 @@ risks:
     score: 16
     ranking: high
     evidence: [T-057, G-006, G-010, T-192]
-    controls: [CTL-012]
-    control_status: decided-build
-    residual_notes: "T-193 not yet implemented. Risk active."
+    controls: [CTL-012, CTL-025]
+    control_status: implemented
+    residual_notes: "CTL-025 (T-193) structurally gates on ### Agent ACs only; human ACs non-blocking. Partial-complete keeps task visible. Residual: agent could mislabel ACs at authoring time."
 
   - id: R-003
     title: "Architectural decisions made without inception exploration"
@@ -436,9 +436,9 @@ risks:
     score: 12
     ranking: high
     evidence: [T-151, T-194]
-    controls: []
-    control_status: decided-build
-    residual_notes: "Currently only a decision, no structural enforcement"
+    controls: [CTL-025]
+    control_status: partial
+    residual_notes: "CTL-025 partial-complete keeps human-AC tasks in active/ with owner:human. T-198 addresses remaining gap: structural gate preventing agent from completing human-owned tasks without dialogue."
 
   # === ARCHITECTURE ===
   - id: R-034

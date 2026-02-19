@@ -249,3 +249,14 @@ controls:
     mitigates: [R-023]
     status: active
     failure_mode: "Only runs on fw doctor invocation — not continuous; python3 must be available"
+
+  # === STRUCTURAL GATE (T-193) ===
+
+  - id: CTL-025
+    name: P-010 Agent/Human AC Split
+    type: structural
+    impl: "agents/task-create/update-task.sh (P-010 gate, partial-complete logic)"
+    blocking: true
+    mitigates: [R-002, R-033]
+    status: active
+    failure_mode: "Tasks without ### Agent / ### Human headers fall through to legacy behavior (all ACs blocking); agent could mislabel ACs at authoring time"

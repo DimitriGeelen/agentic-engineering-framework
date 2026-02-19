@@ -1526,6 +1526,26 @@ else
          "Auto-restart won't work without claude-fw wrapper"
 fi
 
+# CTL-025 OE: P-010 Agent/Human AC split — partial-complete tasks have owner:human
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active/"T-*.md; do
+    task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/id:[[:space:]]*//')
+    task_status=$(grep "^status:" "$task_file" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
+    task_owner=$(grep "^owner:" "$task_file" 2>/dev/null | head -1 | sed 's/owner:[[:space:]]*//')
+
+    # Check: work-completed tasks still in active/ must have owner:human
+    if [ "$task_status" = "work-completed" ]; then
+        if [ "$task_owner" = "human" ]; then
+            pass "CTL-025: $task_id partial-complete with owner:human ✓"
+        else
+            warn "CTL-025: $task_id is work-completed in active/ but owner is '$task_owner' (expected: human)" \
+                 "Partial-complete task without human ownership" \
+                 "Run: fw task update $task_id --owner human"
+        fi
+    fi
+done
+shopt -u nullglob
+
 echo ""
 fi # end oe-daily
 
