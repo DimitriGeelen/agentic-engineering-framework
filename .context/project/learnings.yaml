@@ -506,4 +506,12 @@ learnings:
     date: 2026-02-19
     context: "Added via context agent"
     application: "TBD"
+
+  - id: L-002
+    learning: "Inception commit gate (2 commits then decide) assumes short inceptions. For deep multi-session inceptions (5-10 sessions like T-191), this forces premature go/no-go decisions or repeated --no-verify bypasses. Need either: configurable commit limit per task, or a 'phase gate' that unlocks N more commits without a final decision."
+    source: T-191 inception gate collision
+    task: T-191
+    date: 2026-02-19
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []

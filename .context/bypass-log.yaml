@@ -21,3 +21,9 @@ bypasses:
     authorized_by: human
     reason: "T-124 inception mid-experiment — cycle 3 prep commit"
     retroactive_task: null
+  - timestamp: 2026-02-19T10:09:31Z
+    action: "T-191: Phase 1a research landscape — 14 sources, 7 domains, synthesis"
+    commit: d95ceca
+    authorized_by: human
+    reason: "T-191 is a 5-10 session inception; the 2-commit inception gate is designed for short inceptions and is too restrictive for deep multi-session explorations. Research artifact (Phase 1a, 299 lines) cannot wait for a premature go/no-go decision."
+    retroactive_task: null
