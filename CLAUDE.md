@@ -558,13 +558,21 @@ For tasks involving hardware APIs (microphone, camera, GPS, Bluetooth):
 2. **List constraints in the exploration plan** before writing code
 3. **Test the API access path** in a minimal spike before building the full app
 
+### Agent/Human AC Split (T-193)
+Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteria`:
+- **Agent ACs:** Criteria the agent can verify (code, tests, commands). P-010 gates on these.
+- **Human ACs:** Criteria requiring human verification (UI behavior, subjective quality). Not blocking.
+- **NEVER check a `### Human` AC.** Only the human may verify and check these boxes.
+- When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
+- The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
+
 ### Verification Before Completion
 Before setting any task to `work-completed`:
 1. Run all commands in the task's `## Verification` section
-2. Check every acceptance criterion checkbox — all must be met
+2. Check every `### Agent` acceptance criterion checkbox (or all ACs if no split headers)
 3. If tests exist for the changed code, run them
 4. Report results to user with pass/fail evidence
-5. Do NOT call `fw task update --status work-completed` until all pass
+5. Do NOT call `fw task update --status work-completed` until all agent ACs pass
 6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
 
 ### Hypothesis-Driven Debugging

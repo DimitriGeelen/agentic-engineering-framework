@@ -123,7 +123,37 @@ if [ -n "$NEW_STATUS" ]; then
     fi
 
     if [ "$OLD_STATUS" = "$NEW_STATUS" ]; then
-        echo -e "${YELLOW}Status already '$NEW_STATUS' — no change${NC}"
+        if [ "$OLD_STATUS" = "work-completed" ] && [ "$(dirname "$TASK_FILE")" = "$TASKS_DIR/active" ]; then
+            # T-193: Partial-complete re-run — check if human ACs now satisfied
+            echo -e "${CYAN}Re-checking partial-complete status...${NC}"
+            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)
+            ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+            ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
+            ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
+
+            if [ "$ALL_TOTAL" -gt 0 ] && [ "$ALL_UNCHECKED" -eq 0 ]; then
+                echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
+                DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
+                mv "$TASK_FILE" "$DEST"
+                TASK_FILE="$DEST"
+                echo -e "${GREEN}Moved to completed/${NC}"
+
+                # Generate episodic if not already present
+                if [ ! -f "$CONTEXT_DIR/episodic/$TASK_ID.yaml" ]; then
+                    echo ""
+                    echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
+                    CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
+                    if [ -x "$CONTEXT_AGENT" ]; then
+                        PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+                    fi
+                fi
+            else
+                echo -e "${YELLOW}Still $ALL_UNCHECKED/$ALL_TOTAL ACs unchecked — task stays in active/${NC}"
+                echo "Check human ACs in the task file, then re-run this command."
+            fi
+        else
+            echo -e "${YELLOW}Status already '$NEW_STATUS' — no change${NC}"
+        fi
     else
         # Validate transition (4-status lifecycle: captured → started-work ↔ issues → work-completed)
         VALID_TRANSITION=false
@@ -161,19 +191,53 @@ if [ -n "$NEW_STATUS" ]; then
         fi
 
         # === Acceptance Criteria Gate (P-010) ===
+        # T-193: Supports ### Agent / ### Human AC split.
+        # When split headers present: gate only on Agent ACs, report Human ACs informatively.
+        # When no headers: backward compatible (gate on all ACs).
+        PARTIAL_COMPLETE=false
         if [ "$NEW_STATUS" = "work-completed" ]; then
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | head -n -1)
             if [ -n "$AC_SECTION" ]; then
-                AC_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-                AC_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
-                AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
+                # Detect agent/human AC split
+                HAS_AGENT_HEADER=$(echo "$AC_SECTION" | grep -c '^### Agent' || true)
+                HAS_HUMAN_HEADER=$(echo "$AC_SECTION" | grep -c '^### Human' || true)
+
+                if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
+                    # Split mode: gate only on ### Agent ACs
+                    AGENT_ACS=$(echo "$AC_SECTION" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
+                    AC_TOTAL=$(echo "$AGENT_ACS" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+                    AC_CHECKED=$(echo "$AGENT_ACS" | grep -cE '^\s*-\s*\[x\]' || true)
+                    AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
+                    AC_LABEL="agent AC"
+
+                    # Count human ACs (informational, not blocking)
+                    HUMAN_AC_TOTAL=0
+                    HUMAN_AC_CHECKED=0
+                    if [ "$HAS_HUMAN_HEADER" -gt 0 ]; then
+                        HUMAN_ACS=$(echo "$AC_SECTION" | awk '/^### Human/{f=1; next} /^### /{f=0} f')
+                        HUMAN_AC_TOTAL=$(echo "$HUMAN_ACS" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+                        HUMAN_AC_CHECKED=$(echo "$HUMAN_ACS" | grep -cE '^\s*-\s*\[x\]' || true)
+                    fi
+                else
+                    # Legacy mode: all ACs (backward compatible)
+                    AC_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+                    AC_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
+                    AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
+                    AC_LABEL="acceptance criteria"
+                    HUMAN_AC_TOTAL=0
+                    HUMAN_AC_CHECKED=0
+                fi
 
                 if [ "$AC_TOTAL" -gt 0 ] && [ "$AC_UNCHECKED" -gt 0 ]; then
                     if [ "$FORCE" = true ]; then
-                        echo -e "${YELLOW}WARNING: $AC_UNCHECKED/$AC_TOTAL acceptance criteria unchecked (--force bypass)${NC}"
+                        echo -e "${YELLOW}WARNING: $AC_UNCHECKED/$AC_TOTAL $AC_LABEL unchecked (--force bypass)${NC}"
                     else
-                        echo -e "${RED}ERROR: Cannot complete — $AC_UNCHECKED/$AC_TOTAL acceptance criteria unchecked:${NC}" >&2
-                        echo "$AC_SECTION" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                        echo -e "${RED}ERROR: Cannot complete — $AC_UNCHECKED/$AC_TOTAL $AC_LABEL unchecked:${NC}" >&2
+                        if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
+                            echo "$AGENT_ACS" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                        else
+                            echo "$AC_SECTION" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                        fi
                         echo "" >&2
                         echo "Options:" >&2
                         echo "  1. Check the criteria in the task file, then retry" >&2
@@ -182,6 +246,17 @@ if [ -n "$NEW_STATUS" ]; then
                     fi
                 elif [ "$AC_TOTAL" -gt 0 ]; then
                     echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
+                fi
+
+                # Report human AC status if split mode (T-193)
+                if [ "$HAS_AGENT_HEADER" -gt 0 ] && [ "$HUMAN_AC_TOTAL" -gt 0 ]; then
+                    HUMAN_AC_UNCHECKED=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
+                    if [ "$HUMAN_AC_UNCHECKED" -gt 0 ]; then
+                        echo -e "${YELLOW}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked (not blocking)${NC}"
+                        PARTIAL_COMPLETE=true
+                    else
+                        echo -e "${GREEN}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked ✓${NC}"
+                    fi
                 fi
             fi
         fi
@@ -405,12 +480,21 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
     echo ""
     echo -e "${GREEN}date_finished set to $TIMESTAMP${NC}"
 
-    # Move to completed/
-    DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
-    if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
-        mv "$TASK_FILE" "$DEST"
-        TASK_FILE="$DEST"
-        echo -e "${GREEN}Moved to completed/${NC}"
+    # Move to completed/ (or partial-complete: stay in active/)
+    if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
+        # T-193: Agent done but human ACs pending — stay in active/
+        sed -i "s/^owner:.*/owner: human/" "$TASK_FILE"
+        HUMAN_AC_UNCHECKED_REMAINING=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
+        echo -e "${YELLOW}Partial-complete: $HUMAN_AC_UNCHECKED_REMAINING human AC(s) pending verification${NC}"
+        echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
+        echo "Finalize after verification: fw task update $TASK_ID --status work-completed"
+    else
+        DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
+        if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then
+            mv "$TASK_FILE" "$DEST"
+            TASK_FILE="$DEST"
+            echo -e "${GREEN}Moved to completed/${NC}"
+        fi
     fi
 
     # Generate episodic summary

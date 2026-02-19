@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-193: Implement P-010 AC tagging — agent/human verification split
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-19T21:06:29Z
+# ============================================================================
+
+task_id: T-193
+task_name: "Implement P-010 AC tagging — agent/human verification split"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-19T14:56:10Z
+completed: 2026-02-19T21:06:28Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`update-task.sh` P-010 gate scopes to `### Agent` section when present"
+  - "Tasks without `### Agent` / `### Human` headers work as before (backward compat)"
+  - "Partial-complete: task stays in `active/` with `owner: human` when human ACs unchecked"
+  - "`work-completed` output reports human AC status: \"Human: 0/N checked (not blocking)\""
+  - "`.tasks/templates/default.md` updated with `### Agent` / `### Human` sections"
+  - "`CLAUDE.md` updated with behavioral rule: never check a `### Human` AC"
+  - "`fw task verify` command lists tasks with unchecked human ACs"
+  - "Web UI cockpit shows \"Awaiting Your Verification\" attention section"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 370 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gap, p-010, verification, g-010]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 370
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-193-implement-p-010-ac-tagging--agenthuman-v.md
+generated_by: context-agent-hybrid

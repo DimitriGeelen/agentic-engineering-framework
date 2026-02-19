@@ -709,6 +709,87 @@ else:
         print()
 PYTASK_SHOW
             ;;
+        verify)
+            # T-193: List tasks with unchecked human ACs (awaiting human verification)
+            python3 << 'PYTASK_VERIFY'
+import os, re
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+active_dir = os.path.join(project_root, '.tasks', 'active')
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+results = []
+
+if os.path.isdir(active_dir):
+    for fn in sorted(os.listdir(active_dir)):
+        if not fn.endswith('.md'):
+            continue
+        path = os.path.join(active_dir, fn)
+        with open(path) as f:
+            text = f.read()
+
+        # Extract frontmatter
+        fm = {}
+        if text.startswith('---'):
+            try:
+                end = text.index('---', 3)
+                import yaml
+                fm = yaml.safe_load(text[3:end]) or {}
+            except:
+                pass
+
+        # Find ## Acceptance Criteria section
+        ac_match = re.search(r'^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)', text, re.MULTILINE | re.DOTALL)
+        if not ac_match:
+            continue
+
+        ac_section = ac_match.group(1)
+
+        # Check for ### Human header
+        if '### Human' not in ac_section:
+            continue
+
+        # Extract human ACs
+        human_match = re.search(r'### Human\s*\n(.*?)(?=\n### |\Z)', ac_section, re.DOTALL)
+        if not human_match:
+            continue
+
+        human_block = human_match.group(1)
+        human_total = len(re.findall(r'^\s*-\s*\[[ x]\]', human_block, re.MULTILINE))
+        human_checked = len(re.findall(r'^\s*-\s*\[x\]', human_block, re.MULTILINE))
+        human_unchecked = human_total - human_checked
+
+        if human_unchecked > 0:
+            unchecked_items = re.findall(r'^\s*-\s*\[ \]\s*(.*)', human_block, re.MULTILINE)
+            results.append({
+                'id': fm.get('id', fn),
+                'name': fm.get('name', ''),
+                'status': fm.get('status', '?'),
+                'total': human_total,
+                'checked': human_checked,
+                'unchecked': human_unchecked,
+                'items': unchecked_items,
+            })
+
+if results:
+    print(f'{BOLD}Awaiting Human Verification{NC} ({len(results)} task(s))')
+    print()
+    for r in results:
+        print(f'  {YELLOW}{r["id"]}{NC}: {r["name"]}')
+        print(f'    Status: {r["status"]}  Human ACs: {r["checked"]}/{r["total"]} checked')
+        for item in r['items']:
+            print(f'    {YELLOW}[ ]{NC} {item}')
+        print(f'    Finalize: fw task update {r["id"]} --status work-completed')
+        print()
+else:
+    print(f'{GREEN}No tasks awaiting human verification{NC}')
+PYTASK_VERIFY
+            ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
             echo ""
@@ -717,6 +798,7 @@ PYTASK_SHOW
             echo "  update    Update task status (auto-triggers healing/episodic)"
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"
+            echo "  verify    List tasks awaiting human verification (T-193)"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
@@ -726,6 +808,7 @@ PYTASK_SHOW
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
+            echo '  fw task verify'
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"

@@ -22,8 +22,14 @@ date_finished: null
 
 ## Acceptance Criteria
 
+### Agent
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] [First criterion]
 - [ ] [Second criterion]
+
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
+<!-- Remove this section if all criteria are agent-verifiable. -->
 
 ## Verification
 

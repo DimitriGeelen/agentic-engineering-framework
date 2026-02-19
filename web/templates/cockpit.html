@@ -99,6 +99,28 @@
 </div>
 {% endif %}
 
+{# --- Awaiting Your Verification (amber) — T-193 ------------ #}
+{% if human_verify %}
+<div class="wt-section">
+    <h4 class="wt-section-title">Awaiting Your Verification ({{ human_verify|length }})</h4>
+    {% for task in human_verify %}
+    <div class="wt-card wt-card-amber">
+        <div class="wt-card-summary">
+            <a href="/tasks/{{ task.task_id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                {{ task.task_id }}: {{ task.name }}
+            </a>
+        </div>
+        <div class="wt-card-detail">
+            Human ACs: {{ task.checked }}/{{ task.total }} checked
+            {% for item in task.unchecked_items %}
+            <br>&nbsp;&nbsp;&#9744; {{ item }}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 {# --- Framework Recommends (blue) --------------------------- #}
 {% if framework_recommends %}
 <div class="wt-section">

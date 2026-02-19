@@ -61,6 +61,60 @@ def get_scan_age(scan_data: dict) -> str:
         return "unknown"
 
 
+def get_human_verify_tasks() -> list:
+    """Find active tasks with unchecked ### Human ACs (T-193)."""
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    results = []
+    if not active_dir.is_dir():
+        return results
+
+    for fn in sorted(active_dir.iterdir()):
+        if not fn.name.endswith(".md"):
+            continue
+        text = fn.read_text(errors="replace")
+
+        # Parse frontmatter
+        fm = {}
+        if text.startswith("---"):
+            try:
+                end = text.index("---", 3)
+                fm = yaml.safe_load(text[3:end]) or {}
+            except Exception:
+                pass
+
+        # Find AC section
+        ac_match = re_mod.search(
+            r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
+            re_mod.MULTILINE | re_mod.DOTALL)
+        if not ac_match:
+            continue
+
+        ac_section = ac_match.group(1)
+        if "### Human" not in ac_section:
+            continue
+
+        human_match = re_mod.search(
+            r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_section, re_mod.DOTALL)
+        if not human_match:
+            continue
+
+        human_block = human_match.group(1)
+        total = len(re_mod.findall(r"^\s*-\s*\[[ x]\]", human_block, re_mod.MULTILINE))
+        checked = len(re_mod.findall(r"^\s*-\s*\[x\]", human_block, re_mod.MULTILINE))
+        if total > 0 and checked < total:
+            unchecked = [m.strip() for m in re_mod.findall(
+                r"^\s*-\s*\[ \]\s*(.*)", human_block, re_mod.MULTILINE)]
+            results.append({
+                "task_id": fm.get("id", fn.stem),
+                "name": fm.get("name", ""),
+                "status": fm.get("status", "?"),
+                "total": total,
+                "checked": checked,
+                "unchecked_items": unchecked,
+            })
+    return results
+
+
 def get_cockpit_context(scan_data: dict) -> dict:
     """Build template context from scan data."""
     return {
@@ -80,6 +134,7 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "warnings": scan_data.get("warnings", []),
         "recent_failures": scan_data.get("recent_failures", []),
         "scan_status": scan_data.get("scan_status", "unknown"),
+        "human_verify": get_human_verify_tasks(),
     }
 
 

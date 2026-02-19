@@ -8,15 +8,15 @@ description: >
   human ACs are unchecked. CLI command fw task verify. Web UI cockpit attention section.
   CLAUDE.md behavioral rule. Backward compatible with all 188+ existing tasks.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [gap, p-010, verification, g-010]
 related_tasks: [T-192]
 created: 2026-02-19T14:56:10Z
-last_update: 2026-02-19T14:56:10Z
-date_finished: null
+last_update: 2026-02-19T21:06:28Z
+date_finished: 2026-02-19T21:06:28Z
 ---
 
 # T-193: Implement P-010 AC tagging — agent/human verification split
@@ -30,14 +30,14 @@ Decisions: T-192 task file in `.tasks/completed/`
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `update-task.sh` P-010 gate scopes to `### Agent` section when present
-- [ ] Tasks without `### Agent` / `### Human` headers work as before (backward compat)
-- [ ] Partial-complete: task stays in `active/` with `owner: human` when human ACs unchecked
-- [ ] `work-completed` output reports human AC status: "Human: 0/N checked (not blocking)"
-- [ ] `.tasks/templates/default.md` updated with `### Agent` / `### Human` sections
-- [ ] `CLAUDE.md` updated with behavioral rule: never check a `### Human` AC
-- [ ] `fw task verify` command lists tasks with unchecked human ACs
-- [ ] Web UI cockpit shows "Awaiting Your Verification" attention section
+- [x] `update-task.sh` P-010 gate scopes to `### Agent` section when present
+- [x] Tasks without `### Agent` / `### Human` headers work as before (backward compat)
+- [x] Partial-complete: task stays in `active/` with `owner: human` when human ACs unchecked
+- [x] `work-completed` output reports human AC status: "Human: 0/N checked (not blocking)"
+- [x] `.tasks/templates/default.md` updated with `### Agent` / `### Human` sections
+- [x] `CLAUDE.md` updated with behavioral rule: never check a `### Human` AC
+- [x] `fw task verify` command lists tasks with unchecked human ACs
+- [x] Web UI cockpit shows "Awaiting Your Verification" attention section
 
 ### Human
 - [ ] Create a test task with both AC sections, verify partial-complete behavior
@@ -62,3 +62,9 @@ All decisions made in T-192 inception. See `.tasks/completed/T-192-*.md`
 
 ### 2026-02-19T14:56:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
+
+### 2026-02-19T20:58:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-19T21:06:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
