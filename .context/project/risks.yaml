@@ -330,9 +330,9 @@ risks:
     score: 10
     ranking: high
     evidence: [T-092, T-118, T-063]
-    controls: []
+    controls: [CTL-024]
     control_status: closed
-    residual_notes: "Still fragile — no validation tool for hook config"
+    residual_notes: "CTL-024 (fw doctor) validates structure on demand; still no continuous monitoring"
 
   - id: R-024
     title: "UI silently drops data on parse errors"

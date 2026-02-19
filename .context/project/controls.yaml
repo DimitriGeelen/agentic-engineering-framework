@@ -238,3 +238,14 @@ controls:
     mitigates: [R-010, R-011]
     status: partial
     failure_mode: "Agent dismisses prompt; only fires every 20 tool calls → research gap can grow before check"
+
+  # === DIAGNOSTIC (T-199) ===
+
+  - id: CTL-024
+    name: Hook Config Validator
+    type: diagnostic
+    impl: "bin/fw do_doctor (hook validation section)"
+    blocking: false
+    mitigates: [R-023]
+    status: active
+    failure_mode: "Only runs on fw doctor invocation — not continuous; python3 must be available"

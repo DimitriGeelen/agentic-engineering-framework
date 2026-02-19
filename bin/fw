@@ -333,6 +333,91 @@ do_doctor() {
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
 
+    # Check: Claude Code hook configuration (CTL-R023 — T-199)
+    if [ -f "$settings_file" ]; then
+        local hook_result
+        hook_result=$(python3 -c "
+import json, os, sys
+
+issues = []
+warnings = []
+
+try:
+    with open('$settings_file') as f:
+        data = json.load(f)
+except json.JSONDecodeError as e:
+    print(f'FAIL|settings.json is not valid JSON: {e}')
+    sys.exit(0)
+
+hooks = data.get('hooks', {})
+if not hooks:
+    print('WARN|No hooks configured in settings.json')
+    sys.exit(0)
+
+# Expected hooks (script basename -> event type)
+expected = {
+    'check-active-task.sh': 'PreToolUse',
+    'check-tier0.sh': 'PreToolUse',
+    'budget-gate.sh': 'PreToolUse',
+    'checkpoint.sh': 'PostToolUse',
+    'error-watchdog.sh': 'PostToolUse',
+}
+found = set()
+
+for event_type, hook_list in hooks.items():
+    if not isinstance(hook_list, list):
+        issues.append(f'{event_type} value is not a list (flat format silently fails)')
+        continue
+    for i, entry in enumerate(hook_list):
+        if not isinstance(entry, dict):
+            issues.append(f'{event_type}[{i}] is not an object')
+            continue
+        # Check nested structure
+        inner_hooks = entry.get('hooks', [])
+        if not inner_hooks:
+            issues.append(f'{event_type}[{i}] missing inner hooks array (will silently not fire)')
+            continue
+        for j, cmd in enumerate(inner_hooks):
+            command = cmd.get('command', '')
+            if not command:
+                issues.append(f'{event_type}[{i}].hooks[{j}] missing command')
+                continue
+            # Check script exists
+            script_path = command.split()[0]  # First word is the script
+            if not os.path.exists(script_path):
+                issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
+            elif not os.access(script_path, os.X_OK):
+                warnings.append(f'{event_type}: script not executable: {os.path.basename(script_path)}')
+            # Track expected hooks
+            basename = os.path.basename(script_path)
+            if basename in expected:
+                found.add(basename)
+
+# Check expected hooks present
+for script, event in expected.items():
+    if script not in found:
+        warnings.append(f'Expected hook {script} ({event}) not found')
+
+if issues:
+    print('FAIL|' + '; '.join(issues))
+elif warnings:
+    print('WARN|' + '; '.join(warnings))
+else:
+    print(f'OK|Hook configuration valid ({sum(len(v) for v in hooks.values())} hooks across {len(hooks)} events)')
+" 2>/dev/null || echo "WARN|Python3 not available for hook validation")
+        local hook_status hook_msg
+        hook_status=$(echo "$hook_result" | cut -d'|' -f1)
+        hook_msg=$(echo "$hook_result" | cut -d'|' -f2-)
+        case "$hook_status" in
+            OK)   echo -e "  ${GREEN}OK${NC}  $hook_msg" ;;
+            WARN) echo -e "  ${YELLOW}WARN${NC}  Hook config: $hook_msg"; warnings=$((warnings + 1)) ;;
+            FAIL) echo -e "  ${RED}FAIL${NC}  Hook config: $hook_msg"; issues=$((issues + 1)) ;;
+        esac
+    else
+        echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json — Claude Code hooks not configured"
+        warnings=$((warnings + 1))
+    fi
+
     # Summary
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
