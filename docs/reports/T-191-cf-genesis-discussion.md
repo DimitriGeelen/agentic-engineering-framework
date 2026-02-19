@@ -55,7 +55,7 @@ The human identified a scaling problem during session S-2026-0219 while discussi
 2. **Earn your detail** — Granularity is adaptive: starts coarse, deepens where complexity and change frequency warrant it
 3. **UI as first-class** — UI elements and interaction flows are documented as explicitly as backend components, because agents can't see them
 4. **Enforced, not optional** — Like task-first, component registration is a structural gate, not a suggestion
-5. **Practice what you preach** — The inception process itself must persist all research and thinking as durable artifacts (T-190 principle)
+5. **"The thinking trail IS the artifact"** — Research, discussions, dead ends, and decision rationale are the durable output, not just the final design. Every step of the intellectual process is persisted as a first-class artifact with cross-references. If the final deliverable is lost, the thinking trail can reconstruct it. If the thinking trail is lost, the final deliverable is an unjustified assertion.
 
 ## Name Decision
 

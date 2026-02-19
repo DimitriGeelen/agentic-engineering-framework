@@ -498,4 +498,12 @@ learnings:
   date: 2026-02-18
   context: Added via context agent
   application: TBD
+
+  - id: L-001
+    learning: "The thinking trail IS the artifact. Research, discussions, dead ends, and decision rationale are the durable output — not just the final design. Every step of the intellectual process must be persisted as a first-class artifact with cross-references. If the thinking trail is lost, the final deliverable is an unjustified assertion."
+    source: Human principle, Component Fabric genesis discussion
+    task: T-191
+    date: 2026-02-19
+    context: "Added via context agent"
+    application: "TBD"
 candidates: []
