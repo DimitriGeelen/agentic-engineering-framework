@@ -1,0 +1,508 @@
+# Risk Register — ISO 27001-aligned (T-194)
+# Likelihood (1-5) × Impact (1-5) = Score (1-25)
+# Ranking: Low (1-4), Medium (5-9), High (10-16), Urgent (17-25)
+#
+# Schema:
+#   id: R-XXX
+#   title: Short description
+#   category: governance|context|knowledge|quality|tooling|operational|session|architecture|oversight
+#   description: What can go wrong
+#   likelihood: 1-5 (Rare/Unlikely/Possible/Likely/Almost certain)
+#   impact: 1-5 (Negligible/Minor/Moderate/Major/Severe)
+#   score: L × I
+#   ranking: low|medium|high|urgent
+#   evidence: Task/incident references
+#   controls: List of controls that mitigate this risk
+#   control_status: closed|decided-build|acknowledged|watching
+#   residual_notes: What risk remains after controls
+
+risks:
+  # === GOVERNANCE BYPASS ===
+  - id: R-001
+    title: "External code overrides governance rules"
+    category: governance
+    description: "Plugins, skills, or third-party code claim authority over CLAUDE.md rules, bypassing task-first enforcement"
+    likelihood: 2  # Fixed by hooks, but new plugins could re-emerge
+    impact: 4      # Governance integrity compromised
+    score: 8
+    ranking: medium
+    evidence: [T-061, T-062, T-063]
+    controls: [check-active-task.sh, "CLAUDE.md instruction precedence", "fw work-on"]
+    control_status: closed
+    residual_notes: "New plugins could still attempt override; hook is the structural backstop"
+
+  - id: R-002
+    title: "Human-verifiable criteria completed without human verification"
+    category: governance
+    description: "Agent checks behavior/UX acceptance criteria based on code existence, not actual observation"
+    likelihood: 4  # Happens on every task with behavior ACs
+    impact: 4      # Quality assurance falsified
+    score: 16
+    ranking: high
+    evidence: [T-057, G-006, G-010, T-192]
+    controls: ["T-193 AC tagging (### Agent / ### Human)"]
+    control_status: decided-build
+    residual_notes: "T-193 not yet implemented. Risk active."
+
+  - id: R-003
+    title: "Architectural decisions made without inception exploration"
+    category: governance
+    description: "Agent skips inception process despite knowing the rule, making architectural decisions directly"
+    likelihood: 3  # Observed with T-138
+    impact: 3      # Wrong architecture chosen, rework needed
+    score: 9
+    ranking: medium
+    evidence: [T-138, L-042]
+    controls: ["CLAUDE.md inception discipline", "commit-msg inception gate"]
+    control_status: closed
+    residual_notes: "Gate enforces after 2 commits but agent can build and commit once without gate"
+
+  # === CONTEXT/SESSION LOSS ===
+  - id: R-004
+    title: "Work context destroyed with no recovery"
+    category: context
+    description: "Session hits 0% context without generating handover; all working memory lost"
+    likelihood: 2  # Budget gate now blocks at 85%
+    impact: 5      # Complete session loss
+    score: 10
+    ranking: high
+    evidence: [T-059, FP-004]
+    controls: [budget-gate.sh, checkpoint.sh, "auto-handover at critical"]
+    control_status: closed
+    residual_notes: "Auto-handover generates skeleton; TODOs may not be filled"
+
+  - id: R-005
+    title: "Context monitoring fails silently"
+    category: context
+    description: "Token counting returns wrong values (cache, synthetic entries, wrong transcript), no warnings issued"
+    likelihood: 2  # Multiple fixes applied
+    impact: 5      # Context exhaustion without warning
+    score: 10
+    ranking: high
+    evidence: [T-078, L-014]
+    controls: ["T-078 cache removal", "synthetic filtering", "2MB tail window", "compaction detection"]
+    control_status: closed
+    residual_notes: "Token reading lags by ~1 API call; thresholds set conservatively to compensate"
+
+  - id: R-006
+    title: "Budget gate deadlock after compaction"
+    category: context
+    description: "Fresh session after compaction locked because stale budget state says critical"
+    likelihood: 1  # Fixed with allowlist and reset
+    impact: 4      # Session completely blocked
+    score: 4
+    ranking: low
+    evidence: [T-145]
+    controls: ["allowlist fw context init", "pre-compact reset"]
+    control_status: closed
+    residual_notes: "None — structurally prevented"
+
+  - id: R-007
+    title: "Budget protection creates runaway loops"
+    category: context
+    description: "Budget warning triggers handover which increases token count which triggers more warnings"
+    likelihood: 1  # Cooldown + dedup fix
+    impact: 5      # 14 cascading compactions in 13 minutes
+    score: 5
+    ranking: medium
+    evidence: [L-050, T-136, T-148, T-149]
+    controls: ["T-136 cooldown (10 min)", "T-148 dedup", "T-149 project isolation"]
+    control_status: closed
+    residual_notes: "None — multiple guards prevent re-emergence"
+
+  - id: R-008
+    title: "Safety mechanisms create cascading triggers"
+    category: context
+    description: "Auto-handover fires repeatedly because tokens stay above threshold after each handover"
+    likelihood: 1  # Cooldown file prevents
+    impact: 4      # 25 handover commits in 10 min
+    score: 4
+    ranking: low
+    evidence: [T-136]
+    controls: ["10-minute cooldown file"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-009
+    title: "Budget protection fails in shared-tooling mode"
+    category: context
+    description: "Budget gate non-functional when framework serves multiple projects"
+    likelihood: 2  # Fixed for known projects
+    impact: 4      # Protection completely absent
+    score: 8
+    ranking: medium
+    evidence: [G-007, T-149]
+    controls: ["T-149: transcript discovery, reset, stale handling, project isolation"]
+    control_status: closed
+    residual_notes: "New project setups need verification"
+
+  - id: R-028
+    title: "Research + implementation burns context fast"
+    category: context
+    description: "Inception research consuming ~100K tokens leaves no room for implementation in same session"
+    likelihood: 3  # Happens on any research-heavy task
+    impact: 3      # Insights lost if not committed before context dies
+    score: 9
+    ranking: medium
+    evidence: [L-031, L-032]
+    controls: ["L-031/L-032: synthesize immediately", "split sessions", "commit cadence"]
+    control_status: closed
+    residual_notes: "Depends on agent discipline + budget gate as backstop"
+
+  # === KNOWLEDGE LOSS ===
+  - id: R-010
+    title: "Research artifacts lost — not persisted from conversation"
+    category: knowledge
+    description: "Decisions, analysis, discoveries generated in conversation are not saved to files before context loss"
+    likelihood: 4  # Observed repeatedly: T-174, T-194, T-151
+    impact: 4      # Decisions re-debated, analysis re-done, discoveries never re-discovered
+    score: 16
+    ranking: high
+    evidence: [G-009, T-174, T-178, T-185, T-194]
+    controls: ["C-001 live document (CLAUDE.md)", "C-002 commit gate (commit-msg)", "C-003 checkpoint (checkpoint.sh)", "Audit Section 11 OE tests"]
+    control_status: decided-build
+    residual_notes: "Experiment running on T-194. 7 prior controls all failed. New controls untested."
+
+  - id: R-011
+    title: "Sub-agent output explosion exhausts context"
+    category: knowledge
+    description: "Uncontrolled sub-agent output (30-50K chars × N agents) consumes session context"
+    likelihood: 3  # Protocol exists but not enforced
+    impact: 4      # Session crash, work lost
+    score: 12
+    ranking: high
+    evidence: [G-008, T-073, T-158, T-170]
+    controls: ["CLAUDE.md dispatch protocol", "fw bus (unused)", "L-053/L-054 write-to-file"]
+    control_status: decided-build
+    residual_notes: "Protocol advisory only. fw bus never adopted. Structural enforcement missing."
+
+  - id: R-012
+    title: "Significant work after task closure becomes invisible"
+    category: knowledge
+    description: "Task completed but work continues under same task ID; subsequent commits not captured in episodic"
+    likelihood: 2  # Warning in commit-msg hook
+    impact: 3      # Work history incomplete
+    score: 6
+    ranking: medium
+    evidence: [T-112, T-113, T-114, FP-006]
+    controls: ["T-113 P-010 AC gate", "T-114 closed task warning", "T-122 P-011 verification gate"]
+    control_status: closed
+    residual_notes: "Warning only, not blocking"
+
+  - id: R-013
+    title: "Knowledge accumulates in wrong location"
+    category: knowledge
+    description: "Post-closure commits reference closed task; knowledge not indexed"
+    likelihood: 2  # Warning usually catches it
+    impact: 2      # Findable but misplaced
+    score: 4
+    ranking: low
+    evidence: [FP-006, T-114]
+    controls: ["T-114 closed task warning", "episodic refresh"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-014
+    title: "Framework knowledge lost by format mismatch"
+    category: knowledge
+    description: "Init script creates YAML with wrong key names; downstream scripts can't read it"
+    likelihood: 1  # Fixed and tested
+    impact: 3      # Pattern data silently lost
+    score: 3
+    ranking: low
+    evidence: [T-141, L-047]
+    controls: ["T-141 format fix", "L-047 round-trip verification", "21-test suite"]
+    control_status: closed
+    residual_notes: "None — tested"
+
+  - id: R-015
+    title: "Controls bypassed via alternative code paths"
+    category: knowledge
+    description: "Script uses hardcoded heredoc instead of template; template changes don't propagate"
+    likelihood: 2  # Can recur if new scripts added
+    impact: 3      # Control ineffective
+    score: 6
+    ranking: medium
+    evidence: [T-140, T-141, L-044, L-045]
+    controls: ["T-141 wire template", "L-044 verify controls wired"]
+    control_status: closed
+    residual_notes: "New scripts could repeat the pattern"
+
+  # === QUALITY DECAY ===
+  - id: R-016
+    title: "Incomplete work declared complete"
+    category: quality
+    description: "Task status set to work-completed without all acceptance criteria checked"
+    likelihood: 1  # P-010 gate blocks
+    impact: 4      # False completion, downstream assumptions broken
+    score: 4
+    ranking: low
+    evidence: [T-112, T-113]
+    controls: ["P-010 AC gate in update-task.sh"]
+    control_status: closed
+    residual_notes: "--force bypasses with logging"
+
+  - id: R-017
+    title: "Template text executed as shell code"
+    category: quality
+    description: "Verification gate P-011 runs HTML comments as commands"
+    likelihood: 1  # Fixed
+    impact: 3      # False pass or crash
+    score: 3
+    ranking: low
+    evidence: [T-140, T-141]
+    controls: ["T-141 fixed extraction regex"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-018
+    title: "Invalid YAML data disappears without error"
+    category: quality
+    description: "YAML with special characters breaks parsing; downstream tools skip the entry silently"
+    likelihood: 3  # YAML written by agents frequently
+    impact: 3      # Tasks, patterns, learnings silently lost
+    score: 9
+    ranking: medium
+    evidence: [T-143, L-048]
+    controls: ["L-048 recorded"]
+    control_status: acknowledged
+    residual_notes: "No validation gate. Needs schema validation."
+
+  - id: R-019
+    title: "Root causes hidden by premature workarounds"
+    category: quality
+    description: "Agent encounters error, switches to alternative approach without investigating root cause"
+    likelihood: 3  # Observed 3 instances in T-118
+    impact: 3      # Bug persists, recurs later
+    score: 9
+    ranking: medium
+    evidence: [T-118, L-037, FP-007]
+    controls: ["CLAUDE.md hypothesis-driven debugging", "error-watchdog.sh"]
+    control_status: closed
+    residual_notes: "Behavioral rule + watchdog. Agent can still skip investigation."
+
+  # === TOOLING FRAGILITY ===
+  - id: R-020
+    title: "Third-party code overrides governance"
+    category: tooling
+    description: "Plugins claim authority ('invoke before any response') conflicting with task-first rule"
+    likelihood: 2  # Precedence rules established
+    impact: 4      # Governance bypassed
+    score: 8
+    ranking: medium
+    evidence: [T-061, T-062, T-063, T-067]
+    controls: ["CLAUDE.md instruction precedence", "PreToolUse hook", "audit tool"]
+    control_status: closed
+    residual_notes: "New plugins could attempt override"
+
+  - id: R-021
+    title: "External dependencies create instability"
+    category: tooling
+    description: "Python package conflicts break framework tooling"
+    likelihood: 1  # Minimized dependencies
+    impact: 2      # Tooling temporarily broken
+    score: 2
+    ranking: low
+    evidence: [FP-003, T-026]
+    controls: ["Use built-in validation, minimize dependencies"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-022
+    title: "Shell utilities hide edge cases"
+    category: tooling
+    description: "Bash parsing bugs (sed, grep, ((x++))) cause silent failures"
+    likelihood: 3  # New bash code written frequently
+    impact: 2      # Script fails on edge case
+    score: 6
+    ranking: medium
+    evidence: [FP-002, L-007, L-008]
+    controls: ["L-007/L-008 patterns documented", "MEMORY.md ((x++)) warning"]
+    control_status: closed
+    residual_notes: "Documentation only — no structural prevention"
+
+  - id: R-023
+    title: "Hook configuration fails silently"
+    category: tooling
+    description: "Claude Code hooks require nested structure; flat format silently ignored"
+    likelihood: 2  # Documented but fragile
+    impact: 5      # ALL enforcement disappears
+    score: 10
+    ranking: high
+    evidence: [T-092, T-118, T-063]
+    controls: ["Correct format in settings.json", "MEMORY.md documentation"]
+    control_status: closed
+    residual_notes: "Still fragile — no validation tool for hook config"
+
+  - id: R-024
+    title: "UI silently drops data on parse errors"
+    category: tooling
+    description: "Watchtower skips tasks/items that fail YAML parsing without error message"
+    likelihood: 3  # Happens when agents write bad YAML
+    impact: 3      # Data invisible in UI
+    score: 9
+    ranking: medium
+    evidence: [T-143, L-048]
+    controls: ["L-048 recorded"]
+    control_status: acknowledged
+    residual_notes: "Same root cause as R-018. Needs schema validation."
+
+  # === OPERATIONAL LOOPS ===
+  - id: R-025
+    title: "Automation creates infinite loops"
+    category: operational
+    description: "Automated processes trigger each other in cycles (timestamps, hooks, commits)"
+    likelihood: 1  # Fixed by scoping
+    impact: 3      # Git history polluted, session disrupted
+    score: 3
+    ranking: low
+    evidence: [FP-001]
+    controls: ["Only update active tasks on commit"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-026
+    title: "Single enforcement layer removal breaks system"
+    category: operational
+    description: "Removing one enforcement mechanism causes immediate quality degradation"
+    likelihood: 2  # Hooks stable but could be reconfigured
+    impact: 4      # 97% → 88% traceability in 5 commits
+    score: 8
+    ranking: medium
+    evidence: [L-016, E-004]
+    controls: ["Defense-in-depth principle", "proved experimentally"]
+    control_status: closed
+    residual_notes: "Principle documented but not structurally enforced"
+
+  # === SESSION/MEMORY ===
+  - id: R-029
+    title: "Procedural knowledge fails under pressure"
+    category: session
+    description: "Agent knows budget rule but doesn't check at 80% context because under cognitive load"
+    likelihood: 2  # Budget gate now blocks structurally
+    impact: 4      # Session lost
+    score: 8
+    ranking: medium
+    evidence: [L-043]
+    controls: ["budget-gate.sh structural block", "L-043 check at every decision point"]
+    control_status: closed
+    residual_notes: "Structural gate is the real control; procedural rule is backup"
+
+  - id: R-030
+    title: "Sub-agent outputs uncontrolled"
+    category: session
+    description: "No size limits or management for sub-agent return values"
+    likelihood: 3  # Protocol exists but unenforced
+    impact: 3      # Context bloat
+    score: 9
+    ranking: medium
+    evidence: [L-025, T-073]
+    controls: ["CLAUDE.md dispatch protocol", "fw bus (unused)"]
+    control_status: closed
+    residual_notes: "Advisory only"
+
+  - id: R-031
+    title: "Session boundary state corruption"
+    category: session
+    description: "Cached values from previous session read in new session"
+    likelihood: 1  # Caches removed
+    impact: 5      # Wrong session data, wrong decisions
+    score: 5
+    ranking: medium
+    evidence: [L-014, T-078]
+    controls: ["Cache removed entirely"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-032
+    title: "Long inception gate conflict"
+    category: session
+    description: "2-commit inception gate incompatible with 5-10 session deep explorations"
+    likelihood: 4  # Every deep inception hits this
+    impact: 2      # Forces --no-verify, logged
+    score: 8
+    ranking: medium
+    evidence: [L-002, T-191]
+    controls: ["--no-verify bypass with logging"]
+    control_status: acknowledged
+    residual_notes: "Bypass is the current workaround. Needs configurable threshold."
+
+  - id: R-033
+    title: "Human-owned tasks auto-completed without human"
+    category: session
+    description: "Specification/inception tasks with owner: human completed by agent without dialogue"
+    likelihood: 3  # Observed T-151 (2 min, no consultation)
+    impact: 4      # Human sovereignty violated, spec may be wrong
+    score: 12
+    ranking: high
+    evidence: [T-151, T-194]
+    controls: ["T-194 human-dialogue-mandatory decision"]
+    control_status: decided-build
+    residual_notes: "Currently only a decision, no structural enforcement"
+
+  # === ARCHITECTURE ===
+  - id: R-034
+    title: "Spec complexity unmatched by reality"
+    category: architecture
+    description: "Designed features (statuses, fields) never used in practice"
+    likelihood: 2  # Ongoing vigilance needed
+    impact: 2      # Maintenance burden, confusion
+    score: 4
+    ranking: low
+    evidence: [G-002, T-051]
+    controls: ["Evidence-driven simplification", "spec-reality gap detection"]
+    control_status: closed
+    residual_notes: "gaps.yaml monitors for new instances"
+
+  - id: R-035
+    title: "Unused complexity creates maintenance burden"
+    category: architecture
+    description: "Template fields, config options, features that nobody uses"
+    likelihood: 2  # Periodic pruning needed
+    impact: 2      # Confusion, wasted effort
+    score: 4
+    ranking: low
+    evidence: [G-003, T-052]
+    controls: ["Field removal", "gap-driven simplification"]
+    control_status: closed
+    residual_notes: "None"
+
+  - id: R-036
+    title: "Multi-agent coordination untested"
+    category: architecture
+    description: "Framework designed for multi-agent but all 188 tasks are single-owner"
+    likelihood: 3  # Will occur when scaling
+    impact: 3      # Coordination failures
+    score: 9
+    ranking: medium
+    evidence: [G-004]
+    controls: ["Trigger: first multi-agent task"]
+    control_status: watching
+    residual_notes: "No mitigation until tested"
+
+  # === HUMAN OVERSIGHT ===
+  - id: R-037
+    title: "Framework changes made without blast radius analysis"
+    category: oversight
+    description: "Agent edits core files affecting all projects without showing impact"
+    likelihood: 2  # Learning recorded
+    impact: 4      # All projects affected
+    score: 8
+    ranking: medium
+    evidence: [L-058, T-182]
+    controls: ["L-058: show files/changes/risks/blast-radius, get approval"]
+    control_status: closed
+    residual_notes: "Behavioral rule only"
+
+  - id: R-038
+    title: "Effective practices undocumented"
+    category: oversight
+    description: "Patterns that work well are ad-hoc across tasks, never promoted to practices"
+    likelihood: 3  # Happens slowly
+    impact: 2      # Inefficiency, not crisis
+    score: 6
+    ranking: medium
+    evidence: [L-026, T-097, T-098, T-099]
+    controls: ["Operational reflection protocol", "fw promote suggest", "graduation pipeline"]
+    control_status: closed
+    residual_notes: "Graduation pipeline checks at 20+ learnings"
