@@ -51,3 +51,33 @@ bypasses:
     authorized_by: human
     reason: "Inception gate: T-194 Watchtower risks page is Phase 1 build artifact, not a new exploration commit"
     retroactive_task: null
+  - timestamp: 2026-02-20T06:52:32Z
+    action: "T-191: Phase 2b — all 6 use cases validated with human (requirements dialogue)"
+    commit: 3c25e4ea59401642671770c15055f0963fe366ad
+    authorized_by: human
+    reason: "T-191 deep inception (5-10 sessions), Phase 2 of 5 — decision premature"
+    retroactive_task: null
+  - timestamp: 2026-02-20T06:57:30Z
+    action: "T-191: Phase 2a/2c — minimum viable schema + requirements synthesis"
+    commit: 01d3479ee45d7aaf13e163e9da80f6385d37ebaf
+    authorized_by: human
+    reason: "T-191 deep inception Phase 2, decision premature"
+    retroactive_task: null
+  - timestamp: 2026-02-20T07:03:42Z
+    action: "T-191: Phase 3d — prototype 10 component cards, 2 subsystems, test against 6 use cases"
+    commit: a26a6ba54cdf9be930256cd426b0e62924bc88ab
+    authorized_by: human
+    reason: "T-191 deep inception Phase 3, decision premature"
+    retroactive_task: null
+  - timestamp: 2026-02-20T07:04:24Z
+    action: "T-191: Phase 3 — data model report with prototype findings and schema refinements"
+    commit: f4d7eda1ebfe0c941fb989b311e16a1dbf595c64
+    authorized_by: human
+    reason: "T-191 deep inception Phase 3, decision premature"
+    retroactive_task: null
+  - timestamp: 2026-02-20T07:10:28Z
+    action: "T-191: Phase 4 — enforcement & tooling design (CLI, hooks, drift, granularity)"
+    commit: a076cf6028842953c7f83e50c683fb5ef30ad16b
+    authorized_by: human
+    reason: "T-191 deep inception Phase 4, decision premature"
+    retroactive_task: null
