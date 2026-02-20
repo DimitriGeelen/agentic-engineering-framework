@@ -1,0 +1,13 @@
+id: agents/task-create/update-task.sh
+name: update-task
+type: script
+subsystem: task-management
+location: agents/task-create/update-task.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

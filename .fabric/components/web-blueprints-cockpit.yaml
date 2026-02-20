@@ -1,0 +1,13 @@
+id: web/blueprints/cockpit.py
+name: cockpit
+type: route
+subsystem: watchtower
+location: web/blueprints/cockpit.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

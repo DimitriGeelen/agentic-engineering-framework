@@ -1,21 +1,21 @@
 ---
-id: T-212
-name: "Component Fabric — drift detection + audit integration"
+id: T-213
+name: "Component Fabric — overview + session start injection"
 description: >
-  Implement fw fabric drift (unregistered, orphaned, stale edge detection) and add drift section to agents/audit/audit.sh. Related: T-191, T-208.
+  Implement fw fabric overview (compact subsystem summary). Add SessionStart hook to auto-inject topology summary at session start. Target: ~500 tokens. Related: T-191, T-208.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
-tags: [component-fabric, drift, audit]
+tags: [component-fabric, onboarding]
 related_tasks: []
 created: 2026-02-20T07:14:09Z
-last_update: 2026-02-20T07:19:49Z
-date_finished: null
+last_update: 2026-02-20T07:21:24Z
+date_finished: 2026-02-20T07:21:24Z
 ---
 
-# T-212: Component Fabric — drift detection + audit integration
+# T-213: Component Fabric — overview + session start injection
 
 ## Context
 
@@ -33,7 +33,7 @@ date_finished: null
 <!-- Remove this section if all criteria are agent-verifiable. -->
 
 ## Verification
-bash -c "fw audit --section structure 2>&1 | grep -c Fabric > /dev/null"
+bash -c "bash agents/context/post-compact-resume.sh 2>&1 | grep -c Topology > /dev/null"
 
 <!-- Shell commands that MUST pass before work-completed. One per line.
      Lines starting with # are comments. Empty lines ignored.
@@ -59,8 +59,11 @@ bash -c "fw audit --section structure 2>&1 | grep -c Fabric > /dev/null"
 
 ### 2026-02-20T07:14:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-212-component-fabric--drift-detection--audit.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-213-component-fabric--overview--session-star.md
 - **Context:** Initial task creation
 
-### 2026-02-20T07:19:49Z — status-update [task-update-agent]
+### 2026-02-20T07:21:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-20T07:21:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -3,11 +3,60 @@
 # Each subsystem groups related components for navigation and onboarding
 
 subsystems:
+  - id: watchtower
+    name: Watchtower Web UI
+    purpose: "Web dashboard for monitoring framework state — tasks, learnings, patterns, metrics, graduation pipeline"
+    component_count: 37
+    summary: "Flask app → blueprints (tasks, discovery, graduation, metrics) → templates → htmx interactions"
+    entry_points:
+      - "fw serve (start server)"
+      - "http://localhost:3000"
+
+  - id: context-fabric
+    name: Context Fabric
+    purpose: "Persistent memory system — working memory, project memory, episodic memory. Manages learnings, decisions, patterns, focus."
+    component_count: 13
+    summary: "context.sh → lib/{learning,decision,pattern,focus,init,status,episodic}.sh → .context/project/*.yaml"
+    entry_points:
+      - "fw context <command>"
+
+  - id: framework-core
+    name: Framework Core
+    purpose: "CLI entry point, library scripts, initialization, harvesting, metrics"
+    component_count: 10
+    summary: "bin/fw → lib/{init,harvest,inception,promote,assumption,bus}.sh → metrics.sh"
+    entry_points:
+      - "fw <command>"
+
+  - id: git-traceability
+    name: Git Traceability
+    purpose: "Task-referenced commits, hooks (commit-msg, post-commit, pre-push), bypass logging"
+    component_count: 7
+    summary: "git.sh → hooks/{commit-msg,post-commit,pre-push} → bypass-log.yaml"
+    entry_points:
+      - "fw git <command>"
+
+  - id: component-fabric
+    name: Component Fabric
+    purpose: "Structural topology system — component cards, dependency graph, drift detection, impact analysis"
+    component_count: 7
+    summary: "fabric.sh → lib/{register,query,traverse,drift,summary,ui}.sh → .fabric/"
+    entry_points:
+      - "fw fabric <command>"
+
+  - id: healing
+    name: Healing Loop
+    purpose: "Antifragile error recovery — diagnose issues, suggest mitigations, record patterns"
+    component_count: 5
+    summary: "healing.sh → lib/{diagnose,resolve,patterns,suggest}.sh → patterns.yaml"
+    entry_points:
+      - "fw healing <command>"
+
   - id: learnings-pipeline
     name: Learnings Pipeline
     purpose: "Capture, store, display, and validate project learnings"
-    components: [C-001, C-002, F-001, C-003, C-006, C-004]
-    summary: "context.sh → add-learning → learnings.yaml → discovery.py → /learnings + audit YAML check"
+    component_count: 4
+    summary: "add-learning → learnings.yaml → discovery.py → /learnings + audit YAML check"
     entry_points:
       - "fw context add-learning (CLI)"
       - "/learnings (web)"
@@ -15,16 +64,39 @@ subsystems:
   - id: budget-management
     name: Context Budget Management
     purpose: "Track and enforce context token budget within sessions. Block tool calls at critical level."
-    components: [C-007, C-008, F-003, C-009]
-    summary: "PreToolUse → budget-gate.sh → .budget-status ← checkpoint.sh ← PostToolUse; blocks at 170K tokens"
+    component_count: 3
+    summary: "PreToolUse → budget-gate.sh → .budget-status ← checkpoint.sh ← PostToolUse"
     entry_points:
       - "Automatic (hooks on every tool call)"
-      - "checkpoint.sh status (manual check)"
+
+  - id: task-management
+    name: Task Management
+    purpose: "Create, update, and track tasks with frontmatter, ACs, verification gates"
+    component_count: 2
+    summary: "create-task.sh + update-task.sh → .tasks/{active,completed}/"
+    entry_points:
+      - "fw task <command>"
+
+  - id: audit
+    name: Audit System
+    purpose: "Compliance checking — structure, task quality, git traceability, controls, drift"
+    component_count: 2
+    summary: "audit.sh → .context/audits/ (cron every 30 min + pre-push)"
+    entry_points:
+      - "fw audit"
+
+  - id: handover
+    name: Handover System
+    purpose: "Session continuity — generate forward-looking context documents"
+    component_count: 1
+    summary: "handover.sh → .context/handovers/LATEST.md"
+    entry_points:
+      - "fw handover"
 
   - id: enforcement
     name: Hook Enforcement
     purpose: "Wire PreToolUse/PostToolUse hooks for task gate, tier-0 guard, budget gate, checkpoint, error watchdog"
-    components: [C-009]
+    component_count: 1
     summary: "settings.json → PreToolUse[task-gate, tier0, budget-gate] + PostToolUse[checkpoint, error-watchdog]"
     entry_points:
-      - ".claude/settings.json (configuration)"
+      - ".claude/settings.json"

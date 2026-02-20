@@ -1,0 +1,13 @@
+id: agents/healing/lib/resolve.sh
+name: resolve
+type: script
+subsystem: healing
+location: agents/healing/lib/resolve.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

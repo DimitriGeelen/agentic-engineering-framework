@@ -1,0 +1,13 @@
+id: web/templates/graduation.html
+name: graduation
+type: template
+subsystem: watchtower
+location: web/templates/graduation.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

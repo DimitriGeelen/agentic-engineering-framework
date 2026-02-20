@@ -1,0 +1,13 @@
+id: web/templates/inception_detail.html
+name: inception_detail
+type: template
+subsystem: watchtower
+location: web/templates/inception_detail.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

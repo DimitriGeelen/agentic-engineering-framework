@@ -1,0 +1,13 @@
+id: web/blueprints/tasks.py
+name: tasks
+type: route
+subsystem: watchtower
+location: web/blueprints/tasks.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

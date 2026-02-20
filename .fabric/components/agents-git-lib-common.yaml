@@ -1,0 +1,13 @@
+id: agents/git/lib/common.sh
+name: common
+type: script
+subsystem: git-traceability
+location: agents/git/lib/common.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

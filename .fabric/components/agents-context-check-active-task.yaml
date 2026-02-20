@@ -1,0 +1,13 @@
+id: agents/context/check-active-task.sh
+name: check-active-task
+type: script
+subsystem: context-fabric
+location: agents/context/check-active-task.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

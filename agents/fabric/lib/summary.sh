@@ -21,7 +21,9 @@ do_overview() {
         [ -f "$card" ] || continue
         comp_count=$((comp_count + 1))
         local deps
-        deps=$(grep -c "  - target:" "$card" 2>/dev/null || echo 0)
+        deps=$(grep -c "  - target:" "$card" 2>/dev/null || true)
+        deps=$(echo "$deps" | tr -d '[:space:]')
+        [ -z "$deps" ] && deps=0
         edge_count=$((edge_count + deps))
     done
 
@@ -39,9 +41,10 @@ print()
 
 for s in subsystems:
     name = s.get('name', '?')
-    comps = s.get('components', [])
+    comps = s.get('components', s.get('component_count', 0))
+    count = len(comps) if isinstance(comps, list) else comps
     summary = s.get('summary', '')
-    print(f'**{name}** ({len(comps)} components): {summary}')
+    print(f'**{name}** ({count} components): {summary}')
 " 2>/dev/null
 
     return 0
@@ -104,7 +107,9 @@ do_stats() {
         [ -f "$card" ] || continue
         comp_count=$((comp_count + 1))
         local deps
-        deps=$(grep -c "  - target:" "$card" 2>/dev/null || echo 0)
+        deps=$(grep -c "  - target:" "$card" 2>/dev/null || true)
+        deps=$(echo "$deps" | tr -d '[:space:]')
+        [ -z "$deps" ] && deps=0
         edge_count=$((edge_count + deps))
         local t
         t=$(grep "^type:" "$card" | head -1 | sed 's/^type: //')

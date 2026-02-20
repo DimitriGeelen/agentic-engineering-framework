@@ -1,0 +1,13 @@
+id: agents/audit/plugin-audit.sh
+name: plugin-audit
+type: script
+subsystem: audit
+location: agents/audit/plugin-audit.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

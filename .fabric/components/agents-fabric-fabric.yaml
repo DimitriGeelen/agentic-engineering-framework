@@ -1,0 +1,13 @@
+id: agents/fabric/fabric.sh
+name: fabric
+type: script
+subsystem: component-fabric
+location: agents/fabric/fabric.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

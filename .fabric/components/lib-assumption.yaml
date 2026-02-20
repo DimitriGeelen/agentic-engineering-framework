@@ -1,0 +1,13 @@
+id: lib/assumption.sh
+name: assumption
+type: script
+subsystem: framework-core
+location: lib/assumption.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

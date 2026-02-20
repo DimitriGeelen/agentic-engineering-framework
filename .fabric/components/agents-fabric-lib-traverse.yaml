@@ -1,0 +1,13 @@
+id: agents/fabric/lib/traverse.sh
+name: traverse
+type: script
+subsystem: component-fabric
+location: agents/fabric/lib/traverse.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

@@ -1,0 +1,13 @@
+id: web/templates/timeline.html
+name: timeline
+type: template
+subsystem: watchtower
+location: web/templates/timeline.html
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

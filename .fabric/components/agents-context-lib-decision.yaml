@@ -1,0 +1,13 @@
+id: agents/context/lib/decision.sh
+name: decision
+type: script
+subsystem: context-fabric
+location: agents/context/lib/decision.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown

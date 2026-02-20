@@ -1,0 +1,13 @@
+id: agents/git/lib/status.sh
+name: status
+type: script
+subsystem: git-traceability
+location: agents/git/lib/status.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: unknown
