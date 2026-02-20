@@ -318,7 +318,11 @@ gaps:
       unchecked ### Human ACs stay in active/ with owner: human (not moved to completed/).
       Discoverability via fw task verify command + web UI cockpit attention section.
       Backward compatible: tasks without headers work as before.
+      T-193 built the implementation. T-216 added placeholder detection on top.
+      Validated across T-215, T-218, T-219 — all used Agent/Human split correctly,
+      human ACs stayed unchecked until human sign-off, partial-complete flow worked.
     related_task: T-192
-    status: decided-build
+    status: closed
     created: 2026-02-19
-    last_reviewed: 2026-02-19
+    last_reviewed: 2026-02-20
+    closed_date: 2026-02-20

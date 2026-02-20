@@ -17,7 +17,7 @@
                 </a>
             </strong>
             <span style="font-size: 0.8rem; color: var(--pico-muted-color); white-space: nowrap; margin-left: 0.5rem;">
-                {{ s.component_count | default(s.components | default([]) | length) }}
+                {{ subsystem_counts.get(s.id, 0) }}
             </span>
         </header>
         <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin-bottom: 0.25rem;">{{ s.purpose }}</p>
