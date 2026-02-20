@@ -263,7 +263,37 @@ if [ -n "$NEW_STATUS" ]; then
                         exit 1
                     fi
                 elif [ "$AC_TOTAL" -gt 0 ]; then
-                    echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
+                    # P-010 placeholder detection: reject skeleton/template ACs
+                    PLACEHOLDER_ACS=""
+                    if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
+                        PLACEHOLDER_ACS=$(echo "$AGENT_ACS" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
+                        if [ -z "$PLACEHOLDER_ACS" ]; then
+                            PLACEHOLDER_ACS=$(echo "$AGENT_ACS" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
+                        fi
+                    else
+                        PLACEHOLDER_ACS=$(echo "$AC_SECTION" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
+                        if [ -z "$PLACEHOLDER_ACS" ]; then
+                            PLACEHOLDER_ACS=$(echo "$AC_SECTION" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
+                        fi
+                    fi
+
+                    if [ -n "$PLACEHOLDER_ACS" ]; then
+                        if [ "$FORCE" = true ]; then
+                            echo -e "${YELLOW}WARNING: Skeleton/placeholder ACs detected (--force bypass)${NC}"
+                        else
+                            PLACEHOLDER_COUNT=$(echo "$PLACEHOLDER_ACS" | wc -l)
+                            echo -e "${RED}ERROR: Cannot complete — $PLACEHOLDER_COUNT $AC_LABEL are skeleton placeholders:${NC}" >&2
+                            echo "$PLACEHOLDER_ACS" | sed 's/^/  /' >&2
+                            echo "" >&2
+                            echo "Replace placeholder text with real, specific acceptance criteria." >&2
+                            echo "Options:" >&2
+                            echo "  1. Edit the task file with real ACs, then retry" >&2
+                            echo "  2. Use --force to bypass (logged)" >&2
+                            exit 1
+                        fi
+                    else
+                        echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
+                    fi
                 fi
 
                 # Report human AC status if split mode (T-193)
