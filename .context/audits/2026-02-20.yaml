@@ -1,9 +1,8 @@
-# Audit Results - 2026-02-20-0821
-timestamp: 2026-02-20T07:21:23Z
-sections: "structure"
+# Audit Results - 2026-02-20-0828
+timestamp: 2026-02-20T07:28:27Z
 summary:
-  pass: 7
-  warn: 0
+  pass: 66
+  warn: 22
   fail: 0
 findings:
   - level: PASS
@@ -19,4 +18,188 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 10 registered, 99 unregistered (coverage growing)"
+    check: "Fabric: 95 registered, 12 unregistered (coverage growing)"
+  - level: PASS
+    check: "All 2 active tasks are valid"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 98% (613/622 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: PASS
+    check: "Bypass log exists"
+  - level: PASS
+    check: "Commit-msg hook installed"
+  - level: PASS
+    check: "No Tier 0 violations detected"
+  - level: PASS
+    check: "Practices documented: 7 practice(s) in 015-Practices.md"
+  - level: PASS
+    check: "All practices have traceable origins"
+  - level: PASS
+    check: "All practice origins resolve to actual tasks"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 212 episodic summaries have quality content"
+  - level: PASS
+    check: "No orphaned episodic files"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
+  - level: PASS
+    check: "Gaps register: 1 watching, no triggers fired"
+  - level: WARN
+    check: "Handover has 1 open question(s) with no matching gap or task"
+    mitigation: "Register via 'fw gaps add' or 'fw task create' — see LATEST.md Open Questions section"
+  - level: PASS
+    check: "Graduation pipeline: 0 learnings (threshold: 20)"
+  - level: WARN
+    check: "Inception task T-084 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-084-*.md"
+  - level: WARN
+    check: "Inception task T-097 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-097-*.md"
+  - level: WARN
+    check: "Inception task T-107 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-107-*.md"
+  - level: WARN
+    check: "Inception task T-118 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-118-*.md"
+  - level: WARN
+    check: "Inception task T-122 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-122-*.md"
+  - level: WARN
+    check: "Inception task T-124 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-124-*.md"
+  - level: WARN
+    check: "Inception task T-131 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-131-*.md"
+  - level: WARN
+    check: "Inception task T-132 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-132-*.md"
+  - level: WARN
+    check: "Inception task T-133 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-133-*.md"
+  - level: WARN
+    check: "Inception task T-138 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-138-*.md"
+  - level: WARN
+    check: "Inception task T-140 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-140-*.md"
+  - level: WARN
+    check: "Inception task T-154 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-154-*.md"
+  - level: WARN
+    check: "Inception task T-155 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-155-*.md"
+  - level: WARN
+    check: "Inception task T-156 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-156-*.md"
+  - level: WARN
+    check: "Inception task T-157 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-157-*.md"
+  - level: WARN
+    check: "Inception task T-158 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-158-*.md"
+  - level: WARN
+    check: "Inception task T-164 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-164-*.md"
+  - level: WARN
+    check: "Inception task T-168 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-168-*.md"
+  - level: WARN
+    check: "Inception task T-181 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-181-*.md"
+  - level: WARN
+    check: "Inception task T-192 has no research artifact in docs/reports/"
+    mitigation: "Save research findings: docs/reports/T-192-*.md"
+  - level: PASS
+    check: "C-001: No active inception tasks to check"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-215)"
+  - level: PASS
+    check: "CTL-003: Budget status file fresh (< 5min old)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 1 (last commit: 29 seconds ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: critical)"
+  - level: PASS
+    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+  - level: PASS
+    check: "CTL-020: 4 cron audit file(s) in last hour"
+  - level: PASS
+    check: "CTL-002: Tier 0 guard installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-005: Error watchdog installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-006: Handover coverage for compactions (141 handovers, 28 compactions)"
+  - level: PASS
+    check: "CTL-007: Post-compact resume hook configured in settings.json"
+  - level: PASS
+    check: "CTL-009: Inception T-084 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-097 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-107 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-109 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-110 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-118 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-120 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-124 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-138 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-154 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-157 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-158 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-164 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-174 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-178 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-179 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-181 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-190 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-191 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-194 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
+  - level: PASS
+    check: "CTL-011: pre-push hook installed and executable"
+  - level: PASS
+    check: "CTL-012: All 212 completed tasks have checked ACs"
+  - level: PASS
+    check: "CTL-013: T-214 verification re-run: 1/1 pass"
+  - level: PASS
+    check: "CTL-013: T-213 verification re-run: 1/1 pass"
+  - level: PASS
+    check: "CTL-013: T-212 verification re-run: 1/1 pass"
+  - level: PASS
+    check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
+  - level: PASS
+    check: "CTL-016: No failure patterns recorded"
