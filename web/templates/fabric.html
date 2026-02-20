@@ -6,22 +6,22 @@
 </div>
 
 <!-- Subsystem tiles -->
-<div class="grid" style="margin-bottom: 1.5rem;">
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
     {% for s in subsystems %}
     <article style="padding: 0.75rem; margin-bottom: 0;">
-        <header style="padding: 0.5rem; margin: -0.75rem -0.75rem 0.5rem;">
-            <strong>
+        <header style="padding: 0.5rem; margin: -0.75rem -0.75rem 0.5rem; display: flex; justify-content: space-between; align-items: baseline;">
+            <strong style="white-space: nowrap;">
                 <a href="/fabric?subsystem={{ s.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
                    style="text-decoration: none;">
                     {{ s.name }}
                 </a>
             </strong>
-            <span style="float: right; font-size: 0.8rem; color: var(--pico-muted-color);">
-                {{ s.component_count | default(s.components | default([]) | length) }} components
+            <span style="font-size: 0.8rem; color: var(--pico-muted-color); white-space: nowrap; margin-left: 0.5rem;">
+                {{ s.component_count | default(s.components | default([]) | length) }}
             </span>
         </header>
         <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin-bottom: 0.25rem;">{{ s.purpose }}</p>
-        <code style="font-size: 0.75rem;">{{ s.summary }}</code>
+        <code style="font-size: 0.7rem; word-break: break-all;">{{ s.summary }}</code>
     </article>
     {% endfor %}
 </div>
