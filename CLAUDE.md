@@ -406,6 +406,37 @@ Synthesizes current state from:
 - **Git State** — Uncommitted changes, recent commits
 - **Tasks** — Active tasks with status
 
+## Component Fabric
+
+The Component Fabric (`.fabric/`) is a structural topology map of every significant file in the framework. It enables impact analysis, dependency tracking, and onboarding.
+
+### When to Use
+
+- **Before modifying a file:** `fw fabric deps <path>` — see what depends on it and what it depends on
+- **Before committing:** `fw fabric blast-radius` — see downstream impact of your changes
+- **After creating new files:** `fw fabric register <path>` — create a component card
+- **Periodic health check:** `fw fabric drift` — detect unregistered, orphaned, or stale components
+
+### Key Commands
+
+| Command | Purpose |
+|---------|---------|
+| `fw fabric overview` | Compact subsystem summary (12 subsystems, ~99 components) |
+| `fw fabric deps <path>` | Show dependencies for a file |
+| `fw fabric impact <path>` | Full transitive downstream chain |
+| `fw fabric blast-radius [ref]` | Downstream impact of a commit |
+| `fw fabric search <keyword>` | Search by tags, name, purpose |
+| `fw fabric drift` | Detect unregistered/orphaned/stale |
+| `fw fabric register <path>` | Create component card for a file |
+
+### Component Cards
+
+Each component has a YAML card in `.fabric/components/` with: id, name, type, subsystem, location, purpose, interfaces, depends_on, depended_by. Cards are the source of truth for structural relationships.
+
+### Web UI
+
+The Watchtower web UI at `/fabric` provides: subsystem overview, component table with filtering, dependency graph visualization, and component detail pages.
+
 ## Context Budget Management (P-009)
 
 **Context is a finite, non-renewable resource within a session.** Treat it like a battery gauge.
@@ -646,6 +677,12 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Resume state | `fw resume status` | `./agents/resume/resume.sh status` |
 | Sync working memory | `fw resume sync` | `./agents/resume/resume.sh sync` |
 | Session capture | Review `agents/session-capture/AGENT.md` checklist | |
+| Fabric overview | `fw fabric overview` | `./agents/fabric/fabric.sh overview` |
+| Fabric deps | `fw fabric deps <path>` | `./agents/fabric/fabric.sh deps <path>` |
+| Fabric impact | `fw fabric impact <path>` | `./agents/fabric/fabric.sh impact <path>` |
+| Blast radius | `fw fabric blast-radius [ref]` | `./agents/fabric/fabric.sh blast-radius [ref]` |
+| Fabric drift | `fw fabric drift` | `./agents/fabric/fabric.sh drift` |
+| Register component | `fw fabric register <path>` | `./agents/fabric/fabric.sh register <path>` |
 | Post bus result | `fw bus post --task T-XXX --agent TYPE --summary "..."` | |
 | Read bus results | `fw bus read T-XXX [R-NNN]` | |
 | Bus manifest | `fw bus manifest [T-XXX]` | |
