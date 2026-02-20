@@ -1,16 +1,16 @@
 ---
-session_id: S-2026-0220-0957
-timestamp: 2026-02-20T08:57:30Z
-predecessor: S-2026-0220-0956
+session_id: S-2026-0220-0959
+timestamp: 2026-02-20T08:59:06Z
+predecessor: S-2026-0220-0957
 tasks_active: [T-200, T-215, T-218]
 tasks_touched: [T-215, T-200, T-218, T-XXX, T-193, T-155, T-198, T-214, T-217, T-216, T-132, T-202, T-151, T-196, T-211, T-203, T-184, T-204, T-191, T-131, T-194, T-206, T-197, T-189, T-157, T-205, T-213, T-209, T-156, T-199, T-111, T-212, T-169, T-207, T-168, T-190, T-195, T-208, T-210, T-201, T-192]
 tasks_completed: []
-uncommitted_changes: 15
+uncommitted_changes: 14
 owner: claude-code
 session_narrative: ""
 ---
 
-# Session Handover: S-2026-0220-0957
+# Session Handover: S-2026-0220-0959
 
 ## Where We Are
 
@@ -92,11 +92,11 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Recent Commits
 
+- d5363a5 T-012: Session handover S-2026-0220-0957
 - 1ab475f T-012: Fill handover S-2026-0220-0956 — P-010 fix, dispatch preamble, fabric enrichment
 - 8a5c49a T-012: Session handover S-2026-0220-0956
 - ddd3220 T-218: Complete — enriched 89 fabric component descriptions, removed empty slug artifact
 - d2b486c T-218: Enrich 89 fabric component descriptions — replace all TODO placeholders
-- 89e561f T-217: Add mandatory dispatch preamble — agents write to disk, return ≤5 lines
 
 ---
 
