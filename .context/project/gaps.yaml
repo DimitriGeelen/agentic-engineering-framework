@@ -298,10 +298,17 @@ gaps:
       - "Orchestrator pre-defines output path and includes in prompt"
       - "Audit check: inception tasks must have docs/reports/ artifact"
       - "PostToolUse hook on Task: verify file was written if prompt included output path"
-    status: decided-build
+    status: closed
+    closed_date: 2026-02-20
+    resolution: >
+      T-226 escalated the commit-msg hook research artifact check from warn to block.
+      After the first inception commit, subsequent commits are blocked unless
+      docs/reports/T-XXX-*.md exists on disk or in staged changes. Combined with
+      C-001 guidance in CLAUDE.md, audit research section, and dispatch preamble (T-217),
+      provides layered enforcement: documentation + commit gate + post-completion audit.
     related_task: T-178
     created: 2026-02-18
-    last_reviewed: 2026-02-18
+    last_reviewed: 2026-02-20
 
   - id: G-010
     title: "P-010 AC gate has no distinction between agent-verifiable and human-verifiable criteria"

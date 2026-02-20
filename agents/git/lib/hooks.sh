@@ -47,7 +47,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.4
+# VERSION=1.5
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -116,6 +116,37 @@ if [ -n "$TASK_REF" ]; then
                 echo "  After exploration: fw inception decide $TASK_REF go|no-go --rationale '...'"
                 echo ""
             fi
+        fi
+    fi
+fi
+
+# --- Research Artifact Enforcement (C-001, G-009, T-226) ---
+# Block inception commits after the first if no docs/reports/T-XXX artifact exists.
+# First commit is allowed (task creation). Subsequent commits must have the artifact
+# either on disk already or in the staged changes.
+if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
+    INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$INCEPTION_COMMITS" -gt 0 ]; then
+        # Check if docs/reports/ changes are in this commit
+        HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)
+        # Check if docs/reports/T-XXX-* already exists on disk
+        HAS_EXISTING_ARTIFACT=false
+        if ls "$PROJECT_ROOT/docs/reports/${TASK_REF}-"* >/dev/null 2>&1; then
+            HAS_EXISTING_ARTIFACT=true
+        fi
+
+        if [ "$HAS_STAGED_RESEARCH" -eq 0 ] && [ "$HAS_EXISTING_ARTIFACT" = false ]; then
+            echo ""
+            echo "BLOCKED: inception commit for $TASK_REF — no research artifact (C-001/G-009)"
+            echo ""
+            echo "Inception tasks require a research artifact in docs/reports/"
+            echo "Create the artifact BEFORE conducting research:"
+            echo "  docs/reports/${TASK_REF}-<topic>.md"
+            echo ""
+            echo "The thinking trail IS the artifact — conversations are ephemeral, files are permanent."
+            echo ""
+            echo "Emergency bypass: git commit --no-verify"
+            exit 1
         fi
     fi
 fi
