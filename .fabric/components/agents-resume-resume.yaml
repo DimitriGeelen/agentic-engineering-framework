@@ -1,7 +1,7 @@
 id: agents/resume/resume.sh
 name: resume
 type: script
-subsystem: unknown
+subsystem: context-fabric
 location: agents/resume/resume.sh
 tags: []
 purpose: Resume Agent - Post-compaction recovery and state synchronization

@@ -1,7 +1,7 @@
 id: agents/observe/observe.sh
 name: observe
 type: script
-subsystem: unknown
+subsystem: context-fabric
 location: agents/observe/observe.sh
 tags: []
 purpose: Observe Agent - Lightweight observation capture

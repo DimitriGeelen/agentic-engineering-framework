@@ -1,7 +1,7 @@
 id: agents/mcp/mcp-reaper.sh
 name: mcp-reaper
 type: script
-subsystem: unknown
+subsystem: healing
 location: agents/mcp/mcp-reaper.sh
 tags: []
 purpose: mcp-reaper.sh — Detect and kill orphaned MCP processes
