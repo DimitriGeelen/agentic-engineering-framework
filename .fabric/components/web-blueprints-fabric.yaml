@@ -1,0 +1,10 @@
+id: web/blueprints/fabric.py
+name: fabric
+type: route
+subsystem: watchtower
+location: web/blueprints/fabric.py
+tags: []
+purpose: 'Flask blueprint: Fabric'
+depends_on: []
+last_verified: 2026-02-20
+created_by: unknown

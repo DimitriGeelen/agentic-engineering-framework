@@ -4,10 +4,7 @@ type: script
 subsystem: healing
 location: agents/healing/lib/suggest.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Healing Agent - suggest command
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

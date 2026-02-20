@@ -1,0 +1,10 @@
+id: web/templates/fabric_detail.html
+name: fabric_detail
+type: template
+subsystem: watchtower
+location: web/templates/fabric_detail.html
+tags: []
+purpose: 'Watchtower UI page: Fabric Detail'
+depends_on: []
+last_verified: 2026-02-20
+created_by: unknown

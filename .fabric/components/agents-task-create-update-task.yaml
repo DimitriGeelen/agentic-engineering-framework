@@ -4,10 +4,7 @@ type: script
 subsystem: task-management
 location: agents/task-create/update-task.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Task Update Agent - Status transitions with auto-triggers
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: script
 subsystem: framework-core
 location: bin/claude-fw
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: claude-fw — Claude Code wrapper with auto-restart support
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

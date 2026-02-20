@@ -4,10 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/timeline.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Blueprint ''timeline'' — routes: /timeline'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

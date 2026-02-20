@@ -4,10 +4,7 @@ type: script
 subsystem: git-traceability
 location: agents/git/lib/log.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Git Agent - Log subcommand
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

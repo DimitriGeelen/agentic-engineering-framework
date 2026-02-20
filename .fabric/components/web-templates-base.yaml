@@ -4,10 +4,8 @@ type: template
 subsystem: watchtower
 location: web/templates/base.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Template: {{ page_title | default("Watchtower") }} — Agentic Engineering
+  Framework'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

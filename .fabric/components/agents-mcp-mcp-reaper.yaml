@@ -4,10 +4,7 @@ type: script
 subsystem: unknown
 location: agents/mcp/mcp-reaper.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: mcp-reaper.sh — Detect and kill orphaned MCP processes
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

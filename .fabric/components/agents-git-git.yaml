@@ -4,10 +4,7 @@ type: script
 subsystem: git-traceability
 location: agents/git/git.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Git Agent - Structural Enforcement for Git Operations
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/error-watchdog.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Error Watchdog — PostToolUse hook for Bash error detection
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

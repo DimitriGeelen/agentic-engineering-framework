@@ -4,10 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/upgrade.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: fw upgrade - Sync framework improvements to a consumer project
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: script
 subsystem: unknown
 location: agents/resume/resume.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Resume Agent - Post-compaction recovery and state synchronization
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/session.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Flask blueprint: Session'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

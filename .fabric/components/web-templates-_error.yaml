@@ -4,10 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_error.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Error page template — displays HTTP error codes and messages
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: script
 subsystem: unknown
 location: agents/observe/observe.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Observe Agent - Lightweight observation capture
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

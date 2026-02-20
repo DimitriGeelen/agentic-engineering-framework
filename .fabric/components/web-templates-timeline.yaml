@@ -4,10 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/timeline.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Page template: Timeline'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

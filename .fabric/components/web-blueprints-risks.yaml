@@ -4,10 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/risks.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Flask blueprint ''risks'' serving routes: /risks'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

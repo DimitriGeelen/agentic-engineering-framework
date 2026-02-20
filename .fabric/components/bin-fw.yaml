@@ -4,10 +4,7 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: fw - Agentic Engineering Framework CLI
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

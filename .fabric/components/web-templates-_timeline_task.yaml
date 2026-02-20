@@ -4,10 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_timeline_task.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'HTMX fragment: individual task card for the timeline view'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

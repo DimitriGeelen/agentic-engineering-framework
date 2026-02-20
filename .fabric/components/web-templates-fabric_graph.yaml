@@ -1,0 +1,10 @@
+id: web/templates/fabric_graph.html
+name: fabric_graph
+type: template
+subsystem: watchtower
+location: web/templates/fabric_graph.html
+tags: []
+purpose: 'Watchtower UI page: Fabric Graph'
+depends_on: []
+last_verified: 2026-02-20
+created_by: unknown

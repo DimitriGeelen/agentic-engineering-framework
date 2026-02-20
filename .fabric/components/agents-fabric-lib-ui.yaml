@@ -4,10 +4,7 @@ type: script
 subsystem: component-fabric
 location: agents/fabric/lib/ui.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Fabric Agent - UI query commands
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: script
 subsystem: task-management
 location: agents/task-create/create-task.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Task Creation Agent - Mechanical Operations
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

@@ -4,10 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_wrapper.html
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'Base layout wrapper: nav, header, footer, htmx/CSS includes'
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown

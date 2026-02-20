@@ -4,10 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/post-compact-resume.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: Session Resume Hook — Reinject structured context on session recovery
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: unknown
