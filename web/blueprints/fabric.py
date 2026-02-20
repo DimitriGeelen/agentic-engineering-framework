@@ -205,11 +205,65 @@ def component_detail(name):
                     "location": dep.get("location", ""),
                 })
 
+    # Read source file for inline display
+    source_code = None
+    source_lang = "plaintext"
+    source_lines = 0
+    source_size = ""
+    location = component.get("location", "")
+    if location:
+        source_path = os.path.join(PROJECT_ROOT, location)
+        real_source = os.path.realpath(source_path)
+        real_root = os.path.realpath(PROJECT_ROOT)
+        if real_source.startswith(real_root + os.sep) and os.path.isfile(real_source):
+            ext_map = {
+                ".py": "python", ".sh": "bash", ".bash": "bash",
+                ".html": "html", ".jinja": "html", ".jinja2": "html",
+                ".yaml": "yaml", ".yml": "yaml",
+                ".js": "javascript", ".ts": "typescript",
+                ".md": "markdown", ".json": "json",
+                ".css": "css", ".toml": "toml",
+            }
+            _, ext = os.path.splitext(real_source)
+            source_lang = ext_map.get(ext.lower(), "")
+            if not source_lang:
+                # Detect from shebang for extensionless files
+                try:
+                    with open(real_source) as f:
+                        first_line = f.readline()
+                    if first_line.startswith("#!") and ("bash" in first_line or "sh" in first_line):
+                        source_lang = "bash"
+                    elif first_line.startswith("#!") and "python" in first_line:
+                        source_lang = "python"
+                    else:
+                        source_lang = "plaintext"
+                except Exception:
+                    source_lang = "plaintext"
+            try:
+                size_bytes = os.path.getsize(real_source)
+                if size_bytes < 1024:
+                    source_size = f"{size_bytes} B"
+                else:
+                    source_size = f"{size_bytes / 1024:.1f} KB"
+                with open(real_source) as f:
+                    lines = f.readlines()
+                source_lines = len(lines)
+                if source_lines > 2000:
+                    lines = lines[:2000]
+                    lines.append(f"\n# ... truncated at 2000 lines (file has {source_lines} lines) ...\n")
+                source_code = "".join(lines)
+            except Exception:
+                pass
+
     return render_page(
         "fabric_detail.html",
         page_title=f"Component: {component.get('name', '?')}",
         component=component,
         reverse_deps=reverse_deps,
+        source_code=source_code,
+        source_lang=source_lang,
+        source_lines=source_lines,
+        source_size=source_size,
     )
 
 

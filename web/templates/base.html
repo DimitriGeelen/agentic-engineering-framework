@@ -7,6 +7,8 @@
     <title>{{ page_title | default("Watchtower") }} — Agentic Engineering Framework</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         /* ── Nav ─────────────────────────────────────────────── */
         nav.site-nav {
@@ -332,6 +334,15 @@
         document.addEventListener('click', function(event) {
             document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
                 if (!d.contains(event.target)) d.removeAttribute('open');
+            });
+        });
+
+        // Highlight.js: initial highlight + re-highlight after htmx swaps
+        hljs.highlightAll();
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('pre code.hljs, pre code[class*="language-"]').forEach(function(block) {
+                delete block.dataset.highlighted;
+                hljs.highlightElement(block);
             });
         });
     </script>

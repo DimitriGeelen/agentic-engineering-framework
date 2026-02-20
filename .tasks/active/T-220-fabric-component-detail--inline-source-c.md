@@ -4,10 +4,10 @@ name: "Fabric component detail — inline source code viewer"
 description: >
   Add inline source code viewing to /fabric/component/<name> detail page. When user clicks a component, show the file contents with syntax highlighting. Enhances the fabric browser from metadata-only to full code inspection.
 
-status: captured
+status: started-work
 workflow_type: build
-owner: human
-horizon: later
+owner: agent
+horizon: now
 tags: []
 related_tasks: []
 created: 2026-02-20T09:16:03Z
@@ -19,29 +19,28 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+The `/fabric/component/<name>` detail page shows component metadata but not the actual source code. Adding inline source display with syntax highlighting makes the fabric browser self-contained for code inspection.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] highlight.js CSS + JS added to `web/templates/base.html` (CDN)
+- [x] htmx afterSwap re-highlight hook in base template
+- [x] `component_detail()` in `web/blueprints/fabric.py` reads source file from component location
+- [x] Source code section rendered in `web/templates/fabric_detail.html` with syntax highlighting
+- [x] Language detection from file extension (.py, .sh, .yaml, .js, .html, .md)
+- [x] Safety: file must exist and be under PROJECT_ROOT, capped at 2000 lines
+- [x] Missing file shows muted "file not found" message instead of error
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Source code is readable with good contrast (dark theme)
+- [ ] Collapsible section works smoothly
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+curl -sf http://localhost:3000/fabric/component/web-app | grep -q "hljs"
+curl -sf http://localhost:3000/fabric/component/web-app | grep -q "Source Code"
+python3 -c "import yaml; yaml.safe_load(open('.fabric/components/web-app.yaml'))"
 
 ## Decisions
 

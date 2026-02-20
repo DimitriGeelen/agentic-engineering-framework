@@ -53,6 +53,23 @@
     </footer>
 </article>
 
+<!-- Source Code -->
+{% if source_code is defined %}
+<details open>
+    <summary>
+        <strong>Source Code</strong>
+        {% if source_code %}
+        <small style="color: var(--pico-muted-color); margin-left: 0.5rem;">{{ source_lines }} lines &middot; {{ source_size }}</small>
+        {% endif %}
+    </summary>
+    {% if source_code %}
+    <pre style="margin: 0; max-height: 70vh; overflow: auto;"><code class="language-{{ source_lang }}">{{ source_code }}</code></pre>
+    {% else %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">Source file not found at <code>{{ component.location }}</code></p>
+    {% endif %}
+</details>
+{% endif %}
+
 <!-- Dependencies (what this component uses) -->
 {% if component.depends_on %}
 <details open>
