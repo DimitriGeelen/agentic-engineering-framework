@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-215: Component Fabric — Watchtower UI page (visual browser + graph)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T07:58:51Z
+# ============================================================================
+
+task_id: T-215
+task_name: "Component Fabric — Watchtower UI page (visual browser + graph)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T07:14:11Z
+completed: 2026-02-20T07:58:50Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-20T08:26:27+01:00
+last_commit: 2026-02-20T08:26:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower fabric page — overview, component list, detail view (graph pending)
+
+# Key outcomes
+outcomes:
+  - "/fabric page loads with subsystem tiles and searchable/filterable component list"
+  - "/fabric/component/<name> detail page shows deps, reverse deps, tags, metadata"
+  - "/fabric/graph page renders Cytoscape.js dependency graph with typed node/edge coloring"
+  - "Graph supports click-to-highlight downstream, info panel, re-layout, label toggle"
+  - "Blueprint registered in app.py, \"Architecture\" nav group in shared.py"
+  - "Subsystem filter on graph page navigates via htmx"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-214.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-215-component-fabric--watchtower-ui-page-vis.md"
+  - ".tasks/completed/T-214-component-fabric--batch-register-all-aef.md"
+  - "web/app.py"
+  - "web/blueprints/fabric.py"
+  - "web/shared.py"
+  - "web/templates/fabric_detail.html"
+  - "web/templates/fabric.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T08:26:27"
+    action: "T-215: Watchtower fabric page — overview, component list, detail view (graph pending)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [component-fabric, web, watchtower, visualization]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 1
+  files_changed: 12
+  lines_added: 698
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-215-component-fabric--watchtower-ui-page-vis.md
+generated_by: context-agent-hybrid

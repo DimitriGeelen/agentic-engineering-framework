@@ -1,0 +1,300 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>
+        <a href="/fabric" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; Back to Fabric</a>
+        &nbsp;|&nbsp; {{ total_nodes }} nodes, {{ total_edges }} edges
+        {% if not nodes %}
+        &nbsp;|&nbsp; <em>Only enriched components (with dependency edges) appear here.
+        <a href="/fabric" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Browse all components &rarr;</a></em>
+        {% endif %}
+    </p>
+</div>
+
+<!-- Controls -->
+<div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+    <select id="subsystem-filter" style="margin-bottom: 0; max-width: 220px;">
+        <option value="">All subsystems</option>
+        {% for s in subsystems %}
+        <option value="{{ s.id }}" {{ 'selected' if subsystem_filter == s.id }}>{{ s.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button id="btn-relayout" class="outline" style="margin-bottom: 0; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Re-layout</button>
+    <button id="btn-reset" class="outline secondary" style="margin-bottom: 0; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Reset view</button>
+
+    <label style="margin-bottom: 0; font-size: 0.85rem;">
+        <input type="checkbox" id="chk-labels" checked style="margin-bottom: 0;"> Labels
+    </label>
+</div>
+
+<!-- Legend -->
+<details style="margin-bottom: 1rem;">
+    <summary style="font-size: 0.85rem;">Legend</summary>
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0.5rem 0; font-size: 0.8rem;">
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#a0aec0;vertical-align:middle;"></span> script</span>
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#63b3ed;vertical-align:middle;"></span> route</span>
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#4fd1c5;vertical-align:middle;"></span> template</span>
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ecc94b;vertical-align:middle;"></span> data</span>
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fc8181;vertical-align:middle;"></span> hook</span>
+        <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b794f4;vertical-align:middle;"></span> config</span>
+        <span style="margin-left: 1rem; border-left: 1px solid var(--pico-muted-border-color); padding-left: 1rem;">
+            <span style="color:#718096;">&mdash;</span> reads
+            <span style="color:#ed8936; margin-left:0.5rem;">&mdash;</span> writes
+            <span style="color:#48bb78; margin-left:0.5rem;">&mdash;</span> calls
+            <span style="color:#f56565; margin-left:0.5rem;">&mdash;</span> triggers
+            <span style="color:#4299e1; margin-left:0.5rem;">&mdash;</span> renders
+        </span>
+    </div>
+</details>
+
+<!-- Graph container -->
+<div id="cy" style="width: 100%; height: 600px; background: #1a1a2e; border-radius: 8px; position: relative;"></div>
+
+<!-- Info panel (shown on node click) -->
+<div id="info-panel" style="display: none; margin-top: 1rem;">
+    <article style="padding: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong id="info-name"></strong>
+            <button id="info-close" class="outline secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin: 0;">Close</button>
+        </div>
+        <p style="margin: 0.5rem 0 0.25rem;">
+            <span id="info-type" style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px;"></span>
+            <span id="info-subsystem" style="font-size: 0.8rem; color: var(--pico-muted-color); margin-left: 0.5rem;"></span>
+        </p>
+        <p style="margin: 0.25rem 0;"><code id="info-location" style="font-size: 0.75rem;"></code></p>
+        <p style="margin: 0.5rem 0 0;">
+            <a id="info-link" href="#" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View component details &rarr;</a>
+        </p>
+    </article>
+</div>
+
+<!-- Cytoscape.js -->
+<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<script>
+(function() {
+    var rawNodes = {{ nodes | tojson }};
+    var rawEdges = {{ edges | tojson }};
+
+    var TYPE_COLORS = {
+        script:   '#a0aec0',
+        route:    '#63b3ed',
+        template: '#4fd1c5',
+        data:     '#ecc94b',
+        hook:     '#fc8181',
+        config:   '#b794f4',
+        fragment: '#4fd1c5'
+    };
+    var EDGE_COLORS = {
+        reads:    '#718096',
+        writes:   '#ed8936',
+        calls:    '#48bb78',
+        triggers: '#f56565',
+        renders:  '#4299e1',
+        uses:     '#a0aec0',
+        extends:  '#b794f4',
+        includes: '#4fd1c5',
+        htmx:     '#63b3ed'
+    };
+    var DEFAULT_COLOR = '#a0aec0';
+
+    // Build cytoscape elements
+    var elements = [];
+    rawNodes.forEach(function(n) {
+        elements.push({
+            data: {
+                id: n.id,
+                label: n.label,
+                type: n.type,
+                subsystem: n.subsystem,
+                location: n.location || ''
+            }
+        });
+    });
+    rawEdges.forEach(function(e, i) {
+        elements.push({
+            data: {
+                id: 'e' + i,
+                source: e.source,
+                target: e.target,
+                edgeType: e.type
+            }
+        });
+    });
+
+    if (elements.length === 0) {
+        document.getElementById('cy').innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:1.1rem;">' +
+            'No enriched components with dependency edges found.<br>Enrich component cards to see the graph.' +
+            '</div>';
+        return;
+    }
+
+    var cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: elements,
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'label': 'data(label)',
+                    'background-color': function(el) { return TYPE_COLORS[el.data('type')] || DEFAULT_COLOR; },
+                    'color': '#e2e8f0',
+                    'font-size': '10px',
+                    'text-valign': 'bottom',
+                    'text-margin-y': 4,
+                    'width': 24,
+                    'height': 24,
+                    'border-width': 1,
+                    'border-color': '#2d3748',
+                    'text-outline-width': 2,
+                    'text-outline-color': '#1a1a2e'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'width': 1.5,
+                    'line-color': function(el) { return EDGE_COLORS[el.data('edgeType')] || DEFAULT_COLOR; },
+                    'target-arrow-color': function(el) { return EDGE_COLORS[el.data('edgeType')] || DEFAULT_COLOR; },
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'arrow-scale': 0.7,
+                    'opacity': 0.7
+                }
+            },
+            {
+                selector: 'node.highlighted',
+                style: {
+                    'border-width': 3,
+                    'border-color': '#f6e05e',
+                    'width': 32,
+                    'height': 32,
+                    'z-index': 10
+                }
+            },
+            {
+                selector: 'node.selected-node',
+                style: {
+                    'border-width': 3,
+                    'border-color': '#fff',
+                    'width': 36,
+                    'height': 36,
+                    'z-index': 20
+                }
+            },
+            {
+                selector: 'edge.highlighted',
+                style: {
+                    'width': 3,
+                    'opacity': 1,
+                    'z-index': 10
+                }
+            },
+            {
+                selector: 'node.dimmed',
+                style: {
+                    'opacity': 0.15
+                }
+            },
+            {
+                selector: 'edge.dimmed',
+                style: {
+                    'opacity': 0.08
+                }
+            }
+        ],
+        layout: {
+            name: 'cose',
+            animate: false,
+            nodeOverlap: 20,
+            idealEdgeLength: 80,
+            edgeElasticity: 100,
+            nestingFactor: 1.2,
+            gravity: 0.25,
+            numIter: 1000,
+            padding: 30
+        },
+        minZoom: 0.2,
+        maxZoom: 4,
+        wheelSensitivity: 0.3
+    });
+
+    // --- Node click: highlight downstream ---
+    cy.on('tap', 'node', function(evt) {
+        var node = evt.target;
+        var successors = node.successors();
+        var predecessors = node.predecessors();
+        var neighborhood = successors.union(predecessors).union(node);
+
+        // Dim everything
+        cy.elements().addClass('dimmed').removeClass('highlighted selected-node');
+        // Un-dim neighborhood
+        neighborhood.removeClass('dimmed');
+        successors.addClass('highlighted');
+        successors.edges().addClass('highlighted');
+        node.addClass('selected-node');
+
+        // Show info panel
+        var panel = document.getElementById('info-panel');
+        document.getElementById('info-name').textContent = node.data('label');
+        var typeSpan = document.getElementById('info-type');
+        typeSpan.textContent = node.data('type');
+        typeSpan.style.background = TYPE_COLORS[node.data('type')] || DEFAULT_COLOR;
+        typeSpan.style.color = '#1a202c';
+        document.getElementById('info-subsystem').textContent = node.data('subsystem');
+        document.getElementById('info-location').textContent = node.data('location');
+        var link = document.getElementById('info-link');
+        link.href = '/fabric/component/' + encodeURIComponent(node.data('label'));
+        panel.style.display = 'block';
+    });
+
+    // Click background: reset
+    cy.on('tap', function(evt) {
+        if (evt.target === cy) {
+            cy.elements().removeClass('dimmed highlighted selected-node');
+            document.getElementById('info-panel').style.display = 'none';
+        }
+    });
+
+    // --- Controls ---
+    document.getElementById('btn-relayout').addEventListener('click', function() {
+        cy.layout({
+            name: 'cose',
+            animate: true,
+            animationDuration: 500,
+            nodeOverlap: 20,
+            idealEdgeLength: 80,
+            edgeElasticity: 100,
+            gravity: 0.25,
+            numIter: 1000,
+            padding: 30
+        }).run();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function() {
+        cy.elements().removeClass('dimmed highlighted selected-node');
+        document.getElementById('info-panel').style.display = 'none';
+        cy.fit(undefined, 30);
+    });
+
+    document.getElementById('chk-labels').addEventListener('change', function() {
+        if (this.checked) {
+            cy.style().selector('node').style('label', 'data(label)').update();
+        } else {
+            cy.style().selector('node').style('label', '').update();
+        }
+    });
+
+    document.getElementById('info-close').addEventListener('click', function() {
+        cy.elements().removeClass('dimmed highlighted selected-node');
+        document.getElementById('info-panel').style.display = 'none';
+    });
+
+    // Subsystem filter navigates via htmx-style URL
+    document.getElementById('subsystem-filter').addEventListener('change', function() {
+        var val = this.value;
+        var url = val ? '/fabric/graph?subsystem=' + encodeURIComponent(val) : '/fabric/graph';
+        htmx.ajax('GET', url, {target: '#content', swap: 'innerHTML', pushUrl: true});
+    });
+})();
+</script>

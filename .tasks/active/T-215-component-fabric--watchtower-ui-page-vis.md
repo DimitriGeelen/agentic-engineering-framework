@@ -4,15 +4,15 @@ name: "Component Fabric — Watchtower UI page (visual browser + graph)"
 description: >
   Add /fabric page to Watchtower web UI. Features: subsystem overview tiles, component list (filterable/searchable), component detail with clickable deps, visual dependency graph (D3/Cytoscape/SVG), impact highlighting, drift dashboard. Same stack as existing Watchtower. Human requested visual drill-down interface. Related: T-191.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [component-fabric, web, watchtower, visualization]
 related_tasks: []
 created: 2026-02-20T07:14:11Z
-last_update: 2026-02-20T07:23:18Z
-date_finished: null
+last_update: 2026-02-20T07:58:50Z
+date_finished: 2026-02-20T07:58:50Z
 ---
 
 # T-215: Component Fabric — Watchtower UI page (visual browser + graph)
@@ -24,24 +24,24 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] /fabric page loads with subsystem tiles and searchable/filterable component list
+- [x] /fabric/component/<name> detail page shows deps, reverse deps, tags, metadata
+- [x] /fabric/graph page renders Cytoscape.js dependency graph with typed node/edge coloring
+- [x] Graph supports click-to-highlight downstream, info panel, re-layout, label toggle
+- [x] Blueprint registered in app.py, "Architecture" nav group in shared.py
+- [x] Subsystem filter on graph page navigates via htmx
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Graph layout is readable and visually clear
+- [ ] Component detail page has sufficient information density
+- [ ] Navigation between fabric pages feels natural
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+curl -sf http://localhost:3000/fabric
+curl -sf http://localhost:3000/fabric/component/add-learning
+curl -sf http://localhost:3000/fabric/graph
+python3 -c "from web.blueprints.fabric import _load_components, _build_graph; cs=_load_components(); ns,es=_build_graph([c for c in cs if c.get('depends_on') or c.get('writers') or c.get('readers')]); assert len(ns)>0 and len(es)>0, f'graph empty: {len(ns)} nodes, {len(es)} edges'"
 
 ## Decisions
 
@@ -63,3 +63,6 @@ date_finished: null
 
 ### 2026-02-20T07:23:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-20T07:58:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

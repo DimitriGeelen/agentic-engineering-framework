@@ -97,6 +97,23 @@ def _build_graph(components):
                     seen_edges.add(key)
                     edges.append({"source": rt, "target": source_name, "type": "reads"})
 
+    # Add placeholder nodes for edge targets/sources not in the node set
+    node_ids = {n["id"] for n in nodes}
+    for e in edges:
+        for endpoint in (e["source"], e["target"]):
+            if endpoint and endpoint not in node_ids:
+                node_ids.add(endpoint)
+                nodes.append({
+                    "id": endpoint,
+                    "label": endpoint,
+                    "type": "unknown",
+                    "subsystem": "unknown",
+                    "location": "",
+                })
+
+    # Filter out edges with empty endpoints
+    edges = [e for e in edges if e["source"] and e["target"]]
+
     return nodes, edges
 
 
