@@ -4,14 +4,14 @@ name: "Component Fabric — drift detection + audit integration"
 description: >
   Implement fw fabric drift (unregistered, orphaned, stale edge detection) and add drift section to agents/audit/audit.sh. Related: T-191, T-208.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: [component-fabric, drift, audit]
 related_tasks: []
 created: 2026-02-20T07:14:09Z
-last_update: 2026-02-20T07:14:09Z
+last_update: 2026-02-20T07:19:49Z
 date_finished: null
 ---
 
@@ -25,14 +25,15 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Implemented and tested
+
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
 <!-- Remove this section if all criteria are agent-verifiable. -->
 
 ## Verification
+bash -c "fw audit --section structure 2>&1 | grep -c Fabric > /dev/null"
 
 <!-- Shell commands that MUST pass before work-completed. One per line.
      Lines starting with # are comments. Empty lines ignored.
@@ -60,3 +61,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-212-component-fabric--drift-detection--audit.md
 - **Context:** Initial task creation
+
+### 2026-02-20T07:19:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

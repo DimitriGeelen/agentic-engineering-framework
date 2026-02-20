@@ -81,6 +81,19 @@ CONTEXT="${CONTEXT}
 - Branch: ${BRANCH}
 - Last commit: ${LAST_COMMIT}
 - Uncommitted: ${UNCOMMITTED} files
+"
+
+# Fabric topology overview (T-213 — spatial memory injection)
+if [ -f "$PROJECT_ROOT/.fabric/subsystems.yaml" ]; then
+    FABRIC_OVERVIEW=$("$PROJECT_ROOT/agents/fabric/fabric.sh" overview 2>/dev/null)
+    if [ -n "$FABRIC_OVERVIEW" ]; then
+        CONTEXT="${CONTEXT}
+
+${FABRIC_OVERVIEW}"
+    fi
+fi
+
+CONTEXT="${CONTEXT}
 
 ---
 *This context was auto-injected by the session resume hook (T-111/T-188). Run \`fw resume status\` for full details.*

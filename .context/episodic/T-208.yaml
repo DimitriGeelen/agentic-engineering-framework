@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-208: Component Fabric — agent structure and fw routing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T07:18:34Z
+# ============================================================================
+
+task_id: T-208
+task_name: "Component Fabric — agent structure and fw routing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T07:13:52Z
+completed: 2026-02-20T07:18:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-20T08:18:13+01:00
+last_commit: 2026-02-20T08:18:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Complete — fabric agent structure, all 12 commands, fw routing. Fix verification SIGPIPE (grep -q → grep -c)
+
+# Key outcomes
+outcomes:
+  - "`agents/fabric/` directory with `fabric.sh` dispatcher and `lib/` subdirectory"
+  - "`fw fabric` routed in `bin/fw`"
+  - "All 12 subcommands dispatch correctly (register, scan, search, get, deps, impact, blast-radius, ui, drift, validate, overview, subsystem, stats)"
+  - "`fw fabric help` shows usage"
+  - "`fw fabric search`, `overview`, `stats`, `impact`, `deps`, `ui`, `blast-radius`, `drift` produce correct output against prototype cards"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification SIGPIPE (grep -q → grep -c)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/fabric.sh"
+  - "agents/fabric/lib/drift.sh"
+  - "agents/fabric/lib/query.sh"
+  - "agents/fabric/lib/register.sh"
+  - "agents/fabric/lib/summary.sh"
+  - "agents/fabric/lib/traverse.sh"
+  - "agents/fabric/lib/ui.sh"
+  - "bin/fw"
+  - ".tasks/active/T-208-component-fabric--agent-structure-and-fw.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T08:18:13"
+    action: "T-208: Complete — fabric agent structure, all 12 commands, fw routing"
+  - time: "2026-02-20T08:18:33"
+    action: "T-208: Fix verification SIGPIPE (grep -q → grep -c)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [component-fabric, infrastructure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 9
+  lines_added: 1062
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-208-component-fabric--agent-structure-and-fw.md
+generated_by: context-agent-hybrid

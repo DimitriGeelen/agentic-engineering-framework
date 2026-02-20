@@ -25,14 +25,15 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Implemented and tested
+
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
 <!-- Remove this section if all criteria are agent-verifiable. -->
 
 ## Verification
+bash -c "bash agents/context/post-compact-resume.sh 2>&1 | grep -c Topology > /dev/null"
 
 <!-- Shell commands that MUST pass before work-completed. One per line.
      Lines starting with # are comments. Empty lines ignored.

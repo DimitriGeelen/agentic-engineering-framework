@@ -294,6 +294,66 @@ if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi
 
+# Fabric drift detection (T-212 — component topology integrity)
+if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
+    fabric_cards=$(ls "$PROJECT_ROOT/.fabric/components/"*.yaml 2>/dev/null | wc -l)
+    if [ "$fabric_cards" -gt 0 ]; then
+        drift_result=$(python3 -c "
+import yaml, glob, os
+
+PROJECT_ROOT = '$PROJECT_ROOT'
+FABRIC_DIR = os.path.join(PROJECT_ROOT, '.fabric')
+COMP_DIR = os.path.join(FABRIC_DIR, 'components')
+WATCH_FILE = os.path.join(FABRIC_DIR, 'watch-patterns.yaml')
+
+# Get registered locations
+registered = set()
+for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
+    with open(card_path) as f:
+        data = yaml.safe_load(f)
+    if data and data.get('location'):
+        registered.add(data['location'])
+
+unregistered = 0
+orphaned = 0
+
+# Check watch patterns
+if os.path.exists(WATCH_FILE):
+    with open(WATCH_FILE) as f:
+        wp = yaml.safe_load(f)
+    for p in wp.get('patterns', []):
+        for match in glob.glob(p['glob']):
+            rel = os.path.relpath(match, PROJECT_ROOT)
+            if rel not in registered:
+                unregistered += 1
+
+# Check orphaned cards
+for card_path in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
+    with open(card_path) as f:
+        data = yaml.safe_load(f)
+    if data and data.get('location'):
+        if not os.path.exists(os.path.join(PROJECT_ROOT, data['location'])):
+            orphaned += 1
+
+print(f'{len(registered)} {unregistered} {orphaned}')
+" 2>&1)
+        fabric_registered=$(echo "$drift_result" | awk '{print $1}')
+        fabric_unreg=$(echo "$drift_result" | awk '{print $2}')
+        fabric_orphan=$(echo "$drift_result" | awk '{print $3}')
+
+        if [ "$fabric_orphan" -gt 0 ]; then
+            warn "Fabric: $fabric_orphan orphaned card(s) (file deleted but card remains)" \
+                 "$fabric_orphan cards reference missing files" \
+                 "Run: fw fabric drift"
+        fi
+        if [ "$fabric_unreg" -gt 0 ]; then
+            pass "Fabric: $fabric_registered registered, $fabric_unreg unregistered (coverage growing)"
+        else
+            pass "Fabric: $fabric_registered registered, 0 unregistered"
+        fi
+    fi
+fi
+
 echo ""
 fi # end structure
 

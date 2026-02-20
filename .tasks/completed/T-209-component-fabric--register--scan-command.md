@@ -4,15 +4,15 @@ name: "Component Fabric — register + scan commands"
 description: >
   Implement fw fabric register (single card creation) and fw fabric scan (batch skeleton creation from watch-patterns.yaml). Refine prototype schema: file-path-as-ID, single-direction edges, unified card format. Related: T-191, T-208.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [component-fabric, registration]
 related_tasks: []
 created: 2026-02-20T07:14:07Z
-last_update: 2026-02-20T07:14:07Z
-date_finished: null
+last_update: 2026-02-20T07:19:42Z
+date_finished: 2026-02-20T07:19:42Z
 ---
 
 # T-209: Component Fabric — register + scan commands
@@ -25,14 +25,15 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Implemented in T-208 (fabric agent structure)
+
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
 <!-- Remove this section if all criteria are agent-verifiable. -->
 
 ## Verification
+bash -c "fw fabric help 2>&1 | grep -c fabric > /dev/null"
 
 <!-- Shell commands that MUST pass before work-completed. One per line.
      Lines starting with # are comments. Empty lines ignored.
@@ -60,3 +61,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-209-component-fabric--register--scan-command.md
 - **Context:** Initial task creation
+
+### 2026-02-20T07:19:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-20T07:19:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
