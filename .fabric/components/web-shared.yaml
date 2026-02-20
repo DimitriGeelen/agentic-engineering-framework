@@ -1,0 +1,13 @@
+id: web/shared.py
+name: shared
+type: library
+subsystem: watchtower
+location: web/shared.py
+tags: [flask, web-ui, shared, navigation]
+
+purpose: "Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering)"
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: T-227

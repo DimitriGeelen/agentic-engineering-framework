@@ -1,0 +1,13 @@
+id: agents/dispatch/preamble.md
+name: preamble
+type: template
+subsystem: framework-core
+location: agents/dispatch/preamble.md
+tags: [dispatch, sub-agent, context-budget, protocol]
+
+purpose: "Mandatory dispatch preamble — output rules for sub-agents to prevent context explosion (T-073). Requires disk writes, <=5 line responses."
+
+depends_on: []
+
+last_verified: 2026-02-20
+created_by: T-227

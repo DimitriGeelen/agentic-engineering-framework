@@ -1,0 +1,14 @@
+id: web/app.py
+name: app
+type: entrypoint
+subsystem: watchtower
+location: web/app.py
+tags: [flask, web-ui, entrypoint]
+
+purpose: "Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port"
+
+depends_on:
+  - web/shared.py
+
+last_verified: 2026-02-20
+created_by: T-227
