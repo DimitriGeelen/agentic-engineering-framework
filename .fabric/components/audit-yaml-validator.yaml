@@ -1,0 +1,31 @@
+id: C-004
+name: audit-yaml-validator
+type: script
+subsystem: audit
+location: agents/audit/audit.sh
+tags: [audit, yaml, validation, regression, structure]
+
+purpose: "Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption."
+
+location_detail:
+  file: agents/audit/audit.sh
+  section: "structure checks"
+  lines: 270-292
+
+depends_on:
+  - target: F-001
+    type: reads
+    location: agents/audit/audit.sh:276
+    contract: "python3 yaml.safe_load() — checks parse, non-empty, is-dict"
+  - target: "all .context/project/*.yaml"
+    type: reads
+    location: agents/audit/audit.sh:270
+    contract: "Iterates glob pattern, validates each file"
+
+depended_by:
+  - target: cron-audit
+    type: triggers
+    note: "Runs every 30 minutes via cron + on pre-push"
+
+last_verified: 2026-02-20
+created_by: T-207

@@ -1,0 +1,30 @@
+id: C-001
+name: context-dispatcher
+type: script
+subsystem: context-fabric
+location: agents/context/context.sh
+tags: [context, dispatcher, learning, decision, pattern, focus]
+
+purpose: "Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic)"
+
+depends_on:
+  - target: C-002
+    type: calls
+    location: agents/context/context.sh:80
+    contract: "source + do_add_learning() with positional args"
+  - target: C-010
+    type: calls
+    location: agents/context/context.sh:84
+    contract: "source + do_add_decision() with positional args"
+  - target: C-011
+    type: calls
+    location: agents/context/context.sh:88
+    contract: "source + do_add_pattern() with positional args"
+
+depended_by:
+  - target: fw-cli
+    type: calls
+    note: "bin/fw routes 'context' subcommand here"
+
+last_verified: 2026-02-20
+created_by: T-191

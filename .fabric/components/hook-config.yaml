@@ -1,0 +1,47 @@
+id: C-009
+name: hook-config
+type: config
+subsystem: enforcement
+location: .claude/settings.json
+tags: [hooks, enforcement, PreToolUse, PostToolUse, configuration]
+
+purpose: "Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns."
+
+format: json
+location_detail:
+  PreToolUse: ".claude/settings.json lines 34-61"
+  PostToolUse: ".claude/settings.json lines 63-82"
+
+triggers:
+  - target: C-007
+    type: triggers
+    event: PreToolUse
+    matcher: "Write|Edit|Bash"
+    location: .claude/settings.json:54-60
+  - target: C-008
+    type: triggers
+    event: PostToolUse
+    matcher: ""
+    location: .claude/settings.json:65-70
+  - target: check-active-task
+    type: triggers
+    event: PreToolUse
+    matcher: "Write|Edit"
+    location: .claude/settings.json:36-42
+  - target: check-tier0
+    type: triggers
+    event: PreToolUse
+    matcher: "Bash"
+    location: .claude/settings.json:45-50
+  - target: error-watchdog
+    type: triggers
+    event: PostToolUse
+    matcher: "Bash"
+    location: .claude/settings.json:74-79
+
+depended_by: []
+coupling: soft
+coupling_note: "Hook format is Claude Code-specific. Hooks snapshot at session start — runtime edits require restart."
+
+last_verified: 2026-02-20
+created_by: T-191

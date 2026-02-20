@@ -1,0 +1,30 @@
+# Component Fabric — Subsystem Registry
+# Auto-injected at session start as system topology overview (UC-4)
+# Each subsystem groups related components for navigation and onboarding
+
+subsystems:
+  - id: learnings-pipeline
+    name: Learnings Pipeline
+    purpose: "Capture, store, display, and validate project learnings"
+    components: [C-001, C-002, F-001, C-003, C-006, C-004]
+    summary: "context.sh → add-learning → learnings.yaml → discovery.py → /learnings + audit YAML check"
+    entry_points:
+      - "fw context add-learning (CLI)"
+      - "/learnings (web)"
+
+  - id: budget-management
+    name: Context Budget Management
+    purpose: "Track and enforce context token budget within sessions. Block tool calls at critical level."
+    components: [C-007, C-008, F-003, C-009]
+    summary: "PreToolUse → budget-gate.sh → .budget-status ← checkpoint.sh ← PostToolUse; blocks at 170K tokens"
+    entry_points:
+      - "Automatic (hooks on every tool call)"
+      - "checkpoint.sh status (manual check)"
+
+  - id: enforcement
+    name: Hook Enforcement
+    purpose: "Wire PreToolUse/PostToolUse hooks for task gate, tier-0 guard, budget gate, checkpoint, error watchdog"
+    components: [C-009]
+    summary: "settings.json → PreToolUse[task-gate, tier0, budget-gate] + PostToolUse[checkpoint, error-watchdog]"
+    entry_points:
+      - ".claude/settings.json (configuration)"

@@ -1,0 +1,37 @@
+# Component Fabric — Watch Patterns
+# File patterns that should have component cards in .fabric/components/
+# Drift detection (UC-6) scans for files matching these patterns but missing from the registry
+
+patterns:
+  - glob: "agents/*/*.sh"
+    expected_type: script
+    note: "Agent entry points and main scripts"
+
+  - glob: "agents/*/lib/*.sh"
+    expected_type: script
+    note: "Agent library functions (learning.sh, decision.sh, pattern.sh, etc.)"
+
+  - glob: "web/blueprints/*.py"
+    expected_type: route
+    note: "Flask blueprints — web route handlers"
+
+  - glob: "web/templates/*.html"
+    expected_type: template
+    note: "Jinja2 templates — page and fragment templates"
+    exclude: ["web/templates/_*.html"]
+
+  - glob: "web/templates/_*.html"
+    expected_type: fragment
+    note: "Partial templates (wrapper, session strip, etc.)"
+
+  - glob: ".context/project/*.yaml"
+    expected_type: data
+    note: "Project memory files (learnings, patterns, decisions, controls, etc.)"
+
+  - glob: "lib/*.sh"
+    expected_type: script
+    note: "Framework library scripts"
+
+  - glob: "bin/*"
+    expected_type: script
+    note: "CLI entry points"

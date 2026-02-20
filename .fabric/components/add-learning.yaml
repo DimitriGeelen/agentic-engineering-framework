@@ -1,0 +1,22 @@
+id: C-002
+name: add-learning
+type: script
+subsystem: learnings-pipeline
+location: agents/context/lib/learning.sh
+tags: [learning, context, memory, yaml-writer]
+
+purpose: "Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section."
+
+depends_on:
+  - target: F-001
+    type: writes
+    location: agents/context/lib/learning.sh:88
+    contract: "YAML list item under 'learnings:' key. Fields: id (L-XXX), learning, source, task, date, context, application. No indent on list dash."
+
+depended_by:
+  - target: C-001
+    type: calls
+    location: agents/context/context.sh:80
+
+last_verified: 2026-02-20
+created_by: T-191

@@ -1,0 +1,37 @@
+id: C-003
+name: learnings-route
+type: route
+subsystem: learnings-pipeline
+location: web/blueprints/discovery.py
+tags: [learning, web, watchtower, discovery]
+
+purpose: "Serve the /learnings page showing all project learnings, patterns, and practices."
+
+route:
+  url: /learnings
+  method: GET
+  handler: web/blueprints/discovery.py:learnings
+  handler_lines: 70-113
+  template: web/templates/learnings.html
+
+depends_on:
+  - target: F-001
+    type: reads
+    location: web/blueprints/discovery.py:76
+    contract: "yaml.safe_load(), expects dict with 'learnings' key → list"
+  - target: F-002
+    type: reads
+    location: web/blueprints/discovery.py:83
+    contract: "yaml.safe_load(), expects 'failure_patterns', 'success_patterns', 'workflow_patterns' keys"
+  - target: C-006
+    type: renders
+    location: web/blueprints/discovery.py:107
+    contract: "render_page('learnings.html', learnings=list, patterns=list, practices=list)"
+
+depended_by:
+  - target: C-006
+    type: htmx
+    note: "Template links back to /patterns via hx-get"
+
+last_verified: 2026-02-20
+created_by: T-191

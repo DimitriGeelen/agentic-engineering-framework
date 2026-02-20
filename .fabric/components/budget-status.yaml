@@ -1,0 +1,33 @@
+id: F-003
+name: budget-status
+type: data
+subsystem: budget-management
+location: .context/working/.budget-status
+tags: [budget, state, cache, json]
+
+purpose: "Cached budget level for fast PreToolUse decisions. Avoids re-reading JSONL transcript on every tool call."
+
+format: json
+schema_summary: "{level: ok|warn|urgent|critical, tokens: integer, timestamp: unix-epoch, source: budget-gate|checkpoint}"
+
+writers:
+  - target: C-007
+    location: agents/context/budget-gate.sh:196
+    contract: "Writes on slow path (every 5th call)"
+  - target: C-008
+    location: agents/context/checkpoint.sh:187
+    contract: "Writes when re-reading transcript tokens"
+
+readers:
+  - target: C-007
+    location: agents/context/budget-gate.sh:52
+    contract: "Fast path: read cached level, skip transcript if fresh (<90s)"
+  - target: C-008
+    location: agents/context/checkpoint.sh:99
+    contract: "Reads for threshold comparison"
+
+coupling: soft
+coupling_note: "JSON field names are implicit contract between budget-gate and checkpoint"
+
+last_verified: 2026-02-20
+created_by: T-191
