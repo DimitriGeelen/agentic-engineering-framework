@@ -3,6 +3,21 @@
 ## Purpose
 Use case deep dives + human validation. Synthesized from Phase 1 research and interactive dialogue.
 
+## Priority Matrix
+
+All 6 use cases validated as HIGH priority. No partial solution — full spatial memory system required.
+
+| Use Case | Frequency | Trigger | Core Data Structure |
+|----------|-----------|---------|-------------------|
+| UC-1 Navigate | Every investigation | Agent/human curiosity | Graph traversal + topic index |
+| UC-2 Impact | Every change | Pre-change analysis | Graph transitive traversal |
+| UC-3 UI Identify | Every UI interaction | Agent UI reasoning | UI node cards + vertical chains |
+| UC-4 Onboard | Every session start | Automatic injection | Generated summary view |
+| UC-5 Regress | Every commit | Post-commit hook | Graph traversal on git diff |
+| UC-6 Completeness | Every audit cycle | Cron / on-demand | Registry vs filesystem scan |
+
+**Key insight:** The dependency graph is the single core data structure. UC-1/2/5 traverse it. UC-4 summarizes it. UC-3 extends its node types. UC-6 validates it.
+
 ## The 6 Use Cases
 
 Derived from the problem statement. Each needs: the query an agent asks, the data structure that answers it, and minimum viable schema.
@@ -94,4 +109,208 @@ Derived from the problem statement. Each needs: the query an agent asks, the dat
 - Human confirmed both equally important
 - Both integration points: in `fw audit` for automated cron detection AND `fw fabric drift` for deep on-demand investigation
 - Implication: need file-pattern rules to know what "should" be registered. Components need validation timestamps. Edges need confirmability.
+
+**Phase 2a/2c synthesis:**
+- All 6 use cases HIGH priority — no partial solution viable
+- Core data structure: dependency graph with typed edges and transitive traversal
+- Three node types: script, UI, data file
+- UC-4 requires auto-injection at session start (generated compact summary)
+- UC-5 reuses UC-2 graph, no new schema
+- UC-6 validates the graph itself — needs file-pattern rules and staleness timestamps
+
+---
+
+## Minimum Viable Schema (Phase 2a synthesis)
+
+Derived from 6 validated use cases + Phase 1 research (topology sample, UI patterns, landscape survey).
+
+### Storage Model
+
+```
+.fabric/
+  components/          # One YAML per component
+    budget-gate.yaml
+    learnings-page.yaml
+    learnings-data.yaml
+  subsystems.yaml      # Subsystem groupings (UC-4 onboarding)
+  watch-patterns.yaml  # File patterns that trigger "unregistered" warnings (UC-6)
+  summary.md           # Auto-generated compact overview (UC-4, injected at session start)
+```
+
+**Why one-file-per-component:** Agents read only what they need (context budget). Grep/glob find components fast. Git diff shows exactly what changed. Scales to hundreds of components.
+
+### Component Card Schema (universal fields)
+
+```yaml
+# .fabric/components/<name>.yaml
+id: C-001                        # Unique, stable identifier
+name: budget-gate                # Human-readable name
+type: script                     # script | hook | route | template | fragment | data | config
+subsystem: budget-management     # Groups into subsystems (UC-4)
+location: agents/context/budget-gate.sh  # Primary file path
+tags: [budget, enforcement, context]     # Topic search keywords (UC-1)
+
+purpose: "Block tool execution when context budget exceeds threshold"
+
+# Dependencies — typed edges (UC-1, UC-2, UC-5)
+depends_on:                      # What this component CONSUMES
+  - target: F-001                # Component ID
+    type: reads                  # reads | calls | triggers | extends | includes | renders
+    location: agents/context/budget-gate.sh:45  # Where in source
+    contract: "JSON with fields: level, tokens, timestamp"  # Soft coupling spec
+
+depended_by:                     # What CONSUMES this component (reverse edges)
+  - target: C-010                # Settings.json hook config
+    type: triggers
+    location: .claude/settings.json:PreToolUse
+
+last_verified: 2026-02-20       # Staleness tracking (UC-6)
+created_by: T-138               # Task traceability
+```
+
+### UI Component Card Extension
+
+```yaml
+# Additional fields for type: route | template | fragment
+route:
+  url: /learnings
+  method: GET
+  handler: web/blueprints/discovery.py:learnings  # file:function
+
+template: web/templates/learnings.html
+
+interactive_elements:            # UC-3: machine-readable UI identity
+  - data_component: learnings-table
+    data_action: sort-date
+    htmx: "hx-get=/learnings?sort=date hx-swap=outerHTML"
+    api_endpoint: GET /learnings?sort=date
+    backend_effect: "Re-query and re-render learnings list"
+
+template_inheritance:            # Template tree (Phase 1 decision)
+  extends: _wrapper.html
+  includes: [_session_strip.html]
+```
+
+### Data File Card Extension
+
+```yaml
+# Additional fields for type: data | config
+format: yaml                     # yaml | json | text | markdown
+schema_summary: "Map with 'learnings' key → list of {id, learning, source, task, date, context, application}"
+
+writers: [C-005]                 # Components that write this file
+readers: [C-020, C-030]         # Components that read this file
+coupling: soft                   # soft = format change breaks silently
+```
+
+### Edge Types
+
+| Type | Meaning | Example |
+|------|---------|---------|
+| `reads` | Opens and parses file | `discovery.py` reads `learnings.yaml` |
+| `writes` | Creates or modifies file | `learning.sh` writes `learnings.yaml` |
+| `calls` | Direct invocation (source, subprocess) | `context.sh` calls `learning.sh` |
+| `triggers` | Event-based invocation (hooks, cron) | Settings.json triggers `budget-gate.sh` |
+| `extends` | Template inheritance | `learnings.html` extends `_wrapper.html` |
+| `includes` | Template inclusion | `base.html` includes `_session_strip.html` |
+| `renders` | Route renders template | `/learnings` route renders `learnings.html` |
+| `htmx` | Frontend-to-backend via htmx | `hx-get=/learnings?sort=date` → `discovery.py` |
+
+### Subsystem Registry (UC-4)
+
+```yaml
+# .fabric/subsystems.yaml
+subsystems:
+  - id: budget-management
+    name: Context Budget Management
+    purpose: "Track and enforce context token budget within sessions"
+    key_components: [C-001, C-002, F-001]  # Entry points for drill-down
+    summary: "checkpoint.sh → budget-gate.sh → .budget-status → hooks"
+
+  - id: learnings-pipeline
+    name: Learnings Pipeline
+    purpose: "Capture, store, display, and validate project learnings"
+    key_components: [C-005, F-010, C-020, C-030]
+    summary: "add-learning → learnings.yaml → discovery.py → /learnings + audit"
+```
+
+### Watch Patterns (UC-6)
+
+```yaml
+# .fabric/watch-patterns.yaml — file patterns that should have component cards
+patterns:
+  - glob: "agents/*/*.sh"
+    expected_type: script
+  - glob: "agents/*/lib/*.sh"
+    expected_type: script
+  - glob: "web/blueprints/*.py"
+    expected_type: route
+  - glob: "web/templates/*.html"
+    expected_type: template
+  - glob: ".context/project/*.yaml"
+    expected_type: data
+  - glob: "lib/*.sh"
+    expected_type: script
+  - glob: "bin/*"
+    expected_type: script
+
+# Files matching these patterns but NOT in .fabric/components/ trigger drift warnings
+```
+
+### Query Interface (CLI)
+
+```bash
+# UC-1: Navigate
+fw fabric search "learnings"              # Topic search by tags/name
+fw fabric get C-005                       # Get component card by ID
+fw fabric deps learning.sh                # Point traversal: what connects to this file?
+
+# UC-2: Impact
+fw fabric impact learning.sh              # Full transitive downstream chain
+fw fabric impact learning.sh --depth 2    # Limit traversal depth
+
+# UC-3: UI Identify
+fw fabric ui /learnings                   # All interactive elements on route
+fw fabric ui --action sort-date           # Find element by data-action
+
+# UC-4: Onboard
+fw fabric overview                        # Compact subsystem summary (~500 tokens)
+fw fabric subsystem budget-management     # Drill into one subsystem
+
+# UC-5: Regress
+fw fabric blast-radius HEAD               # Downstream impact of last commit
+fw fabric blast-radius abc123..def456     # Impact of commit range
+
+# UC-6: Completeness
+fw fabric drift                           # Full scan: unregistered + stale
+fw fabric validate C-005                  # Re-validate one component's edges
+```
+
+### Generated Summary (UC-4 auto-injection)
+
+Auto-generated from `subsystems.yaml` + component counts. Injected at session start by SessionStart hook (like handovers). Target: ~500 tokens.
+
+```markdown
+## System Topology (auto-generated)
+12 subsystems, 47 components, 83 edges
+
+Budget Management (5 components): checkpoint.sh → budget-gate.sh → .budget-status → hooks
+Task System (8 components): create-task.sh → update-task.sh → .tasks/ → audit checks
+Learnings Pipeline (4 components): add-learning → learnings.yaml → discovery.py → /learnings
+Context Fabric (6 components): context.sh → focus/init/status → working memory files
+...
+Last validated: 2026-02-20 | Drift: 0 unregistered, 0 stale
+```
+
+### Non-Functional Requirements
+
+| Requirement | Threshold | Rationale |
+|-------------|-----------|-----------|
+| Component card read | < 2K tokens | Context budget (P-009) |
+| Summary view | < 500 tokens | Session start injection |
+| Drift scan | < 30 seconds | Must fit in audit cron (30 min cycle) |
+| Blast radius query | < 5 seconds | Post-commit hook, must not slow commits |
+| Registration overhead | < 5 minutes per component | Must not impede development velocity |
+| File format | YAML | Human-readable, git-friendly, consistent with framework |
+| No external deps | bash + python3 (already required) | D4 Portability |
 
