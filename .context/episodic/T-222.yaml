@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-222: Component Fabric integration — CLAUDE.md awareness, task-component linking, drift detection
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T11:11:33Z
+# ============================================================================
+
+task_id: T-222
+task_name: "Component Fabric integration — CLAUDE.md awareness, task-component linking, drift detection"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T09:23:31Z
+completed: 2026-02-20T11:11:33Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-20T10:24:15+01:00
+last_commit: 2026-02-20T10:24:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — Component Fabric integration (CLAUDE.md, task linking, drift)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (at least A1-A3)"
+  - "Go/No-Go decision made with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-222-component-fabric-integration--claudemd-a.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T10:24:15"
+    action: "T-222: Inception — Component Fabric integration (CLAUDE.md, task linking, drift)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 108
+  commits: 1
+  files_changed: 1
+  lines_added: 125
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-222-component-fabric-integration--claudemd-a.md
+generated_by: context-agent-hybrid
