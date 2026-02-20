@@ -1,0 +1,165 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>
+        <a href="/fabric" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; Back to Fabric</a>
+    </p>
+</div>
+
+{% if not component %}
+<p style="color: var(--pico-muted-color);">Component not found.</p>
+{% else %}
+
+<!-- Overview card -->
+<article>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>
+                <strong>{{ component.name }}</strong>
+                <span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;
+                    {% if component.type == 'script' %}background: #2d3748; color: #a0aec0;
+                    {% elif component.type == 'route' %}background: #2b6cb0; color: #bee3f8;
+                    {% elif component.type == 'template' %}background: #2c7a7b; color: #b2f5ea;
+                    {% elif component.type == 'data' %}background: #744210; color: #fefcbf;
+                    {% elif component.type == 'hook' %}background: #742a2a; color: #fed7d7;
+                    {% elif component.type == 'config' %}background: #553c9a; color: #e9d8fd;
+                    {% else %}background: #4a5568; color: #e2e8f0;
+                    {% endif %}">
+                    {{ component.type }}
+                </span>
+            </span>
+            <small style="color: var(--pico-muted-color);">{{ component.subsystem }}</small>
+        </div>
+    </header>
+
+    <p><code>{{ component.location }}</code></p>
+    <p>{{ component.purpose | default('No purpose documented') }}</p>
+
+    {% if component.tags %}
+    <p>
+        {% for tag in component.tags %}
+        <span style="font-size: 0.7rem; padding: 0.1rem 0.3rem; border: 1px solid var(--pico-muted-border-color); border-radius: 3px; margin-right: 0.25rem;">{{ tag }}</span>
+        {% endfor %}
+    </p>
+    {% endif %}
+
+    {% if component.route %}
+    <p><strong>Route:</strong> <code>{{ component.route.method | default('GET') }} {{ component.route.url }}</code>
+        &rarr; <code>{{ component.route.handler }}</code></p>
+    {% endif %}
+
+    <footer style="font-size: 0.8rem; color: var(--pico-muted-color);">
+        Last verified: {{ component.last_verified | default('?') }}
+        {% if component.created_by %} | Created by: <code>{{ component.created_by }}</code>{% endif %}
+    </footer>
+</article>
+
+<!-- Dependencies (what this component uses) -->
+{% if component.depends_on %}
+<details open>
+    <summary><strong>Depends On ({{ component.depends_on | length }})</strong></summary>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Type</th>
+                <th scope="col">Target</th>
+                <th scope="col">Location</th>
+                <th scope="col">Contract</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dep in component.depends_on %}
+            {% if dep is mapping %}
+            <tr>
+                <td><span style="font-size: 0.8rem;">{{ dep.type | default('uses') }}</span></td>
+                <td><code>{{ dep.target }}</code></td>
+                <td><code style="font-size: 0.75rem;">{{ dep.location | default('') }}</code></td>
+                <td><small>{{ dep.contract | default('') }}</small></td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+<!-- Reverse dependencies (what depends on this component) -->
+{% if reverse_deps %}
+<details open>
+    <summary><strong>Depended By ({{ reverse_deps | length }})</strong></summary>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Type</th>
+                <th scope="col">Component</th>
+                <th scope="col">Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dep in reverse_deps %}
+            <tr>
+                <td><span style="font-size: 0.8rem;">{{ dep.type }}</span></td>
+                <td>
+                    <a href="/fabric/component/{{ dep.name }}"
+                       hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                        {{ dep.name }}
+                    </a>
+                </td>
+                <td><code style="font-size: 0.75rem;">{{ dep.location | default('') }}</code></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+<!-- Interactive elements (UI components) -->
+{% if component.interactive_elements %}
+<details open>
+    <summary><strong>Interactive Elements ({{ component.interactive_elements | length }})</strong></summary>
+    {% for el in component.interactive_elements %}
+    <article style="padding: 0.75rem; margin-bottom: 0.5rem;">
+        <strong>[{{ el.data_component }}]</strong> action={{ el.data_action }}
+        <br><code style="font-size: 0.75rem;">{{ el.htmx }}</code>
+        <br><small>Endpoint: <code>{{ el.api_endpoint }}</code></small>
+        <br><small>Effect: {{ el.backend_effect }}</small>
+    </article>
+    {% endfor %}
+</details>
+{% endif %}
+
+<!-- Writers/Readers (data files) -->
+{% if component.writers or component.readers %}
+<details open>
+    <summary><strong>Data Flow</strong></summary>
+    {% if component.writers %}
+    <p><strong>Writers:</strong></p>
+    <ul>
+        {% for w in component.writers %}
+        <li><code>{{ w.target if w is mapping else w }}</code>
+            {% if w is mapping and w.location %} at <code style="font-size: 0.75rem;">{{ w.location }}</code>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if component.readers %}
+    <p><strong>Readers:</strong></p>
+    <ul>
+        {% for r in component.readers %}
+        <li><code>{{ r.target if r is mapping else r }}</code>
+            {% if r is mapping and r.location %} at <code style="font-size: 0.75rem;">{{ r.location }}</code>{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</details>
+{% endif %}
+
+<!-- Coupling notes -->
+{% if component.coupling_note %}
+<details>
+    <summary><strong>Coupling Warning</strong></summary>
+    <p style="color: #e53e3e;">{{ component.coupling_note }}</p>
+</details>
+{% endif %}
+
+{% endif %}

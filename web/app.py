@@ -77,6 +77,7 @@ from web.blueprints.cockpit import bp as cockpit_bp
 from web.blueprints.inception import bp as inception_bp
 from web.blueprints.enforcement import bp as enforcement_bp
 from web.blueprints.risks import bp as risks_bp
+from web.blueprints.fabric import bp as fabric_bp
 
 app.register_blueprint(core_bp)
 app.register_blueprint(tasks_bp)
@@ -89,6 +90,7 @@ app.register_blueprint(cockpit_bp)
 app.register_blueprint(inception_bp)
 app.register_blueprint(enforcement_bp)
 app.register_blueprint(risks_bp)
+app.register_blueprint(fabric_bp)
 
 # ---------------------------------------------------------------------------
 # Error handlers

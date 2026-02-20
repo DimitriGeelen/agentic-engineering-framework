@@ -33,6 +33,10 @@ NAV_GROUPS = [
         ("Patterns",    "discovery.patterns",     None),
         ("Decisions",   "discovery.decisions",    None),
     ]),
+    ("Architecture", [
+        ("Fabric",      "fabric.fabric_overview",   None),
+        ("Graph",       "fabric.fabric_graph",      None),
+    ]),
     ("Govern", [
         ("Directives",  "core.directives",                    None),
         ("Enforcement", "enforcement.enforcement_dashboard",  None),

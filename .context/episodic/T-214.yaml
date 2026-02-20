@@ -1,0 +1,171 @@
+# ============================================================================
+# EPISODIC MEMORY - T-214: Component Fabric — batch-register all AEF components
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T07:23:12Z
+# ============================================================================
+
+task_id: T-214
+task_name: "Component Fabric — batch-register all AEF components"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T07:14:10Z
+completed: 2026-02-20T07:23:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-20T08:23:07+01:00
+last_commit: 2026-02-20T08:23:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Batch-register 95 AEF components, 12 subsystems, 91% coverage
+
+# Key outcomes
+outcomes:
+  - "All watch-pattern matches registered (95 components, 91% coverage)"
+  - "Subsystems registry updated (12 subsystems)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/summary.sh"
+  - ".context/audits/2026-02-20.yaml"
+  - ".context/episodic/T-212.yaml"
+  - ".context/episodic/T-213.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".fabric/components/agents-audit-plugin-audit.yaml"
+  - ".fabric/components/agents-context-bus-handler.yaml"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-error-watchdog.yaml"
+  - ".fabric/components/agents-context-lib-decision.yaml"
+  - ".fabric/components/agents-context-lib-episodic.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-lib-pattern.yaml"
+  - ".fabric/components/agents-context-lib-status.yaml"
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-fabric-lib-drift.yaml"
+  - ".fabric/components/agents-fabric-lib-query.yaml"
+  - ".fabric/components/agents-fabric-lib-register.yaml"
+  - ".fabric/components/agents-fabric-lib-summary.yaml"
+  - ".fabric/components/agents-fabric-lib-traverse.yaml"
+  - ".fabric/components/agents-fabric-lib-ui.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-git-lib-bypass.yaml"
+  - ".fabric/components/agents-git-lib-commit.yaml"
+  - ".fabric/components/agents-git-lib-common.yaml"
+  - ".fabric/components/agents-git-lib-hooks.yaml"
+  - ".fabric/components/agents-git-lib-log.yaml"
+  - ".fabric/components/agents-git-lib-status.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-healing-lib-diagnose.yaml"
+  - ".fabric/components/agents-healing-lib-patterns.yaml"
+  - ".fabric/components/agents-healing-lib-resolve.yaml"
+  - ".fabric/components/agents-healing-lib-suggest.yaml"
+  - ".fabric/components/agents-mcp-mcp-reaper.yaml"
+  - ".fabric/components/agents-observe-observe.yaml"
+  - ".fabric/components/agents-resume-resume.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/bin-claude-fw.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/lib-assumption.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-harvest.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-promote.yaml"
+  - ".fabric/components/lib-setup.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/web-blueprints-cockpit.yaml"
+  - ".fabric/components/web-blueprints-core.yaml"
+  - ".fabric/components/web-blueprints-enforcement.yaml"
+  - ".fabric/components/web-blueprints-inception.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-metrics.yaml"
+  - ".fabric/components/web-blueprints-quality.yaml"
+  - ".fabric/components/web-blueprints-risks.yaml"
+  - ".fabric/components/web-blueprints-session.yaml"
+  - ".fabric/components/web-blueprints-tasks.yaml"
+  - ".fabric/components/web-blueprints-timeline.yaml"
+  - ".fabric/components/web-templates-assumptions.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-cockpit.yaml"
+  - ".fabric/components/web-templates-decisions.yaml"
+  - ".fabric/components/web-templates-directives.yaml"
+  - ".fabric/components/web-templates-enforcement.yaml"
+  - ".fabric/components/web-templates-_error.yaml"
+  - ".fabric/components/web-templates-gaps.yaml"
+  - ".fabric/components/web-templates-graduation.yaml"
+  - ".fabric/components/web-templates-inception_detail.yaml"
+  - ".fabric/components/web-templates-inception.yaml"
+  - ".fabric/components/web-templates-index.yaml"
+  - ".fabric/components/web-templates-metrics.yaml"
+  - ".fabric/components/web-templates-patterns.yaml"
+  - ".fabric/components/web-templates-project_doc.yaml"
+  - ".fabric/components/web-templates-project.yaml"
+  - ".fabric/components/web-templates-_quality_audit_fragment.yaml"
+  - ".fabric/components/web-templates-quality.yaml"
+  - ".fabric/components/web-templates-risks.yaml"
+  - ".fabric/components/web-templates-search.yaml"
+  - ".fabric/components/web-templates-_session_strip.yaml"
+  - ".fabric/components/web-templates-task_detail.yaml"
+  - ".fabric/components/web-templates-tasks.yaml"
+  - ".fabric/components/web-templates-_timeline_task.yaml"
+  - ".fabric/components/web-templates-timeline.yaml"
+  - ".fabric/components/web-templates-_wrapper.yaml"
+  - ".fabric/components/.yaml"
+  - ".fabric/subsystems.yaml"
+  - ".tasks/active/T-214-component-fabric--batch-register-all-aef.md"
+  - ".tasks/completed/T-212-component-fabric--drift-detection--audit.md"
+  - ".tasks/completed/T-213-component-fabric--overview--session-star.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T08:23:07"
+    action: "T-214: Batch-register 95 AEF components, 12 subsystems, 91% coverage"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [component-fabric, registration, bulk]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 97
+  lines_added: 1375
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-214-component-fabric--batch-register-all-aef.md
+generated_by: context-agent-hybrid

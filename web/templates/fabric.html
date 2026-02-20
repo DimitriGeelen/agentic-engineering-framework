@@ -1,0 +1,118 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ total_components }} components across {{ subsystems|length }} subsystems, {{ total_edges }} dependency edges.
+        <a href="/fabric/graph" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View dependency graph &rarr;</a>
+    </p>
+</div>
+
+<!-- Subsystem tiles -->
+<div class="grid" style="margin-bottom: 1.5rem;">
+    {% for s in subsystems %}
+    <article style="padding: 0.75rem; margin-bottom: 0;">
+        <header style="padding: 0.5rem; margin: -0.75rem -0.75rem 0.5rem;">
+            <strong>
+                <a href="/fabric?subsystem={{ s.id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+                   style="text-decoration: none;">
+                    {{ s.name }}
+                </a>
+            </strong>
+            <span style="float: right; font-size: 0.8rem; color: var(--pico-muted-color);">
+                {{ s.component_count | default(s.components | default([]) | length) }} components
+            </span>
+        </header>
+        <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin-bottom: 0.25rem;">{{ s.purpose }}</p>
+        <code style="font-size: 0.75rem;">{{ s.summary }}</code>
+    </article>
+    {% endfor %}
+</div>
+
+<!-- Filters -->
+<div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+    <input type="search" placeholder="Search components..."
+           value="{{ search }}"
+           name="q"
+           hx-get="/fabric"
+           hx-target="#content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           hx-trigger="keyup changed delay:300ms"
+           hx-include="[name='subsystem_filter'],[name='type_filter']"
+           style="margin-bottom: 0; max-width: 300px;">
+
+    <select name="subsystem_filter"
+            hx-get="/fabric"
+            hx-target="#content"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-include="[name='q'],[name='type_filter']"
+            style="margin-bottom: 0; max-width: 200px;">
+        <option value="">All subsystems</option>
+        {% for sid, count in subsystem_counts | dictsort %}
+        <option value="{{ sid }}" {{ 'selected' if filter_subsystem == sid }}>{{ sid }} ({{ count }})</option>
+        {% endfor %}
+    </select>
+
+    <select name="type_filter"
+            hx-get="/fabric"
+            hx-target="#content"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-include="[name='q'],[name='subsystem_filter']"
+            style="margin-bottom: 0; max-width: 160px;">
+        <option value="">All types</option>
+        {% for t, count in type_counts | dictsort %}
+        <option value="{{ t }}" {{ 'selected' if filter_type == t }}>{{ t }} ({{ count }})</option>
+        {% endfor %}
+    </select>
+
+    {% if filter_subsystem or filter_type or search %}
+    <a href="/fabric" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       style="font-size: 0.875rem;">Clear filters</a>
+    {% endif %}
+</div>
+
+<!-- Component list -->
+<p style="color: var(--pico-muted-color); font-size: 0.875rem; margin-bottom: 0.5rem;">
+    Showing {{ components|length }} of {{ total_components }} components
+</p>
+
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Subsystem</th>
+            <th scope="col">Location</th>
+            <th scope="col">Deps</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in components %}
+        <tr>
+            <td>
+                <a href="/fabric/component/{{ c.name }}"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    {{ c.name }}
+                </a>
+            </td>
+            <td>
+                <span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px;
+                    {% if c.type == 'script' %}background: #2d3748; color: #a0aec0;
+                    {% elif c.type == 'route' %}background: #2b6cb0; color: #bee3f8;
+                    {% elif c.type == 'template' %}background: #2c7a7b; color: #b2f5ea;
+                    {% elif c.type == 'data' %}background: #744210; color: #fefcbf;
+                    {% elif c.type == 'hook' %}background: #742a2a; color: #fed7d7;
+                    {% elif c.type == 'config' %}background: #553c9a; color: #e9d8fd;
+                    {% elif c.type == 'fragment' %}background: #285e61; color: #b2f5ea;
+                    {% else %}background: #4a5568; color: #e2e8f0;
+                    {% endif %}">
+                    {{ c.type }}
+                </span>
+            </td>
+            <td><small>{{ c.subsystem }}</small></td>
+            <td><code style="font-size: 0.75rem;">{{ c.location }}</code></td>
+            <td>{{ c.depends_on | default([]) | length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
