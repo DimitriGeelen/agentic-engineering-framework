@@ -8,6 +8,7 @@ workflow_type:
 owner:
 horizon: now
 tags: []
+components: []
 related_tasks: []
 created:
 last_update:

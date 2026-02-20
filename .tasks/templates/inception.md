@@ -8,6 +8,7 @@ workflow_type: inception
 owner:
 horizon: now
 tags: []
+components: []
 related_tasks: []
 created:
 last_update:

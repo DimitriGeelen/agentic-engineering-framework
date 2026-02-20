@@ -556,6 +556,50 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
     fi
 
+    # === Auto-populate components field (T-224) ===
+    # Resolve git diff paths to component IDs via .fabric/components/*.yaml location field
+    FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
+    if [ -d "$FABRIC_DIR" ]; then
+        # Build location→id lookup from component cards
+        declare -A LOC_TO_ID
+        for card in "$FABRIC_DIR"/*.yaml; do
+            [ -f "$card" ] || continue
+            c_loc=$(grep "^location:" "$card" 2>/dev/null | sed 's/^location:[[:space:]]*//' | head -1)
+            c_id=$(grep "^id:" "$card" 2>/dev/null | sed 's/^id:[[:space:]]*//' | head -1)
+            if [ -n "$c_loc" ] && [ -n "$c_id" ]; then
+                LOC_TO_ID["$c_loc"]="$c_id"
+            fi
+        done
+
+        # Get all files changed in commits for this task
+        TASK_COMMITS=$(git log --all --oneline --grep="$TASK_ID" 2>/dev/null | awk '{print $1}')
+        RESOLVED_COMPONENTS=""
+        if [ -n "$TASK_COMMITS" ]; then
+            ALL_PATHS=$(for c in $TASK_COMMITS; do git diff --name-only "${c}~1" "$c" 2>/dev/null; done | sort -u)
+            for path in $ALL_PATHS; do
+                # Skip metadata paths
+                case "$path" in
+                    .context/*|.tasks/*|.fabric/*|docs/*) continue ;;
+                esac
+                if [ -n "${LOC_TO_ID[$path]:-}" ]; then
+                    RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${LOC_TO_ID[$path]}"
+                fi
+            done
+        fi
+
+        # Update components field if we found any
+        if [ -n "$RESOLVED_COMPONENTS" ]; then
+            if grep -q "^components:" "$TASK_FILE" 2>/dev/null; then
+                sed -i "s|^components:.*|components: [$RESOLVED_COMPONENTS]|" "$TASK_FILE"
+            else
+                # Add field after tags line
+                sed -i "/^tags:.*/a components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
+            fi
+            COMP_COUNT=$(echo "$RESOLVED_COMPONENTS" | tr ',' '\n' | wc -l)
+            echo -e "${GREEN}Components: $COMP_COUNT resolved from git history${NC}"
+        fi
+    fi
+
     # Generate episodic summary
     echo ""
     echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
