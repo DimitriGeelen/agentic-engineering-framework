@@ -3,43 +3,43 @@ session_id: S-2026-0220-0956
 timestamp: 2026-02-20T08:56:47Z
 predecessor: S-2026-0220-0916
 tasks_active: [T-200, T-215, T-218]
-tasks_touched: [T-215, T-200, T-218, T-XXX, T-193, T-155, T-198, T-214, T-217, T-216, T-132, T-202, T-151, T-196, T-211, T-203, T-184, T-204, T-191, T-131, T-194, T-206, T-197, T-189, T-157, T-205, T-213, T-209, T-156, T-199, T-111, T-212, T-169, T-207, T-168, T-190, T-195, T-208, T-210, T-201, T-192]
-tasks_completed: []
+tasks_touched: [T-216, T-217, T-218]
+tasks_completed: [T-216, T-217, T-218]
 uncommitted_changes: 16
 owner: claude-code
-session_narrative: ""
+session_narrative: "User frustrated about framework quality breakdown. Ran comprehensive validation (4 parallel agents). Found system IS working post-P-010 (94.5% real ACs) but pre-gate tasks had no ACs. Fixed skeleton AC bypass in P-010. Added dispatch preamble to stop agents returning full blobs. Enriched 89 fabric component descriptions."
 ---
 
 # Session Handover: S-2026-0220-0956
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+User was deeply concerned the framework was breaking down — tasks completing without real ACs, deliverables not working. Ran a full system validation: the framework IS working since Feb 18 (94.5% real ACs, 91% verification sections). The perceived 26% failure rate was from mixing pre-gate and post-gate tasks. Fixed the one real bug (P-010 accepts skeleton text), enforced sub-agent output discipline, and enriched all fabric component descriptions.
 
 ## Work in Progress
 
 <!-- horizon: now -->
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
-- **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** captured (horizon: later)
+- **Last action:** Not touched this session
+- **Next step:** Needs OE test data before starting
+- **Blockers:** Waiting for real project usage data
+- **Insight:** None this session
 
 ### T-215: "Component Fabric — Watchtower UI page (visual browser + graph)"
 - **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Completed in previous session. 6/6 agent ACs pass, 3 human ACs pending
+- **Next step:** Human to review UI quality and check their 3 ACs
+- **Blockers:** None — waiting on human review
+- **Insight:** Graph needed placeholder nodes for non-enriched edge targets
 
 ### T-218: "Enrich fabric component descriptions — replace 89 TODO placeholders"
-- **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed (partial — 1 human AC pending)
+- **Last action:** Batch-enriched all 89 components from source code analysis. Zero TODOs on /fabric page.
+- **Next step:** Human to verify description quality on the /fabric page
+- **Blockers:** None
+- **Insight:** fw fabric scan creates components with "TODO: describe" as purpose. Two-pass enrichment needed: first pass reads source headers/routes/structure, second pass improves generic fallbacks.
 
 ## Inception Phases
 
@@ -55,40 +55,40 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **P-010 fix: pattern-match skeleton text rather than content-hash**
+   - Why: Simple regex catches `[First criterion]` etc. without false positives
+   - Alternatives rejected: NLP-based content quality scoring (overkill), checksum comparison (brittle)
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Dispatch preamble as mandatory prompt prefix rather than system-level enforcement**
+   - Why: Can't modify Claude's Task tool behavior; prompt preamble is the only injection point
+   - Alternatives rejected: PostToolUse hook to truncate results (too late — context already consumed)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **`TaskOutput` with `block: true` for background agents** — Returns full JSONL transcript (100K+ tokens), defeating the purpose of background execution. Use `tail` on output file instead.
+2. **`curl -sf` in verification commands** — The `-f` flag causes silent failures on large pages. Use `curl -s` or `python3 urllib` instead.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. The empty `.fabric/components/.yaml` artifact keeps coming back when `fw fabric scan` encounters components with empty slugs. Should add a filter in the scan script.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Web server needs restart after fabric YAML changes (not hot-reloaded)
+- `TaskOutput` returns raw JSONL — always use the dispatch preamble and read output files instead
+- T-215 and T-218 both have human ACs pending — owner set to human
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Review the /fabric page at http://localhost:3000/fabric and check the human ACs on T-215 and T-218. Then decide what to build next — the framework enforcement chain is solid now.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `agents/dispatch/preamble.md` (mandatory sub-agent output discipline)
+- Modified: `agents/task-create/update-task.sh` (P-010 placeholder detection)
+- Modified: 89 files in `.fabric/components/` (enriched descriptions)
+- Deleted: `.fabric/components/.yaml` (empty slug artifact)
+- Updated: `MEMORY.md` (added dispatch rules at top)
 
 ## Recent Commits
 
