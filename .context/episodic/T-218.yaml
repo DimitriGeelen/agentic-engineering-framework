@@ -1,0 +1,165 @@
+# ============================================================================
+# EPISODIC MEMORY - T-218: Enrich fabric component descriptions — replace 89 TODO placeholders
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T08:52:28Z
+# ============================================================================
+
+task_id: T-218
+task_name: "Enrich fabric component descriptions — replace 89 TODO placeholders"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T08:48:45Z
+completed: 2026-02-20T08:52:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-20T09:50:54+01:00
+last_commit: 2026-02-20T09:50:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Enrich 89 fabric component descriptions — replace all TODO placeholders
+
+# Key outcomes
+outcomes:
+  - "All 99 fabric component YAML files have real purpose descriptions (no TODO)"
+  - "Descriptions generated from source code analysis (comments, routes, structure)"
+  - "/fabric page renders with zero TODO occurrences"
+  - "All 12 subsystem tiles show real descriptions"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-audit-plugin-audit.yaml"
+  - ".fabric/components/agents-context-bus-handler.yaml"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-error-watchdog.yaml"
+  - ".fabric/components/agents-context-lib-decision.yaml"
+  - ".fabric/components/agents-context-lib-episodic.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-lib-pattern.yaml"
+  - ".fabric/components/agents-context-lib-status.yaml"
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-fabric-lib-drift.yaml"
+  - ".fabric/components/agents-fabric-lib-query.yaml"
+  - ".fabric/components/agents-fabric-lib-register.yaml"
+  - ".fabric/components/agents-fabric-lib-summary.yaml"
+  - ".fabric/components/agents-fabric-lib-traverse.yaml"
+  - ".fabric/components/agents-fabric-lib-ui.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-git-lib-bypass.yaml"
+  - ".fabric/components/agents-git-lib-commit.yaml"
+  - ".fabric/components/agents-git-lib-common.yaml"
+  - ".fabric/components/agents-git-lib-hooks.yaml"
+  - ".fabric/components/agents-git-lib-log.yaml"
+  - ".fabric/components/agents-git-lib-status.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-healing-lib-diagnose.yaml"
+  - ".fabric/components/agents-healing-lib-patterns.yaml"
+  - ".fabric/components/agents-healing-lib-resolve.yaml"
+  - ".fabric/components/agents-healing-lib-suggest.yaml"
+  - ".fabric/components/agents-mcp-mcp-reaper.yaml"
+  - ".fabric/components/agents-observe-observe.yaml"
+  - ".fabric/components/agents-resume-resume.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/bin-claude-fw.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/lib-assumption.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-harvest.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-promote.yaml"
+  - ".fabric/components/lib-setup.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/web-blueprints-cockpit.yaml"
+  - ".fabric/components/web-blueprints-core.yaml"
+  - ".fabric/components/web-blueprints-enforcement.yaml"
+  - ".fabric/components/web-blueprints-fabric.yaml"
+  - ".fabric/components/web-blueprints-inception.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-metrics.yaml"
+  - ".fabric/components/web-blueprints-quality.yaml"
+  - ".fabric/components/web-blueprints-risks.yaml"
+  - ".fabric/components/web-blueprints-session.yaml"
+  - ".fabric/components/web-blueprints-tasks.yaml"
+  - ".fabric/components/web-blueprints-timeline.yaml"
+  - ".fabric/components/web-templates-assumptions.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-cockpit.yaml"
+  - ".fabric/components/web-templates-decisions.yaml"
+  - ".fabric/components/web-templates-directives.yaml"
+  - ".fabric/components/web-templates-enforcement.yaml"
+  - ".fabric/components/web-templates-_error.yaml"
+  - ".fabric/components/web-templates-fabric_detail.yaml"
+  - ".fabric/components/web-templates-fabric_graph.yaml"
+  - ".fabric/components/web-templates-fabric.yaml"
+  - ".fabric/components/web-templates-gaps.yaml"
+  - ".fabric/components/web-templates-graduation.yaml"
+  - ".fabric/components/web-templates-inception_detail.yaml"
+  - ".fabric/components/web-templates-inception.yaml"
+  - ".fabric/components/web-templates-index.yaml"
+  - ".fabric/components/web-templates-metrics.yaml"
+  - ".fabric/components/web-templates-patterns.yaml"
+  - ".fabric/components/web-templates-project_doc.yaml"
+  - ".fabric/components/web-templates-project.yaml"
+  - ".fabric/components/web-templates-_quality_audit_fragment.yaml"
+  - ".fabric/components/web-templates-quality.yaml"
+  - ".fabric/components/web-templates-risks.yaml"
+  - ".fabric/components/web-templates-search.yaml"
+  - ".fabric/components/web-templates-_session_strip.yaml"
+  - ".fabric/components/web-templates-task_detail.yaml"
+  - ".fabric/components/web-templates-tasks.yaml"
+  - ".fabric/components/web-templates-_timeline_task.yaml"
+  - ".fabric/components/web-templates-timeline.yaml"
+  - ".fabric/components/web-templates-_wrapper.yaml"
+  - ".fabric/components/.yaml"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T09:50:54"
+    action: "T-218: Enrich 89 fabric component descriptions — replace all TODO placeholders"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 90
+  lines_added: 139
+  lines_removed: 340
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-218-enrich-fabric-component-descriptions--re.md
+generated_by: context-agent-hybrid
