@@ -259,9 +259,17 @@ gaps:
       - "Agent prompt linter: check for 'write to file' in bg agent prompts"
       - "Make fw bus post the ONLY way to return bg agent results"
       - "Practice: never use browser_snapshot/browser_navigate on data-heavy pages"
-    status: decided-build
+    status: closed
+    closed_date: 2026-02-20
+    resolution: >
+      T-225 built PostToolUse hook (check-dispatch.sh) on Task|TaskOutput.
+      Warns at 5K chars, critical at 20K chars. Combined with the dispatch
+      preamble (T-217) and MEMORY.md rules, provides layered enforcement:
+      documentation (CLAUDE.md), prompt injection (preamble.md), runtime
+      guard (check-dispatch.sh). Remaining items (PreToolUse parallel count,
+      prompt linter) are lower priority — can be added if incidents recur.
     created: 2026-02-18
-    last_reviewed: 2026-02-18
+    last_reviewed: 2026-02-20
 
   - id: G-009
     title: "Research artifact persistence has no structural enforcement"
