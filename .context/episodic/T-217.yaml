@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-217: Enforce sub-agent output discipline: prompt template + bus integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-20T08:44:25Z
+# ============================================================================
+
+task_id: T-217
+task_name: "Enforce sub-agent output discipline: prompt template + bus integration"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T08:41:36Z
+completed: 2026-02-20T08:44:24Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Mandatory preamble file created at agents/dispatch/preamble.md"
+  - "Preamble includes output rules, file path convention, response length limit"
+  - "Auto-memory updated with dispatch rules (loaded every session)"
+  - "Test agent dispatched with preamble — wrote 25KB to file, returned 4 lines"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-217-enforce-sub-agent-output-discipline-prom.md
+generated_by: context-agent-hybrid
