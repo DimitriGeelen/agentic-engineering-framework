@@ -11,7 +11,7 @@ horizon: now
 tags: [component-fabric, infrastructure]
 related_tasks: []
 created: 2026-02-20T07:13:52Z
-last_update: 2026-02-20T07:13:52Z
+last_update: 2026-02-20T07:18:13Z
 date_finished: null
 ---
 
@@ -32,11 +32,11 @@ Build task from T-191 inception (GO). Design: `docs/reports/T-191-cf-enforcement
 
 ## Verification
 
-fw fabric help | grep -q "Component topology system"
-fw fabric search learnings | grep -q "add-learning"
-fw fabric overview | grep -q "subsystems"
-fw fabric stats | grep -q "Components:"
-fw fabric impact agents/context/lib/learning.sh | grep -q "downstream"
+bash -c 'fw fabric help 2>&1 | grep -c "Component topology system" > /dev/null'
+bash -c 'fw fabric search learnings 2>&1 | grep -c "add-learning" > /dev/null'
+bash -c 'fw fabric overview 2>&1 | grep -c "subsystems" > /dev/null'
+bash -c 'fw fabric stats 2>&1 | grep -c "Components:" > /dev/null'
+bash -c 'fw fabric impact agents/context/lib/learning.sh 2>&1 | grep -c "downstream" > /dev/null'
 
 ## Decisions
 
