@@ -7,34 +7,34 @@ tasks_touched: [T-215, T-200, T-XXX, T-193, T-155, T-198, T-214, T-132, T-202, T
 tasks_completed: []
 uncommitted_changes: 8
 owner: claude-code
-session_narrative: ""
+session_narrative: "T-215 completed (graph template + placeholder node fix). Deep AC quality audit launched across last 50 tasks — found 13 tasks with skeleton/trivial ACs (26% failure rate). Root cause: P-010 gate checks checkbox state not content quality. 5 structural root causes identified. Remediation task needed."
 ---
 
 # Session Handover: S-2026-0220-0911
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+T-215 completed — fabric_graph.html written (Cytoscape.js), placeholder node bug fixed in _build_graph(), empty .yaml slug deleted. All 3 fabric pages verified via Playwright. Then ran deep AC quality audit across last 50 completed tasks using 4 parallel investigation agents. Found 13 tasks (26%) with skeleton/trivial ACs. Investigation identified 5 root causes. **Next priority: create remediation task to fix P-010 gate and backfill affected tasks.**
 
 ## Work in Progress
 
 <!-- horizon: now -->
 
 ### T-215: "Component Fabric — Watchtower UI page (visual browser + graph)"
-- **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed (partial-complete, owner: human for 3 UI quality ACs)
+- **Last action:** Wrote fabric_graph.html with Cytoscape.js, fixed _build_graph() placeholder nodes, deleted .yaml empty slug, verified all 3 pages, completed task
+- **Next step:** Human verifies 3 UI ACs (graph readability, info density, navigation feel), then finalizes
+- **Blockers:** None
+- **Insight:** Graph only shows enriched components (10 of 95); as more cards get enriched, graph becomes richer
 
 <!-- horizon: later -->
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Untouched
+- **Next step:** Start when OE test data accumulates
+- **Blockers:** Needs OE data volume
+- **Insight:** None
 
 ## Inception Phases
 
@@ -50,40 +50,34 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+No architectural decisions this session — work was completing T-215 deliverables and running investigation.
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Stale web server after writing template** — Server started before fabric_graph.html existed returned 500 on /fabric. Had to kill and restart after writing the file.
+2. **Playwright browser lock** — Stale Chrome process from previous session blocked Playwright. Needed `pkill -9 -f chrome` before browser navigation worked.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. **AC quality remediation scope** — User identified 13 tasks with skeleton/trivial ACs. Need task to: (a) harden P-010 gate with placeholder detection, (b) add skeleton AC audit check, (c) backfill 13 affected tasks, (d) consider "absorbed" status for satellite tasks. User was upset — this is HIGH PRIORITY.
+2. **grep `-->` errors in pre-push audit** — HTML comments in skeleton task verification sections parsed as grep flags. Known issue, not yet fixed (CTL-013 re-verification noise).
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- User is frustrated about AC quality — treat remediation as immediate priority
+- The 4 investigation agent outputs are at `/tmp/claude-0/-opt-999-Agentic-Engineering-Framework/tasks/{ac6878d,a4d0f28,a45d502,a89adb6}.output` — rich data for remediation task
+- Web server at :3000 is running (restarted this session)
+- T-215 is partial-complete (owner: human) — 3 UI ACs for human to verify
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Create a task for P-010 AC quality remediation. The investigation is done — 5 root causes identified, 13 affected tasks catalogued. Fixes needed: (1) Add placeholder text detection to P-010 gate in update-task.sh, (2) Add skeleton AC audit check to audit.sh, (3) Backfill real ACs on 13 affected tasks from git history/episodics, (4) Fix `--start` flag bypassing T-137 placeholder warning.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `web/templates/fabric_graph.html` (Cytoscape.js graph visualization)
+- Modified: `web/blueprints/fabric.py` (placeholder node fix in _build_graph)
+- Deleted: `.fabric/components/.yaml` (empty slug artifact)
 
 ## Recent Commits
 
