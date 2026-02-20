@@ -833,6 +833,9 @@ case "$cmd" in
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
         ;;
+    fabric)
+        exec "$AGENTS_DIR/fabric/fabric.sh" "$@"
+        ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;

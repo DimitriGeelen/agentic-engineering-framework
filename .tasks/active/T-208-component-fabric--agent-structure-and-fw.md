@@ -19,29 +19,24 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build task from T-191 inception (GO). Design: `docs/reports/T-191-cf-enforcement-design.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `agents/fabric/` directory with `fabric.sh` dispatcher and `lib/` subdirectory
+- [x] `fw fabric` routed in `bin/fw`
+- [x] All 12 subcommands dispatch correctly (register, scan, search, get, deps, impact, blast-radius, ui, drift, validate, overview, subsystem, stats)
+- [x] `fw fabric help` shows usage
+- [x] `fw fabric search`, `overview`, `stats`, `impact`, `deps`, `ui`, `blast-radius`, `drift` produce correct output against prototype cards
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+fw fabric help | grep -q "Component topology system"
+fw fabric search learnings | grep -q "add-learning"
+fw fabric overview | grep -q "subsystems"
+fw fabric stats | grep -q "Components:"
+fw fabric impact agents/context/lib/learning.sh | grep -q "downstream"
 
 ## Decisions
 
