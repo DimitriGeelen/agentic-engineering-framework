@@ -4,16 +4,16 @@ name: "Fix MEDIUM severity enforcement bypasses — B-009, B-012, integrity chec
 description: >
   Address MEDIUM severity bypass vectors from T-228: (1) B-012: Extend task gate matcher to cover NotebookEdit and side-effect tools. (2) B-009: Add pre-execution validation for likely-failing destructive commands. (3) Add enforcement integrity audit to fw doctor — verify hooks installed, settings.json intact, gate scripts present.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, bin/fw]
 related_tasks: []
 created: 2026-02-21T14:27:14Z
-last_update: 2026-02-21T14:27:14Z
-date_finished: null
+last_update: 2026-02-21T14:33:34Z
+date_finished: 2026-02-21T14:33:34Z
 ---
 
 # T-230: Fix MEDIUM severity enforcement bypasses — B-009, B-012, integrity checks
@@ -60,3 +60,6 @@ grep -q "enforcement" /opt/999-Agentic-Engineering-Framework/bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-230-fix-medium-severity-enforcement-bypasses.md
 - **Context:** Initial task creation
+
+### 2026-02-21T14:33:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

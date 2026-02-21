@@ -4,16 +4,16 @@ name: "Update git hook messages and register enforcement gaps"
 description: >
   Follow-up from T-228/T-229 enforcement hardening: (1) Update commit-msg and pre-push hook messages — they still say 'Emergency bypass: git commit --no-verify' but Tier 0 now blocks --no-verify. Update messaging to reference 'fw tier0 approve'. (2) Register remaining bypass vectors (B-002, B-006, B-009) in gaps.yaml. (3) Run unit tests to verify no regressions.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-02-21T14:35:37Z
-last_update: 2026-02-21T14:35:37Z
-date_finished: null
+last_update: 2026-02-21T14:38:35Z
+date_finished: 2026-02-21T14:38:35Z
 ---
 
 # T-231: Update git hook messages and register enforcement gaps
@@ -53,3 +53,6 @@ python3 -c "import yaml; yaml.safe_load(open('/opt/999-Agentic-Engineering-Frame
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-231-update-git-hook-messages-and-register-en.md
 - **Context:** Initial task creation
+
+### 2026-02-21T14:38:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

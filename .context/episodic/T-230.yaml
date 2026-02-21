@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-230: Fix MEDIUM severity enforcement bypasses — B-009, B-012, integrity checks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-21T14:33:36Z
+# ============================================================================
+
+task_id: T-230
+task_name: "Fix MEDIUM severity enforcement bypasses — B-009, B-012, integrity checks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T14:27:14Z
+completed: 2026-02-21T14:33:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-21T15:33:07+01:00
+last_commit: 2026-02-21T15:33:31+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add enforcement integrity checks — matcher coverage, baseline hash, NotebookEdit support. Fix verification command — use exit code instead of grep on colored output
+
+# Key outcomes
+outcomes:
+  - "B-012: check-active-task.sh handles `notebook_path` (NotebookEdit) in addition to `file_path`"
+  - "fw doctor checks matcher coverage — warns if NotebookEdit/WebFetch not in PreToolUse matchers"
+  - "fw doctor checks enforcement baseline — stores/verifies settings.json hooks hash"
+  - "`fw enforcement baseline` command saves current hook config hash"
+  - "Existing `fw doctor` checks still pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification command — use exit code instead of grep on colored output"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - "bin/fw"
+  - ".context/project/enforcement-baseline.sha256"
+  - ".tasks/active/T-230-fix-medium-severity-enforcement-bypasses.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-21T15:33:07"
+    action: "T-230: Add enforcement integrity checks — matcher coverage, baseline hash, NotebookEdit support"
+  - time: "2026-02-21T15:33:31"
+    action: "T-230: Fix verification command — use exit code instead of grep on colored output"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 4
+  lines_added: 204
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-230-fix-medium-severity-enforcement-bypasses.md
+generated_by: context-agent-hybrid

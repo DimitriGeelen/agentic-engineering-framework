@@ -4,16 +4,16 @@ name: "Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 
 description: >
   Implement fixes for the two HIGH severity bypass vectors from T-228 analysis: (1) B-001: Detect --no-verify in check-tier0.sh as a Tier 0 destructive pattern. Also expand keyword pre-filter. (2) B-005: Detect Write/Edit to .claude/settings.json in check-tier0.sh or check-active-task.sh — require Tier 0 approval. Also add B-003 Tier 0 pattern gaps (find -delete, dd, chmod 000, mkfs, pkill).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: [agents/context/check-tier0.sh, agents/context/check-active-task.sh]
+components: [agents/context/check-active-task.sh, agents/context/check-tier0.sh]
 related_tasks: [T-228]
 created: 2026-02-21T14:19:45Z
-last_update: 2026-02-21T14:19:45Z
-date_finished: null
+last_update: 2026-02-21T14:23:23Z
+date_finished: 2026-02-21T14:23:23Z
 ---
 
 # T-229: Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 (hook config)
@@ -59,3 +59,6 @@ echo '{"tool_input":{"command":"git commit -m \"T-229: test\""}}' | /opt/999-Age
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-229-fix-high-severity-enforcement-bypasses--.md
 - **Context:** Initial task creation
+
+### 2026-02-21T14:23:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
