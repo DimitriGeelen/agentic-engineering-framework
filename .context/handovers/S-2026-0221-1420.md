@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Fixed the fabric page "flicker" — root cause was subsystem cards linking to themselves (same page with filter param). Cards now collapse to a focused header when filtered. Also fixed broken dropdown filters (wrong param names). T-227 completed. User wants to investigate enforcement bypass strengthening next session.
 
 ## Work in Progress
 
@@ -22,24 +22,24 @@ session_narrative: ""
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Untouched this session
+- **Next step:** Begin inception exploration
+- **Blockers:** None
+- **Insight:** None
 
 ### T-220: "Fabric component detail — inline source code viewer"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Source viewer implemented (7ed0b1d), body-level htmx defaults added to base.html
+- **Next step:** Human ACs pending (dark theme contrast, collapsible section UX)
+- **Blockers:** Waiting for human verification
+- **Insight:** None
 
 ### T-227: "Fix fabric page — subsystem cards link to themselves, dropdown filters broken"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed (horizon: now)
+- **Last action:** Fixed both bugs — subsystem cards collapse when filtered, dropdown param names aligned
+- **Next step:** Human AC pending (filtered view visual quality)
+- **Blockers:** None
+- **Insight:** The "flicker" was a UX issue, not JS — 12 cards reloaded identically because they linked to the same page. Dropdown filters were also silently broken (name mismatch)
 
 ## Inception Phases
 
@@ -55,40 +55,32 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **Collapse subsystem cards when filtered instead of removing hx-boost**
+   - Why: The "flicker" was a UX problem (self-linking cards), not an htmx issue
+   - Alternatives rejected: Removing hx-boost (would break ~20 bare links), adding JS debounce (wrong diagnosis)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Previous sessions: htmx body-level defaults** — added `hx-target="#content" hx-swap="innerHTML"` to body tag. Didn't fix the flicker because the root cause was UX (cards linking to themselves), not htmx targeting.
+2. **Previous sessions: Playwright network monitoring** — could not reproduce flicker in headless Chromium because the "flicker" was visual sameness, not a double request.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. User wants to investigate how framework enforcement rules could be bypassed and how to strengthen them — create inception task next session
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Flask template caching: after editing templates, server restart may be needed to pick up changes
+- Pipe in curl verification commands causes SIGPIPE (exit 23) — use `-o file && grep file` pattern instead
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Investigate enforcement bypass per user request — check hook configuration, gate scripts, identify gaps. Consider creating an inception task for this.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Modified: `web/templates/fabric.html` (subsystem cards collapse + dropdown name fix)
+- Modified: `web/templates/base.html` (body-level htmx defaults from prior session, committed this session)
 
 ## Recent Commits
 
