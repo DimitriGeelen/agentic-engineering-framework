@@ -4,17 +4,17 @@ timestamp: 2026-02-21T20:36:35Z
 predecessor: S-2026-0221-2129
 tasks_active: [T-200, T-220, T-227, T-230, T-233]
 tasks_touched: [T-230, T-233, T-227, T-232, T-229, T-231, T-228]
-tasks_completed: []
+tasks_completed: [T-232, T-233]
 uncommitted_changes: 6
 owner: claude-code
-session_narrative: ""
+session_narrative: "Fixed task-gate bypass (G-013), rewrote fabric graph with dagre+compound nodes+3 layout modes. All pushed to onedev. Human reviewed graph — approved."
 ---
 
 # Session Handover: S-2026-0221-2136
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Session complete. Fixed critical task-gate enforcement bypass (G-013, T-232) and overhauled the fabric dependency graph (T-233) with dagre layout, compound subsystem nodes, 3 layout modes, and degree-based sizing. Human reviewed the graph and approved. All learnings/decisions/patterns recorded. Everything pushed to onedev.
 
 ## Work in Progress
 
@@ -22,38 +22,38 @@ session_narrative: ""
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Untouched this session
+- **Next step:** Begin inception — explore pattern detection approach
+- **Blockers:** None
+- **Insight:** None yet
 
 ### T-220: "Fabric component detail — inline source code viewer"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Source viewer implemented in prior session
+- **Next step:** Human ACs pending — check dark theme contrast, collapsible section UX on :3000
+- **Blockers:** Needs human review
+- **Insight:** None
 
 ### T-227: "Fix fabric page — subsystem cards link to themselves, dropdown filters broken"
 - **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** All agent ACs done in prior session
+- **Next step:** Human AC pending — filtered view visual quality
+- **Blockers:** Needs human review
+- **Insight:** None
 
 ### T-230: "Fix MEDIUM severity enforcement bypasses — B-009, B-012, integrity checks"
 - **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** All fixes done in prior session
+- **Next step:** Human AC pending
+- **Blockers:** Needs human review
+- **Insight:** None
 
-### T-233: "Improve fabric graph layout"
-- **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+### T-233: "Improve fabric graph layout" (COMPLETED THIS SESSION)
+- **Status:** work-completed
+- **Last action:** Human reviewed graph at :3000/fabric/graph — approved all 3 modes
+- **Next step:** Human ACs pending — label readability, visual quality
+- **Blockers:** None
+- **Insight:** Cytoscape cose + compound nodes = broken at scale. Dagre + detach-for-cose pattern works.
 
 ## Inception Phases
 
@@ -70,40 +70,35 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **Dagre as default graph layout** (T-233) — hierarchy + compound subsystem nodes
+2. **Validate active task file in enforcement gate** (T-232) — closes G-013
+3. **Detach nodes from parents for force-directed** (T-233) — cose can't handle compounds at scale
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+See S-2026-0221-2129 for full rationale and rejected alternatives.
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **cose with compound parents** — 3.5:1 elongated layouts at 95 nodes
+2. **display:none on compound parents** — hides all children too
+3. **Transparent parents (opacity:0)** — still distorts cose force calculations
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. ~8 graph edges have "invalid endpoints" warnings — dependency targets not in enriched set. Cosmetic only.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Flask templates cached without debug mode — restart server after edits
+- Watchtower may need restart: `pkill -f "python3 -m web.app" && python3 -m web.app &`
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Review human ACs on T-220 (source viewer), T-227 (fabric page fixes), T-230 (enforcement bypasses), T-233 (graph layout) — all waiting for visual review at :3000.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `web/static/dagre.min.js`, `web/static/cytoscape-dagre.js`
+- Modified: `agents/context/check-active-task.sh`, `web/templates/fabric_graph.html`, `web/blueprints/fabric.py`, `.context/project/gaps.yaml`, `.context/project/learnings.yaml`, `.context/project/decisions.yaml`, `.context/project/patterns.yaml`
 
 ## Recent Commits
 
