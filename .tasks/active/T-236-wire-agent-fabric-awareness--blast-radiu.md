@@ -25,10 +25,10 @@ Research in T-235 found agent fabric awareness is 5/10 — Component Fabric 20% 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Post-commit hook shows blast-radius summary when registered components are modified
-- [ ] `update-task.sh` work-completed flow auto-extracts decisions from task Decisions section
-- [ ] CLAUDE.md "When completing" section includes fabric/context check guidance
-- [ ] Existing hooks/scripts still pass (`fw doctor`)
+- [x] Post-commit hook shows blast-radius summary when registered components are modified
+- [x] `update-task.sh` work-completed flow auto-extracts decisions from task Decisions section
+- [x] CLAUDE.md "When completing" section includes fabric/context check guidance
+- [x] Existing hooks/scripts still pass (`fw doctor`)
 
 ## Verification
 
