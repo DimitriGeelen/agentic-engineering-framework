@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-236: Wire agent fabric awareness — blast-radius in git hooks, auto-capture learnings on completion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-21T22:10:36Z
+# ============================================================================
+
+task_id: T-236
+task_name: "Wire agent fabric awareness — blast-radius in git hooks, auto-capture learnings on completion"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T21:48:24Z
+completed: 2026-02-21T22:10:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-21T23:06:20+01:00
+last_commit: 2026-02-21T23:10:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fill handover S-2026-0221-2305 with session context. Wire fabric awareness into post-commit hook, task completion, and CLAUDE.md. Check all acceptance criteria
+
+# Key outcomes
+outcomes:
+  - "Post-commit hook shows blast-radius summary when registered components are modified"
+  - "`update-task.sh` work-completed flow auto-extracts decisions from task Decisions section"
+  - "CLAUDE.md \"When completing\" section includes fabric/context check guidance"
+  - "Existing hooks/scripts still pass (`fw doctor`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+  - "agents/task-create/update-task.sh"
+  - "CLAUDE.md"
+  - ".context/handovers/S-2026-0221-2305.md"
+  - ".tasks/active/T-236-wire-agent-fabric-awareness--blast-radiu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-21T23:06:20"
+    action: "T-236: Fill handover S-2026-0221-2305 with session context"
+  - time: "2026-02-21T23:09:56"
+    action: "T-236: Wire fabric awareness into post-commit hook, task completion, and CLAUDE.md"
+  - time: "2026-02-21T23:10:29"
+    action: "T-236: Check all acceptance criteria"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 3
+  files_changed: 5
+  lines_added: 135
+  lines_removed: 71
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-236-wire-agent-fabric-awareness--blast-radiu.md
+generated_by: context-agent-hybrid

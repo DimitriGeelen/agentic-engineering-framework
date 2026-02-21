@@ -259,3 +259,10 @@ decisions:
     date: 2026-02-21
     task: T-232
     rationale: "Non-empty CURRENT_TASK in focus.yaml is insufficient — completed tasks move to .tasks/completed/ but focus.yaml persists. Gate now does find .tasks/active/${CURRENT_TASK}-*.md to confirm the task is genuinely active. Closes a high-severity gap (G-013) where the core enforcement principle could be silently bypassed."
+
+  - id: D-032
+    decision: "[what was decided]"
+    scope: project
+    date: 2026-02-21
+    task: T-236
+    rationale: "Auto-captured from task file on completion"

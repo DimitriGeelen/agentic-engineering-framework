@@ -4,16 +4,16 @@ name: "Wire agent fabric awareness — blast-radius in git hooks, auto-capture l
 description: >
   Wire Component Fabric and Context Fabric into agent workflows. Priority 1: Add blast-radius check to git commit flow (warn when modifying files with many dependents). Priority 2: Auto-extract decisions/patterns from task file on work-completed. Priority 3: Update CLAUDE.md Working with Tasks section to include fabric/context checks. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md, /tmp/fw-agent-fabric-awareness.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-02-21T21:48:24Z
-last_update: 2026-02-21T22:06:26Z
-date_finished: null
+last_update: 2026-02-21T22:10:34Z
+date_finished: 2026-02-21T22:10:34Z
 ---
 
 # T-236: Wire agent fabric awareness — blast-radius in git hooks, auto-capture learnings on completion
@@ -61,3 +61,6 @@ fw doctor
 
 ### 2026-02-21T22:06:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-21T22:10:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
