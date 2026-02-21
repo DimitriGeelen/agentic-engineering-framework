@@ -146,6 +146,30 @@ Agent behavioral rules (task discipline, inception protocol, verification gate, 
 **B-012 (uncovered tools):**
 - Extend task gate matcher to `Write|Edit|WebFetch|NotebookEdit` (tools that produce side effects)
 
+## Fixes Applied
+
+### T-229 (HIGH severity):
+- **B-001 FIXED:** `--no-verify` detected as Tier 0 pattern in check-tier0.sh (git-context-aware: `\bgit\b[^;|&]*--no-verify\b`)
+- **B-005 FIXED:** `.claude/settings.json` writes blocked by check-active-task.sh (explicit block before exempt-path check)
+- **B-003 FIXED:** 6 new Tier 0 patterns added: find -delete, dd, chmod -R 000, mkfs, pkill -9. Keyword pre-filter expanded.
+- 24 tests pass, 0 false positives.
+
+### T-230 (MEDIUM severity):
+- **B-012 PARTIAL:** check-active-task.sh handles `notebook_path` (NotebookEdit ready). Human needs to add NotebookEdit to settings.json matcher.
+- **B-005 INTEGRITY:** `fw enforcement baseline` saves settings.json hooks hash. `fw doctor` verifies against baseline.
+- **NEW:** `fw enforcement status` shows all 3 enforcement layers at a glance.
+- **NEW:** `fw doctor` warns about uncovered side-effect tools (matcher gap check).
+
+### Remaining (not addressed):
+- B-002: Exempt paths breadth (by design — framework operations need freedom)
+- B-006: dontAsk + broad allowlists (user configuration choice)
+- B-009: PostToolUse advisory-only (architectural limitation of Claude Code hooks)
+- B-004, B-007, B-008, B-010, B-011, B-013: LOW severity, accepted risk
+
 ## Dialogue Log
 
-(Session just started — to be filled as discussion progresses)
+- User chose option 1 (implement HIGH severity fixes) after reviewing the 13-vector analysis
+- User said "proceed" to continue with MEDIUM severity fixes after HIGH was done
+- B-001 initial implementation caught false positive (pattern too broad, matched `--no-verify` in echo strings). Fixed by anchoring to `\bgit\b` context.
+- Verification commands hit SIGPIPE (exit 141) — same issue as T-227. Fixed by checking exit code directly instead of piping to grep.
+- `fw enforcement` subcommand initially used `local` outside a function — fixed to use global vars.
