@@ -33,12 +33,12 @@ Fixes for HIGH severity bypass vectors identified in T-228. See `docs/reports/T-
 
 ## Verification
 
-# B-001: --no-verify must be detected
-echo '{"tool_input":{"command":"git commit --no-verify -m test"}}' | bash -c 'cat | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>&1; echo "EXIT:$?"' | grep -q "TIER 0 BLOCK\|EXIT:2"
-echo '{"tool_input":{"command":"git push --no-verify"}}' | bash -c 'cat | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>&1; echo "EXIT:$?"' | grep -q "TIER 0 BLOCK\|EXIT:2"
+# B-001: --no-verify must be detected (exit 2 = blocked)
+echo '{"tool_input":{"command":"git commit --no-verify -m test"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 2
+echo '{"tool_input":{"command":"git push --no-verify"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 2
 # B-003: find -delete must be detected
-echo '{"tool_input":{"command":"find / -name *.log -delete"}}' | bash -c 'cat | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>&1; echo "EXIT:$?"' | grep -q "TIER 0 BLOCK\|EXIT:2"
-# Safe commands must pass
+echo '{"tool_input":{"command":"find / -name *.log -delete"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 2
+# Safe commands must pass (exit 0 = allowed)
 echo '{"tool_input":{"command":"git status"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 0
 echo '{"tool_input":{"command":"git commit -m \"T-229: test\""}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 0
 
