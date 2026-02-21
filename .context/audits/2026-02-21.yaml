@@ -1,8 +1,8 @@
-# Audit Results - 2026-02-21-2145
-timestamp: 2026-02-21T20:45:00Z
+# Audit Results - 2026-02-21-2310
+timestamp: 2026-02-21T22:10:56Z
 summary:
-  pass: 71
-  warn: 3
+  pass: 72
+  warn: 2
   fail: 0
 findings:
   - level: PASS
@@ -18,7 +18,7 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 105 registered, 7 unregistered (coverage growing)"
+    check: "Fabric: 105 registered, 8 unregistered (coverage growing)"
   - level: PASS
     check: "Fabric edges: 95/105 cards enriched (10 without edges)"
   - level: PASS
@@ -27,7 +27,7 @@ findings:
     check: "Task T-233 has short description (27 chars)"
     mitigation: "Expand description in T-233-improve-fabric-graph-layout.md"
   - level: PASS
-    check: "Git traceability: 98% (687/696 commits reference tasks)"
+    check: "Git traceability: 98% (698/707 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -48,7 +48,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 230 episodic summaries have quality content"
+    check: "All 233 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -60,7 +60,7 @@ findings:
   - level: PASS
     check: "Graduation pipeline: 0 learnings (threshold: 20)"
   - level: PASS
-    check: "All 33 completed inceptions have research artifacts"
+    check: "All 34 completed inceptions have research artifacts"
   - level: PASS
     check: "C-001: No active inception tasks to check"
   - level: PASS
@@ -70,13 +70,13 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-234)"
+    check: "CTL-001: Focus file has active task (T-236)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 12 (last commit: 67 seconds ago)"
+    check: "CTL-004: Tool counter at 1 (last commit: 19 seconds ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: ok)"
+    check: "CTL-018: Budget status valid JSON (level: urgent)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -86,7 +86,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (163 handovers, 38 compactions)"
+    check: "CTL-006: Handover coverage for compactions (164 handovers, 38 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -132,18 +132,17 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-222 has decision (4 commits)"
   - level: PASS
+    check: "CTL-009: Inception T-235 has decision (3 commits)"
+  - level: PASS
     check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
   - level: PASS
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
-    check: "CTL-012: All 227 completed tasks have checked ACs"
-  - level: WARN
-    check: "CTL-013: T-232 verification re-run: 1 command(s) failing"
-    mitigation: "Review T-232 — environment may have changed"
+    check: "CTL-012: All 230 completed tasks have checked ACs"
   - level: PASS
-    check: "CTL-013: T-231 verification re-run: 3/3 pass"
+    check: "CTL-013: T-236 verification re-run: 4/4 pass"
   - level: PASS
-    check: "CTL-013: T-229 verification re-run: 5/5 pass"
+    check: "CTL-013: T-234 verification re-run: 2/2 pass"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
