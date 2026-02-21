@@ -1,7 +1,7 @@
-# Audit Results - 2026-02-21-2314
-timestamp: 2026-02-21T22:14:46Z
+# Audit Results - 2026-02-21-2341
+timestamp: 2026-02-21T22:41:04Z
 summary:
-  pass: 72
+  pass: 73
   warn: 2
   fail: 0
 findings:
@@ -18,18 +18,19 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 105 registered, 7 unregistered (coverage growing)"
+    check: "Fabric: 106 registered, 8 unregistered (coverage growing)"
   - level: PASS
-    check: "Fabric edges: 95/105 cards enriched (10 without edges)"
+    check: "Fabric edges: 96/106 cards enriched (10 without edges)"
   - level: PASS
     check: "All 6 active tasks are valid"
   - level: WARN
     check: "Task T-233 has short description (27 chars)"
     mitigation: "Expand description in T-233-improve-fabric-graph-layout.md"
   - level: PASS
-    check: "Git traceability: 98% (700/709 commits reference tasks)"
-  - level: PASS
-    check: "Working directory clean"
+    check: "Git traceability: 98% (704/713 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -47,7 +48,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 233 episodic summaries have quality content"
+    check: "All 234 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -69,23 +70,23 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-236)"
+    check: "CTL-001: Focus file has active task (T-237)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 0 (last commit: 4 seconds ago)"
+    check: "CTL-004: Tool counter at 9 (last commit: 68 seconds ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: urgent)"
+    check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 5 cron audit file(s) in last hour"
+    check: "CTL-020: 4 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (166 handovers, 38 compactions)"
+    check: "CTL-006: Handover coverage for compactions (167 handovers, 39 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -138,9 +139,8 @@ findings:
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
     check: "CTL-012: All 230 completed tasks have checked ACs"
-  - level: WARN
-    check: "CTL-013: T-236 verification re-run: 4 command(s) failing"
-    mitigation: "Review T-236 — environment may have changed"
+  - level: PASS
+    check: "CTL-013: T-236 verification re-run: 4/4 pass"
   - level: PASS
     check: "CTL-013: T-234 verification re-run: 2/2 pass"
   - level: PASS
@@ -151,6 +151,8 @@ findings:
     check: "CTL-025: T-230 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-025: T-233 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-237 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
