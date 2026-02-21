@@ -60,9 +60,148 @@ Layer 3 is where the framework moves from "are controls working?" to "what are w
 5. What's the right frequency for each discovery type?
 6. How do we avoid false positives that erode trust?
 
+## Phase 1a: Discovery Capability Catalog
+
+### What Already Exists (to avoid redundancy)
+
+Watchtower `rules.py` already has 10 point-in-time checks:
+- `check_stale_tasks` — tasks not updated in N days
+- `check_unresolved_healing` — tasks stuck in "issues"
+- `check_traceability_drift` — commits without task refs
+- `check_audit_regression` — audit results worsening
+- `check_gap_triggers` — gap trigger conditions met
+- `check_novel_failures` — new failure types
+- `check_graduation_candidates` — learnings ready for promotion
+- `check_dead_letter_practices` — practices with no evidence
+- `check_pattern_consolidation` — similar patterns to merge
+- `check_escalation_advancement` — patterns at step threshold
+- `check_mitigation_ineffectiveness` — mitigations that didn't work
+
+**These are all point-in-time.** The discovery layer adds **temporal analysis** — patterns only visible across multiple data points over time.
+
+### Candidate Discoveries
+
+Scored: Value (1-5, how much the human cares) x Feasibility (1-5, how easy to implement with existing data).
+
+| # | Name | Type | Description | Data Source | Value | Feasibility | Score | Redundant? |
+|---|------|------|-------------|-------------|-------|-------------|-------|------------|
+| D1 | **Episodic quality decay** | Omission | 135/234 episodics (58%) have [TODO] placeholders — detect when new completions produce stale episodics | episodic YAML files | 5 | 5 | 25 | No |
+| D2 | **Human review queue aging** | Omission | 4 tasks waiting on human ACs, oldest 32h. Alert when human review items age past threshold | active tasks with owner:human | 4 | 5 | 20 | Partial (stale_tasks checks all, not human-specific) |
+| D3 | **Commit velocity anomalies** | Insight | 19-153 commits/day range. Detect unusual spikes (agent rushing) or drops (agent stuck) | git log | 4 | 4 | 16 | No |
+| D4 | **Audit trend regression** | Trend | Track warn/fail counts across cron audits over time — detect upward trends | cron audit YAML history | 4 | 5 | 20 | Partial (audit_regression is point-in-time) |
+| D5 | **Task lifecycle anomalies** | Insight | Detect tasks that go captured→completed in <5 min (T-151 pattern — agent overreach) | task files (created vs date_finished) | 5 | 4 | 20 | No |
+| D6 | **Completion velocity trends** | Trend | 7-45 tasks/day range. Detect sustained drops (systemic issue) vs normal variation | completed task dates | 3 | 5 | 15 | No |
+| D7 | **Commit bunching detection** | Omission | 5+ commits in 10 minutes = budget pressure signal | git log timestamps | 4 | 4 | 16 | No |
+| D8 | **Handover quality decay** | Omission | Detect handovers with unfilled [TODO] sections (pre-compact skeletons) | handover files | 4 | 5 | 20 | No |
+| D9 | **Control effectiveness drift** | Trend | Track which controls fire (warn/block) over time — detect controls that never fire (dead) or always fire (too sensitive) | audit + OE data | 3 | 3 | 9 | No |
+| D10 | **Decision-without-dialogue** | Omission | Tasks with owner:human + workflow_type:specification/inception completed without human AC checks | task files + git timestamps | 5 | 3 | 15 | No |
+| D11 | **Gap register staleness** | Omission | Gaps in "watching" status for >7 days with no trigger check | gaps.yaml dates | 3 | 5 | 15 | Partial (gap_triggers) |
+| D12 | **Bypass log growth** | Trend | Track --no-verify usage and bypass log entries over time | bypass-log.yaml + git | 3 | 4 | 12 | No |
+
+### Priority Ranking (by score)
+
+1. **D1 (25)** — Episodic quality decay — **highest signal, immediate value**
+2. **D2 (20)** — Human review queue aging
+3. **D4 (20)** — Audit trend regression
+4. **D5 (20)** — Task lifecycle anomalies (T-151 pattern)
+5. **D8 (20)** — Handover quality decay
+6. **D3 (16)** — Commit velocity anomalies
+7. **D7 (16)** — Commit bunching detection
+8. **D6 (15)** — Completion velocity trends
+9. **D10 (15)** — Decision-without-dialogue
+10. **D11 (15)** — Gap register staleness
+11. **D12 (12)** — Bypass log growth
+12. **D9 (9)** — Control effectiveness drift
+
+### Real Data Validation
+
+Evidence that these discoveries would have caught real problems:
+
+- **D1 (episodic decay):** 58% stale NOW — this has been invisible for weeks
+- **D5 (lifecycle anomaly):** T-151 went captured→completed in 2 min — triggered the entire T-194 assurance model inception
+- **D8 (handover decay):** LATEST.md (S-2026-0222-0011) had all [TODO] sections — just fixed this session
+- **D7 (commit bunching):** Feb 18 had 153 commits — clear pressure signal
+- **D2 (review queue):** T-227 human ACs pending since Feb 21 13:20 — 34h and counting
+- **D10 (decision-without-dialogue):** T-151 is the canonical example, but untested whether it has recurred
+
+### Classification
+
+| Type | Candidates | Cron frequency |
+|------|-----------|----------------|
+| **Omission detection** | D1, D2, D7, D8, D10 | Every 30 min (fast) |
+| **Trend analysis** | D4, D6, D9, D12 | Daily (needs history) |
+| **Insight generation** | D3, D5, D11 | Hourly (moderate) |
+
+## Phase 1a-ext: Temporal Infrastructure Gap Analysis
+
+Two sub-agent investigations conducted in parallel. Full reports at:
+- `/tmp/fw-agent-discovery-data.md` — Framework data mining (10 analyses)
+- `/tmp/fw-agent-discovery-gaps.md` — Audit infrastructure gap analysis (10 gaps)
+
+### Current State Snapshot (from data mining agent)
+
+| Metric | Value | Signal |
+|--------|-------|--------|
+| Active tasks | 6 (2 started-work, 4 work-completed) | Healthy WIP |
+| Stale task | T-220 (last update Feb 20, >48h) | Needs attention |
+| Human review queue | 4 tasks, oldest 34h (T-227) | Potential bottleneck |
+| Commit frequency | 19-153/day (avg ~72) | High variance |
+| Completion velocity | 7-45/day (avg ~25), declining | Downward trend |
+| Episodic quality | 135/234 (58%) have [TODO] | Major quality gap |
+| Task sizing | Nearly all <1h creation-to-completion | Well-sized |
+| Bypass log | Empty | Clean compliance |
+| Audit health | 0 failures, warnings trending 2→0 | Healthy |
+| Gaps tracked | 13 (G-001 through G-013) | Active register |
+
+### Existing Temporal Mechanisms (6 partial, all insufficient)
+
+| Mechanism | Location | What it does | Limitation |
+|-----------|----------|-------------|------------|
+| Trend analysis | audit.sh:1820 | Counts recurring WARN/FAIL across past audits | Binary recurrence only, no directionality |
+| Audit regression | rules.py:195 | Two-point comparison (current vs previous) | Only N vs N-1, no moving average |
+| Compute delta | scanner.py:297 | Two-point scan delta (task counts) | Never stored, not a time series |
+| Velocity | scanner.py:400 | Single tasks-per-week scalar | No trend, no comparison |
+| Cron schedule | /etc/cron.d/agentic-audit | Generates data every 15-30 min | Nothing aggregates across time |
+| metrics.sh | Framework CLI | Point-in-time snapshot | No persistence, no delta |
+
+**Core finding: Strong point-in-time compliance, zero temporal intelligence.** Data exists (234 cron files, 230 tasks, 550+ commits) but nothing aggregates, trends, or surfaces cross-time patterns.
+
+### Temporal Infrastructure Gaps (from gap analysis agent)
+
+| Gap | Severity | Summary |
+|-----|----------|---------|
+| GAP-T1 | **High** | No time-series storage — audit files are isolated islands |
+| GAP-T2 | **High** | No trend direction detection — cannot distinguish resolving vs emerging issues |
+| GAP-T7 | **High** | No session-start surfacing — resume/context agents blind to trends |
+| GAP-T3 | Medium | No velocity trend — single scalar, no acceleration/deceleration |
+| GAP-T4 | Medium | No lead time/cycle time computation despite timestamps existing |
+| GAP-T5 | Medium | No cross-check correlation — related symptoms appear as separate findings |
+| GAP-T6 | Medium | No normalized health score — only raw pass/warn/fail counts |
+| GAP-T8 | Medium | No visual trend display in Watchtower — snapshot tables only |
+| GAP-T9 | Low | No graduated issue aging / SLA tracking |
+| GAP-T10 | Low | No meta-audit to detect silently broken checks |
+
+### Gap-to-Discovery Mapping
+
+| Gap | Addressed by Discovery |
+|-----|----------------------|
+| GAP-T1 (no time-series) | Foundation for D4, D6, D9, D12 |
+| GAP-T2 (no direction) | D4 (audit trends), D6 (velocity trends) |
+| GAP-T3 (no velocity trend) | D6 (completion velocity trends) |
+| GAP-T4 (no cycle time) | D5 (lifecycle anomalies) |
+| GAP-T5 (no correlation) | D3+D7 (commit patterns correlate with budget pressure) |
+| GAP-T6 (no health score) | Could be added as D13 (composite health index) |
+| GAP-T7 (no session surfacing) | Surfacing model design (Phase 2) |
+| GAP-T8 (no charts) | Watchtower integration (build task) |
+| GAP-T9 (no aging) | D2 (human review queue aging) |
+| GAP-T10 (no meta-audit) | D9 (control effectiveness drift) |
+
+### Additional Data Findings
+
+**OE daily/weekly tiers not scheduled:** T-194 Phase 3 designed OE-daily (18 checks) and OE-weekly tiers, but they only exist in audit.sh code — not actually being run on schedule. The cron job runs `oe-fast,oe-research` only. This is a separate gap (not discovery layer, but OE infrastructure).
+
+**13 gaps tracked (not 2):** The gaps register has G-001 through G-013. The handover only mentioned 2 "watching" — the rest have different statuses (closed, accepted-risk, etc.).
+
 ## Dialogue Log
 
 <!-- Record questions, answers, course corrections during human dialogue -->
-
-</content>
-</invoke>

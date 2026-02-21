@@ -8,8 +8,9 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: []
-related_tasks: []
+tags: [discovery, assurance, antifragility, temporal-analysis]
+related_tasks: [T-194]
+components: [docs/reports/T-200-discovery-layer-design.md]
 created: 2026-02-19T19:29:30Z
 last_update: 2026-02-21T23:20:57Z
 date_finished: null
@@ -114,18 +115,18 @@ The framework has three assurance layers designed in T-194. Layers 1-2 (hooks + 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 12 discovery capabilities cataloged and scored against real data. Top 5 score 20-25. 58% episodic decay rate validates D1 immediately. 10 temporal infrastructure gaps identified — zero temporal intelligence exists despite 234 cron audits. Gap-to-discovery mapping complete. Build tasks for top discoveries.
+
+**Date**: 2026-02-21T23:37:37Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 12 discovery capabilities cataloged and scored against real data. Top 5 score 20-25. 58% episodic decay rate validates D1 immediately. 10 temporal infrastructure gaps identified — zero temporal intelligence exists despite 234 cron audits. Gap-to-discovery mapping complete. Build tasks for top discoveries.
+
+**Date**: 2026-02-21T23:37:37Z
 
 ## Updates
 
@@ -141,3 +142,8 @@ The framework has three assurance layers designed in T-194. Layers 1-2 (hooks + 
 
 ### 2026-02-21T23:20:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-21T23:37:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 12 discovery capabilities cataloged and scored against real data. Top 5 score 20-25. 58% episodic decay rate validates D1 immediately. 10 temporal infrastructure gaps identified — zero temporal intelligence exists despite 234 cron audits. Gap-to-discovery mapping complete. Build tasks for top discoveries.
