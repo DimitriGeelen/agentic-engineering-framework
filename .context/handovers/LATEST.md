@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Investigated user-reported navigation flicker on fabric pages ("page loads then goes back"). Root cause identified as mismatch between `hx-boost="true"` default body target and explicit `hx-target="#content"` on links. Fixed by adding `hx-target="#content" hx-swap="innerHTML"` to the body tag alongside `hx-boost`. T-220 inline source viewer is functionally complete (all agent ACs checked); human ACs remain for visual verification.
 
 ## Work in Progress
 
@@ -22,17 +22,17 @@ session_narrative: ""
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Begin inception/exploration of discovery layer
+- **Blockers:** None
+- **Insight:** None
 
 ### T-220: "Fabric component detail — inline source code viewer"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Fixed nav flicker — added `hx-target="#content" hx-swap="innerHTML"` to body tag to align boost defaults with explicit link targets
+- **Next step:** User verifies flicker is gone in their browser, then checks human ACs (dark theme contrast, collapsible section). Commit the fix and complete task.
+- **Blockers:** Waiting for user to confirm flicker fix works in their browser
+- **Insight:** `hx-boost="true"` defaults to targeting `<body>` for response swaps. When links also have explicit `hx-target="#content"`, the mismatch between boost default and explicit target can cause flicker in some browsers. Fix: set body-level `hx-target` to match.
 
 ## Inception Phases
 
@@ -48,40 +48,31 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **Add body-level htmx defaults instead of removing hx-boost**
+   - Why: Removing `hx-boost` would break ~20 bare links across templates that rely on boost for SPA navigation. Setting body-level `hx-target="#content" hx-swap="innerHTML"` aligns boost defaults with explicit link targets without breaking anything.
+   - Alternatives rejected: (a) Remove hx-boost entirely — too many bare links to fix; (b) Add hx-boost="false" to individual links — more changes than needed
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **Playwright reproduction of flicker** — Could not reproduce in headless Chromium. Single request, single history push, correct content swap every time. Issue may be browser-specific (Firefox/Safari) or timing-dependent.
+2. **History API monitoring** — Checked for duplicate pushState calls. Found clean 1 replaceState + 1 pushState pattern. No double-push.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. Does the `hx-target` body-level fix resolve the flicker the user reported? Needs confirmation in their browser.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- The base.html `<body>` tag change is uncommitted — it's only in the working tree. Need to commit after user confirms the fix works.
+- T-220 has 2 unchecked human ACs: dark theme contrast and collapsible section UX. Only the human can check these.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Ask user to test navigation on the fabric page in their browser. If flicker is gone, commit the fix and complete T-220.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Modified: `web/templates/base.html` (body tag: added `hx-target="#content" hx-swap="innerHTML"`)
 
 ## Recent Commits
 
