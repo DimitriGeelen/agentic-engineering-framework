@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+T-220 (inline source code viewer) is implemented, committed, and all agent ACs pass. The feature adds highlight.js syntax highlighting + source file reading to `/fabric/component/<name>`. User reported a possible navigation issue ("page loads then goes back") on fabric pages — could not reproduce in Playwright testing. Human ACs remain unchecked. T-200 is untouched this session.
 
 ## Work in Progress
 
@@ -22,17 +22,17 @@ session_narrative: ""
 
 ### T-200: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
 - **Status:** captured (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Not touched this session
+- **Next step:** Begin inception exploration
+- **Blockers:** None
+- **Insight:** None
 
 ### T-220: "Fabric component detail — inline source code viewer"
 - **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Implemented full feature (3 files), committed as 7ed0b1d. All agent ACs checked. User reported navigation flicker on fabric pages — investigated with Playwright but could not reproduce.
+- **Next step:** User to verify Human ACs (dark theme contrast, collapsible section UX). Investigate navigation issue if user can provide browser/repro steps. Then `fw task update T-220 --status work-completed`.
+- **Blockers:** User-reported navigation issue not yet understood — may be pre-existing htmx/hx-boost conflict, not T-220 specific
+- **Insight:** Shebang detection needed for extensionless scripts like `bin/fw`. Flask needs restart for Python code changes (templates auto-reload but .py doesn't).
 
 ## Inception Phases
 
@@ -48,40 +48,38 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **Used CDN for highlight.js (github-dark theme)**
+   - Why: Simplest integration, no bundling needed, dark theme good contrast for code
+   - Alternatives rejected: Self-hosting (more work for no benefit), atom-one-dark (less contrast)
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Added shebang detection for extensionless files**
+   - Why: `bin/fw` and `bin/claude-fw` have no extension but are bash scripts
+   - Alternatives rejected: Hardcoding specific files, defaulting to bash for all unknowns
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **First verification run failed for hljs check** — Server was running old code. Flask doesn't hot-reload Python changes without debug mode. Restart fixed it.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. User reports "page loads then goes back to same page in under a second" when clicking fabric component links. Could not reproduce in Playwright. Need browser info and whether it's pre-existing or new with T-220.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Web server on port 3000 needs manual restart after Python code changes (`kill PID && python3 -m web.app --port 3000 &`)
+- T-220 Human ACs still unchecked — don't mark work-completed until user verifies
+- The navigation flicker issue may be a pre-existing htmx `hx-boost` conflict, not caused by highlight.js changes
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Investigate the user-reported navigation flicker on fabric pages. Ask user for browser type and whether it happens on non-fabric pages too. If confirmed as pre-existing htmx issue, create a separate bug task.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Modified: `web/templates/base.html` (highlight.js CDN + re-highlight on htmx swap)
+- Modified: `web/blueprints/fabric.py` (source file reading with path safety + shebang detection)
+- Modified: `web/templates/fabric_detail.html` (collapsible source code section)
+- Modified: `.tasks/active/T-220-*.md` (ACs filled, status updated)
 
 ## Recent Commits
 
