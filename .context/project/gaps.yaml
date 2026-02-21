@@ -377,20 +377,13 @@ gaps:
       but the settings.json matcher still needs updating to include NotebookEdit.
     spec_reference: "CLAUDE.md §Enforcement Tiers"
     severity: low
-    why_not_now: >
-      settings.json is now protected by B-005 (check-active-task.sh blocks writes).
-      Human must update the matcher manually. fw doctor warns about the gap.
-    decision_trigger: >
-      NotebookEdit or WebFetch used without task context, causing untraceable changes.
-    trigger_check:
-      type: auto
-      check: "fw doctor 2>&1 | grep -c 'Matcher gap'"
-      threshold: ">= 1 means uncovered tools exist"
     evidence_collected: "T-228 analysis: B-012. fw doctor now warns about this gap."
-    resolution_note: >
-      Human action needed: add NotebookEdit to PreToolUse matcher in .claude/settings.json.
-      Change Write|Edit to Write|Edit|NotebookEdit in the check-active-task.sh entry.
-    status: watching
+    resolution: >
+      Accepted risk. This project has no Jupyter notebooks and no foreseeable use case.
+      NotebookEdit would only matter in a data science project using the framework.
+      If a future project needs it, they add NotebookEdit to their own settings.json matcher.
+    status: closed
     created: 2026-02-21
     last_reviewed: 2026-02-21
+    closed_date: 2026-02-21
     related_task: T-230

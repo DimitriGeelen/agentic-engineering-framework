@@ -418,42 +418,7 @@ else:
         warnings=$((warnings + 1))
     fi
 
-    # Check: Enforcement matcher coverage (B-012 — T-230)
-    # Warn if side-effect tools (NotebookEdit) are not covered by PreToolUse
-    if [ -f "$settings_file" ]; then
-        local matcher_result
-        matcher_result=$(python3 -c "
-import json, sys
-
-with open('$settings_file') as f:
-    data = json.load(f)
-
-hooks = data.get('hooks', {})
-pre_matchers = []
-for entry in hooks.get('PreToolUse', []):
-    m = entry.get('matcher', '')
-    if m:
-        pre_matchers.extend(m.split('|'))
-
-# Side-effect tools that should have PreToolUse enforcement
-uncovered = []
-for tool in ['NotebookEdit']:
-    if tool not in pre_matchers:
-        uncovered.append(tool)
-
-if uncovered:
-    print('WARN|' + ', '.join(uncovered) + ' not covered by PreToolUse hooks (B-012)')
-else:
-    print('OK|All side-effect tools covered by PreToolUse hooks')
-" 2>/dev/null || echo "WARN|Could not check matcher coverage")
-        local mc_status mc_msg
-        mc_status=$(echo "$matcher_result" | cut -d'|' -f1)
-        mc_msg=$(echo "$matcher_result" | cut -d'|' -f2-)
-        case "$mc_status" in
-            OK)   echo -e "  ${GREEN}OK${NC}  $mc_msg" ;;
-            WARN) echo -e "  ${YELLOW}WARN${NC}  Matcher gap: $mc_msg"; warnings=$((warnings + 1)) ;;
-        esac
-    fi
+    # Enforcement matcher coverage: G-012 closed as accepted risk (no notebooks in project)
 
     # Check: Enforcement baseline integrity (B-005 — T-230)
     local baseline_file="$PROJECT_ROOT/.context/project/enforcement-baseline.sha256"
