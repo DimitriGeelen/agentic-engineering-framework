@@ -120,8 +120,9 @@ if [ -n "$TASK_REF" ]; then
     fi
 fi
 
-# --- Research Artifact Enforcement (C-001, G-009, T-226) ---
+# --- Research Artifact Enforcement (C-001, C-002, G-009, T-226) ---
 # Block inception commits after the first if no docs/reports/T-XXX artifact exists.
+# inception-research-warnings: audit marker (C-002 OE check)
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
 if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
