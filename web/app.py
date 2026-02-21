@@ -22,7 +22,7 @@ import sys
 
 from flask import abort, render_template, request, session
 
-from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, build_ambient
+from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, PROJECT_ROOT, build_ambient
 
 # ---------------------------------------------------------------------------
 # Flask application
@@ -104,6 +104,7 @@ def _error_context():
         "nav_items": NAV_ITEMS,
         "active_endpoint": None,
         "ambient": build_ambient(),
+        "project_root": str(PROJECT_ROOT),
     }
 
 
