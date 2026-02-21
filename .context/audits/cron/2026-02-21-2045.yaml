@@ -1,0 +1,25 @@
+# Audit Results - 2026-02-21-2045
+timestamp: 2026-02-21T19:45:01Z
+sections: "oe-fast,oe-research"
+summary:
+  pass: 7
+  warn: 1
+  fail: 0
+findings:
+  - level: PASS
+    check: "C-001: No active inception tasks to check"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-012)"
+  - level: WARN
+    check: "CTL-003: Budget status file stale (9min old)"
+    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
+  - level: PASS
+    check: "CTL-004: Tool counter at 2 (last commit: 8 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: ok)"

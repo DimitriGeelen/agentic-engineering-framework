@@ -1,8 +1,8 @@
-# Audit Results - 2026-02-21-2008
-timestamp: 2026-02-21T19:08:18Z
+# Audit Results - 2026-02-21-2053
+timestamp: 2026-02-21T19:53:00Z
 summary:
-  pass: 66
-  warn: 24
+  pass: 71
+  warn: 1
   fail: 0
 findings:
   - level: PASS
@@ -18,13 +18,15 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 104 registered, 9 unregistered (coverage growing)"
+    check: "Fabric: 105 registered, 7 unregistered (coverage growing)"
+  - level: PASS
+    check: "Fabric edges: 95/105 cards enriched (10 without edges)"
   - level: PASS
     check: "All 4 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (672/681 commits reference tasks)"
+    check: "Git traceability: 98% (678/687 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -50,89 +52,28 @@ findings:
     check: "No orphaned episodic files"
   - level: PASS
     check: "Observation inbox clean (0 pending)"
-  - level: WARN
-    check: "Gap trigger(s) fired — review gaps register"
-    mitigation: "Review .context/project/gaps.yaml and decide: build or simplify"
+  - level: PASS
+    check: "Gaps register: 2 watching, no triggers fired"
   - level: PASS
     check: "Handover open questions: none (section empty or template placeholder)"
   - level: PASS
     check: "Graduation pipeline: 0 learnings (threshold: 20)"
-  - level: WARN
-    check: "Inception task T-084 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-084-*.md"
-  - level: WARN
-    check: "Inception task T-097 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-097-*.md"
-  - level: WARN
-    check: "Inception task T-107 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-107-*.md"
-  - level: WARN
-    check: "Inception task T-118 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-118-*.md"
-  - level: WARN
-    check: "Inception task T-122 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-122-*.md"
-  - level: WARN
-    check: "Inception task T-124 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-124-*.md"
-  - level: WARN
-    check: "Inception task T-131 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-131-*.md"
-  - level: WARN
-    check: "Inception task T-132 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-132-*.md"
-  - level: WARN
-    check: "Inception task T-133 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-133-*.md"
-  - level: WARN
-    check: "Inception task T-138 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-138-*.md"
-  - level: WARN
-    check: "Inception task T-140 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-140-*.md"
-  - level: WARN
-    check: "Inception task T-154 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-154-*.md"
-  - level: WARN
-    check: "Inception task T-155 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-155-*.md"
-  - level: WARN
-    check: "Inception task T-156 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-156-*.md"
-  - level: WARN
-    check: "Inception task T-157 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-157-*.md"
-  - level: WARN
-    check: "Inception task T-158 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-158-*.md"
-  - level: WARN
-    check: "Inception task T-164 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-164-*.md"
-  - level: WARN
-    check: "Inception task T-168 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-168-*.md"
-  - level: WARN
-    check: "Inception task T-181 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-181-*.md"
-  - level: WARN
-    check: "Inception task T-192 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-192-*.md"
+  - level: PASS
+    check: "All 33 completed inceptions have research artifacts"
   - level: PASS
     check: "C-001: No active inception tasks to check"
-  - level: WARN
-    check: "C-002: commit-msg hook missing research artifact check"
-    mitigation: "Reinstall hooks: fw git install-hooks (or manually add C-002)"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
   - level: PASS
     check: "C-002: No research warnings logged (clean or first run)"
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-231)"
-  - level: WARN
-    check: "CTL-003: Budget status file stale (60min old)"
-    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
+    check: "CTL-001: Focus file has active task (T-012)"
   - level: PASS
-    check: "CTL-004: Tool counter at 2 (last commit: 59 minutes ago)"
+    check: "CTL-003: Budget status file fresh (< 5min old)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 10 (last commit: 3 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-233: Improve fabric graph layout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-21T20:14:29Z
+# ============================================================================
+
+task_id: T-233
+task_name: "Improve fabric graph layout"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T20:01:36Z
+completed: 2026-02-21T20:14:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-21T21:14:24+01:00
+last_commit: 2026-02-21T21:14:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add dagre layout, compound subsystem nodes, layout switcher, degree sizing
+
+# Key outcomes
+outcomes:
+  - "Dagre layout (top-down) as default with subsystem compound nodes"
+  - "Layout mode switcher with 3 modes (dagre TB, dagre LR, force-directed)"
+  - "Node size scales by degree (hubs larger, leaves smaller)"
+  - "Viewport height uses calc(100vh - 220px) instead of fixed 600px"
+  - "Info panel shows connection count (in/out degree)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "dagre LR (left-to-right) for second layout mode"
+    rationale: "cose with compound parent nodes creates extremely elongated layouts (3.5:1 ratio) at 95-node scale"
+    alternatives_rejected: ["cose-compound — force-directed layout can't handle 12 subsystem compound parents well; produces unusable vertical strips"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-233-improve-fabric-graph-layout.md"
+  - "web/blueprints/fabric.py"
+  - "web/static/cytoscape-dagre.js"
+  - "web/static/dagre.min.js"
+  - "web/templates/fabric_graph.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-21T21:14:24"
+    action: "T-233: Add dagre layout, compound subsystem nodes, layout switcher, degree sizing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 5
+  lines_added: 4494
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-233-improve-fabric-graph-layout.md
+generated_by: context-agent-hybrid
