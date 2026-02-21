@@ -25,12 +25,13 @@ FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
 
-# Extract file path from tool input
+# Extract file path from tool input (supports file_path and notebook_path for NotebookEdit)
 FILE_PATH=$(echo "$INPUT" | python3 -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
-    print(data.get('tool_input', {}).get('file_path', ''))
+    ti = data.get('tool_input', {})
+    print(ti.get('file_path', '') or ti.get('notebook_path', ''))
 except:
     print('')
 " 2>/dev/null)
