@@ -77,6 +77,22 @@ failure_patterns:
     date_learned: 2026-02-18
     mitigation: "Added 10min cooldown file (.handover-cooldown) with unix timestamp"
 
+  - id: FP-009
+    pattern: "Cytoscape cose layout with compound nodes produces elongated layouts"
+    description: "Cytoscape cose layout with compound nodes produces elongated layouts"
+    scope: project
+    learned_from: T-233
+    date_learned: 2026-02-21
+    mitigation: "Use dagre for hierarchical views with compounds. Detach nodes from parents before cose. dagre-LR provides alternative perspective without cose distortion."
+
+  - id: FP-010
+    pattern: "Task enforcement bypassed by stale focus.yaml pointing to completed task"
+    description: "Task enforcement bypassed by stale focus.yaml pointing to completed task"
+    scope: project
+    learned_from: T-232
+    date_learned: 2026-02-21
+    mitigation: "check-active-task.sh now validates task file exists in .tasks/active/. Registered as G-013 (closed)."
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"

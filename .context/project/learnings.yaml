@@ -519,4 +519,32 @@ learnings:
   date: 2026-02-19
   context: Added via context agent
   application: TBD
+- id: L-062
+  learning: "Task enforcement gate (check-active-task.sh) must validate task exists in .tasks/active/, not just check if CURRENT_TASK is non-empty. A completed task ID left in focus.yaml silently bypassed all enforcement. Root cause: focus.yaml persists across sessions but task files move to completed/. Fix: find .tasks/active/${CURRENT_TASK}-*.md before allowing writes."
+  source: P-002
+  task: T-232
+  date: 2026-02-21
+  context: Added via context agent
+  application: TBD
+- id: L-063
+  learning: "Cytoscape.js cose layout with compound parent nodes produces extremely elongated layouts (3.5:1 aspect ratio) at 95+ node scale. The compound parents constrain force-directed placement, creating unusable vertical strips. Solution: use dagre (layered DAG) for hierarchical views with compounds, and detach nodes from parents (node.move({parent:null})) before running cose for force-directed views."
+  source: T-233
+  task: T-233
+  date: 2026-02-21
+  context: Added via context agent
+  application: TBD
+- id: L-064
+  learning: "In cytoscape.js, hiding a compound parent with style('display','none') also hides ALL child nodes — visible() returns false for children. To make parents invisible while keeping children visible, set background-opacity:0, border-width:0, label:'' instead. Or better: detach children with node.move({parent:null}) and restore with node.move({parent:savedId})."
+  source: T-233
+  task: T-233
+  date: 2026-02-21
+  context: Added via context agent
+  application: TBD
+- id: L-065
+  learning: "Flask without debug=True caches templates in memory on first load. Editing template files on disk does NOT take effect until the server process is restarted. When iterating on templates, always restart: pkill -f 'python3 -m web.app' && python3 -m web.app."
+  source: T-233
+  task: T-233
+  date: 2026-02-21
+  context: Added via context agent
+  application: TBD
 candidates: []

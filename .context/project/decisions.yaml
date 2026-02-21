@@ -245,3 +245,17 @@ decisions:
     date: 2026-02-19
     task: T-198
     rationale: "Two-layer defense: D prevents circumvention, A blocks completion. Simple, auditable, bash-implementable. Rejected: B (too blunt), C (too complex)."
+
+  - id: D-030
+    decision: "Use dagre (layered DAG) as default graph layout instead of cose"
+    scope: project
+    date: 2026-02-21
+    task: T-233
+    rationale: "95 nodes + 140 edges with cose = cluttered hairball. Dagre produces clear top-to-bottom hierarchy showing subsystem structure. Compound parent nodes work well with dagre but break cose. Three modes offered: dagre-TB (default), dagre-LR, force-directed (cose without compounds)."
+
+  - id: D-031
+    decision: "Validate active task file existence in enforcement gate"
+    scope: project
+    date: 2026-02-21
+    task: T-232
+    rationale: "Non-empty CURRENT_TASK in focus.yaml is insufficient — completed tasks move to .tasks/completed/ but focus.yaml persists. Gate now does find .tasks/active/${CURRENT_TASK}-*.md to confirm the task is genuinely active. Closes a high-severity gap (G-013) where the core enforcement principle could be silently bypassed."
