@@ -5,7 +5,22 @@
     </p>
 </div>
 
-<!-- Subsystem tiles -->
+<!-- Subsystem tiles (hidden when a subsystem is selected) -->
+{% if filter_subsystem %}
+    {%- set active_sub = subsystems | selectattr('id', 'equalto', filter_subsystem) | first -%}
+    {% if active_sub %}
+    <article style="padding: 0.75rem; margin-bottom: 1.5rem; border-left: 3px solid var(--pico-primary);">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <strong style="font-size: 1.1rem;">{{ active_sub.name }}</strong>
+            <span style="font-size: 0.85rem; color: var(--pico-muted-color);">
+                {{ subsystem_counts.get(filter_subsystem, 0) }} components
+            </span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.25rem;">{{ active_sub.purpose }}</p>
+        <code style="font-size: 0.7rem; word-break: break-all;">{{ active_sub.summary }}</code>
+    </article>
+    {% endif %}
+{% else %}
 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
     {% for s in subsystems %}
     <article style="padding: 0.75rem; margin-bottom: 0;">
@@ -25,6 +40,7 @@
     </article>
     {% endfor %}
 </div>
+{% endif %}
 
 <!-- Filters -->
 <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
@@ -36,15 +52,15 @@
            hx-swap="innerHTML"
            hx-push-url="true"
            hx-trigger="keyup changed delay:300ms"
-           hx-include="[name='subsystem_filter'],[name='type_filter']"
+           hx-include="[name='subsystem'],[name='type']"
            style="margin-bottom: 0; max-width: 300px;">
 
-    <select name="subsystem_filter"
+    <select name="subsystem"
             hx-get="/fabric"
             hx-target="#content"
             hx-swap="innerHTML"
             hx-push-url="true"
-            hx-include="[name='q'],[name='type_filter']"
+            hx-include="[name='q'],[name='type']"
             style="margin-bottom: 0; max-width: 200px;">
         <option value="">All subsystems</option>
         {% for sid, count in subsystem_counts | dictsort %}
@@ -52,12 +68,12 @@
         {% endfor %}
     </select>
 
-    <select name="type_filter"
+    <select name="type"
             hx-get="/fabric"
             hx-target="#content"
             hx-swap="innerHTML"
             hx-push-url="true"
-            hx-include="[name='q'],[name='subsystem_filter']"
+            hx-include="[name='q'],[name='subsystem']"
             style="margin-bottom: 0; max-width: 160px;">
         <option value="">All types</option>
         {% for t, count in type_counts | dictsort %}
