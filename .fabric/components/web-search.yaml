@@ -1,0 +1,17 @@
+id: web/search.py
+name: search
+type: script
+subsystem: watchtower
+location: web/search.py
+tags: [search, bm25, tantivy]
+
+purpose: "Tantivy BM25 full-text search engine — indexes all YAML/Markdown files, provides ranked search with snippets"
+
+depends_on:
+- target: web/shared.py
+  type: imports
+- target: web/blueprints/discovery.py
+  type: imported_by
+
+last_verified: 2026-02-21
+created_by: unknown

@@ -9,10 +9,10 @@ workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/search.py, web/blueprints/discovery.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-21T21:48:32Z
-last_update: 2026-02-21T22:29:41Z
+last_update: 2026-02-21T22:37:24Z
 date_finished: null
 ---
 
@@ -30,8 +30,8 @@ Replace grep-based search in Watchtower with tantivy BM25 full-text search. Rese
 - [x] Search returns BM25-ranked results with snippet highlighting
 - [x] `/search` route uses tantivy instead of grep subprocess
 - [x] Search results categorized by content type (Active Tasks, Completed Tasks, Episodic Memory, etc.)
-- [ ] Existing tests pass (`pytest web/test_app.py`)
-- [ ] Index auto-rebuilds when stale (>60s)
+- [x] Existing tests pass (`pytest web/test_app.py`) — 140 passed
+- [x] Index auto-rebuilds when stale (>60s)
 
 ### Human
 - [ ] Search result quality and relevance at :3000/search
