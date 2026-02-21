@@ -48,7 +48,7 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s'; then
     exit 0
 fi
 
@@ -111,6 +111,22 @@ PATTERNS = [
      'SQL DROP: Permanent data destruction'),
     (r'(?i)\bTRUNCATE\s+TABLE\b',
      'SQL TRUNCATE: Permanent data destruction'),
+
+    # === Hook/enforcement bypass ===
+    (r'\bgit\b[^;|&]*--no-verify\b',
+     'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'),
+
+    # === Destructive file operations (B-003) ===
+    (r'\bfind\b[^;|&]*-delete\b',
+     'FIND DELETE: Recursively deletes matching files'),
+    (r'\bdd\s+if=',
+     'DD: Raw disk/device write — can overwrite filesystems'),
+    (r'\bchmod\b[^;|&]*-[a-zA-Z]*R[^;|&]*\s+000\b',
+     'CHMOD 000 RECURSIVE: Removes all permissions recursively'),
+    (r'\bmkfs\b',
+     'MKFS: Creates filesystem — destroys existing data on device'),
+    (r'\bpkill\s+-9\b',
+     'PKILL -9: Force-kills processes by name (SIGKILL)'),
 
     # === Infrastructure destructive ===
     (r'\bdocker\s+system\s+prune\b',

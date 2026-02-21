@@ -35,6 +35,25 @@ except:
     print('')
 " 2>/dev/null)
 
+# B-005 (T-229): Protect hook enforcement config from agent modification.
+# .claude/settings.json controls which hooks run — modifying it can disable all enforcement.
+# Block this specifically BEFORE the general exempt-path check.
+case "$FILE_PATH" in
+    */settings.json)
+        # Only block if it's the Claude Code settings file
+        if echo "$FILE_PATH" | grep -q '\.claude/settings\.json$'; then
+            echo "" >&2
+            echo "BLOCKED: Cannot modify .claude/settings.json — this controls enforcement hooks." >&2
+            echo "" >&2
+            echo "Modifying this file could disable task gates, Tier 0 checks, and budget enforcement." >&2
+            echo "Changes to hook configuration require human review." >&2
+            echo "" >&2
+            echo "Policy: B-005 (Enforcement Config Protection)" >&2
+            exit 2
+        fi
+        ;;
+esac
+
 # Exempt paths — framework operations that are part of task management itself
 case "$FILE_PATH" in
     */.context/*|*/.tasks/*|*/.claude/*|*/.git/*)
