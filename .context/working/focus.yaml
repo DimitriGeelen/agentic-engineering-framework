@@ -1,7 +1,18 @@
-blockers: []
-current_task: T-236
-pending_decisions: []
+# Working Memory - Current Focus
+# Session: S-2026-0221-2228
+
+current_task: T-237
+
+# Priority queue
 priorities: []
+
+# Blockers
+blockers: []
+
+# Pending decisions
+pending_decisions: []
+
+# Reminders
 reminders:
-- Run audit before pushing
-- Create handover before ending session
+  - "Run audit before pushing"
+  - "Create handover before ending session"

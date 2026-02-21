@@ -184,8 +184,8 @@
             </li>
 
             <li class="nav-search">
-                <a href="{{ url_for('discovery.search') }}" title="Search"
-                   {% if active_endpoint == 'discovery.search' %}aria-current="page"{% endif %}
+                <a href="{{ url_for('discovery.search_view') }}" title="Search"
+                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}
                    hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="11" cy="11" r="7"></circle>

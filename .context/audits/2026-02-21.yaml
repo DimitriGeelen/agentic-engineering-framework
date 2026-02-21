@@ -1,5 +1,5 @@
-# Audit Results - 2026-02-21-2310
-timestamp: 2026-02-21T22:10:56Z
+# Audit Results - 2026-02-21-2314
+timestamp: 2026-02-21T22:14:46Z
 summary:
   pass: 72
   warn: 2
@@ -18,7 +18,7 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 105 registered, 8 unregistered (coverage growing)"
+    check: "Fabric: 105 registered, 7 unregistered (coverage growing)"
   - level: PASS
     check: "Fabric edges: 95/105 cards enriched (10 without edges)"
   - level: PASS
@@ -27,10 +27,9 @@ findings:
     check: "Task T-233 has short description (27 chars)"
     mitigation: "Expand description in T-233-improve-fabric-graph-layout.md"
   - level: PASS
-    check: "Git traceability: 98% (698/707 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
+    check: "Git traceability: 98% (700/709 commits reference tasks)"
+  - level: PASS
+    check: "Working directory clean"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -74,19 +73,19 @@ findings:
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 1 (last commit: 19 seconds ago)"
+    check: "CTL-004: Tool counter at 0 (last commit: 4 seconds ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: urgent)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 4 cron audit file(s) in last hour"
+    check: "CTL-020: 5 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (164 handovers, 38 compactions)"
+    check: "CTL-006: Handover coverage for compactions (166 handovers, 38 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -139,8 +138,9 @@ findings:
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
     check: "CTL-012: All 230 completed tasks have checked ACs"
-  - level: PASS
-    check: "CTL-013: T-236 verification re-run: 4/4 pass"
+  - level: WARN
+    check: "CTL-013: T-236 verification re-run: 4 command(s) failing"
+    mitigation: "Review T-236 — environment may have changed"
   - level: PASS
     check: "CTL-013: T-234 verification re-run: 2/2 pass"
   - level: PASS

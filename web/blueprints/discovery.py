@@ -130,68 +130,25 @@ def gaps():
 
 
 @bp.route("/search")
-def search():
+def search_view():
+    from web.search import search, index_stats
+
     query = request.args.get("q", "").strip()
     results = {}
+    stats = None
 
     if query and len(query) >= 2:
-        safe_query = re_mod.sub(r"[^\w\s\-]", "", query)
-        if safe_query:
-            try:
-                search_paths = [
-                    str(PROJECT_ROOT / ".tasks"),
-                    str(PROJECT_ROOT / ".context"),
-                ]
-                for spec in PROJECT_ROOT.glob("0*.md"):
-                    search_paths.append(str(spec))
+        search_results = search(query)
+        results = search_results.get("categories", {})
+        stats = index_stats()
 
-                result = subprocess.run(
-                    ["grep", "-rn", "--include=*.yaml", "--include=*.md", "-i", "-l", safe_query]
-                    + search_paths,
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                )
-                files = result.stdout.strip().split("\n") if result.stdout.strip() else []
-
-                for fpath in files[:50]:
-                    if ".tasks/" in fpath:
-                        category = "Tasks"
-                    elif ".context/episodic/" in fpath:
-                        category = "Episodic Memory"
-                    elif ".context/project/" in fpath:
-                        category = "Project Memory"
-                    elif ".context/handovers/" in fpath:
-                        category = "Handovers"
-                    else:
-                        category = "Specifications"
-
-                    if category not in results:
-                        results[category] = []
-
-                    matches = []
-                    try:
-                        line_result = subprocess.run(
-                            ["grep", "-n", "-i", "-m", "3", safe_query, fpath],
-                            capture_output=True,
-                            text=True,
-                            timeout=5,
-                        )
-                        if line_result.stdout.strip():
-                            matches = line_result.stdout.strip().split("\n")[:3]
-                    except Exception:
-                        pass
-
-                    results[category].append(
-                        {
-                            "path": fpath.replace(str(PROJECT_ROOT) + "/", ""),
-                            "matches": matches,
-                        }
-                    )
-            except Exception:
-                pass
-
-    return render_page("search.html", page_title="Search", query=query, results=results)
+    return render_page(
+        "search.html",
+        page_title="Search",
+        query=query,
+        results=results,
+        stats=stats,
+    )
 
 
 @bp.route("/patterns")

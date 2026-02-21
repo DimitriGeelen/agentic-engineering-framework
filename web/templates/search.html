@@ -3,7 +3,7 @@
     <p>Full-text search across tasks, decisions, learnings, patterns, and documentation.</p>
 </div>
 
-<form action="{{ url_for('discovery.search') }}" method="get" role="search" hx-get="{{ url_for('discovery.search') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+<form action="{{ url_for('discovery.search_view') }}" method="get" role="search" hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
     <fieldset role="group">
         <input type="search" name="q" value="{{ query | default('') }}" placeholder="Search framework content..." aria-label="Search" minlength="2" required>
         <button type="submit">Search</button>
@@ -12,8 +12,12 @@
 
 {% if query %}
 <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+    {% set total = results.values() | map('length') | sum %}
     {% if results %}
-    Showing results for <strong>{{ query }}</strong> across {{ results.keys() | list | length }} categories.
+    Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong> across {{ results.keys() | list | length }} categor{{ 'ies' if results.keys() | list | length != 1 else 'y' }}.
+    {% if stats %}
+    <span style="margin-left: 0.5rem; opacity: 0.6;">({{ stats.num_docs }} docs indexed)</span>
+    {% endif %}
     {% else %}
     No results found for <strong>{{ query }}</strong>.
     {% endif %}
@@ -21,15 +25,23 @@
 {% endif %}
 
 {% if results %}
-{% for category, files in results.items() %}
+{% for category, items in results.items() %}
 <details open>
-    <summary><strong>{{ category }}</strong> ({{ files|length }} file{{ 's' if files|length != 1 else '' }})</summary>
-    {% for f in files %}
+    <summary><strong>{{ category }}</strong> ({{ items|length }})</summary>
+    {% for item in items %}
     <article style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
-        <p style="margin: 0; font-weight: bold; font-size: 0.9rem;"><code>{{ f.path }}</code></p>
-        {% if f.matches %}
-        <div style="margin-top: 0.5rem; font-size: 0.8rem; font-family: monospace; color: var(--pico-muted-color); white-space: pre-wrap; overflow-x: auto;">{% for m in f.matches %}{{ m }}
-{% endfor %}</div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
+                {% if item.task_id %}
+                <span style="color: var(--pico-primary); margin-right: 0.25rem;">{{ item.task_id }}</span>
+                {% endif %}
+                {{ item.title }}
+            </p>
+            <small style="color: var(--pico-muted-color); white-space: nowrap; margin-left: 1rem;">{{ item.score }}</small>
+        </div>
+        <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--pico-muted-color);"><code>{{ item.path }}</code></p>
+        {% if item.snippet %}
+        <div style="margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5; color: var(--pico-color); overflow-wrap: break-word;">{{ item.snippet | safe }}</div>
         {% endif %}
     </article>
     {% endfor %}
@@ -38,6 +50,6 @@
 {% elif query %}
 <div class="coming-soon">
     <h3>No Results</h3>
-    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term.</p>
+    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term or use stemmed forms.</p>
 </div>
 {% endif %}
