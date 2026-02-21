@@ -16,16 +16,11 @@ depends_on:
     type: reads
     location: agents/context/budget-gate.sh:52
     contract: "JSON with fields: level, tokens, timestamp, source"
-  - target: F-004
+  - target: budget-gate-counter
     type: reads
     location: agents/context/budget-gate.sh:148
     contract: "Text integer — invocation counter for recheck interval"
-  - target: transcript
-    type: reads
-    location: agents/context/budget-gate.sh:169
-    contract: "Claude Code JSONL transcript — reads last API response for input_tokens"
-    coupling: soft
-    coupling_note: "External dependency on Claude Code JSONL path format"
+  # transcript: external dependency (Claude Code JSONL) — not a framework component
 
 depended_by:
   - target: C-009

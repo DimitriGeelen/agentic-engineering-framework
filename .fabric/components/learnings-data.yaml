@@ -22,7 +22,7 @@ readers:
   - target: C-004
     location: agents/audit/audit.sh:276
     contract: "python3 yaml.safe_load() — parse validation only"
-  - target: C-005
+  - target: audit-yaml-validator
     location: agents/audit/audit.sh:1034
     contract: "grep -c '^  - id: L-' — graduation pipeline count"
 

@@ -17,10 +17,7 @@ depends_on:
     type: reads
     location: agents/audit/audit.sh:276
     contract: "python3 yaml.safe_load() — checks parse, non-empty, is-dict"
-  - target: "all .context/project/*.yaml"
-    type: reads
-    location: agents/audit/audit.sh:270
-    contract: "Iterates glob pattern, validates each file"
+  # Also reads all .context/project/*.yaml via glob (not a single component)
 
 depended_by:
   - target: cron-audit

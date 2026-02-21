@@ -1,0 +1,16 @@
+id: F-004
+name: budget-gate-counter
+type: data
+subsystem: budget-management
+location: .context/working/.budget-gate-counter
+tags: [budget, counter, state, working-memory]
+
+purpose: "Text integer tracking tool invocation count between budget rechecks. Read by budget-gate to decide when to re-read the transcript."
+
+depended_by:
+  - target: budget-gate
+    type: reads
+    note: "Checked every invocation to decide recheck interval"
+
+last_verified: 2026-02-21
+created_by: T-191

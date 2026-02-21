@@ -12,11 +12,11 @@ depends_on:
     type: calls
     location: agents/context/context.sh:80
     contract: "source + do_add_learning() with positional args"
-  - target: C-010
+  - target: decision
     type: calls
     location: agents/context/context.sh:84
     contract: "source + do_add_decision() with positional args"
-  - target: C-011
+  - target: pattern
     type: calls
     location: agents/context/context.sh:88
     contract: "source + do_add_pattern() with positional args"

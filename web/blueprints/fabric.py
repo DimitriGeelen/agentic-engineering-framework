@@ -50,28 +50,37 @@ def _load_subsystems():
     return data.get("subsystems", [])
 
 
-def _build_graph(components):
+def _build_graph(components, all_components=None):
     """Build nodes and edges for visualization."""
     nodes = []
     edges = []
     id_to_name = {}
+    comp_info = {}  # name → {type, subsystem, location}
 
-    for c in components:
+    # Build lookup from ALL components so dependency targets resolve correctly
+    for c in (all_components or components):
         cid = c.get("id", c.get("name", ""))
         name = c.get("name", cid)
         ctype = c.get("type", "unknown")
         subsystem = c.get("subsystem", "unknown")
+        loc = c.get("location", "")
         id_to_name[cid] = name
         id_to_name[name] = name
-        loc = c.get("location", "")
         if loc:
             id_to_name[loc] = name
+        comp_info[name] = {"type": ctype, "subsystem": subsystem, "location": loc}
+
+    # Build nodes only from enriched components passed in
+    for c in components:
+        cid = c.get("id", c.get("name", ""))
+        name = c.get("name", cid)
+        info = comp_info.get(name, {})
         nodes.append({
             "id": name,
             "label": name,
-            "type": ctype,
-            "subsystem": subsystem,
-            "location": loc,
+            "type": info.get("type", "unknown"),
+            "subsystem": info.get("subsystem", "unknown"),
+            "location": info.get("location", ""),
         })
 
     seen_edges = set()
@@ -108,18 +117,19 @@ def _build_graph(components):
                     seen_edges.add(key)
                     edges.append({"source": rt, "target": source_name, "type": "reads"})
 
-    # Add placeholder nodes for edge targets/sources not in the node set
+    # Add nodes for edge endpoints not already in the node set
     node_ids = {n["id"] for n in nodes}
     for e in edges:
         for endpoint in (e["source"], e["target"]):
             if endpoint and endpoint not in node_ids:
                 node_ids.add(endpoint)
+                info = comp_info.get(endpoint, {})
                 nodes.append({
                     "id": endpoint,
                     "label": endpoint,
-                    "type": "unknown",
-                    "subsystem": "unknown",
-                    "location": "",
+                    "type": info.get("type", "unknown"),
+                    "subsystem": info.get("subsystem", "unknown"),
+                    "location": info.get("location", ""),
                 })
 
     # Filter out edges with empty endpoints
@@ -290,7 +300,7 @@ def fabric_graph():
     # Only include components that have edges (enriched cards)
     enriched = [c for c in components if c.get("depends_on") or c.get("writers") or c.get("readers")]
 
-    nodes, edges = _build_graph(enriched)
+    nodes, edges = _build_graph(enriched, all_components=components)
     subsystems = _load_subsystems()
 
     return render_page(

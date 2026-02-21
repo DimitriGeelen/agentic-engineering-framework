@@ -20,11 +20,7 @@ depends_on:
     type: writes
     location: agents/context/checkpoint.sh:187
     contract: "Same JSON format — updates when re-reading transcript"
-  - target: transcript
-    type: reads
-    location: agents/context/checkpoint.sh:75
-    contract: "Claude Code JSONL transcript — reads last real API response"
-    coupling: soft
+  # transcript: external dependency (Claude Code JSONL) — not a framework component
 
 depended_by:
   - target: C-009
