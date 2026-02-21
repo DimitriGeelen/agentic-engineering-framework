@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-235: Agent fabric awareness + vector database for semantic search
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-21T21:48:07Z
+# ============================================================================
+
+task_id: T-235
+task_name: "Agent fabric awareness + vector database for semantic search"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-21T21:03:25Z
+completed: 2026-02-21T21:48:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-21T22:04:21+01:00
+last_commit: 2026-02-21T22:10:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Start inception — agent fabric awareness + vector DB research. Consolidate research findings from 3 parallel agents
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-235-agent-fabric-awareness-vector-db.md"
+  - ".tasks/active/T-235-agent-fabric-awareness--vector-database-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-21T22:04:21"
+    action: "T-235: Start inception — agent fabric awareness + vector DB research"
+  - time: "2026-02-21T22:10:30"
+    action: "T-235: Consolidate research findings from 3 parallel agents"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 2
+  files_changed: 2
+  lines_added: 170
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-235-agent-fabric-awareness--vector-database-.md
+generated_by: context-agent-hybrid

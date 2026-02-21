@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/fabric.py, web/templates/fabric_graph.html]
 related_tasks: []
 created: 2026-02-21T20:01:36Z
-last_update: 2026-02-21T20:14:28Z
+last_update: 2026-02-21T20:37:25Z
 date_finished: 2026-02-21T20:14:28Z
 ---
 
