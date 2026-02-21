@@ -72,9 +72,9 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo "To fix:"
     echo "  1. Add task reference: git commit -m \"T-XXX: your message\""
     echo "  2. Create a task: ./agents/task-create/create-task.sh"
-    echo "  3. Emergency bypass: git commit --no-verify"
+    echo "  3. Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
     echo ""
-    echo "Note: Bypasses should be logged with: ./agents/git/git.sh log-bypass"
+    echo "Note: --no-verify is Tier 0 protected. Bypasses are logged."
     exit 1
 fi
 
@@ -108,7 +108,7 @@ if [ -n "$TASK_REF" ]; then
                 echo "  fw inception decide $TASK_REF go --rationale 'reason'"
                 echo "  fw inception decide $TASK_REF no-go --rationale 'reason'"
                 echo ""
-                echo "Emergency bypass: git commit --no-verify"
+                echo "Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
                 exit 1
             else
                 echo ""
@@ -259,7 +259,7 @@ if [ $audit_exit -eq 2 ]; then
     echo "ERROR: Push blocked - audit has FAILURES"
     echo ""
     echo "Fix the issues above before pushing."
-    echo "Emergency bypass: git push --no-verify"
+    echo "Emergency bypass (human only): fw tier0 approve && git push --no-verify"
     echo ""
     exit 1
 elif [ $audit_exit -eq 1 ]; then
@@ -285,7 +285,7 @@ HOOK_EOF
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
-    echo "  - Bypass with: git commit/push --no-verify (logs warning)"
+    echo "  - Bypass: fw tier0 approve && git commit/push --no-verify (Tier 0 protected)"
 }
 
 show_hooks_help() {
@@ -309,6 +309,6 @@ Pre-push behavior:
   - Audit FAIL (exit 2): Push blocked
   - Audit WARN (exit 1): Push allowed with warning
   - Audit PASS (exit 0): Push allowed
-  - Bypass: git push --no-verify
+  - Bypass: fw tier0 approve && git push --no-verify (Tier 0 protected)
 EOF
 }

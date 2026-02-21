@@ -341,3 +341,56 @@ gaps:
     created: 2026-02-19
     last_reviewed: 2026-02-20
     closed_date: 2026-02-20
+
+  - id: G-011
+    title: "PostToolUse hooks are advisory-only — cannot block actions"
+    description: >
+      Claude Code PostToolUse hooks always exit 0 (advisory). Error-watchdog.sh
+      and check-dispatch.sh can warn but not prevent the agent from ignoring errors
+      or dispatching too many agents. The agent can proceed without investigating
+      after error-watchdog fires. Architecturally limited by Claude Code hook design.
+    spec_reference: "CLAUDE.md §Enforcement Tiers"
+    severity: low
+    why_not_now: >
+      PostToolUse hooks see results (post-action), PreToolUse sees intent (pre-action).
+      Cannot promote most PostToolUse checks to PreToolUse because the information
+      needed (exit codes, output size) only exists after execution. CLAUDE.md behavioral
+      rules remain the primary control for post-action compliance.
+    decision_trigger: >
+      Agent repeatedly ignores error-watchdog warnings (3+ instances in one session)
+      and the resulting bug requires >1 hour to fix.
+    trigger_check:
+      type: manual
+      hint: "Monitor for sessions where error-watchdog fired but agent proceeded without investigating"
+    evidence_collected: "T-228 analysis: B-009. No known incidents of ignoring warnings causing major damage."
+    status: watching
+    created: 2026-02-21
+    last_reviewed: 2026-02-21
+    related_task: T-228
+
+  - id: G-012
+    title: "NotebookEdit and other side-effect tools not covered by PreToolUse task gate"
+    description: >
+      The PreToolUse task gate (check-active-task.sh) only fires for Write|Edit per the
+      settings.json matcher. NotebookEdit, WebFetch, and MCP tools can produce side effects
+      without task context. check-active-task.sh was updated to handle notebook_path (T-230),
+      but the settings.json matcher still needs updating to include NotebookEdit.
+    spec_reference: "CLAUDE.md §Enforcement Tiers"
+    severity: low
+    why_not_now: >
+      settings.json is now protected by B-005 (check-active-task.sh blocks writes).
+      Human must update the matcher manually. fw doctor warns about the gap.
+    decision_trigger: >
+      NotebookEdit or WebFetch used without task context, causing untraceable changes.
+    trigger_check:
+      type: auto
+      check: "fw doctor 2>&1 | grep -c 'Matcher gap'"
+      threshold: ">= 1 means uncovered tools exist"
+    evidence_collected: "T-228 analysis: B-012. fw doctor now warns about this gap."
+    resolution_note: >
+      Human action needed: add NotebookEdit to PreToolUse matcher in .claude/settings.json.
+      Change Write|Edit to Write|Edit|NotebookEdit in the check-active-task.sh entry.
+    status: watching
+    created: 2026-02-21
+    last_reviewed: 2026-02-21
+    related_task: T-230
