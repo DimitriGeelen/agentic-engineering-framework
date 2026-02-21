@@ -1580,13 +1580,13 @@ for task_file in $recent_completed; do
         if [ "$in_verify" = true ]; then
             # Track HTML comment blocks (<!-- ... -->)
             if echo "$line" | grep -q '<!--'; then
-                if ! echo "$line" | grep -q '-->'; then
+                if ! echo "$line" | grep -q -- '-->'; then
                     in_comment=true
                 fi
                 continue
             fi
             if [ "$in_comment" = true ]; then
-                if echo "$line" | grep -q '-->'; then
+                if echo "$line" | grep -q -- '-->'; then
                     in_comment=false
                 fi
                 continue
