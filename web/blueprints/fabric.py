@@ -13,9 +13,18 @@ bp = Blueprint("fabric", __name__)
 FABRIC_DIR = os.path.join(PROJECT_ROOT, ".fabric")
 COMP_DIR = os.path.join(FABRIC_DIR, "components")
 
+# mtime-based cache for component loading
+_comp_cache = {"mtime": 0, "data": []}
+
 
 def _load_components():
-    """Load all component cards."""
+    """Load all component cards (cached by directory mtime)."""
+    try:
+        dir_mtime = os.stat(COMP_DIR).st_mtime
+    except OSError:
+        return []
+    if dir_mtime == _comp_cache["mtime"] and _comp_cache["data"]:
+        return _comp_cache["data"]
     components = []
     for path in sorted(glob.glob(os.path.join(COMP_DIR, "*.yaml"))):
         try:
@@ -26,6 +35,8 @@ def _load_components():
                 components.append(data)
         except Exception:
             pass
+    _comp_cache["mtime"] = dir_mtime
+    _comp_cache["data"] = components
     return components
 
 

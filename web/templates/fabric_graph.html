@@ -69,7 +69,7 @@
 </div>
 
 <!-- Cytoscape.js -->
-<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<script src="{{ url_for('static', filename='cytoscape.min.js') }}"></script>
 <script>
 (function() {
     var rawNodes = {{ nodes | tojson }};
@@ -211,7 +211,7 @@
             edgeElasticity: 100,
             nestingFactor: 1.2,
             gravity: 0.25,
-            numIter: 1000,
+            numIter: Math.min(300, rawNodes.length * 20),
             padding: 30
         },
         minZoom: 0.2,
@@ -266,7 +266,7 @@
             idealEdgeLength: 80,
             edgeElasticity: 100,
             gravity: 0.25,
-            numIter: 1000,
+            numIter: Math.min(300, rawNodes.length * 20),
             padding: 30
         }).run();
     });
