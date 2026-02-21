@@ -98,11 +98,26 @@ if [ -z "$CURRENT_TASK" ]; then
     exit 2
 fi
 
+# Verify task is actually active (not completed/archived) — G-013
+ACTIVE_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${CURRENT_TASK}-*.md" -type f 2>/dev/null | head -1)
+if [ -z "$ACTIVE_FILE" ]; then
+    echo "" >&2
+    echo "BLOCKED: Task $CURRENT_TASK is not active (may be completed or missing)." >&2
+    echo "" >&2
+    echo "To unblock:" >&2
+    echo "  fw work-on T-XXX   (resume an active task)" >&2
+    echo "  fw work-on 'name'  (create a new task)" >&2
+    echo "" >&2
+    echo "Attempting to modify: $FILE_PATH" >&2
+    echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
+    exit 2
+fi
+
 # --- Inception awareness ---
 # If the active task is inception type with no decision, warn (don't block)
-TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${CURRENT_TASK}-*.md" -type f 2>/dev/null | head -1)
-if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
-    if ! grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$TASK_FILE" 2>/dev/null; then
+# ACTIVE_FILE already resolved above
+if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2>/dev/null; then
+    if ! grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$ACTIVE_FILE" 2>/dev/null; then
         echo "NOTE: Active task $CURRENT_TASK is inception (no decision yet). Ensure you are doing exploration, not building." >&2
     fi
 fi

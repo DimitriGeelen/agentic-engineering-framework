@@ -387,3 +387,22 @@ gaps:
     last_reviewed: 2026-02-21
     closed_date: 2026-02-21
     related_task: T-230
+
+  - id: G-013
+    title: "Task gate accepts completed task IDs — no active-file validation"
+    description: >
+      check-active-task.sh only checked if CURRENT_TASK was non-empty in focus.yaml.
+      It did not verify the task file exists in .tasks/active/. A completed task ID
+      left in focus.yaml passed the gate, allowing Write/Edit without an active task.
+      Discovered when T-012 (completed) remained in focus across sessions.
+    spec_reference: "CLAUDE.md §Enforcement Tiers — Tier 1"
+    severity: high
+    evidence_collected: "Session S-2026-0221: T-012 completed but still in focus, all edits allowed"
+    resolution: >
+      Added active-file validation after reading CURRENT_TASK. The gate now does
+      find .tasks/active/${CURRENT_TASK}-*.md and blocks if no match found.
+    status: closed
+    created: 2026-02-21
+    last_reviewed: 2026-02-21
+    closed_date: 2026-02-21
+    related_task: T-232
