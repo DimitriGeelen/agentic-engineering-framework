@@ -19,11 +19,20 @@
         {% endfor %}
     </select>
 
+    <select id="layout-mode" style="margin-bottom: 0; max-width: 180px;">
+        <option value="dagre" selected>Hierarchy (top-down)</option>
+        <option value="dagre-lr">Hierarchy (left-right)</option>
+        <option value="cose">Force-directed</option>
+    </select>
+
     <button id="btn-relayout" class="outline" style="margin-bottom: 0; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Re-layout</button>
     <button id="btn-reset" class="outline secondary" style="margin-bottom: 0; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Reset view</button>
 
     <label style="margin-bottom: 0; font-size: 0.85rem;">
         <input type="checkbox" id="chk-labels" checked style="margin-bottom: 0;"> Labels
+    </label>
+    <label style="margin-bottom: 0; font-size: 0.85rem;">
+        <input type="checkbox" id="chk-groups" checked style="margin-bottom: 0;"> Subsystem groups
     </label>
 </div>
 
@@ -47,8 +56,8 @@
     </div>
 </details>
 
-<!-- Graph container -->
-<div id="cy" style="width: 100%; height: 600px; background: #1a1a2e; border-radius: 8px; position: relative;"></div>
+<!-- Graph container — dynamic height for full viewport usage -->
+<div id="cy" style="width: 100%; height: calc(100vh - 220px); min-height: 500px; background: #1a1a2e; border-radius: 8px; position: relative;"></div>
 
 <!-- Info panel (shown on node click) -->
 <div id="info-panel" style="display: none; margin-top: 1rem;">
@@ -62,18 +71,22 @@
             <span id="info-subsystem" style="font-size: 0.8rem; color: var(--pico-muted-color); margin-left: 0.5rem;"></span>
         </p>
         <p style="margin: 0.25rem 0;"><code id="info-location" style="font-size: 0.75rem;"></code></p>
+        <p id="info-degree" style="margin: 0.25rem 0; font-size: 0.8rem; color: var(--pico-muted-color);"></p>
         <p style="margin: 0.5rem 0 0;">
             <a id="info-link" href="#" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View component details &rarr;</a>
         </p>
     </article>
 </div>
 
-<!-- Cytoscape.js -->
+<!-- Cytoscape.js + dagre layout -->
 <script src="{{ url_for('static', filename='cytoscape.min.js') }}"></script>
+<script src="{{ url_for('static', filename='dagre.min.js') }}"></script>
+<script src="{{ url_for('static', filename='cytoscape-dagre.js') }}"></script>
 <script>
 (function() {
     var rawNodes = {{ nodes | tojson }};
     var rawEdges = {{ edges | tojson }};
+    var subsystemColors = {{ subsystem_colors | tojson }};
 
     var TYPE_COLORS = {
         script:   '#a0aec0',
@@ -97,19 +110,55 @@
     };
     var DEFAULT_COLOR = '#a0aec0';
 
+    // Compute node degree for size scaling
+    var degreeMap = {};
+    rawNodes.forEach(function(n) { degreeMap[n.id] = 0; });
+    rawEdges.forEach(function(e) {
+        degreeMap[e.source] = (degreeMap[e.source] || 0) + 1;
+        degreeMap[e.target] = (degreeMap[e.target] || 0) + 1;
+    });
+    var maxDegree = Math.max(1, Math.max.apply(null, Object.values(degreeMap)));
+
+    // Collect unique subsystems for compound parent nodes
+    var subsystemSet = {};
+    rawNodes.forEach(function(n) {
+        if (n.subsystem && n.subsystem !== 'unknown') {
+            subsystemSet[n.subsystem] = true;
+        }
+    });
+
     // Build cytoscape elements
     var elements = [];
-    rawNodes.forEach(function(n) {
+
+    // Add compound parent nodes for each subsystem
+    Object.keys(subsystemSet).forEach(function(sub) {
         elements.push({
+            data: {
+                id: 'sub_' + sub,
+                label: sub.replace(/-/g, ' '),
+                isParent: true,
+                subsystem: sub
+            }
+        });
+    });
+
+    rawNodes.forEach(function(n) {
+        var degree = degreeMap[n.id] || 0;
+        var parentId = (n.subsystem && n.subsystem !== 'unknown') ? 'sub_' + n.subsystem : undefined;
+        var el = {
             data: {
                 id: n.id,
                 label: n.label,
                 type: n.type,
                 subsystem: n.subsystem,
-                location: n.location || ''
+                location: n.location || '',
+                degree: degree
             }
-        });
+        };
+        if (parentId) el.data.parent = parentId;
+        elements.push(el);
     });
+
     rawEdges.forEach(function(e, i) {
         elements.push({
             data: {
@@ -121,7 +170,7 @@
         });
     });
 
-    if (elements.length === 0) {
+    if (rawNodes.length === 0) {
         document.getElementById('cy').innerHTML =
             '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#a0aec0;font-size:1.1rem;">' +
             'No enriched components with dependency edges found.<br>Enrich component cards to see the graph.' +
@@ -129,25 +178,57 @@
         return;
     }
 
+    // Node size: scale by degree (18-44px range)
+    function nodeSize(el) {
+        var d = el.data('degree') || 0;
+        return 18 + (d / maxDegree) * 26;
+    }
+
     var cy = cytoscape({
         container: document.getElementById('cy'),
         elements: elements,
         style: [
             {
-                selector: 'node',
+                selector: 'node[!isParent]',
                 style: {
                     'label': 'data(label)',
                     'background-color': function(el) { return TYPE_COLORS[el.data('type')] || DEFAULT_COLOR; },
                     'color': '#e2e8f0',
-                    'font-size': '10px',
+                    'font-size': '9px',
                     'text-valign': 'bottom',
                     'text-margin-y': 4,
-                    'width': 24,
-                    'height': 24,
+                    'width': nodeSize,
+                    'height': nodeSize,
                     'border-width': 1,
                     'border-color': '#2d3748',
                     'text-outline-width': 2,
-                    'text-outline-color': '#1a1a2e'
+                    'text-outline-color': '#1a1a2e',
+                    'text-max-width': '80px',
+                    'text-wrap': 'ellipsis'
+                }
+            },
+            {
+                selector: '$node > node',
+                style: {
+                    'background-color': function(el) {
+                        return subsystemColors[el.data('subsystem')] || '#1e2a3a';
+                    },
+                    'background-opacity': 0.4,
+                    'border-width': 1,
+                    'border-color': function(el) {
+                        return subsystemColors[el.data('subsystem')] || '#2d3748';
+                    },
+                    'border-opacity': 0.6,
+                    'label': 'data(label)',
+                    'color': '#8892a4',
+                    'font-size': '11px',
+                    'text-valign': 'top',
+                    'text-halign': 'center',
+                    'text-margin-y': -6,
+                    'padding': '16px',
+                    'shape': 'roundrectangle',
+                    'text-transform': 'uppercase',
+                    'font-weight': 'bold'
                 }
             },
             {
@@ -159,7 +240,7 @@
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier',
                     'arrow-scale': 0.7,
-                    'opacity': 0.7
+                    'opacity': 0.6
                 }
             },
             {
@@ -167,8 +248,6 @@
                 style: {
                     'border-width': 3,
                     'border-color': '#f6e05e',
-                    'width': 32,
-                    'height': 32,
                     'z-index': 10
                 }
             },
@@ -177,8 +256,6 @@
                 style: {
                     'border-width': 3,
                     'border-color': '#fff',
-                    'width': 36,
-                    'height': 36,
                     'z-index': 20
                 }
             },
@@ -192,50 +269,133 @@
             },
             {
                 selector: 'node.dimmed',
-                style: {
-                    'opacity': 0.15
-                }
+                style: { 'opacity': 0.12 }
             },
             {
                 selector: 'edge.dimmed',
-                style: {
-                    'opacity': 0.08
-                }
+                style: { 'opacity': 0.06 }
             }
         ],
-        layout: {
-            name: 'cose',
-            animate: false,
-            nodeOverlap: 20,
-            idealEdgeLength: 80,
-            edgeElasticity: 100,
-            nestingFactor: 1.2,
-            gravity: 0.25,
-            numIter: Math.min(300, rawNodes.length * 20),
-            padding: 30
-        },
-        minZoom: 0.2,
-        maxZoom: 4,
+        layout: { name: 'preset' },
+        minZoom: 0.1,
+        maxZoom: 5,
         wheelSensitivity: 0.3
     });
 
+    // --- Layout configs ---
+    var LAYOUTS = {
+        dagre: {
+            name: 'dagre',
+            rankDir: 'TB',
+            nodeSep: 30,
+            rankSep: 60,
+            edgeSep: 10,
+            animate: false,
+            padding: 30
+        },
+        'dagre-lr': {
+            name: 'dagre',
+            rankDir: 'LR',
+            nodeSep: 20,
+            rankSep: 80,
+            edgeSep: 10,
+            animate: false,
+            padding: 30
+        },
+        cose: {
+            name: 'cose',
+            animate: false,
+            fit: true,
+            nodeOverlap: 20,
+            idealEdgeLength: function(edge) { return 80; },
+            edgeElasticity: function(edge) { return 100; },
+            nestingFactor: 1.2,
+            gravity: 0.25,
+            numIter: Math.min(400, rawNodes.length * 20),
+            padding: 30
+        }
+    };
+
+    // Track current mode
+    var currentMode = 'dagre';
+
+    function applyLayout(mode) {
+        currentMode = mode;
+        var config = LAYOUTS[mode];
+        if (!config) return;
+
+        // For dagre TB, use taxi edges. For dagre LR, use taxi horizontal. For cose, bezier.
+        if (mode === 'dagre') {
+            cy.style().selector('edge').style('curve-style', 'taxi').style('taxi-direction', 'downward').style('taxi-turn', '20px').update();
+        } else if (mode === 'dagre-lr') {
+            cy.style().selector('edge').style('curve-style', 'taxi').style('taxi-direction', 'rightward').style('taxi-turn', '20px').update();
+        } else {
+            cy.style().selector('edge').style('curve-style', 'bezier').update();
+        }
+
+        // For cose: detach nodes from parents entirely (parents distort force layout).
+        // For dagre: re-attach and show parents.
+        var showGroups = document.getElementById('chk-groups').checked;
+        if (mode === 'cose') {
+            // Remove parent assignment, hide parent nodes
+            cy.nodes('[!isParent]').forEach(function(n) {
+                if (n.data('parent')) {
+                    n.data('_savedParent', n.data('parent'));
+                    n.move({ parent: null });
+                }
+            });
+            cy.nodes('[?isParent]').style('display', 'none');
+        } else {
+            // Restore parent assignments
+            cy.nodes('[!isParent]').forEach(function(n) {
+                var saved = n.data('_savedParent');
+                if (saved && !n.data('parent')) {
+                    n.move({ parent: saved });
+                }
+            });
+            cy.nodes('[?isParent]').forEach(function(p) {
+                if (!showGroups) {
+                    p.style({'background-opacity': 0, 'border-width': 0, 'label': '', 'padding': '0px', 'display': 'element'});
+                } else {
+                    p.style({
+                        'background-opacity': 0.4,
+                        'border-width': 1,
+                        'label': p.data('label'),
+                        'padding': '16px',
+                        'display': 'element'
+                    });
+                }
+            });
+        }
+
+        var layout = cy.layout(config);
+        layout.on('layoutstop', function() { cy.fit(undefined, 30); });
+        layout.run();
+    }
+
+    // Run initial layout
+    applyLayout('dagre');
+
     // --- Node click: highlight downstream ---
-    cy.on('tap', 'node', function(evt) {
+    cy.on('tap', 'node[!isParent]', function(evt) {
         var node = evt.target;
         var successors = node.successors();
         var predecessors = node.predecessors();
         var neighborhood = successors.union(predecessors).union(node);
 
-        // Dim everything
         cy.elements().addClass('dimmed').removeClass('highlighted selected-node');
-        // Un-dim neighborhood
         neighborhood.removeClass('dimmed');
         successors.addClass('highlighted');
         successors.edges().addClass('highlighted');
         node.addClass('selected-node');
 
+        // Also un-dim parent nodes of visible nodes
+        neighborhood.nodes().forEach(function(n) {
+            var p = n.parent();
+            if (p.length) p.removeClass('dimmed');
+        });
+
         // Show info panel
-        var panel = document.getElementById('info-panel');
         document.getElementById('info-name').textContent = node.data('label');
         var typeSpan = document.getElementById('info-type');
         typeSpan.textContent = node.data('type');
@@ -243,9 +403,12 @@
         typeSpan.style.color = '#1a202c';
         document.getElementById('info-subsystem').textContent = node.data('subsystem');
         document.getElementById('info-location').textContent = node.data('location');
+        document.getElementById('info-degree').textContent =
+            'Connections: ' + (node.data('degree') || 0) + ' (' +
+            node.indegree() + ' in, ' + node.outdegree() + ' out)';
         var link = document.getElementById('info-link');
         link.href = '/fabric/component/' + encodeURIComponent(node.data('label'));
-        panel.style.display = 'block';
+        document.getElementById('info-panel').style.display = 'block';
     });
 
     // Click background: reset
@@ -257,18 +420,12 @@
     });
 
     // --- Controls ---
+    document.getElementById('layout-mode').addEventListener('change', function() {
+        applyLayout(this.value);
+    });
+
     document.getElementById('btn-relayout').addEventListener('click', function() {
-        cy.layout({
-            name: 'cose',
-            animate: true,
-            animationDuration: 500,
-            nodeOverlap: 20,
-            idealEdgeLength: 80,
-            edgeElasticity: 100,
-            gravity: 0.25,
-            numIter: Math.min(300, rawNodes.length * 20),
-            padding: 30
-        }).run();
+        applyLayout(currentMode);
     });
 
     document.getElementById('btn-reset').addEventListener('click', function() {
@@ -279,10 +436,14 @@
 
     document.getElementById('chk-labels').addEventListener('change', function() {
         if (this.checked) {
-            cy.style().selector('node').style('label', 'data(label)').update();
+            cy.style().selector('node[!isParent]').style('label', 'data(label)').update();
         } else {
-            cy.style().selector('node').style('label', '').update();
+            cy.style().selector('node[!isParent]').style('label', '').update();
         }
+    });
+
+    document.getElementById('chk-groups').addEventListener('change', function() {
+        applyLayout(currentMode);
     });
 
     document.getElementById('info-close').addEventListener('click', function() {

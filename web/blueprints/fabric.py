@@ -305,6 +305,22 @@ def fabric_graph():
     nodes, edges = _build_graph(enriched, all_components=components)
     subsystems = _load_subsystems()
 
+    # Build subsystem color map for compound node backgrounds
+    subsystem_colors = {
+        "watchtower": "#2d4a7a",
+        "context-fabric": "#2a5a4a",
+        "framework-core": "#5a3a2a",
+        "git-traceability": "#4a2a5a",
+        "component-fabric": "#2a4a5a",
+        "healing": "#5a2a3a",
+        "learnings-pipeline": "#3a5a2a",
+        "budget-management": "#5a4a2a",
+        "task-management": "#2a3a5a",
+        "audit": "#4a5a2a",
+        "handover": "#3a2a5a",
+        "enforcement": "#5a2a4a",
+    }
+
     return render_page(
         "fabric_graph.html",
         page_title="Dependency Graph",
@@ -312,6 +328,7 @@ def fabric_graph():
         edges=edges,
         subsystems=subsystems,
         subsystem_filter=subsystem_filter,
+        subsystem_colors=subsystem_colors,
         total_nodes=len(nodes),
         total_edges=len(edges),
     )
