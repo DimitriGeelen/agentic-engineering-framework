@@ -175,8 +175,10 @@ When encountering task-level issues:
 
 When completing:
 1. Verify all acceptance criteria met
-2. Set status to `work-completed`
-3. Framework generates episodic summary for future reference
+2. If source files were changed: run `fw fabric blast-radius HEAD` to understand downstream impact
+3. Record any design choices in the task's `## Decisions` section (auto-captured to context fabric on completion)
+4. Set status to `work-completed`
+5. Framework auto-generates episodic summary and captures decisions for future reference
 
 ## Context Integration
 

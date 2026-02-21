@@ -600,6 +600,40 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
     fi
 
+    # === Auto-capture decisions from task file (T-236) ===
+    # Extract decisions from ## Decisions section and record to context fabric
+    CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
+    if [ -x "$CONTEXT_AGENT" ] && [ -f "$TASK_FILE" ]; then
+        # Extract "Chose:" lines from Decisions section as decision summaries
+        IN_DECISIONS=false
+        DECISION_COUNT=0
+        while IFS= read -r line; do
+            if echo "$line" | grep -q '^## Decisions'; then
+                IN_DECISIONS=true
+                continue
+            fi
+            if echo "$line" | grep -q '^## ' && [ "$IN_DECISIONS" = true ]; then
+                break
+            fi
+            if [ "$IN_DECISIONS" = true ]; then
+                # Match "**Chose:**" or "**Decision**:" patterns
+                DECISION_TEXT=""
+                if echo "$line" | grep -qE '\*\*Chose:\*\*'; then
+                    DECISION_TEXT=$(echo "$line" | sed 's/.*\*\*Chose:\*\*[[:space:]]*//')
+                elif echo "$line" | grep -qE '\*\*Decision\*\*:'; then
+                    DECISION_TEXT=$(echo "$line" | sed 's/.*\*\*Decision\*\*:[[:space:]]*//')
+                fi
+                if [ -n "$DECISION_TEXT" ] && [ ${#DECISION_TEXT} -gt 5 ]; then
+                    PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" add-decision "$DECISION_TEXT" --task "$TASK_ID" --rationale "Auto-captured from task file on completion" 2>/dev/null && \
+                        DECISION_COUNT=$((DECISION_COUNT + 1)) || true
+                fi
+            fi
+        done < "$TASK_FILE"
+        if [ "$DECISION_COUNT" -gt 0 ]; then
+            echo -e "${GREEN}Auto-captured $DECISION_COUNT decision(s) from task file${NC}"
+        fi
+    fi
+
     # Generate episodic summary
     echo ""
     echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"

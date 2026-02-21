@@ -195,6 +195,38 @@ if [ -f "$COUNTER_FILE" ]; then
     echo "0" > "$COUNTER_FILE"
 fi
 
+# --- Fabric blast-radius note (T-236) ---
+FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
+if [ -d "$FABRIC_DIR" ]; then
+    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+    COMP_COUNT=0
+    DEP_COUNT=0
+    COMP_NAMES=""
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        case "$file" in .context/*|.fabric/*|.tasks/*|docs/*) continue ;; esac
+        for card in "$FABRIC_DIR"/*.yaml; do
+            [ -f "$card" ] || continue
+            if grep -q "^location: $file" "$card" 2>/dev/null; then
+                COMP_COUNT=$((COMP_COUNT + 1))
+                name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
+                COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
+                # Count dependents (depended_by entries)
+                deps=$(grep -c "target:" "$card" 2>/dev/null || true)
+                DEP_COUNT=$((DEP_COUNT + deps))
+                break
+            fi
+        done
+    done <<< "$CHANGED_FILES"
+    if [ "$COMP_COUNT" -gt 0 ]; then
+        echo ""
+        echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
+        if [ "$DEP_COUNT" -gt 5 ]; then
+            echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radius HEAD"
+        fi
+    fi
+fi
+
 # --- Handover staleness check ---
 LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
 if [ -f "$LATEST" ]; then
