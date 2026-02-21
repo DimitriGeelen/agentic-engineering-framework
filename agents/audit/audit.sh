@@ -351,6 +351,35 @@ print(f'{len(registered)} {unregistered} {orphaned}')
         else
             pass "Fabric: $fabric_registered registered, 0 unregistered"
         fi
+
+        # Check for unenriched cards (no depends_on AND no depended_by edges)
+        unenriched_count=$(python3 -c "
+import yaml, glob, os
+COMP_DIR = os.path.join('$PROJECT_ROOT', '.fabric', 'components')
+unenriched = 0
+total = 0
+for f in glob.glob(os.path.join(COMP_DIR, '*.yaml')):
+    with open(f) as fh:
+        d = yaml.safe_load(fh)
+    if not d: continue
+    total += 1
+    deps = d.get('depends_on') or []
+    depby = d.get('depended_by') or []
+    if not deps and not depby:
+        unenriched += 1
+print(f'{unenriched} {total}')
+" 2>&1)
+        fabric_unenriched=$(echo "$unenriched_count" | awk '{print $1}')
+        fabric_total=$(echo "$unenriched_count" | awk '{print $2}')
+        fabric_enriched=$((fabric_total - fabric_unenriched))
+
+        if [ "$fabric_unenriched" -gt 10 ]; then
+            warn "Fabric: $fabric_unenriched/$fabric_total cards have no edges" \
+                 "Graph coverage below target" \
+                 "Run: fw fabric enrich"
+        else
+            pass "Fabric edges: $fabric_enriched/$fabric_total cards enriched ($fabric_unenriched without edges)"
+        fi
     fi
 fi
 

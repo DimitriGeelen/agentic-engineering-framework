@@ -1,0 +1,13 @@
+id: agents/context/check-dispatch.sh
+name: check-dispatch
+type: script
+subsystem: context-fabric
+location: agents/context/check-dispatch.sh
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on: []
+
+last_verified: 2026-02-21
+created_by: unknown

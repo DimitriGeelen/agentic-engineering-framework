@@ -129,7 +129,9 @@ for p in data.get('patterns', []):
     echo "  Created: $created skeleton cards"
     echo "  Skipped: $skipped already registered"
     if [ "$created" -gt 0 ]; then
-        echo -e "  ${YELLOW}Run 'fw fabric enrich' to fill in details${NC}"
+        echo ""
+        echo -e "${CYAN}Auto-enriching new cards...${NC}"
+        python3 "$LIB_DIR/enrich.py"
     fi
     return 0
 }
