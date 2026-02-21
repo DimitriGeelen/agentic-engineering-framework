@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-237: Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-21T22:39:50Z
+# ============================================================================
+
+task_id: T-237
+task_name: "Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T21:48:32Z
+completed: 2026-02-21T22:39:30Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-21T23:37:24+01:00
+last_commit: 2026-02-21T23:39:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace grep search with tantivy BM25 — 831 docs indexed, ranked results with snippets. Register search component, check all acceptance criteria
+
+# Key outcomes
+outcomes:
+  - "`tantivy` Python package installed and importable"
+  - "`web/search.py` module indexes all YAML/Markdown files (tasks, episodic, project memory, handovers, fabric, specs, reports, agent docs)"
+  - "Search returns BM25-ranked results with snippet highlighting"
+  - "`/search` route uses tantivy instead of grep subprocess"
+  - "Search results categorized by content type (Active Tasks, Completed Tasks, Episodic Memory, etc.)"
+  - "Existing tests pass (`pytest web/test_app.py`) — 140 passed"
+  - "Index auto-rebuilds when stale (>60s)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "`/tmp/fw-search-index/` (ephemeral, rebuilt on demand)"
+    rationale: "Index is cheap to rebuild (<1s for 831 docs), no need to persist across reboots"
+    alternatives_rejected: ["`.context/search-index/` (adds git noise), in-memory only (lost on restart)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-02-21.yaml"
+  - ".context/audits/cron/2026-02-21-2315.yaml"
+  - ".context/audits/cron/2026-02-21-2330.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0221-2316.md"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - ".fabric/components/web-search.yaml"
+  - ".tasks/active/T-237-add-search-infrastructure--tantivy-bm25-.md"
+  - "web/blueprints/discovery.py"
+  - "web/search.py"
+  - "web/templates/base.html"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-21T23:37:24"
+    action: "T-237: Replace grep search with tantivy BM25 — 831 docs indexed, ranked results with snippets"
+  - time: "2026-02-21T23:39:24"
+    action: "T-237: Register search component, check all acceptance criteria"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 20
+  lines_added: 567
+  lines_removed: 131
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-237-add-search-infrastructure--tantivy-bm25-.md
+generated_by: context-agent-hybrid

@@ -4,16 +4,16 @@ name: "Add search infrastructure — tantivy BM25 for Watchtower, plan embedding
 description: >
   Replace grep-based search in Watchtower with tantivy BM25 full-text search. Phase 1: pip install tantivy, index all YAML/Markdown files, wire into /search route. Phase 2 (future): Add sqlite-vec for embedding-based similarity when find-similar use case becomes real need. Phase 3 (future): Consider Qdrant MCP server for agent-queryable knowledge. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md, /tmp/fw-agent-vector-db-options.md, /tmp/fw-agent-vector-db-research.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: [web/search.py, web/blueprints/discovery.py, web/templates/search.html]
+components: [C-003, web/search.py, web/templates/base.html, web/templates/search.html]
 related_tasks: []
 created: 2026-02-21T21:48:32Z
-last_update: 2026-02-21T22:37:24Z
-date_finished: null
+last_update: 2026-02-21T22:39:30Z
+date_finished: 2026-02-21T22:39:30Z
 ---
 
 # T-237: Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer
@@ -65,3 +65,6 @@ pytest web/test_app.py -x -q
 
 ### 2026-02-21T22:29:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-21T22:39:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

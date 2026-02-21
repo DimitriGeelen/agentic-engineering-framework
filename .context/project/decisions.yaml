@@ -266,3 +266,10 @@ decisions:
     date: 2026-02-21
     task: T-236
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-033
+    decision: "`/tmp/fw-search-index/` (ephemeral, rebuilt on demand)"
+    scope: project
+    date: 2026-02-21
+    task: T-237
+    rationale: "Auto-captured from task file on completion"
