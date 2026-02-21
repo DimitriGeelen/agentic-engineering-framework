@@ -77,6 +77,9 @@ show_usage() {
     echo "  drift                Detect unregistered/orphaned/stale"
     echo "  validate [id]        Deep-validate component edges"
     echo ""
+    echo "Enrichment:"
+    echo "  enrich [--dry-run] [--subsystem X]  Auto-detect dependency edges"
+    echo ""
     echo "Meta:"
     echo "  stats                Component count, edge count, coverage"
 }
@@ -147,6 +150,10 @@ case "${1:-}" in
         shift
         source "$LIB_DIR/summary.sh"
         do_stats "$@"
+        ;;
+    enrich)
+        shift
+        exec python3 "$LIB_DIR/enrich.py" "$@"
         ;;
     -h|--help|help)
         show_usage

@@ -3,26 +3,39 @@ name: audit-yaml-validator
 type: script
 subsystem: audit
 location: agents/audit/audit.sh
-tags: [audit, yaml, validation, regression, structure]
-
-purpose: "Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption."
-
+tags:
+- audit
+- yaml
+- validation
+- regression
+- structure
+purpose: Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after
+  T-206 silent corruption.
 location_detail:
   file: agents/audit/audit.sh
-  section: "structure checks"
+  section: structure checks
   lines: 270-292
-
 depends_on:
-  - target: F-001
-    type: reads
-    location: agents/audit/audit.sh:276
-    contract: "python3 yaml.safe_load() — checks parse, non-empty, is-dict"
-  # Also reads all .context/project/*.yaml via glob (not a single component)
-
+- target: F-001
+  type: reads
+  location: agents/audit/audit.sh:276
+  contract: python3 yaml.safe_load() — checks parse, non-empty, is-dict
+- target: C-008
+  type: calls
+- target: agents/context/check-tier0.sh
+  type: calls
+- target: agents/context/error-watchdog.sh
+  type: calls
+- target: agents/task-create/update-task.sh
+  type: calls
 depended_by:
-  - target: cron-audit
-    type: triggers
-    note: "Runs every 30 minutes via cron + on pre-push"
-
+- target: cron-audit
+  type: triggers
+  note: Runs every 30 minutes via cron + on pre-push
+- target: agents/git/lib/hooks.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-207
+last_enriched: '2026-02-21'

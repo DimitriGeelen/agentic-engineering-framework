@@ -5,6 +5,30 @@ subsystem: git-traceability
 location: agents/git/git.sh
 tags: []
 purpose: Git Agent - Structural Enforcement for Git Operations
-depends_on: []
+depends_on:
+- target: agents/git/lib/common.sh
+  type: calls
+- target: agents/git/lib/commit.sh
+  type: calls
+- target: agents/git/lib/status.sh
+  type: calls
+- target: agents/git/lib/hooks.sh
+  type: calls
+- target: agents/git/lib/bypass.sh
+  type: calls
+- target: agents/git/lib/log.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: agents/handover/handover.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/init.sh
+  type: called_by
+- target: lib/setup.sh
+  type: called_by
+- target: lib/upgrade.sh
+  type: called_by

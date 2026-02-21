@@ -8,3 +8,13 @@ purpose: Task Creation Agent - Mechanical Operations
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: agents/handover/handover.sh
+  type: called_by
+- target: agents/observe/observe.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/setup.sh
+  type: called_by
+last_enriched: '2026-02-21'

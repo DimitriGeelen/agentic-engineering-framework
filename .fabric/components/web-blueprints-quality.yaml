@@ -5,6 +5,16 @@ subsystem: watchtower
 location: web/blueprints/quality.py
 tags: []
 purpose: 'Flask blueprint: Quality'
-depends_on: []
+depends_on:
+- target: web/shared.py
+  type: calls
+- target: web/templates/quality.html
+  type: renders
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: web/app.py
+  type: called_by
+- target: web/app.py
+  type: registered_by

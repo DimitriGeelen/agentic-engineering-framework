@@ -3,28 +3,50 @@ name: context-dispatcher
 type: script
 subsystem: context-fabric
 location: agents/context/context.sh
-tags: [context, dispatcher, learning, decision, pattern, focus]
-
-purpose: "Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic)"
-
+tags:
+- context
+- dispatcher
+- learning
+- decision
+- pattern
+- focus
+purpose: Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status,
+  generate-episodic)
 depends_on:
-  - target: C-002
-    type: calls
-    location: agents/context/context.sh:80
-    contract: "source + do_add_learning() with positional args"
-  - target: decision
-    type: calls
-    location: agents/context/context.sh:84
-    contract: "source + do_add_decision() with positional args"
-  - target: pattern
-    type: calls
-    location: agents/context/context.sh:88
-    contract: "source + do_add_pattern() with positional args"
-
+- target: C-002
+  type: calls
+  location: agents/context/context.sh:80
+  contract: source + do_add_learning() with positional args
+- target: decision
+  type: calls
+  location: agents/context/context.sh:84
+  contract: source + do_add_decision() with positional args
+- target: pattern
+  type: calls
+  location: agents/context/context.sh:88
+  contract: source + do_add_pattern() with positional args
+- target: agents/context/lib/init.sh
+  type: calls
+- target: agents/context/lib/status.sh
+  type: calls
+- target: agents/context/lib/pattern.sh
+  type: calls
+- target: agents/context/lib/decision.sh
+  type: calls
+- target: agents/context/lib/episodic.sh
+  type: calls
+- target: agents/context/lib/focus.sh
+  type: calls
 depended_by:
-  - target: fw-cli
-    type: calls
-    note: "bin/fw routes 'context' subcommand here"
-
+- target: fw-cli
+  type: calls
+  note: bin/fw routes 'context' subcommand here
+- target: agents/task-create/update-task.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/setup.sh
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-191
+last_enriched: '2026-02-21'

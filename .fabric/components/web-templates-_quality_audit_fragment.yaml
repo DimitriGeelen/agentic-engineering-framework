@@ -8,3 +8,7 @@ purpose: 'HTMX fragment: quality audit results panel, loaded dynamically'
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: web/templates/quality.html
+  type: included_by
+last_enriched: '2026-02-21'

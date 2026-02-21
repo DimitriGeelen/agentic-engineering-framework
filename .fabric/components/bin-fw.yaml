@@ -5,6 +5,49 @@ subsystem: framework-core
 location: bin/fw
 tags: []
 purpose: fw - Agentic Engineering Framework CLI
-depends_on: []
+depends_on:
+- target: agents/task-create/create-task.sh
+  type: calls
+- target: agents/task-create/update-task.sh
+  type: calls
+- target: C-004
+  type: calls
+- target: agents/audit/plugin-audit.sh
+  type: calls
+- target: C-001
+  type: calls
+- target: agents/fabric/fabric.sh
+  type: calls
+- target: agents/git/git.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: calls
+- target: agents/healing/healing.sh
+  type: calls
+- target: agents/resume/resume.sh
+  type: calls
+- target: agents/mcp/mcp-reaper.sh
+  type: calls
+- target: agents/observe/observe.sh
+  type: calls
+- target: lib/inception.sh
+  type: calls
+- target: lib/promote.sh
+  type: calls
+- target: lib/assumption.sh
+  type: calls
+- target: lib/bus.sh
+  type: calls
+- target: lib/init.sh
+  type: calls
+- target: lib/upgrade.sh
+  type: calls
+- target: lib/setup.sh
+  type: calls
+- target: lib/harvest.sh
+  type: calls
+- target: web/app.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'

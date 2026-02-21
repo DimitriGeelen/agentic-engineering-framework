@@ -3,12 +3,65 @@ name: app
 type: entrypoint
 subsystem: watchtower
 location: web/app.py
-tags: [flask, web-ui, entrypoint]
-
-purpose: "Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port"
-
+tags:
+- flask
+- web-ui
+- entrypoint
+purpose: Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port
 depends_on:
-  - web/shared.py
-
+- target: web/shared.py
+  type: calls
+- target: web/blueprints/core.py
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
+- target: web/blueprints/timeline.py
+  type: calls
+- target: C-003
+  type: calls
+- target: web/blueprints/quality.py
+  type: calls
+- target: web/blueprints/session.py
+  type: calls
+- target: web/blueprints/metrics.py
+  type: calls
+- target: web/blueprints/cockpit.py
+  type: calls
+- target: web/blueprints/inception.py
+  type: calls
+- target: web/blueprints/enforcement.py
+  type: calls
+- target: web/blueprints/risks.py
+  type: calls
+- target: web/blueprints/fabric.py
+  type: calls
+- target: web/blueprints/core.py
+  type: registers
+- target: web/blueprints/tasks.py
+  type: registers
+- target: web/blueprints/timeline.py
+  type: registers
+- target: C-003
+  type: registers
+- target: web/blueprints/quality.py
+  type: registers
+- target: web/blueprints/session.py
+  type: registers
+- target: web/blueprints/metrics.py
+  type: registers
+- target: web/blueprints/cockpit.py
+  type: registers
+- target: web/blueprints/inception.py
+  type: registers
+- target: web/blueprints/enforcement.py
+  type: registers
+- target: web/blueprints/risks.py
+  type: registers
+- target: web/blueprints/fabric.py
+  type: registers
 last_verified: 2026-02-20
 created_by: T-227
+last_enriched: '2026-02-21'
+depended_by:
+- target: bin/fw
+  type: called_by

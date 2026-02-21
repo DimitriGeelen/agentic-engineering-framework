@@ -5,6 +5,12 @@ subsystem: watchtower
 location: web/templates/quality.html
 tags: []
 purpose: 'Watchtower UI page: Quality'
-depends_on: []
+depends_on:
+- target: web/templates/_quality_audit_fragment.html
+  type: includes
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: web/blueprints/quality.py
+  type: rendered_by

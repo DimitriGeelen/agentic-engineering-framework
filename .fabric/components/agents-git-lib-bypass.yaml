@@ -8,3 +8,9 @@ purpose: Git Agent - Bypass logging subcommand
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: agents/git/git.sh
+  type: called_by
+- target: agents/git/lib/commit.sh
+  type: called_by
+last_enriched: '2026-02-21'

@@ -5,6 +5,16 @@ subsystem: task-management
 location: agents/task-create/update-task.sh
 tags: []
 purpose: Task Update Agent - Status transitions with auto-triggers
-depends_on: []
+depends_on:
+- target: C-001
+  type: calls
+- target: agents/healing/healing.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: C-004
+  type: called_by
+- target: bin/fw
+  type: called_by

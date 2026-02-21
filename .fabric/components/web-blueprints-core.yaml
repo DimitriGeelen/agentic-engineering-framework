@@ -5,6 +5,28 @@ subsystem: watchtower
 location: web/blueprints/core.py
 tags: []
 purpose: 'Flask blueprint: Core'
-depends_on: []
+depends_on:
+- target: web/shared.py
+  type: calls
+- target: web/blueprints/cockpit.py
+  type: calls
+- target: web/templates/index.html
+  type: renders
+- target: web/templates/cockpit.html
+  type: renders
+- target: web/templates/project.html
+  type: renders
+- target: web/templates/project_doc.html
+  type: renders
+- target: web/templates/directives.html
+  type: renders
+- target: web/blueprints/cockpit.py
+  type: registers
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: web/app.py
+  type: called_by
+- target: web/app.py
+  type: registered_by

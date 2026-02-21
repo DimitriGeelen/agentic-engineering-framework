@@ -5,6 +5,14 @@ subsystem: framework-core
 location: lib/init.sh
 tags: []
 purpose: fw init - Bootstrap a new project with the Agentic Engineering Framework
-depends_on: []
+depends_on:
+- target: agents/git/git.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: bin/fw
+  type: called_by
+- target: lib/setup.sh
+  type: called_by

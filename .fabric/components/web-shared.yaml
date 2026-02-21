@@ -3,11 +3,41 @@ name: shared
 type: library
 subsystem: watchtower
 location: web/shared.py
-tags: [flask, web-ui, shared, navigation]
-
-purpose: "Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering)"
-
+tags:
+- flask
+- web-ui
+- shared
+- navigation
+purpose: Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full
+  page rendering)
 depends_on: []
-
 last_verified: 2026-02-20
 created_by: T-227
+depended_by:
+- target: C-003
+  type: called_by
+- target: web/app.py
+  type: called_by
+- target: web/blueprints/cockpit.py
+  type: called_by
+- target: web/blueprints/core.py
+  type: called_by
+- target: web/blueprints/enforcement.py
+  type: called_by
+- target: web/blueprints/fabric.py
+  type: called_by
+- target: web/blueprints/inception.py
+  type: called_by
+- target: web/blueprints/metrics.py
+  type: called_by
+- target: web/blueprints/quality.py
+  type: called_by
+- target: web/blueprints/risks.py
+  type: called_by
+- target: web/blueprints/session.py
+  type: called_by
+- target: web/blueprints/tasks.py
+  type: called_by
+- target: web/blueprints/timeline.py
+  type: called_by
+last_enriched: '2026-02-21'

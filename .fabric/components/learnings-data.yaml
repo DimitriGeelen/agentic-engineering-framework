@@ -3,31 +3,39 @@ name: learnings-data
 type: data
 subsystem: learnings-pipeline
 location: .context/project/learnings.yaml
-tags: [learning, memory, project-memory, yaml]
-
-purpose: "Persistent store of all project learnings. Read by web UI and audit. Written by add-learning command."
-
+tags:
+- learning
+- memory
+- project-memory
+- yaml
+purpose: Persistent store of all project learnings. Read by web UI and audit. Written by add-learning command.
 format: yaml
-schema_summary: "Top-level key 'learnings:' → list of {id: L-XXX, learning, source, task, date, context, application}. Optional 'candidates:' section at end."
-
+schema_summary: 'Top-level key ''learnings:'' → list of {id: L-XXX, learning, source, task, date, context, application}. Optional
+  ''candidates:'' section at end.'
 writers:
-  - target: C-002
-    location: agents/context/lib/learning.sh:88
-    contract: "Appends YAML list item. No-indent list dashes."
-
+- target: C-002
+  location: agents/context/lib/learning.sh:88
+  contract: Appends YAML list item. No-indent list dashes.
 readers:
-  - target: C-003
-    location: web/blueprints/discovery.py:76
-    contract: "yaml.safe_load(), data.get('learnings', [])"
-  - target: C-004
-    location: agents/audit/audit.sh:276
-    contract: "python3 yaml.safe_load() — parse validation only"
-  - target: audit-yaml-validator
-    location: agents/audit/audit.sh:1034
-    contract: "grep -c '^  - id: L-' — graduation pipeline count"
-
+- target: C-003
+  location: web/blueprints/discovery.py:76
+  contract: yaml.safe_load(), data.get('learnings', [])
+- target: C-004
+  location: agents/audit/audit.sh:276
+  contract: python3 yaml.safe_load() — parse validation only
+- target: audit-yaml-validator
+  location: agents/audit/audit.sh:1034
+  contract: 'grep -c ''^  - id: L-'' — graduation pipeline count'
 coupling: soft
-coupling_note: "Format change breaks readers silently. T-206 proved this: indentation bug corrupted file, web showed 0 learnings with no error."
-
+coupling_note: 'Format change breaks readers silently. T-206 proved this: indentation bug corrupted file, web showed 0 learnings
+  with no error.'
 last_verified: 2026-02-20
 created_by: T-191
+depended_by:
+- target: C-002
+  type: writes_by
+- target: C-004
+  type: read_by
+- target: C-003
+  type: read_by
+last_enriched: '2026-02-21'

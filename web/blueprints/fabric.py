@@ -298,7 +298,9 @@ def fabric_graph():
         components = [c for c in components if c.get("subsystem") == subsystem_filter]
 
     # Only include components that have edges (enriched cards)
-    enriched = [c for c in components if c.get("depends_on") or c.get("writers") or c.get("readers")]
+    enriched = [c for c in components if
+                c.get("depends_on") or c.get("depended_by") or
+                c.get("writers") or c.get("readers")]
 
     nodes, edges = _build_graph(enriched, all_components=components)
     subsystems = _load_subsystems()

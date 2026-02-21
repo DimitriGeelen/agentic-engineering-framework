@@ -5,6 +5,20 @@ subsystem: watchtower
 location: web/blueprints/inception.py
 tags: []
 purpose: 'Blueprint ''inception'' — routes: /inception'
-depends_on: []
+depends_on:
+- target: web/shared.py
+  type: calls
+- target: web/templates/inception.html
+  type: renders
+- target: web/templates/inception_detail.html
+  type: renders
+- target: web/templates/assumptions.html
+  type: renders
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: web/app.py
+  type: called_by
+- target: web/app.py
+  type: registered_by

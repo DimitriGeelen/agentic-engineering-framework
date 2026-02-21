@@ -5,6 +5,20 @@ subsystem: handover
 location: agents/handover/handover.sh
 tags: []
 purpose: Handover Agent - Mechanical Operations
-depends_on: []
+depends_on:
+- target: agents/task-create/create-task.sh
+  type: calls
+- target: C-008
+  type: calls
+- target: agents/git/git.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: agents/context/pre-compact.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: C-008
+  type: called_by

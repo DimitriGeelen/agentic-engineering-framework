@@ -3,29 +3,31 @@ name: learnings-template
 type: template
 subsystem: learnings-pipeline
 location: web/templates/learnings.html
-tags: [learning, web, watchtower, template, htmx]
-
-purpose: "Render learnings table, practices section, and navigation for the /learnings page."
-
+tags:
+- learning
+- web
+- watchtower
+- template
+- htmx
+purpose: Render learnings table, practices section, and navigation for the /learnings page.
 template_inheritance:
   rendered_by: render_page()
   wrapper: web/templates/_wrapper.html
   base: web/templates/base.html
-
 interactive_elements:
-  - data_component: learnings-nav
-    data_action: view-patterns
-    htmx: "hx-get=/patterns hx-target=#content hx-swap=innerHTML hx-push-url=true"
-    api_endpoint: GET /patterns
-    backend_effect: "Navigate to patterns page"
-    location: web/templates/learnings.html:44-46
-
+- data_component: learnings-nav
+  data_action: view-patterns
+  htmx: hx-get=/patterns hx-target=#content hx-swap=innerHTML hx-push-url=true
+  api_endpoint: GET /patterns
+  backend_effect: Navigate to patterns page
+  location: web/templates/learnings.html:44-46
 depends_on:
-  - target: C-003
-    type: renders
-    note: "Receives learnings, patterns, practices as template variables"
-
-depended_by: []
-
+- target: C-003
+  type: renders
+  note: Receives learnings, patterns, practices as template variables
+depended_by:
+- target: C-003
+  type: rendered_by
 last_verified: 2026-02-20
 created_by: T-191
+last_enriched: '2026-02-21'

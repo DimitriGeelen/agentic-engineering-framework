@@ -5,6 +5,18 @@ subsystem: framework-core
 location: lib/setup.sh
 tags: []
 purpose: fw setup - Guided onboarding wizard for new projects
-depends_on: []
+depends_on:
+- target: lib/init.sh
+  type: calls
+- target: agents/git/git.sh
+  type: calls
+- target: C-001
+  type: calls
+- target: agents/task-create/create-task.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: bin/fw
+  type: called_by

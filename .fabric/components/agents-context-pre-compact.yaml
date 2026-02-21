@@ -5,6 +5,9 @@ subsystem: context-fabric
 location: agents/context/pre-compact.sh
 tags: []
 purpose: Pre-Compaction Hook — Save structured context before lossy compaction
-depends_on: []
+depends_on:
+- target: agents/handover/handover.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'

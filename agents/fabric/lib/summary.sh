@@ -21,7 +21,7 @@ do_overview() {
         [ -f "$card" ] || continue
         comp_count=$((comp_count + 1))
         local deps
-        deps=$(grep -c "  - target:" "$card" 2>/dev/null || true)
+        deps=$(grep -c "^[[:space:]]*- target:" "$card" 2>/dev/null || true)
         deps=$(echo "$deps" | tr -d '[:space:]')
         [ -z "$deps" ] && deps=0
         edge_count=$((edge_count + deps))
@@ -107,7 +107,7 @@ do_stats() {
         [ -f "$card" ] || continue
         comp_count=$((comp_count + 1))
         local deps
-        deps=$(grep -c "  - target:" "$card" 2>/dev/null || true)
+        deps=$(grep -c "^[[:space:]]*- target:" "$card" 2>/dev/null || true)
         deps=$(echo "$deps" | tr -d '[:space:]')
         [ -z "$deps" ] && deps=0
         edge_count=$((edge_count + deps))

@@ -5,6 +5,20 @@ subsystem: healing
 location: agents/healing/healing.sh
 tags: []
 purpose: Healing Agent - Antifragile error recovery and pattern learning
-depends_on: []
+depends_on:
+- target: agents/healing/lib/diagnose.sh
+  type: calls
+- target: agents/healing/lib/resolve.sh
+  type: calls
+- target: agents/healing/lib/patterns.sh
+  type: calls
+- target: agents/healing/lib/suggest.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: agents/task-create/update-task.sh
+  type: called_by
+- target: bin/fw
+  type: called_by

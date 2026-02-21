@@ -8,3 +8,7 @@ purpose: 'Watchtower UI page: Inception Detail'
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: web/blueprints/inception.py
+  type: rendered_by
+last_enriched: '2026-02-21'

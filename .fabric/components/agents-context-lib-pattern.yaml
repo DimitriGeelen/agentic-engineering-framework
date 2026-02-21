@@ -8,3 +8,7 @@ purpose: Context Agent - add-pattern command
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: C-001
+  type: called_by
+last_enriched: '2026-02-21'

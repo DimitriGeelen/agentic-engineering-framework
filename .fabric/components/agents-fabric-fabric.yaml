@@ -5,6 +5,24 @@ subsystem: component-fabric
 location: agents/fabric/fabric.sh
 tags: []
 purpose: Fabric Agent - Component topology system for codebase self-awareness
-depends_on: []
+depends_on:
+- target: agents/fabric/lib/register.sh
+  type: calls
+- target: agents/fabric/lib/query.sh
+  type: calls
+- target: agents/fabric/lib/traverse.sh
+  type: calls
+- target: agents/fabric/lib/ui.sh
+  type: calls
+- target: agents/fabric/lib/drift.sh
+  type: calls
+- target: agents/fabric/lib/summary.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'
+depended_by:
+- target: agents/context/post-compact-resume.sh
+  type: called_by
+- target: bin/fw
+  type: called_by

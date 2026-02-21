@@ -4,8 +4,11 @@ type: template
 subsystem: watchtower
 location: web/templates/base.html
 tags: []
-purpose: 'Template: {{ page_title | default("Watchtower") }} — Agentic Engineering
-  Framework'
+purpose: 'Template: {{ page_title | default("Watchtower") }} — Agentic Engineering Framework'
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: web/templates/_wrapper.html
+  type: extended_by
+last_enriched: '2026-02-21'

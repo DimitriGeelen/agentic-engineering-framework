@@ -8,3 +8,7 @@ purpose: fw harvest - Collect learnings from projects back into the framework
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: bin/fw
+  type: called_by
+last_enriched: '2026-02-21'

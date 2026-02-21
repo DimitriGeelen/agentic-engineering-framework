@@ -8,3 +8,7 @@ purpose: Healing Agent - diagnose command
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: agents/healing/healing.sh
+  type: called_by
+last_enriched: '2026-02-21'

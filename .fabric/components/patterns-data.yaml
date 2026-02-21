@@ -3,14 +3,18 @@ name: patterns-data
 type: data
 subsystem: learnings-pipeline
 location: .context/project/patterns.yaml
-tags: [patterns, data, context, learnings]
-
-purpose: "Stores failure, success, and workflow patterns discovered during project work."
-
+tags:
+- patterns
+- data
+- context
+- learnings
+purpose: Stores failure, success, and workflow patterns discovered during project work.
 depended_by:
-  - target: learnings-route
-    type: reads
-    note: "Web UI reads patterns for /learnings page"
-
+- target: learnings-route
+  type: reads
+  note: Web UI reads patterns for /learnings page
+- target: C-003
+  type: read_by
 last_verified: 2026-02-21
 created_by: T-191
+last_enriched: '2026-02-21'

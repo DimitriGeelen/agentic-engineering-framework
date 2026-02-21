@@ -3,46 +3,52 @@ name: checkpoint
 type: hook
 subsystem: budget-management
 location: agents/context/checkpoint.sh
-tags: [budget, checkpoint, context, hook, PostToolUse, auto-handover]
-
-purpose: "Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints."
-
+tags:
+- budget
+- checkpoint
+- context
+- hook
+- PostToolUse
+- auto-handover
+purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages
+  inception checkpoints.
 interfaces:
-  input: "Invoked as PostToolUse hook or CLI: checkpoint.sh {post-tool|reset|status}"
-  output: "Warnings to stderr, writes state files"
-
+  input: 'Invoked as PostToolUse hook or CLI: checkpoint.sh {post-tool|reset|status}'
+  output: Warnings to stderr, writes state files
 depends_on:
-  - target: F-003
-    type: reads
-    location: agents/context/checkpoint.sh:99
-    contract: "JSON with level, tokens, timestamp"
-  - target: F-003
-    type: writes
-    location: agents/context/checkpoint.sh:187
-    contract: "Same JSON format — updates when re-reading transcript"
-  # transcript: external dependency (Claude Code JSONL) — not a framework component
-
+- target: F-003
+  type: reads
+  location: agents/context/checkpoint.sh:99
+  contract: JSON with level, tokens, timestamp
+- target: F-003
+  type: writes
+  location: agents/context/checkpoint.sh:187
+  contract: Same JSON format — updates when re-reading transcript
+- target: agents/handover/handover.sh
+  type: calls
 depended_by:
-  - target: C-009
-    type: triggers
-    location: .claude/settings.json:65-70
-    contract: "PostToolUse hook, runs after every tool call"
-
+- target: C-009
+  type: triggers
+  location: .claude/settings.json:65-70
+  contract: PostToolUse hook, runs after every tool call
+- target: agents/handover/handover.sh
+  type: called_by
+- target: C-004
+  type: called_by
 writes:
-  - target: ".context/working/.tool-counter"
-    contract: "Text integer, incremented on every post-tool call"
-  - target: ".context/working/.prev-token-reading"
-    contract: "Text integer, previous token count for compaction detection"
-  - target: ".context/working/.handover-cooldown"
-    contract: "Unix timestamp of last auto-handover (600s cooldown)"
-  - target: ".context/working/.restart-requested"
-    contract: "Signal file for claude-fw wrapper auto-restart"
-
+- target: .context/working/.tool-counter
+  contract: Text integer, incremented on every post-tool call
+- target: .context/working/.prev-token-reading
+  contract: Text integer, previous token count for compaction detection
+- target: .context/working/.handover-cooldown
+  contract: Unix timestamp of last auto-handover (600s cooldown)
+- target: .context/working/.restart-requested
+  contract: Signal file for claude-fw wrapper auto-restart
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
   TOKEN_CRITICAL: 170000
-  note: "Duplicated in C-007 (budget-gate.sh)"
-
+  note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
+last_enriched: '2026-02-21'

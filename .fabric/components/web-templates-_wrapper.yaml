@@ -5,6 +5,9 @@ subsystem: watchtower
 location: web/templates/_wrapper.html
 tags: []
 purpose: 'Base layout wrapper: nav, header, footer, htmx/CSS includes'
-depends_on: []
+depends_on:
+- target: web/templates/base.html
+  type: extends
 last_verified: 2026-02-20
 created_by: unknown
+last_enriched: '2026-02-21'

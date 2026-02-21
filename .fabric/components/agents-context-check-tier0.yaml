@@ -8,3 +8,7 @@ purpose: Tier 0 Enforcement Hook — PreToolUse gate for Bash tool
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown
+depended_by:
+- target: C-004
+  type: called_by
+last_enriched: '2026-02-21'
