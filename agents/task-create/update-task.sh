@@ -623,6 +623,10 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 elif echo "$line" | grep -qE '\*\*Decision\*\*:'; then
                     DECISION_TEXT=$(echo "$line" | sed 's/.*\*\*Decision\*\*:[[:space:]]*//')
                 fi
+                # Filter out template placeholders
+                case "$DECISION_TEXT" in
+                    *"[what was decided]"*|*"[topic]"*|*"[rationale]"*|*"TODO"*) DECISION_TEXT="" ;;
+                esac
                 if [ -n "$DECISION_TEXT" ] && [ ${#DECISION_TEXT} -gt 5 ]; then
                     PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" add-decision "$DECISION_TEXT" --task "$TASK_ID" --rationale "Auto-captured from task file on completion" 2>/dev/null && \
                         DECISION_COUNT=$((DECISION_COUNT + 1)) || true
