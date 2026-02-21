@@ -38,8 +38,8 @@ MEDIUM severity fixes from T-228 analysis. See `docs/reports/T-228-enforcement-b
 
 # check-active-task.sh handles notebook_path
 grep -q "notebook_path" /opt/999-Agentic-Engineering-Framework/agents/context/check-active-task.sh
-# fw doctor runs without errors
-fw doctor 2>&1 | tail -1 | grep -qv "failure"
+# fw doctor exits 0 (warnings OK, failures not)
+fw doctor > /dev/null 2>&1
 # enforcement baseline command exists
 grep -q "enforcement" /opt/999-Agentic-Engineering-Framework/bin/fw
 
