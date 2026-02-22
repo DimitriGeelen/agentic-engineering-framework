@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-245: sqlite-vec embedding layer — semantic search for project knowledge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T15:33:37Z
+# ============================================================================
+
+task_id: T-245
+task_name: "sqlite-vec embedding layer — semantic search for project knowledge"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-22T09:29:37Z
+completed: 2026-02-22T15:33:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T10:30:15+01:00
+last_commit: 2026-02-22T16:31:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB. sqlite-vec embedding layer — core module with semantic + hybrid search. Add semantic/hybrid search to CLI and Watchtower web UI
+
+# Key outcomes
+outcomes:
+  - "`web/embeddings.py` module: index, search, hybrid_search functions"
+  - "Indexes episodic, learnings, patterns, decisions, component cards (~710 files)"
+  - "Semantic search returns ranked results with scores and snippets"
+  - "Hybrid search combines BM25 + vector scores (RRF fusion)"
+  - "CLI: `fw search --semantic \"query\"` returns results"
+  - "Watchtower /search page has semantic search toggle"
+  - "Index builds in <30 seconds on full corpus"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-244-pre-edit-fabric-awareness--advisory-depe.md"
+  - ".tasks/active/T-245-sqlite-vec-embedding-layer--semantic-sea.md"
+  - ".tasks/active/T-246-project-memory-read-path--query-learning.md"
+  - ".tasks/active/T-247-dispatch-fabric-context--auto-registrati.md"
+  - "web/blueprints/discovery.py"
+  - "web/embeddings.py"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T10:30:15"
+    action: "T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB"
+  - time: "2026-02-22T16:27:52"
+    action: "T-245: sqlite-vec embedding layer — core module with semantic + hybrid search"
+  - time: "2026-02-22T16:31:14"
+    action: "T-245: Add semantic/hybrid search to CLI and Watchtower web UI"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 363 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [search, embeddings, knowledge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 363
+  commits: 3
+  files_changed: 12
+  lines_added: 841
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-245-sqlite-vec-embedding-layer--semantic-sea.md
+generated_by: context-agent-hybrid

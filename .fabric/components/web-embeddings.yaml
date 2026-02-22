@@ -1,0 +1,15 @@
+id: web/embeddings.py
+name: embeddings
+type: script
+subsystem: watchtower
+location: web/embeddings.py
+tags: [search, embeddings, semantic]
+
+purpose: "sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search"
+
+depends_on:
+  - web/search.py
+  - web/shared.py
+
+last_verified: 2026-02-22
+created_by: unknown

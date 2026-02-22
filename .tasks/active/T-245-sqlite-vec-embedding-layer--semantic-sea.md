@@ -4,16 +4,16 @@ name: "sqlite-vec embedding layer — semantic search for project knowledge"
 description: >
   Add sqlite-vec vector database for semantic/associative search across episodic memory (241 files), learnings (58), patterns (14), decisions (30+), and component cards (99). T-235 research found BM25 (Tantivy, T-237) covers 60-70% of queries; embeddings add 30-40% value for 'find similar' and 'what is related' queries. Root cause: terminology fragmentation — 'audit'/'gate'/'enforcement'/'verification' all mean similar things, causing 30-40% miss rate on keyword search. Recommended: sqlite-vec (~22MB model) paired with existing Tantivy for hybrid search. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 2. Related: T-237 (Tantivy BM25 — done, live at :3000/search). This is the foundation for project memory read-path (T-245) and episodic search.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: later
 tags: [search, embeddings, knowledge]
-components: []
+components: [bin/fw, C-003, web/embeddings.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-22T09:29:37Z
-last_update: 2026-02-22T15:24:17Z
-date_finished: null
+last_update: 2026-02-22T15:33:04Z
+date_finished: 2026-02-22T15:33:04Z
 ---
 
 # T-245: sqlite-vec embedding layer — semantic search for project knowledge
@@ -25,13 +25,13 @@ Adds sqlite-vec semantic search alongside existing Tantivy BM25 (T-237). Model: 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/embeddings.py` module: index, search, hybrid_search functions
-- [ ] Indexes episodic, learnings, patterns, decisions, component cards (~710 files)
-- [ ] Semantic search returns ranked results with scores and snippets
-- [ ] Hybrid search combines BM25 + vector scores (RRF fusion)
-- [ ] CLI: `fw search --semantic "query"` returns results
-- [ ] Watchtower /search page has semantic search toggle
-- [ ] Index builds in <30 seconds on full corpus
+- [x] `web/embeddings.py` module: index, search, hybrid_search functions
+- [x] Indexes episodic, learnings, patterns, decisions, component cards (~710 files)
+- [x] Semantic search returns ranked results with scores and snippets
+- [x] Hybrid search combines BM25 + vector scores (RRF fusion)
+- [x] CLI: `fw search --semantic "query"` returns results
+- [x] Watchtower /search page has semantic search toggle
+- [x] Index builds in <30 seconds on full corpus
 
 ### Human
 - [ ] Semantic search finds related content that keyword search misses
@@ -67,3 +67,6 @@ grep -q "search" bin/fw
 
 ### 2026-02-22T15:24:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T15:33:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
