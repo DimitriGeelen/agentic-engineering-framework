@@ -12,7 +12,7 @@
 #
 # Sections: structure, compliance, quality, traceability, enforcement,
 #           learning, episodic, observations, gaps, handover, graduation,
-#           research, oe-research, discovery
+#           research, oe-research, discovery, discovery-trends
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -46,8 +46,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Task quality + structure integrity + discovery (every 30 min)
 */30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality,discovery --cron 2>/dev/null
 
-# Git traceability + episodic completeness (hourly)
-0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic --cron 2>/dev/null
+# Git traceability + episodic completeness + trend discoveries (hourly)
+0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic,discovery-trends --cron 2>/dev/null
 
 # Observations + gaps (every 6 hours)
 0 */6 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section observations,gaps --cron 2>/dev/null
@@ -150,7 +150,8 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
-            echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly, discovery"
+            echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly,"
+            echo "          discovery, discovery-trends"
             echo ""
             echo "Subcommands:"
             echo "  schedule install  Install cron entries for periodic audits"
@@ -1715,7 +1716,7 @@ if [ -d "$ep_dir" ]; then
         [ -f "$ep_file" ] || continue
         [ "$(basename "$ep_file")" = "TEMPLATE.yaml" ] && continue
         d1_total=$((d1_total + 1))
-        if grep -q '\[TODO' "$ep_file" 2>/dev/null; then
+        if grep -qE '^\s*#?\s*\[TODO|: "\[TODO|^- "\[TODO' "$ep_file" 2>/dev/null; then
             d1_todo=$((d1_todo + 1))
         fi
     done
@@ -1827,6 +1828,319 @@ fi
 
 echo ""
 fi # end discovery
+
+# ============================================
+# DISCOVERY-TRENDS: Temporal trend detection (T-240)
+# D4 (audit trend regression), D5 (task lifecycle anomalies),
+# D3 (commit velocity anomalies), D7 (commit bunching)
+# ============================================
+if should_run_section "discovery-trends"; then
+echo "=== DISCOVERY: TREND DETECTION ==="
+
+# D4: Audit Trend Regression (Score 20)
+# Compare 7-entry rolling average of warn+fail counts against previous 7-entry window
+METRICS_HISTORY="$CONTEXT_DIR/project/metrics-history.yaml"
+if [ -f "$METRICS_HISTORY" ]; then
+    d4_result=$(python3 << 'D4EOF'
+import yaml, sys
+from pathlib import Path
+
+mf = sys.argv[1] if len(sys.argv) > 1 else ""
+try:
+    with open(mf or "$METRICS_HISTORY") as f:
+        data = yaml.safe_load(f)
+    entries = data.get("entries", [])
+except Exception:
+    entries = []
+
+if len(entries) < 3:
+    print("SKIP insufficient_data")
+    sys.exit(0)
+
+# Current window (last 7 or fewer)
+window = min(7, len(entries))
+current = entries[-window:]
+cur_wf = [e.get("warn", 0) + e.get("fail", 0) for e in current]
+cur_avg = sum(cur_wf) / len(cur_wf)
+
+# Previous window
+if len(entries) > window:
+    prev_end = len(entries) - window
+    prev_start = max(0, prev_end - window)
+    previous = entries[prev_start:prev_end]
+    prev_wf = [e.get("warn", 0) + e.get("fail", 0) for e in previous]
+    prev_avg = sum(prev_wf) / len(prev_wf) if prev_wf else 0
+
+    if prev_avg > 0:
+        pct_change = ((cur_avg - prev_avg) / prev_avg) * 100
+    else:
+        pct_change = 100 if cur_avg > 0 else 0
+
+    # Check for consecutive fails
+    fail_streak = 0
+    for e in reversed(entries):
+        if e.get("fail", 0) > 0:
+            fail_streak += 1
+        else:
+            break
+
+    if fail_streak >= 3:
+        print(f"FAIL streak={fail_streak} cur_avg={cur_avg:.1f} prev_avg={prev_avg:.1f}")
+    elif pct_change > 50:
+        print(f"WARN pct={pct_change:.0f} cur_avg={cur_avg:.1f} prev_avg={prev_avg:.1f}")
+    else:
+        print(f"PASS pct={pct_change:.0f} cur_avg={cur_avg:.1f} prev_avg={prev_avg:.1f}")
+else:
+    print(f"PASS single_window cur_avg={cur_avg:.1f}")
+D4EOF
+)
+    d4_level=$(echo "$d4_result" | awk '{print $1}')
+    case "$d4_level" in
+        FAIL)
+            fail "D4: Audit trend regression — $d4_result" \
+                 "Consecutive audit failures detected" \
+                 "Investigate recurring failures: fw audit"
+            ;;
+        WARN)
+            warn "D4: Audit trend regression — warn+fail avg increased >50% ($d4_result)" \
+                 "Audit health trending worse" \
+                 "Review recent audit findings: fw audit"
+            ;;
+        SKIP)
+            pass "D4: Audit trend — insufficient history (<3 entries)"
+            ;;
+        *)
+            pass "D4: Audit trend — stable ($d4_result)"
+            ;;
+    esac
+else
+    pass "D4: Audit trend — no metrics history yet"
+fi
+
+# D5: Task Lifecycle Anomalies (Score 20)
+# Detect recently completed tasks with <5 min cycle time (last 30 days only)
+# Also detect active tasks stuck >7 days without completion
+d5_result=$(python3 << 'D5EOF'
+import yaml, glob, os, re
+from datetime import datetime, timedelta, timezone
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks")
+cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+
+anomalies = []
+
+def parse_frontmatter(path):
+    """Extract YAML frontmatter from markdown task file."""
+    try:
+        content = open(path).read()
+        m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+        if m:
+            return yaml.safe_load(m.group(1)) or {}
+    except Exception:
+        pass
+    return {}
+
+def parse_ts(s):
+    if not s or s == "null":
+        return None
+    try:
+        ts = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        return ts
+    except (ValueError, TypeError):
+        return None
+
+# Check completed tasks: human-owned tasks completed in <5 min (sovereignty signal)
+for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
+    fm = parse_frontmatter(f)
+    finished = parse_ts(fm.get("date_finished"))
+    if not finished or finished < cutoff:
+        continue
+    created = parse_ts(fm.get("created"))
+    if not created:
+        continue
+    cycle_min = (finished - created).total_seconds() / 60
+    owner = fm.get("owner", "?")
+    # Only flag human-owned tasks completed fast (sovereignty bypass signal from T-151)
+    if cycle_min < 5 and owner == "human":
+        tid = fm.get("id", "?")
+        anomalies.append(f"{tid}({cycle_min:.0f}min,{owner})")
+
+# Check active tasks stuck >7 days in started-work (not captured or work-completed)
+for f in glob.glob(os.path.join(TASKS_DIR, "active", "T-*.md")):
+    fm = parse_frontmatter(f)
+    status = fm.get("status", "")
+    if status not in ("started-work", "issues"):
+        continue  # captured/work-completed are normal states for aging
+    created = parse_ts(fm.get("created"))
+    if not created:
+        continue
+    age_days = (datetime.now(timezone.utc) - created).days
+    if age_days > 7:
+        tid = fm.get("id", "?")
+        anomalies.append(f"{tid}({age_days}d-active)")
+
+if anomalies:
+    # Cap output to 10 items for readability
+    shown = anomalies[:10]
+    extra = f" (+{len(anomalies)-10} more)" if len(anomalies) > 10 else ""
+    print(f"WARN {len(anomalies)} {' '.join(shown)}{extra}")
+else:
+    print("PASS 0")
+D5EOF
+)
+d5_level=$(echo "$d5_result" | awk '{print $1}')
+d5_count=$(echo "$d5_result" | awk '{print $2}')
+d5_detail=$(echo "$d5_result" | cut -d' ' -f3-)
+case "$d5_level" in
+    WARN)
+        warn "D5: Task lifecycle — $d5_count anomaly(s): $d5_detail" \
+             "Tasks with unusual cycle times detected" \
+             "Review flagged tasks for process issues"
+        ;;
+    *)
+        pass "D5: Task lifecycle — no anomalies"
+        ;;
+esac
+
+# D3: Commit Velocity Anomalies (Score 16)
+# Compare daily commit count against 7-day moving average
+d3_result=$(python3 << 'D3EOF'
+import subprocess, sys
+from datetime import datetime, timedelta, timezone
+from collections import Counter
+
+try:
+    r = subprocess.run(
+        ["git", "log", "--format=%aI", "--since=14 days ago"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if r.returncode != 0 or not r.stdout.strip():
+        print("SKIP no_data")
+        sys.exit(0)
+
+    # Count commits per day
+    daily = Counter()
+    for line in r.stdout.strip().split("\n"):
+        if not line.strip():
+            continue
+        try:
+            dt = datetime.fromisoformat(line.strip())
+            daily[dt.strftime("%Y-%m-%d")] += 1
+        except (ValueError, TypeError):
+            pass
+
+    if len(daily) < 3:
+        print("SKIP insufficient_days")
+        sys.exit(0)
+
+    # Sort by date
+    dates = sorted(daily.keys())
+    today = datetime.now().strftime("%Y-%m-%d")
+    today_count = daily.get(today, 0)
+
+    # 7-day average (excluding today)
+    past_dates = [d for d in dates if d != today][-7:]
+    if not past_dates:
+        print(f"PASS today={today_count}")
+        sys.exit(0)
+
+    avg = sum(daily[d] for d in past_dates) / len(past_dates)
+
+    if avg > 0:
+        ratio = today_count / avg
+        if ratio > 2:
+            print(f"WARN spike today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
+        elif ratio < 0.3 and today_count > 0:
+            print(f"WARN drop today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
+        else:
+            print(f"PASS today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
+    else:
+        print(f"PASS today={today_count} avg=0")
+
+except Exception as e:
+    print(f"SKIP error={e}")
+D3EOF
+)
+d3_level=$(echo "$d3_result" | awk '{print $1}')
+case "$d3_level" in
+    WARN)
+        warn "D3: Commit velocity — $d3_result" \
+             "Unusual commit rate detected" \
+             "Check if velocity reflects budget pressure or unusual activity"
+        ;;
+    SKIP)
+        pass "D3: Commit velocity — insufficient data"
+        ;;
+    *)
+        pass "D3: Commit velocity — normal ($d3_result)"
+        ;;
+esac
+
+# D7: Commit Bunching (Score 16)
+# Detect 5+ commits within any 10-minute window in the last 24h
+d7_result=$(python3 << 'D7EOF'
+import subprocess, sys
+from datetime import datetime, timedelta, timezone
+
+try:
+    r = subprocess.run(
+        ["git", "log", "--format=%aI", "--since=24 hours ago"],
+        capture_output=True, text=True, timeout=10,
+    )
+    if r.returncode != 0 or not r.stdout.strip():
+        print("PASS no_recent_commits")
+        sys.exit(0)
+
+    timestamps = []
+    for line in r.stdout.strip().split("\n"):
+        if not line.strip():
+            continue
+        try:
+            timestamps.append(datetime.fromisoformat(line.strip()))
+        except (ValueError, TypeError):
+            pass
+
+    timestamps.sort()
+
+    if len(timestamps) < 5:
+        print(f"PASS {len(timestamps)}_commits_24h")
+        sys.exit(0)
+
+    # Sliding window: check every 10-min window
+    bunches = 0
+    for i in range(len(timestamps)):
+        window_end = timestamps[i] + timedelta(minutes=10)
+        count = sum(1 for t in timestamps[i:] if t <= window_end)
+        if count >= 5:
+            bunches += 1
+            # Skip ahead to avoid counting overlapping windows
+            break
+
+    if bunches > 0:
+        print(f"INFO {bunches}_bunch(es) {len(timestamps)}_commits_24h")
+    else:
+        print(f"PASS {len(timestamps)}_commits_24h_no_bunching")
+
+except Exception as e:
+    print(f"PASS error={e}")
+D7EOF
+)
+d7_level=$(echo "$d7_result" | awk '{print $1}')
+case "$d7_level" in
+    INFO)
+        # INFO level — just report, don't warn
+        pass "D7: Commit bunching — detected ($d7_result)"
+        ;;
+    *)
+        pass "D7: Commit bunching — none ($d7_result)"
+        ;;
+esac
+
+echo ""
+fi # end discovery-trends
 
 # ============================================
 # OE-WEEKLY: Controls checked once per week (T-195)

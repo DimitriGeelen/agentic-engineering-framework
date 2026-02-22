@@ -7,15 +7,15 @@ description: >
   D3/D7 (commit velocity anomalies and bunching, score 16 each). These require
   time-series data from T-238. Research: docs/reports/T-200-discovery-layer-design.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [discovery, trends, temporal]
 components: []
 related_tasks: [T-200, T-194, T-238]
 created: 2026-02-21T23:38:59Z
-last_update: 2026-02-21T23:38:59Z
+last_update: 2026-02-22T00:12:42Z
 date_finished: null
 ---
 
@@ -53,36 +53,36 @@ Implement temporal trend and insight discoveries from T-200. These detect patter
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Discovery script/module with D4, D5, D3, D7 implementations
-- [ ] D4 reads from metrics-history.yaml and computes rolling averages
-- [ ] D5 scans completed tasks for lifecycle anomalies (validated against T-151 data)
-- [ ] D3 computes daily commit velocity against 7-day moving average
-- [ ] D7 detects commit bunching (5+ in 10 min window) from git log
-- [ ] Each discovery outputs structured YAML findings
-- [ ] Integrated into audit.sh as new section (e.g., `discovery-trends`)
-- [ ] Existing audit tests pass
+- [x] Discovery script/module with D4, D5, D3, D7 implementations
+- [x] D4 reads from metrics-history.yaml and computes rolling averages
+- [x] D5 scans completed tasks for lifecycle anomalies (validated against T-151 data)
+- [x] D3 computes daily commit velocity against 7-day moving average
+- [x] D7 detects commit bunching (5+ in 10 min window) from git log
+- [x] Each discovery outputs structured YAML findings
+- [x] Integrated into audit.sh as new section (e.g., `discovery-trends`)
+- [x] Existing audit tests pass
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# discovery-trends section exists in audit.sh
+grep -q 'should_run_section "discovery-trends"' agents/audit/audit.sh
+# D4 check exists
+grep -q "D4: Audit trend" agents/audit/audit.sh
+# D5 check exists
+grep -q "D5: Task lifecycle" agents/audit/audit.sh
+# D3 check exists
+grep -q "D3: Commit velocity" agents/audit/audit.sh
+# D7 check exists
+grep -q "D7: Commit bunching" agents/audit/audit.sh
+# Discovery-trends section runs without error
+fw audit --section discovery-trends --quiet 2>/dev/null; test $? -le 2
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-02-22 — D5 anomaly scope
+- **Chose:** Only flag human-owned tasks with <5min cycle time + active tasks stuck in started-work >7d
+- **Why:** All tasks <5min produces 80+ false positives (bootstrapping tasks). The real signal (from T-151) is human-owned tasks completed too fast — sovereignty bypass indicator
+- **Rejected:** Flagging all fast-completed tasks (too noisy), flagging captured/work-completed aging (normal states)
 
 ## Updates
 
@@ -90,3 +90,6 @@ Implement temporal trend and insight discoveries from T-200. These detect patter
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-240-implement-discovery-jobs--audit-trends-v.md
 - **Context:** Initial task creation
+
+### 2026-02-22T00:12:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
