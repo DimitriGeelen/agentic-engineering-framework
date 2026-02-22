@@ -9,18 +9,17 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [22/Feb/2026 16:42:10] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:42:14] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:42:14] "GET /static/htmx.min.js HTTP/1.1" 304 -
-127.0.0.1 - - [22/Feb/2026 16:42:14] "GET /static/logo.png HTTP/1.1" 304 -
-127.0.0.1 - - [22/Feb/2026 16:42:14] "GET /static/pico.min.css HTTP/1.1" 304 -
-127.0.0.1 - - [22/Feb/2026 16:42:50] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:42:50] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:43:51] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:43:51] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:44:01] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:44:01] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:44:57] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:44:57] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:46:02] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
-127.0.0.1 - - [22/Feb/2026 16:46:02] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:10:22] "GET / HTTP/1.1" 200 -
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:65: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+127.0.0.1 - - [22/Feb/2026 20:10:44] "GET /search?q=error+handling&mode=semantic HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:10:48] "GET /search?q=error+handling&mode=semantic HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:10:48] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:10:48] "GET /static/logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:10:48] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [22/Feb/2026 20:17:26] "GET /fabric/graph?subsystem=audit HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:27] "GET /fabric/graph?subsystem=audit HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:27] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:27] "GET /fabric/component/context-dispatcher HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:35] "GET /search?q=error%20handling&mode=semantic HTTP/1.1" 200 -
+127.0.0.1 - - [22/Feb/2026 20:17:50] "GET /search?q=how%20do%20tasks%20work&mode=semantic HTTP/1.1" 200 -

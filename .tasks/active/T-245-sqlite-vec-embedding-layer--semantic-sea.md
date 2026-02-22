@@ -12,7 +12,7 @@ tags: [search, embeddings, knowledge]
 components: [bin/fw, C-003, web/embeddings.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-22T09:29:37Z
-last_update: 2026-02-22T15:33:04Z
+last_update: 2026-02-22T19:10:56Z
 date_finished: 2026-02-22T15:33:04Z
 ---
 
