@@ -7,15 +7,15 @@ description: >
   D8 (handover quality decay, score 20). These run as cron-compatible scripts that
   output YAML findings. Research: docs/reports/T-200-discovery-layer-design.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [discovery, omission]
 components: []
 related_tasks: [T-200, T-194, T-238]
 created: 2026-02-21T23:38:55Z
-last_update: 2026-02-21T23:38:55Z
+last_update: 2026-02-22T00:06:48Z
 date_finished: null
 ---
 
@@ -53,25 +53,29 @@ Implement the three highest-scoring omission detection discoveries from T-200. T
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Discovery script/module created (bash or python) with D1, D2, D8 implementations
-- [ ] Each discovery outputs structured YAML findings (level, check, detail, evidence)
-- [ ] D1 correctly detects episodic TODO percentage (verified against known 58% rate)
-- [ ] D2 correctly identifies human-owned work-completed tasks with age calculation
-- [ ] D8 correctly detects [TODO] in handover files
-- [ ] Integrated into audit.sh as new section (e.g., `discovery-omission`)
-- [ ] Cron schedule updated to include discovery section
-- [ ] Existing audit tests pass
+- [x] Discovery script/module created (bash or python) with D1, D2, D8 implementations
+- [x] Each discovery outputs structured YAML findings (level, check, detail, evidence)
+- [x] D1 correctly detects episodic TODO percentage (verified against known 58% rate)
+- [x] D2 correctly identifies human-owned work-completed tasks with age calculation
+- [x] D8 correctly detects [TODO] in handover files
+- [x] Integrated into audit.sh as new section (e.g., `discovery-omission`)
+- [x] Cron schedule updated to include discovery section
+- [x] Existing audit tests pass
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Discovery section exists in audit.sh
+grep -q 'should_run_section "discovery"' agents/audit/audit.sh
+# D1 check exists
+grep -q "D1: Episodic quality" agents/audit/audit.sh
+# D2 check exists
+grep -q "D2: Human review queue" agents/audit/audit.sh
+# D8 check exists
+grep -q "D8: Handover quality" agents/audit/audit.sh
+# Cron schedule includes discovery
+grep -q "discovery" agents/audit/audit.sh
+# Discovery section runs without error (exit 0-2 all valid)
+fw audit --section discovery --quiet 2>/dev/null; test $? -le 2
 
 ## Decisions
 
@@ -90,3 +94,6 @@ Implement the three highest-scoring omission detection discoveries from T-200. T
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-239-implement-discovery-jobs--episodic-decay.md
 - **Context:** Initial task creation
+
+### 2026-02-22T00:06:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

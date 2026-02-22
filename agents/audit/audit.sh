@@ -12,7 +12,7 @@
 #
 # Sections: structure, compliance, quality, traceability, enforcement,
 #           learning, episodic, observations, gaps, handover, graduation,
-#           research, oe-research
+#           research, oe-research, discovery
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -43,8 +43,8 @@ PATH=/usr/local/bin:/usr/bin:/bin
 
 # === STRUCTURAL AUDITS (project well-formed) ===
 
-# Task quality + structure integrity (every 30 min)
-*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality --cron 2>/dev/null
+# Task quality + structure integrity + discovery (every 30 min)
+*/30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section structure,compliance,quality,discovery --cron 2>/dev/null
 
 # Git traceability + episodic completeness (hourly)
 0 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section traceability,episodic --cron 2>/dev/null
@@ -150,7 +150,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
-            echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly"
+            echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly, discovery"
             echo ""
             echo "Subcommands:"
             echo "  schedule install  Install cron entries for periodic audits"
@@ -1695,6 +1695,138 @@ fi
 
 echo ""
 fi # end oe-daily
+
+# ============================================
+# DISCOVERY: Omission detection (T-239)
+# D1 (episodic quality decay), D2 (human review queue aging),
+# D8 (handover quality decay)
+# ============================================
+if should_run_section "discovery"; then
+echo "=== DISCOVERY: OMISSION DETECTION ==="
+
+# D1: Episodic Quality Decay (Score 25)
+# Scan episodic files for [TODO] placeholders
+ep_dir="$CONTEXT_DIR/episodic"
+if [ -d "$ep_dir" ]; then
+    d1_total=0
+    d1_todo=0
+    shopt -s nullglob
+    for ep_file in "$ep_dir"/T-*.yaml; do
+        [ -f "$ep_file" ] || continue
+        [ "$(basename "$ep_file")" = "TEMPLATE.yaml" ] && continue
+        d1_total=$((d1_total + 1))
+        if grep -q '\[TODO' "$ep_file" 2>/dev/null; then
+            d1_todo=$((d1_todo + 1))
+        fi
+    done
+    shopt -u nullglob
+
+    if [ "$d1_total" -gt 0 ]; then
+        d1_pct=$((d1_todo * 100 / d1_total))
+        if [ "$d1_pct" -gt 50 ]; then
+            fail "D1: Episodic quality — $d1_pct% have [TODO] placeholders ($d1_todo/$d1_total)" \
+                 "More than half of episodic summaries are unfilled" \
+                 "Enrich episodics: fw context generate-episodic T-XXX"
+        elif [ "$d1_pct" -gt 20 ]; then
+            warn "D1: Episodic quality — $d1_pct% have [TODO] placeholders ($d1_todo/$d1_total)" \
+                 "$d1_todo episodic summaries need enrichment" \
+                 "Enrich episodics: fw context generate-episodic T-XXX"
+        else
+            pass "D1: Episodic quality — $d1_pct% [TODO] ($d1_todo/$d1_total)"
+        fi
+    else
+        pass "D1: No episodic files to check"
+    fi
+else
+    pass "D1: No episodic directory"
+fi
+
+# D2: Human Review Queue Aging (Score 20)
+# Scan active tasks for work-completed with owner:human, calculate age
+d2_info=0
+d2_warn=0
+d2_fail=0
+d2_details=""
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active"/T-*.md; do
+    [ -f "$task_file" ] || continue
+    t_status=$(grep "^status:" "$task_file" | head -1 | sed 's/status:[[:space:]]*//')
+    [ "$t_status" != "work-completed" ] && continue
+    t_owner=$(grep "^owner:" "$task_file" | head -1 | sed 's/owner:[[:space:]]*//')
+    [ "$t_owner" != "human" ] && continue
+    t_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id:[[:space:]]*//')
+    t_finished=$(grep "^date_finished:" "$task_file" | head -1 | sed 's/date_finished:[[:space:]]*//')
+    t_updated=$(grep "^last_update:" "$task_file" | head -1 | sed 's/last_update:[[:space:]]*//')
+
+    # Use date_finished if available, else last_update
+    t_date="${t_finished:-$t_updated}"
+    if [ -n "$t_date" ] && [ "$t_date" != "null" ]; then
+        age_seconds=$(python3 -c "
+from datetime import datetime, timezone
+try:
+    ts = datetime.fromisoformat('$t_date'.replace('Z','+00:00'))
+    if ts.tzinfo is None: ts = ts.replace(tzinfo=timezone.utc)
+    age = (datetime.now(timezone.utc) - ts).total_seconds()
+    print(int(age))
+except: print(0)
+" 2>/dev/null)
+        age_hours=$((age_seconds / 3600))
+
+        if [ "$age_hours" -ge 72 ]; then
+            d2_fail=$((d2_fail + 1))
+            d2_details="$d2_details $t_id(${age_hours}h)"
+        elif [ "$age_hours" -ge 48 ]; then
+            d2_warn=$((d2_warn + 1))
+            d2_details="$d2_details $t_id(${age_hours}h)"
+        elif [ "$age_hours" -ge 24 ]; then
+            d2_info=$((d2_info + 1))
+            d2_details="$d2_details $t_id(${age_hours}h)"
+        fi
+    fi
+done
+shopt -u nullglob
+
+d2_total=$((d2_info + d2_warn + d2_fail))
+if [ "$d2_fail" -gt 0 ]; then
+    fail "D2: Human review queue — $d2_fail task(s) waiting >72h:$d2_details" \
+         "Critical review delay" \
+         "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
+elif [ "$d2_warn" -gt 0 ]; then
+    warn "D2: Human review queue — $d2_warn task(s) waiting >48h:$d2_details" \
+         "Review items aging" \
+         "Review pending tasks at :3000/tasks"
+elif [ "$d2_info" -gt 0 ]; then
+    pass "D2: Human review queue — $d2_info task(s) waiting >24h:$d2_details"
+else
+    pass "D2: Human review queue — no aging items"
+fi
+
+# D8: Handover Quality Decay (Score 20)
+# Scan LATEST.md and recent handovers for [TODO] strings
+HANDOVER_LATEST="$CONTEXT_DIR/handovers/LATEST.md"
+if [ -f "$HANDOVER_LATEST" ]; then
+    d8_todos=$(grep -c '\[TODO' "$HANDOVER_LATEST" 2>/dev/null || true)
+    d8_todos=$(echo "$d8_todos" | tr -d '[:space:]')
+
+    if [ "$d8_todos" -gt 3 ]; then
+        fail "D8: Handover quality — LATEST.md has $d8_todos [TODO] sections" \
+             "Handover is a stale skeleton" \
+             "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
+    elif [ "$d8_todos" -gt 0 ]; then
+        warn "D8: Handover quality — LATEST.md has $d8_todos [TODO] section(s)" \
+             "Some handover sections are unfilled" \
+             "Fill remaining [TODO] sections in LATEST.md"
+    else
+        pass "D8: Handover quality — no [TODO] in LATEST.md"
+    fi
+else
+    warn "D8: No LATEST.md handover file found" \
+         "Missing handover file" \
+         "Run: fw handover"
+fi
+
+echo ""
+fi # end discovery
 
 # ============================================
 # OE-WEEKLY: Controls checked once per week (T-195)
