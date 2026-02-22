@@ -1918,15 +1918,19 @@ else
 fi
 
 # D5: Task Lifecycle Anomalies (Score 20)
-# Detect recently completed tasks with <5 min cycle time (last 30 days only)
+# Detect recently completed tasks with suspiciously fast cycle times (last 30 days)
 # Also detect active tasks stuck >7 days without completion
+# Refined in T-249: filter by workflow_type, commit count, effective cycle time
 d5_result=$(python3 << 'D5EOF'
-import yaml, glob, os, re
+import yaml, glob, os, re, subprocess
 from datetime import datetime, timedelta, timezone
 
 PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
 TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks")
 cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+
+# Workflow types expected to complete quickly — not anomalous
+FAST_TYPES = {"test", "specification", "decommission"}
 
 anomalies = []
 
@@ -1952,7 +1956,19 @@ def parse_ts(s):
     except (ValueError, TypeError):
         return None
 
-# Check completed tasks: human-owned tasks completed in <5 min (sovereignty signal)
+def count_commits(tid):
+    """Count git commits referencing this task ID."""
+    try:
+        r = subprocess.run(
+            ["git", "log", "--oneline", f"--grep={tid}:"],
+            capture_output=True, text=True, timeout=5,
+            cwd=PROJECT_ROOT
+        )
+        return len(r.stdout.strip().split('\n')) if r.stdout.strip() else 0
+    except Exception:
+        return -1  # unknown
+
+# Check completed tasks for suspiciously fast cycle times
 for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     fm = parse_frontmatter(f)
     finished = parse_ts(fm.get("date_finished"))
@@ -1961,12 +1977,31 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     created = parse_ts(fm.get("created"))
     if not created:
         continue
+
     cycle_min = (finished - created).total_seconds() / 60
     owner = fm.get("owner", "?")
-    # Only flag human-owned tasks completed fast (sovereignty bypass signal from T-151)
-    if cycle_min < 5 and owner == "human":
-        tid = fm.get("id", "?")
-        anomalies.append(f"{tid}({cycle_min:.0f}min,{owner})")
+    wtype = fm.get("workflow_type", "?")
+    tid = fm.get("id", "?")
+
+    # Only flag human-owned tasks — agent tasks completing fast is normal
+    if owner != "human":
+        continue
+
+    # Filter 1: skip workflow types expected to be fast
+    if wtype in FAST_TYPES:
+        continue
+
+    # Filter 2: only flag fast tasks (< 5 min)
+    if cycle_min >= 5:
+        continue
+
+    # Filter 3: skip tasks with 2+ commits (proves substantive work happened)
+    commits = count_commits(tid)
+    if commits >= 2:
+        continue
+
+    # Remaining: human task, fast, 0-1 commits, non-trivial type — flag it
+    anomalies.append(f"{tid}({cycle_min:.0f}min,{owner})")
 
 # Check active tasks stuck >7 days in started-work (not captured or work-completed)
 for f in glob.glob(os.path.join(TASKS_DIR, "active", "T-*.md")):

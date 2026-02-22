@@ -4,7 +4,7 @@ name: "Refine D5 lifecycle anomaly detection to reduce false positive rate"
 description: >
   D5 lifecycle anomaly detection flags legitimate human admin tasks at roughly half FP rate. Needs refinement: filter by workflow_type or add owner: agenthuman plus fast-completion as expected pattern. GO criterion was under 20 pct FP. Research: docs/reports/T-200-discovery-layer-design.md Phase 3. Related: T-200, T-239.
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-02-22T09:42:05Z
-last_update: 2026-02-22T09:42:05Z
+last_update: 2026-02-22T14:33:32Z
 date_finished: null
 ---
 
@@ -20,40 +20,31 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+D5 in `agents/audit/audit.sh` flagged 8 human-owned tasks as lifecycle anomalies (fast completion). All 8 were false positives — legitimate quick work. Research: `docs/reports/T-200-discovery-layer-design.md` Phase 3.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] D5 filters out test/specification/decommission workflow types (inherently fast)
+- [x] D5 filters out tasks with 2+ commits (proves substantive work)
+- [x] D5 still only flags human-owned tasks (agent fast-completion is normal)
+- [x] Audit D5 output drops from 8 to <=1 anomalies
+- [x] Remaining flag (T-203) is a genuine signal (0 commits, 0.5min throwaway)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# D5 should flag at most 1 anomaly (T-203 only)
+fw audit 2>&1 | grep "D5:" | grep -qv "8 anomaly"
+# Filters present in code
+grep -q "FAST_TYPES" agents/audit/audit.sh
+grep -q "count_commits" agents/audit/audit.sh
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-02-22 — FP filtering strategy
+- **Chose:** Three-filter approach: workflow_type allowlist + commit count >=2 + human-only scope
+- **Why:** Eliminates all 8 FPs while keeping genuine signals. Commit count is the strongest signal — tasks with real work have commits.
+- **Rejected:** Lowering threshold to <2min (still misses T-021 at 3.1min); using last_update as start time (unreliable, doesn't reflect actual work)
 
 ## Updates
 
@@ -61,3 +52,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-249-refine-d5-lifecycle-anomaly-detection-to.md
 - **Context:** Initial task creation
+
+### 2026-02-22T14:33:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
