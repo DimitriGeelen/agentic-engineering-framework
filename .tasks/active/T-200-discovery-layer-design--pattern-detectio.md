@@ -107,11 +107,14 @@ The framework has three assurance layers designed in T-194. Layers 1-2 (hooks + 
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+# Research artifact exists and covers all 4 phases
+grep -q "Phase 2: Surfacing Model Design" docs/reports/T-200-discovery-layer-design.md
+grep -q "Phase 3: Technical Spike Results" docs/reports/T-200-discovery-layer-design.md
+grep -q "Phase 4: Decision Synthesis" docs/reports/T-200-discovery-layer-design.md
+# Remaining discoveries are backlogged
+test -f .tasks/active/T-248-implement-remaining-discovery-jobs-d6-d.md
+# D5 FP refinement is backlogged
+test -f .tasks/active/T-249-refine-d5-lifecycle-anomaly-detection-t.md
 
 ## Decisions
 

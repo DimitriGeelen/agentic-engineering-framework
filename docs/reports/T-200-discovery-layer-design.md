@@ -202,6 +202,116 @@ Two sub-agent investigations conducted in parallel. Full reports at:
 
 **13 gaps tracked (not 2):** The gaps register has G-001 through G-013. The handover only mentioned 2 "watching" — the rest have different statuses (closed, accepted-risk, etc.).
 
+## Phase 2: Surfacing Model Design
+
+Designed during T-241 implementation. Three surfacing channels:
+
+### Channel 1: Session-Start Injection (T-241)
+- `post-compact-resume.sh` reads `LATEST.yaml`, filters WARN/FAIL only
+- Injects 2-3 line summary into session context on resume/compact
+- `resume.sh` shows "Discovery Findings" section in `cmd_status()` with colored severity
+
+### Channel 2: Watchtower Discoveries Page (T-241)
+- New blueprint `web/blueprints/discoveries.py` at `:3000/discoveries`
+- 4 summary cards, inline SVG sparkline charts from `metrics-history.yaml`
+- Color-coded findings table with severity badges (green/yellow/red)
+
+### Channel 3: Cron Output (T-240)
+- Discovery findings written to `.context/audits/discoveries/LATEST.yaml`
+- Structured YAML: id, level (PASS/WARN/FAIL), check description, mitigation
+- Summary counts (pass/warn/fail/total) for quick parsing
+
+### False-Positive Mitigation Strategy
+- **Severity levels:** INFO (logged only), WARN (surfaced), FAIL (surfaced + priority action)
+- **Only WARN/FAIL surfaced at session-start** — INFO suppressed to avoid noise
+- **Per-discovery thresholds:** D1 episodic quality >5% = WARN, >15% = FAIL; D2 human review >48h = WARN, >72h = FAIL; D3 velocity <0.3x or >3x = WARN; D5 lifecycle <5min = flag; D7 bunching 5+ commits in 10min; D8 handover >0 TODOs = WARN
+- **Known FP source:** D5 (lifecycle anomalies) flags legitimate fast human admin tasks at ~50% FP rate. Needs refinement: filter by `workflow_type` or add `owner: human` + `<5min` as expected pattern
+- **Acknowledgment/suppression:** Not yet implemented. Repeat findings show every cron cycle. Future: add `acknowledged_findings:` list to suppress known-acceptable items
+
+## Phase 3: Technical Spike Results
+
+Spikes exceeded scope — went from "prototype 2-3" to "implement 8 production discoveries."
+
+### Runtime Measurement (2026-02-22)
+```
+All 7 discovery jobs (discovery + discovery-trends sections):
+  real  1.702s
+  user  0.856s
+  sys   1.088s
+```
+**Result: 1.7s — well under 5s target.** Runs via cron every 15-30 min without issues.
+
+### False Positive Assessment (2026-02-22)
+| Discovery | Current FP Rate | Notes |
+|-----------|----------------|-------|
+| D1 (episodic quality) | ~0% | Clean — [TODO] detection is precise after T-239 comment fix |
+| D2 (human review queue) | ~0% | Threshold-based, clear signal |
+| D3 (commit velocity) | Low | Ratio-based (0.3x-3x band), appropriate sensitivity |
+| D4 (audit trends) | N/A | Insufficient history yet (<3 entries) |
+| D5 (lifecycle anomalies) | ~50% | Flags legitimate human admin tasks — needs refinement |
+| D7 (commit bunching) | Low | INFO level only, not surfaced |
+| D8 (handover quality) | ~0% | [TODO] detection is binary, accurate |
+
+**Aggregate: ~7/8 findings are true positives.** D5 is the outlier. Overall FP rate well under 20% excluding D5. D5 alone exceeds threshold — flagged for refinement.
+
+### Accuracy by Type
+- **Omission detection (D1, D2, D8):** High accuracy, low FP
+- **Trend analysis (D4):** Not yet evaluable (needs history accumulation)
+- **Insight generation (D3, D5, D7):** D3/D7 good, D5 needs tuning
+
+## Phase 4: Decision Synthesis
+
+### Architecture Delivered
+```
+Cron (every 15-30 min)
+  └→ audit.sh --section discovery,discovery-trends
+      ├→ D1-D8 discovery jobs (bash, <2s total)
+      ├→ Writes .context/audits/discoveries/LATEST.yaml
+      └→ Writes .context/audits/cron/*.yaml
+
+Session Start
+  └→ post-compact-resume.sh / resume.sh
+      └→ Reads LATEST.yaml, shows WARN/FAIL only
+
+Watchtower
+  └→ /discoveries page
+      ├→ Summary cards + sparkline charts
+      └→ Color-coded findings table
+```
+
+### Build Tasks Completed
+| Task | Deliverable | Status |
+|------|------------|--------|
+| T-238 | Time-series storage (metrics-history.yaml) | Completed |
+| T-239 | Episodic decay + omission discovery jobs (D1, D2, D5, D8) | Completed |
+| T-240 | Audit trends + velocity discovery jobs (D3, D4, D7) | Completed |
+| T-241 | 3 surfacing channels (session-start, Watchtower, cron) | Completed |
+
+### Remaining Discoveries (not yet built)
+5 of 12 cataloged discoveries were not implemented. Need backlog tasks:
+
+| Discovery | Score | Why Deferred |
+|-----------|-------|-------------|
+| D6 (completion velocity trends) | 15 | Overlaps with D3; lower priority |
+| D9 (control effectiveness drift) | 9 | Lowest score; needs longer history |
+| D10 (decision-without-dialogue) | 15 | T-151 pattern; needs task+git correlation |
+| D11 (gap register staleness) | 15 | Partially covered by existing gap trigger checks |
+| D12 (bypass log growth) | 12 | Bypass log currently empty; low signal |
+
 ## Dialogue Log
 
-<!-- Record questions, answers, course corrections during human dialogue -->
+Dialogue occurred across multiple sessions but was not captured contemporaneously (C-001 violation — acknowledged). Key decisions reconstructed from git history and task files:
+
+### 2026-02-21 — Phase 1 discovery catalog
+- Human reviewed 12 candidates, agreed with Value x Feasibility scoring
+- Course correction: human prioritized D1 (episodic decay) as immediate proof-of-value
+- Decision: implement top 8 discoveries (D1-D5, D7, D8 + D4 trends), defer D6/D9-D12
+
+### 2026-02-21 — GO decision
+- Evidence presented: 12 capabilities cataloged, 10 temporal infrastructure gaps found, 58% episodic decay validates D1
+- Human approved GO with build task decomposition into T-238/239/240/241
+
+### 2026-02-22 — Surfacing model review
+- Human verified Watchtower discoveries page at :3000/discoveries
+- Human verified session-start injection (concise, actionable)
+- Both channels approved via T-241 human AC sign-off
