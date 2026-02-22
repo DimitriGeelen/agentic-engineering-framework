@@ -1852,6 +1852,129 @@ if [ -n "$OUTPUT_DIR" ] && [ -d "$OUTPUT_DIR" ]; then
     find "$OUTPUT_DIR" -name "*.yaml" -mtime +7 -delete 2>/dev/null || true
 fi
 
+# ============================================
+# METRICS HISTORY APPEND (T-238)
+# Appends summary metrics to time-series store after every audit run.
+# Independent of section selection — always computes fresh values.
+# ============================================
+METRICS_HISTORY="$CONTEXT_DIR/project/metrics-history.yaml"
+if [ -d "$CONTEXT_DIR/project" ]; then
+    export AUDIT_PASS="$PASS_COUNT" AUDIT_WARN="$WARN_COUNT" AUDIT_FAIL="$FAIL_COUNT"
+    export PROJECT_ROOT="$PROJECT_ROOT"
+    python3 << 'METRICS_EOF'
+import yaml, glob, os, subprocess, re
+from datetime import datetime, timedelta, timezone
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+METRICS_FILE = os.path.join(PROJECT_ROOT, ".context", "project", "metrics-history.yaml")
+TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks")
+CONTEXT_DIR = os.path.join(PROJECT_ROOT, ".context")
+
+# Compute metrics
+active_tasks = len(glob.glob(os.path.join(TASKS_DIR, "active", "T-*.md")))
+completed_tasks = len(glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")))
+
+# Velocity: commits in last 24h
+try:
+    r = subprocess.run(
+        ["git", "log", "--oneline", "--since=24 hours ago"],
+        capture_output=True, text=True, timeout=10, cwd=PROJECT_ROOT,
+    )
+    velocity = len([l for l in r.stdout.strip().split("\n") if l.strip()]) if r.returncode == 0 else 0
+except Exception:
+    velocity = 0
+
+# Traceability
+try:
+    r = subprocess.run(
+        ["git", "log", "--oneline", "-200", "--format=%s"],
+        capture_output=True, text=True, timeout=10, cwd=PROJECT_ROOT,
+    )
+    lines = [l for l in r.stdout.strip().split("\n") if l.strip()] if r.returncode == 0 else []
+    traced = sum(1 for l in lines if re.search(r"T-\d+", l))
+    traceability_pct = int(round(traced / len(lines) * 100)) if lines else 0
+except Exception:
+    traceability_pct = 0
+
+# Episodic quality: % without [TODO] in summary
+ep_dir = os.path.join(CONTEXT_DIR, "episodic")
+ep_total = 0
+ep_good = 0
+if os.path.isdir(ep_dir):
+    for f in glob.glob(os.path.join(ep_dir, "T-*.yaml")):
+        ep_total += 1
+        try:
+            content = open(f).read()
+            if "[TODO" not in content:
+                ep_good += 1
+        except Exception:
+            pass
+episodic_quality_pct = int(round(ep_good / ep_total * 100)) if ep_total > 0 else 100
+
+# Open gaps
+gaps_file = os.path.join(CONTEXT_DIR, "project", "gaps.yaml")
+open_gaps = 0
+if os.path.exists(gaps_file):
+    try:
+        with open(gaps_file) as f:
+            gd = yaml.safe_load(f)
+        open_gaps = sum(1 for g in (gd or {}).get("gaps", []) if g.get("status") == "watching")
+    except Exception:
+        pass
+
+# Build entry
+entry = {
+    "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "pass": int(os.environ.get("AUDIT_PASS", "0")),
+    "warn": int(os.environ.get("AUDIT_WARN", "0")),
+    "fail": int(os.environ.get("AUDIT_FAIL", "0")),
+    "active_tasks": active_tasks,
+    "completed_tasks": completed_tasks,
+    "velocity": velocity,
+    "traceability_pct": traceability_pct,
+    "episodic_quality_pct": episodic_quality_pct,
+    "open_gaps": open_gaps,
+}
+
+# Load existing, append, prune >30 days
+if os.path.exists(METRICS_FILE):
+    try:
+        with open(METRICS_FILE) as f:
+            data = yaml.safe_load(f) or {}
+    except Exception:
+        data = {}
+else:
+    data = {}
+
+entries = data.get("entries", [])
+if not isinstance(entries, list):
+    entries = []
+
+entries.append(entry)
+
+# Prune entries older than 30 days
+cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+pruned = []
+for e in entries:
+    ts_str = e.get("timestamp", "")
+    try:
+        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        if ts >= cutoff:
+            pruned.append(e)
+    except (ValueError, TypeError):
+        pruned.append(e)  # keep unparseable entries
+
+data["entries"] = pruned
+
+with open(METRICS_FILE, "w") as f:
+    # Preserve header comment
+    f.write("# Time-series metrics history\n")
+    f.write("# Auto-appended by audit.sh on each run\n")
+    f.write("# 30-day rolling retention\n")
+    yaml.dump({"entries": pruned}, f, default_flow_style=False, sort_keys=False)
+METRICS_EOF
+fi
+
 echo ""
 echo "=== END AUDIT ==="
 
