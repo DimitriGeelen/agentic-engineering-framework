@@ -276,11 +276,23 @@ def component_detail(name):
             except Exception:
                 pass
 
+    # Build ID-to-name mapping for resolving C-XXX and path references in deps
+    id_to_name = {}
+    for c in components:
+        ci = c.get("id", c.get("name", ""))
+        cn = c.get("name", ci)
+        cl = c.get("location", "")
+        id_to_name[ci] = cn
+        id_to_name[cn] = cn
+        if cl:
+            id_to_name[cl] = cn
+
     return render_page(
         "fabric_detail.html",
         page_title=f"Component: {component.get('name', '?')}",
         component=component,
         reverse_deps=reverse_deps,
+        id_to_name=id_to_name,
         source_code=source_code,
         source_lang=source_lang,
         source_lines=source_lines,

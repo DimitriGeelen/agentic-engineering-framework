@@ -86,9 +86,19 @@
         <tbody>
             {% for dep in component.depends_on %}
             {% if dep is mapping %}
+            {% set resolved_name = id_to_name.get(dep.target, '') if id_to_name is defined else '' %}
             <tr>
                 <td><span style="font-size: 0.8rem;">{{ dep.type | default('uses') }}</span></td>
-                <td><code>{{ dep.target }}</code></td>
+                <td>
+                    {% if resolved_name %}
+                    <a href="/fabric/component/{{ resolved_name }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ resolved_name }}</a>
+                    {% if resolved_name != dep.target %}
+                    <small style="color: var(--pico-muted-color); margin-left: 0.25rem;">({{ dep.target }})</small>
+                    {% endif %}
+                    {% else %}
+                    <code>{{ dep.target }}</code>
+                    {% endif %}
+                </td>
                 <td><code style="font-size: 0.75rem;">{{ dep.location | default('') }}</code></td>
                 <td><small>{{ dep.contract | default('') }}</small></td>
             </tr>
