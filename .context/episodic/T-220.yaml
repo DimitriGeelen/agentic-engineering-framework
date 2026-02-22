@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-220: Fabric component detail — inline source code viewer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T08:50:54Z
+# ============================================================================
+
+task_id: T-220
+task_name: "Fabric component detail — inline source code viewer"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-20T09:16:03Z
+completed: 2026-02-22T08:50:53Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-02-20T16:20:22+01:00
+last_commit: 2026-02-20T16:20:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add inline source code viewer to fabric component detail page
+
+# Key outcomes
+outcomes:
+  - "highlight.js CSS + JS added to `web/templates/base.html` (CDN)"
+  - "htmx afterSwap re-highlight hook in base template"
+  - "`component_detail()` in `web/blueprints/fabric.py` reads source file from component location"
+  - "Source code section rendered in `web/templates/fabric_detail.html` with syntax highlighting"
+  - "Language detection from file extension (.py, .sh, .yaml, .js, .html, .md)"
+  - "Safety: file must exist and be under PROJECT_ROOT, capped at 2000 lines"
+  - "Missing file shows muted \"file not found\" message instead of error"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-220-fabric-component-detail--inline-source-c.md"
+  - "web/blueprints/fabric.py"
+  - "web/templates/base.html"
+  - "web/templates/fabric_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-20T16:20:22"
+    action: "T-220: Add inline source code viewer to fabric component detail page"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2854 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2854
+  commits: 2
+  files_changed: 5
+  lines_added: 217
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-220-fabric-component-detail--inline-source-c.md
+generated_by: context-agent-hybrid

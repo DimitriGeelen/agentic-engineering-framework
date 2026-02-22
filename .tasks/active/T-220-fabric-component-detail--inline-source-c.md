@@ -4,15 +4,16 @@ name: "Fabric component detail — inline source code viewer"
 description: >
   Add inline source code viewing to /fabric/component/<name> detail page. When user clicks a component, show the file contents with syntax highlighting. Enhances the fabric browser from metadata-only to full code inspection.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
+components: [web/blueprints/fabric.py, web/templates/base.html, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-02-20T09:16:03Z
-last_update: 2026-02-20T15:20:22Z
-date_finished: null
+last_update: 2026-02-22T08:50:53Z
+date_finished: 2026-02-22T08:50:53Z
 ---
 
 # T-220: Fabric component detail — inline source code viewer
@@ -59,3 +60,6 @@ python3 -c "import yaml; yaml.safe_load(open('.fabric/components/web-app.yaml'))
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-220-fabric-component-detail--inline-source-c.md
 - **Context:** Initial task creation
+
+### 2026-02-22T08:50:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

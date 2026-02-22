@@ -7,16 +7,16 @@ description: >
   (3) cron output for standalone monitoring. Addresses GAP-T7 (no session-start
   surfacing) and GAP-T8 (no visual trends). Research: docs/reports/T-200-discovery-layer-design.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [discovery, surfacing, watchtower]
-components: []
+components: [C-004, agents/context/post-compact-resume.sh, agents/resume/resume.sh, web/app.py, web/shared.py]
 related_tasks: [T-200, T-194, T-238, T-239, T-240]
 created: 2026-02-21T23:39:01Z
-last_update: 2026-02-22T06:45:49Z
-date_finished: null
+last_update: 2026-02-22T08:50:35Z
+date_finished: 2026-02-22T08:50:35Z
 ---
 
 # T-241: Wire discovery findings into session-start and Watchtower
@@ -99,3 +99,6 @@ grep -q "Discovery Findings" agents/resume/resume.sh
 - **web/app.py:** Registered `discoveries_bp` blueprint
 - **web/shared.py:** Added "Discoveries" to Govern nav group
 - **Verification:** All 4 verification commands pass, 140 existing tests pass
+
+### 2026-02-22T08:50:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

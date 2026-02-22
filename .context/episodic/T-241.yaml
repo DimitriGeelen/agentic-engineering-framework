@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-241: Wire discovery findings into session-start and Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T08:50:36Z
+# ============================================================================
+
+task_id: T-241
+task_name: "Wire discovery findings into session-start and Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T23:39:01Z
+completed: 2026-02-22T08:50:35Z
+duration_days: 1
+updates_count: 5
+first_commit: 2026-02-22T00:41:40+01:00
+last_commit: 2026-02-22T08:14:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-200: Create 4 build tasks with rich context from discovery research. Wire discovery findings into session-start and Watchtower. Add implementation updates to task file
+
+# Key outcomes
+outcomes:
+  - "`resume.sh` or SessionStart hook reads discovery findings and injects summary"
+  - "Discovery findings page accessible in Watchtower (`:3000/discoveries` or equivalent)"
+  - "At least one time-series visualization (sparkline or chart) using metrics-history.yaml"
+  - "Discovery findings persisted to `.context/audits/discoveries/LATEST.yaml`"
+  - "Only WARN/FAIL findings surfaced at session-start (not INFO)"
+  - "Existing tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/context/post-compact-resume.sh"
+  - "agents/resume/resume.sh"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".tasks/active/T-238-build-time-series-storage.md"
+  - ".tasks/active/T-239-implement-discovery-jobs--episodic-decay.md"
+  - ".tasks/active/T-240-implement-discovery-jobs--audit-trends-v.md"
+  - ".tasks/active/T-241-wire-discovery-findings-into-session-sta.md"
+  - "web/app.py"
+  - "web/blueprints/discoveries.py"
+  - "web/shared.py"
+  - "web/templates/discoveries.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T00:41:40"
+    action: "T-200: Create 4 build tasks with rich context from discovery research"
+  - time: "2026-02-22T08:10:43"
+    action: "T-241: Wire discovery findings into session-start and Watchtower"
+  - time: "2026-02-22T08:14:29"
+    action: "T-241: Add implementation updates to task file"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 551 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [discovery, surfacing, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 551
+  commits: 3
+  files_changed: 12
+  lines_added: 760
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-241-wire-discovery-findings-into-session-sta.md
+generated_by: context-agent-hybrid
