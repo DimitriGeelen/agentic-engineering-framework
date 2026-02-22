@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-243: Codify autonomous-mode boundaries — delegation is not authorization
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T09:12:03Z
+# ============================================================================
+
+task_id: T-243
+task_name: "Codify autonomous-mode boundaries — delegation is not authorization"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-22T09:01:07Z
+completed: 2026-02-22T09:12:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-22T10:03:25+01:00
+last_commit: 2026-02-22T10:03:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Codify autonomous-mode boundaries — delegation is not authorization
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md Authority Model section references initiative ≠ authority distinction"
+  - "CLAUDE.md Agent Behavioral Rules has \"Autonomous Mode Boundaries\" subsection"
+  - "Rule explicitly lists what IS and IS NOT delegated by broad directives"
+  - "Rule states structural gates override broad directives"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-243-codify-autonomous-mode-boundaries--deleg.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T10:03:25"
+    action: "T-243: Codify autonomous-mode boundaries — delegation is not authorization"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 2
+  lines_added: 67
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-243-codify-autonomous-mode-boundaries--deleg.md
+generated_by: context-agent-hybrid

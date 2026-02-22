@@ -84,12 +84,12 @@ The framework has three assurance layers designed in T-194. Layers 1-2 (hooks + 
 
 ## Acceptance Criteria
 
-- [ ] Discovery capabilities cataloged and prioritized (>= 5 candidates scored)
-- [ ] Surfacing model designed (how findings reach human)
-- [ ] False-positive mitigation strategy defined
-- [ ] Technical spike on 2-3 top discoveries validates feasibility
-- [ ] All research persisted in docs/reports/T-200-*
-- [ ] Go/No-Go decision made with rationale
+- [x] Discovery capabilities cataloged and prioritized (>= 5 candidates scored)
+- [x] Surfacing model designed (how findings reach human)
+- [x] False-positive mitigation strategy defined
+- [x] Technical spike on 2-3 top discoveries validates feasibility
+- [x] All research persisted in docs/reports/T-200-*
+- [x] Go/No-Go decision made with rationale
 
 ## Go/No-Go Criteria
 
@@ -120,14 +120,6 @@ The framework has three assurance layers designed in T-194. Layers 1-2 (hooks + 
 **Rationale**: 12 discovery capabilities cataloged and scored against real data. Top 5 score 20-25. 58% episodic decay rate validates D1 immediately. 10 temporal infrastructure gaps identified — zero temporal intelligence exists despite 234 cron audits. Gap-to-discovery mapping complete. Build tasks for top discoveries.
 
 **Date**: 2026-02-21T23:37:37Z
-## Decision
-
-**Decision**: GO
-
-**Rationale**: 12 discovery capabilities cataloged and scored against real data. Top 5 score 20-25. 58% episodic decay rate validates D1 immediately. 10 temporal infrastructure gaps identified — zero temporal intelligence exists despite 234 cron audits. Gap-to-discovery mapping complete. Build tasks for top discoveries.
-
-**Date**: 2026-02-21T23:37:37Z
-
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
