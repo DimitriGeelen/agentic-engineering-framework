@@ -266,3 +266,17 @@ decisions:
     date: 2026-02-21
     task: T-237
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-033
+    decision: "Only flag human-owned tasks with <5min cycle time + active tasks stuck in started-work >7d"
+    scope: project
+    date: 2026-02-22
+    task: T-240
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-034
+    decision: "Three-layer approach: CLAUDE.md prohibition (agent discipline) + PreToolUse hook (structural) + gap registration (tracking)"
+    scope: project
+    date: 2026-02-22
+    task: T-242
+    rationale: "Auto-captured from task file on completion"

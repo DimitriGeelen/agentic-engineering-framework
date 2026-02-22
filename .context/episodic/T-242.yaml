@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-242: Block built-in EnterPlanMode from bypassing framework governance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T07:48:43Z
+# ============================================================================
+
+task_id: T-242
+task_name: "Block built-in EnterPlanMode from bypassing framework governance"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-22T07:39:09Z
+completed: 2026-02-22T07:48:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-22T08:43:46+01:00
+last_commit: 2026-02-22T08:43:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Block built-in EnterPlanMode from bypassing framework governance
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md contains \"Plan Mode Prohibition\" section with explicit `EnterPlanMode` ban"
+  - "`.claude/settings.json` has PreToolUse hook for `EnterPlanMode` matcher"
+  - "`agents/context/block-plan-mode.sh` exists, is executable, exits with code 2"
+  - "Gap G-014 registered in `gaps.yaml` tracking enforcement uncertainty"
+  - "`fw doctor` passes (enforcement baseline updated)"
+  - "All modified files parse correctly (JSON, YAML)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Three-layer approach: CLAUDE.md prohibition (agent discipline) + PreToolUse hook (structural) + gap registration (tracking)"
+    rationale: "Cannot confirm if PreToolUse fires for mode-transition tools until next session restart. Layered defense covers both cases."
+    alternatives_rejected: ["Single-layer CLAUDE.md-only (insufficient — T-241 showed agent ignores CLAUDE.md under plan mode's override prompt); hook-only (might not fire for EnterPlanMode)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/block-plan-mode.sh"
+  - "CLAUDE.md"
+  - ".claude/settings.json"
+  - ".context/project/enforcement-baseline.sha256"
+  - ".context/project/gaps.yaml"
+  - "docs/reports/T-242-plan-mode-governance-bypass.md"
+  - ".tasks/active/T-242-block-built-in-enterplanmode-from-bypass.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T08:43:46"
+    action: "T-242: Block built-in EnterPlanMode from bypassing framework governance"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 7
+  lines_added: 238
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-242-block-built-in-enterplanmode-from-bypass.md
+generated_by: context-agent-hybrid

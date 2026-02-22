@@ -7,16 +7,16 @@ description: >
   D8 (handover quality decay, score 20). These run as cron-compatible scripts that
   output YAML findings. Research: docs/reports/T-200-discovery-layer-design.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [discovery, omission]
-components: []
+components: [C-004]
 related_tasks: [T-200, T-194, T-238]
 created: 2026-02-21T23:38:55Z
-last_update: 2026-02-22T00:06:48Z
-date_finished: null
+last_update: 2026-02-22T00:10:34Z
+date_finished: 2026-02-22T00:10:34Z
 ---
 
 # T-239: Implement discovery jobs — episodic decay, review queue, handover quality
@@ -97,3 +97,6 @@ fw audit --section discovery --quiet 2>/dev/null; test $? -le 2
 
 ### 2026-02-22T00:06:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T00:10:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

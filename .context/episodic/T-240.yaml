@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-240: Implement discovery jobs — audit trends, velocity trends, lifecycle anomalies
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T00:16:32Z
+# ============================================================================
+
+task_id: T-240
+task_name: "Implement discovery jobs — audit trends, velocity trends, lifecycle anomalies"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T23:38:59Z
+completed: 2026-02-22T00:16:30Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-22T00:41:40+01:00
+last_commit: 2026-02-22T01:16:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-200: Create 4 build tasks with rich context from discovery research. Implement trend discoveries — D4 audit trends, D5 lifecycle, D3 velocity, D7 bunching
+
+# Key outcomes
+outcomes:
+  - "Discovery script/module with D4, D5, D3, D7 implementations"
+  - "D4 reads from metrics-history.yaml and computes rolling averages"
+  - "D5 scans completed tasks for lifecycle anomalies (validated against T-151 data)"
+  - "D3 computes daily commit velocity against 7-day moving average"
+  - "D7 detects commit bunching (5+ in 10 min window) from git log"
+  - "Each discovery outputs structured YAML findings"
+  - "Integrated into audit.sh as new section (e.g., `discovery-trends`)"
+  - "Existing audit tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Only flag human-owned tasks with <5min cycle time + active tasks stuck in started-work >7d"
+    rationale: "All tasks <5min produces 80+ false positives (bootstrapping tasks). The real signal (from T-151) is human-owned tasks completed too fast — sovereignty bypass indicator"
+    alternatives_rejected: ["Flagging all fast-completed tasks (too noisy), flagging captured/work-completed aging (normal states)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-238-build-time-series-storage.md"
+  - ".tasks/active/T-239-implement-discovery-jobs--episodic-decay.md"
+  - ".tasks/active/T-240-implement-discovery-jobs--audit-trends-v.md"
+  - ".tasks/active/T-241-wire-discovery-findings-into-session-sta.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T00:41:40"
+    action: "T-200: Create 4 build tasks with rich context from discovery research"
+  - time: "2026-02-22T01:16:23"
+    action: "T-240: Implement trend discoveries — D4 audit trends, D5 lifecycle, D3 velocity, D7 bunching"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [discovery, trends, temporal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 2
+  files_changed: 5
+  lines_added: 699
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-240-implement-discovery-jobs--audit-trends-v.md
+generated_by: context-agent-hybrid
