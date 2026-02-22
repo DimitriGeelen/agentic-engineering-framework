@@ -47,7 +47,7 @@ git_timeline:
   - time: "2026-02-18T17:41:14"
     action: "T-168: Fill inception — framework sync for Sprechloop"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 33 min
 

@@ -58,7 +58,7 @@ git_timeline:
   - time: "2026-02-18T15:38:11"
     action: "T-166: Implement governance inheritance — seed practices, decisions, patterns in fw init"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 6 min
 

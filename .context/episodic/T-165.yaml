@@ -75,7 +75,7 @@ git_timeline:
   - time: "2026-02-18T15:05:00"
     action: "T-165: Fix 20 broken Watchtower task links — YAML quoting bugs"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 3 min
 

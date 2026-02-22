@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: REQUIRES ENRICHMENT
 #
-# This is a SKELETON, not a complete summary. The sections marked [TODO]
+# This is a SKELETON, not a complete summary. Sections below may need enrichment.
 # must be filled in by a human or LLM before this episodic is useful.
 #
 # To enrich: Read the source task file and fill in the TODO sections.
@@ -23,7 +23,7 @@ duration_days: 1
 updates_count: 2
 
 # Summary
-# [TODO] Write 2-3 sentences explaining what was accomplished and WHY it matters.
+# Write 2-3 sentences explaining what was accomplished and WHY it matters.
 # Don't just copy the description - synthesize the journey from Updates section.
 summary: |
   Fixed 4 critical bugs in the checkpoint.sh context monitoring system (P-009) that caused it to fail silently during session f4480b79. The bugs—stale transcript caching, synthetic model entries, insufficient read window, and missing compaction detection—allowed tokens to reach 177K (88% of limit) without a single warning, resulting in context compaction and memory loss. Multi-layer fixes (cache removal, synthetic filtering, 2MB read window, compaction detection) now ensure context budget warnings are reliable and compaction events are immediately detected.
@@ -38,7 +38,7 @@ outcomes:
   - "9 enriched episodic files from T-073 recovered intact on disk"
 
 # What worked well
-# [TODO] List 1-3 things that worked well, with WHY they worked.
+# List 1-3 things that worked well, with WHY they worked.
 # Format: - description: "What worked" / why: "Why it worked"
 successes:
   - description: "Multi-layer defensive fixes (not just one patch)"
@@ -49,7 +49,7 @@ successes:
     why: "Even though context compacted, the files written to disk were complete. No actual work was lost, only working memory was destroyed—partial recovery possible."
 
 # Challenges encountered
-# [TODO] List challenges faced and how they were resolved.
+# List challenges faced and how they were resolved.
 challenges:
   - description: "Session f4480b79 hit 177K tokens (88% of limit) with ZERO warnings, then compacted"
     resolution: "Root cause was stale transcript cache in find_transcript() — cached path across sessions so check always read old data. Removed cache, now always finds most-recent transcript."
@@ -59,7 +59,7 @@ challenges:
     resolution: "Claude Code writes <synthetic> entries after compaction with 0 token usage. Now filtered out so last real entry determines actual context size."
 
 # Decisions made during this task
-# [TODO] Extract decisions from Design Record. Include rationale and alternatives rejected.
+# Extract decisions from Design Record. Include rationale and alternatives rejected.
 # Format: - decision: "What was decided" / rationale: "Why" / alternatives_rejected: ["Option B"]
 decisions:
   - decision: "Always find most-recent transcript instead of caching path"
@@ -76,7 +76,7 @@ decisions:
     alternatives_rejected: ["Check for 0 tokens alone", "Wait for next token reading after compaction"]
 
 # Files created or significantly modified
-# [TODO] List actual files created or modified during this task.
+# List actual files created or modified during this task.
 artifacts:
   created:
     - ".context/working/.prev-token-reading (compaction detection state file)"

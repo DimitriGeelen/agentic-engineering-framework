@@ -102,7 +102,7 @@ git_timeline:
   - time: "2026-02-20T08:10:28"
     action: "T-191: Phase 4 — enforcement & tooling design (CLI, hooks, drift, granularity)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 12 commit(s), 1277 min
 

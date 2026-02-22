@@ -107,7 +107,7 @@ git_timeline:
   - time: "2026-02-19T20:14:13"
     action: "T-194: Phase 3 — OE test design (20/23 automatable, cron redesign proposed)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 17 commit(s), 219 min
 

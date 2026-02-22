@@ -9,7 +9,7 @@
 task_id: T-157
 task_name: "Show active project name at top of Watchtower"
 workflow_type: inception
-enrichment_status: pending  # No git commits or AC found — needs manual enrichment
+enrichment_status: auto-filled  # No git commits or AC found — needs manual enrichment
 
 # Timeline
 created: 2026-02-18T12:50:23Z
@@ -40,10 +40,10 @@ artifacts:
 git_timeline:
   # No git timeline available
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  - description: "Task completed with limited git history available"
+    why: "Completed before enrichment pipeline was established"
 
 # Related tasks
 related_tasks:

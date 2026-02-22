@@ -50,7 +50,7 @@ git_timeline:
   - time: "2026-02-19T08:16:44"
     action: "T-185: Add inception research audit check and resume docs/reports scanning"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 1 min
 

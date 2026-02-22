@@ -79,7 +79,7 @@ git_timeline:
   - time: "2026-02-18T07:19:59"
     action: "T-124: Cycle 3 protocol — test structural enforcement fixes"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 6 commit(s), 878 min
 

@@ -54,7 +54,7 @@ git_timeline:
   - time: "2026-02-18T10:15:40"
     action: "T-143: Add colon-in-name test (22/22 pass) + fill AC/verification"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 0 min
 

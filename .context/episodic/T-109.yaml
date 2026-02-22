@@ -57,7 +57,7 @@ git_timeline:
   - time: "2026-02-17T16:26:10"
     action: "T-109: Implement fw bus — task-scoped result ledger for sub-agent dispatch"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 247 min
 

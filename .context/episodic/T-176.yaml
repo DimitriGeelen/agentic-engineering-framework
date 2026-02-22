@@ -54,7 +54,7 @@ git_timeline:
   - time: "2026-02-18T22:20:51"
     action: "T-176: Adjust budget gate thresholds to 120K/150K/170K for no-compaction architecture"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 149 min
 

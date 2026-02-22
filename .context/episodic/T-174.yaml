@@ -52,7 +52,7 @@ git_timeline:
   - "90bb39d T-174: Persist research doc, update T-175/T-178/T-179 with investigation insights"
   - "7ea07d8 T-174: Persist crash resilience research (proving the point about T-178)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   - "3-agent parallel dispatch produced comprehensive research in ~45 seconds"
   - "Discovery that autoCompactEnabled:false was already set validated the approach"

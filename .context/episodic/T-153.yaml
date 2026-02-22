@@ -55,7 +55,7 @@ git_timeline:
   - time: "2026-02-18T13:42:26"
     action: "T-153: Codify L-051/L-052 — one bug = one task + register gaps before fixing"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 8 min
 

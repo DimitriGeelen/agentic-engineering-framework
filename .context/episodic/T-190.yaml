@@ -45,7 +45,7 @@ git_timeline:
   - time: "2026-02-19T10:13:09"
     action: "T-190: Create inception — sub-agent research persistence and traceability"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 705 min
 

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-239: Implement discovery jobs — episodic decay, review queue, handover quality
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T00:10:36Z
+# ============================================================================
+
+task_id: T-239
+task_name: "Implement discovery jobs — episodic decay, review queue, handover quality"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T23:38:55Z
+completed: 2026-02-22T00:10:34Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-22T00:41:40+01:00
+last_commit: 2026-02-22T01:10:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-200: Create 4 build tasks with rich context from discovery research. Implement discovery jobs — D1 episodic decay, D2 review queue, D8 handover quality
+
+# Key outcomes
+outcomes:
+  - "Discovery script/module created (bash or python) with D1, D2, D8 implementations"
+  - "Each discovery outputs structured YAML findings (level, check, detail, evidence)"
+  - "D1 correctly detects episodic TODO percentage (verified against known 58% rate)"
+  - "D2 correctly identifies human-owned work-completed tasks with age calculation"
+  - "D8 correctly detects [TODO] in handover files"
+  - "Integrated into audit.sh as new section (e.g., `discovery-omission`)"
+  - "Cron schedule updated to include discovery section"
+  - "Existing audit tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-238-build-time-series-storage.md"
+  - ".tasks/active/T-239-implement-discovery-jobs--episodic-decay.md"
+  - ".tasks/active/T-240-implement-discovery-jobs--audit-trends-v.md"
+  - ".tasks/active/T-241-wire-discovery-findings-into-session-sta.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T00:41:40"
+    action: "T-200: Create 4 build tasks with rich context from discovery research"
+  - time: "2026-02-22T01:10:28"
+    action: "T-239: Implement discovery jobs — D1 episodic decay, D2 review queue, D8 handover quality"
+
+# What worked well (requires judgment — fill if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [discovery, omission]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 2
+  files_changed: 5
+  lines_added: 512
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-239-implement-discovery-jobs--episodic-decay.md
+generated_by: context-agent-hybrid

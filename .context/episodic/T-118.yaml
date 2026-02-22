@@ -60,7 +60,7 @@ git_timeline:
   - time: "2026-02-17T16:11:01"
     action: "T-118: Deploy error-watchdog PostToolUse hook for Bash error detection"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 27 min
 

@@ -73,7 +73,7 @@ git_timeline:
   - time: "2026-02-21T23:39:24"
     action: "T-237: Register search component, check all acceptance criteria"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 50 min
 

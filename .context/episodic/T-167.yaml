@@ -58,7 +58,7 @@ git_timeline:
   - time: "2026-02-18T17:58:48"
     action: "T-167: WIP — kanban UI improvements analysis complete, changes ready to apply"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 69 min
 

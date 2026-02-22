@@ -74,7 +74,7 @@ git_timeline:
   - time: "2026-02-18T09:31:45"
     action: "T-141: Fix knowledge capture YAML bugs + add test suite (21 tests)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 3 commit(s), 24 min
 

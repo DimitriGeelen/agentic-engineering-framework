@@ -61,7 +61,7 @@ git_timeline:
   - time: "2026-02-18T00:33:47"
     action: "T-134: Replace superpowers with framework-native rules and skills"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 9 min
 

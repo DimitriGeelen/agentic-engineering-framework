@@ -49,7 +49,7 @@ git_timeline:
   - time: "2026-02-17T15:03:42"
     action: "T-116: Systematic audit of 109 completed tasks for governance issues"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 28 min
 

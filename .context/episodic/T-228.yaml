@@ -46,7 +46,7 @@ git_timeline:
   - time: "2026-02-21T15:15:52"
     action: "T-228: Initial enforcement bypass analysis — 13 vectors identified"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 5 min
 

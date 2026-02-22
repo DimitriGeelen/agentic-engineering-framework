@@ -50,7 +50,7 @@ git_timeline:
   - time: "2026-02-17T21:24:32"
     action: "T-126: Inception gate + T-125: First-session orientation + T-127: Behavioral rules"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 22 min
 

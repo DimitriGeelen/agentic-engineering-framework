@@ -51,7 +51,7 @@ git_timeline:
   - time: "2026-02-18T16:28:09"
     action: "T-163: Regression suite runner — fw doctor test check, fw test help"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 117 min
 

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-238: Build time-series storage for audit metrics
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T00:03:18Z
+# ============================================================================
+
+task_id: T-238
+task_name: "Build time-series storage for audit metrics"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-21T23:38:47Z
+completed: 2026-02-22T00:03:17Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-22T00:41:40+01:00
+last_commit: 2026-02-22T01:03:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-200: Create 4 build tasks with rich context from discovery research. Build time-series storage for audit metrics
+
+# Key outcomes
+outcomes:
+  - "`.context/project/metrics-history.yaml` created with documented schema"
+  - "`audit.sh` appends a metrics entry on each run (all audit modes)"
+  - "Schema includes: timestamp, pass, warn, fail, active_tasks, completed_tasks, velocity, traceability_pct, episodic_quality_pct, open_gaps"
+  - "30-day retention: entries older than 30 days are pruned on append"
+  - "Python helper function to read and query the time series (for Watchtower/discovery jobs)"
+  - "Existing audit tests pass"
+  - "At least 3 historical entries exist after running audit 3 times"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0222-0046.md"
+  - ".context/project/metrics-history.yaml"
+  - ".tasks/active/T-238-build-time-series-storage.md"
+  - ".tasks/active/T-239-implement-discovery-jobs--episodic-decay.md"
+  - ".tasks/active/T-240-implement-discovery-jobs--audit-trends-v.md"
+  - ".tasks/active/T-241-wire-discovery-findings-into-session-sta.md"
+  - "web/metrics_history.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T00:41:40"
+    action: "T-200: Create 4 build tasks with rich context from discovery research"
+  - time: "2026-02-22T01:03:12"
+    action: "T-238: Build time-series storage for audit metrics"
+
+# What worked well (requires judgment — fill if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [discovery, temporal, infrastructure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 2
+  files_changed: 9
+  lines_added: 890
+  lines_removed: 88
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-238-build-time-series-storage.md
+generated_by: context-agent-hybrid

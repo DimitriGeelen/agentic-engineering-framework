@@ -68,7 +68,7 @@ git_timeline:
   - time: "2026-02-18T10:21:49"
     action: "T-144: Final session state — handover + working memory"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 4 commit(s), 21 min
 

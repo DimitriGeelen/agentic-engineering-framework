@@ -49,7 +49,7 @@ git_timeline:
   - time: "2026-02-17T15:49:07"
     action: "T-119: Fix fw not in PATH — resolve symlinks in bin/fw, add symlink step to fw init"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 2 min
 

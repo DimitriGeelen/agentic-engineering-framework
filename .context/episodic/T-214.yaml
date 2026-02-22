@@ -145,7 +145,7 @@ git_timeline:
   - time: "2026-02-20T08:23:07"
     action: "T-214: Batch-register 95 AEF components, 12 subsystems, 91% coverage"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 9 min
 

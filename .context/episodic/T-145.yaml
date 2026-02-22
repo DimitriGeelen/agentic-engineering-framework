@@ -58,7 +58,7 @@ git_timeline:
   - time: "2026-02-18T10:38:42"
     action: "T-145: Close T-131/T-132 (superseded by T-141/T-142), create T-145 (budget gate bug)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 1 min
 

@@ -63,7 +63,7 @@ git_timeline:
   - time: "2026-02-20T08:26:27"
     action: "T-215: Watchtower fabric page — overview, component list, detail view (graph pending)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 44 min
 

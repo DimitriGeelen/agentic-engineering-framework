@@ -57,7 +57,7 @@ git_timeline:
   - time: "2026-02-18T16:16:31"
     action: "T-160: Bash unit tests — 84 tests across 5 scripts (common, log, focus, diagnose, suggest)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 106 min
 

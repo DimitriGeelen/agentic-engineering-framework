@@ -57,7 +57,7 @@ git_timeline:
   - time: "2026-02-21T15:33:31"
     action: "T-230: Fix verification command — use exit code instead of grep on colored output"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 6 min
 

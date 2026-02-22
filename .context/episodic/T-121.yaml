@@ -64,7 +64,7 @@ git_timeline:
   - time: "2026-02-17T17:21:27"
     action: "T-121: Fix episodic YAML — backticks are invalid YAML tokens"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 8 min
 

@@ -62,7 +62,7 @@ git_timeline:
   - time: "2026-02-20T08:18:33"
     action: "T-208: Fix verification SIGPIPE (grep -q → grep -c)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 4 min
 

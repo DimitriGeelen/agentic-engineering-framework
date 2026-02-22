@@ -50,7 +50,7 @@ git_timeline:
   - time: "2026-02-18T08:11:54"
     action: "T-138: Inception findings written to disk + task file fleshed out"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 26 min
 

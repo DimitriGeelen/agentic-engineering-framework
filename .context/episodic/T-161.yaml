@@ -55,7 +55,7 @@ git_timeline:
   - time: "2026-02-18T16:24:27"
     action: "T-161: Hook integration tests — 76 tests for check-active-task, check-tier0, error-watchdog"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 113 min
 

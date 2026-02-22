@@ -45,7 +45,7 @@ git_timeline:
   - time: "2026-02-18T14:39:35"
     action: "T-164: Create inception — governance inheritance for fw init (practices, patterns seeding)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 52 min
 

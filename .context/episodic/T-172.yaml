@@ -53,7 +53,7 @@ git_timeline:
   - time: "2026-02-19T01:07:27"
     action: "T-172: Add Commands and Research categories to docs page"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 356 min
 

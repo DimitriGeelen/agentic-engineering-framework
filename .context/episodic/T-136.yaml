@@ -48,7 +48,7 @@ git_timeline:
   - time: "2026-02-18T01:05:12"
     action: "T-136: Auto-trigger emergency handover at critical context threshold"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 387 min
 

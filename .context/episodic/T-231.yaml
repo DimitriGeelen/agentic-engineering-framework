@@ -52,7 +52,7 @@ git_timeline:
   - time: "2026-02-21T15:38:30"
     action: "T-231: Update hook bypass messages to reference Tier 0 approval, register enforcement gaps"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 2 min
 

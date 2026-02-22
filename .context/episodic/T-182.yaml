@@ -69,7 +69,7 @@ git_timeline:
   - time: "2026-02-19T00:20:22"
     action: "T-182: Reframe handover messaging from emergency panic to calm wrap-up"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 7 commit(s), 94 min
 

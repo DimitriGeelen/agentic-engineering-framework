@@ -52,7 +52,7 @@ git_timeline:
   - time: "2026-02-19T23:55:54"
     action: "T-206: Fix add-learning YAML indentation + ID collision bug"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 1 min
 

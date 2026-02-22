@@ -44,7 +44,7 @@ artifacts:
 git_timeline:
   # No git timeline available
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 7 min
 

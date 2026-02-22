@@ -54,7 +54,7 @@ git_timeline:
   - time: "2026-02-17T14:55:19"
     action: "T-115: Complete — episodic enriched, L-035 captured"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 0 min
 

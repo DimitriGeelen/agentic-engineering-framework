@@ -50,7 +50,7 @@ git_timeline:
   - time: "2026-02-19T00:47:50"
     action: "T-181: Spike 2+3 — inline name editing, AC checkboxes, description editing"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 139 min
 

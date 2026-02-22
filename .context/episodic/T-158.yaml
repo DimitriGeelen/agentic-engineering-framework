@@ -49,7 +49,7 @@ git_timeline:
   - time: "2026-02-18T14:17:58"
     action: "T-158: Register L-053 + G-008 — sub-agent dispatch protocol violation caused session crash"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 37 min
 

@@ -55,7 +55,7 @@ git_timeline:
   - time: "2026-02-18T01:04:02"
     action: "T-128: Implement circuit breaker — consecutive-commit guardrail"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 613 min
 

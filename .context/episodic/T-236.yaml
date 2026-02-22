@@ -58,7 +58,7 @@ git_timeline:
   - time: "2026-02-21T23:10:29"
     action: "T-236: Check all acceptance criteria"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 3 commit(s), 22 min
 

@@ -52,7 +52,7 @@ git_timeline:
   - time: "2026-02-21T14:16:23"
     action: "T-227: Fix fabric page — collapse subsystem cards when filtered, fix dropdown param names"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 6 min
 

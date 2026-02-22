@@ -45,7 +45,7 @@ git_timeline:
   - time: "2026-02-17T21:37:12"
     action: "T-130: Create investigation task for GSD framework (horizon: later)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 2135 min
 

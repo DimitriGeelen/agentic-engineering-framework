@@ -55,7 +55,7 @@ git_timeline:
   - time: "2026-02-18T17:48:30"
     action: "T-169: Build fw upgrade command — sync framework improvements to consumer projects"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 4 min
 

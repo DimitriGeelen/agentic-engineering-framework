@@ -68,7 +68,7 @@ git_timeline:
   - time: "2026-02-17T15:36:06"
     action: "T-117: Phase 3 — validate episodic generator on T-115, T-112, T-108, T-116"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 4 commit(s), 21 min
 

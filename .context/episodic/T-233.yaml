@@ -54,7 +54,7 @@ git_timeline:
   - time: "2026-02-21T21:14:24"
     action: "T-233: Add dagre layout, compound subsystem nodes, layout switcher, degree sizing"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 12 min
 

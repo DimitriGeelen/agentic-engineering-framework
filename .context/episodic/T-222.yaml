@@ -45,7 +45,7 @@ git_timeline:
   - time: "2026-02-20T10:24:15"
     action: "T-222: Inception — Component Fabric integration (CLAUDE.md, task linking, drift)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 108 min
 

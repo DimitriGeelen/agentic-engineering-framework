@@ -64,7 +64,7 @@ git_timeline:
   - time: "2026-02-17T14:48:41"
     action: "T-112: Promote L-034 to practice P-010 (acceptance criteria validation)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 3 commit(s), 2 min
 

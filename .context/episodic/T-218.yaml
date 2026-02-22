@@ -139,7 +139,7 @@ git_timeline:
   - time: "2026-02-20T09:50:54"
     action: "T-218: Enrich 89 fabric component descriptions — replace all TODO placeholders"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 3 min
 

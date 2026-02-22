@@ -49,7 +49,7 @@ git_timeline:
   - time: "2026-02-18T01:06:28"
     action: "T-137: Task template enforcement — AC and Verification on creation"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 387 min
 

@@ -54,7 +54,7 @@ git_timeline:
   - time: "2026-02-19T10:12:18"
     action: "T-189: Memory consolidation protocol — fw consolidate scan/apply/report"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 1 commit(s), 5 min
 

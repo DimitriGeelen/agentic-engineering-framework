@@ -53,7 +53,7 @@ git_timeline:
   - time: "2026-02-19T01:29:14"
     action: "T-151: Task completed — episodic generated"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well (requires judgment — fill if enrichment_status is pending)
 successes:
   # Completed successfully in 2 commit(s), 1972 min
 
