@@ -1,30 +1,45 @@
-timestamp: 2026-02-22T10:21:55Z
+timestamp: 2026-02-22T15:12:58Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (1/242)"
+    check: "D1: Episodic quality — 0% [TODO] (1/247)"
   - id: D2
     level: PASS
     check: "D2: Human review queue — no aging items"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - id: D10
+    level: PASS
+    check: "D10: Decision-without-dialogue — none detected"
+  - id: D11
+    level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"
   - id: D4
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 1 anomaly(s): T-050(-12min,human)"
+    check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=35 avg=47 ratio=0.8x)"
+    check: "D3: Commit velocity — normal (PASS today=47 avg=82 ratio=0.6x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 71_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 88_commits_24h)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=14.3 earlier=28.3)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 6
+  pass: 11
   warn: 1
   fail: 0
-  total: 7
+  total: 12

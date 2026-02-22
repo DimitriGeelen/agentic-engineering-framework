@@ -547,4 +547,11 @@ learnings:
   date: 2026-02-21
   context: Added via context agent
   application: TBD
+- id: L-066
+  learning: "Never use fw audit in task verification commands — CTL-013 re-runs verification on pre-push, causing infinite recursion. Use direct grep/test checks instead."
+  source: unknown
+  task: T-249
+  date: 2026-02-22
+  context: Added via context agent
+  application: TBD
 candidates: []

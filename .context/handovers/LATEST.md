@@ -1,7 +1,7 @@
 ---
-session_id: S-2026-0222-1611
-timestamp: 2026-02-22T15:11:25Z
-predecessor: S-2026-0222-1119
+session_id: S-2026-0222-1614
+timestamp: 2026-02-22T15:14:31Z
+predecessor: S-2026-0222-1611
 tasks_active: [T-245, T-246]
 tasks_touched: [T-246, T-245, T-234, T-238, T-200, T-230, T-248, T-232, T-244, T-242, T-237, T-249, T-243, T-239, T-233, T-227, T-220, T-235, T-236, T-247, T-240, T-250, T-241]
 tasks_completed: []
@@ -10,11 +10,11 @@ owner: claude-code
 session_narrative: ""
 ---
 
-# Session Handover: S-2026-0222-1611
+# Session Handover: S-2026-0222-1614
 
 ## Where We Are
 
-Highly productive session: cleared 5 of 6 backlog tasks. Discovery catalog is now complete (12/12), fabric awareness is wired into both pre-edit (T-244) and post-commit (T-247) hooks, dispatch preamble has fabric guidance, Watchtower has a reliable startup script, and D5 FP noise is eliminated. Only T-245 (sqlite-vec) and T-246 (read-path) remain — both large, sequential tasks.
+All planned work from the previous mega-session is complete. Five tasks shipped (T-244, T-247, T-248, T-249, T-250) — covering fabric awareness, discovery catalog completion, D5 FP refinement, and the Watchtower startup script. Only T-245 and T-246 remain as `horizon: later` backlog items. Watchtower is running on port 3000.
 
 ## Work in Progress
 
@@ -22,17 +22,17 @@ Highly productive session: cleared 5 of 6 backlog tasks. Discovery catalog is no
 
 ### T-245: "sqlite-vec embedding layer — semantic search for project knowledge"
 - **Status:** captured (horizon: later)
-- **Last action:** Task created; no work started
-- **Next step:** Add sqlite-vec vector database for semantic search across episodic memory, learnings, patterns, decisions
-- **Blockers:** None (large task, needs dedicated session)
-- **Insight:** Tantivy BM25 covers 60-70% of queries; embeddings add 30-40% for semantic "find similar" across terminology fragmentation
+- **Last action:** Created as backlog item from T-235 GO follow-ups
+- **Next step:** Inception — research sqlite-vec capabilities, schema design, embedding model selection
+- **Blockers:** None
+- **Insight:** Prerequisite for T-246 (read-path needs the embedding layer)
 
 ### T-246: "Project memory read-path — query learnings/patterns/decisions at task start"
 - **Status:** captured (horizon: later)
-- **Last action:** Task created; no work started
-- **Next step:** Query project memory when setting focus or creating tasks; inject relevant learnings/patterns/decisions
-- **Blockers:** Sequential dependency on T-245 (or can use Tantivy BM25 as interim)
-- **Insight:** Framework writes 58 learnings + 14 patterns + 30+ decisions but never consults them; this closes the biggest gap (read-path scores 2/10)
+- **Last action:** Created as backlog item from T-235 GO follow-ups
+- **Next step:** Design query interface after T-245 provides the embedding layer
+- **Blockers:** Depends on T-245
+- **Insight:** None yet
 
 ## Gaps Register
 
@@ -45,41 +45,41 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-1. **D-035: D5 FP filtering — three-filter approach** (T-249)
-   - Why: Eliminates all 8 false positives while keeping genuine signals
-   - Alternatives rejected: Lower threshold to <2min (still misses some); last_update as start time (unreliable)
+1. **D5 three-filter approach** — Skip test/spec types, require <5min AND <2 commits, human-only scope. Reduced 8 FPs to 1 genuine signal.
+2. **Fabric advisory (not blocking)** — Pre-edit hook prints dependency count to stderr but doesn't block. Keeps dev velocity while raising awareness.
+3. **Post-commit auto-registration** — Advisory only, excludes docs/context/config files. Catches new source files without component cards.
 
 ## Things Tried That Failed
 
-1. **T-249 verification used `fw audit`** — caused infinite recursion when CTL-013 re-ran verification during pre-push audit. Fixed by replacing with direct grep checks. Learning L-066 recorded.
-2. **`watchtower/app.py` path** — doesn't exist, correct path is `python3 -m web.app` from framework root. Led to creating `bin/watchtower.sh` which handles the cwd correctly.
+1. **`fw audit` in verification commands** — Caused infinite recursion via CTL-013. Fixed by using direct grep. Learning L-066 recorded.
+2. **D5 without human-only filter** — Flagged 41 tasks (all agent tasks too). Re-added `owner != "human"` check.
 
 ## Open Questions / Blockers
 
-None. All active work completed. T-245/T-246 are parked for when priority shifts.
+No open blockers. Both remaining tasks (T-245, T-246) are `horizon: later` awaiting promotion.
 
 ## Gotchas / Warnings for Next Session
 
-- Never use `fw audit` in task verification commands — causes CTL-013 recursive audit bomb (L-066)
-- Post-commit hook is now v1.5 — if `fw git install-hooks` is run, it will update to the new version with auto-registration advisory
-- Watchtower is running: `fw serve status` to check, `fw serve stop` to stop
+- Never use `fw audit` in task verification commands (causes recursive audit bomb via CTL-013)
+- Watchtower PID file at `.context/working/watchtower.pid` — use `fw serve stop` for clean shutdown
+- CTL-013 WARN on T-244: environment-dependent verification may fail if fabric cards change
 
 ## Suggested First Action
 
-No `horizon: now` tasks exist. Either promote T-245 or T-246, or create new work.
+No `horizon: now` or `next` tasks. Await human direction — promote T-245 or create new work.
 
 ## Files Changed This Session
 
-- Created: `bin/watchtower.sh` (startup script)
-- Modified: `agents/audit/audit.sh` (D5 refinement + D6/D9/D10/D11/D12), `agents/context/check-active-task.sh` (fabric advisory), `agents/dispatch/preamble.md` (fabric guidance), `agents/git/lib/hooks.sh` (v1.5 auto-registration), `.git/hooks/post-commit` (auto-registration), `bin/fw` (serve delegation)
+- Created: `bin/watchtower.sh`, `agents/context/block-plan-mode.sh`
+- Modified: `bin/fw`, `agents/audit/audit.sh`, `agents/context/check-active-task.sh`, `agents/dispatch/preamble.md`, `agents/git/lib/hooks.sh`, `.git/hooks/post-commit`, `CLAUDE.md`
 
 ## Recent Commits
 
+- 7900d19 T-012: Fill handover S-2026-0222-1611 TODOs
+- bc3e4c2 T-012: Session handover S-2026-0222-1611
 - a604704 T-248: Complete — all 12 discoveries operational
 - 811b4d2 T-248: Implement D6 D9 D10 D11 D12 — complete 12/12 discovery catalog
 - 3c6c929 T-247: Complete — dispatch preamble + auto-registration advisory
-- 8f10b25 T-247: Add fabric awareness to dispatch preamble + auto-registration in post-commit
-- 50a7a69 T-244: Complete — fabric awareness advisory active on Write/Edit
 
 ---
 
