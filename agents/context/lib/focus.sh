@@ -71,5 +71,12 @@ EOF
         local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
         echo -e "${GREEN}Focus set: $task_id${NC}"
         echo "Task: $task_name"
+
+        # Memory recall — surface relevant prior knowledge (T-246)
+        local recall_script="$FRAMEWORK_ROOT/agents/context/lib/memory-recall.py"
+        if [ -f "$recall_script" ]; then
+            echo ""
+            python3 "$recall_script" --task "$task_id" --limit 5 2>/dev/null || true
+        fi
     fi
 }

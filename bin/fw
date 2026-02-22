@@ -144,6 +144,7 @@ show_help() {
     echo -e "  ${GREEN}search${NC} <keyword>   Search across all artifacts (keyword)"
     echo -e "  ${GREEN}search --semantic${NC}  Semantic vector search (sqlite-vec)"
     echo -e "  ${GREEN}search --hybrid${NC}   Hybrid BM25 + semantic (RRF fusion)"
+    echo -e "  ${GREEN}recall${NC} <query>    Query project memory (learnings, patterns, decisions)"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
@@ -922,6 +923,19 @@ case "$cmd" in
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
+        ;;
+    recall)
+        RECALL_QUERY="${*}"
+        if [ -z "$RECALL_QUERY" ]; then
+            echo -e "${RED}Usage: fw recall <query>${NC}"
+            echo "  Query project memory for relevant learnings, patterns, and decisions."
+            echo ""
+            echo "Examples:"
+            echo "  fw recall \"audit enforcement\""
+            echo "  fw recall \"context budget management\""
+            exit 1
+        fi
+        exec python3 "$AGENTS_DIR/context/lib/memory-recall.py" --query "$RECALL_QUERY"
         ;;
     scan)
         if ! python3 -c "import yaml" 2>/dev/null; then
