@@ -168,7 +168,7 @@ def _chunk_content(content: str, max_chars: int = 1500) -> list[str]:
 
 def _init_db() -> sqlite3.Connection:
     """Create and initialize the sqlite-vec database."""
-    db = sqlite3.connect(str(DB_PATH))
+    db = sqlite3.connect(str(DB_PATH), check_same_thread=False)
     db.enable_load_extension(True)
     sqlite_vec.load(db)
     db.enable_load_extension(False)
