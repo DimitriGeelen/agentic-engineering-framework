@@ -14,7 +14,7 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Highly productive session: cleared 5 of 6 backlog tasks. Discovery catalog is now complete (12/12), fabric awareness is wired into both pre-edit (T-244) and post-commit (T-247) hooks, dispatch preamble has fabric guidance, Watchtower has a reliable startup script, and D5 FP noise is eliminated. Only T-245 (sqlite-vec) and T-246 (read-path) remain — both large, sequential tasks.
 
 ## Work in Progress
 
@@ -22,17 +22,17 @@ session_narrative: ""
 
 ### T-245: "sqlite-vec embedding layer — semantic search for project knowledge"
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Task created; no work started
+- **Next step:** Add sqlite-vec vector database for semantic search across episodic memory, learnings, patterns, decisions
+- **Blockers:** None (large task, needs dedicated session)
+- **Insight:** Tantivy BM25 covers 60-70% of queries; embeddings add 30-40% for semantic "find similar" across terminology fragmentation
 
 ### T-246: "Project memory read-path — query learnings/patterns/decisions at task start"
 - **Status:** captured (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Last action:** Task created; no work started
+- **Next step:** Query project memory when setting focus or creating tasks; inject relevant learnings/patterns/decisions
+- **Blockers:** Sequential dependency on T-245 (or can use Tantivy BM25 as interim)
+- **Insight:** Framework writes 58 learnings + 14 patterns + 30+ decisions but never consults them; this closes the biggest gap (read-path scores 2/10)
 
 ## Gaps Register
 
@@ -45,40 +45,33 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **D-035: D5 FP filtering — three-filter approach** (T-249)
+   - Why: Eliminates all 8 false positives while keeping genuine signals
+   - Alternatives rejected: Lower threshold to <2min (still misses some); last_update as start time (unreliable)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **T-249 verification used `fw audit`** — caused infinite recursion when CTL-013 re-ran verification during pre-push audit. Fixed by replacing with direct grep checks. Learning L-066 recorded.
+2. **`watchtower/app.py` path** — doesn't exist, correct path is `python3 -m web.app` from framework root. Led to creating `bin/watchtower.sh` which handles the cwd correctly.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+None. All active work completed. T-245/T-246 are parked for when priority shifts.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Never use `fw audit` in task verification commands — causes CTL-013 recursive audit bomb (L-066)
+- Post-commit hook is now v1.5 — if `fw git install-hooks` is run, it will update to the new version with auto-registration advisory
+- Watchtower is running: `fw serve status` to check, `fw serve stop` to stop
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+No `horizon: now` tasks exist. Either promote T-245 or T-246, or create new work.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `bin/watchtower.sh` (startup script)
+- Modified: `agents/audit/audit.sh` (D5 refinement + D6/D9/D10/D11/D12), `agents/context/check-active-task.sh` (fabric advisory), `agents/dispatch/preamble.md` (fabric guidance), `agents/git/lib/hooks.sh` (v1.5 auto-registration), `.git/hooks/post-commit` (auto-registration), `bin/fw` (serve delegation)
 
 ## Recent Commits
 
