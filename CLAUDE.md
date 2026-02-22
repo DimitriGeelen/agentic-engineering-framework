@@ -34,6 +34,8 @@ Framework →  AUTHORITY   →  Enforces rules, checks gates, logs everything
 Agent    →  INITIATIVE   →  Can propose, request, suggest — never decides
 ```
 
+**Initiative ≠ Authority.** Broad directives ("proceed as you see fit") delegate initiative, not authority. When a structural gate blocks an action, the gate wins — always ask, never force. See §Autonomous Mode Boundaries.
+
 ## Instruction Precedence
 
 When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user messages), this resolution order applies:
@@ -562,6 +564,24 @@ These rules govern agent behavior during work. They are structural expectations,
 
 ### Choice Presentation
 Always present choices as a **numbered or lettered list** so the user can reply with just the identifier (e.g., "1" or "b"). Never present options as prose paragraphs.
+
+### Autonomous Mode Boundaries
+When the human says "proceed as you see fit", "go ahead", "do what you think is best", or similar broad directives, this delegates **initiative** (choosing what to work on), NOT **authority** (approving, completing, or bypassing). Specifically:
+
+**Delegated (agent may do autonomously):**
+- Choose which task to work on next
+- Choose implementation approach within a task
+- Run verification, tests, audits
+- Commit completed work and report back
+
+**NOT delegated (requires explicit human approval per action):**
+- Completing human-owned tasks (`owner: human`)
+- Using `--force` to bypass any gate (sovereignty, AC, verification)
+- Changing task ownership away from human
+- Destructive actions (Tier 0)
+- Any action the sovereignty gate or structural enforcement blocks
+
+**The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
