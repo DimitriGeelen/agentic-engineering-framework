@@ -2,39 +2,28 @@
 session_id: S-2026-0222-1642
 timestamp: 2026-02-22T15:42:45Z
 predecessor: S-2026-0222-1614
-tasks_active: [T-245, T-251]
-tasks_touched: [T-251, T-245, T-234, T-238, T-200, T-230, T-248, T-232, T-244, T-242, T-237, T-249, T-243, T-239, T-246, T-233, T-227, T-220, T-235, T-236, T-247, T-240, T-250, T-241]
-tasks_completed: []
-uncommitted_changes: 13
+tasks_active: [T-245]
+tasks_touched: [T-251, T-245, T-246]
+tasks_completed: [T-245, T-246, T-251]
+uncommitted_changes: 0
 owner: claude-code
-session_narrative: ""
+session_narrative: "Built sqlite-vec semantic search, memory read-path, and fixed fabric C-XXX display"
 ---
 
 # Session Handover: S-2026-0222-1642
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Completed T-245 (sqlite-vec embedding layer), T-246 (memory read-path), and T-251 (fabric C-XXX display fix). All backlog tasks are now done. T-245 stays in active/ awaiting human AC check (subjective quality of semantic search). No active work remaining.
 
 ## Work in Progress
 
-<!-- horizon: now -->
-
-### T-251: "Fix C-XXX display in fabric detail page"
-- **Status:** started-work (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
-
-<!-- horizon: later -->
-
 ### T-245: "sqlite-vec embedding layer — semantic search for project knowledge"
-- **Status:** work-completed (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed (partial — human AC pending)
+- **Last action:** Built web/embeddings.py, added CLI and Watchtower integration
+- **Next step:** Human verifies semantic search quality
+- **Blockers:** None
+- **Insight:** 874 docs, 11.6K chunks in 15s build. RRF hybrid fusion effective.
 
 ## Gaps Register
 
@@ -47,48 +36,43 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+1. **all-MiniLM-L6-v2 for embeddings** — 384-dim, ~22MB, fast enough (15s full index build)
+   - Why: Matches T-235 research recommendation, available via sentence-transformers
+   - Alternatives rejected: Larger models (slower), custom embeddings (unnecessary complexity)
+2. **RRF fusion for hybrid search** — k=60 standard constant
+   - Why: Simple, well-understood, works with different score distributions
+   - Alternatives rejected: Linear combination (needs tuning), learned fusion (over-engineering)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **sqlite-vec LIMIT clause** — KNN queries require `k = ?` in WHERE, not SQL LIMIT. Fixed immediately.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+No open blockers. All backlog tasks complete.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- sqlite-vec index is in /tmp (ephemeral) — rebuilds automatically when stale (2 min)
+- Embedding model loads on first query (~2s cold start)
+- Memory recall in `fw context focus` adds ~3s to focus set (model load + search)
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+No active work tasks. Await human direction or create new tasks.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `web/embeddings.py`, `agents/context/lib/memory-recall.py`
+- Modified: `bin/fw`, `web/blueprints/discovery.py`, `web/templates/search.html`, `agents/context/lib/focus.sh`, `web/blueprints/fabric.py`, `web/templates/fabric_detail.html`
 
 ## Recent Commits
 
+- 8272444 T-251: Complete — C-XXX IDs resolved in fabric detail page
 - b2c449c T-251: Resolve C-XXX IDs in fabric detail dependency table
 - e14d7fb T-246: Complete — project memory read-path operational
 - 593eca6 T-246: Memory recall — surface prior knowledge on focus set
 - 6f99d13 T-245: Complete — sqlite-vec semantic + hybrid search operational
-- 5230e3d T-245: Add semantic/hybrid search to CLI and Watchtower web UI
 
 ---
 

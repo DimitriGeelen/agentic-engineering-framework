@@ -1,9 +1,9 @@
-# Audit Results - 2026-02-22-1612
-timestamp: 2026-02-22T15:12:58Z
+# Audit Results - 2026-02-22-1645
+timestamp: 2026-02-22T15:45:07Z
 summary:
-  pass: 82
-  warn: 3
-  fail: 0
+  pass: 83
+  warn: 2
+  fail: 1
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -18,15 +18,15 @@ findings:
   - level: PASS
     check: "All 11 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 106 registered, 13 unregistered (coverage growing)"
+    check: "Fabric: 107 registered, 13 unregistered (coverage growing)"
   - level: PASS
-    check: "Fabric edges: 96/106 cards enriched (10 without edges)"
+    check: "Fabric edges: 97/107 cards enriched (10 without edges)"
   - level: PASS
-    check: "All 2 active tasks are valid"
+    check: "All 1 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (755/764 commits reference tasks)"
+    check: "Git traceability: 98% (764/773 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -47,7 +47,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 247 episodic summaries have quality content"
+    check: "All 250 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -55,7 +55,7 @@ findings:
   - level: PASS
     check: "Gaps register: 2 watching, no triggers fired"
   - level: PASS
-    check: "Handover open questions: none (section empty or template placeholder)"
+    check: "Handover open questions: none"
   - level: PASS
     check: "Graduation pipeline: 0 learnings (threshold: 20)"
   - level: PASS
@@ -69,11 +69,11 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-248)"
+    check: "CTL-001: Focus file has active task (T-251)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 5 (last commit: 66 seconds ago)"
+    check: "CTL-004: Tool counter at 2 (last commit: 2 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: urgent)"
   - level: PASS
@@ -85,7 +85,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (178 handovers, 43 compactions)"
+    check: "CTL-006: Handover coverage for compactions (180 handovers, 44 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -139,24 +139,26 @@ findings:
   - level: PASS
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
-    check: "CTL-012: All 247 completed tasks have checked ACs"
+    check: "CTL-012: All 249 completed tasks have checked ACs"
+  - level: PASS
+    check: "CTL-013: T-251 verification re-run: 2/2 pass"
+  - level: PASS
+    check: "CTL-013: T-246 verification re-run: 3/3 pass"
   - level: PASS
     check: "CTL-013: T-248 verification re-run: 5/5 pass"
   - level: PASS
-    check: "CTL-013: T-247 verification re-run: 4/4 pass"
-  - level: WARN
-    check: "CTL-013: T-244 verification re-run: 1 command(s) failing"
-    mitigation: "Review T-244 — environment may have changed"
-  - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-025: T-245 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (1/247)"
+    check: "D1: Episodic quality — 0% [TODO] (1/250)"
   - level: PASS
     check: "D2: Human review queue — no aging items"
-  - level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - level: FAIL
+    check: "D8: Handover quality — LATEST.md has 15 [TODO] sections"
+    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - level: PASS
     check: "D10: Decision-without-dialogue — none detected"
   - level: PASS
@@ -167,11 +169,11 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=47 avg=82 ratio=0.6x)"
+    check: "D3: Commit velocity — normal (PASS today=56 avg=82 ratio=0.7x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 88_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 97_commits_24h)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=14.3 earlier=28.3)"
+    check: "D6: Completion velocity — normal (PASS recent=15.0 earlier=28.3)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
