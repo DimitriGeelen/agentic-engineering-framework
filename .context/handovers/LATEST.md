@@ -14,18 +14,18 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+Three major tasks shipped this session: T-245 (sqlite-vec semantic search with hybrid RRF fusion), T-246 (project memory read-path integrated into `fw context focus` and `fw recall`), and T-251 (C-XXX legacy ID resolution in fabric detail page). All commits pushed to remote. No active work tasks remain — T-245 stays partial-complete pending human verification of semantic search quality.
 
 ## Work in Progress
 
 <!-- horizon: later -->
 
 ### T-245: "sqlite-vec embedding layer — semantic search for project knowledge"
-- **Status:** work-completed (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed, partial-complete (human AC pending)
+- **Last action:** Built full embedding pipeline (web/embeddings.py), integrated into Watchtower search with keyword/semantic/hybrid modes, registered fabric component, completed all 7 agent ACs and 4 verification commands
+- **Next step:** Human verifies AC "Semantic search finds related content that keyword search misses" at /search
+- **Blockers:** None — awaiting human verification only
+- **Insight:** sqlite-vec KNN queries require `WHERE embedding MATCH ? AND k = ?` syntax, NOT `LIMIT ?`. The 384-dim all-MiniLM-L6-v2 model indexes 874 docs / 11.6K chunks in ~15s
 
 ## Gaps Register
 
@@ -38,40 +38,51 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **all-MiniLM-L6-v2 for embeddings (T-245)**
+   - Why: 384-dim, ~22MB, fast enough for local indexing, good quality for short text chunks
+   - Alternatives rejected: OpenAI embeddings (requires API key, network dependency), larger models (slower, diminishing returns for framework docs)
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Reciprocal Rank Fusion for hybrid search (T-245)**
+   - Why: Simple, effective fusion of BM25 + vector scores without parameter tuning (k=60 standard)
+   - Alternatives rejected: Linear combination (requires weight tuning), re-ranking (added complexity)
+
+3. **Integrate memory recall into `fw context focus` (T-246)**
+   - Why: Automatic surfacing at the natural workflow moment (setting focus = starting work)
+   - Alternatives rejected: Separate manual command only (users forget), always-on display (noise)
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **sqlite-vec KNN with `LIMIT ?`** — sqlite-vec requires `WHERE embedding MATCH ? AND k = ?` in the WHERE clause, not SQL LIMIT. Got `OperationalError: A LIMIT or 'k = ?' constraint is required`.
+2. **Editing fabric.py after T-246 completed** — PreToolUse task gate blocked the edit because the active task (T-246) was already `work-completed`. Had to create T-251 first.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. T-245 human AC pending — "Semantic search finds related content that keyword search misses" needs human verification at `/search`
+2. No other active tasks — backlog is clear, awaiting human direction
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- Flask template caching: without `debug=True`, templates are cached on first load. Restart server after editing templates.
+- sqlite-vec index is in `/tmp/fw-vec-index.db` — ephemeral, rebuilt automatically if stale (>2 min) or missing
+- The `fw recall` command and `fw context focus` memory recall depend on sentence-transformers being installed (`pip install sentence-transformers`)
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+No horizon:now or horizon:next tasks remain. Await human direction for new work. If resuming, verify T-245 human AC at `/search` (try semantic mode for a concept like "error handling" and confirm it finds related content that keyword search misses).
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
 - Created:
+  - `web/embeddings.py` — sqlite-vec semantic search module (T-245)
+  - `agents/context/lib/memory-recall.py` — project memory query script (T-246)
+  - `.fabric/components/web-embeddings.yaml` — component card for embeddings module
 - Modified:
+  - `bin/fw` — added `fw search --semantic/--hybrid`, `fw recall`, help text
+  - `web/blueprints/discovery.py` — search_view supports mode parameter (keyword/semantic/hybrid)
+  - `web/templates/search.html` — mode dropdown added
+  - `agents/context/lib/focus.sh` — memory recall integration on focus set
+  - `web/blueprints/fabric.py` — id_to_name mapping for C-XXX resolution (T-251)
+  - `web/templates/fabric_detail.html` — resolved dep targets with clickable links (T-251)
 
 ## Recent Commits
 
