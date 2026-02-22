@@ -6,16 +6,16 @@ description: >
   inspired by DenkraumNavigator's restart_server_prod.sh. Handles PID management,
   port cleanup, graceful shutdown, health check, and LAN IP reporting.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-02-22T13:46:39Z
-last_update: 2026-02-22T13:46:39Z
-date_finished: null
+last_update: 2026-02-22T13:49:16Z
+date_finished: 2026-02-22T13:49:16Z
 ---
 
 # T-250: Reliable Watchtower startup script
@@ -59,3 +59,6 @@ grep -q "watchtower.sh" bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-250-reliable-watchtower-startup-script.md
 - **Context:** Initial task creation
+
+### 2026-02-22T13:49:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
