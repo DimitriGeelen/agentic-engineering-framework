@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-244: Pre-edit fabric awareness — advisory dependency check on Write/Edit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T15:03:04Z
+# ============================================================================
+
+task_id: T-244
+task_name: "Pre-edit fabric awareness — advisory dependency check on Write/Edit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-22T09:29:28Z
+completed: 2026-02-22T15:03:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T10:30:15+01:00
+last_commit: 2026-02-22T16:02:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB. Add pre-edit fabric awareness advisory to Write/Edit hook
+
+# Key outcomes
+outcomes:
+  - "Fabric advisory added to `check-active-task.sh` (not a separate hook)"
+  - "Shows dependent count for registered files with >0 dependents"
+  - "Silent for unregistered files (no noise)"
+  - "Silent for exempt paths (.context/, .tasks/, .claude/)"
+  - "Advisory only — exit code remains 0 (never blocks)"
+  - "Hook latency under 200ms with advisory"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-active-task.sh"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-244-pre-edit-fabric-awareness--advisory-depe.md"
+  - ".tasks/active/T-245-sqlite-vec-embedding-layer--semantic-sea.md"
+  - ".tasks/active/T-246-project-memory-read-path--query-learning.md"
+  - ".tasks/active/T-247-dispatch-fabric-context--auto-registrati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T10:30:15"
+    action: "T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB"
+  - time: "2026-02-22T16:02:57"
+    action: "T-244: Add pre-edit fabric awareness advisory to Write/Edit hook"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 333 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, enforcement, awareness]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 333
+  commits: 2
+  files_changed: 9
+  lines_added: 315
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-244-pre-edit-fabric-awareness--advisory-depe.md
+generated_by: context-agent-hybrid
