@@ -930,18 +930,16 @@ case "$cmd" in
         cd "$FRAMEWORK_ROOT" && exec python3 -m web.watchtower "$@"
         ;;
     serve)
-        # Check Flask is installed
-        if ! python3 -c "import flask" 2>/dev/null; then
-            echo -e "${RED}ERROR: Flask is not installed${NC}" >&2
-            echo "" >&2
-            echo "Install required packages:" >&2
-            echo "  pip install flask pyyaml ruamel.yaml markdown2 bleach" >&2
-            echo "" >&2
-            echo "Or install from requirements file:" >&2
-            echo "  pip install -r $FRAMEWORK_ROOT/web/requirements.txt" >&2
-            exit 1
+        # Delegate to watchtower.sh for reliable start/stop/restart
+        # If first arg looks like an option (--port, --debug), treat as 'start'
+        if [ $# -gt 0 ] && [[ "$1" == --* ]]; then
+            exec "$FRAMEWORK_ROOT/bin/watchtower.sh" start "$@"
         fi
-        cd "$FRAMEWORK_ROOT" && exec python3 -m web.app "$@"
+        # Default to 'start' if no args
+        if [ $# -eq 0 ]; then
+            exec "$FRAMEWORK_ROOT/bin/watchtower.sh" start
+        fi
+        exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
         ;;
     tier0)
         # Tier 0 enforcement — approve or inspect blocked commands
