@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-247: Dispatch fabric context + auto-registration — close agent blind spots
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T15:07:03Z
+# ============================================================================
+
+task_id: T-247
+task_name: "Dispatch fabric context + auto-registration — close agent blind spots"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-22T09:29:59Z
+completed: 2026-02-22T15:07:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T10:30:15+01:00
+last_commit: 2026-02-22T16:06:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB. Add fabric awareness to dispatch preamble + auto-registration in post-commit
+
+# Key outcomes
+outcomes:
+  - "Dispatch preamble includes fabric awareness section"
+  - "Preamble instructs sub-agents to check deps before editing high-connectivity files"
+  - "Post-commit hook detects new files without component cards (advisory)"
+  - "Hook template in hooks.sh updated to v1.5 with auto-registration advisory"
+  - "Installed hook (.git/hooks/post-commit) updated to match"
+  - "Non-source files (*.md, *.yaml, .context/, docs/) excluded from registration check"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/dispatch/preamble.md"
+  - "agents/git/lib/hooks.sh"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-244-pre-edit-fabric-awareness--advisory-depe.md"
+  - ".tasks/active/T-245-sqlite-vec-embedding-layer--semantic-sea.md"
+  - ".tasks/active/T-246-project-memory-read-path--query-learning.md"
+  - ".tasks/active/T-247-dispatch-fabric-context--auto-registrati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T10:30:15"
+    action: "T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB"
+  - time: "2026-02-22T16:06:55"
+    action: "T-247: Add fabric awareness to dispatch preamble + auto-registration in post-commit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 337 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, dispatch, auto-registration]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 337
+  commits: 2
+  files_changed: 10
+  lines_added: 317
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-247-dispatch-fabric-context--auto-registrati.md
+generated_by: context-agent-hybrid

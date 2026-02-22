@@ -4,16 +4,16 @@ name: "Dispatch fabric context + auto-registration — close agent blind spots"
 description: >
   Two related fixes for agent blind spots: (1) Update dispatch preamble (agents/dispatch/preamble.md) to include fabric awareness guidance — sub-agents should run fw fabric deps before modifying registered components. Currently dispatch preamble has zero fabric references and cross-agent awareness scores 1/10. (2) Add auto-registration of new files in post-commit hook — when git diff shows files not matching any component card, run fw fabric scan on them (advisory, not blocking). Currently new files created during tasks don't get registered until manual fw fabric register. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 1 Gaps 3-5. Also: /tmp/fw-agent-fabric-status.md §3.4 and §3.5. Related: T-236 (blast-radius in post-commit — done, extend same hook), T-244 (pre-edit awareness — companion task).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
 tags: [fabric, dispatch, auto-registration]
-components: []
+components: [agents/dispatch/preamble.md, agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-02-22T09:29:59Z
-last_update: 2026-02-22T15:05:14Z
-date_finished: null
+last_update: 2026-02-22T15:07:02Z
+date_finished: 2026-02-22T15:07:02Z
 ---
 
 # T-247: Dispatch fabric context + auto-registration — close agent blind spots
@@ -48,3 +48,6 @@ grep -q "UNREG_COUNT" .git/hooks/post-commit
 
 ### 2026-02-22T15:05:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T15:07:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
