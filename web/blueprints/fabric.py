@@ -303,9 +303,10 @@ def component_detail(name):
 @bp.route("/fabric/graph")
 def fabric_graph():
     """Dependency graph visualization."""
-    components = _load_components()
+    all_components = _load_components()
     subsystem_filter = request.args.get("subsystem", "")
 
+    components = all_components
     if subsystem_filter:
         components = [c for c in components if c.get("subsystem") == subsystem_filter]
 
@@ -314,7 +315,7 @@ def fabric_graph():
                 c.get("depends_on") or c.get("depended_by") or
                 c.get("writers") or c.get("readers")]
 
-    nodes, edges = _build_graph(enriched, all_components=components)
+    nodes, edges = _build_graph(enriched, all_components=all_components)
     subsystems = _load_subsystems()
 
     # Build subsystem color map for compound node backgrounds
