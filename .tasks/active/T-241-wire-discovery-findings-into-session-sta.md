@@ -89,3 +89,13 @@ grep -q "Discovery Findings" agents/resume/resume.sh
 
 ### 2026-02-22T06:45:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T07:09:25Z — implementation [agent]
+- **audit.sh:** Added discovery extraction block after YAML output — loops FINDINGS array, matches `D[0-9]+:` prefix, writes `.context/audits/discoveries/LATEST.yaml` with structured findings + summary counts
+- **post-compact-resume.sh:** Added discovery injection section — reads LATEST.yaml, filters WARN/FAIL only, appends to session context string
+- **resume.sh:** Added "Discovery Findings" section to `cmd_status()` — shows timestamp, P/W/F counts, colored WARN/FAIL entries
+- **web/blueprints/discoveries.py (new):** Blueprint with `/discoveries` route — loads findings, computes SVG sparkline points from `metrics_history.field_series()` for 3 trend metrics (audit_warn_count, velocity_commits_24h, episodic_quality_pct)
+- **web/templates/discoveries.html (new):** 4 summary cards, inline SVG sparkline charts, color-coded findings table with severity badges
+- **web/app.py:** Registered `discoveries_bp` blueprint
+- **web/shared.py:** Added "Discoveries" to Govern nav group
+- **Verification:** All 4 verification commands pass, 140 existing tests pass
