@@ -1826,6 +1826,138 @@ else
          "Run: fw handover"
 fi
 
+# D10: Decision-Without-Dialogue (Score 15, T-248)
+# Tasks with owner:human + inception/specification completed without human AC checks
+d10_result=$(python3 << 'D10EOF'
+import yaml, glob, os, re
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks", "completed")
+from datetime import datetime, timedelta, timezone
+cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+
+def parse_frontmatter(path):
+    try:
+        content = open(path).read()
+        m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+        if m:
+            return yaml.safe_load(m.group(1)) or {}
+    except Exception:
+        pass
+    return {}
+
+def parse_ts(s):
+    if not s or s == "null":
+        return None
+    try:
+        ts = datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        return ts
+    except (ValueError, TypeError):
+        return None
+
+flagged = []
+for f in glob.glob(os.path.join(TASKS_DIR, "T-*.md")):
+    fm = parse_frontmatter(f)
+    finished = parse_ts(fm.get("date_finished"))
+    if not finished or finished < cutoff:
+        continue
+    owner = fm.get("owner", "")
+    wtype = fm.get("workflow_type", "")
+    if owner != "human" or wtype not in ("inception", "specification"):
+        continue
+    # Check if any Human AC section exists and has unchecked boxes
+    content = open(f).read()
+    # Look for ### Human section with all boxes checked
+    human_section = re.search(r'### Human\n(.*?)(?=\n##|\Z)', content, re.DOTALL)
+    if not human_section:
+        continue  # no human ACs — fine
+    human_text = human_section.group(1)
+    checked = human_text.count("[x]")
+    unchecked = human_text.count("[ ]")
+    if unchecked > 0 and checked == 0:
+        # Human ACs exist but none checked — decision without dialogue
+        tid = fm.get("id", "?")
+        flagged.append(tid)
+
+if flagged:
+    shown = flagged[:5]
+    print(f"WARN {len(flagged)} {' '.join(shown)}")
+else:
+    print("PASS 0")
+D10EOF
+)
+d10_level=$(echo "$d10_result" | awk '{print $1}')
+d10_count=$(echo "$d10_result" | awk '{print $2}')
+d10_detail=$(echo "$d10_result" | cut -d' ' -f3-)
+case "$d10_level" in
+    WARN)
+        warn "D10: Decision-without-dialogue — $d10_count task(s): $d10_detail" \
+             "Human-owned inception/spec tasks completed without human AC verification" \
+             "Review flagged tasks — human dialogue may have been skipped"
+        ;;
+    *)
+        pass "D10: Decision-without-dialogue — none detected"
+        ;;
+esac
+
+# D11: Gap Register Staleness (Score 15, T-248)
+# Gaps in "watching" status for >30 days with no recent update
+GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+if [ -f "$GAPS_FILE" ]; then
+    d11_result=$(python3 << D11EOF
+import yaml
+from datetime import datetime, timedelta, timezone
+
+cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+gaps_file = "$GAPS_FILE"
+
+try:
+    with open(gaps_file) as f:
+        data = yaml.safe_load(f)
+    gaps = data.get("gaps", []) if data else []
+except Exception:
+    gaps = []
+
+stale = []
+for g in gaps:
+    status = g.get("status", "")
+    if status != "watching":
+        continue
+    opened = g.get("opened", "")
+    try:
+        ts = datetime.fromisoformat(str(opened).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if ts < cutoff:
+            stale.append(g.get("id", "?"))
+    except (ValueError, TypeError):
+        pass
+
+if stale:
+    print(f"WARN {len(stale)} {' '.join(stale)}")
+else:
+    print("PASS 0")
+D11EOF
+)
+    d11_level=$(echo "$d11_result" | awk '{print $1}')
+    d11_count=$(echo "$d11_result" | awk '{print $2}')
+    d11_detail=$(echo "$d11_result" | cut -d' ' -f3-)
+    case "$d11_level" in
+        WARN)
+            warn "D11: Gap register staleness — $d11_count gap(s) watching >30d: $d11_detail" \
+                 "Gaps in watching status for over 30 days" \
+                 "Review: fw gaps — close or escalate stale gaps"
+            ;;
+        *)
+            pass "D11: Gap register staleness — all gaps fresh"
+            ;;
+    esac
+else
+    pass "D11: Gap register — no gaps file"
+fi
+
 echo ""
 fi # end discovery
 
@@ -1833,6 +1965,7 @@ fi # end discovery
 # DISCOVERY-TRENDS: Temporal trend detection (T-240)
 # D4 (audit trend regression), D5 (task lifecycle anomalies),
 # D3 (commit velocity anomalies), D7 (commit bunching)
+# D6 (completion velocity trends), D9 (control drift), D12 (bypass growth)
 # ============================================
 if should_run_section "discovery-trends"; then
 echo "=== DISCOVERY: TREND DETECTION ==="
@@ -2171,6 +2304,177 @@ case "$d7_level" in
         ;;
     *)
         pass "D7: Commit bunching — none ($d7_result)"
+        ;;
+esac
+
+# D6: Completion Velocity Trends (Score 15, T-248)
+# Detect sustained drops in task completion rate (7-day rolling average)
+d6_result=$(python3 << 'D6EOF'
+import yaml, glob, os, re
+from datetime import datetime, timedelta, timezone
+from collections import Counter
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+TASKS_DIR = os.path.join(PROJECT_ROOT, ".tasks", "completed")
+
+def parse_frontmatter(path):
+    try:
+        content = open(path).read()
+        m = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+        if m:
+            return yaml.safe_load(m.group(1)) or {}
+    except Exception:
+        pass
+    return {}
+
+now = datetime.now(timezone.utc)
+cutoff = now - timedelta(days=14)
+
+# Count completions per day (last 14 days)
+daily = Counter()
+for f in glob.glob(os.path.join(TASKS_DIR, "T-*.md")):
+    fm = parse_frontmatter(f)
+    finished = fm.get("date_finished")
+    if not finished:
+        continue
+    try:
+        ts = datetime.fromisoformat(str(finished).replace("Z", "+00:00"))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if ts >= cutoff:
+            day_key = ts.strftime("%Y-%m-%d")
+            daily[day_key] = daily.get(day_key, 0) + 1
+    except (ValueError, TypeError):
+        pass
+
+if len(daily) < 4:
+    print("PASS insufficient_data")
+else:
+    # Compare last 3 days vs previous 7 days
+    dates = sorted(daily.keys())
+    recent = [daily.get((now - timedelta(days=i)).strftime("%Y-%m-%d"), 0) for i in range(3)]
+    earlier = [daily.get((now - timedelta(days=i)).strftime("%Y-%m-%d"), 0) for i in range(3, 10)]
+    recent_avg = sum(recent) / max(len(recent), 1)
+    earlier_avg = sum(earlier) / max(len(earlier), 1)
+    if earlier_avg > 0 and recent_avg < earlier_avg * 0.3:
+        print(f"WARN drop recent_avg={recent_avg:.1f} vs earlier_avg={earlier_avg:.1f}")
+    else:
+        print(f"PASS recent={recent_avg:.1f} earlier={earlier_avg:.1f}")
+D6EOF
+)
+d6_level=$(echo "$d6_result" | awk '{print $1}')
+case "$d6_level" in
+    WARN)
+        d6_detail=$(echo "$d6_result" | cut -d' ' -f2-)
+        warn "D6: Completion velocity — sustained drop ($d6_detail)" \
+             "Task completion rate dropped >70% vs prior week" \
+             "Check for blockers or process issues slowing work"
+        ;;
+    *)
+        pass "D6: Completion velocity — normal ($d6_result)"
+        ;;
+esac
+
+# D12: Bypass Log Growth (Score 12, T-248)
+# Track --no-verify usage and bypass log entries
+BYPASS_LOG="$PROJECT_ROOT/.context/project/bypass-log.yaml"
+if [ -f "$BYPASS_LOG" ]; then
+    d12_result=$(python3 << D12EOF
+import yaml
+from datetime import datetime, timedelta, timezone
+
+bypass_file = "$BYPASS_LOG"
+now = datetime.now(timezone.utc)
+cutoff_7d = now - timedelta(days=7)
+
+try:
+    with open(bypass_file) as f:
+        data = yaml.safe_load(f)
+    entries = data.get("bypasses", []) if data else []
+except Exception:
+    entries = []
+
+recent = 0
+for e in entries:
+    ts = e.get("timestamp", "")
+    try:
+        dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        if dt >= cutoff_7d:
+            recent += 1
+    except (ValueError, TypeError):
+        pass
+
+total = len(entries)
+if recent >= 5:
+    print(f"WARN {recent} recent_7d total={total}")
+elif recent > 0:
+    print(f"INFO {recent} recent_7d total={total}")
+else:
+    print(f"PASS total={total}")
+D12EOF
+)
+    d12_level=$(echo "$d12_result" | awk '{print $1}')
+    case "$d12_level" in
+        WARN)
+            d12_detail=$(echo "$d12_result" | cut -d' ' -f2-)
+            warn "D12: Bypass log growth — $d12_detail bypasses in last 7 days" \
+                 "Elevated bypass rate may indicate enforcement friction" \
+                 "Review bypass reasons: fw git log --bypasses"
+            ;;
+        *)
+            pass "D12: Bypass log — normal ($d12_result)"
+            ;;
+    esac
+else
+    pass "D12: Bypass log — no log file"
+fi
+
+# D9: Control Effectiveness Drift (Score 9, T-248)
+# Detect controls that never fire or always fire across recent audits
+d9_result=$(python3 << 'D9EOF'
+import yaml, glob, os, re
+from collections import Counter
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+AUDITS_DIR = os.path.join(PROJECT_ROOT, ".context", "audits", "cron")
+
+# Read last 10 cron audits
+audit_files = sorted(glob.glob(os.path.join(AUDITS_DIR, "*.yaml")))[-10:]
+if len(audit_files) < 3:
+    print("PASS insufficient_audits")
+else:
+    # Count warn/fail per check across audits
+    warn_counts = Counter()
+    total_audits = len(audit_files)
+    for af in audit_files:
+        try:
+            with open(af) as f:
+                data = yaml.safe_load(f)
+            checks = data.get("checks", []) if data else []
+            for check in checks:
+                if check.get("level") in ("warn", "fail"):
+                    warn_counts[check.get("check", "?")] += 1
+        except Exception:
+            pass
+
+    # Find controls that ALWAYS fire (warn/fail in every audit)
+    always_fire = [k for k, v in warn_counts.items() if v >= total_audits and total_audits >= 3]
+    if always_fire:
+        print(f"INFO {len(always_fire)} always-fire: {' '.join(always_fire[:3])}")
+    else:
+        print(f"PASS {total_audits}_audits_checked")
+D9EOF
+)
+d9_level=$(echo "$d9_result" | awk '{print $1}')
+case "$d9_level" in
+    INFO)
+        d9_detail=$(echo "$d9_result" | cut -d' ' -f2-)
+        pass "D9: Control drift — $d9_detail"
+        ;;
+    *)
+        pass "D9: Control drift — normal ($d9_result)"
         ;;
 esac
 
