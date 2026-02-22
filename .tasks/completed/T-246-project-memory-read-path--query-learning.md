@@ -4,16 +4,16 @@ name: "Project memory read-path — query learnings/patterns/decisions at task s
 description: >
   When fw context focus T-XXX is set or a new task is created, query project memory (learnings.yaml, patterns.yaml, decisions.yaml) for relevant prior knowledge and inject a 2-3 line summary into working memory. Currently the context fabric scores 7/10 on write-path but 2/10 on read-path — the framework captures knowledge it doesn't use. 58 learnings, 14 patterns, 30+ decisions accumulated but never consulted when starting new work. Depends on: T-245 (sqlite-vec) for semantic matching, or can start with BM25 keyword matching via Tantivy (T-237). Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 1 Gap 2. Also: /tmp/fw-agent-fabric-status.md §3.2 'Project Memory Not Consulted'. Related: T-241 (discovery surfacing at session-start — done, pattern to follow).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
 tags: [context-fabric, knowledge, read-path]
-components: []
+components: [agents/context/lib/focus.sh, bin/fw]
 related_tasks: []
 created: 2026-02-22T09:29:49Z
-last_update: 2026-02-22T15:33:54Z
-date_finished: null
+last_update: 2026-02-22T15:37:38Z
+date_finished: 2026-02-22T15:37:38Z
 ---
 
 # T-246: Project memory read-path — query learnings/patterns/decisions at task start
@@ -25,11 +25,11 @@ Closes the read-path gap: framework captures knowledge (7/10) but never consults
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/context/lib/memory-recall.py` queries learnings, patterns, decisions by task context
-- [ ] `fw context focus T-XXX` prints relevant prior knowledge after setting focus
-- [ ] `fw recall "query"` standalone CLI command returns relevant knowledge
-- [ ] Output is concise (max 5 items, 1 line each) with source references
-- [ ] Graceful degradation: works without sqlite-vec index (falls back to keyword)
+- [x] `agents/context/lib/memory-recall.py` queries learnings, patterns, decisions by task context
+- [x] `fw context focus T-XXX` prints relevant prior knowledge after setting focus
+- [x] `fw recall "query"` standalone CLI command returns relevant knowledge
+- [x] Output is concise (max 5 items, 1 line each) with source references
+- [x] Graceful degradation: works without sqlite-vec index (falls back to keyword)
 
 ## Verification
 
@@ -60,3 +60,6 @@ python3 agents/context/lib/memory-recall.py --query "audit enforcement" 2>/dev/n
 
 ### 2026-02-22T15:33:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T15:37:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

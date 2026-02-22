@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-246: Project memory read-path — query learnings/patterns/decisions at task start
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T15:37:39Z
+# ============================================================================
+
+task_id: T-246
+task_name: "Project memory read-path — query learnings/patterns/decisions at task start"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-22T09:29:49Z
+completed: 2026-02-22T15:37:38Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T10:30:15+01:00
+last_commit: 2026-02-22T16:37:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB. Memory recall — surface prior knowledge on focus set
+
+# Key outcomes
+outcomes:
+  - "`agents/context/lib/memory-recall.py` queries learnings, patterns, decisions by task context"
+  - "`fw context focus T-XXX` prints relevant prior knowledge after setting focus"
+  - "`fw recall \"query\"` standalone CLI command returns relevant knowledge"
+  - "Output is concise (max 5 items, 1 line each) with source references"
+  - "Graceful degradation: works without sqlite-vec index (falls back to keyword)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/focus.sh"
+  - "agents/context/lib/memory-recall.py"
+  - "bin/fw"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-244-pre-edit-fabric-awareness--advisory-depe.md"
+  - ".tasks/active/T-245-sqlite-vec-embedding-layer--semantic-sea.md"
+  - ".tasks/active/T-246-project-memory-read-path--query-learning.md"
+  - ".tasks/active/T-247-dispatch-fabric-context--auto-registrati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T10:30:15"
+    action: "T-012: Create backlog tasks for T-235 GO follow-ups — fabric awareness + vector DB"
+  - time: "2026-02-22T16:37:02"
+    action: "T-246: Memory recall — surface prior knowledge on focus set"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 367 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [context-fabric, knowledge, read-path]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 367
+  commits: 2
+  files_changed: 11
+  lines_added: 530
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-246-project-memory-read-path--query-learning.md
+generated_by: context-agent-hybrid
