@@ -122,5 +122,47 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
     fi
 fi
 
+# --- Fabric awareness advisory (T-244) ---
+# If the file is a registered fabric component with dependents, show a note.
+# Advisory only — never blocks. Runs only for non-exempt paths.
+if [ -n "$FILE_PATH" ] && [ -d "$FRAMEWORK_ROOT/.fabric/components" ]; then
+    # Resolve relative path
+    REL_PATH=$(realpath --relative-to="$PROJECT_ROOT" "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")
+    # Quick count: how many other cards reference this file?
+    DEP_COUNT=$(python3 -c "
+import os, glob, re
+root = '$PROJECT_ROOT'
+rel = '$REL_PATH'
+cards_dir = os.path.join(root, '.fabric', 'components')
+# Find this file's card to get its id/name
+comp_id = comp_name = ''
+for card in glob.glob(os.path.join(cards_dir, '*.yaml')):
+    with open(card) as f:
+        text = f.read()
+    if f'location: {rel}' in text or f'id: {rel}' in text:
+        for line in text.split('\n'):
+            if line.startswith('id: '): comp_id = line[4:].strip()
+            if line.startswith('name: '): comp_name = line[6:].strip()
+        break
+if not comp_id:
+    print(0)
+else:
+    # Count cards that reference this component
+    count = 0
+    patterns = [comp_id, comp_name, rel]
+    for card in glob.glob(os.path.join(cards_dir, '*.yaml')):
+        with open(card) as f:
+            text = f.read()
+        if f'id: {comp_id}' in text:
+            continue  # skip self
+        if any(f'target: {p}' in text or f'target: \"{p}\"' in text for p in patterns if p):
+            count += 1
+    print(count)
+" 2>/dev/null || echo 0)
+    if [ "$DEP_COUNT" -gt 0 ]; then
+        echo "FABRIC: $REL_PATH has $DEP_COUNT downstream dependent(s). Consider: fw fabric blast-radius after commit." >&2
+    fi
+fi
+
 # Active task exists — allow
 exit 0
