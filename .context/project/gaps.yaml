@@ -406,3 +406,42 @@ gaps:
     last_reviewed: 2026-02-21
     closed_date: 2026-02-21
     related_task: T-232
+
+  - id: G-014
+    title: "Built-in EnterPlanMode bypasses all framework governance"
+    description: >
+      Claude Code's built-in EnterPlanMode tool bypasses framework governance:
+      no task gate, no session init, no research artifacts, and its system prompt
+      says "This supercedes any other instructions" — overriding CLAUDE.md rules.
+      Plan files go to .claude/plans/ (untracked, ephemeral) instead of docs/plans/.
+      Post-plan execution creates bias that skips commit cadence and check-ins.
+    spec_reference: "CLAUDE.md §Plan Mode Prohibition, §Instruction Precedence"
+    severity: high
+    evidence_collected: >
+      T-241 implementation: entered plan mode, skipped fw context init, skipped
+      LATEST.md, implemented all 7 steps in one batch, no task updates recorded,
+      no commit cadence followed. The only gate that fired was check-active-task.sh
+      blocking the first edit (Tier 1), but everything before that was ungoverned.
+    resolution: >
+      T-242 multi-layer defense:
+      Layer 1 (agent discipline): CLAUDE.md §Plan Mode Prohibition — explicit rule
+      to never use EnterPlanMode, with /plan as the governed alternative.
+      Layer 2 (structural): PreToolUse hook on EnterPlanMode matcher with
+      block-plan-mode.sh (exit 2). Whether PreToolUse fires for mode-transition
+      tools is unconfirmed — needs testing after session restart.
+      Layer 3 (gap registration): This entry — tracks enforcement uncertainty.
+    what_remains: >
+      Cannot confirm PreToolUse fires for EnterPlanMode until next session restart
+      (hooks snapshot at session start). If hook doesn't fire, Layer 1 (CLAUDE.md
+      prohibition) is the only defense — agent discipline, not structural enforcement.
+    decision_trigger: >
+      After session restart, test whether hook blocks EnterPlanMode. If not, evaluate
+      alternatives (UserPromptSubmit hook to intercept plan mode responses, or accept
+      the risk with Layer 1 only).
+    trigger_check:
+      type: manual
+      hint: "After restart, attempt EnterPlanMode and check if hook fires"
+    status: watching
+    created: 2026-02-22
+    last_reviewed: 2026-02-22
+    related_task: T-242

@@ -618,6 +618,23 @@ When encountering errors or unexpected behavior:
 6. Never shotgun-debug (trying random fixes without understanding the cause)
 7. After resolution, record the pattern: `fw healing resolve T-XXX --mitigation "what fixed it"`
 
+## Plan Mode Prohibition
+
+**NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
+- No task gate — planning starts without a task
+- No session init — Session Start Protocol is skipped entirely
+- No research artifacts — plan files go to `.claude/plans/` (untracked, ephemeral)
+- Its system prompt says "This supercedes any other instructions" — overriding CLAUDE.md
+- Post-plan execution skips commit cadence, task updates, and check-ins
+
+**Use `/plan` instead** — the framework's governance-aware planning skill that:
+- Requires an active task (verified in Step 1)
+- Writes to `docs/plans/` (tracked, committed)
+- Respects instruction precedence
+
+If you need to explore before planning, use the Explore agent or `/explore` skill.
+If you need to plan implementation, create a task first, then use `/plan`.
+
 ## Session Start Protocol
 
 **Before beginning any work:**
