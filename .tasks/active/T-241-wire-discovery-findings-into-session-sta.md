@@ -7,15 +7,15 @@ description: >
   (3) cron output for standalone monitoring. Addresses GAP-T7 (no session-start
   surfacing) and GAP-T8 (no visual trends). Research: docs/reports/T-200-discovery-layer-design.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [discovery, surfacing, watchtower]
 components: []
 related_tasks: [T-200, T-194, T-238, T-239, T-240]
 created: 2026-02-21T23:39:01Z
-last_update: 2026-02-21T23:39:01Z
+last_update: 2026-02-22T06:45:49Z
 date_finished: null
 ---
 
@@ -48,12 +48,12 @@ Discoveries are useless if they don't reach the human. This task wires findings 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `resume.sh` or SessionStart hook reads discovery findings and injects summary
-- [ ] Discovery findings page accessible in Watchtower (`:3000/discoveries` or equivalent)
-- [ ] At least one time-series visualization (sparkline or chart) using metrics-history.yaml
-- [ ] Discovery findings persisted to `.context/audits/discoveries/LATEST.yaml`
-- [ ] Only WARN/FAIL findings surfaced at session-start (not INFO)
-- [ ] Existing tests pass
+- [x] `resume.sh` or SessionStart hook reads discovery findings and injects summary
+- [x] Discovery findings page accessible in Watchtower (`:3000/discoveries` or equivalent)
+- [x] At least one time-series visualization (sparkline or chart) using metrics-history.yaml
+- [x] Discovery findings persisted to `.context/audits/discoveries/LATEST.yaml`
+- [x] Only WARN/FAIL findings surfaced at session-start (not INFO)
+- [x] Existing tests pass
 
 ### Human
 - [ ] Discovery page layout and readability at :3000
@@ -61,14 +61,10 @@ Discoveries are useless if they don't reach the human. This task wires findings 
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "import yaml; yaml.safe_load(open('.context/audits/discoveries/LATEST.yaml'))"
+curl -sf http://localhost:3000/discoveries
+grep -q "discoveries" agents/context/post-compact-resume.sh
+grep -q "Discovery Findings" agents/resume/resume.sh
 
 ## Decisions
 
@@ -87,3 +83,9 @@ Discoveries are useless if they don't reach the human. This task wires findings 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-241-wire-discovery-findings-into-session-sta.md
 - **Context:** Initial task creation
+
+### 2026-02-22T06:45:24Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
+
+### 2026-02-22T06:45:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

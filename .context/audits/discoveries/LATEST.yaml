@@ -1,0 +1,32 @@
+timestamp: 2026-02-22T07:09:25Z
+findings:
+  - id: D1
+    level: PASS
+    check: "D1: Episodic quality — 0% [TODO] (1/237)"
+  - id: D2
+    level: PASS
+    check: "D2: Human review queue — no aging items"
+  - id: D8
+    level: WARN
+    check: "D8: Handover quality — LATEST.md has 3 [TODO] section(s)"
+    mitigation: "Fill remaining [TODO] sections in LATEST.md"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 8 anomaly(s): T-021(3min,human) T-203(0min,human) T-219(2min,human) T-135(2min,human) T-015(5min,human) T-022(1min,human) T-012(5min,human) T-218(4min,human)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: WARN
+    check: "D3: Commit velocity — WARN drop today=16 avg=82 ratio=0.2x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 77_commits_24h)"
+
+summary:
+  pass: 4
+  warn: 3
+  fail: 0
+  total: 7

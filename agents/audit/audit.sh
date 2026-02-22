@@ -2232,6 +2232,49 @@ if [ -n "$OUTPUT_DIR" ]; then
     ln -sf "$(basename "$AUDIT_FILE")" "$EFFECTIVE_OUTPUT_DIR/LATEST-CRON.yaml" 2>/dev/null || true
 fi
 
+# Extract discovery findings (D1-D8) to LATEST.yaml
+if should_run_section "discovery" || should_run_section "discovery-trends"; then
+    DISC_DIR="$AUDITS_DIR/discoveries"
+    mkdir -p "$DISC_DIR"
+    DISC_PASS=0; DISC_WARN=0; DISC_FAIL=0; DISC_TOTAL=0
+    DISC_FINDINGS=""
+    for finding in "${FINDINGS[@]}"; do
+        level=$(echo "$finding" | cut -d'|' -f1)
+        check=$(echo "$finding" | cut -d'|' -f2)
+        mitigation=$(echo "$finding" | cut -d'|' -f3)
+        # Match D1-D9 prefix
+        if echo "$check" | grep -qE '^D[0-9]+:'; then
+            disc_id=$(echo "$check" | grep -oE '^D[0-9]+')
+            DISC_TOTAL=$((DISC_TOTAL + 1))
+            case "$level" in
+                PASS) DISC_PASS=$((DISC_PASS + 1)) ;;
+                WARN) DISC_WARN=$((DISC_WARN + 1)) ;;
+                FAIL) DISC_FAIL=$((DISC_FAIL + 1)) ;;
+            esac
+            DISC_FINDINGS="${DISC_FINDINGS}  - id: $disc_id
+    level: $level
+    check: \"$check\"
+"
+            if [ -n "$mitigation" ]; then
+                DISC_FINDINGS="${DISC_FINDINGS}    mitigation: \"$mitigation\"
+"
+            fi
+        fi
+    done
+    if [ "$DISC_TOTAL" -gt 0 ]; then
+        cat > "$DISC_DIR/LATEST.yaml" << DISCEOF
+timestamp: $AUDIT_TIMESTAMP
+findings:
+$DISC_FINDINGS
+summary:
+  pass: $DISC_PASS
+  warn: $DISC_WARN
+  fail: $DISC_FAIL
+  total: $DISC_TOTAL
+DISCEOF
+    fi
+fi
+
 # Trend detection: Compare with previous audits
 echo ""
 echo "=== TREND ANALYSIS ==="

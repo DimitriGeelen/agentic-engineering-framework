@@ -150,6 +150,33 @@ cmd_status() {
     fi
     echo ""
 
+    # Discovery findings (T-241)
+    local disc_file="$PROJECT_ROOT/.context/audits/discoveries/LATEST.yaml"
+    if [ -f "$disc_file" ]; then
+        local disc_output
+        disc_output=$(python3 -c "
+import yaml, sys
+with open('$disc_file') as f:
+    data = yaml.safe_load(f)
+if not data or 'findings' not in data:
+    sys.exit(0)
+ts = data.get('timestamp', '?')
+s = data.get('summary', {})
+items = [f for f in data['findings'] if f.get('level') in ('WARN', 'FAIL')]
+print(f'Last run: {ts}  (P:{s.get(\"pass\",0)} W:{s.get(\"warn\",0)} F:{s.get(\"fail\",0)})')
+for f in items:
+    lvl = f['level']
+    color = '\033[1;33m' if lvl == 'WARN' else '\033[0;31m'
+    nc = '\033[0m'
+    print(f'  {color}[{lvl}]{nc} {f[\"check\"]}')
+" 2>/dev/null)
+        if [ -n "$disc_output" ]; then
+            echo -e "${BOLD}Discovery Findings:${NC}"
+            echo -e "$disc_output"
+            echo ""
+        fi
+    fi
+
     # Scan intelligence
     local scan_file="$PROJECT_ROOT/.context/scans/LATEST.yaml"
     if [ -f "$scan_file" ]; then

@@ -1,0 +1,170 @@
+<style>
+    .disc-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .disc-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .metric-card { text-align: center; }
+    .metric-card .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .metric-card .metric-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .level-pass { color: #2e7d32; }
+    .level-warn { color: #f9a825; }
+    .level-fail { color: #c62828; }
+    .badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+    .badge-pass { background: #2e7d3222; color: #2e7d32; }
+    .badge-warn { background: #f9a82522; color: #f9a825; }
+    .badge-fail { background: #c6282822; color: #c62828; }
+    .sparkline-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .sparkline-card {
+        text-align: center;
+        padding: 1rem;
+    }
+    .sparkline-card .spark-label {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 0.5rem;
+    }
+    .sparkline-card .spark-value {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 0.4rem;
+    }
+    .findings-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .findings-table th {
+        text-align: left;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--pico-muted-color);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 2px solid var(--pico-muted-border-color);
+    }
+    .findings-table td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+        font-size: 0.9rem;
+    }
+    .findings-table tr:last-child td { border-bottom: none; }
+</style>
+
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1>{{ page_title }}</h1>
+        <p>Discovery layer findings from automated audit jobs (D1-D8).</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <small style="color: var(--pico-muted-color);">{{ timestamp }}</small>
+        <a role="button" class="outline" style="font-size: 0.85rem;"
+           hx-get="/discoveries" hx-target="#content" hx-swap="innerHTML">Refresh</a>
+    </div>
+</div>
+
+<!-- Summary cards -->
+<div class="disc-grid">
+    <article class="metric-card">
+        <div class="metric-value">{{ summary.get('total', 0) }}</div>
+        <div class="metric-label">Total Checks</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value level-pass">{{ summary.get('pass', 0) }}</div>
+        <div class="metric-label">Pass</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value level-warn">{{ summary.get('warn', 0) }}</div>
+        <div class="metric-label">Warnings</div>
+    </article>
+    <article class="metric-card">
+        <div class="metric-value level-fail">{{ summary.get('fail', 0) }}</div>
+        <div class="metric-label">Failures</div>
+    </article>
+</div>
+
+<!-- Sparkline trend charts -->
+{% if sparklines %}
+<div class="sparkline-row">
+    {% for key, spark in sparklines.items() %}
+    <article class="sparkline-card">
+        <div class="spark-label">{{ spark.label }}</div>
+        <svg width="120" height="30" viewBox="0 0 120 30" style="overflow: visible;">
+            <polyline
+                points="{{ spark.points }}"
+                fill="none"
+                stroke="var(--pico-primary)"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+            />
+        </svg>
+        <div class="spark-value">
+            {% if spark.latest is not none %}{{ spark.latest }}{% else %}&mdash;{% endif %}
+            <small style="color: var(--pico-muted-color); font-size: 0.7rem;">({{ spark.count }} pts)</small>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Findings table -->
+<article>
+    {% if findings %}
+    <table class="findings-table">
+        <thead>
+            <tr>
+                <th style="width: 3rem;">ID</th>
+                <th style="width: 4rem;">Level</th>
+                <th>Check</th>
+                <th>Mitigation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for f in findings %}
+            <tr>
+                <td><strong>{{ f.get('id', '?') }}</strong></td>
+                <td>
+                    {% set lvl = f.get('level', 'PASS') %}
+                    <span class="badge badge-{{ lvl|lower }}">{{ lvl }}</span>
+                </td>
+                <td>{{ f.get('check', '') }}</td>
+                <td style="color: var(--pico-muted-color); font-size: 0.85rem;">
+                    {{ f.get('mitigation', '') or '&mdash;' }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--pico-muted-color); font-style: italic; text-align: center; padding: 2rem 0;">
+        No discovery findings yet. Run <code>fw audit --section discovery,discovery-trends</code> to generate.
+    </p>
+    {% endif %}
+</article>

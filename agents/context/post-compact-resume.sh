@@ -93,6 +93,30 @@ ${FABRIC_OVERVIEW}"
     fi
 fi
 
+# Discovery findings (T-241 — surface WARN/FAIL discoveries at session start)
+DISC_FILE="$PROJECT_ROOT/.context/audits/discoveries/LATEST.yaml"
+if [ -f "$DISC_FILE" ]; then
+    DISC_SUMMARY=$(python3 -c "
+import yaml, sys
+with open('$DISC_FILE') as f:
+    data = yaml.safe_load(f)
+if not data or 'findings' not in data:
+    sys.exit(0)
+items = [f for f in data['findings'] if f.get('level') in ('WARN', 'FAIL')]
+if not items:
+    sys.exit(0)
+for f in items:
+    print(f\"- [{f['level']}] {f['check']}\")
+" 2>/dev/null)
+    if [ -n "$DISC_SUMMARY" ]; then
+        CONTEXT="${CONTEXT}
+
+## Discovery Findings (WARN/FAIL)
+${DISC_SUMMARY}
+"
+    fi
+fi
+
 CONTEXT="${CONTEXT}
 
 ---

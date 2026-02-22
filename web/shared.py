@@ -38,12 +38,13 @@ NAV_GROUPS = [
         ("Graph",       "fabric.fabric_graph",      None),
     ]),
     ("Govern", [
-        ("Directives",  "core.directives",                    None),
-        ("Enforcement", "enforcement.enforcement_dashboard",  None),
-        ("Risks",       "risks.risk_register",                None),
-        ("Gaps",        "discovery.gaps",                     None),
-        ("Quality",     "quality.quality_gate",               None),
-        ("Metrics",     "metrics.project_metrics",            None),
+        ("Directives",    "core.directives",                       None),
+        ("Enforcement",   "enforcement.enforcement_dashboard",     None),
+        ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
+        ("Risks",         "risks.risk_register",                   None),
+        ("Gaps",          "discovery.gaps",                        None),
+        ("Quality",       "quality.quality_gate",                  None),
+        ("Metrics",       "metrics.project_metrics",               None),
     ]),
 ]
 
