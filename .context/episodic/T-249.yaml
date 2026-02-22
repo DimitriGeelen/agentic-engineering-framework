@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-249: Refine D5 lifecycle anomaly detection to reduce false positive rate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T14:40:45Z
+# ============================================================================
+
+task_id: T-249
+task_name: "Refine D5 lifecycle anomaly detection to reduce false positive rate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-22T09:42:05Z
+completed: 2026-02-22T14:39:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T15:38:31+01:00
+last_commit: 2026-02-22T15:38:31+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Refine D5 lifecycle anomaly detection — 8 FPs to 1 with commit+type filters
+
+# Key outcomes
+outcomes:
+  - "D5 filters out test/specification/decommission workflow types (inherently fast)"
+  - "D5 filters out tasks with 2+ commits (proves substantive work)"
+  - "D5 still only flags human-owned tasks (agent fast-completion is normal)"
+  - "Audit D5 output drops from 8 to <=1 anomalies"
+  - "Remaining flag (T-203) is a genuine signal (0 commits, 0.5min throwaway)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Three-filter approach: workflow_type allowlist + commit count >=2 + human-only scope"
+    rationale: "Eliminates all 8 FPs while keeping genuine signals. Commit count is the strongest signal — tasks with real work have commits."
+    alternatives_rejected: ["Lowering threshold to <2min (still misses T-021 at 3.1min); using last_update as start time (unreliable, doesn't reflect actual work)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-249-refine-d5-lifecycle-anomaly-detection-to.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T15:38:31"
+    action: "T-249: Refine D5 lifecycle anomaly detection — 8 FPs to 1 with commit+type filters"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 297 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 297
+  commits: 1
+  files_changed: 2
+  lines_added: 62
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-249-refine-d5-lifecycle-anomaly-detection-to.md
+generated_by: context-agent-hybrid

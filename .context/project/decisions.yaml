@@ -280,3 +280,10 @@ decisions:
     date: 2026-02-22
     task: T-242
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-035
+    decision: "Three-filter approach: workflow_type allowlist + commit count >=2 + human-only scope"
+    scope: project
+    date: 2026-02-22
+    task: T-249
+    rationale: "Auto-captured from task file on completion"

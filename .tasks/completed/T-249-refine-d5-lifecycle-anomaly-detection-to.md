@@ -4,16 +4,16 @@ name: "Refine D5 lifecycle anomaly detection to reduce false positive rate"
 description: >
   D5 lifecycle anomaly detection flags legitimate human admin tasks at roughly half FP rate. Needs refinement: filter by workflow_type or add owner: agenthuman plus fast-completion as expected pattern. GO criterion was under 20 pct FP. Research: docs/reports/T-200-discovery-layer-design.md Phase 3. Related: T-200, T-239.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner:
 horizon: later
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-02-22T09:42:05Z
-last_update: 2026-02-22T14:33:32Z
-date_finished: null
+last_update: 2026-02-22T14:39:47Z
+date_finished: 2026-02-22T14:39:47Z
 ---
 
 # T-249: Refine D5 lifecycle anomaly detection to reduce false positive rate
@@ -33,8 +33,8 @@ D5 in `agents/audit/audit.sh` flagged 8 human-owned tasks as lifecycle anomalies
 
 ## Verification
 
-# D5 should flag at most 1 anomaly (T-203 only)
-fw audit 2>&1 | grep "D5:" | grep -qv "8 anomaly"
+# D5 should not flag 8 anomalies (old behavior was 8, now <=1)
+test "$(fw audit 2>&1 | grep 'D5:' | grep -oP '\d+ anomaly' | grep -oP '\d+')" -le 1
 # Filters present in code
 grep -q "FAST_TYPES" agents/audit/audit.sh
 grep -q "count_commits" agents/audit/audit.sh
@@ -55,3 +55,6 @@ grep -q "count_commits" agents/audit/audit.sh
 
 ### 2026-02-22T14:33:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T14:39:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
