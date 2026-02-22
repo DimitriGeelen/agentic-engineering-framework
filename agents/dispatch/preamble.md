@@ -43,6 +43,20 @@ EXAMPLE BAD RESPONSE:
   [200 more lines]
 ```
 
+## Fabric Awareness (T-247)
+
+When your task involves **modifying source files**, follow these rules:
+
+1. **Before editing a registered component**, check its dependents:
+   - Run: `fw fabric deps <file-path>` to see what depends on it
+   - If it has >5 dependents, mention this in your summary so the orchestrator can run blast-radius
+
+2. **When creating new files**, note them in your summary:
+   - The post-commit hook will detect unregistered files and suggest registration
+   - Include the file paths in your output so the orchestrator can track them
+
+3. **Do NOT run** `fw fabric register` or `fw fabric blast-radius` yourself — the orchestrator handles these via hooks. Just report what you modified/created.
+
 ## Why This Exists
 
 - T-073: 9 agents returned full YAML → 177K token spike → session crash

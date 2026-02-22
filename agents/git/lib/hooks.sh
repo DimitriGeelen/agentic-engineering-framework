@@ -172,7 +172,7 @@ HOOK_EOF
 # post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.4
+# VERSION=1.5
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -224,6 +224,36 @@ if [ -d "$FABRIC_DIR" ]; then
         if [ "$DEP_COUNT" -gt 5 ]; then
             echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radius HEAD"
         fi
+    fi
+fi
+
+# --- New file auto-registration advisory (T-247) ---
+if [ -d "$FABRIC_DIR" ]; then
+    NEW_FILES=$(git diff-tree --no-commit-id --name-only --diff-filter=A -r HEAD 2>/dev/null)
+    UNREG=""
+    UNREG_COUNT=0
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        case "$file" in
+            .context/*|.fabric/*|.tasks/*|.claude/*|.git/*|docs/*|*.md|*.yaml|*.yml|*.json) continue ;;
+        esac
+        FOUND=0
+        for card in "$FABRIC_DIR"/*.yaml; do
+            [ -f "$card" ] || continue
+            if grep -q "^location: $file" "$card" 2>/dev/null; then
+                FOUND=1
+                break
+            fi
+        done
+        if [ "$FOUND" -eq 0 ]; then
+            UNREG_COUNT=$((UNREG_COUNT + 1))
+            UNREG="${UNREG:+$UNREG, }$file"
+        fi
+    done <<< "$NEW_FILES"
+    if [ "$UNREG_COUNT" -gt 0 ]; then
+        echo ""
+        echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
+        echo "  Register: fw fabric register <path>"
     fi
 fi
 
