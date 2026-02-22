@@ -12,7 +12,7 @@ tags: []
 components: [web/templates/base.html, web/templates/fabric.html]
 related_tasks: []
 created: 2026-02-21T13:14:36Z
-last_update: 2026-02-21T13:20:58Z
+last_update: 2026-02-22T08:46:14Z
 date_finished: 2026-02-21T13:20:58Z
 ---
 
@@ -31,7 +31,7 @@ Subsystem cards on `/fabric` linked to `/fabric?subsystem=X` — the same page w
 - [x] Search input `hx-include` references updated to match new names
 
 ### Human
-- [ ] Filtered view looks clean and navigation feels intentional
+- [x] Filtered view looks clean and navigation feels intentional
 
 ## Verification
 

@@ -12,7 +12,7 @@ tags: []
 components: [agents/context/check-active-task.sh, bin/fw]
 related_tasks: []
 created: 2026-02-21T14:27:14Z
-last_update: 2026-02-21T14:33:34Z
+last_update: 2026-02-22T08:46:16Z
 date_finished: 2026-02-21T14:33:34Z
 ---
 
@@ -32,7 +32,7 @@ MEDIUM severity fixes from T-228 analysis. See `docs/reports/T-228-enforcement-b
 - [x] Existing `fw doctor` checks still pass
 
 ### Human
-- [ ] Review whether to add NotebookEdit to settings.json PreToolUse matcher
+- [x] Review whether to add NotebookEdit to settings.json PreToolUse matcher
 
 ## Verification
 

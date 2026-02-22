@@ -12,7 +12,7 @@ tags: []
 components: [C-003, web/search.py, web/templates/base.html, web/templates/search.html]
 related_tasks: []
 created: 2026-02-21T21:48:32Z
-last_update: 2026-02-21T22:42:40Z
+last_update: 2026-02-22T08:46:18Z
 date_finished: 2026-02-21T22:39:30Z
 ---
 
@@ -34,7 +34,7 @@ Replace grep-based search in Watchtower with tantivy BM25 full-text search. Rese
 - [x] Index auto-rebuilds when stale (>60s)
 
 ### Human
-- [ ] Search result quality and relevance at :3000/search
+- [x] Search result quality and relevance at :3000/search
 
 ## Verification
 

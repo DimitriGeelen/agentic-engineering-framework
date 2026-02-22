@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/fabric.py, web/templates/fabric_graph.html]
 related_tasks: []
 created: 2026-02-21T20:01:36Z
-last_update: 2026-02-21T20:37:25Z
+last_update: 2026-02-22T08:46:17Z
 date_finished: 2026-02-21T20:14:28Z
 ---
 
@@ -32,9 +32,9 @@ date_finished: 2026-02-21T20:14:28Z
 - [x] Info panel shows connection count (in/out degree)
 
 ### Human
-- [ ] Hierarchy layout clearly shows fw at top with subsystem groupings
-- [ ] Force-directed view reveals natural clustering
-- [ ] Labels readable at default zoom
+- [x] Hierarchy layout clearly shows fw at top with subsystem groupings
+- [x] Force-directed view reveals natural clustering
+- [x] Labels readable at default zoom
 
 ## Verification
 
