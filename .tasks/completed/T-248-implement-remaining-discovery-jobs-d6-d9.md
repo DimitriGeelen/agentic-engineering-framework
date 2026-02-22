@@ -4,16 +4,16 @@ name: "Implement remaining discovery jobs D6 D9 D10 D11 D12"
 description: >
   5 of 12 discoveries from T-200 not yet implemented. D10 decision-without-dialogue is highest value - the T-151 pattern detector. Research: docs/reports/T-200-discovery-layer-design.md. Related: T-200, T-239, T-240.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 created: 2026-02-22T09:41:52Z
-last_update: 2026-02-22T15:07:15Z
-date_finished: null
+last_update: 2026-02-22T15:10:37Z
+date_finished: 2026-02-22T15:10:37Z
 ---
 
 # T-248: Implement remaining discovery jobs D6 D9 D10 D11 D12
@@ -50,3 +50,6 @@ grep -q "D12:" agents/audit/audit.sh
 
 ### 2026-02-22T15:07:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-22T15:10:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

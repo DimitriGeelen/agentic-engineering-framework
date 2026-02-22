@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-248: Implement remaining discovery jobs D6 D9 D10 D11 D12
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-22T15:10:38Z
+# ============================================================================
+
+task_id: T-248
+task_name: "Implement remaining discovery jobs D6 D9 D10 D11 D12"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-22T09:41:52Z
+completed: 2026-02-22T15:10:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-22T16:10:32+01:00
+last_commit: 2026-02-22T16:10:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Implement D6 D9 D10 D11 D12 — complete 12/12 discovery catalog
+
+# Key outcomes
+outcomes:
+  - "D6 (completion velocity trends) implemented — 7-day rolling average comparison"
+  - "D9 (control effectiveness drift) implemented — detects always-fire controls"
+  - "D10 (decision-without-dialogue) implemented — flags human tasks without AC checks"
+  - "D11 (gap register staleness) implemented — flags gaps watching >30 days"
+  - "D12 (bypass log growth) implemented — tracks bypass rate over 7 days"
+  - "All 12 discoveries run without errors in fw audit"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-248-implement-remaining-discovery-jobs-d6-d9.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-22T16:10:32"
+    action: "T-248: Implement D6 D9 D10 D11 D12 — complete 12/12 discovery catalog"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 328 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 328
+  commits: 1
+  files_changed: 2
+  lines_added: 322
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-248-implement-remaining-discovery-jobs-d6-d9.md
+generated_by: context-agent-hybrid
