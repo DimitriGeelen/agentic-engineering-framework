@@ -6,6 +6,11 @@
 <form action="{{ url_for('discovery.search_view') }}" method="get" role="search" hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
     <fieldset role="group">
         <input type="search" name="q" value="{{ query | default('') }}" placeholder="Search framework content..." aria-label="Search" minlength="2" required>
+        <select name="mode" aria-label="Search mode" style="max-width: 10rem;">
+            <option value="keyword" {{ 'selected' if mode|default('keyword') == 'keyword' }}>Keyword (BM25)</option>
+            <option value="semantic" {{ 'selected' if mode|default('keyword') == 'semantic' }}>Semantic</option>
+            <option value="hybrid" {{ 'selected' if mode|default('keyword') == 'hybrid' }}>Hybrid</option>
+        </select>
         <button type="submit">Search</button>
     </fieldset>
 </form>
@@ -14,9 +19,11 @@
 <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
     {% set total = results.values() | map('length') | sum %}
     {% if results %}
-    Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong> across {{ results.keys() | list | length }} categor{{ 'ies' if results.keys() | list | length != 1 else 'y' }}.
+    Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong>
+    ({{ mode | default('keyword') }})
+    across {{ results.keys() | list | length }} categor{{ 'ies' if results.keys() | list | length != 1 else 'y' }}.
     {% if stats %}
-    <span style="margin-left: 0.5rem; opacity: 0.6;">({{ stats.num_docs }} docs indexed)</span>
+    <span style="margin-left: 0.5rem; opacity: 0.6;">({{ stats.num_docs }} docs indexed{% if vec_stats %}, {{ vec_stats.num_chunks }} chunks embedded{% endif %})</span>
     {% endif %}
     {% else %}
     No results found for <strong>{{ query }}</strong>.
@@ -50,6 +57,6 @@
 {% elif query %}
 <div class="coming-soon">
     <h3>No Results</h3>
-    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term or use stemmed forms.</p>
+    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term or switch to semantic mode.</p>
 </div>
 {% endif %}

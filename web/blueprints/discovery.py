@@ -131,23 +131,47 @@ def gaps():
 
 @bp.route("/search")
 def search_view():
-    from web.search import search, index_stats
+    from web.search import search as bm25_search, index_stats
 
     query = request.args.get("q", "").strip()
+    mode = request.args.get("mode", "keyword")
     results = {}
     stats = None
+    vec_stats = None
 
     if query and len(query) >= 2:
-        search_results = search(query)
-        results = search_results.get("categories", {})
+        if mode == "semantic":
+            from web.embeddings import search as vec_search, index_stats as vec_index_stats
+            search_results = vec_search(query)
+            # Convert flat results to categorized format for template
+            for item in search_results.get("results", []):
+                cat = item.get("category", "Other")
+                if cat not in results:
+                    results[cat] = []
+                results[cat].append(item)
+            vec_stats = vec_index_stats()
+        elif mode == "hybrid":
+            from web.embeddings import hybrid_search, index_stats as vec_index_stats
+            search_results = hybrid_search(query)
+            for item in search_results.get("results", []):
+                cat = item.get("category", "Other")
+                if cat not in results:
+                    results[cat] = []
+                results[cat].append(item)
+            vec_stats = vec_index_stats()
+        else:
+            search_results = bm25_search(query)
+            results = search_results.get("categories", {})
         stats = index_stats()
 
     return render_page(
         "search.html",
         page_title="Search",
         query=query,
+        mode=mode,
         results=results,
         stats=stats,
+        vec_stats=vec_stats,
     )
 
 

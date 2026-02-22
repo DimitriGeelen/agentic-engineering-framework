@@ -141,7 +141,9 @@ show_help() {
     echo -e "  ${GREEN}learnings${NC}          Show learnings with context"
     echo -e "  ${GREEN}patterns${NC}           Show failure/success patterns"
     echo -e "  ${GREEN}practices${NC}          Show graduated principles"
-    echo -e "  ${GREEN}search${NC} <keyword>   Search across all artifacts"
+    echo -e "  ${GREEN}search${NC} <keyword>   Search across all artifacts (keyword)"
+    echo -e "  ${GREEN}search --semantic${NC}  Semantic vector search (sqlite-vec)"
+    echo -e "  ${GREEN}search --hybrid${NC}   Hybrid BM25 + semantic (RRF fusion)"
     echo ""
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
@@ -1399,10 +1401,67 @@ print()
 PYPRACTICES
         ;;
     search)
-        SEARCH_TERM="${1:-}"
+        # Check for --semantic or --hybrid flags
+        SEARCH_MODE="keyword"
+        SEARCH_ARGS=()
+        for arg in "$@"; do
+            case "$arg" in
+                --semantic) SEARCH_MODE="semantic" ;;
+                --hybrid)   SEARCH_MODE="hybrid" ;;
+                *)          SEARCH_ARGS+=("$arg") ;;
+            esac
+        done
+        SEARCH_TERM="${SEARCH_ARGS[*]:-}"
         if [ -z "$SEARCH_TERM" ]; then
-            echo -e "${RED}Usage: fw search <keyword>${NC}"
+            echo -e "${RED}Usage: fw search [--semantic|--hybrid] <query>${NC}"
             exit 1
+        fi
+        if [ "$SEARCH_MODE" != "keyword" ]; then
+            python3 - "$SEARCH_MODE" "$SEARCH_TERM" << 'PYVECSEARCH'
+import sys, os
+os.chdir(os.environ.get('FRAMEWORK_ROOT', '.'))
+mode = sys.argv[1]
+query = sys.argv[2]
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+NC = '\033[0m'
+
+if mode == 'semantic':
+    from web.embeddings import search
+    results = search(query)
+elif mode == 'hybrid':
+    from web.embeddings import hybrid_search
+    results = hybrid_search(query)
+
+print(f'{BOLD}Search ({mode}):{NC} "{query}"')
+print()
+
+if not results['results']:
+    print(f'{YELLOW}No results found{NC}')
+    sys.exit(0)
+
+for item in results['results']:
+    score = item['score']
+    cat = item.get('category', '')
+    tid = item.get('task_id', '')
+    title = item['title'][:60]
+    path = item['path']
+    prefix = f'{GREEN}{tid}{NC} ' if tid else ''
+    print(f'  {score:6.3f}  {prefix}{title}')
+    print(f'         {CYAN}{path}{NC}')
+    if item.get('snippet'):
+        # Strip HTML tags for terminal
+        import re
+        snippet = re.sub(r'</?b>', '', item['snippet'])[:120]
+        print(f'         {snippet}')
+    print()
+
+print(f'{len(results["results"])} result(s) found')
+PYVECSEARCH
+            exit $?
         fi
         python3 - "$SEARCH_TERM" << 'PYSEARCH'
 import os, subprocess, sys, re
