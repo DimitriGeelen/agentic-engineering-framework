@@ -15,7 +15,7 @@ tags: [discovery, surfacing, watchtower]
 components: [C-004, agents/context/post-compact-resume.sh, agents/resume/resume.sh, web/app.py, web/shared.py]
 related_tasks: [T-200, T-194, T-238, T-239, T-240]
 created: 2026-02-21T23:39:01Z
-last_update: 2026-02-22T08:50:35Z
+last_update: 2026-02-22T09:15:24Z
 date_finished: 2026-02-22T08:50:35Z
 ---
 
@@ -56,8 +56,8 @@ Discoveries are useless if they don't reach the human. This task wires findings 
 - [x] Existing tests pass
 
 ### Human
-- [ ] Discovery page layout and readability at :3000
-- [ ] Session-start summary is concise and actionable
+- [x] Discovery page layout and readability at :3000
+- [x] Session-start summary is concise and actionable
 
 ## Verification
 

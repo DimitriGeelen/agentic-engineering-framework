@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/fabric.py, web/templates/base.html, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-02-20T09:16:03Z
-last_update: 2026-02-22T08:50:53Z
+last_update: 2026-02-22T09:15:23Z
 date_finished: 2026-02-22T08:50:53Z
 ---
 
@@ -34,8 +34,8 @@ The `/fabric/component/<name>` detail page shows component metadata but not the 
 - [x] Missing file shows muted "file not found" message instead of error
 
 ### Human
-- [ ] Source code is readable with good contrast (dark theme)
-- [ ] Collapsible section works smoothly
+- [x] Source code is readable with good contrast (dark theme)
+- [x] Collapsible section works smoothly
 
 ## Verification
 
