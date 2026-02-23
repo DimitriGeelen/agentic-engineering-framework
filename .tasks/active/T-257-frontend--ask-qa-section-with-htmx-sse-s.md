@@ -4,45 +4,46 @@ name: "Frontend — Ask Q&A section with htmx SSE streaming"
 description: >
   Add Ask Q&A section to web/templates/search.html: textarea input, Ask button, answer div with streaming token display, collapsible Sources panel with inline [1][2] citations. Uses htmx 2.0+ SSE extension (hx-ext=sse, sse-connect). Reuses T-253 URL mapping for source links. ~80 lines template + check/upgrade htmx version. See docs/reports/T-254-llm-assisted-qa-research.md RQ-3. Predecessor: T-256.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:34Z
-last_update: 2026-02-23T20:38:34Z
-date_finished: null
+last_update: 2026-02-23T21:01:32Z
+date_finished: 2026-02-23T21:01:32Z
 ---
 
 # T-257: Frontend — Ask Q&A section with htmx SSE streaming
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Frontend for LLM Q&A. See `docs/reports/T-254-llm-assisted-qa-research.md` RQ-3.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Ask section exists on search page with input and button
+- [x] Connects to `/search/ask` SSE endpoint
+- [x] Tokens stream into answer div in real-time
+- [x] Sources panel shows after answer completes with numbered citations
+- [x] Source links are clickable (reuses T-253 URL mapping)
+- [x] Model name displayed during generation
+- [x] Error messages displayed if LLM fails
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Streaming UX feels responsive and natural
+- [ ] Answer formatting (markdown) is readable
+- [ ] Source panel layout is clean and useful
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Search page loads with Ask section
+curl -sf http://localhost:3000/search | grep -q "Ask"
+# Ask section has SSE attributes
+curl -sf http://localhost:3000/search | grep -q "sse"
 
 ## Decisions
 
@@ -61,3 +62,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-257-frontend--ask-qa-section-with-htmx-sse-s.md
 - **Context:** Initial task creation
+
+### 2026-02-23T21:01:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-23T21:01:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

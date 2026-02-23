@@ -15,6 +15,32 @@
     </fieldset>
 </form>
 
+<!-- Ask Q&A Section (T-257) -->
+<details id="ask-section" style="margin-bottom: 1.5rem;">
+    <summary><strong>Ask a Question</strong> — get an AI-assisted answer from project knowledge</summary>
+    <article style="margin-top: 0.5rem; padding: 1rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: end;">
+            <input type="text" id="ask-input" placeholder="Ask about the framework, tasks, patterns..." style="margin-bottom: 0; flex: 1;" aria-label="Question">
+            <button id="ask-btn" onclick="askQuestion()" style="margin-bottom: 0; white-space: nowrap;">Ask</button>
+        </div>
+        <small id="ask-model" style="color: var(--pico-muted-color); display: none; margin-top: 0.25rem;"></small>
+
+        <div id="ask-answer" style="display: none; margin-top: 1rem;">
+            <div id="ask-status" style="color: var(--pico-muted-color); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                <span aria-busy="true">Thinking...</span>
+            </div>
+            <div id="ask-text" style="line-height: 1.7; overflow-wrap: break-word;"></div>
+        </div>
+
+        <details id="ask-sources" style="display: none; margin-top: 1rem;">
+            <summary><strong>Sources</strong> (<span id="ask-source-count">0</span>)</summary>
+            <div id="ask-source-list" style="font-size: 0.85rem;"></div>
+        </details>
+
+        <div id="ask-error" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #c6282822; border-radius: var(--pico-border-radius); color: #c62828; font-size: 0.85rem;"></div>
+    </article>
+</details>
+
 {% if query %}
 <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
     {% set total = results.values() | map('length') | sum %}
@@ -84,3 +110,167 @@
     <p>No matches found for <strong>{{ query }}</strong>. Try a different search term or switch to semantic mode.</p>
 </div>
 {% endif %}
+
+<script>
+/* Ask Q&A (T-257) — SSE streaming with token-by-token display */
+var _askEvtSource = null;
+
+function askQuestion() {
+    var input = document.getElementById('ask-input');
+    var query = input.value.trim();
+    if (!query || query.length < 2) return;
+
+    var btn = document.getElementById('ask-btn');
+    var answerDiv = document.getElementById('ask-answer');
+    var textDiv = document.getElementById('ask-text');
+    var statusDiv = document.getElementById('ask-status');
+    var modelDiv = document.getElementById('ask-model');
+    var sourcesEl = document.getElementById('ask-sources');
+    var sourceList = document.getElementById('ask-source-list');
+    var sourceCount = document.getElementById('ask-source-count');
+    var errorDiv = document.getElementById('ask-error');
+
+    /* Reset UI */
+    btn.disabled = true;
+    btn.textContent = 'Thinking...';
+    btn.setAttribute('aria-busy', 'true');
+    textDiv.innerHTML = '';
+    answerDiv.style.display = 'block';
+    statusDiv.style.display = 'block';
+    statusDiv.innerHTML = '<span aria-busy="true">Retrieving context & generating answer...</span>';
+    modelDiv.style.display = 'none';
+    sourcesEl.style.display = 'none';
+    sourceList.innerHTML = '';
+    errorDiv.style.display = 'none';
+
+    /* Close previous connection if any */
+    if (_askEvtSource) { _askEvtSource.close(); _askEvtSource = null; }
+
+    var url = '/search/ask?q=' + encodeURIComponent(query);
+    var evtSource = new EventSource(url);
+    _askEvtSource = evtSource;
+    var fullText = '';
+    var gotFirstToken = false;
+
+    evtSource.onmessage = function(event) {
+        var data;
+        try { data = JSON.parse(event.data); } catch(e) { return; }
+
+        if (data.type === 'model') {
+            modelDiv.textContent = 'Model: ' + data.model;
+            modelDiv.style.display = 'block';
+        }
+        else if (data.type === 'token') {
+            if (!gotFirstToken) {
+                gotFirstToken = true;
+                statusDiv.style.display = 'none';
+            }
+            fullText += data.content;
+            /* Render markdown-like formatting */
+            textDiv.innerHTML = renderAnswer(fullText);
+        }
+        else if (data.type === 'sources') {
+            var sources = data.sources || [];
+            sourceCount.textContent = sources.length;
+            sourceList.innerHTML = '';
+            sources.forEach(function(src) {
+                var link = pathToLink(src.path);
+                var el = document.createElement('div');
+                el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
+                el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
+                    (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
+                    escHtml(src.title) +
+                    (link ? '</a>' : '') +
+                    ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
+                    '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
+                sourceList.appendChild(el);
+            });
+            sourcesEl.style.display = 'block';
+            sourcesEl.setAttribute('open', '');
+            /* Re-process htmx on new links */
+            htmx.process(sourceList);
+        }
+        else if (data.type === 'done') {
+            evtSource.close();
+            _askEvtSource = null;
+            btn.disabled = false;
+            btn.textContent = 'Ask';
+            btn.removeAttribute('aria-busy');
+        }
+        else if (data.type === 'error') {
+            evtSource.close();
+            _askEvtSource = null;
+            errorDiv.textContent = data.message;
+            errorDiv.style.display = 'block';
+            statusDiv.style.display = 'none';
+            btn.disabled = false;
+            btn.textContent = 'Ask';
+            btn.removeAttribute('aria-busy');
+        }
+    };
+
+    evtSource.onerror = function() {
+        evtSource.close();
+        _askEvtSource = null;
+        if (!gotFirstToken) {
+            errorDiv.textContent = 'Connection to LLM failed. Is ollama running?';
+            errorDiv.style.display = 'block';
+            statusDiv.style.display = 'none';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Ask';
+        btn.removeAttribute('aria-busy');
+    };
+}
+
+/* Allow Enter key to submit */
+document.addEventListener('DOMContentLoaded', function() {
+    var el = document.getElementById('ask-input');
+    if (el) el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); askQuestion(); }
+    });
+});
+
+/* Simple markdown-ish rendering for answer text */
+function renderAnswer(text) {
+    var html = escHtml(text);
+    /* Bold */
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    /* Inline code */
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    /* Citation references — make them stand out */
+    html = html.replace(/\[(\d+)\]/g, '<sup style="color:var(--pico-primary);font-weight:600">[$1]</sup>');
+    /* Line breaks */
+    html = html.replace(/\n\n/g, '</p><p>');
+    html = html.replace(/\n/g, '<br>');
+    return '<p>' + html + '</p>';
+}
+
+/* Path to Watchtower URL (mirrors Jinja2 logic from T-253) */
+function pathToLink(path) {
+    if (!path) return '';
+    if (path.indexOf('.tasks/') === 0 && path.indexOf('/T-') !== -1) {
+        var m = path.match(/\/T-(\d+)/);
+        return m ? '/tasks/T-' + m[1] : '';
+    }
+    if (path.indexOf('.fabric/components/') === 0) {
+        return '/fabric/component/' + path.split('/').pop().replace('.yaml', '');
+    }
+    if (path.indexOf('.context/episodic/') === 0 && path.endsWith('.yaml')) {
+        return '/tasks/' + path.split('/').pop().replace('.yaml', '');
+    }
+    if (path === '.context/project/learnings.yaml') return '/learnings';
+    if (path === '.context/project/patterns.yaml') return '/patterns';
+    if (path === '.context/project/decisions.yaml') return '/decisions';
+    if (path.endsWith('.md') && path.charAt(0) !== '.') {
+        return '/project/' + path.replace('.md', '').replace(/\//g, '--');
+    }
+    return '';
+}
+
+function escHtml(s) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+}
+</script>

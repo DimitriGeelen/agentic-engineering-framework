@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-257: Frontend — Ask Q&A section with htmx SSE streaming
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-23T21:01:33Z
+# ============================================================================
+
+task_id: T-257
+task_name: "Frontend — Ask Q&A section with htmx SSE streaming"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-23T20:38:34Z
+completed: 2026-02-23T21:01:32Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Ask section exists on search page with input and button"
+  - "Connects to `/search/ask` SSE endpoint"
+  - "Tokens stream into answer div in real-time"
+  - "Sources panel shows after answer completes with numbered citations"
+  - "Source links are clickable (reuses T-253 URL mapping)"
+  - "Model name displayed during generation"
+  - "Error messages displayed if LLM fails"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-257-frontend--ask-qa-section-with-htmx-sse-s.md
+generated_by: context-agent-hybrid
