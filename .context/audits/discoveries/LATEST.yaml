@@ -1,4 +1,4 @@
-timestamp: 2026-02-22T19:16:30Z
+timestamp: 2026-02-23T07:00:01Z
 findings:
   - id: D1
     level: PASS
@@ -19,26 +19,27 @@ findings:
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
-    level: PASS
-    check: "D5: Task lifecycle — no anomalies"
+    level: WARN
+    check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
+    mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=61 avg=47 ratio=1.3x)"
+    check: "D3: Commit velocity — insufficient data"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 80_commits_24h)"
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.0 earlier=6.9)"
+    check: "D6: Completion velocity — normal (PASS recent=9.0 earlier=26.6)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
   - id: D9
     level: PASS
-    check: "D9: Control drift — normal (PASS insufficient_audits)"
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 12
-  warn: 0
+  pass: 11
+  warn: 1
   fail: 0
   total: 12

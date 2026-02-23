@@ -287,3 +287,10 @@ decisions:
     date: 2026-02-22
     task: T-249
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-036
+    decision: "GO — proceed to build"
+    scope: project
+    date: 2026-02-23
+    task: T-254
+    rationale: "Auto-captured from task file on completion"

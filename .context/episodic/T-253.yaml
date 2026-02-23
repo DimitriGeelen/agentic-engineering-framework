@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-253: Make search results browsable with clickable links
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-23T19:26:16Z
+# ============================================================================
+
+task_id: T-253
+task_name: "Make search results browsable with clickable links"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-23T19:24:00Z
+completed: 2026-02-23T19:26:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-23T20:25:25+01:00
+last_commit: 2026-02-23T20:25:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Make search results browsable with clickable links
+
+# Key outcomes
+outcomes:
+  - "Task results link to /tasks/T-XXX"
+  - "Spec/doc results link to /project/<doc>"
+  - "Fabric component results link to /fabric/component/<name>"
+  - "Episodic results link to /tasks/T-XXX"
+  - "Links use htmx for SPA navigation"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-23T20:25:25"
+    action: "T-253: Make search results browsable with clickable links"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 1
+  lines_added: 24
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-253-make-search-results-browsable-with-click.md
+generated_by: context-agent-hybrid

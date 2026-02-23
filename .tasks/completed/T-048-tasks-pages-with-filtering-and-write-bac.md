@@ -38,7 +38,7 @@ date_finished: 2026-02-14T12:27:34Z
 ## Specification Record
 
 ### Acceptance Criteria
-- [ ] /tasks shows all tasks with name, status, component tags, date
+- [x] /tasks shows all tasks with name, status, component tags, date
 - [ ] Filter controls for component, directive, workflow_type, status
 - [ ] Sort toggle for date vs. name
 - [ ] /tasks/:id shows full episodic summary + task content

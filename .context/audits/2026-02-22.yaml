@@ -1,5 +1,5 @@
-# Audit Results - 2026-02-22-2016
-timestamp: 2026-02-22T19:16:30Z
+# Audit Results - 2026-02-22-2019
+timestamp: 2026-02-22T19:19:13Z
 summary:
   pass: 83
   warn: 3
@@ -18,7 +18,7 @@ findings:
   - level: PASS
     check: "All 11 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 107 registered, 8 unregistered (coverage growing)"
+    check: "Fabric: 107 registered, 13 unregistered (coverage growing)"
   - level: PASS
     check: "Fabric edges: 97/107 cards enriched (10 without edges)"
   - level: PASS
@@ -26,7 +26,7 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 98% (770/779 commits reference tasks)"
+    check: "Git traceability: 98% (771/780 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -71,10 +71,10 @@ findings:
   - level: PASS
     check: "CTL-001: Focus file has active task (T-245)"
   - level: WARN
-    check: "CTL-003: Budget status file stale (6min old)"
+    check: "CTL-003: Budget status file stale (9min old)"
     mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
   - level: PASS
-    check: "CTL-004: Tool counter at 1 (last commit: 6 minutes ago)"
+    check: "CTL-004: Tool counter at 1 (last commit: 20 seconds ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -145,9 +145,8 @@ findings:
     check: "CTL-013: T-252 verification re-run: 2/2 pass"
   - level: PASS
     check: "CTL-013: T-251 verification re-run: 2/2 pass"
-  - level: WARN
-    check: "CTL-013: T-246 verification re-run: 3 command(s) failing"
-    mitigation: "Review T-246 — environment may have changed"
+  - level: PASS
+    check: "CTL-013: T-246 verification re-run: 3/3 pass"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -166,17 +165,18 @@ findings:
     check: "D11: Gap register staleness — all gaps fresh"
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
+  - level: WARN
+    check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
+    mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D5: Task lifecycle — no anomalies"
+    check: "D3: Commit velocity — normal (PASS today=63 avg=82 ratio=0.8x)"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=61 avg=47 ratio=1.3x)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 96_commits_24h)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 80_commits_24h)"
-  - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.0 earlier=6.9)"
+    check: "D6: Completion velocity — normal (PASS recent=15.3 earlier=28.3)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
-    check: "D9: Control drift — normal (PASS insufficient_audits)"
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
   - level: PASS
     check: "CTL-016: No failure patterns recorded"

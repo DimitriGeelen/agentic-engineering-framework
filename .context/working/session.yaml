@@ -11,7 +11,7 @@ uncommitted_changes: 0
 
 # What we're working on
 active_tasks: [T-245]
-tasks_touched: [T-252]
+tasks_touched: [T-252, T-253, T-254]
 tasks_completed: []
 
 # Session notes (ephemeral)
