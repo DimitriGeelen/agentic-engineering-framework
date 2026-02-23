@@ -14,34 +14,34 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+All 5 build tasks from T-254 inception (LLM Q&A) are implemented and committed. The "Ask a Question" feature is live on /search — retrieves 10 chunks via hybrid RRF, streams answers from qwen2.5-coder-32b via SSE with inline citations. T-256 and T-257 have human ACs pending (answer quality, streaming UX). Everything pushed to remote.
 
 ## Work in Progress
 
 <!-- horizon: now -->
 
 ### T-256: "Ask endpoint — /search/ask with ollama SSE streaming"
-- **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed, owner: human (horizon: now)
+- **Last action:** Built `/search/ask` SSE endpoint in `web/ask.py` + discovery blueprint. Streams tokens from ollama with model fallback.
+- **Next step:** Human verifies answer quality and streaming responsiveness
+- **Blockers:** None
+- **Insight:** qwen2.5-coder-32b takes ~5s TTFT + 4.8 tok/s. Model cold start adds ~20s first time.
 
 ### T-257: "Frontend — Ask Q&A section with htmx SSE streaming"
-- **Status:** work-completed (horizon: now)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed, owner: human (horizon: now)
+- **Last action:** Built collapsible Ask section with EventSource streaming, inline [N] citations, Sources panel with clickable links
+- **Next step:** Human verifies UX quality — streaming feel, markdown rendering, source panel layout
+- **Blockers:** None
+- **Insight:** Used vanilla JS EventSource instead of htmx SSE extension for finer control over token-by-token rendering
 
 <!-- horizon: later -->
 
 ### T-245: "sqlite-vec embedding layer — semantic search for project knowledge"
-- **Status:** work-completed (horizon: later)
-- **Last action:** [TODO: What was just done on this task]
-- **Next step:** [TODO: What should happen next]
-- **Blockers:** [TODO: Any blockers, or "None"]
-- **Insight:** [TODO: Key understanding gained, if any]
+- **Status:** work-completed, owner: human (horizon: later)
+- **Last action:** Thread-safety fix applied (previous session)
+- **Next step:** Human verifies semantic search finds content keyword search misses
+- **Blockers:** None
+- **Insight:** sqlite-vec needs `check_same_thread=False` for Flask threading
 
 ## Gaps Register
 
@@ -54,40 +54,36 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **Vanilla JS EventSource over htmx SSE extension for Ask UI**
+   - Why: Need fine-grained control — token-by-token append, source panel rendering, error handling. htmx SSE extension replaces content rather than appending.
+   - Alternatives rejected: htmx `hx-ext="sse"` — too coarse for streaming token display
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Single `web/ask.py` module for both T-256 and T-258**
+   - Why: Model management and streaming are tightly coupled — splitting would create unnecessary indirection
+   - Alternatives rejected: Separate model_manager.py — over-engineering for ~30 lines of model logic
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+1. **curl to test SSE endpoint** — curl buffers by default, needed `-N` (no-buffer) flag and 90s timeout due to model cold start + generation time
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+1. Human ACs on T-256/T-257 — answer quality and streaming UX need human evaluation
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- qwen2.5-coder-32b cold start takes ~20s first query. Subsequent queries are faster (~5s TTFT).
+- Flask template caching — restart server after template edits (`bin/watchtower.sh restart`)
+- T-256 and T-257 are in `active/` with `owner: human` — human must check ACs and finalize
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+Test the Ask Q&A feature at http://localhost:3000/search — open the "Ask a Question" section, ask a framework question, verify answer quality and citation accuracy. Then check human ACs on T-256 and T-257.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `web/ask.py`, `web/static/htmx-ext-sse.js`
+- Modified: `web/embeddings.py` (rag_retrieve), `web/blueprints/discovery.py` (/search/ask endpoint), `web/templates/search.html` (Ask section), `web/templates/base.html` (SSE extension script tag)
 
 ## Recent Commits
 
