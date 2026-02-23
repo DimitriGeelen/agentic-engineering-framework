@@ -494,8 +494,8 @@ $RECENT_COMMITS
 - What was unnecessary?
 EOF
 
-# Step 3: Update LATEST.md
-cp "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
+# Step 3: Update LATEST.md (symlink so edits to session file auto-reflect)
+ln -sf "$(basename "$HANDOVER_FILE")" "$HANDOVER_DIR/LATEST.md"
 
 echo ""
 echo -e "${GREEN}=== Handover Created ===${NC}"
