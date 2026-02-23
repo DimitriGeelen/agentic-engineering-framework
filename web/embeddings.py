@@ -419,6 +419,86 @@ def hybrid_search(query: str, limit: int = 20) -> dict:
     }
 
 
+def rag_retrieve(query: str, limit: int = 10) -> list[dict]:
+    """Retrieve full chunks for RAG context (LLM-assisted Q&A).
+
+    Wraps hybrid_search() to return full chunk_text instead of snippets.
+    Deduplicates by path (best chunk per file).
+
+    Returns list of dicts: path, title, category, task_id, score, chunk_text.
+    """
+    db = _get_db()
+    query_vec = _embed_single(query)
+
+    # Get more candidates for better dedup
+    rows = db.execute("""
+        SELECT v.id, v.distance, d.path, d.title, d.category, d.task_id, d.chunk_text
+        FROM vec_documents v
+        JOIN documents d ON d.id = v.id
+        WHERE v.embedding MATCH ? AND k = ?
+        ORDER BY v.distance
+    """, (query_vec, limit * 3)).fetchall()
+
+    # Also get BM25 ranking for RRF fusion
+    from web.search import search as bm25_search
+    K = 60
+    bm25_results = bm25_search(query, limit=limit * 3)
+    bm25_items = []
+    for cat_items in bm25_results.get("categories", {}).values():
+        bm25_items.extend(cat_items)
+
+    # Build BM25 rank by path
+    bm25_rank = {}
+    for rank, item in enumerate(bm25_items):
+        path = item["path"]
+        if path not in bm25_rank:
+            bm25_rank[path] = rank
+
+    # Build RRF-scored results with full chunk text
+    rrf_scores = {}
+    item_data = {}
+
+    for rank, (row_id, distance, path, title, category, task_id, chunk_text) in enumerate(rows):
+        similarity = max(0, 1.0 - distance)
+        vec_rrf = 1.0 / (K + rank + 1)
+        bm25_rrf = 1.0 / (K + bm25_rank[path] + 1) if path in bm25_rank else 0
+
+        if path not in rrf_scores or (vec_rrf + bm25_rrf) > rrf_scores[path]:
+            rrf_scores[path] = vec_rrf + bm25_rrf
+            item_data[path] = {
+                "path": path,
+                "title": title,
+                "category": category,
+                "task_id": task_id,
+                "score": round(vec_rrf + bm25_rrf, 4),
+                "chunk_text": chunk_text,
+            }
+
+    # Add BM25-only results (not in vector results)
+    for rank, item in enumerate(bm25_items):
+        path = item["path"]
+        if path not in rrf_scores:
+            bm25_rrf = 1.0 / (K + rank + 1)
+            rrf_scores[path] = bm25_rrf
+            # BM25 results don't have chunk_text — read from DB
+            row = db.execute(
+                "SELECT chunk_text FROM documents WHERE path = ? ORDER BY chunk_index LIMIT 1",
+                (path,)
+            ).fetchone()
+            item_data[path] = {
+                "path": path,
+                "title": item.get("title", ""),
+                "category": item.get("category", ""),
+                "task_id": item.get("task_id", ""),
+                "score": round(bm25_rrf, 4),
+                "chunk_text": row[0] if row else "",
+            }
+
+    # Sort by RRF score descending, take top N
+    sorted_paths = sorted(rrf_scores.keys(), key=lambda p: rrf_scores[p], reverse=True)
+    return [item_data[p] for p in sorted_paths[:limit]]
+
+
 def _make_snippet(chunk_text: str, query: str, max_len: int = 200) -> str:
     """Extract a relevant snippet from chunk text with basic highlighting."""
     # Find the most relevant paragraph

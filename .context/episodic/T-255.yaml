@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-255: RAG retrieval wrapper — rag_retrieve() in embeddings.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-23T20:50:57Z
+# ============================================================================
+
+task_id: T-255
+task_name: "RAG retrieval wrapper — rag_retrieve() in embeddings.py"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-23T20:38:08Z
+completed: 2026-02-23T20:50:40Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`rag_retrieve(query, limit=10)` function exists in `web/embeddings.py`"
+  - "Returns list of dicts with: path, title, category, task_id, score, chunk_text"
+  - "Uses hybrid_search internally for RRF fusion quality"
+  - "Returns full chunk_text (not truncated snippets)"
+  - "Deduplicates by path (best chunk per file)"
+  - "Python import works: `from web.embeddings import rag_retrieve`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-255-rag-retrieval-wrapper--ragretrieve-in-em.md
+generated_by: context-agent-hybrid

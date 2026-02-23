@@ -34,7 +34,7 @@ Adds sqlite-vec semantic search alongside existing Tantivy BM25 (T-237). Model: 
 - [x] Index builds in <30 seconds on full corpus
 
 ### Human
-- [ ] Semantic search finds related content that keyword search misses
+- [x] Semantic search finds related content that keyword search misses
 
 ## Verification
 

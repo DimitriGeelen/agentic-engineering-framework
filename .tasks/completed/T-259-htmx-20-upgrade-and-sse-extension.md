@@ -4,7 +4,7 @@ name: "htmx 2.0+ upgrade and SSE extension"
 description: >
   Verify current htmx version in web/static/htmx.min.js. If <2.0, upgrade to 2.0+. Add htmx SSE extension (sse.js) to static/. Load in base.html. Test existing htmx interactions still work after upgrade. See docs/reports/T-254-llm-assisted-qa-research.md RQ-3 (htmx version check needed). Predecessor: none (can run in parallel).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,37 +12,32 @@ tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:59Z
-last_update: 2026-02-23T20:38:59Z
-date_finished: null
+last_update: 2026-02-23T20:51:04Z
+date_finished: 2026-02-23T20:51:04Z
 ---
 
 # T-259: htmx 2.0+ upgrade and SSE extension
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+htmx SSE extension needed for T-256/T-257 streaming Q&A. See `docs/reports/T-254-llm-assisted-qa-research.md` RQ-3. htmx already v2.0.4 — only SSE extension needed.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] htmx is 2.0+ (already v2.0.4 — verified)
+- [x] SSE extension (`htmx-ext-sse.js`) present in `web/static/`
+- [x] SSE extension loaded in `base.html` after htmx
+- [x] Existing htmx interactions still work (search page loads, navigation works)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# SSE extension file exists
+test -f web/static/htmx-ext-sse.js
+# SSE extension loaded in base.html
+grep -q "htmx-ext-sse" web/templates/base.html
+# Search page still works
+curl -sf http://localhost:3000/search | grep -q "Search"
 
 ## Decisions
 
@@ -61,3 +56,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-259-htmx-20-upgrade-and-sse-extension.md
 - **Context:** Initial task creation
+
+### 2026-02-23T20:51:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-02-23T20:51:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
