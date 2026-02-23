@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-258: Model management — pre-load and fallback logic
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-23T20:56:35Z
+# ============================================================================
+
+task_id: T-258
+task_name: "Model management — pre-load and fallback logic"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-23T20:38:50Z
+completed: 2026-02-23T20:56:33Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Primary model: `krith/qwen2.5-coder-32b-instruct:IQ2_M`"
+  - "Fallback model: `dolphin-llama3:8b`"
+  - "`get_model()` function detects available models and selects best"
+  - "Graceful error if no ollama models available"
+  - "Model config importable: `from web.ask import get_model`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-258-model-management--pre-load-and-fallback-.md
+generated_by: context-agent-hybrid

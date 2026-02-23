@@ -5,7 +5,7 @@ import re as re_mod
 import subprocess
 
 import yaml
-from flask import Blueprint, request
+from flask import Blueprint, Response, request
 
 from web.shared import PROJECT_ROOT, render_page
 
@@ -172,6 +172,30 @@ def search_view():
         results=results,
         stats=stats,
         vec_stats=vec_stats,
+    )
+
+
+@bp.route("/search/ask")
+def search_ask():
+    """SSE streaming endpoint for LLM-assisted Q&A (T-256)."""
+    from web.ask import stream_answer
+    from web.embeddings import rag_retrieve
+
+    query = request.args.get("q", "").strip()
+    if not query or len(query) < 2:
+        def error_stream():
+            yield 'data: {"type": "error", "message": "Query too short"}\n\n'
+        return Response(error_stream(), mimetype="text/event-stream")
+
+    chunks = rag_retrieve(query, limit=10)
+
+    return Response(
+        stream_answer(query, chunks),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
     )
 
 
