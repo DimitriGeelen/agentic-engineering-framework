@@ -36,13 +36,37 @@
 <details open>
     <summary><strong>{{ category }}</strong> ({{ items|length }})</summary>
     {% for item in items %}
+    {% set path = item.path | default('') %}
+    {% set link = '' %}
+    {% if path.startswith('.tasks/') and '/T-' in path %}
+    {% set link = '/tasks/' + path.split('/T-')[1].split('-')[0] | string %}
+    {% set link = '/tasks/T-' + path.split('/T-')[1].split('-')[0] %}
+    {% elif path.startswith('.fabric/components/') %}
+    {% set link = '/fabric/component/' + path.split('/')[-1].replace('.yaml', '') %}
+    {% elif path.startswith('.context/episodic/') and path.endswith('.yaml') %}
+    {% set link = '/tasks/' + path.split('/')[-1].replace('.yaml', '') %}
+    {% elif path == '.context/project/learnings.yaml' or path == 'learnings.yaml' %}
+    {% set link = '/learnings' %}
+    {% elif path == '.context/project/patterns.yaml' or path == 'patterns.yaml' %}
+    {% set link = '/patterns' %}
+    {% elif path == '.context/project/decisions.yaml' or path == 'decisions.yaml' %}
+    {% set link = '/decisions' %}
+    {% elif path.endswith('.md') and not path.startswith('.') %}
+    {% set link = '/project/' + path.replace('.md', '').replace('/', '--') %}
+    {% endif %}
     <article style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: baseline;">
             <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
+                {% if link %}
+                <a href="{{ link }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none;">
+                {% endif %}
                 {% if item.task_id %}
                 <span style="color: var(--pico-primary); margin-right: 0.25rem;">{{ item.task_id }}</span>
                 {% endif %}
                 {{ item.title }}
+                {% if link %}
+                </a>
+                {% endif %}
             </p>
             <small style="color: var(--pico-muted-color); white-space: nowrap; margin-left: 1rem;">{{ item.score }}</small>
         </div>
