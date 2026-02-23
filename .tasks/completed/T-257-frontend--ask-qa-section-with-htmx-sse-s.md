@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:34Z
-last_update: 2026-02-23T21:01:32Z
+last_update: 2026-02-23T21:26:45Z
 date_finished: 2026-02-23T21:01:32Z
 ---
 
@@ -34,9 +34,9 @@ Frontend for LLM Q&A. See `docs/reports/T-254-llm-assisted-qa-research.md` RQ-3.
 - [x] Error messages displayed if LLM fails
 
 ### Human
-- [ ] Streaming UX feels responsive and natural
-- [ ] Answer formatting (markdown) is readable
-- [ ] Source panel layout is clean and useful
+- [x] Streaming UX feels responsive and natural
+- [x] Answer formatting (markdown) is readable
+- [x] Source panel layout is clean and useful
 
 ## Verification
 
