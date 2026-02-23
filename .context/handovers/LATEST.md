@@ -14,9 +14,11 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+LLM Q&A feature fully shipped. All 5 build tasks from T-254 inception (T-255..T-259) completed and human-verified. Zero active tasks. The "Ask a Question" section on /search streams answers from qwen2.5-coder-32b via ollama with inline citations and clickable source links. Watchtower running on :3000.
 
 ## Work in Progress
+
+No active tasks. Clean slate.
 
 ## Gaps Register
 
@@ -29,40 +31,36 @@ Run `fw audit` to check if any trigger conditions are met.
 
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
+1. **Vanilla JS EventSource over htmx SSE extension for Ask UI**
+   - Why: Need token-by-token append + source panel rendering + error handling. htmx SSE replaces content rather than appending.
+   - Alternatives rejected: htmx `hx-ext="sse"` — too coarse for streaming
 
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+2. **Single `web/ask.py` for T-256 + T-258**
+   - Why: Model management and streaming tightly coupled, ~130 lines total
+   - Alternatives rejected: Separate model_manager.py — over-engineering
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+None — clean execution across all 5 tasks.
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+None. Consider Phase 2 features from T-254 scope fence: multi-turn chat, answer caching, user feedback, reranking.
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+- qwen2.5-coder-32b cold start ~20s on first query, then ~5s TTFT
+- Flask template caching — `bin/watchtower.sh restart` after template edits
+- 257 completed tasks, 0 active — clean slate for next feature
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+No active tasks. Ask the user what to build next. Consider Phase 2 Q&A features or other improvements.
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+- Created: `web/ask.py` (LLM Q&A module), `web/static/htmx-ext-sse.js` (SSE extension)
+- Modified: `web/embeddings.py` (rag_retrieve), `web/blueprints/discovery.py` (/search/ask), `web/templates/search.html` (Ask section), `web/templates/base.html` (SSE script tag)
 
 ## Recent Commits
 
