@@ -4,16 +4,16 @@ name: "Replace LLM with Qwen3-14B + thinking mode toggle"
 description: >
   Replace qwen2.5-coder-32b IQ2_M (4.8 tok/s) with Qwen3-14B Q4_K_M (~33 tok/s). Add thinking mode toggle: simple queries use think=False, complex queries use think=True with 'Thinking...' UI indicator. Update web/ask.py model constants, add query complexity classifier, update frontend to show thinking phase. Ref: docs/reports/T-261-models-16gb-vram.md §Tier 1 #1, T-261-thinking-models.md §4 (Ollama config), §6 (hybrid approach). Predecessor: T-258 (model management). VRAM: 9.3GB model + 3-4GB KV cache = ~13GB. Prerequisite: ollama pull qwen3:14b on host.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [qa, llm, model]
-components: []
+components: [web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:36:31Z
-last_update: 2026-02-24T09:03:29Z
-date_finished: null
+last_update: 2026-02-24T09:19:45Z
+date_finished: 2026-02-24T09:19:45Z
 ---
 
 # T-262: Replace LLM with Qwen3-14B + thinking mode toggle
@@ -72,3 +72,6 @@ python3 -c "from web.ask import should_think; assert should_think('why does the 
 
 ### 2026-02-24T09:03:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T09:19:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

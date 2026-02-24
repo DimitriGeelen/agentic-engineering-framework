@@ -4,16 +4,16 @@ name: "fw ask CLI — synchronous RAG+LLM wrapper"
 description: >
   Build fw ask CLI command: synchronous wrapper around rag_retrieve() + non-streaming Ollama call. Keystone for all framework integrations. Create lib/ask-api.py (~80 lines: wrapper + non-streaming Ollama + JSON output), lib/ask.sh (~30 lines: arg parsing + Python invocation), add route in bin/fw. Support: --scope {all,patterns,episodic,specs,tasks} to bias retrieval, --json for programmatic consumption, --concise for brief answers. Net: ~150 new lines. Ref: docs/reports/T-261-framework-enhancement.md §1 (onboarding), §Architectural Notes. Predecessor: T-255 (RAG), T-256 (ask endpoint). Enables: T-266 (healing integration), T-267 (session briefing).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [qa, cli, framework]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-02-24T08:37:00Z
-last_update: 2026-02-24T09:23:43Z
-date_finished: null
+last_update: 2026-02-24T09:31:19Z
+date_finished: 2026-02-24T09:31:19Z
 ---
 
 # T-264: fw ask CLI — synchronous RAG+LLM wrapper
@@ -66,3 +66,6 @@ python3 -c "from lib.ask import ask; print('OK')"
 
 ### 2026-02-24T09:23:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T09:31:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

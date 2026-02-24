@@ -102,37 +102,18 @@ test -f docs/reports/T-261-arch-improvements.md
 
 ## Decisions
 
-### 2026-02-23 — Primary model selection
-- **Chose:** Qwen3-14B Q4_K_M as primary model
-- **Why:** 7x faster (33 vs 4.8 tok/s), better quality (Q4 vs IQ2_M), toggleable thinking, 9.3GB fits
-- **Rejected:** GPT-OSS 20B (14GB too tight for KV), DeepSeek R1 14B (always-on thinking), keep current (evidence overwhelmingly against)
-- **Evidence:** RQ-1 §Performance Comparison, RQ-3 §7
+**Decision**: GO
 
-### 2026-02-23 — Single vs dual model
-- **Chose:** Single model with dynamic think toggle
-- **Why:** Thinking toggle eliminates need for separate fast/deep models. No model swap penalty.
-- **Rejected:** Two-model router (can't fit both in 16GB)
-- **Evidence:** RQ-3 §Hybrid Approach Strategy 1
+**Rationale**: Research complete: 5 agents, 6 reports, 20 improvements identified. Model replacement alone (Qwen3-14B) delivers 7x speed + better quality. RAG quick wins stack for compound gains. fw ask CLI unlocks 8 framework integrations. Saved answers create knowledge flywheel. 9 build tasks created (T-262..T-270) with rich references to research. VRAM budget confirmed: 13-14GB of 16GB.
 
-### 2026-02-23 — Keystone integration (fw ask CLI)
-- **Chose:** Build fw ask CLI before other framework integrations
-- **Why:** All 8 downstream enhancements depend on programmatic Q&A access
-- **Rejected:** Direct HTTP calls from bash agents (fragile, requires server running)
-- **Evidence:** RQ-4 §Priority Matrix
-
-### 2026-02-23 — Saved answers as indexed markdown
-- **Chose:** Save to .context/qa/*.md, indexed by existing search infrastructure
-- **Why:** Zero new infrastructure, human-readable, git-trackable, grep-able
-- **Rejected:** SQLite (not indexable), Redis (new dependency)
-
-### 2026-02-23 — Implementation order
-- **Chose:** Model → RAG quick wins → fw ask → saved answers → UX
-- **Why:** Model has highest impact:effort ratio, unblocks thinking mode. RAG compounds with model. fw ask enables framework integration.
-- **Rejected:** Starting with UX (doesn't improve quality), starting with fw ask (model is bottleneck)
-
+**Date**: 2026-02-24T08:38:39Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-261 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Research complete: 5 agents, 6 reports, 20 improvements identified. Model replacement alone (Qwen3-14B) delivers 7x speed + better quality. RAG quick wins stack for compound gains. fw ask CLI unlocks 8 framework integrations. Saved answers create knowledge flywheel. 9 build tasks created (T-262..T-270) with rich references to research. VRAM budget confirmed: 13-14GB of 16GB.
+
+**Date**: 2026-02-24T08:38:39Z
 
 ## Updates
 
@@ -142,3 +123,8 @@ test -f docs/reports/T-261-arch-improvements.md
 - 20 improvement opportunities identified, prioritized into 4 tiers
 - 5 key decisions recorded with evidence
 - Human Q&A discussion captured in dialogue log (see research doc)
+
+### 2026-02-24T08:38:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Research complete: 5 agents, 6 reports, 20 improvements identified. Model replacement alone (Qwen3-14B) delivers 7x speed + better quality. RAG quick wins stack for compound gains. fw ask CLI unlocks 8 framework integrations. Saved answers create knowledge flywheel. 9 build tasks created (T-262..T-270) with rich references to research. VRAM budget confirmed: 13-14GB of 16GB.

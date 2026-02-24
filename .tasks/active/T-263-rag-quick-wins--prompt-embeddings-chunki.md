@@ -4,16 +4,16 @@ name: "RAG quick wins — prompt, embeddings, chunking"
 description: >
   Four stacking improvements to RAG quality: (1) Improve system prompt with anti-hallucination rules, structured citation format, 'I don't know' protocol — 15min, 15-25% fewer hallucinations (RQ-2 §4.2). (2) Upgrade embedding model from all-MiniLM-L6-v2 (384-dim, MTEB 56.3) to nomic-embed-text (768-dim, MTEB 62.4) via Ollama API — 1hr, 10-15% retrieval improvement (RQ-2 §3.2). (3) Add 150-200 char chunk overlap — 30min, 5-10% boundary fix (RQ-2 §2.2A). (4) Add query embedding cache (LRU) — 30min, 50-80% latency reduction (RQ-2 §6.1). Files: web/ask.py (prompt), web/embeddings.py (embed model + chunking + cache). Ref: docs/reports/T-261-rag-quality-techniques.md §1-§6. Predecessor: T-255 (RAG retrieval).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [qa, rag, embeddings]
-components: []
+components: [web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:36:46Z
-last_update: 2026-02-24T08:58:05Z
-date_finished: null
+last_update: 2026-02-24T09:20:13Z
+date_finished: 2026-02-24T09:20:13Z
 ---
 
 # T-263: RAG quick wins — prompt, embeddings, chunking
@@ -46,7 +46,7 @@ grep -q "EMBEDDING_DIM = 768" web/embeddings.py
 # Chunk overlap implemented
 grep -q "overlap" web/embeddings.py
 # sentence-transformers no longer imported
-grep -c "sentence_transformers" web/embeddings.py | grep -q "^0$"
+python3 -c "assert 'sentence_transformers' not in open('web/embeddings.py').read(); print('OK')"
 # Server still loads
 python3 -c "from web.ask import SYSTEM_PROMPT; print('OK')"
 python3 -c "from web.embeddings import EMBEDDING_DIM; assert EMBEDDING_DIM == 768"
@@ -71,3 +71,6 @@ python3 -c "from web.embeddings import EMBEDDING_DIM; assert EMBEDDING_DIM == 76
 
 ### 2026-02-24T08:58:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T09:20:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
