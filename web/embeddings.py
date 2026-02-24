@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 MODEL_NAME = "nomic-embed-text-v2-moe"
 EMBEDDING_DIM = 768
 CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
+RERANKER_MODEL = "dengcao/Qwen3-Reranker-0.6B"  # T-269: cross-encoder reranking
 DB_PATH = Path("/tmp/fw-vec-index.db")
 STALE_SECONDS = 120  # rebuild if older than 2 minutes
 
@@ -323,6 +324,73 @@ def build_index() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Cross-encoder reranking (T-269)
+# ---------------------------------------------------------------------------
+
+_RERANKER_SYSTEM = (
+    "Judge whether the Document meets the requirements based on the Query "
+    "and the Instruct provided. Note that the answer can only be 'yes' or 'no'."
+)
+
+_RERANKER_INSTRUCT = (
+    "Given a user question about the Agentic Engineering Framework, "
+    "retrieve relevant passages that answer the question"
+)
+
+
+def _rerank_score(query: str, document: str) -> float:
+    """Score a single (query, document) pair using the cross-encoder reranker.
+
+    Returns a relevance score between 0 and 1.
+    """
+    import math
+
+    prompt = f"<Instruct>: {_RERANKER_INSTRUCT}\n<Query>: {query}\n<Document>: {document}"
+    try:
+        resp = ollama.generate(
+            model=RERANKER_MODEL,
+            system=_RERANKER_SYSTEM,
+            prompt=prompt,
+            options={"temperature": 0.0, "num_predict": 1},
+            raw=True,
+        )
+        answer = (resp.response or "").strip().lower()
+        return 1.0 if "yes" in answer else 0.0
+    except Exception as e:
+        log.debug("Reranker error: %s", e)
+        return 0.5  # neutral fallback
+
+
+def _rerank_available() -> bool:
+    """Check if the reranker model is installed."""
+    try:
+        models = [m.model for m in ollama.list().models]
+        return any(RERANKER_MODEL.lower() in m.lower() for m in models)
+    except Exception:
+        return False
+
+
+def rerank(query: str, candidates: list[dict], top_k: int = 10) -> list[dict]:
+    """Rerank candidates using cross-encoder and return top_k.
+
+    Each candidate must have a 'chunk_text' key.
+    Falls back to original order if reranker unavailable.
+    """
+    if not _rerank_available() or not candidates:
+        return candidates[:top_k]
+
+    scored = []
+    for item in candidates:
+        doc_text = item.get("chunk_text", "")[:1000]  # truncate for speed
+        score = _rerank_score(query, doc_text)
+        scored.append((score, item))
+
+    # Sort by reranker score desc, then by original RRF score desc for ties
+    scored.sort(key=lambda x: (x[0], x[1].get("score", 0)), reverse=True)
+    return [item for _, item in scored[:top_k]]
+
+
+# ---------------------------------------------------------------------------
 # Search functions
 # ---------------------------------------------------------------------------
 
@@ -520,9 +588,12 @@ def rag_retrieve(query: str, limit: int = 10) -> list[dict]:
                 "chunk_text": row[0] if row else "",
             }
 
-    # Sort by RRF score descending, take top N
+    # Sort by RRF score descending
     sorted_paths = sorted(rrf_scores.keys(), key=lambda p: rrf_scores[p], reverse=True)
-    return [item_data[p] for p in sorted_paths[:limit]]
+    candidates = [item_data[p] for p in sorted_paths[:limit * 3]]
+
+    # T-269: Cross-encoder reranking — rerank top candidates to final limit
+    return rerank(query, candidates, top_k=limit)
 
 
 def _make_snippet(chunk_text: str, query: str, max_len: int = 200) -> str:

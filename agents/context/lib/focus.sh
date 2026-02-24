@@ -88,7 +88,7 @@ EOF
                 2>/dev/null) || true
             if [ -n "$briefing" ]; then
                 echo ""
-                echo -e "${CYAN}=== Task Briefing ===${NC}"
+                echo -e "${BLUE}=== Task Briefing ===${NC}"
                 echo "$briefing"
             fi
         fi
