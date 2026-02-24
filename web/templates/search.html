@@ -151,14 +151,32 @@ function askQuestion() {
     _askEvtSource = evtSource;
     var fullText = '';
     var gotFirstToken = false;
+    var isThinking = false;
+    var thinkingStart = 0;
 
     evtSource.onmessage = function(event) {
         var data;
         try { data = JSON.parse(event.data); } catch(e) { return; }
 
         if (data.type === 'model') {
-            modelDiv.textContent = 'Model: ' + data.model;
+            var label = 'Model: ' + data.model;
+            if (data.thinking) label += ' (thinking mode)';
+            modelDiv.textContent = label;
             modelDiv.style.display = 'block';
+            if (data.thinking) {
+                isThinking = true;
+                thinkingStart = Date.now();
+                statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>';
+            }
+        }
+        else if (data.type === 'thinking') {
+            /* Update thinking indicator with elapsed time */
+            var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
+            statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
+        }
+        else if (data.type === 'thinking_done') {
+            isThinking = false;
+            statusDiv.style.display = 'none';
         }
         else if (data.type === 'token') {
             if (!gotFirstToken) {

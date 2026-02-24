@@ -5,20 +5,22 @@ streams answers via ollama with SSE. Includes model fallback logic (T-258).
 
 T-256: Ask endpoint — /search/ask with ollama SSE streaming.
 T-258: Model management — pre-load and fallback logic.
+T-262: Replaced model with Qwen3-14B + thinking mode toggle.
 """
 
 import json
 import logging
+import re
 
 import ollama
 
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Model management (T-258)
+# Model management (T-258, T-262)
 # ---------------------------------------------------------------------------
 
-PRIMARY_MODEL = "krith/qwen2.5-coder-32b-instruct:IQ2_M"
+PRIMARY_MODEL = "qwen3:14b"
 FALLBACK_MODEL = "dolphin-llama3:8b"
 
 _available_models = None
@@ -57,6 +59,38 @@ def get_model() -> str:
         return FALLBACK_MODEL
 
     raise RuntimeError("No suitable LLM model available in ollama")
+
+
+# ---------------------------------------------------------------------------
+# Query complexity classifier (T-262)
+# ---------------------------------------------------------------------------
+
+# Patterns that signal complex queries needing deep thinking
+_COMPLEX_PATTERNS = [
+    r"\bwhy\b",          # Reasoning questions
+    r"\bhow (?:can|should|do|would)\b",  # Design/approach questions
+    r"\bcompare\b",      # Comparison questions
+    r"\bdesign\b",       # Architecture questions
+    r"\bexplain\b",      # Explanation requests
+    r"\bdifference\b",   # Contrast questions
+    r"\btrade.?off\b",   # Analysis questions
+    r"\bbest\b",         # Evaluation questions
+    r"\brecommend\b",    # Advice questions
+    r"\banalyz\b",       # Analysis requests
+]
+_COMPLEX_RE = re.compile("|".join(_COMPLEX_PATTERNS), re.IGNORECASE)
+
+
+def should_think(query: str) -> bool:
+    """Classify whether a query benefits from thinking mode.
+
+    Simple lookups (what is X?, list Y, show Z) use fast mode.
+    Complex reasoning (why, how should, compare, design) use thinking.
+    """
+    # Short queries are almost always simple lookups
+    if len(query.split()) <= 4:
+        return False
+    return bool(_COMPLEX_RE.search(query))
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +143,9 @@ def stream_answer(query: str, chunks: list[dict]):
 
     Yields:
         SSE-formatted strings: "data: {...}\\n\\n"
-        Events: {type: "token", content: "..."} for each token
+        Events: {type: "model", model: "...", thinking: bool} model info
+                {type: "thinking", content: "..."} thinking tokens (T-262)
+                {type: "token", content: "..."} for each answer token
                 {type: "sources", sources: [...]} at the end
                 {type: "done"} when complete
                 {type: "error", message: "..."} on failure
@@ -120,11 +156,12 @@ def stream_answer(query: str, chunks: list[dict]):
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         return
 
+    use_thinking = should_think(query) if model == PRIMARY_MODEL else False
     context = format_rag_context(chunks)
     user_message = f"{context}\n\n## Question\n\n{query}"
 
-    # Send model info
-    yield f"data: {json.dumps({'type': 'model', 'model': model})}\n\n"
+    # Send model info with thinking status
+    yield f"data: {json.dumps({'type': 'model', 'model': model, 'thinking': use_thinking})}\n\n"
 
     try:
         response = ollama.chat(
@@ -134,11 +171,25 @@ def stream_answer(query: str, chunks: list[dict]):
                 {"role": "user", "content": user_message},
             ],
             stream=True,
+            think=use_thinking,
         )
 
+        in_thinking = use_thinking
         for chunk in response:
-            token = chunk.get("message", {}).get("content", "")
+            msg = chunk.get("message", {})
+            # Thinking tokens come via the 'thinking' field (Qwen3/Ollama)
+            thinking_token = msg.get("thinking", "")
+            if thinking_token:
+                yield f"data: {json.dumps({'type': 'thinking', 'content': thinking_token})}\n\n"
+                continue
+
+            # Answer tokens
+            token = msg.get("content", "")
             if token:
+                if in_thinking:
+                    # First answer token after thinking phase
+                    in_thinking = False
+                    yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
                 yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
             if chunk.get("done"):
                 break
