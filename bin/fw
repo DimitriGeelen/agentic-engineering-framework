@@ -853,6 +853,9 @@ cmd="${1:-}"
 shift || true
 
 case "$cmd" in
+    ask)
+        exec "$FW_LIB_DIR/ask.sh" "$@"
+        ;;
     audit)
         exec "$AGENTS_DIR/audit/audit.sh" "$@"
         ;;
