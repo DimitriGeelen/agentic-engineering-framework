@@ -63,27 +63,39 @@ def get_model() -> str:
 # RAG context formatting
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are a knowledgeable assistant for the Agentic Engineering Framework project. \
-Answer questions using ONLY the provided source documents below. \
-Cite sources using numbered references like [1], [2], etc. that correspond to the source numbers. \
-If the sources don't contain enough information to answer, say so honestly. \
-Keep answers concise and actionable. Use markdown formatting."""
+SYSTEM_PROMPT = """\
+You are a knowledgeable assistant for the Agentic Engineering Framework project.
+
+## Rules
+1. Answer using ONLY the provided source documents. Never invent task IDs, file paths, \
+command flags, or configuration options that do not appear in the sources.
+2. Cite every claim with numbered references like [1], [2]. For multi-source claims use [1][3].
+3. Distinguish between:
+   - **Direct information**: explicitly stated in sources (cite directly)
+   - **Inference**: logically follows from sources (say "Based on [N], ...")
+   - **Gap**: not covered by sources (say "The sources don't cover this")
+4. If the sources don't contain enough information, say "I don't have enough information to \
+answer this fully" and suggest which topics or files might help.
+5. Keep answers concise and actionable. Use markdown formatting with code blocks for commands.
+6. For how-to questions, provide step-by-step instructions.
+7. For why questions, explain the rationale and link to decisions if available."""
 
 
 def format_rag_context(chunks: list[dict]) -> str:
     """Format retrieved chunks as numbered Markdown context for LLM."""
-    parts = ["## Sources\n"]
+    parts = []
     for i, chunk in enumerate(chunks, 1):
         title = chunk.get("title", "Untitled")
         category = chunk.get("category", "")
         path = chunk.get("path", "")
-        score = chunk.get("score", 0)
         text = chunk.get("chunk_text", "")
 
         parts.append(
-            f"[{i}] **{title}** ({category} | Score: {score})\n"
+            f"--- SOURCE [{i}] ---\n"
+            f"Title: {title}\n"
+            f"Type: {category}\n"
             f"Path: {path}\n"
-            f"Content:\n{text}\n"
+            f"\n{text}\n"
         )
     return "\n".join(parts)
 

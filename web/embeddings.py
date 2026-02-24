@@ -1,61 +1,71 @@
 """sqlite-vec semantic search for Watchtower.
 
-Embeds all YAML/Markdown knowledge files using all-MiniLM-L6-v2 (384-dim),
-stores vectors in sqlite-vec, and provides semantic + hybrid search (RRF
-fusion with Tantivy BM25).
+Embeds all YAML/Markdown knowledge files using nomic-embed-text-v2-moe (768-dim)
+via Ollama, stores vectors in sqlite-vec, and provides semantic + hybrid search
+(RRF fusion with Tantivy BM25).
 
 T-245: sqlite-vec embedding layer — semantic search for project knowledge.
+T-263: Upgraded from all-MiniLM-L6-v2 (384-dim) to nomic-embed-text-v2-moe (768-dim).
 """
 
+import logging
 import os
 import re
 import sqlite3
 import struct
 import time
+from functools import lru_cache
 from pathlib import Path
 
+import ollama
 import sqlite_vec
 
 from web.shared import PROJECT_ROOT
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "all-MiniLM-L6-v2"
-EMBEDDING_DIM = 384
+MODEL_NAME = "nomic-embed-text-v2-moe"
+EMBEDDING_DIM = 768
+CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
 DB_PATH = Path("/tmp/fw-vec-index.db")
 STALE_SECONDS = 120  # rebuild if older than 2 minutes
 
 # Singleton state
 _db = None
-_model = None
 _db_built_at = 0.0
 
 
 # ---------------------------------------------------------------------------
-# Embedding model (lazy-loaded singleton)
+# Embedding via Ollama (T-263: replaces sentence-transformers)
 # ---------------------------------------------------------------------------
 
-def _get_model():
-    """Lazy-load the sentence transformer model."""
-    global _model
-    if _model is None:
-        from sentence_transformers import SentenceTransformer
-        _model = SentenceTransformer(MODEL_NAME)
-    return _model
-
-
 def _embed(texts: list[str]) -> list[bytes]:
-    """Embed a batch of texts, returning raw float32 bytes for sqlite-vec."""
-    model = _get_model()
-    embeddings = model.encode(texts, show_progress_bar=False, normalize_embeddings=True)
-    return [e.tobytes() for e in embeddings]
+    """Embed a batch of texts via Ollama, returning raw float32 bytes for sqlite-vec."""
+    try:
+        resp = ollama.embed(model=MODEL_NAME, input=texts)
+    except Exception as e:
+        log.error("Ollama embed error: %s", e)
+        raise
+    result = []
+    for emb in resp.embeddings:
+        result.append(struct.pack(f"{len(emb)}f", *emb))
+    return result
+
+
+# Query embedding cache — LRU avoids re-embedding repeated queries (T-263)
+@lru_cache(maxsize=256)
+def _embed_single_cached(text: str) -> bytes:
+    """Embed a single text string with LRU caching."""
+    return _embed([text])[0]
 
 
 def _embed_single(text: str) -> bytes:
-    """Embed a single text string."""
-    return _embed([text])[0]
+    """Embed a single text string (cached for queries)."""
+    return _embed_single_cached(text)
 
 
 # ---------------------------------------------------------------------------
@@ -134,32 +144,47 @@ def _chunk_content(content: str, max_chars: int = 1500) -> list[str]:
     """Split content into chunks suitable for embedding.
 
     Each chunk is roughly max_chars. Splits on section headings (## or ###)
-    first, then on double newlines if still too long.
+    first, then on double newlines if still too long. Adjacent chunks get
+    CHUNK_OVERLAP chars of overlap to preserve boundary context (T-263).
     """
     # Split on markdown headings
     sections = re.split(r'\n(?=#{1,3}\s)', content)
-    chunks = []
+    raw_chunks = []
 
     for section in sections:
         section = section.strip()
         if not section:
             continue
         if len(section) <= max_chars:
-            chunks.append(section)
+            raw_chunks.append(section)
         else:
             # Split long sections on paragraph boundaries
             paragraphs = section.split("\n\n")
             current = ""
             for para in paragraphs:
                 if len(current) + len(para) + 2 > max_chars and current:
-                    chunks.append(current.strip())
+                    raw_chunks.append(current.strip())
                     current = para
                 else:
                     current = current + "\n\n" + para if current else para
             if current.strip():
-                chunks.append(current.strip())
+                raw_chunks.append(current.strip())
 
-    return chunks if chunks else [content[:max_chars]]
+    if not raw_chunks:
+        return [content[:max_chars]]
+
+    # Add overlap: prepend tail of previous chunk to each subsequent chunk
+    chunks = [raw_chunks[0]]
+    for i in range(1, len(raw_chunks)):
+        prev = raw_chunks[i - 1]
+        overlap_text = prev[-CHUNK_OVERLAP:] if len(prev) > CHUNK_OVERLAP else prev
+        # Find a clean word boundary for the overlap
+        space_idx = overlap_text.find(" ")
+        if space_idx > 0:
+            overlap_text = overlap_text[space_idx + 1:]
+        chunks.append(overlap_text + "\n\n" + raw_chunks[i])
+
+    return chunks
 
 
 # ---------------------------------------------------------------------------
