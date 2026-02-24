@@ -124,6 +124,7 @@ def _collect_files() -> list[Path]:
         PROJECT_ROOT / ".context" / "project",
         PROJECT_ROOT / ".context" / "handovers",
         PROJECT_ROOT / ".fabric" / "components",
+        PROJECT_ROOT / ".context" / "qa",
         PROJECT_ROOT / "docs" / "reports",
     ]
     for d in search_dirs:

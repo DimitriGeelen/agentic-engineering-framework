@@ -36,6 +36,8 @@ def _categorize(path_str: str) -> str:
         return "Episodic Memory"
     if ".context/project/" in path_str:
         return "Project Memory"
+    if ".context/qa/" in path_str:
+        return "Saved Answers"
     if ".context/handovers/" in path_str:
         return "Handovers"
     if ".fabric/components/" in path_str:
@@ -72,6 +74,7 @@ def _collect_files() -> list[Path]:
         PROJECT_ROOT / ".context" / "project",
         PROJECT_ROOT / ".context" / "handovers",
         PROJECT_ROOT / ".fabric" / "components",
+        PROJECT_ROOT / ".context" / "qa",
         PROJECT_ROOT / "docs" / "reports",
     ]
 

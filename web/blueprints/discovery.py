@@ -1,8 +1,10 @@
 """Discovery blueprint — decisions, learnings, gaps, search, graduation."""
 
+import json
 import os
 import re as re_mod
 import subprocess
+from datetime import datetime
 
 import yaml
 from flask import Blueprint, Response, request
@@ -197,6 +199,56 @@ def search_ask():
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@bp.route("/search/save", methods=["POST"])
+def search_save():
+    """Save a Q&A answer to .context/qa/ for the retrieval flywheel (T-265)."""
+    data = request.get_json(silent=True) or {}
+    question = (data.get("question") or "").strip()
+    answer = (data.get("answer") or "").strip()
+    sources = data.get("sources") or []
+
+    if not question or not answer:
+        return json.dumps({"error": "Question and answer are required"}), 400
+
+    qa_dir = PROJECT_ROOT / ".context" / "qa"
+    qa_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate slug from question
+    slug = re_mod.sub(r"[^a-z0-9]+", "-", question.lower())[:60].strip("-")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{date_str}-{slug}.md"
+    filepath = qa_dir / filename
+
+    # Avoid overwriting — append counter if needed
+    counter = 1
+    while filepath.exists():
+        counter += 1
+        filename = f"{date_str}-{slug}-{counter}.md"
+        filepath = qa_dir / filename
+
+    # Format sources
+    source_lines = []
+    for s in sources:
+        num = s.get("num", "")
+        title = s.get("title", "")
+        path = s.get("path", "")
+        source_lines.append(f"- [{num}] {title} (`{path}`)")
+
+    content = (
+        f"# {question}\n\n"
+        f"**Date:** {date_str}\n\n"
+        f"## Answer\n\n"
+        f"{answer}\n\n"
+        f"## Sources\n\n"
+        + ("\n".join(source_lines) if source_lines else "No sources recorded.")
+        + "\n"
+    )
+
+    filepath.write_text(content)
+    rel_path = str(filepath.relative_to(PROJECT_ROOT))
+    return json.dumps({"saved": True, "path": rel_path}), 200
 
 
 @bp.route("/patterns")
