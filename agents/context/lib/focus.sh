@@ -78,5 +78,19 @@ EOF
             echo ""
             python3 "$recall_script" --task "$task_id" --limit 5 2>/dev/null || true
         fi
+
+        # Task briefing via semantic search (T-270)
+        local ask_script="$FRAMEWORK_ROOT/lib/ask.py"
+        if [ -f "$ask_script" ]; then
+            local briefing
+            briefing=$(python3 "$ask_script" --concise --no-think \
+                "Brief me on task $task_id: $task_name. What prior work, patterns, and decisions are relevant? What should I watch out for?" \
+                2>/dev/null) || true
+            if [ -n "$briefing" ]; then
+                echo ""
+                echo -e "${CYAN}=== Task Briefing ===${NC}"
+                echo "$briefing"
+            fi
+        fi
     fi
 }

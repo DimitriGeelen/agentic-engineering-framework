@@ -47,82 +47,18 @@ classify_failure() {
 find_similar_patterns() {
     local failure_type="$1"
     local description="$2"
-    local description_lower=$(echo "$description" | tr '[:upper:]' '[:lower:]')
 
-    if [ ! -f "$PATTERNS_FILE" ]; then
-        return
+    # T-270: Semantic pattern matching via fw ask — replaces 80 lines of keyword matching
+    local query="Find failure patterns similar to this issue (type: ${failure_type}): ${description}. List matching pattern IDs (FP-XXX) with their mitigations. If no patterns match, say so."
+    local result
+    result=$(python3 "$FRAMEWORK_ROOT/lib/ask.py" --concise --no-think --limit 5 "$query" 2>/dev/null) || true
+
+    if [ -n "$result" ]; then
+        echo "$result"
+    else
+        echo "Semantic search unavailable (Ollama not running or index not built)"
+        echo "Start Ollama and rebuild index for pattern matching"
     fi
-
-    # Extract only the failure_patterns section (stop at success_patterns or workflow_patterns)
-    local fp_section=$(sed -n '/^failure_patterns:/,/^[a-z_]*patterns:/p' "$PATTERNS_FILE" | head -n -1)
-
-    # Collect patterns with relevance scoring
-    local all_patterns=""
-    local current_id=""
-    local pattern_text=""
-    local mitigation=""
-
-    while IFS= read -r line; do
-        # Start of a new failure pattern
-        if [[ "$line" =~ id:[[:space:]]*(FP-[0-9]+) ]]; then
-            # Save previous pattern if exists
-            if [ -n "$current_id" ] && [ -n "$pattern_text" ]; then
-                local score=$(score_pattern "$pattern_text" "$mitigation" "$description_lower")
-                if [ "$score" -gt 0 ]; then
-                    all_patterns="${all_patterns}${score}|${current_id}: ${pattern_text}"$'\n'
-                    [ -n "$mitigation" ] && all_patterns="${all_patterns}${score}|  Mitigation: ${mitigation}"$'\n'
-                fi
-            fi
-            current_id="${BASH_REMATCH[1]}"
-            pattern_text=""
-            mitigation=""
-            continue
-        fi
-
-        # Extract fields
-        if [[ "$line" =~ ^[[:space:]]*pattern:[[:space:]]*\"(.*)\" ]]; then
-            pattern_text="${BASH_REMATCH[1]}"
-        elif [[ "$line" =~ ^[[:space:]]*mitigation:[[:space:]]*\"(.*)\" ]]; then
-            mitigation="${BASH_REMATCH[1]}"
-        fi
-    done <<< "$fp_section"
-
-    # Don't forget the last pattern
-    if [ -n "$current_id" ] && [ -n "$pattern_text" ]; then
-        local score=$(score_pattern "$pattern_text" "$mitigation" "$description_lower")
-        if [ "$score" -gt 0 ]; then
-            all_patterns="${all_patterns}${score}|${current_id}: ${pattern_text}"$'\n'
-            [ -n "$mitigation" ] && all_patterns="${all_patterns}${score}|  Mitigation: ${mitigation}"$'\n'
-        fi
-    fi
-
-    # Output sorted by relevance (highest score first), strip score prefix
-    if [ -n "$all_patterns" ]; then
-        echo "$all_patterns" | sort -t'|' -k1 -rn | cut -d'|' -f2-
-    fi
-}
-
-score_pattern() {
-    local pattern_text="$1"
-    local mitigation="$2"
-    local description_lower="$3"
-    local score=0
-
-    local pattern_lower=$(echo "$pattern_text" | tr '[:upper:]' '[:lower:]')
-    for word in $pattern_lower; do
-        [ ${#word} -lt 3 ] && continue
-        echo "$description_lower" | grep -qiw "$word" 2>/dev/null && score=$((score + 1))
-    done
-
-    if [ -n "$mitigation" ]; then
-        local mit_lower=$(echo "$mitigation" | tr '[:upper:]' '[:lower:]')
-        for word in $mit_lower; do
-            [ ${#word} -lt 4 ] && continue
-            echo "$description_lower" | grep -qiw "$word" 2>/dev/null && score=$((score + 1))
-        done
-    fi
-
-    echo "$score"
 }
 
 
