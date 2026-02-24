@@ -1,0 +1,54 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Quality tracking for AI-assisted Q&A answers.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <article style="text-align: center; padding: 1rem;">
+        <h2 style="margin: 0; font-size: 2rem;">{{ analytics.total }}</h2>
+        <small style="color: var(--pico-muted-color);">Total Ratings</small>
+    </article>
+    <article style="text-align: center; padding: 1rem;">
+        <h2 style="margin: 0; font-size: 2rem; color: #2e7d32;">{{ analytics.positive }}</h2>
+        <small style="color: var(--pico-muted-color);">Positive</small>
+    </article>
+    <article style="text-align: center; padding: 1rem;">
+        <h2 style="margin: 0; font-size: 2rem; color: #c62828;">{{ analytics.negative }}</h2>
+        <small style="color: var(--pico-muted-color);">Negative</small>
+    </article>
+    <article style="text-align: center; padding: 1rem;">
+        <h2 style="margin: 0; font-size: 2rem;">{{ (analytics.ratio * 100) | round(0) }}%</h2>
+        <small style="color: var(--pico-muted-color);">Positive Rate</small>
+    </article>
+</div>
+
+{% if analytics.recent %}
+<h3>Recent Feedback</h3>
+<figure>
+<table>
+    <thead>
+        <tr>
+            <th>Rating</th>
+            <th>Query</th>
+            <th>Model</th>
+            <th>Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in analytics.recent %}
+        <tr>
+            <td>{% if item.rating == 1 %}&#x1F44D;{% else %}&#x1F44E;{% endif %}</td>
+            <td style="max-width: 20rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ item.query }}</td>
+            <td><small>{{ item.model }}</small></td>
+            <td style="max-width: 15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ item.comment or '—' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="coming-soon">
+    <h3>No Feedback Yet</h3>
+    <p>Use the thumbs up/down buttons on Q&A answers to start collecting feedback.</p>
+</div>
+{% endif %}

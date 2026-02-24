@@ -251,6 +251,40 @@ def search_save():
     return json.dumps({"saved": True, "path": rel_path}), 200
 
 
+@bp.route("/search/feedback", methods=["POST"])
+def search_feedback():
+    """Record thumbs up/down feedback on a Q&A answer (T-267)."""
+    from web.qa_feedback import save_feedback
+
+    data = request.get_json(silent=True) or {}
+    query = (data.get("query") or "").strip()
+    rating = data.get("rating")
+    if not query or rating not in (-1, 1):
+        return json.dumps({"error": "query and rating (-1 or 1) required"}), 400
+
+    row_id = save_feedback(
+        query=query,
+        answer_preview=data.get("answer_preview", ""),
+        model=data.get("model", ""),
+        rating=rating,
+        comment=data.get("comment", ""),
+    )
+    return json.dumps({"saved": True, "id": row_id}), 200
+
+
+@bp.route("/search/feedback/analytics")
+def feedback_analytics():
+    """Simple analytics dashboard for Q&A feedback (T-267)."""
+    from web.qa_feedback import get_analytics
+
+    analytics = get_analytics()
+    return render_page(
+        "feedback_analytics.html",
+        page_title="Q&A Feedback",
+        analytics=analytics,
+    )
+
+
 @bp.route("/patterns")
 def patterns():
     all_patterns = []

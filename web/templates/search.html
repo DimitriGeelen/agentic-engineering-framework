@@ -37,9 +37,14 @@
             <div id="ask-source-list" style="font-size: 0.85rem;"></div>
         </details>
 
-        <div id="ask-save-row" style="display: none; margin-top: 0.75rem;">
+        <div id="ask-actions-row" style="display: none; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <button id="ask-save-btn" onclick="saveAnswer()" class="outline secondary" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">Save Answer</button>
-            <small id="ask-save-status" style="margin-left: 0.5rem; color: var(--pico-muted-color);"></small>
+            <span style="color: var(--pico-muted-border-color);">|</span>
+            <button id="fb-up" onclick="sendFeedback(1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Good answer">&#x1F44D;</button>
+            <button id="fb-down" onclick="sendFeedback(-1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Bad answer">&#x1F44E;</button>
+            <small id="fb-status" style="color: var(--pico-muted-color);"></small>
+            <span style="flex: 1;"></span>
+            <small id="ask-save-status" style="color: var(--pico-muted-color);"></small>
         </div>
 
         <div id="ask-error" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #c6282822; border-radius: var(--pico-border-radius); color: #c62828; font-size: 0.85rem;"></div>
@@ -135,6 +140,7 @@ var _askEvtSource = null;
 var _lastQuestion = '';
 var _lastAnswer = '';
 var _lastSources = [];
+var _lastModel = '';
 
 function saveAnswer() {
     var btn = document.getElementById('ask-save-btn');
@@ -176,6 +182,46 @@ function saveAnswer() {
     });
 }
 
+function sendFeedback(rating) {
+    var upBtn = document.getElementById('fb-up');
+    var downBtn = document.getElementById('fb-down');
+    var fbStatus = document.getElementById('fb-status');
+    upBtn.disabled = true;
+    downBtn.disabled = true;
+
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+    fetch('/search/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        body: JSON.stringify({
+            query: _lastQuestion,
+            answer_preview: _lastAnswer.substring(0, 500),
+            model: _lastModel,
+            rating: rating
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.saved) {
+            fbStatus.textContent = rating === 1 ? 'Thanks!' : 'Noted, thanks!';
+            fbStatus.style.color = 'var(--pico-muted-color)';
+            if (rating === 1) { upBtn.style.opacity = '1'; downBtn.style.opacity = '0.3'; }
+            else { downBtn.style.opacity = '1'; upBtn.style.opacity = '0.3'; }
+        } else {
+            fbStatus.textContent = data.error || 'Failed';
+            upBtn.disabled = false;
+            downBtn.disabled = false;
+        }
+    })
+    .catch(function() {
+        fbStatus.textContent = 'Network error';
+        upBtn.disabled = false;
+        downBtn.disabled = false;
+    });
+}
+
 function askQuestion() {
     var input = document.getElementById('ask-input');
     var query = input.value.trim();
@@ -203,7 +249,7 @@ function askQuestion() {
     sourcesEl.style.display = 'none';
     sourceList.innerHTML = '';
     errorDiv.style.display = 'none';
-    document.getElementById('ask-save-row').style.display = 'none';
+    document.getElementById('ask-actions-row').style.display = 'none';
     _lastSources = [];
 
     /* Close previous connection if any */
@@ -222,6 +268,7 @@ function askQuestion() {
         try { data = JSON.parse(event.data); } catch(e) { return; }
 
         if (data.type === 'model') {
+            _lastModel = data.model;
             var label = 'Model: ' + data.model;
             if (data.thinking) label += ' (thinking mode)';
             modelDiv.textContent = label;
@@ -282,13 +329,18 @@ function askQuestion() {
             btn.disabled = false;
             btn.textContent = 'Ask';
             btn.removeAttribute('aria-busy');
-            /* Show save button (T-265) */
+            /* Show action buttons (T-265, T-267) */
             _lastAnswer = fullText;
             _lastQuestion = query;
-            document.getElementById('ask-save-row').style.display = 'block';
+            document.getElementById('ask-actions-row').style.display = 'flex';
             document.getElementById('ask-save-btn').disabled = false;
             document.getElementById('ask-save-btn').textContent = 'Save Answer';
             document.getElementById('ask-save-status').textContent = '';
+            document.getElementById('fb-up').disabled = false;
+            document.getElementById('fb-down').disabled = false;
+            document.getElementById('fb-up').style.opacity = '1';
+            document.getElementById('fb-down').style.opacity = '1';
+            document.getElementById('fb-status').textContent = '';
         }
         else if (data.type === 'error') {
             evtSource.close();
