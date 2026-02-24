@@ -4,7 +4,7 @@ name: "Streaming UX — marked.js, syntax highlighting, copy buttons"
 description: >
   Replace custom renderAnswer() with marked.js for full CommonMark rendering. Add highlight.js for code syntax highlighting. Add copy buttons on code blocks. Improve thinking phase with progressive status messages and elapsed timer. Debounce markdown rendering to ~100ms intervals to prevent flicker. Add DOMPurify for XSS prevention. Files: web/templates/search.html (JS), web/static/ (marked.min.js, highlight.min.js, purify.min.js). Ref: docs/reports/T-261-arch-improvements.md §4 (full code sketches for marked integration, highlight, copy buttons, thinking phases). Predecessor: T-257 (frontend).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [qa, frontend, ux]
 components: []
 related_tasks: []
 created: 2026-02-24T08:37:26Z
-last_update: 2026-02-24T08:37:26Z
+last_update: 2026-02-24T09:20:25Z
 date_finished: null
 ---
 
@@ -20,29 +20,45 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Streaming UX improvements for Q&A. Ref: [T-261-arch-improvements.md](../../docs/reports/T-261-arch-improvements.md) §4
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] marked.js loaded for full CommonMark markdown rendering
+- [x] highlight.js loaded for code syntax highlighting
+- [x] DOMPurify loaded for XSS prevention
+- [x] Copy buttons added to code blocks
+- [x] Rendering debounced to ~100ms to prevent flicker
+- [x] All JS libraries served locally (no CDN dependency)
+- [x] Citation references styled with sup.citation class
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Markdown renders correctly (headers, lists, bold, code blocks)
+- [ ] Code blocks have syntax highlighting with appropriate colors
+- [ ] Copy button works and shows "Copied!" feedback
+- [ ] Streaming feels smooth without flicker
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# marked.js exists locally
+test -f web/static/marked.min.js
+# DOMPurify exists locally
+test -f web/static/purify.min.js
+# highlight.js exists locally
+test -f web/static/highlight.min.js
+# marked integration in search template
+grep -q "marked.parse" web/templates/search.html
+# DOMPurify used for sanitization
+grep -q "DOMPurify.sanitize" web/templates/search.html
+# Copy button function exists
+grep -q "addCopyButtons" web/templates/search.html
+# Debounce function exists
+grep -q "renderAnswerDebounced" web/templates/search.html
+# Base template loads local libraries
+grep -q "marked.min.js" web/templates/base.html
+# Search page loads
+curl -sf http://localhost:3000/search > /dev/null
 
 ## Decisions
 
@@ -61,3 +77,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-266-streaming-ux--markedjs-syntax-highlighti.md
 - **Context:** Initial task creation
+
+### 2026-02-24T09:20:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

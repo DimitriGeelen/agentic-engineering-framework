@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='highlight-github-dark.min.css') }}">
+    <script src="{{ url_for('static', filename='highlight.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='marked.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='purify.min.js') }}"></script>
     <style>
         /* ── Nav ─────────────────────────────────────────────── */
         nav.site-nav {

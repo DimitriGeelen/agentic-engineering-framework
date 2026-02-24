@@ -111,6 +111,19 @@
 </div>
 {% endif %}
 
+<!-- T-266: Styles for Q&A rendering -->
+<style>
+#ask-text pre { position: relative; }
+#ask-text pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
+.copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; padding: 0.15rem 0.5rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6; background: var(--pico-muted-border-color); border: none; border-radius: 3px; color: var(--pico-color); }
+.copy-btn:hover { opacity: 1; }
+sup.citation { color: var(--pico-primary); font-weight: 600; cursor: default; }
+#ask-text { line-height: 1.7; }
+#ask-text p { margin-bottom: 0.75rem; }
+#ask-text ul, #ask-text ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
+#ask-text h1, #ask-text h2, #ask-text h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
+</style>
+
 <script>
 /* Ask Q&A (T-257) — SSE streaming with token-by-token display */
 var _askEvtSource = null;
@@ -184,8 +197,8 @@ function askQuestion() {
                 statusDiv.style.display = 'none';
             }
             fullText += data.content;
-            /* Render markdown-like formatting */
-            textDiv.innerHTML = renderAnswer(fullText);
+            /* Debounced markdown rendering (T-266) */
+            renderAnswerDebounced(fullText, textDiv);
         }
         else if (data.type === 'sources') {
             var sources = data.sources || [];
@@ -211,6 +224,10 @@ function askQuestion() {
         else if (data.type === 'done') {
             evtSource.close();
             _askEvtSource = null;
+            /* Final render to catch last debounce window */
+            if (_renderTimer) clearTimeout(_renderTimer);
+            textDiv.innerHTML = renderAnswer(fullText);
+            addCopyButtons(textDiv);
             btn.disabled = false;
             btn.textContent = 'Ask';
             btn.removeAttribute('aria-busy');
@@ -249,19 +266,63 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/* Simple markdown-ish rendering for answer text */
+/* Markdown rendering via marked.js + highlight.js + DOMPurify (T-266) */
+var _renderTimer = null;
+var _markedReady = false;
+
+(function initMarked() {
+    if (typeof marked === 'undefined') return;
+    marked.setOptions({
+        highlight: function(code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(code, { language: lang }).value;
+            }
+            return hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true
+    });
+    _markedReady = true;
+})();
+
 function renderAnswer(text) {
-    var html = escHtml(text);
-    /* Bold */
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    /* Inline code */
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-    /* Citation references — make them stand out */
-    html = html.replace(/\[(\d+)\]/g, '<sup style="color:var(--pico-primary);font-weight:600">[$1]</sup>');
-    /* Line breaks */
-    html = html.replace(/\n\n/g, '</p><p>');
-    html = html.replace(/\n/g, '<br>');
-    return '<p>' + html + '</p>';
+    if (!_markedReady) {
+        /* Fallback if marked not loaded */
+        return '<p>' + escHtml(text) + '</p>';
+    }
+    var raw = marked.parse(text);
+    /* Sanitize HTML to prevent XSS */
+    var html = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(raw) : raw;
+    /* Highlight citation references */
+    html = html.replace(/\[(\d+)\]/g, '<sup class="citation">[$1]</sup>');
+    return html;
+}
+
+function renderAnswerDebounced(text, target) {
+    /* Debounce rendering to ~100ms to prevent flicker during fast streaming */
+    if (_renderTimer) clearTimeout(_renderTimer);
+    _renderTimer = setTimeout(function() {
+        target.innerHTML = renderAnswer(text);
+        addCopyButtons(target);
+    }, 100);
+}
+
+function addCopyButtons(container) {
+    /* Add copy button to each code block (T-266) */
+    container.querySelectorAll('pre code').forEach(function(block) {
+        if (block.parentNode.querySelector('.copy-btn')) return;
+        var btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        btn.onclick = function() {
+            navigator.clipboard.writeText(block.textContent).then(function() {
+                btn.textContent = 'Copied!';
+                setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+            });
+        };
+        block.parentNode.style.position = 'relative';
+        block.parentNode.appendChild(btn);
+    });
 }
 
 /* Path to Watchtower URL (mirrors Jinja2 logic from T-253) */
