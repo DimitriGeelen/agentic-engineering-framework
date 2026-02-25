@@ -308,3 +308,10 @@ decisions:
     date: 2026-02-25
     task: T-268
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-039
+    decision: "Single LXC container with two systemd services (dev on :5051, prod on :5050)"
+    scope: project
+    date: 2026-02-25
+    task: T-279
+    rationale: "Auto-captured from task file on completion"

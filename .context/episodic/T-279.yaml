@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-279: Watchtower deployment model — framework dashboard vs multi-project SaaS
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T17:48:00Z
+# ============================================================================
+
+task_id: T-279
+task_name: "Watchtower deployment model — framework dashboard vs multi-project SaaS"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T14:55:34Z
+completed: 2026-02-25T17:47:59Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Single LXC container with two systemd services (dev on :5051, prod on :5050)"
+    rationale: "Docker's ephemeral/stateless/replicated model creates 2 CRITICAL issues (write data loss + replica divergence, vector DB timeout). LXC provides persistent filesystem, native git, and direct Ollama access — all critical for Watchtower's \"command center\" vision."
+    alternatives_rejected: ["Docker with read-only mode (reduces to static viewer), Docker with NFS (complexity), two LXCs (overkill), full VM (overkill)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 172 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 172
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-279-watchtower-deployment-model--framework-d.md
+generated_by: context-agent-hybrid
