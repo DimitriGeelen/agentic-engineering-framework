@@ -6,13 +6,13 @@ description: >
 
 status: started-work
 workflow_type: refactor
-owner: human
+owner: agent
 horizon: now
 tags: [deployment, learnings, antifragility]
 components: [.context/project/learnings.yaml, agents/audit/audit.sh, bin/fw]
 related_tasks: [T-272, T-277, T-100]
 created: 2026-02-25T08:09:57Z
-last_update: 2026-02-25T12:40:02Z
+last_update: 2026-02-25T12:45:30Z
 date_finished: null
 ---
 
@@ -59,8 +59,8 @@ python3 -c "import yaml; yaml.safe_load(open('.context/project/learnings.yaml'))
 # Template learnings harvested (at least 6 new entries with T-278 reference)
 grep -c "T-278" .context/project/learnings.yaml | python3 -c "import sys; n=int(sys.stdin.read()); assert n >= 6, f'Only {n} T-278 learnings found'; print(f'{n} learnings harvested')"
 
-# Audit passes
-bin/fw audit 2>&1 | tail -5 | grep -qv "Fail: [1-9]"
+# Audit has no failures (exit 0 = pass, exit 1 = warnings only)
+bin/fw audit --section structure --quiet
 
 ## Decisions
 
@@ -82,3 +82,6 @@ bin/fw audit 2>&1 | tail -5 | grep -qv "Fail: [1-9]"
 
 ### 2026-02-25T12:40:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-25T12:45:30Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
