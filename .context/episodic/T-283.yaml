@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-283: Set up dev auto-update mechanism for Watchtower LXC
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T18:54:16Z
+# ============================================================================
+
+task_id: T-283
+task_name: "Set up dev auto-update mechanism for Watchtower LXC"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T17:48:38Z
+completed: 2026-02-25T18:54:15Z
+duration_days: 0
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Update script at /opt/watchtower-dev-update.sh (fetch, diff, pull if changed, restart)"
+  - "systemd timer running every 5 minutes"
+  - "Script correctly detects \"no changes\" when repo is up-to-date"
+  - "Script logs via journald (tag: watchtower-dev-update)"
+  - "Prod remains manual-only (no auto-update for watchtower service)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "systemd timer (5-min polling) over OneDev webhook"
+    rationale: "Simpler (no webhook endpoint to configure/secure on LXC, no OneDev config needed), integrates with systemd logging, same effective latency for a dashboard"
+    alternatives_rejected: ["OneDev webhook (requires HTTP endpoint on LXC, auth setup, firewall rules)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, automation, ci-cd]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 65
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-283-set-up-dev-auto-update-mechanism-for-wat.md
+generated_by: context-agent-hybrid
