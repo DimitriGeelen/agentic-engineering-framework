@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-262: Replace LLM with Qwen3-14B + thinking mode toggle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-24T09:19:47Z
+# ============================================================================
+
+task_id: T-262
+task_name: "Replace LLM with Qwen3-14B + thinking mode toggle"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:36:31Z
+completed: 2026-02-24T09:19:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-24T10:06:12+01:00
+last_commit: 2026-02-24T10:06:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace LLM with Qwen3-14B + thinking mode toggle
+
+# Key outcomes
+outcomes:
+  - "PRIMARY_MODEL set to qwen3:14b"
+  - "Query complexity classifier (should_think) routes simple vs complex queries"
+  - "think=True/False passed to ollama.chat based on classifier"
+  - "Thinking tokens streamed as separate SSE event type"
+  - "Frontend shows \"Thinking... (Ns)\" indicator during thinking phase"
+  - "Fallback model still works if qwen3:14b unavailable"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-262-replace-llm-with-qwen3-14b--thinking-mod.md"
+  - "web/ask.py"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T10:06:12"
+    action: "T-262: Replace LLM with Qwen3-14B + thinking mode toggle"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, llm, model]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 1
+  files_changed: 3
+  lines_added: 103
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-262-replace-llm-with-qwen3-14b--thinking-mod.md
+generated_by: context-agent-hybrid

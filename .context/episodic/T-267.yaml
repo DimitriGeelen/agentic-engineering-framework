@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-267: User feedback — thumbs up/down on Q&A answers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-24T10:14:42Z
+# ============================================================================
+
+task_id: T-267
+task_name: "User feedback — thumbs up/down on Q&A answers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:37:37Z
+completed: 2026-02-24T10:14:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-24T11:14:31+01:00
+last_commit: 2026-02-24T11:14:31+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  User feedback — thumbs up/down buttons, SQLite storage, analytics page
+
+# Key outcomes
+outcomes:
+  - "web/qa_feedback.py with SQLite storage (save_feedback, get_analytics)"
+  - "POST /search/feedback endpoint in discovery blueprint"
+  - "GET /search/feedback/analytics endpoint with analytics template"
+  - "Thumbs up/down buttons in search.html after answer completes"
+  - "CSRF token included in feedback POST"
+  - "Model name tracked and sent with feedback"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-267-user-feedback--thumbs-updown-on-qa-answe.md"
+  - "web/blueprints/discovery.py"
+  - "web/qa_feedback.py"
+  - "web/templates/feedback_analytics.html"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T11:14:31"
+    action: "T-267: User feedback — thumbs up/down buttons, SQLite storage, analytics page"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 97 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, feedback, analytics]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 97
+  commits: 1
+  files_changed: 5
+  lines_added: 252
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-267-user-feedback--thumbs-updown-on-qa-answe.md
+generated_by: context-agent-hybrid

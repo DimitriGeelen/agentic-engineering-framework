@@ -4,16 +4,16 @@ name: "User feedback — thumbs up/down on Q&A answers"
 description: >
   Add subtle thumbs up/down buttons after Q&A answers. Store feedback in SQLite: query, answer, model, sources, rating (-1/0/1), optional comment, timestamp. POST /search/feedback endpoint. Basic analytics: GET /search/feedback/analytics showing total queries, positive/negative ratio, recent feedback. Enables quality tracking and prompt engineering iteration. Files: web/qa_feedback.py (NEW ~50 lines), web/blueprints/discovery.py (endpoints), web/templates/search.html (buttons), web/templates/feedback_analytics.html (NEW). Ref: docs/reports/T-261-arch-improvements.md §3 (full schema, endpoint code, frontend integration). Predecessor: T-257 (frontend).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [qa, feedback, analytics]
-components: []
+components: [C-003, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:37Z
-last_update: 2026-02-24T10:10:27Z
-date_finished: null
+last_update: 2026-02-24T10:14:41Z
+date_finished: 2026-02-24T10:14:41Z
 ---
 
 # T-267: User feedback — thumbs up/down on Q&A answers
@@ -71,3 +71,6 @@ python3 -c "from web.qa_feedback import save_feedback, get_analytics; print('OK'
 
 ### 2026-02-24T10:10:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T10:14:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

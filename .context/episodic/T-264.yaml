@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-264: fw ask CLI — synchronous RAG+LLM wrapper
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-24T09:31:20Z
+# ============================================================================
+
+task_id: T-264
+task_name: "fw ask CLI — synchronous RAG+LLM wrapper"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:37:00Z
+completed: 2026-02-24T09:31:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-24T10:30:07+01:00
+last_commit: 2026-02-24T10:30:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw ask CLI — synchronous RAG+LLM wrapper
+
+# Key outcomes
+outcomes:
+  - "lib/ask.py implements synchronous RAG+LLM wrapper using rag_retrieve() + ollama.chat()"
+  - "lib/ask.sh provides shell wrapper with arg parsing and --help"
+  - "fw ask route added to bin/fw"
+  - "--json flag outputs structured JSON (answer, model, sources, thinking_used)"
+  - "--concise flag requests brief answers"
+  - "--think/--no-think flags control thinking mode"
+  - "Auto-detect thinking mode via should_think() classifier"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/ask.py"
+  - "lib/ask.sh"
+  - ".tasks/active/T-264-fw-ask-cli--synchronous-ragllm-wrapper.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T10:30:07"
+    action: "T-264: fw ask CLI — synchronous RAG+LLM wrapper"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, cli, framework]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 1
+  files_changed: 4
+  lines_added: 180
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-264-fw-ask-cli--synchronous-ragllm-wrapper.md
+generated_by: context-agent-hybrid

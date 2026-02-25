@@ -4,16 +4,16 @@ name: "Healing agent integration — semantic pattern matching via fw ask"
 description: >
   Replace healing agent's 126 lines of bash keyword-matching (diagnose.sh find_similar_patterns) with a single fw ask --json --scope patterns call. The LLM understands semantic similarity (e.g. 'context explosion' matches 'memory overflow' even without keyword overlap). Also enhance context agent: on fw context focus T-XXX, generate a 200-word briefing from episodic predecessors + related patterns + CLAUDE.md sections. Files: agents/healing/healing.sh (simplify), agents/context/context.sh (add briefing). Ref: docs/reports/T-261-framework-enhancement.md §4 (programmatic access), §6 (session briefing). Depends on: T-264 (fw ask CLI).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: [qa, framework, healing, agents]
-components: []
+components: [agents/context/lib/focus.sh, agents/healing/lib/diagnose.sh]
 related_tasks: []
 created: 2026-02-24T08:38:16Z
-last_update: 2026-02-24T10:23:36Z
-date_finished: null
+last_update: 2026-02-24T10:26:22Z
+date_finished: 2026-02-24T10:26:22Z
 ---
 
 # T-270: Healing agent integration — semantic pattern matching via fw ask
@@ -66,3 +66,6 @@ bash -n agents/context/lib/focus.sh
 
 ### 2026-02-24T10:23:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T10:26:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

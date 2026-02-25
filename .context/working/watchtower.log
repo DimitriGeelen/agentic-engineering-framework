@@ -9,19 +9,23 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [23/Feb/2026 21:59:19] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 21:59:28] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 21:59:28] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 21:59:32] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 21:59:32] "GET /static/pico.min.css HTTP/1.1" 304 -
-127.0.0.1 - - [23/Feb/2026 21:59:32] "GET /static/htmx-ext-sse.js HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 21:59:32] "GET /static/logo.png HTTP/1.1" 304 -
-127.0.0.1 - - [23/Feb/2026 21:59:32] "GET /static/htmx.min.js HTTP/1.1" 304 -
-/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:65: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
-  import pynvml  # type: ignore[import]
-127.0.0.1 - - [23/Feb/2026 22:00:15] "GET /search/ask?q=What%20is%20the%20task%20system%20and%20how%20does%20it%20work? HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 22:01:32] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 22:01:32] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 22:04:37] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 22:06:15] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [23/Feb/2026 22:07:33] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:13:57] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:14:20] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:14:20] "POST /search/feedback HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:14:20] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:24:30] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:24:30] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/pico.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/htmx.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/highlight.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/marked.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/purify.min.js HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /static/logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [24/Feb/2026 11:27:13] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [24/Feb/2026 11:27:16] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:27:39] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:29:46] "GET /search/ask?q=how%20can%20i%20port%20this%20framework%20to%20anothe%20projekt HTTP/1.1" 200 -
+127.0.0.1 - - [24/Feb/2026 11:30:42] "GET /search/ask?q=how%20can%20i%20port%20this%20framework%20to%20anothe%20projekt HTTP/1.1" 200 -

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-263: RAG quick wins — prompt, embeddings, chunking
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-24T09:20:15Z
+# ============================================================================
+
+task_id: T-263
+task_name: "RAG quick wins — prompt, embeddings, chunking"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:36:46Z
+completed: 2026-02-24T09:20:13Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-24T10:03:13+01:00
+last_commit: 2026-02-24T10:03:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RAG quick wins — prompt, embeddings, chunking, cache
+
+# Key outcomes
+outcomes:
+  - "System prompt includes anti-hallucination rules, \"I don't know\" protocol, and structured citation guidance"
+  - "Embedding model switched from sentence-transformers all-MiniLM-L6-v2 to Ollama nomic-embed-text-v2-moe (768-dim)"
+  - "Chunk overlap of 150-200 chars added to _chunk_content()"
+  - "Query embedding cache (LRU) reduces repeated query latency"
+  - "EMBEDDING_DIM updated to 768"
+  - "sentence-transformers import removed (Ollama handles embeddings)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-263-rag-quick-wins--prompt-embeddings-chunki.md"
+  - "web/ask.py"
+  - "web/embeddings.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T10:03:13"
+    action: "T-263: RAG quick wins — prompt, embeddings, chunking, cache"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, rag, embeddings]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 1
+  files_changed: 3
+  lines_added: 101
+  lines_removed: 54
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-263-rag-quick-wins--prompt-embeddings-chunki.md
+generated_by: context-agent-hybrid

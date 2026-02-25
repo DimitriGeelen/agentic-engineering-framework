@@ -4,16 +4,16 @@ name: "Saved answers — curated Q&A for retrieval flywheel"
 description: >
   Add 'Save Answer' button to Q&A UI. Saved answers stored as .context/qa/YYYY-MM-DD-{slug}.md with question, answer, sources, date. Files get indexed by existing BM25+vector search infrastructure on next rebuild. Creates a knowledge flywheel: good answers become first-class retrieval sources for future queries. Implementation: POST /search/save endpoint (~20 lines in discovery.py), save-answer JS function (~15 lines in search.html), .context/qa/ directory. Ref: conversation Q3 in docs/reports/T-261-qa-phase2-research.md §Dialogue Log Q3. Predecessor: T-256 (ask endpoint), T-257 (frontend).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [qa, knowledge, search]
-components: []
+components: [C-003, web/embeddings.py, web/search.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:11Z
-last_update: 2026-02-24T10:04:03Z
-date_finished: null
+last_update: 2026-02-24T10:09:38Z
+date_finished: 2026-02-24T10:09:38Z
 ---
 
 # T-265: Saved answers — curated Q&A for retrieval flywheel
@@ -72,3 +72,6 @@ grep -q "Saved Answers" web/search.py
 
 ### 2026-02-24T10:04:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-24T10:09:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

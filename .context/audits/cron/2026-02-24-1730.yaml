@@ -1,0 +1,32 @@
+# Audit Results - 2026-02-24-1730
+timestamp: 2026-02-24T16:30:01Z
+sections: "structure,compliance,quality"
+summary:
+  pass: 9
+  warn: 1
+  fail: 1
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: FAIL
+    check: "YAML parse error: metrics-history.yaml"
+    mitigation: "Fix the YAML syntax in .context/project/metrics-history.yaml"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
+  - level: PASS
+    check: "Fabric: 107 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 97/107 cards enriched (10 without edges)"
+  - level: PASS
+    check: "All 8 active tasks are valid"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"

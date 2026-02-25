@@ -294,3 +294,10 @@ decisions:
     date: 2026-02-23
     task: T-254
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-037
+    decision: "Build infrastructure with graceful fallback, ship without model"
+    scope: project
+    date: 2026-02-24
+    task: T-269
+    rationale: "Auto-captured from task file on completion"

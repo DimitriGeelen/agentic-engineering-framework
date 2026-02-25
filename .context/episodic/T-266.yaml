@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-266: Streaming UX — marked.js, syntax highlighting, copy buttons
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-24T09:31:15Z
+# ============================================================================
+
+task_id: T-266
+task_name: "Streaming UX — marked.js, syntax highlighting, copy buttons"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:37:26Z
+completed: 2026-02-24T09:31:14Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-02-24T10:23:30+01:00
+last_commit: 2026-02-24T10:23:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Streaming UX — marked.js, highlight.js, copy buttons, debounced rendering
+
+# Key outcomes
+outcomes:
+  - "marked.js loaded for full CommonMark markdown rendering"
+  - "highlight.js loaded for code syntax highlighting"
+  - "DOMPurify loaded for XSS prevention"
+  - "Copy buttons added to code blocks"
+  - "Rendering debounced to ~100ms to prevent flicker"
+  - "All JS libraries served locally (no CDN dependency)"
+  - "Citation references styled with sup.citation class"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-266-streaming-ux--markedjs-syntax-highlighti.md"
+  - "web/static/highlight-github-dark.min.css"
+  - "web/static/highlight.min.js"
+  - "web/static/marked.min.js"
+  - "web/static/purify.min.js"
+  - "web/templates/base.html"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T10:23:30"
+    action: "T-266: Streaming UX — marked.js, highlight.js, copy buttons, debounced rendering"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 53 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, frontend, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53
+  commits: 1
+  files_changed: 7
+  lines_added: 1377
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-266-streaming-ux--markedjs-syntax-highlighti.md
+generated_by: context-agent-hybrid
