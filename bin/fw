@@ -126,6 +126,7 @@ show_help() {
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
+    echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (fast, non-interactive)"
@@ -173,6 +174,7 @@ show_help() {
     echo "  fw init /path/to/project --provider claude"
     echo "  fw upgrade /path/to/project --dry-run"
     echo "  fw harvest /path/to/project --dry-run"
+    echo "  fw deploy scaffold --app my-app --pattern swarm --port-prod 5040 --port-dev 5041"
 }
 
 show_version() {
@@ -959,6 +961,15 @@ case "$cmd" in
             exec "$FRAMEWORK_ROOT/bin/watchtower.sh" start
         fi
         exec "$FRAMEWORK_ROOT/bin/watchtower.sh" "$@"
+        ;;
+    deploy)
+        DEPLOYER="/opt/claude-shared-toolkit/skills/infrastructure/ring20-deployer/scripts/ring20_deployer.py"
+        if [ ! -f "$DEPLOYER" ]; then
+            echo -e "${RED}ERROR: ring20-deployer not found at $DEPLOYER${NC}" >&2
+            echo "  Install: git clone <toolkit-repo> /opt/claude-shared-toolkit" >&2
+            exit 1
+        fi
+        exec python3 "$DEPLOYER" "$@"
         ;;
     tier0)
         # Tier 0 enforcement — approve or inspect blocked commands
