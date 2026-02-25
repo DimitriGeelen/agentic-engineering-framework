@@ -4,15 +4,15 @@ name: "Multi-turn Q&A conversation"
 description: >
   Add chat history to Q&A. Client-side history array sent via POST body. Switch from EventSource (GET-only) to fetch + ReadableStream for SSE consumption. Modify stream_answer() to accept history parameter (last 6 turns). Context window management: system prompt (~200 tokens) + RAG context (~3000) + 3 exchanges (~2000) = ~5200 tokens. Frontend: conversation thread display, 'New conversation' button, follow-up input. Ref: docs/reports/T-261-arch-improvements.md §1 (full architecture design, code sketches for both Python and JS). Predecessor: T-256 (endpoint), T-257 (frontend). Note: EventSource→fetch is a one-way door — changes SSE client code significantly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
 tags: [qa, frontend, chat]
-components: []
-related_tasks: []
+components: [web/ask.py, web/blueprints/discovery.py, web/templates/search.html]
+related_tasks: [T-256, T-257, T-261]
 created: 2026-02-24T08:37:50Z
-last_update: 2026-02-24T08:37:50Z
+last_update: 2026-02-25T07:06:34Z
 date_finished: null
 ---
 
@@ -20,40 +20,54 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Multi-turn Q&A conversation — EventSource→fetch one-way door. Ref: docs/reports/T-261-arch-improvements.md §1.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] stream_answer() accepts history parameter (list of {role, content} dicts)
+- [x] History truncated to last 6 turns (3 exchanges) for context window management
+- [x] /search/ask supports POST with JSON body {query, history}
+- [x] GET /search/ask still works (backward compatible)
+- [x] Frontend uses fetch+ReadableStream instead of EventSource
+- [x] Client-side _conversationHistory array tracks conversation state
+- [x] Conversation thread displays previous Q&A turns
+- [x] New Conversation button clears history and thread
+- [x] Follow-up questions sent with full conversation history
+- [x] AbortController replaces EventSource.close() for request cancellation
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Multi-turn answers reference prior conversation context naturally
+- [ ] Conversation thread is readable and well-formatted
+- [ ] New Conversation button resets cleanly
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# stream_answer accepts history parameter
+grep -q "def stream_answer.*history" web/ask.py
+# History truncation logic
+grep -q "MAX_HISTORY_TURNS" web/ask.py
+# POST method on /search/ask
+grep -q 'methods=\["GET", "POST"\]' web/blueprints/discovery.py
+# History extracted from POST body
+grep -q "history.*data.get" web/blueprints/discovery.py
+# Frontend uses fetch instead of EventSource
+grep -q "fetch.*search/ask" web/templates/search.html
+# Conversation history array exists
+grep -q "_conversationHistory" web/templates/search.html
+# New Conversation function exists
+grep -q "function newConversation" web/templates/search.html
+# AbortController for request cancellation
+grep -q "AbortController" web/templates/search.html
+# Module imports correctly
+python3 -c "from web.ask import stream_answer; print('OK')"
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-02-25 — SSE transport
+- **Chose:** fetch+ReadableStream with POST body for SSE consumption
+- **Why:** EventSource only supports GET (no request body for history). fetch+ReadableStream allows POST with JSON body while still reading SSE stream.
+- **Rejected:** EventSource with history in query params (URL length limits), server-side session storage (adds server state complexity)
 
 ## Updates
 
@@ -61,3 +75,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-268-multi-turn-qa-conversation.md
 - **Context:** Initial task creation
+
+### 2026-02-25T07:06:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

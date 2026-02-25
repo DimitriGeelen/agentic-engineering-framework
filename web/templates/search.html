@@ -15,10 +15,20 @@
     </fieldset>
 </form>
 
-<!-- Ask Q&A Section (T-257) -->
+<!-- Ask Q&A Section (T-257, T-268: multi-turn) -->
 <details id="ask-section" style="margin-bottom: 1.5rem;">
     <summary><strong>Ask a Question</strong> — get an AI-assisted answer from project knowledge</summary>
     <article style="margin-top: 0.5rem; padding: 1rem;">
+        <!-- Conversation header: shows turn count + new conversation button -->
+        <div id="conv-header" style="display: none; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <small id="conv-turn-count" style="color: var(--pico-muted-color);"></small>
+            <span style="flex: 1;"></span>
+            <button onclick="newConversation()" class="outline secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">New Conversation</button>
+        </div>
+
+        <!-- Previous conversation turns (T-268) -->
+        <div id="conv-thread" style="display: none; margin-bottom: 1rem; max-height: 400px; overflow-y: auto; border-left: 3px solid var(--pico-muted-border-color); padding-left: 0.75rem;"></div>
+
         <div style="display: flex; gap: 0.5rem; align-items: end;">
             <input type="text" id="ask-input" placeholder="Ask about the framework, tasks, patterns..." style="margin-bottom: 0; flex: 1;" aria-label="Question">
             <button id="ask-btn" onclick="askQuestion()" style="margin-bottom: 0; white-space: nowrap;">Ask</button>
@@ -121,7 +131,7 @@
 </div>
 {% endif %}
 
-<!-- T-266: Styles for Q&A rendering -->
+<!-- T-266: Styles for Q&A rendering, T-268: Conversation thread -->
 <style>
 #ask-text pre { position: relative; }
 #ask-text pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
@@ -132,15 +142,24 @@ sup.citation { color: var(--pico-primary); font-weight: 600; cursor: default; }
 #ask-text p { margin-bottom: 0.75rem; }
 #ask-text ul, #ask-text ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
 #ask-text h1, #ask-text h2, #ask-text h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
+/* T-268: Conversation thread styling */
+#conv-thread::-webkit-scrollbar { width: 4px; }
+#conv-thread::-webkit-scrollbar-thumb { background: var(--pico-muted-border-color); border-radius: 2px; }
 </style>
 
 <script>
-/* Ask Q&A (T-257) — SSE streaming with token-by-token display */
-var _askEvtSource = null;
+/* Ask Q&A (T-257, T-268: multi-turn) — fetch+ReadableStream SSE */
+var _askAbort = null;
 var _lastQuestion = '';
 var _lastAnswer = '';
 var _lastSources = [];
 var _lastModel = '';
+var _conversationHistory = [];
+
+function _getCsrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
 
 function saveAnswer() {
     var btn = document.getElementById('ask-save-btn');
@@ -149,17 +168,10 @@ function saveAnswer() {
     btn.textContent = 'Saving...';
     status.textContent = '';
 
-    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
     fetch('/search/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-        body: JSON.stringify({
-            question: _lastQuestion,
-            answer: _lastAnswer,
-            sources: _lastSources
-        })
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
+        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources })
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -189,12 +201,9 @@ function sendFeedback(rating) {
     upBtn.disabled = true;
     downBtn.disabled = true;
 
-    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-
     fetch('/search/feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
         body: JSON.stringify({
             query: _lastQuestion,
             answer_preview: _lastAnswer.substring(0, 500),
@@ -222,6 +231,45 @@ function sendFeedback(rating) {
     });
 }
 
+/* T-268: New conversation — clear history and thread */
+function newConversation() {
+    _conversationHistory = [];
+    document.getElementById('conv-thread').innerHTML = '';
+    document.getElementById('conv-thread').style.display = 'none';
+    document.getElementById('conv-header').style.display = 'none';
+    document.getElementById('ask-answer').style.display = 'none';
+    document.getElementById('ask-sources').style.display = 'none';
+    document.getElementById('ask-actions-row').style.display = 'none';
+    document.getElementById('ask-error').style.display = 'none';
+    document.getElementById('ask-input').value = '';
+    document.getElementById('ask-input').focus();
+}
+
+/* T-268: Add completed turn to the conversation thread */
+function _addTurnToThread(question, answerHtml) {
+    var thread = document.getElementById('conv-thread');
+    var turn = document.createElement('div');
+    turn.style.cssText = 'margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--pico-muted-border-color);';
+    turn.innerHTML =
+        '<div style="font-weight: 600; font-size: 0.85rem; color: var(--pico-primary); margin-bottom: 0.25rem;">' + escHtml(question) + '</div>' +
+        '<div style="font-size: 0.85rem; line-height: 1.5; max-height: 150px; overflow-y: auto;">' + answerHtml + '</div>';
+    thread.appendChild(turn);
+    thread.style.display = 'block';
+    thread.scrollTop = thread.scrollHeight;
+}
+
+/* T-268: Update conversation header */
+function _updateConvHeader() {
+    var turns = _conversationHistory.length / 2;
+    var header = document.getElementById('conv-header');
+    if (turns > 0) {
+        document.getElementById('conv-turn-count').textContent = turns + ' turn' + (turns !== 1 ? 's' : '');
+        header.style.display = 'flex';
+    } else {
+        header.style.display = 'none';
+    }
+}
+
 function askQuestion() {
     var input = document.getElementById('ask-input');
     var query = input.value.trim();
@@ -237,6 +285,11 @@ function askQuestion() {
     var sourceCount = document.getElementById('ask-source-count');
     var errorDiv = document.getElementById('ask-error');
 
+    /* T-268: Archive previous turn to thread before starting new one */
+    if (_lastQuestion && _lastAnswer) {
+        _addTurnToThread(_lastQuestion, renderAnswer(_lastAnswer));
+    }
+
     /* Reset UI */
     btn.disabled = true;
     btn.textContent = 'Thinking...';
@@ -251,121 +304,169 @@ function askQuestion() {
     errorDiv.style.display = 'none';
     document.getElementById('ask-actions-row').style.display = 'none';
     _lastSources = [];
+    input.value = '';
 
-    /* Close previous connection if any */
-    if (_askEvtSource) { _askEvtSource.close(); _askEvtSource = null; }
+    /* Abort previous request if any */
+    if (_askAbort) { _askAbort.abort(); _askAbort = null; }
 
-    var url = '/search/ask?q=' + encodeURIComponent(query);
-    var evtSource = new EventSource(url);
-    _askEvtSource = evtSource;
+    /* T-268: POST with conversation history via fetch+ReadableStream */
+    var abortCtrl = new AbortController();
+    _askAbort = abortCtrl;
+
     var fullText = '';
     var gotFirstToken = false;
     var isThinking = false;
     var thinkingStart = 0;
 
-    evtSource.onmessage = function(event) {
-        var data;
-        try { data = JSON.parse(event.data); } catch(e) { return; }
+    fetch('/search/ask', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': _getCsrfToken()
+        },
+        body: JSON.stringify({
+            query: query,
+            history: _conversationHistory
+        }),
+        signal: abortCtrl.signal
+    }).then(function(response) {
+        if (!response.ok) {
+            throw new Error('Server error: ' + response.status);
+        }
+        var reader = response.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
 
-        if (data.type === 'model') {
-            _lastModel = data.model;
-            var label = 'Model: ' + data.model;
-            if (data.thinking) label += ' (thinking mode)';
-            modelDiv.textContent = label;
-            modelDiv.style.display = 'block';
-            if (data.thinking) {
-                isThinking = true;
-                thinkingStart = Date.now();
-                statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>';
+        function processBuffer() {
+            var parts = buffer.split('\n\n');
+            buffer = parts.pop();
+            parts.forEach(function(part) {
+                var match = part.match(/^data:\s*(.+)$/m);
+                if (!match) return;
+                var data;
+                try { data = JSON.parse(match[1]); } catch(e) { return; }
+                handleEvent(data);
+            });
+        }
+
+        function handleEvent(data) {
+            if (data.type === 'model') {
+                _lastModel = data.model;
+                var label = 'Model: ' + data.model;
+                if (data.thinking) label += ' (thinking mode)';
+                modelDiv.textContent = label;
+                modelDiv.style.display = 'block';
+                if (data.thinking) {
+                    isThinking = true;
+                    thinkingStart = Date.now();
+                    statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>';
+                }
             }
-        }
-        else if (data.type === 'thinking') {
-            /* Update thinking indicator with elapsed time */
-            var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
-            statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
-        }
-        else if (data.type === 'thinking_done') {
-            isThinking = false;
-            statusDiv.style.display = 'none';
-        }
-        else if (data.type === 'token') {
-            if (!gotFirstToken) {
-                gotFirstToken = true;
+            else if (data.type === 'thinking') {
+                var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
+                statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
+            }
+            else if (data.type === 'thinking_done') {
+                isThinking = false;
                 statusDiv.style.display = 'none';
             }
-            fullText += data.content;
-            /* Debounced markdown rendering (T-266) */
-            renderAnswerDebounced(fullText, textDiv);
+            else if (data.type === 'token') {
+                if (!gotFirstToken) {
+                    gotFirstToken = true;
+                    statusDiv.style.display = 'none';
+                }
+                fullText += data.content;
+                renderAnswerDebounced(fullText, textDiv);
+            }
+            else if (data.type === 'sources') {
+                var sources = data.sources || [];
+                _lastSources = sources;
+                sourceCount.textContent = sources.length;
+                sourceList.innerHTML = '';
+                sources.forEach(function(src) {
+                    var link = pathToLink(src.path);
+                    var el = document.createElement('div');
+                    el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
+                    el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
+                        (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
+                        escHtml(src.title) +
+                        (link ? '</a>' : '') +
+                        ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
+                        '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
+                    sourceList.appendChild(el);
+                });
+                sourcesEl.style.display = 'block';
+                sourcesEl.setAttribute('open', '');
+                htmx.process(sourceList);
+            }
+            else if (data.type === 'done') {
+                _askAbort = null;
+                if (_renderTimer) clearTimeout(_renderTimer);
+                textDiv.innerHTML = renderAnswer(fullText);
+                addCopyButtons(textDiv);
+                btn.disabled = false;
+                btn.textContent = 'Ask';
+                btn.removeAttribute('aria-busy');
+                /* Update conversation state (T-268) */
+                _lastAnswer = fullText;
+                _lastQuestion = query;
+                _conversationHistory.push({role: 'user', content: query});
+                _conversationHistory.push({role: 'assistant', content: fullText});
+                _updateConvHeader();
+                /* Show action buttons (T-265, T-267) */
+                document.getElementById('ask-actions-row').style.display = 'flex';
+                document.getElementById('ask-save-btn').disabled = false;
+                document.getElementById('ask-save-btn').textContent = 'Save Answer';
+                document.getElementById('ask-save-status').textContent = '';
+                document.getElementById('fb-up').disabled = false;
+                document.getElementById('fb-down').disabled = false;
+                document.getElementById('fb-up').style.opacity = '1';
+                document.getElementById('fb-down').style.opacity = '1';
+                document.getElementById('fb-status').textContent = '';
+                input.focus();
+            }
+            else if (data.type === 'error') {
+                _askAbort = null;
+                errorDiv.textContent = data.message;
+                errorDiv.style.display = 'block';
+                statusDiv.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = 'Ask';
+                btn.removeAttribute('aria-busy');
+            }
         }
-        else if (data.type === 'sources') {
-            var sources = data.sources || [];
-            _lastSources = sources;
-            sourceCount.textContent = sources.length;
-            sourceList.innerHTML = '';
-            sources.forEach(function(src) {
-                var link = pathToLink(src.path);
-                var el = document.createElement('div');
-                el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
-                el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
-                    (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
-                    escHtml(src.title) +
-                    (link ? '</a>' : '') +
-                    ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
-                    '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
-                sourceList.appendChild(el);
-            });
-            sourcesEl.style.display = 'block';
-            sourcesEl.setAttribute('open', '');
-            /* Re-process htmx on new links */
-            htmx.process(sourceList);
-        }
-        else if (data.type === 'done') {
-            evtSource.close();
-            _askEvtSource = null;
-            /* Final render to catch last debounce window */
-            if (_renderTimer) clearTimeout(_renderTimer);
-            textDiv.innerHTML = renderAnswer(fullText);
-            addCopyButtons(textDiv);
-            btn.disabled = false;
-            btn.textContent = 'Ask';
-            btn.removeAttribute('aria-busy');
-            /* Show action buttons (T-265, T-267) */
-            _lastAnswer = fullText;
-            _lastQuestion = query;
-            document.getElementById('ask-actions-row').style.display = 'flex';
-            document.getElementById('ask-save-btn').disabled = false;
-            document.getElementById('ask-save-btn').textContent = 'Save Answer';
-            document.getElementById('ask-save-status').textContent = '';
-            document.getElementById('fb-up').disabled = false;
-            document.getElementById('fb-down').disabled = false;
-            document.getElementById('fb-up').style.opacity = '1';
-            document.getElementById('fb-down').style.opacity = '1';
-            document.getElementById('fb-status').textContent = '';
-        }
-        else if (data.type === 'error') {
-            evtSource.close();
-            _askEvtSource = null;
-            errorDiv.textContent = data.message;
-            errorDiv.style.display = 'block';
-            statusDiv.style.display = 'none';
-            btn.disabled = false;
-            btn.textContent = 'Ask';
-            btn.removeAttribute('aria-busy');
-        }
-    };
 
-    evtSource.onerror = function() {
-        evtSource.close();
-        _askEvtSource = null;
-        if (!gotFirstToken) {
-            errorDiv.textContent = 'Connection to LLM failed. Is ollama running?';
-            errorDiv.style.display = 'block';
-            statusDiv.style.display = 'none';
+        function read() {
+            reader.read().then(function(result) {
+                if (result.done) {
+                    processBuffer();
+                    return;
+                }
+                buffer += decoder.decode(result.value, { stream: true });
+                processBuffer();
+                read();
+            }).catch(function(err) {
+                if (err.name !== 'AbortError') {
+                    errorDiv.textContent = 'Stream interrupted';
+                    errorDiv.style.display = 'block';
+                    statusDiv.style.display = 'none';
+                    btn.disabled = false;
+                    btn.textContent = 'Ask';
+                    btn.removeAttribute('aria-busy');
+                }
+            });
         }
+
+        read();
+    }).catch(function(err) {
+        if (err.name === 'AbortError') return;
+        errorDiv.textContent = 'Connection to LLM failed. Is ollama running?';
+        errorDiv.style.display = 'block';
+        statusDiv.style.display = 'none';
         btn.disabled = false;
         btn.textContent = 'Ask';
         btn.removeAttribute('aria-busy');
-    };
+    });
 }
 
 /* Allow Enter key to submit */

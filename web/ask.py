@@ -138,8 +138,14 @@ def format_rag_context(chunks: list[dict]) -> str:
 # Streaming Q&A
 # ---------------------------------------------------------------------------
 
-def stream_answer(query: str, chunks: list[dict]):
+def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = None):
     """Generator yielding SSE events for a RAG-assisted answer.
+
+    Args:
+        query: The user's question.
+        chunks: RAG-retrieved context chunks.
+        history: Optional conversation history as list of {role, content} dicts.
+                 Last 6 turns (3 exchanges) are used to stay within context window.
 
     Yields:
         SSE-formatted strings: "data: {...}\\n\\n"
@@ -160,16 +166,27 @@ def stream_answer(query: str, chunks: list[dict]):
     context = format_rag_context(chunks)
     user_message = f"{context}\n\n## Question\n\n{query}"
 
+    # Build message list: system + history + current query (T-268)
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    # Add conversation history (last 6 turns = 3 exchanges)
+    MAX_HISTORY_TURNS = 6
+    if history:
+        for msg in history[-MAX_HISTORY_TURNS:]:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content})
+
+    messages.append({"role": "user", "content": user_message})
+
     # Send model info with thinking status
     yield f"data: {json.dumps({'type': 'model', 'model': model, 'thinking': use_thinking})}\n\n"
 
     try:
         response = ollama.chat(
             model=model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message},
-            ],
+            messages=messages,
             stream=True,
             think=use_thinking,
         )

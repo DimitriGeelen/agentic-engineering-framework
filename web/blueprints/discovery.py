@@ -177,13 +177,24 @@ def search_view():
     )
 
 
-@bp.route("/search/ask")
+@bp.route("/search/ask", methods=["GET", "POST"])
 def search_ask():
-    """SSE streaming endpoint for LLM-assisted Q&A (T-256)."""
+    """SSE streaming endpoint for LLM-assisted Q&A (T-256, T-268).
+
+    GET:  /search/ask?q=... (single-shot, backward compatible)
+    POST: /search/ask with JSON {query, history} (multi-turn conversation)
+    """
     from web.ask import stream_answer
     from web.embeddings import rag_retrieve
 
-    query = request.args.get("q", "").strip()
+    history = []
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        query = (data.get("query") or data.get("q") or "").strip()
+        history = data.get("history") or []
+    else:
+        query = request.args.get("q", "").strip()
+
     if not query or len(query) < 2:
         def error_stream():
             yield 'data: {"type": "error", "message": "Query too short"}\n\n'
@@ -192,7 +203,7 @@ def search_ask():
     chunks = rag_retrieve(query, limit=10)
 
     return Response(
-        stream_answer(query, chunks),
+        stream_answer(query, chunks, history=history),
         mimetype="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
