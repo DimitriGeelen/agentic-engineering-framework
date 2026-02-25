@@ -4,16 +4,16 @@ name: "Multi-turn Q&A conversation"
 description: >
   Add chat history to Q&A. Client-side history array sent via POST body. Switch from EventSource (GET-only) to fetch + ReadableStream for SSE consumption. Modify stream_answer() to accept history parameter (last 6 turns). Context window management: system prompt (~200 tokens) + RAG context (~3000) + 3 exchanges (~2000) = ~5200 tokens. Frontend: conversation thread display, 'New conversation' button, follow-up input. Ref: docs/reports/T-261-arch-improvements.md §1 (full architecture design, code sketches for both Python and JS). Predecessor: T-256 (endpoint), T-257 (frontend). Note: EventSource→fetch is a one-way door — changes SSE client code significantly.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: [qa, frontend, chat]
-components: [web/ask.py, web/blueprints/discovery.py, web/templates/search.html]
+components: [C-003, web/templates/search.html]
 related_tasks: [T-256, T-257, T-261]
 created: 2026-02-24T08:37:50Z
-last_update: 2026-02-25T07:06:34Z
-date_finished: null
+last_update: 2026-02-25T07:21:39Z
+date_finished: 2026-02-25T07:21:39Z
 ---
 
 # T-268: Multi-turn Q&A conversation
@@ -78,3 +78,6 @@ python3 -c "from web.ask import stream_answer; print('OK')"
 
 ### 2026-02-25T07:06:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-25T07:21:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

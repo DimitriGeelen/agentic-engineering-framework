@@ -4,16 +4,16 @@ name: "Production readiness — WSGI, health endpoint, config, error handling"
 description: >
   Prepare Watchtower web app for production deployment. Create WSGI entry point (gunicorn-compatible), add /health endpoint with dependency checks (Ollama, embedding DB), implement environment-based config module, add 500 error handler, move embedding DB to persistent path. See docs/reports/T-272-deploy-watchtower-ring20.md RQ-3.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [deployment, web, production]
-components: [web/app.py, web/shared.py, web/embeddings.py, web/ask.py, bin/watchtower.sh]
+components: [web/app.py, web/embeddings.py]
 related_tasks: [T-272, T-274, T-254, T-262, T-263]
 created: 2026-02-25T08:09:27Z
-last_update: 2026-02-25T08:25:48Z
-date_finished: null
+last_update: 2026-02-25T08:34:58Z
+date_finished: 2026-02-25T08:34:58Z
 ---
 
 # T-273: Production readiness — WSGI, health endpoint, config, error handling
@@ -88,3 +88,9 @@ grep -qv '"/tmp/' web/embeddings.py || echo "WARN: /tmp still referenced"
 
 ### 2026-02-25T08:25:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-25T08:34:58Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-02-25T08:34:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

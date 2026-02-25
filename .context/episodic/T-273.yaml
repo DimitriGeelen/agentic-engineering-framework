@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-273: Production readiness — WSGI, health endpoint, config, error handling
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T08:35:00Z
+# ============================================================================
+
+task_id: T-273
+task_name: "Production readiness — WSGI, health endpoint, config, error handling"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T08:09:27Z
+completed: 2026-02-25T08:34:58Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T09:34:42+01:00
+last_commit: 2026-02-25T09:34:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Production readiness — WSGI, health, config, error handling
+
+# Key outcomes
+outcomes:
+  - "`web/wsgi.py` exists with `application = create_app()` export"
+  - "`gunicorn -w 1 -b 127.0.0.1:3001 web.wsgi:application --check-config` succeeds (config valid)"
+  - "`GET /health` returns JSON with `app`, `ollama`, `embeddings` keys"
+  - "`/health` returns HTTP 503 when Ollama is unreachable (graceful degradation)"
+  - "`web/config.py` exists with `OLLAMA_HOST`, `EMBEDDING_MODEL`, `PRIMARY_MODEL`, `VECTOR_DB_PATH`"
+  - "All hardcoded model names in `web/ask.py` replaced with config references"
+  - "Embedding DB path configurable via `VECTOR_DB_PATH` env var (default: `.context/working/fw-vec-index.db`)"
+  - "500 error handler registered — does not leak stack traces"
+  - "`FW_SECRET_KEY` required in production (not auto-generated)"
+  - "Existing tests/curl commands still pass (no regression)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Production readiness — WSGI, health, config, error handling"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-273-production-readiness--wsgi-health-endpoi.md"
+  - "web/app.py"
+  - "web/ask.py"
+  - "web/config.py"
+  - "web/embeddings.py"
+  - "web/wsgi.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T09:34:42"
+    action: "T-273: Production readiness — WSGI, health, config, error handling"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, web, production]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 6
+  lines_added: 253
+  lines_removed: 124
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-273-production-readiness--wsgi-health-endpoi.md
+generated_by: context-agent-hybrid

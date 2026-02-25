@@ -12,7 +12,7 @@ tags: [bugfix, budget, enforcement]
 components: [agents/context/budget-gate.sh]
 related_tasks: [T-138, T-139, T-228]
 created: 2026-02-25T06:34:08Z
-last_update: 2026-02-25T06:34:08Z
+last_update: 2026-02-25T06:38:07Z
 date_finished: null
 ---
 

@@ -4,7 +4,7 @@ name: "Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes"
 description: >
   Generate deployment files for Watchtower using swarm pattern. Customize Dockerfile for Flask+deps, configure docker-compose with health checks, create Traefik routes for watchtower.docker.ring20.geelenandcompany.com. Wire OLLAMA_HOST to GPU host. Depends on T-273 (needs /health endpoint). See docs/reports/T-272-deploy-watchtower-ring20.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [deployment, infrastructure, docker, traefik]
 components: [bin/fw, Dockerfile, deploy/docker-compose.swarm.yml, deploy/traefik-routes.yml]
 related_tasks: [T-272, T-273, T-277, T-077]
 created: 2026-02-25T08:09:37Z
-last_update: 2026-02-25T09:16:28Z
-date_finished: null
+last_update: 2026-02-25T09:24:19Z
+date_finished: 2026-02-25T09:24:19Z
 ---
 
 # T-274: Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes
@@ -101,3 +101,9 @@ grep -q "5050" deploy/docker-compose.swarm.yml
 
 ### 2026-02-25T09:16:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-25T09:24:19Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-02-25T09:24:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

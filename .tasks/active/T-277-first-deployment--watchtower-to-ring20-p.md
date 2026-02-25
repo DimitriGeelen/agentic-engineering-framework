@@ -4,7 +4,7 @@ name: "First deployment — Watchtower to Ring20 production"
 description: >
   Execute first production deployment of Watchtower. Use fw deploy scaffold, validate with /deploy-check, push to registry, deploy via Swarm, verify health through Traefik FQDN. Document deployment runbook. Depends on T-274 (scaffold) and T-275 (quality gate). See docs/reports/T-272-deploy-watchtower-ring20.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [deployment, production, ring20]
 components: [Dockerfile, deploy/docker-compose.swarm.yml, deploy/traefik-routes.yml, .onedev-buildspec.yml]
 related_tasks: [T-272, T-273, T-274, T-275, T-276]
 created: 2026-02-25T08:09:53Z
-last_update: 2026-02-25T08:09:53Z
+last_update: 2026-02-25T11:13:54Z
 date_finished: null
 ---
 
@@ -89,3 +89,6 @@ test -f docs/deployment-runbook.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-277-first-deployment--watchtower-to-ring20-p.md
 - **Context:** Initial task creation
+
+### 2026-02-25T11:06:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

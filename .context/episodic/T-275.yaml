@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-275: Pre-deploy quality gate — audit section + gated fw deploy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T09:36:16Z
+# ============================================================================
+
+task_id: T-275
+task_name: "Pre-deploy quality gate — audit section + gated fw deploy"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T08:09:44Z
+completed: 2026-02-25T09:36:12Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T10:34:38+01:00
+last_commit: 2026-02-25T10:34:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Pre-deploy quality gate — audit section + gated fw deploy
+
+# Key outcomes
+outcomes:
+  - "`fw audit --section deployment` runs and produces pass/warn/fail results"
+  - "Audit checks: active task, clean git, HEAD commit has T-XXX, deployment files exist"
+  - "`fw deploy` no longer uses raw `exec` — runs audit gates first"
+  - "`fw deploy` blocks (exit 1) when pre-deploy audit fails"
+  - "`fw deploy` logs deployment record to `.context/deployments/YYYY-MM-DD-HHMM.yaml`"
+  - "Deployment record schema includes: app, tier, version, task, commit, gates, result"
+  - "`fw deploy status` still works (passthrough for status/ports subcommands preserved)"
+  - "Swarm buildspec template includes `docker service rollback` on convergence failure"
+  - "Existing audit sections unaffected (regression test)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "bin/fw"
+  - ".onedev-buildspec.yml"
+  - ".tasks/active/T-275-pre-deploy-quality-gate--audit-section--.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T10:34:38"
+    action: "T-275: Pre-deploy quality gate — audit section + gated fw deploy"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 86 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, audit, quality-gate, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 86
+  commits: 1
+  files_changed: 4
+  lines_added: 150
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-275-pre-deploy-quality-gate--audit-section--.md
+generated_by: context-agent-hybrid

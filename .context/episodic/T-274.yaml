@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-274: Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T09:24:20Z
+# ============================================================================
+
+task_id: T-274
+task_name: "Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T08:09:37Z
+completed: 2026-02-25T09:24:19Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T10:24:06+01:00
+last_commit: 2026-02-25T10:24:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Scaffold Watchtower deployment — Dockerfile, compose, Traefik, buildspec
+
+# Key outcomes
+outcomes:
+  - "`Dockerfile` builds successfully (`docker build -t watchtower-test .`)"
+  - "`deploy/docker-compose.swarm.yml` parses (`docker compose -f deploy/docker-compose.swarm.yml config`)"
+  - "`deploy/traefik-routes.yml` is valid YAML"
+  - "`.onedev-buildspec.yml` follows Ring20 patterns (registry push verification, convergence wait)"
+  - "`.dockerignore` excludes .git, .context, .tasks, docs, tests, __pycache__"
+  - "Dockerfile uses gunicorn (not Flask dev server) as entrypoint"
+  - "Health check in compose targets `/health` endpoint (from T-273)"
+  - "OLLAMA_HOST env var configured in compose pointing to GPU host"
+  - "Port allocation registered: 5050 (prod), 5051 (dev)"
+  - "Traefik routes include retry middleware (3 attempts, 200ms interval)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "deploy/docker-compose.swarm.yml"
+  - "deploy/traefik-routes.yml"
+  - "Dockerfile"
+  - ".dockerignore"
+  - ".onedev-buildspec.yml"
+  - ".tasks/active/T-274-scaffold-watchtower-deployment--dockerfi.md"
+  - "web/requirements.txt"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T10:24:06"
+    action: "T-274: Scaffold Watchtower deployment — Dockerfile, compose, Traefik, buildspec"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 74 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, infrastructure, docker, traefik]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 74
+  commits: 1
+  files_changed: 7
+  lines_added: 421
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-274-scaffold-watchtower-deployment--dockerfi.md
+generated_by: context-agent-hybrid

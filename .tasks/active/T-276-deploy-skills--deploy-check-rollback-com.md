@@ -4,7 +4,7 @@ name: "Deploy skills — /deploy-check, /rollback commands"
 description: >
   Create framework skills for deployment lifecycle. /deploy-check: pre-deployment validation (task gate, health, registry, routes). /rollback: explicit deployment recovery with history from .context/deployments/. Each skill enforces task prerequisites, presents numbered options, logs outcomes. Depends on T-275 (needs gated fw deploy and deployment records). See docs/reports/T-272-deploy-watchtower-ring20.md RQ-5.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [deployment, skills, governance]
 components: [.claude/commands/deploy-check.md, .claude/commands/rollback.md, .context/deployments/]
 related_tasks: [T-272, T-275, T-277]
 created: 2026-02-25T08:09:50Z
-last_update: 2026-02-25T10:44:17Z
-date_finished: null
+last_update: 2026-02-25T10:48:42Z
+date_finished: 2026-02-25T10:48:42Z
 ---
 
 # T-276: Deploy skills — /deploy-check, /rollback commands
@@ -88,3 +88,9 @@ grep -q "deployments" .claude/commands/rollback.md
 
 ### 2026-02-25T10:44:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-02-25T10:48:36Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-02-25T10:48:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

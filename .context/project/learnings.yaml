@@ -554,4 +554,11 @@ learnings:
   date: 2026-02-22
   context: Added via context agent
   application: TBD
+- id: L-067
+  learning: "Budget-gate Bug 3 fix (stale critical always blocks) creates a trap: once .budget-status hits critical, the fast path intercepts forever, preventing the slow path from re-reading the actual transcript. Fix: stale critical must fall through to slow path with forced re-read (FORCE_RECHECK). L-014 predicted this class of bug."
+  source: P-009
+  task: T-271
+  date: 2026-02-25
+  context: Added via context agent
+  application: TBD
 candidates: []
