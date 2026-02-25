@@ -4,7 +4,7 @@ name: "Harvest deployment learnings — templates to learnings.yaml"
 description: >
   Extract deployment learnings hardcoded in ring20-deployer Jinja2 templates (L-BUILD-01, L-CICD-05, L-CICD-21, L-SWM-06, L-SWM-08, L-TRF-02) into framework learnings.yaml. Record T-277 deployment experience as new learnings. Feed back into fw deploy quality gates. Depends on T-277 (needs real deployment experience). See docs/reports/T-272-deploy-watchtower-ring20.md RQ-5.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [deployment, learnings, antifragility]
 components: [.context/project/learnings.yaml, agents/audit/audit.sh, bin/fw]
 related_tasks: [T-272, T-277, T-100]
 created: 2026-02-25T08:09:57Z
-last_update: 2026-02-25T08:09:57Z
+last_update: 2026-02-25T12:40:02Z
 date_finished: null
 ---
 
@@ -41,11 +41,11 @@ This is a Level D error escalation (change ways of working) — codifying deploy
 ## Acceptance Criteria
 
 ### Agent
-- [ ] 6 template learnings (L-BUILD-01 through L-TRF-02) added to learnings.yaml with `source: template-harvest` and `task: T-278`
-- [ ] Each harvested learning includes: description, source, task reference, date
-- [ ] New learnings from T-277 deployment experience captured (at least 2)
-- [ ] Audit passes after learnings added (`fw audit` exit 0 or 1)
-- [ ] Learning count in learnings.yaml increased by >= 8
+- [x] 6 template learnings (L-BUILD-01 through L-TRF-02) added to learnings.yaml with `source: template-harvest` and `task: T-278`
+- [x] Each harvested learning includes: description, source, task reference, date
+- [x] New learnings from T-277 deployment experience captured (at least 2)
+- [x] Audit passes after learnings added (`fw audit` exit 0 or 1)
+- [x] Learning count in learnings.yaml increased by >= 8
 
 ### Human
 - [ ] Harvested learnings are accurate and useful (not copied blindly from templates)
@@ -79,3 +79,6 @@ bin/fw audit 2>&1 | tail -5 | grep -qv "Fail: [1-9]"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-278-harvest-deployment-learnings--templates-.md
 - **Context:** Initial task creation
+
+### 2026-02-25T12:40:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

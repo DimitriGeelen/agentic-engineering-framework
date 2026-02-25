@@ -561,4 +561,67 @@ learnings:
   date: 2026-02-25
   context: Added via context agent
   application: TBD
+- id: L-068
+  learning: "Use a dedicated build container (separate from Swarm workers) for Docker image builds. Build isolation prevents resource contention with running services and avoids pulling build dependencies onto production nodes."
+  source: template-harvest (ring20-deployer Dockerfile.python.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-BUILD-01 from ring20-deployer templates. Watchtower uses docker-builder CT 400 (tcp://docker-builder.ring20.geelenandcompany.com:2375) for all image builds, separate from the Swarm cluster nodes."
+  application: Always set DOCKER_HOST to the build container when building images, never build on Swarm manager/workers directly.
+- id: L-069
+  learning: "Always verify Docker registry push before proceeding to deployment. A push that appears to succeed can silently fail (network timeout, registry full). Verify by querying the registry tags API."
+  source: template-harvest (ring20-deployer buildspec-swarm.yml.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-CICD-05 from ring20-deployer templates. Buildspec includes: wget -q -O - http://REGISTRY/v2/APP/tags/list | grep VERSION after push. Validated in T-277: image push verified before deployment."
+  application: "After docker push, always: curl -sf http://REGISTRY/v2/APP/tags/list | grep VERSION"
+- id: L-070
+  learning: "Build containers running inside Docker (DinD or remote Docker) cannot directly reach LAN hosts through Swarm networking. Use a host-networked helper container to bridge the gap."
+  source: template-harvest (ring20-deployer buildspec-swarm.yml.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-CICD-21 from ring20-deployer templates. The deploy step uses: docker run --rm --network host docker:27-cli sh -c 'export DOCKER_HOST=tcp://MANAGER:2375 && docker service update ...' because the CI runner container can't reach the Swarm manager directly."
+  application: When CI/CD needs to interact with Swarm manager from a build container, spawn a host-networked helper.
+- id: L-071
+  learning: "Swarm services on Proxmox 9.1 must use port mode: host, not ingress. Ingress routing mesh is broken on Proxmox-managed Docker nodes (traffic silently dropped). Host mode binds directly to node IPs."
+  source: template-harvest (ring20-deployer docker-compose.swarm.yml.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-SWM-06 from ring20-deployer templates. Watchtower compose uses ports: target:5050 published:5050 mode:host. Confirmed working in T-277 deployment — both nodes respond on their IPs."
+  application: "Always use mode: host in Swarm port configs on Ring20. Never use default (ingress) mode."
+- id: L-072
+  learning: "Use stop-first update order when Swarm has exactly as many eligible nodes as replicas. Start-first needs a spare node to schedule the new container before stopping the old one — with 2 nodes and 2 replicas, there is no spare."
+  source: template-harvest (ring20-deployer docker-compose.swarm.yml.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-SWM-08 from ring20-deployer templates. Watchtower: 2 replicas on 2 nodes (manager + worker-1, worker-2 excluded). start-first would fail because no node can accept a third replica. stop-first works: stop one, start replacement, then repeat."
+  application: "Count eligible nodes vs replicas. If equal, use order: stop-first in update_config."
+- id: L-073
+  learning: "Always sync Traefik file provider routes to ALL Traefik HA nodes. Traefik nodes don't share file provider config — each reads its own /opt/traefik/config/ directory independently. A route added to one node but not the other causes intermittent 404s."
+  source: template-harvest (ring20-deployer traefik-routes.yml.j2)
+  task: T-278
+  date: 2026-02-25
+  context: "L-TRF-02 from ring20-deployer templates. Ring20 has 2 Traefik nodes (.51 and .53). T-277 deployment synced watchtower.yml to both via scp. Forgetting one node would cause ~50% of requests to 404."
+  application: "After creating/updating Traefik routes: scp to BOTH .51 and .53. Add to deployment checklist."
+- id: L-074
+  learning: "Health endpoints must never trigger expensive operations. A /health check that calls index_stats() triggered a full vector index rebuild (embedding all framework files via Ollama), causing the endpoint to hang for minutes. Health checks should be sub-second and read-only."
+  source: T-277 deployment experience
+  task: T-278
+  date: 2026-02-25
+  context: "Discovered during T-277 pre-deploy validation. The health endpoint called index_stats() which calls _get_db() which triggers build_index() when stale. Fixed by checking _db directly without triggering rebuild."
+  application: "Health endpoints: check cached state only, never trigger computation. If a dependency is stale, report 'stale' not 'let me rebuild it for you'."
+- id: L-075
+  learning: "First Swarm deployment requires docker stack deploy (creates network + service). CI/CD buildspec uses docker service update which fails if the service doesn't exist. Keep manual first-deploy steps in the runbook."
+  source: T-277 deployment experience
+  task: T-278
+  date: 2026-02-25
+  context: "T-277 buildspec uses docker service update --image for rolling updates. But watchtower_app didn't exist yet. Had to manually: FW_SECRET_KEY=xxx DOCKER_HOST=tcp://MANAGER docker stack deploy -c compose.yml watchtower. Subsequent deploys can use CI/CD."
+  application: "For new apps: manual docker stack deploy first, then CI/CD handles updates. Document in runbook."
+- id: L-076
+  learning: "Register new apps in ring20-deployer ports.yaml to enable fw deploy status. The deployer's port registry is the source of truth for which apps exist and which ports they use. Without registration, fw deploy status returns 'not found'."
+  source: T-277 deployment experience
+  task: T-278
+  date: 2026-02-25
+  context: "After deploying watchtower, fw deploy status --app watchtower failed with 'not found'. Had to add watchtower entry (prod:5050, dev:5051) to /opt/claude-shared-toolkit/skills/infrastructure/ring20-deployer/ports.yaml."
+  application: "When deploying a new app: add to ports.yaml before or immediately after first deployment."
 candidates: []
