@@ -2,7 +2,7 @@
 id: T-282
 name: "Remap Traefik routes from Swarm to LXC"
 description: >
-  Update deploy/traefik-routes.yml to point watchtower services to LXC IP (192.168.10.141:5050 for prod, 192.168.10.141:5051 for dev) instead of Swarm nodes (.201/.202). Sync to both Traefik nodes (.51 and .53) via SCP. Verify both FQDNs resolve and return /health OK. Critical: L-TRF-02 — sync to BOTH nodes. Depends on T-281 (services running on LXC). See T-279 research. Parent: T-279.
+  Update deploy/traefik-routes.yml to point watchtower services to LXC IP (192.168.10.170:5050 for prod, 192.168.10.170:5051 for dev) instead of Swarm nodes (.201/.202). Sync to both Traefik nodes (.51 and .53) via SCP. Verify both FQDNs resolve and return /health OK. Critical: L-TRF-02 — sync to BOTH nodes. Depends on T-281 (services running on LXC). See T-279 research. Parent: T-279.
 
 status: captured
 workflow_type: build

@@ -74,7 +74,7 @@ Ring20 currently uses Docker Swarm for all web apps. This would be the first LXC
 ### Architecture
 
 ```
-LXC Container (CT on proxmox2, IP 192.168.10.141)
+LXC Container (CT on proxmox2, IP 192.168.10.170)
 ├── /opt/watchtower-dev/     ← git checkout (master/develop)
 │   └── systemd: watchtower-dev on :5051
 │
@@ -85,8 +85,8 @@ LXC Container (CT on proxmox2, IP 192.168.10.141)
 └── Shared: Ollama access via http://192.168.10.107:11434
 
 Traefik (.51/.53):
-  watchtower.docker.ring20...     → http://192.168.10.141:5050
-  watchtower-dev.docker.ring20... → http://192.168.10.141:5051
+  watchtower.docker.ring20...     → http://192.168.10.170:5050
+  watchtower-dev.docker.ring20... → http://192.168.10.170:5051
 ```
 
 ### Update Workflow

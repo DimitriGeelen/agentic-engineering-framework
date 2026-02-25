@@ -2,7 +2,7 @@
 id: T-280
 name: "Provision Watchtower LXC on Proxmox"
 description: >
-  Create LXC container on proxmox2 for Watchtower. IP: 192.168.10.141, hostname: watchtower. Install Python 3.12, git, curl, pip, gunicorn, sqlite-vec deps. Configure static IP, DNS. Enable Proxmox HA for auto-restart on node failure. See T-279 research: docs/reports/T-279-watchtower-deployment-model.md. Parent: T-279.
+  Create LXC container on proxmox2 for Watchtower. IP: 192.168.10.170, hostname: watchtower. Create DHCP reservation for .170 on the router/DHCP server. Install Python 3.12, git, curl, pip, gunicorn, sqlite-vec deps. Configure static IP, DNS. Enable Proxmox HA for auto-restart on node failure. See T-279 research: docs/reports/T-279-watchtower-deployment-model.md. Parent: T-279.
 
 status: started-work
 workflow_type: build

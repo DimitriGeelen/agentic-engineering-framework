@@ -9,7 +9,7 @@
 | Dev FQDN | `https://watchtower-dev.docker.ring20.geelenandcompany.com` |
 | Port | 5050 (prod), 5051 (dev) |
 | Deployment model | LXC container on Proxmox (D-039, see T-279) |
-| LXC host | 192.168.10.141 (CT on proxmox2) |
+| LXC host | 192.168.10.170 (CT on proxmox2) |
 | Ollama host | `192.168.10.107:11434` |
 | Traefik nodes | .51 and .53 (sync both — L-TRF-02) |
 | Git remote | OneDev (`onedev`) |
@@ -19,7 +19,7 @@
 ```
 Browser → Traefik HA (.51/.53, VIP .52)
               ↓
-    LXC Container (192.168.10.141)
+    LXC Container (192.168.10.170)
     ├── watchtower-dev  :5051  ← git checkout (master)
     └── watchtower      :5050  ← git checkout (tagged release)
               ↓
@@ -87,7 +87,7 @@ fw audit --section deployment
 curl -sf http://192.168.10.107:11434/api/tags | head -5
 
 # LXC reachable
-ssh root@192.168.10.141 'systemctl is-active watchtower-dev watchtower'
+ssh root@192.168.10.170 'systemctl is-active watchtower-dev watchtower'
 ```
 
 ## Manual Operations
@@ -95,7 +95,7 @@ ssh root@192.168.10.141 'systemctl is-active watchtower-dev watchtower'
 ### Update Dev
 
 ```bash
-ssh root@192.168.10.141 'cd /opt/watchtower-dev && git pull && systemctl restart watchtower-dev'
+ssh root@192.168.10.170 'cd /opt/watchtower-dev && git pull && systemctl restart watchtower-dev'
 ```
 
 ### Promote to Prod
@@ -106,25 +106,25 @@ git tag v1.X.X
 git push onedev --tags
 
 # Deploy on LXC
-ssh root@192.168.10.141 'cd /opt/watchtower-prod && git fetch --tags && git checkout v1.X.X && pip install -q -r web/requirements.txt && systemctl restart watchtower'
+ssh root@192.168.10.170 'cd /opt/watchtower-prod && git fetch --tags && git checkout v1.X.X && pip install -q -r web/requirements.txt && systemctl restart watchtower'
 ```
 
 ### Rollback Prod
 
 ```bash
 # Check previous tag
-ssh root@192.168.10.141 'cd /opt/watchtower-prod && git tag --sort=-v:refname | head -5'
+ssh root@192.168.10.170 'cd /opt/watchtower-prod && git tag --sort=-v:refname | head -5'
 
 # Rollback to previous version
-ssh root@192.168.10.141 'cd /opt/watchtower-prod && git checkout v1.X.Y && systemctl restart watchtower'
+ssh root@192.168.10.170 'cd /opt/watchtower-prod && git checkout v1.X.Y && systemctl restart watchtower'
 ```
 
 ## Verification
 
 ```bash
 # Health checks (direct)
-curl -sf http://192.168.10.141:5050/health   # prod
-curl -sf http://192.168.10.141:5051/health   # dev
+curl -sf http://192.168.10.170:5050/health   # prod
+curl -sf http://192.168.10.170:5051/health   # dev
 
 # Health checks (via Traefik FQDN)
 curl -sf https://watchtower.docker.ring20.geelenandcompany.com/health
@@ -134,7 +134,7 @@ curl -sf https://watchtower-dev.docker.ring20.geelenandcompany.com/health
 curl -sf https://watchtower.docker.ring20.geelenandcompany.com/ -o /dev/null -w "%{http_code}"
 
 # Service status on LXC
-ssh root@192.168.10.141 'systemctl status watchtower watchtower-dev'
+ssh root@192.168.10.170 'systemctl status watchtower watchtower-dev'
 ```
 
 ## Traefik Routes
