@@ -1,24 +1,24 @@
-# Audit Results - 2026-02-25-1208
-timestamp: 2026-02-25T11:08:19Z
-sections: "deployment"
+# Audit Results - 2026-02-25-1347
+timestamp: 2026-02-25T12:47:27Z
+sections: "structure"
 summary:
-  pass: 5
-  warn: 1
-  fail: 1
+  pass: 8
+  warn: 0
+  fail: 0
 findings:
   - level: PASS
-    check: "Deploy gate: Active task T-277"
-  - level: FAIL
-    check: "Deploy gate: 8 uncommitted source file(s)"
-    mitigation: "Run: fw git commit -m 'T-XXX: pre-deploy commit'"
+    check: "Tasks directory exists"
   - level: PASS
-    check: "Deploy gate: HEAD commit has task reference"
+    check: "Tasks/active directory exists"
   - level: PASS
-    check: "Deploy gate: Dockerfile exists"
+    check: "Tasks/completed directory exists"
   - level: PASS
-    check: "Deploy gate: deploy/docker-compose.swarm.yml exists"
+    check: "Tasks/templates directory exists"
   - level: PASS
-    check: "Deploy gate: deploy/traefik-routes.yml exists"
-  - level: WARN
-    check: "Deploy gate: Health endpoint not reachable"
-    mitigation: "Start server: fw serve (or check if health endpoint exists)"
+    check: "Task template exists"
+  - level: PASS
+    check: "All 11 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 107 registered, 15 unregistered (coverage growing)"
+  - level: PASS
+    check: "Fabric edges: 97/107 cards enriched (10 without edges)"

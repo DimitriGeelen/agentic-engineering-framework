@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-278: Harvest deployment learnings — templates to learnings.yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T12:47:30Z
+# ============================================================================
+
+task_id: T-278
+task_name: "Harvest deployment learnings — templates to learnings.yaml"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T08:09:57Z
+completed: 2026-02-25T12:47:26Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T13:45:20+01:00
+last_commit: 2026-02-25T13:47:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Harvest deployment learnings — 6 template + 3 experience. Fix verification command — avoid grep -qv on piped audit
+
+# Key outcomes
+outcomes:
+  - "6 template learnings (L-BUILD-01 through L-TRF-02) added to learnings.yaml with `source: template-harvest` and `task: T-278`"
+  - "Each harvested learning includes: description, source, task reference, date"
+  - "New learnings from T-277 deployment experience captured (at least 2)"
+  - "Audit passes after learnings added (`fw audit` exit 0 or 1)"
+  - "Learning count in learnings.yaml increased by >= 8"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification command — avoid grep -qv on piped audit"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-278-harvest-deployment-learnings--templates-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T13:45:20"
+    action: "T-278: Harvest deployment learnings — 6 template + 3 experience"
+  - time: "2026-02-25T13:47:18"
+    action: "T-278: Fix verification command — avoid grep -qv on piped audit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 277 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, learnings, antifragility]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 277
+  commits: 2
+  files_changed: 2
+  lines_added: 80
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-278-harvest-deployment-learnings--templates-.md
+generated_by: context-agent-hybrid

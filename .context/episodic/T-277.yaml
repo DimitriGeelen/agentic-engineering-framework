@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-277: First deployment — Watchtower to Ring20 production
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T11:25:10Z
+# ============================================================================
+
+task_id: T-277
+task_name: "First deployment — Watchtower to Ring20 production"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T08:09:53Z
+completed: 2026-02-25T11:25:08Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T12:13:54+01:00
+last_commit: 2026-02-25T12:24:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix health endpoint blocking on stale index rebuild. Pre-deploy state sync — context, tasks, audits. First deployment of Watchtower to Ring20 production
+
+# Key outcomes
+outcomes:
+  - "Docker image builds and pushes to registry (192.168.10.201:5000)"
+  - "Swarm service running with 2 healthy replicas"
+  - "Traefik routes synced to both nodes (.51 and .53)"
+  - "Health endpoint responds: `curl -sf https://watchtower.docker.ring20.geelenandcompany.com/health`"
+  - "Deployment record logged to `.context/deployments/`"
+  - "`fw deploy status --app watchtower` shows healthy"
+  - "Deployment runbook written: `docs/deployment-runbook.md`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix health endpoint blocking on stale index rebuild"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-02-25.yaml"
+  - ".context/audits/cron/2026-02-25-0730.yaml"
+  - ".context/audits/cron/2026-02-25-0745.yaml"
+  - ".context/audits/cron/2026-02-25-0800.yaml"
+  - ".context/audits/cron/2026-02-25-0815.yaml"
+  - ".context/audits/cron/2026-02-25-0830.yaml"
+  - ".context/audits/cron/2026-02-25-0845.yaml"
+  - ".context/audits/cron/2026-02-25-0900.yaml"
+  - ".context/audits/cron/2026-02-25-0915.yaml"
+  - ".context/audits/cron/2026-02-25-0930.yaml"
+  - ".context/audits/cron/2026-02-25-0945.yaml"
+  - ".context/audits/cron/2026-02-25-1000.yaml"
+  - ".context/audits/cron/2026-02-25-1015.yaml"
+  - ".context/audits/cron/2026-02-25-1030.yaml"
+  - ".context/audits/cron/2026-02-25-1045.yaml"
+  - ".context/audits/cron/2026-02-25-1100.yaml"
+  - ".context/audits/cron/2026-02-25-1115.yaml"
+  - ".context/audits/cron/2026-02-25-1130.yaml"
+  - ".context/audits/cron/2026-02-25-1145.yaml"
+  - ".context/audits/cron/2026-02-25-1200.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/deployments/2026-02-25-1222.yaml"
+  - ".context/episodic/T-268.yaml"
+  - ".context/episodic/T-272.yaml"
+  - ".context/episodic/T-273.yaml"
+  - ".context/episodic/T-274.yaml"
+  - ".context/episodic/T-275.yaml"
+  - ".context/episodic/T-276.yaml"
+  - ".context/handovers/S-2026-0225-0920.md"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/fw-vec-index.db"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/deployment-runbook.md"
+  - ".tasks/active/T-268-multi-turn-qa-conversation.md"
+  - ".tasks/active/T-271-fix-budget-gate-stale-critical-status-tr.md"
+  - ".tasks/active/T-273-production-readiness--wsgi-health-endpoi.md"
+  - ".tasks/active/T-274-scaffold-watchtower-deployment--dockerfi.md"
+  - ".tasks/active/T-275-pre-deploy-quality-gate--audit-section--.md"
+  - ".tasks/active/T-276-deploy-skills--deploy-check-rollback-com.md"
+  - ".tasks/active/T-277-first-deployment--watchtower-to-ring20-p.md"
+  - ".tasks/completed/T-272-deploy-watchtower--qa-to-ring20-producti.md"
+  - "web/app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T12:13:54"
+    action: "T-277: Fix health endpoint blocking on stale index rebuild"
+  - time: "2026-02-25T12:14:05"
+    action: "T-277: Pre-deploy state sync — context, tasks, audits"
+  - time: "2026-02-25T12:24:48"
+    action: "T-277: First deployment of Watchtower to Ring20 production"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 195 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, production, ring20]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 195
+  commits: 3
+  files_changed: 50
+  lines_added: 2165
+  lines_removed: 288
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-277-first-deployment--watchtower-to-ring20-p.md
+generated_by: context-agent-hybrid
