@@ -20,19 +20,20 @@ from pathlib import Path
 import ollama
 import sqlite_vec
 
+from web.config import Config
 from web.shared import PROJECT_ROOT
 
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration (T-273: config-driven, no hardcoded paths)
 # ---------------------------------------------------------------------------
 
-MODEL_NAME = "nomic-embed-text-v2-moe"
+MODEL_NAME = Config.EMBEDDING_MODEL
 EMBEDDING_DIM = 768
 CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
-RERANKER_MODEL = "dengcao/Qwen3-Reranker-0.6B"  # T-269: cross-encoder reranking
-DB_PATH = Path("/tmp/fw-vec-index.db")
+RERANKER_MODEL = Config.RERANKER_MODEL
+DB_PATH = Config.VECTOR_DB_PATH
 STALE_SECONDS = 120  # rebuild if older than 2 minutes
 
 # Singleton state

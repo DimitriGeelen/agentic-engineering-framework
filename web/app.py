@@ -8,130 +8,202 @@ SPA-like navigation and Pico CSS styling.
 Usage:
     python3 web/app.py [--port PORT]
     fw serve [--port PORT]
+    gunicorn -w 2 -b 0.0.0.0:5050 web.wsgi:application
 
 Environment:
     PROJECT_ROOT  — Project directory (default: auto-detect from app.py location)
     FW_PORT       — Port number (default: 3000)
+    FW_SECRET_KEY — Required in production (gunicorn). Auto-generated in dev.
 """
 
 import argparse
+import logging
 import os
 import secrets
 import signal
 import sys
 
-from flask import abort, render_template, request, session
+from flask import Flask, abort, jsonify, render_template, request, session
 
+from web.config import Config
 from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, PROJECT_ROOT, build_ambient
 
-# ---------------------------------------------------------------------------
-# Flask application
-# ---------------------------------------------------------------------------
+log = logging.getLogger(__name__)
 
-from flask import Flask
-
-app = Flask(
-    __name__,
-    template_folder=str(APP_DIR / "templates"),
-    static_folder=str(APP_DIR / "static"),
-)
-
-app.secret_key = os.environ.get("FW_SECRET_KEY", secrets.token_hex(32))
 
 # ---------------------------------------------------------------------------
-# CSRF protection
+# Application factory
 # ---------------------------------------------------------------------------
 
+def create_app() -> Flask:
+    """Create and configure the Watchtower Flask application."""
+    app = Flask(
+        __name__,
+        template_folder=str(APP_DIR / "templates"),
+        static_folder=str(APP_DIR / "static"),
+    )
 
-def generate_csrf_token():
-    """Return the current CSRF token, creating one if needed."""
-    if "_csrf_token" not in session:
-        session["_csrf_token"] = secrets.token_hex(32)
-    return session["_csrf_token"]
+    # Secret key: require FW_SECRET_KEY in production, auto-generate in dev
+    if Config.SECRET_KEY:
+        app.secret_key = Config.SECRET_KEY
+    else:
+        app.secret_key = secrets.token_hex(32)
+        log.warning(
+            "FW_SECRET_KEY not set — using auto-generated key. "
+            "Set FW_SECRET_KEY for production deployment."
+        )
+
+    # -------------------------------------------------------------------
+    # CSRF protection
+    # -------------------------------------------------------------------
+
+    def generate_csrf_token():
+        """Return the current CSRF token, creating one if needed."""
+        if "_csrf_token" not in session:
+            session["_csrf_token"] = secrets.token_hex(32)
+        return session["_csrf_token"]
+
+    @app.before_request
+    def csrf_protect():
+        """Validate CSRF token on state-changing requests."""
+        if request.method in ("POST", "PATCH", "PUT", "DELETE"):
+            # Skip CSRF for health endpoint
+            if request.endpoint == "health":
+                return
+            token = (
+                request.form.get("_csrf_token")
+                or request.headers.get("X-CSRF-Token")
+            )
+            if not token or token != session.get("_csrf_token"):
+                abort(403, description="CSRF token missing or invalid")
+
+    app.jinja_env.globals["csrf_token"] = generate_csrf_token
+
+    # -------------------------------------------------------------------
+    # Register blueprints
+    # -------------------------------------------------------------------
+
+    from web.blueprints.core import bp as core_bp
+    from web.blueprints.tasks import bp as tasks_bp
+    from web.blueprints.timeline import bp as timeline_bp
+    from web.blueprints.discovery import bp as discovery_bp
+    from web.blueprints.quality import bp as quality_bp
+    from web.blueprints.session import bp as session_bp
+    from web.blueprints.metrics import bp as metrics_bp
+    from web.blueprints.cockpit import bp as cockpit_bp
+    from web.blueprints.inception import bp as inception_bp
+    from web.blueprints.enforcement import bp as enforcement_bp
+    from web.blueprints.risks import bp as risks_bp
+    from web.blueprints.fabric import bp as fabric_bp
+    from web.blueprints.discoveries import bp as discoveries_bp
+
+    app.register_blueprint(core_bp)
+    app.register_blueprint(tasks_bp)
+    app.register_blueprint(timeline_bp)
+    app.register_blueprint(discovery_bp)
+    app.register_blueprint(quality_bp)
+    app.register_blueprint(session_bp)
+    app.register_blueprint(metrics_bp)
+    app.register_blueprint(cockpit_bp)
+    app.register_blueprint(inception_bp)
+    app.register_blueprint(enforcement_bp)
+    app.register_blueprint(risks_bp)
+    app.register_blueprint(fabric_bp)
+    app.register_blueprint(discoveries_bp)
+
+    # -------------------------------------------------------------------
+    # Health endpoint
+    # -------------------------------------------------------------------
+
+    @app.route("/health")
+    def health():
+        """Health check for load balancers and deployment verification.
+
+        Returns JSON with component status. HTTP 200 if app is healthy,
+        503 if critical dependencies (Ollama) are unreachable.
+        """
+        import ollama as ollama_client
+
+        result = {"app": "ok"}
+        healthy = True
+
+        # Check Ollama connectivity
+        try:
+            ollama_client.list()
+            result["ollama"] = "ok"
+        except Exception as e:
+            result["ollama"] = "unreachable"
+            healthy = False
+
+        # Check embedding index
+        try:
+            from web.embeddings import index_stats
+            stats = index_stats()
+            result["embeddings"] = {
+                "status": "ok",
+                "docs": stats.get("num_docs", 0),
+                "chunks": stats.get("num_chunks", 0),
+            }
+        except Exception:
+            result["embeddings"] = {"status": "unavailable"}
+
+        code = 200 if healthy else 503
+        return jsonify(result), code
+
+    # -------------------------------------------------------------------
+    # Error handlers
+    # -------------------------------------------------------------------
+
+    def _error_context():
+        """Common context for error pages."""
+        return {
+            "nav_groups": NAV_GROUPS,
+            "nav_items": NAV_ITEMS,
+            "active_endpoint": None,
+            "ambient": build_ambient(),
+            "project_root": str(PROJECT_ROOT),
+        }
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template(
+            "_wrapper.html",
+            _content_template="_error.html",
+            page_title="Forbidden",
+            error_title="403 Forbidden",
+            error_message=(
+                str(e.description) if hasattr(e, "description") else str(e)
+            ),
+            **_error_context(),
+        ), 403
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template(
+            "_wrapper.html",
+            _content_template="_error.html",
+            page_title="Not Found",
+            error_title="404 Not Found",
+            error_message="The requested page does not exist.",
+            **_error_context(),
+        ), 404
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        return render_template(
+            "_wrapper.html",
+            _content_template="_error.html",
+            page_title="Server Error",
+            error_title="500 Internal Server Error",
+            error_message="An unexpected error occurred. Check the server logs.",
+            **_error_context(),
+        ), 500
+
+    return app
 
 
-@app.before_request
-def csrf_protect():
-    """Validate CSRF token on state-changing requests."""
-    if request.method in ("POST", "PATCH", "PUT", "DELETE"):
-        token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
-        if not token or token != session.get("_csrf_token"):
-            abort(403, description="CSRF token missing or invalid")
-
-
-# Make csrf_token available in all templates
-app.jinja_env.globals["csrf_token"] = generate_csrf_token
-
-# ---------------------------------------------------------------------------
-# Register blueprints
-# ---------------------------------------------------------------------------
-
-from web.blueprints.core import bp as core_bp
-from web.blueprints.tasks import bp as tasks_bp
-from web.blueprints.timeline import bp as timeline_bp
-from web.blueprints.discovery import bp as discovery_bp
-from web.blueprints.quality import bp as quality_bp
-from web.blueprints.session import bp as session_bp
-from web.blueprints.metrics import bp as metrics_bp
-from web.blueprints.cockpit import bp as cockpit_bp
-from web.blueprints.inception import bp as inception_bp
-from web.blueprints.enforcement import bp as enforcement_bp
-from web.blueprints.risks import bp as risks_bp
-from web.blueprints.fabric import bp as fabric_bp
-from web.blueprints.discoveries import bp as discoveries_bp
-
-app.register_blueprint(core_bp)
-app.register_blueprint(tasks_bp)
-app.register_blueprint(timeline_bp)
-app.register_blueprint(discovery_bp)
-app.register_blueprint(quality_bp)
-app.register_blueprint(session_bp)
-app.register_blueprint(metrics_bp)
-app.register_blueprint(cockpit_bp)
-app.register_blueprint(inception_bp)
-app.register_blueprint(enforcement_bp)
-app.register_blueprint(risks_bp)
-app.register_blueprint(fabric_bp)
-app.register_blueprint(discoveries_bp)
-
-# ---------------------------------------------------------------------------
-# Error handlers
-# ---------------------------------------------------------------------------
-
-
-def _error_context():
-    """Common context for error pages."""
-    return {
-        "nav_groups": NAV_GROUPS,
-        "nav_items": NAV_ITEMS,
-        "active_endpoint": None,
-        "ambient": build_ambient(),
-        "project_root": str(PROJECT_ROOT),
-    }
-
-
-@app.errorhandler(403)
-def forbidden(e):
-    return render_template(
-        "_wrapper.html",
-        _content_template="_error.html",
-        page_title="Forbidden",
-        error_title="403 Forbidden",
-        error_message=str(e.description) if hasattr(e, "description") else str(e),
-        **_error_context(),
-    ), 403
-
-
-@app.errorhandler(404)
-def not_found(e):
-    return render_template(
-        "_wrapper.html",
-        _content_template="_error.html",
-        page_title="Not Found",
-        error_title="404 Not Found",
-        error_message="The requested page does not exist.",
-        **_error_context(),
-    ), 404
+# Module-level app for backward compat (python3 web/app.py, existing imports)
+app = create_app()
 
 # ---------------------------------------------------------------------------
 # CLI entry point
@@ -147,7 +219,7 @@ def main():
     parser.add_argument(
         "--port", "-p",
         type=int,
-        default=int(os.environ.get("FW_PORT", "3000")),
+        default=Config.PORT,
         help="Port to listen on (default: 3000, env: FW_PORT)",
     )
     parser.add_argument(
@@ -158,7 +230,7 @@ def main():
     )
     args = parser.parse_args()
 
-    host = os.environ.get("FW_HOST", "0.0.0.0")
+    host = Config.HOST
     port = args.port
 
     def handle_sigint(sig, frame):

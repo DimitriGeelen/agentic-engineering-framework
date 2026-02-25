@@ -4,7 +4,7 @@ name: "Production readiness — WSGI, health endpoint, config, error handling"
 description: >
   Prepare Watchtower web app for production deployment. Create WSGI entry point (gunicorn-compatible), add /health endpoint with dependency checks (Ollama, embedding DB), implement environment-based config module, add 500 error handler, move embedding DB to persistent path. See docs/reports/T-272-deploy-watchtower-ring20.md RQ-3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [deployment, web, production]
 components: [web/app.py, web/shared.py, web/embeddings.py, web/ask.py, bin/watchtower.sh]
 related_tasks: [T-272, T-274, T-254, T-262, T-263]
 created: 2026-02-25T08:09:27Z
-last_update: 2026-02-25T08:09:27Z
+last_update: 2026-02-25T08:25:48Z
 date_finished: null
 ---
 
@@ -35,16 +35,16 @@ Foundation for all deployment tasks. The Watchtower web app currently runs as a 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/wsgi.py` exists with `application = create_app()` export
-- [ ] `gunicorn -w 1 -b 127.0.0.1:3001 web.wsgi:application --check-config` succeeds (config valid)
-- [ ] `GET /health` returns JSON with `app`, `ollama`, `embeddings` keys
-- [ ] `/health` returns HTTP 503 when Ollama is unreachable (graceful degradation)
-- [ ] `web/config.py` exists with `OLLAMA_HOST`, `EMBEDDING_MODEL`, `PRIMARY_MODEL`, `VECTOR_DB_PATH`
-- [ ] All hardcoded model names in `web/ask.py` replaced with config references
-- [ ] Embedding DB path configurable via `VECTOR_DB_PATH` env var (default: `.context/working/fw-vec-index.db`)
-- [ ] 500 error handler registered — does not leak stack traces
-- [ ] `FW_SECRET_KEY` required in production (not auto-generated)
-- [ ] Existing tests/curl commands still pass (no regression)
+- [x] `web/wsgi.py` exists with `application = create_app()` export
+- [x] `gunicorn -w 1 -b 127.0.0.1:3001 web.wsgi:application --check-config` succeeds (config valid)
+- [x] `GET /health` returns JSON with `app`, `ollama`, `embeddings` keys
+- [x] `/health` returns HTTP 503 when Ollama is unreachable (graceful degradation)
+- [x] `web/config.py` exists with `OLLAMA_HOST`, `EMBEDDING_MODEL`, `PRIMARY_MODEL`, `VECTOR_DB_PATH`
+- [x] All hardcoded model names in `web/ask.py` replaced with config references
+- [x] Embedding DB path configurable via `VECTOR_DB_PATH` env var (default: `.context/working/fw-vec-index.db`)
+- [x] 500 error handler registered — does not leak stack traces
+- [x] `FW_SECRET_KEY` required in production (not auto-generated)
+- [x] Existing tests/curl commands still pass (no regression)
 
 ### Human
 - [ ] Watchtower UI loads normally at http://localhost:3000 after changes
@@ -85,3 +85,6 @@ grep -qv '"/tmp/' web/embeddings.py || echo "WARN: /tmp still referenced"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-273-production-readiness--wsgi-health-endpoi.md
 - **Context:** Initial task creation
+
+### 2026-02-25T08:25:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

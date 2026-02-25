@@ -14,14 +14,16 @@ import re
 
 import ollama
 
+from web.config import Config
+
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Model management (T-258, T-262)
+# Model management (T-258, T-262, T-273: config-driven)
 # ---------------------------------------------------------------------------
 
-PRIMARY_MODEL = "qwen3:14b"
-FALLBACK_MODEL = "dolphin-llama3:8b"
+PRIMARY_MODEL = Config.PRIMARY_MODEL
+FALLBACK_MODEL = Config.FALLBACK_MODEL
 
 _available_models = None
 
