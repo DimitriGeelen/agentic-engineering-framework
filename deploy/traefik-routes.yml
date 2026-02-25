@@ -37,8 +37,7 @@ http:
           interval: 2s
           timeout: 1s
         servers:
-          - url: "http://192.168.10.201:5050"
-          - url: "http://192.168.10.202:5050"
+          - url: "http://192.168.10.170:5050"
 
     watchtower-dev:
       loadBalancer:
@@ -47,5 +46,4 @@ http:
           interval: 2s
           timeout: 1s
         servers:
-          - url: "http://192.168.10.201:5051"
-          - url: "http://192.168.10.202:5051"
+          - url: "http://192.168.10.170:5051"
