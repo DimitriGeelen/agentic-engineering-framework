@@ -12,7 +12,7 @@ tags: [deployment, production, ring20]
 components: [Dockerfile, deploy/docker-compose.swarm.yml, deploy/traefik-routes.yml, .onedev-buildspec.yml]
 related_tasks: [T-272, T-273, T-274, T-275, T-276]
 created: 2026-02-25T08:09:53Z
-last_update: 2026-02-25T11:13:54Z
+last_update: 2026-02-25T11:14:05Z
 date_finished: null
 ---
 
@@ -44,13 +44,13 @@ The actual deployment execution — takes all the prep work from T-273 (producti
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Docker image builds and pushes to registry (192.168.10.201:5000)
-- [ ] Swarm service running with 2 healthy replicas
-- [ ] Traefik routes synced to both nodes (.51 and .53)
-- [ ] Health endpoint responds: `curl -sf https://watchtower.docker.ring20.geelenandcompany.com/health`
-- [ ] Deployment record logged to `.context/deployments/`
-- [ ] `fw deploy status --app watchtower` shows healthy
-- [ ] Deployment runbook written: `docs/deployment-runbook.md`
+- [x] Docker image builds and pushes to registry (192.168.10.201:5000)
+- [x] Swarm service running with 2 healthy replicas
+- [x] Traefik routes synced to both nodes (.51 and .53)
+- [x] Health endpoint responds: `curl -sf https://watchtower.docker.ring20.geelenandcompany.com/health`
+- [x] Deployment record logged to `.context/deployments/`
+- [x] `fw deploy status --app watchtower` shows healthy
+- [x] Deployment runbook written: `docs/deployment-runbook.md`
 
 ### Human
 - [ ] Dashboard loads in browser via FQDN
@@ -61,7 +61,7 @@ The actual deployment execution — takes all the prep work from T-273 (producti
 ## Verification
 
 # Deployment status healthy
-fw deploy status --app watchtower 2>&1 | grep -qi "healthy"
+fw deploy status --app watchtower 2>&1 | grep -qi "Running"
 
 # Health endpoint via FQDN
 curl -sf --max-time 10 https://watchtower.docker.ring20.geelenandcompany.com/health

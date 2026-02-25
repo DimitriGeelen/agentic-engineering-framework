@@ -1,0 +1,26 @@
+# Deployment Record — 2026-02-25 12:22
+timestamp: 2026-02-25T11:22:00Z
+app: watchtower
+tier: production
+version: "20260225-121925"
+image: 192.168.10.201:5000/watchtower:20260225-121925
+task: T-277
+commit: ceafa82
+command: "manual first deployment — docker stack deploy"
+method: manual
+gates:
+  audit_exit: 0
+  registry_push: verified
+  convergence: "2 replicas in <15s"
+  health_201: ok
+  health_202: ok
+  health_fqdn: ok
+  traefik_sync: both_nodes
+result: success
+notes: |
+  First ever deployment of Watchtower to Ring20 Swarm.
+  Stack: watchtower (docker stack deploy -c deploy/docker-compose.swarm.yml watchtower)
+  Nodes: docker-manager (.201), docker-worker-1 (.202)
+  FQDN: https://watchtower.docker.ring20.geelenandcompany.com
+  Ollama reachable from both Swarm nodes (192.168.10.107:11434)
+  Embeddings: no_index (expected — fresh containers, index built on first search)
