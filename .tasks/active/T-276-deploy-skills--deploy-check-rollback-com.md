@@ -4,7 +4,7 @@ name: "Deploy skills — /deploy-check, /rollback commands"
 description: >
   Create framework skills for deployment lifecycle. /deploy-check: pre-deployment validation (task gate, health, registry, routes). /rollback: explicit deployment recovery with history from .context/deployments/. Each skill enforces task prerequisites, presents numbered options, logs outcomes. Depends on T-275 (needs gated fw deploy and deployment records). See docs/reports/T-272-deploy-watchtower-ring20.md RQ-5.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: [deployment, skills, governance]
 components: [.claude/commands/deploy-check.md, .claude/commands/rollback.md, .context/deployments/]
 related_tasks: [T-272, T-275, T-277]
 created: 2026-02-25T08:09:50Z
-last_update: 2026-02-25T08:09:50Z
+last_update: 2026-02-25T10:44:17Z
 date_finished: null
 ---
 
@@ -42,14 +42,14 @@ Create Claude Code skills (`.claude/commands/`) for deployment lifecycle, follow
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.claude/commands/deploy-check.md` exists and follows skill format
-- [ ] `.claude/commands/rollback.md` exists and follows skill format
-- [ ] `/deploy-check` enforces active task prerequisite
-- [ ] `/deploy-check` calls `fw audit --section deployment`
-- [ ] `/rollback` reads deployment history from `.context/deployments/`
-- [ ] `/rollback` requires explicit user confirmation before executing
-- [ ] Both skills present numbered options (per Agent Behavioral Rules)
-- [ ] Both skills registered in `.claude/settings.json` if needed
+- [x] `.claude/commands/deploy-check.md` exists and follows skill format
+- [x] `.claude/commands/rollback.md` exists and follows skill format
+- [x] `/deploy-check` enforces active task prerequisite
+- [x] `/deploy-check` calls `fw audit --section deployment`
+- [x] `/rollback` reads deployment history from `.context/deployments/`
+- [x] `/rollback` requires explicit user confirmation before executing
+- [x] Both skills present numbered options (per Agent Behavioral Rules)
+- [x] Both skills registered in `.claude/settings.json` if needed
 
 ### Human
 - [ ] Skills produce clear, actionable output
@@ -85,3 +85,6 @@ grep -q "deployments" .claude/commands/rollback.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-276-deploy-skills--deploy-check-rollback-com.md
 - **Context:** Initial task creation
+
+### 2026-02-25T10:44:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
