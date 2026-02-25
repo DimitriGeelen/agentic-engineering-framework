@@ -1,0 +1,49 @@
+# Git
+.git/
+.gitignore
+
+# Framework / task management (volume-mount in production if needed)
+.context/
+.tasks/
+.fabric/
+.framework.yaml
+
+# Development
+.claude/
+.playwright-mcp/
+tests/
+spikes/
+certs/
+*.png
+*.jpg
+
+# Build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+*.log
+venv/
+.venv/
+
+# Data (volume-mounted)
+data/
+logs/
+
+# Docs / deploy config (not needed in image)
+docs/
+deploy/
+.pytest_cache/
+.onedev-buildspec.yml

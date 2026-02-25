@@ -1,0 +1,56 @@
+# Watchtower app tier -- Swarm deployment
+# Deploy: DOCKER_HOST=tcp://192.168.10.201:2375 docker stack deploy -c deploy/docker-compose.swarm.yml watchtower
+#
+# The app tier runs on the Proxmox Swarm cluster (CPU-only).
+# Ollama inference runs on GPU host (192.168.10.107) as system service.
+
+version: "3.8"
+
+services:
+  app:
+    image: 192.168.10.201:5000/watchtower:latest
+    ports:
+      - target: 5050
+        published: 5050
+        protocol: tcp
+        mode: host
+    environment:
+      - OLLAMA_HOST=http://192.168.10.107:11434
+      - FW_SECRET_KEY=${FW_SECRET_KEY:?Set FW_SECRET_KEY in environment}
+      - FW_PORT=5050
+      - VECTOR_DB_PATH=/app/data/fw-vec-index.db
+      - PYTHONUNBUFFERED=1
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          # Exclude worker-2: can't pull large images over slow CT link (L-SWM-06)
+          # Nodes with image: manager (.201) and worker-1 (.202)
+          - node.hostname != docker-worker-2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        # stop-first: host mode + 2 replicas on 2 nodes = no spare for start-first (L-SWM-08)
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5050/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    volumes:
+      - app-data:/app/data
+    networks:
+      - default
+
+volumes:
+  app-data:

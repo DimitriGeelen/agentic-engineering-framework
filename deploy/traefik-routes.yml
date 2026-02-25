@@ -1,0 +1,51 @@
+# Traefik file provider routes for watchtower
+# Apply to BOTH Traefik nodes (L-TRF-02):
+#   scp deploy/traefik-routes.yml root@192.168.10.51:/opt/traefik/config/watchtower.yml
+#   scp deploy/traefik-routes.yml root@192.168.10.53:/opt/traefik/config/watchtower.yml
+
+http:
+  routers:
+    watchtower:
+      rule: "Host(`watchtower.docker.ring20.geelenandcompany.com`)"
+      service: watchtower
+      middlewares:
+        - watchtower-retry
+      entryPoints:
+        - websecure
+      tls: {}
+
+    watchtower-dev:
+      rule: "Host(`watchtower-dev.docker.ring20.geelenandcompany.com`)"
+      service: watchtower-dev
+      middlewares:
+        - watchtower-retry
+      entryPoints:
+        - websecure
+      tls: {}
+
+  middlewares:
+    watchtower-retry:
+      retry:
+        attempts: 3
+        initialInterval: 200ms
+
+  services:
+    watchtower:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: 2s
+          timeout: 1s
+        servers:
+          - url: "http://192.168.10.201:5050"
+          - url: "http://192.168.10.202:5050"
+
+    watchtower-dev:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: 2s
+          timeout: 1s
+        servers:
+          - url: "http://192.168.10.201:5051"
+          - url: "http://192.168.10.202:5051"
