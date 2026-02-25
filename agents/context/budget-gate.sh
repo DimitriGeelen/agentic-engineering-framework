@@ -100,8 +100,12 @@ STATUS_AGE=${STATUS_AGE:-999}
 CMD_CLASS=${CMD_CLASS:-blocked}
 
 # --- Fast path: use cached status if fresh ---
-# Even stale status enforces critical (Bug 3 fix: stale critical still blocks)
-if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ] || [ "$STATUS_LEVEL" = "critical" ]; then
+# Only use cached status when fresh (< STATUS_MAX_AGE seconds).
+# T-271 fix: stale critical falls through to slow path for re-validation.
+# Previous Bug 3 fix blindly trusted stale critical, creating a trap where
+# the slow path (which re-reads the actual transcript) could never run after
+# compaction or session restart, permanently blocking the agent.
+if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
     case "$STATUS_LEVEL" in
         ok)
             exit 0
@@ -139,6 +143,14 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ] || [ "$STATUS_LEVEL" = "critical" ]
 fi
 
 # --- Slow path: re-read transcript every Nth call ---
+# T-271: Force immediate re-read when stale critical is detected.
+# This prevents the stale-critical trap while still re-validating from
+# the actual transcript before deciding to block.
+FORCE_RECHECK=0
+if [ "$STATUS_LEVEL" = "critical" ] && [ "${STATUS_AGE}" -ge "$STATUS_MAX_AGE" ]; then
+    FORCE_RECHECK=1
+fi
+
 mkdir -p "$(dirname "$GATE_COUNTER_FILE")"
 GATE_COUNT=0
 if [ -f "$GATE_COUNTER_FILE" ]; then
@@ -147,8 +159,8 @@ fi
 GATE_COUNT=$((GATE_COUNT + 1))
 echo "$GATE_COUNT" > "$GATE_COUNTER_FILE"
 
-# Only re-read transcript every Nth call (performance)
-if [ $((GATE_COUNT % RECHECK_INTERVAL)) -ne 1 ] && [ "$GATE_COUNT" -ne 1 ]; then
+# Only re-read transcript every Nth call (performance), UNLESS force re-check
+if [ "$FORCE_RECHECK" -ne 1 ] && [ $((GATE_COUNT % RECHECK_INTERVAL)) -ne 1 ] && [ "$GATE_COUNT" -ne 1 ]; then
     exit 0
 fi
 
