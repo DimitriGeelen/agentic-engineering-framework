@@ -135,15 +135,16 @@ def create_app() -> Flask:
             result["ollama"] = "unreachable"
             healthy = False
 
-        # Check embedding index
+        # Check embedding index (lightweight — never trigger rebuild)
         try:
-            from web.embeddings import index_stats
-            stats = index_stats()
-            result["embeddings"] = {
-                "status": "ok",
-                "docs": stats.get("num_docs", 0),
-                "chunks": stats.get("num_chunks", 0),
-            }
+            from web.embeddings import DB_PATH, _db, _db_built_at
+            if _db is not None:
+                num = _db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+                result["embeddings"] = {"status": "ok", "chunks": num}
+            elif DB_PATH.exists():
+                result["embeddings"] = {"status": "stale"}
+            else:
+                result["embeddings"] = {"status": "no_index"}
         except Exception:
             result["embeddings"] = {"status": "unavailable"}
 
