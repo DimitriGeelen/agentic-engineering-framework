@@ -1,4 +1,8 @@
-# Watchtower app tier -- Swarm deployment
+# SUPERSEDED (T-284): Watchtower migrated from Swarm to LXC on 2026-02-25.
+# See docs/deployment-runbook.md for the current LXC-based deployment.
+# This file is kept for reference only — the Swarm stack has been removed.
+#
+# Original: Watchtower app tier -- Swarm deployment
 # Deploy: DOCKER_HOST=tcp://192.168.10.201:2375 docker stack deploy -c deploy/docker-compose.swarm.yml watchtower
 #
 # The app tier runs on the Proxmox Swarm cluster (CPU-only).

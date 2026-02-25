@@ -1,4 +1,8 @@
-# Watchtower — Agentic Engineering Framework Web UI
+# SUPERSEDED (T-284): Watchtower migrated from Swarm to LXC on 2026-02-25.
+# See docs/deployment-runbook.md for the current LXC-based deployment.
+# This file is kept for reference only.
+#
+# Original: Watchtower — Agentic Engineering Framework Web UI
 # Swarm pattern: CPU-only, connects to GPU host for Ollama inference
 FROM python:3.12-slim
 

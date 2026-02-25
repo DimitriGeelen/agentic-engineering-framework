@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-284: Decommission Swarm watchtower stack
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T19:04:44Z
+# ============================================================================
+
+task_id: T-284
+task_name: "Decommission Swarm watchtower stack"
+workflow_type: decommission
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-02-25T17:48:42Z
+completed: 2026-02-25T19:04:43Z
+duration_days: 0
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Swarm watchtower stack removed (`docker stack rm watchtower`)"
+  - "LXC still serving traffic after Swarm removal (both FQDNs healthy)"
+  - "ring20-deployer ports.yaml updated with LXC host"
+  - "Dockerfile marked as superseded (T-284)"
+  - "docker-compose.swarm.yml marked as superseded (T-284)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 76 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, decommission, swarm]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 76
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-284-decommission-swarm-watchtower-stack.md
+generated_by: context-agent-hybrid
