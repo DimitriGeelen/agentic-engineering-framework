@@ -2516,8 +2516,10 @@ fi # end oe-weekly
 
 # ============================================
 # DEPLOYMENT: Pre-deploy quality gates (T-275)
+# Only runs when explicitly requested (--section deployment)
+# Not included in default full audit or pre-push checks
 # ============================================
-if should_run_section "deployment"; then
+if [ -n "$SECTIONS" ] && should_run_section "deployment"; then
 echo "=== DEPLOYMENT CHECKS ==="
 
 # Check active task exists (must deploy under a task)
