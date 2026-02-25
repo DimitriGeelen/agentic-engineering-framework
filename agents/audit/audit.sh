@@ -12,7 +12,7 @@
 #
 # Sections: structure, compliance, quality, traceability, enforcement,
 #           learning, episodic, observations, gaps, handover, graduation,
-#           research, oe-research, discovery, discovery-trends
+#           research, oe-research, discovery, discovery-trends, deployment
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -151,7 +151,7 @@ while [[ $# -gt 0 ]]; do
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
             echo "          oe-research, oe-fast, oe-hourly, oe-daily, oe-weekly,"
-            echo "          discovery, discovery-trends"
+            echo "          discovery, discovery-trends, deployment"
             echo ""
             echo "Subcommands:"
             echo "  schedule install  Install cron entries for periodic audits"
@@ -2513,6 +2513,76 @@ fi
 
 echo ""
 fi # end oe-weekly
+
+# ============================================
+# DEPLOYMENT: Pre-deploy quality gates (T-275)
+# ============================================
+if should_run_section "deployment"; then
+echo "=== DEPLOYMENT CHECKS ==="
+
+# Check active task exists (must deploy under a task)
+FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
+if [ -f "$FOCUS_FILE" ]; then
+    FOCUS_TASK=$(grep -E '^(task_id|current_task):' "$FOCUS_FILE" 2>/dev/null | head -1 | awk '{print $2}' | tr -d '"')
+    if [ -n "$FOCUS_TASK" ] && [ "$FOCUS_TASK" != "null" ]; then
+        pass "Deploy gate: Active task $FOCUS_TASK"
+    else
+        fail "Deploy gate: No active task — set focus before deploying" \
+             "focus.yaml has no task_id" \
+             "Run: fw context focus T-XXX"
+    fi
+else
+    fail "Deploy gate: No focus file — initialize session first" \
+         "$FOCUS_FILE not found" \
+         "Run: fw context init && fw context focus T-XXX"
+fi
+
+# Check git is clean (no uncommitted changes to source files)
+DIRTY_SRC=$(cd "$PROJECT_ROOT" && git diff --name-only HEAD -- '*.py' '*.sh' '*.yml' '*.yaml' 'Dockerfile' 2>/dev/null | wc -l | tr -d ' ')
+if [ "$DIRTY_SRC" = "0" ]; then
+    pass "Deploy gate: Git clean (source files)"
+else
+    fail "Deploy gate: $DIRTY_SRC uncommitted source file(s)" \
+         "$(cd "$PROJECT_ROOT" && git diff --name-only HEAD -- '*.py' '*.sh' '*.yml' '*.yaml' 'Dockerfile' 2>/dev/null | head -3)" \
+         "Run: fw git commit -m 'T-XXX: pre-deploy commit'"
+fi
+
+# Check HEAD commit has task reference (traceability)
+HEAD_MSG=$(cd "$PROJECT_ROOT" && git log -1 --format='%s' 2>/dev/null)
+if echo "$HEAD_MSG" | grep -qE '^T-[0-9]+:'; then
+    pass "Deploy gate: HEAD commit has task reference"
+else
+    warn "Deploy gate: HEAD commit lacks T-XXX reference" \
+         "HEAD: $HEAD_MSG" \
+         "Commit with task prefix: fw git commit -m 'T-XXX: ...'"
+fi
+
+# Check deployment files exist
+DEPLOY_FILES_OK=true
+for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-routes.yml; do
+    if [ -f "$PROJECT_ROOT/$deploy_file" ]; then
+        pass "Deploy gate: $deploy_file exists"
+    else
+        fail "Deploy gate: $deploy_file missing" \
+             "$deploy_file not found in project root" \
+             "Run: fw deploy scaffold --app <name> --pattern swarm --port-prod <N> --port-dev <N>"
+        DEPLOY_FILES_OK=false
+    fi
+done
+
+# Check health endpoint responds (if server is running)
+if curl -sf --max-time 3 http://localhost:3000/health >/dev/null 2>&1; then
+    pass "Deploy gate: Health endpoint responds on :3000"
+elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
+    pass "Deploy gate: Health endpoint responds on :5050"
+else
+    warn "Deploy gate: Health endpoint not reachable" \
+         "Neither :3000 nor :5050 /health responded" \
+         "Start server: fw serve (or check if health endpoint exists)"
+fi
+
+echo ""
+fi # end deployment
 
 # ============================================
 # SUMMARY (always runs)

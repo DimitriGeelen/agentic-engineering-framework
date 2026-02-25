@@ -969,7 +969,59 @@ case "$cmd" in
             echo "  Install: git clone <toolkit-repo> /opt/claude-shared-toolkit" >&2
             exit 1
         fi
-        exec python3 "$DEPLOYER" "$@"
+
+        # Passthrough subcommands that don't need gates
+        deploy_subcmd="${1:-}"
+        case "$deploy_subcmd" in
+            status|ports|routes|--help|-h|"")
+                exec python3 "$DEPLOYER" "$@"
+                ;;
+            scaffold)
+                # Scaffold generates files — run pre-deploy audit first (T-275)
+                echo -e "${CYAN}=== Pre-Deploy Audit ===${NC}"
+                AUDIT_EXIT=0
+                "$FRAMEWORK_ROOT/agents/audit/audit.sh" --section deployment || AUDIT_EXIT=$?
+
+                if [ "$AUDIT_EXIT" -eq 2 ]; then
+                    echo -e "${RED}Pre-deploy audit FAILED — deployment blocked${NC}" >&2
+                    echo "  Fix the failures above, then retry: fw deploy $*" >&2
+                    exit 1
+                elif [ "$AUDIT_EXIT" -eq 1 ]; then
+                    echo -e "${YELLOW}Pre-deploy audit has warnings — proceeding${NC}"
+                fi
+
+                # Run the deployer
+                python3 "$DEPLOYER" "$@"
+                DEPLOY_EXIT=$?
+
+                # Log deployment record
+                DEPLOY_DIR="$PROJECT_ROOT/.context/deployments"
+                mkdir -p "$DEPLOY_DIR"
+                DEPLOY_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                DEPLOY_FILE="$DEPLOY_DIR/$(date +%Y-%m-%d-%H%M).yaml"
+                FOCUS_TASK=$(grep -E '^(task_id|current_task):' "$PROJECT_ROOT/.context/working/focus.yaml" 2>/dev/null | head -1 | awk '{print $2}' | tr -d '"')
+                HEAD_COMMIT=$(cd "$PROJECT_ROOT" && git rev-parse --short HEAD 2>/dev/null)
+
+                cat > "$DEPLOY_FILE" << DEPLOYEOF
+# Deployment Record — $(date +%Y-%m-%d %H:%M)
+timestamp: $DEPLOY_TS
+app: $(echo "$@" | grep -oP '(?<=--app )\S+' || echo "unknown")
+command: fw deploy $*
+task: ${FOCUS_TASK:-none}
+commit: ${HEAD_COMMIT:-unknown}
+gates:
+  audit_exit: $AUDIT_EXIT
+  deploy_exit: $DEPLOY_EXIT
+result: $([ "$DEPLOY_EXIT" -eq 0 ] && echo "success" || echo "failed")
+DEPLOYEOF
+                echo -e "${GREEN}Deployment record: $DEPLOY_FILE${NC}"
+                exit $DEPLOY_EXIT
+                ;;
+            *)
+                # Unknown subcommand — pass through
+                exec python3 "$DEPLOYER" "$@"
+                ;;
+        esac
         ;;
     tier0)
         # Tier 0 enforcement — approve or inspect blocked commands
