@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-280: Provision Watchtower LXC on Proxmox
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T18:28:19Z
+# ============================================================================
+
+task_id: T-280
+task_name: "Provision Watchtower LXC on Proxmox"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T17:48:11Z
+completed: 2026-02-25T18:28:17Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-02-25T18:57:18+01:00
+last_commit: 2026-02-25T18:57:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix LXC IP to 192.168.10.170 + add DHCP reservation
+
+# Key outcomes
+outcomes:
+  - "LXC container created on proxmox2 (VMID 170, hostname: watchtower)"
+  - "Debian 13 template (Python 3.13 built-in)"
+  - "Static IP 192.168.10.170/24 configured"
+  - "SSH access working from dev machine (root@192.168.10.170)"
+  - "Python 3.13, git, curl, pip installed"
+  - "Proxmox HA enabled for auto-restart on node failure"
+  - "Container set to start on boot (onboot=1)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix LXC IP to 192.168.10.170 + add DHCP reservation"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/deployment-runbook.md"
+  - "docs/reports/T-279-watchtower-deployment-model.md"
+  - ".tasks/active/T-280-provision-watchtower-lxc-on-proxmox.md"
+  - ".tasks/active/T-282-remap-traefik-routes-from-swarm-to-lxc.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T18:57:18"
+    action: "T-280: Fix LXC IP to 192.168.10.170 + add DHCP reservation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [deployment, infrastructure, lxc]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 40
+  commits: 1
+  files_changed: 4
+  lines_added: 15
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-280-provision-watchtower-lxc-on-proxmox.md
+generated_by: context-agent-hybrid
