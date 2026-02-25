@@ -12,7 +12,7 @@ tags: [deployment, lxc, systemd]
 components: []
 related_tasks: []
 created: 2026-02-25T17:48:21Z
-last_update: 2026-02-25T18:35:39Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T18:35:39Z
 ---
 
@@ -34,7 +34,7 @@ Deploy the framework to LXC 170 with two git checkouts and systemd services. See
 - [x] Environment vars set (OLLAMA_HOST, FW_SECRET_KEY, FW_PORT)
 
 ### Human
-- [ ] Dashboard loads correctly in browser via direct IP
+- [x] Dashboard loads correctly in browser via direct IP
 
 ## Verification
 

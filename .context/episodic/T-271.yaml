@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-271: Fix budget-gate stale critical status trap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T20:36:18Z
+# ============================================================================
+
+task_id: T-271
+task_name: "Fix budget-gate stale critical status trap"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-25T06:34:08Z
+completed: 2026-02-25T20:36:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-02-25T07:38:07+01:00
+last_commit: 2026-02-25T07:38:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix budget-gate stale critical status trap
+
+# Key outcomes
+outcomes:
+  - "Fast path only uses cached status when fresh (< STATUS_MAX_AGE)"
+  - "Stale critical triggers FORCE_RECHECK=1 (falls through to slow path)"
+  - "Slow path bypasses every-Nth-call skip when FORCE_RECHECK=1"
+  - "Slow path re-reads actual transcript and corrects stale status"
+  - "Fresh critical still blocks as before (no regression)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix budget-gate stale critical status trap"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Force slow path re-read when stale critical detected (FORCE_RECHECK flag)"
+    rationale: "Preserves fresh critical blocking (no regression) while allowing stale critical to be re-validated from actual transcript"
+    alternatives_rejected: ["Removing Bug 3 fix entirely (would let stale critical be bypassed during 90s window); adding session ID tracking (more complex, not needed)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - ".tasks/active/T-271-fix-budget-gate-stale-critical-status-tr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-25T07:38:07"
+    action: "T-271: Fix budget-gate stale critical status trap"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 842 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bugfix, budget, enforcement]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 842
+  commits: 1
+  files_changed: 2
+  lines_added: 75
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-271-fix-budget-gate-stale-critical-status-tr.md
+generated_by: context-agent-hybrid

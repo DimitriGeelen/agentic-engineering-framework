@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-261: Q&A Phase 2 — model upgrade, RAG quality, framework integration, saved answers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-02-25T20:37:39Z
+# ============================================================================
+
+task_id: T-261
+task_name: "Q&A Phase 2 — model upgrade, RAG quality, framework integration, saved answers"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-02-24T08:33:55Z
+completed: 2026-02-25T20:37:38Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-02-24T09:36:18+01:00
+last_commit: 2026-02-24T09:38:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Q&A Phase 2 inception — research complete, 6 reports. Create 9 build tasks from Phase 2 research
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (via research agents)"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-261-arch-improvements.md"
+  - "docs/reports/T-261-framework-enhancement.md"
+  - "docs/reports/T-261-models-16gb-vram.md"
+  - "docs/reports/T-261-qa-phase2-research.md"
+  - "docs/reports/T-261-rag-quality-techniques.md"
+  - "docs/reports/T-261-thinking-models.md"
+  - ".tasks/active/T-261-qa-phase-2--model-upgrade-rag-quality-fr.md"
+  - ".tasks/active/T-262-replace-llm-with-qwen3-14b--thinking-mod.md"
+  - ".tasks/active/T-263-rag-quick-wins--prompt-embeddings-chunki.md"
+  - ".tasks/active/T-264-fw-ask-cli--synchronous-ragllm-wrapper.md"
+  - ".tasks/active/T-265-saved-answers--curated-qa-for-retrieval-.md"
+  - ".tasks/active/T-266-streaming-ux--markedjs-syntax-highlighti.md"
+  - ".tasks/active/T-267-user-feedback--thumbs-updown-on-qa-answe.md"
+  - ".tasks/active/T-268-multi-turn-qa-conversation.md"
+  - ".tasks/active/T-269-cross-encoder-reranking-with-qwen3-reran.md"
+  - ".tasks/active/T-270-healing-agent-integration--semantic-patt.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-02-24T09:36:18"
+    action: "T-261: Q&A Phase 2 inception — research complete, 6 reports"
+  - time: "2026-02-24T09:38:29"
+    action: "T-261: Create 9 build tasks from Phase 2 research"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2163 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [qa, llm, rag, search, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2163
+  commits: 2
+  files_changed: 16
+  lines_added: 2895
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-261-qa-phase-2--model-upgrade-rag-quality-fr.md
+generated_by: context-agent-hybrid

@@ -12,7 +12,7 @@ tags: [qa, frontend, ux]
 components: [web/templates/base.html, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:26Z
-last_update: 2026-02-24T09:31:14Z
+last_update: 2026-02-25T20:37:12Z
 date_finished: 2026-02-24T09:31:14Z
 ---
 
@@ -34,10 +34,10 @@ Streaming UX improvements for Q&A. Ref: [T-261-arch-improvements.md](../../docs/
 - [x] Citation references styled with sup.citation class
 
 ### Human
-- [ ] Markdown renders correctly (headers, lists, bold, code blocks)
-- [ ] Code blocks have syntax highlighting with appropriate colors
-- [ ] Copy button works and shows "Copied!" feedback
-- [ ] Streaming feels smooth without flicker
+- [x] Markdown renders correctly (headers, lists, bold, code blocks)
+- [x] Code blocks have syntax highlighting with appropriate colors
+- [x] Copy button works and shows "Copied!" feedback
+- [x] Streaming feels smooth without flicker
 
 ## Verification
 

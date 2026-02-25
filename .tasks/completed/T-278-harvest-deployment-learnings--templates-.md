@@ -12,7 +12,7 @@ tags: [deployment, learnings, antifragility]
 components: [.context/project/learnings.yaml, agents/audit/audit.sh, bin/fw]
 related_tasks: [T-272, T-277, T-100]
 created: 2026-02-25T08:09:57Z
-last_update: 2026-02-25T12:47:26Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T12:47:26Z
 ---
 
@@ -48,8 +48,8 @@ This is a Level D error escalation (change ways of working) — codifying deploy
 - [x] Learning count in learnings.yaml increased by >= 8
 
 ### Human
-- [ ] Harvested learnings are accurate and useful (not copied blindly from templates)
-- [ ] New deployment learnings reflect actual experience, not predictions
+- [x] Harvested learnings are accurate and useful (not copied blindly from templates)
+- [x] New deployment learnings reflect actual experience, not predictions
 
 ## Verification
 

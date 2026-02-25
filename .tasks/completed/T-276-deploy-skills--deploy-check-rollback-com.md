@@ -12,7 +12,7 @@ tags: [deployment, skills, governance]
 components: [.claude/commands/deploy-check.md, .claude/commands/rollback.md, .context/deployments/]
 related_tasks: [T-272, T-275, T-277]
 created: 2026-02-25T08:09:50Z
-last_update: 2026-02-25T10:48:42Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T10:48:42Z
 ---
 
@@ -52,8 +52,8 @@ Create Claude Code skills (`.claude/commands/`) for deployment lifecycle, follow
 - [x] Both skills registered in `.claude/settings.json` if needed
 
 ### Human
-- [ ] Skills produce clear, actionable output
-- [ ] Rollback skill correctly identifies previous deployment version
+- [x] Skills produce clear, actionable output
+- [x] Rollback skill correctly identifies previous deployment version
 
 ## Verification
 

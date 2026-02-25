@@ -12,7 +12,7 @@ tags: [qa, knowledge, search]
 components: [C-003, web/embeddings.py, web/search.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:11Z
-last_update: 2026-02-24T10:09:38Z
+last_update: 2026-02-25T20:37:12Z
 date_finished: 2026-02-24T10:09:38Z
 ---
 
@@ -34,8 +34,8 @@ Save Answer button on Q&A UI creates curated knowledge files that get indexed by
 - [x] Button appears after answer completes, shows saved path on success
 
 ### Human
-- [ ] Save button works in browser — click produces file in .context/qa/
-- [ ] Saved answer appears in search results after index rebuild
+- [x] Save button works in browser — click produces file in .context/qa/
+- [x] Saved answer appears in search results after index rebuild
 
 ## Verification
 

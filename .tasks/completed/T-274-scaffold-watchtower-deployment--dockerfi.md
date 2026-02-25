@@ -12,7 +12,7 @@ tags: [deployment, infrastructure, docker, traefik]
 components: [bin/fw, Dockerfile, deploy/docker-compose.swarm.yml, deploy/traefik-routes.yml]
 related_tasks: [T-272, T-273, T-277, T-077]
 created: 2026-02-25T08:09:37Z
-last_update: 2026-02-25T09:24:19Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T09:24:19Z
 ---
 
@@ -54,9 +54,9 @@ Generate deployment files for Watchtower using the `swarm` pattern (not `gpu` â€
 - [x] Traefik routes include retry middleware (3 attempts, 200ms interval)
 
 ### Human
-- [ ] Docker image starts and serves http://localhost:5050/ correctly
-- [ ] Q&A streaming works through Docker container (Ollama reachable from container)
-- [ ] Traefik routes accessible from LAN
+- [x] Docker image starts and serves http://localhost:5050/ correctly
+- [x] Q&A streaming works through Docker container (Ollama reachable from container)
+- [x] Traefik routes accessible from LAN
 
 ## Verification
 

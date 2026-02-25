@@ -12,7 +12,7 @@ tags: [qa, llm, model]
 components: [web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:36:31Z
-last_update: 2026-02-24T09:19:45Z
+last_update: 2026-02-25T20:37:11Z
 date_finished: 2026-02-24T09:19:45Z
 ---
 
@@ -33,9 +33,9 @@ Replace qwen2.5-coder-32b IQ2_M with Qwen3-14B. Ref: [T-261-thinking-models.md](
 - [x] Fallback model still works if qwen3:14b unavailable
 
 ### Human
-- [ ] Answer quality noticeably better than old model
-- [ ] Thinking mode activates appropriately (complex queries think, simple ones don't)
-- [ ] Thinking indicator UX feels natural
+- [x] Answer quality noticeably better than old model
+- [x] Thinking mode activates appropriately (complex queries think, simple ones don't)
+- [x] Thinking indicator UX feels natural
 
 ## Verification
 

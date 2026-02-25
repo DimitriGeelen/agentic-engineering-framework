@@ -12,7 +12,7 @@ tags: [deployment, audit, quality-gate, governance]
 components: [C-004, bin/fw]
 related_tasks: [T-272, T-274, T-276, T-277]
 created: 2026-02-25T08:09:44Z
-last_update: 2026-02-25T09:36:12Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T09:36:12Z
 ---
 
@@ -45,8 +45,8 @@ The biggest governance gap: `fw deploy` is a raw `exec` passthrough that bypasse
 - [x] Existing audit sections unaffected (regression test)
 
 ### Human
-- [ ] Pre-deploy audit output is clear and actionable when gates fail
-- [ ] Deployment record YAML is human-readable and useful for post-mortems
+- [x] Pre-deploy audit output is clear and actionable when gates fail
+- [x] Deployment record YAML is human-readable and useful for post-mortems
 
 ## Verification
 

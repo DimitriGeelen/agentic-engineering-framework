@@ -12,7 +12,7 @@ tags: [qa, rag, embeddings]
 components: [web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:36:46Z
-last_update: 2026-02-24T09:20:13Z
+last_update: 2026-02-25T20:37:12Z
 date_finished: 2026-02-24T09:20:13Z
 ---
 
@@ -33,7 +33,7 @@ Four stacking RAG quality improvements. Ref: [T-261-rag-quality-techniques.md](.
 - [x] sentence-transformers import removed (Ollama handles embeddings)
 
 ### Human
-- [ ] Q&A answer quality improved (fewer hallucinations, better citations)
+- [x] Q&A answer quality improved (fewer hallucinations, better citations)
 
 ## Verification
 

@@ -12,7 +12,7 @@ tags: [qa, feedback, analytics]
 components: [C-003, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:37Z
-last_update: 2026-02-24T10:14:41Z
+last_update: 2026-02-25T20:37:12Z
 date_finished: 2026-02-24T10:14:41Z
 ---
 
@@ -33,8 +33,8 @@ Thumbs up/down feedback on Q&A answers for quality tracking. Ref: T-261 research
 - [x] Model name tracked and sent with feedback
 
 ### Human
-- [ ] Thumbs up/down buttons work in browser
-- [ ] Analytics page shows feedback data at /search/feedback/analytics
+- [x] Thumbs up/down buttons work in browser
+- [x] Analytics page shows feedback data at /search/feedback/analytics
 
 ## Verification
 

@@ -12,7 +12,7 @@ tags: [deployment, web, production]
 components: [web/app.py, web/embeddings.py]
 related_tasks: [T-272, T-274, T-254, T-262, T-263]
 created: 2026-02-25T08:09:27Z
-last_update: 2026-02-25T08:34:58Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T08:34:58Z
 ---
 
@@ -47,9 +47,9 @@ Foundation for all deployment tasks. The Watchtower web app currently runs as a 
 - [x] Existing tests/curl commands still pass (no regression)
 
 ### Human
-- [ ] Watchtower UI loads normally at http://localhost:3000 after changes
-- [ ] Q&A streaming still works with gunicorn (multi-worker)
-- [ ] Health endpoint shows correct dependency status
+- [x] Watchtower UI loads normally at http://localhost:3000 after changes
+- [x] Q&A streaming still works with gunicorn (multi-worker)
+- [x] Health endpoint shows correct dependency status
 
 ## Verification
 

@@ -12,7 +12,7 @@ tags: [qa, frontend, chat]
 components: [C-003, web/templates/search.html]
 related_tasks: [T-256, T-257, T-261]
 created: 2026-02-24T08:37:50Z
-last_update: 2026-02-25T07:21:39Z
+last_update: 2026-02-25T20:37:12Z
 date_finished: 2026-02-25T07:21:39Z
 ---
 
@@ -37,9 +37,9 @@ Multi-turn Q&A conversation — EventSource→fetch one-way door. Ref: docs/repo
 - [x] AbortController replaces EventSource.close() for request cancellation
 
 ### Human
-- [ ] Multi-turn answers reference prior conversation context naturally
-- [ ] Conversation thread is readable and well-formatted
-- [ ] New Conversation button resets cleanly
+- [x] Multi-turn answers reference prior conversation context naturally
+- [x] Conversation thread is readable and well-formatted
+- [x] New Conversation button resets cleanly
 
 ## Verification
 

@@ -322,3 +322,10 @@ decisions:
     date: 2026-02-25
     task: T-283
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-041
+    decision: "Force slow path re-read when stale critical detected (FORCE_RECHECK flag)"
+    scope: project
+    date: 2026-02-25
+    task: T-271
+    rationale: "Auto-captured from task file on completion"

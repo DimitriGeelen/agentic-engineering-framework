@@ -4,16 +4,16 @@ name: "Fix budget-gate stale critical status trap"
 description: >
   Budget-gate.sh line 104 has a stale-critical trap: when .budget-status says critical, the fast path ALWAYS intercepts regardless of age, so the slow path (which re-reads the actual transcript) never runs. After compaction or new session, the old critical status persists forever. Fix: when status is stale AND critical, force slow path re-read instead of blindly blocking.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [bugfix, budget, enforcement]
-components: [agents/context/budget-gate.sh]
+components: [C-007]
 related_tasks: [T-138, T-139, T-228]
 created: 2026-02-25T06:34:08Z
-last_update: 2026-02-25T06:38:07Z
-date_finished: null
+last_update: 2026-02-25T20:36:17Z
+date_finished: 2026-02-25T20:36:17Z
 ---
 
 # T-271: Fix budget-gate stale critical status trap
@@ -57,3 +57,6 @@ bash -n agents/context/budget-gate.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-271-fix-budget-gate-stale-critical-status-tr.md
 - **Context:** Initial task creation
+
+### 2026-02-25T20:36:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

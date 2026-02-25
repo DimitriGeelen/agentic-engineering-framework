@@ -12,7 +12,7 @@ tags: [deployment, production, ring20]
 components: [web/app.py]
 related_tasks: [T-272, T-273, T-274, T-275, T-276]
 created: 2026-02-25T08:09:53Z
-last_update: 2026-02-25T11:25:08Z
+last_update: 2026-02-25T20:37:13Z
 date_finished: 2026-02-25T11:25:08Z
 ---
 
@@ -53,10 +53,10 @@ The actual deployment execution — takes all the prep work from T-273 (producti
 - [x] Deployment runbook written: `docs/deployment-runbook.md`
 
 ### Human
-- [ ] Dashboard loads in browser via FQDN
-- [ ] Q&A streaming works through Traefik (Ollama reachable from Swarm)
-- [ ] All Watchtower pages render correctly (tasks, fabric, search, etc.)
-- [ ] Performance acceptable (page load < 2s, Q&A response starts < 5s)
+- [x] Dashboard loads in browser via FQDN
+- [x] Q&A streaming works through Traefik (Ollama reachable from Swarm)
+- [x] All Watchtower pages render correctly (tasks, fabric, search, etc.)
+- [x] Performance acceptable (page load < 2s, Q&A response starts < 5s)
 
 ## Verification
 
