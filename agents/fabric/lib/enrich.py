@@ -485,10 +485,10 @@ def main():
                         help="Specific card paths to enrich (default: all)")
     args = parser.parse_args()
 
-    # Find framework root
+    # Find project root (use PROJECT_ROOT env var if available, for embedded frameworks)
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    framework_root = os.path.normpath(os.path.join(script_dir, "..", "..", ".."))
-    components_dir = os.path.join(framework_root, ".fabric", "components")
+    project_root = os.environ.get("PROJECT_ROOT") or os.path.normpath(os.path.join(script_dir, "..", "..", ".."))
+    components_dir = os.path.join(project_root, ".fabric", "components")
 
     if not os.path.isdir(components_dir):
         print(f"ERROR: Components directory not found: {components_dir}",
