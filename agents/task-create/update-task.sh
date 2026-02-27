@@ -324,7 +324,7 @@ text = sys.stdin.read()
 text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
 print(text)
 " 2>/dev/null || echo "$VERIFY_SECTION")
-            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#' || true)
+            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#|^\s*```' || true)
 
             if [ -n "$VERIFY_CMDS" ]; then
                 VERIFY_TOTAL=$(echo "$VERIFY_CMDS" | wc -l)
