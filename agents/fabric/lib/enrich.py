@@ -229,6 +229,65 @@ def detect_template_deps(content, source_location, framework_root):
     return edges
 
 
+def detect_generic_python_imports(content, source_location, project_root):
+    """
+    Detect standard Python imports: from X import Y
+
+    Attempts to resolve module names to actual files in the project,
+    inferring paths based on source file location and common patterns.
+
+    This is a prototype for consumer project support (L-CONSUMER-001).
+    """
+    edges = []
+
+    # Get directory containing source file
+    source_dir = os.path.dirname(source_location)
+
+    # Skip standard library and common third-party modules
+    SKIP_MODULES = {
+        'typing', 'os', 'sys', 'datetime', 'argparse', 'subprocess',
+        'yaml', 're', 'json', 'pathlib', 'collections', 'functools',
+        'itertools', 'logging', 'time', 'random', 'math', 'copy',
+        'enum', 'dataclasses', 'abc', 'urllib', 'http', 'email',
+        'sqlite3', 'csv', 'xml', 'html', 'unittest', 'pytest',
+        'flask', 'jinja2', 'werkzeug', 'requests', 'numpy', 'pandas'
+    }
+
+    # Pattern: from module import something
+    for m in re.finditer(r'from\s+(\w+)\s+import', content):
+        module_name = m.group(1)
+
+        # Skip standard library and common third-party modules
+        if module_name in SKIP_MODULES:
+            continue
+
+        # Try to resolve module to file
+        # Strategy 1: Same directory as source
+        target = os.path.join(source_dir, module_name + '.py')
+        if os.path.exists(os.path.join(project_root, target)):
+            if target != source_location:
+                edges.append((target, "uses"))
+            continue
+
+        # Strategy 2: Package init file
+        target = os.path.join(source_dir, module_name, '__init__.py')
+        if os.path.exists(os.path.join(project_root, target)):
+            if target != source_location:
+                edges.append((target, "uses"))
+            continue
+
+        # Strategy 3: Check parent directory (for shared modules)
+        parent_dir = os.path.dirname(source_dir)
+        if parent_dir:
+            target = os.path.join(parent_dir, module_name + '.py')
+            if os.path.exists(os.path.join(project_root, target)):
+                if target != source_location:
+                    edges.append((target, "uses"))
+                continue
+
+    return edges
+
+
 # ---------------------------------------------------------------------------
 # Edge resolver
 # ---------------------------------------------------------------------------
@@ -299,6 +358,7 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
         elif is_python:
             raw_edges.extend(detect_python_imports(content, location, framework_root))
             raw_edges.extend(detect_blueprint_registration(content, location, framework_root))
+            raw_edges.extend(detect_generic_python_imports(content, location, framework_root))  # L-CONSUMER-001 prototype
         elif is_html:
             raw_edges.extend(detect_template_deps(content, location, framework_root))
 
