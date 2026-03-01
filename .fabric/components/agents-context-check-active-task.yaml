@@ -6,5 +6,12 @@ location: agents/context/check-active-task.sh
 tags: []
 purpose: Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools
 depends_on: []
-last_verified: 2026-02-20
+depended_by:
+- target: C-009
+  type: triggered_by
+  note: PreToolUse hook on Write|Edit (.claude/settings.json)
+- target: agents/audit/self-audit.sh
+  type: verified_by
+  note: self-audit checks existence and executable bit
+last_verified: 2026-03-01
 created_by: unknown

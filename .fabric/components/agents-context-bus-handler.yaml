@@ -5,6 +5,10 @@ subsystem: context-fabric
 location: agents/context/bus-handler.sh
 tags: []
 purpose: bus-handler.sh — Process incoming bus messages from inbox
-depends_on: []
-last_verified: 2026-02-20
+depends_on:
+- target: lib/bus.sh
+  type: reads
+  note: Processes messages in .context/bus/inbox/ written by the bus system
+depended_by: []
+last_verified: 2026-03-01
 created_by: unknown

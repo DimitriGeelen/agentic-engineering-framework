@@ -6,5 +6,9 @@ location: web/blueprints/__init__.py
 tags: []
 purpose: 'Flask blueprint:   Init  '
 depends_on: []
-last_verified: 2026-02-20
+depended_by:
+- target: web/app.py
+  type: imported_by
+  note: Python package init; implicitly loaded when app.py imports from web.blueprints.*
+last_verified: 2026-03-01
 created_by: unknown

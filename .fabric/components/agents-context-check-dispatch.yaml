@@ -5,9 +5,19 @@ subsystem: context-fabric
 location: agents/context/check-dispatch.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Dispatch Guard — PostToolUse hook for Task/TaskOutput result size. Warns when sub-agent results exceed safe thresholds (G-008 enforcement)."
 
-depends_on: []
+depends_on:
+- target: agents/dispatch/preamble.md
+  type: references
+  note: Warning messages direct agents to include the dispatch preamble
+depended_by:
+- target: C-009
+  type: triggered_by
+  note: PostToolUse hook on Task|TaskOutput (.claude/settings.json)
+- target: agents/audit/self-audit.sh
+  type: verified_by
+  note: self-audit checks existence and executable bit
 
-last_verified: 2026-02-21
+last_verified: 2026-03-01
 created_by: unknown

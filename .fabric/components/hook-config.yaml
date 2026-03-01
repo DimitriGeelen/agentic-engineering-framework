@@ -39,6 +39,31 @@ triggers:
     matcher: "Bash"
     location: .claude/settings.json:74-79
 
+depends_on:
+- target: agents/context/check-active-task.sh
+  type: triggers
+  note: PreToolUse hook on Write|Edit
+- target: agents/context/check-tier0.sh
+  type: triggers
+  note: PreToolUse hook on Bash
+- target: C-007
+  type: triggers
+  note: PreToolUse hook on Write|Edit|Bash (budget-gate.sh)
+- target: C-008
+  type: triggers
+  note: PostToolUse hook on all tools (checkpoint.sh)
+- target: agents/context/error-watchdog.sh
+  type: triggers
+  note: PostToolUse hook on Bash
+- target: agents/context/check-dispatch.sh
+  type: triggers
+  note: PostToolUse hook on Task|TaskOutput
+- target: agents/context/pre-compact.sh
+  type: triggers
+  note: PreCompact lifecycle hook
+- target: agents/context/post-compact-resume.sh
+  type: triggers
+  note: SessionStart lifecycle hook (compact, resume)
 depended_by: []
 coupling: soft
 coupling_note: "Hook format is Claude Code-specific. Hooks snapshot at session start — runtime edits require restart."

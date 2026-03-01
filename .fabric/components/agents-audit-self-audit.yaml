@@ -7,7 +7,37 @@ tags: [audit, standalone, integrity]
 
 purpose: "Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks."
 
-depends_on: []
+depends_on:
+- target: bin/fw
+  type: reads
+  note: Checks existence and executable bit (Layer 1)
+- target: C-009
+  type: reads
+  note: Reads and parses .claude/settings.json to verify hook wiring (Layer 3)
+- target: agents/context/check-active-task.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
+- target: agents/context/check-tier0.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
+- target: C-007
+  type: reads
+  note: Verifies budget-gate.sh exists, is executable, and parses (Layer 1)
+- target: C-008
+  type: reads
+  note: Verifies checkpoint.sh exists, is executable, and parses (Layer 1)
+- target: agents/context/error-watchdog.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
+- target: agents/context/check-dispatch.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
+- target: agents/context/pre-compact.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
+- target: agents/context/post-compact-resume.sh
+  type: reads
+  note: Verifies hook script exists, is executable, and parses (Layer 1)
 
 last_verified: 2026-03-01
 created_by: T-286

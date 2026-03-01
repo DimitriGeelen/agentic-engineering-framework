@@ -8,6 +8,10 @@ tags: [dispatch, sub-agent, context-budget, protocol]
 purpose: "Mandatory dispatch preamble — output rules for sub-agents to prevent context explosion (T-073). Requires disk writes, <=5 line responses."
 
 depends_on: []
+depended_by:
+- target: agents/context/check-dispatch.sh
+  type: referenced_by
+  note: check-dispatch.sh warning messages direct users to this preamble
 
-last_verified: 2026-02-20
+last_verified: 2026-03-01
 created_by: T-227

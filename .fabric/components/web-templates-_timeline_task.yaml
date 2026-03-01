@@ -6,5 +6,9 @@ location: web/templates/_timeline_task.html
 tags: []
 purpose: 'HTMX fragment: individual task card for the timeline view'
 depends_on: []
-last_verified: 2026-02-20
+depended_by:
+- target: web/blueprints/timeline.py
+  type: rendered_by
+  note: HTMX fragment rendered by timeline task detail endpoint
+last_verified: 2026-03-01
 created_by: unknown

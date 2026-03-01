@@ -6,5 +6,9 @@ location: web/templates/_session_strip.html
 tags: []
 purpose: 'HTMX fragment: session status strip shown in page headers'
 depends_on: []
-last_verified: 2026-02-20
+depended_by:
+- target: web/blueprints/session.py
+  type: rendered_by
+  note: HTMX fragment rendered by /api/session/status endpoint
+last_verified: 2026-03-01
 created_by: unknown
