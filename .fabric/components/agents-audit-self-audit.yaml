@@ -1,0 +1,13 @@
+id: agents/audit/self-audit.sh
+name: self-audit
+type: script
+subsystem: audit
+location: agents/audit/self-audit.sh
+tags: [audit, standalone, integrity]
+
+purpose: "Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks."
+
+depends_on: []
+
+last_verified: 2026-03-01
+created_by: T-286
