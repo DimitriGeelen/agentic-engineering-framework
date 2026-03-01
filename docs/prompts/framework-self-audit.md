@@ -1,7 +1,7 @@
 # Framework Self-Audit & Remediation Prompt
 
 > **Source:** Agentic Engineering Framework — `docs/prompts/framework-self-audit.md`
-> **Repo:** `https://git.geelenandcompany.com/999-Agentic-Engineering-Framework`
+> **Repo:** `https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework`
 > **Version:** 2026-03-01
 
 ---
@@ -24,7 +24,7 @@ and fix anything that's broken.
 ```
 Pull the framework self-audit prompt from our repo and execute it:
 
-git archive --remote=https://git.geelenandcompany.com/999-Agentic-Engineering-Framework.git \
+git archive --remote=https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git \
   HEAD docs/prompts/framework-self-audit.md | tar -x
 
 Read docs/prompts/framework-self-audit.md and execute the full self-audit.
@@ -35,7 +35,7 @@ Write the report to docs/reports/framework-self-audit-$(date +%Y-%m-%d).md
 If `git archive` doesn't work (auth, protocol), alternatives:
 ```
 # Option A: Clone the whole repo temporarily
-git clone --depth 1 https://git.geelenandcompany.com/999-Agentic-Engineering-Framework.git /tmp/fw-source
+git clone --depth 1 https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git /tmp/fw-source
 cat /tmp/fw-source/docs/prompts/framework-self-audit.md
 
 # Option B: If the file was included in the merge
