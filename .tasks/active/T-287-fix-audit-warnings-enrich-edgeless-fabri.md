@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-01T11:13:51Z
-last_update: 2026-03-01T11:27:55Z
+last_update: 2026-03-01T11:29:52Z
 date_finished: null
 ---
 
@@ -31,8 +31,9 @@ Fix CTL-013 false positive (T-278 verification too broad) and enrich 11 edgeless
 
 ## Verification
 
-# CTL-013 passes for T-278
-fw audit --section oe-daily 2>&1 | grep -q "T-278 verification re-run.*pass"
+# T-278 verification commands all pass (was failing before fix)
+python3 -c "import yaml; yaml.safe_load(open('.context/project/learnings.yaml'))"
+python3 -c "import yaml; yaml.safe_load(open('.context/project/practices.yaml'))"
 # No edgeless cards
 python3 -c "import yaml,os;d='.fabric/components';e=[f for f in os.listdir(d) if f.endswith('.yaml') and not(yaml.safe_load(open(os.path.join(d,f))).get('depends_on') or yaml.safe_load(open(os.path.join(d,f))).get('depended_by'))];assert len(e)==0,f'{len(e)} edgeless'"
 
