@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-285: Write framework self-audit prompt for cross-project deployment
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-01T09:38:02Z
+# ============================================================================
+
+task_id: T-285
+task_name: "Write framework self-audit prompt for cross-project deployment"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-01T08:59:31Z
+completed: 2026-03-01T09:38:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-01T10:04:04+01:00
+last_commit: 2026-03-01T10:37:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Framework self-audit & remediation prompt for cross-project deployment. Enrich self-audit prompt with context, bootstrap, success criteria
+
+# Key outcomes
+outcomes:
+  - "Self-audit prompt covers all 6 enforcement layers"
+  - "Includes bootstrap prompt for pulling from OneDev repo"
+  - "Includes remediation steps for each failure mode"
+  - "Documents 8 common merge problems with solutions"
+  - "Includes success criteria with concrete verification commands"
+  - "Includes correct `.claude/settings.json` reference JSON"
+  - "Report template included for structured findings"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Prompt file in repo + short bootstrap prompt for humans to paste"
+    rationale: "Single source of truth, version-controlled, any project can pull and execute"
+    alternatives_rejected: ["Pasting the full 900-line prompt (fragile, unversioned, painful)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/prompts/framework-self-audit.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-01T10:04:04"
+    action: "T-285: Framework self-audit & remediation prompt for cross-project deployment"
+  - time: "2026-03-01T10:37:19"
+    action: "T-285: Enrich self-audit prompt with context, bootstrap, success criteria"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 38 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, deployment, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 38
+  commits: 2
+  files_changed: 1
+  lines_added: 1079
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-285-write-framework-self-audit-prompt-for-cr.md
+generated_by: context-agent-hybrid
