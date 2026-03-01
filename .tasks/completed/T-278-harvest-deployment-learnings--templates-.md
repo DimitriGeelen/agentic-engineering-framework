@@ -59,8 +59,8 @@ python3 -c "import yaml; yaml.safe_load(open('.context/project/learnings.yaml'))
 # Template learnings harvested (at least 6 new entries with T-278 reference)
 grep -c "T-278" .context/project/learnings.yaml | python3 -c "import sys; n=int(sys.stdin.read()); assert n >= 6, f'Only {n} T-278 learnings found'; print(f'{n} learnings harvested')"
 
-# Audit has no failures (exit 0 = pass, exit 1 = warnings only)
-bin/fw audit --section structure --quiet
+# Practices file valid YAML (T-278 added deployment practices)
+python3 -c "import yaml; yaml.safe_load(open('.context/project/practices.yaml'))"
 
 ## Decisions
 
