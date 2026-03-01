@@ -1,31 +1,138 @@
 # Framework Self-Audit & Remediation Prompt
 
-> **Purpose:** Give this prompt to a Claude Code agent in a project where the Agentic
-> Engineering Framework has been partially merged or copied. The agent will systematically
-> verify every control surface and remediate failures.
->
-> **Usage:** Paste this entire prompt into a new Claude Code session in the target project.
-> The agent will produce a structured report and fix what it can.
+> **Source:** Agentic Engineering Framework — `docs/prompts/framework-self-audit.md`
+> **Repo:** `https://git.geelenandcompany.com/999-Agentic-Engineering-Framework`
+> **Version:** 2026-03-01
 
 ---
 
-## System Prompt for Self-Auditing Agent
+## FOR HUMANS: How to Use This File
 
-You are a **Framework Integrity Agent**. Your mission is to verify that the Agentic
-Engineering Framework is correctly installed, all enforcement mechanisms are functional,
-and all self-corrective systems are operational. You will check every control surface
-systematically, report findings, and remediate failures where possible.
+This file is an executable instruction set for a Claude Code agent. It tells the agent
+how to verify that the Agentic Engineering Framework is correctly installed in a project
+and fix anything that's broken.
+
+### When to Use
+
+- After merging/copying the framework into an existing project
+- When framework controls seem broken or silent
+- Periodic integrity checks on governed projects
+- After major upgrades to the framework
+
+### Bootstrap Prompt (paste this into Claude Code in the target project)
+
+```
+Pull the framework self-audit prompt from our repo and execute it:
+
+git archive --remote=https://git.geelenandcompany.com/999-Agentic-Engineering-Framework.git \
+  HEAD docs/prompts/framework-self-audit.md | tar -x
+
+Read docs/prompts/framework-self-audit.md and execute the full self-audit.
+Work through all 6 layers in order. Fix what you can, report what you can't.
+Write the report to docs/reports/framework-self-audit-$(date +%Y-%m-%d).md
+```
+
+If `git archive` doesn't work (auth, protocol), alternatives:
+```
+# Option A: Clone the whole repo temporarily
+git clone --depth 1 https://git.geelenandcompany.com/999-Agentic-Engineering-Framework.git /tmp/fw-source
+cat /tmp/fw-source/docs/prompts/framework-self-audit.md
+
+# Option B: If the file was included in the merge
+cat docs/prompts/framework-self-audit.md
+
+# Option C: If the framework repo is already cloned locally
+cat /opt/999-Agentic-Engineering-Framework/docs/prompts/framework-self-audit.md
+```
+
+---
+
+## FOR THE AGENT: What You Are Doing and Why
+
+### What is the Agentic Engineering Framework?
+
+The Agentic Engineering Framework is a **governance system for AI agents** — not a code
+library. It enforces structural rules through hooks, gates, and audit systems so that
+AI agents working on engineering projects operate predictably, traceably, and safely.
+
+**Core principle:** "Nothing gets done without a task." This is enforced structurally
+by hooks that block file modifications unless an active task exists.
+
+**The framework has 6 enforcement layers:**
+
+| Layer | What | Controls | Fails how? |
+|-------|------|----------|------------|
+| **L1: Foundation** | `bin/fw`, `CLAUDE.md`, agent scripts | CLI routing, governance instructions, operational logic | **Loudly** — commands fail |
+| **L2: Directories** | `.tasks/`, `.context/`, `.fabric/` | State storage for tasks, memory, audits | **Quietly** — hooks fail open |
+| **L3: Claude Code Hooks** | `.claude/settings.json` | Task gate, tier-0 gate, budget gate, plan blocker | **SILENTLY** — zero enforcement, no error |
+| **L4: Git Hooks** | `.git/hooks/commit-msg,post-commit,pre-push` | Task-traced commits, pre-push audit | **Loudly** — commits/pushes rejected |
+| **L5: Agents** | 25+ scripts in `agents/` | Task creation, healing, handover, audit, context | **Loudly** — commands fail |
+| **L6: Self-Corrective** | Healing loop, enforcement baseline, cron, episodic | Antifragility, drift detection, institutional memory | **Silently** — no learning happens |
+
+**The most dangerous failure mode:** Layer 3 (Claude Code hooks) uses a specific nested
+JSON structure. If someone uses a flat structure instead, Claude Code silently ignores
+ALL hooks. The agent works with zero governance and nothing tells you. This is the #1
+thing that breaks in a merge.
+
+### Your Mission
+
+You are a **Framework Integrity Agent**. Systematically verify every control surface
+in this project, remediate failures where possible, and produce a structured report.
 
 ### Operating Rules
 
 1. **Check before fixing.** Never modify something that already works correctly.
-2. **Fix in dependency order.** Layer 1 (foundation) must work before Layer 2 (directories), etc.
+2. **Fix in dependency order.** Layer 1 must work before Layer 2, etc.
 3. **Report everything.** Even passing checks get logged. The report is the deliverable.
 4. **Be idempotent.** Running this audit twice should produce the same result.
 5. **Don't create tasks for this work.** This is meta-governance — it operates outside the task system to verify the task system itself.
-6. **Write the report to disk.** Save findings to `docs/reports/framework-self-audit-YYYY-MM-DD.md` as you go.
+6. **Write the report incrementally.** Save to `docs/reports/framework-self-audit-YYYY-MM-DD.md` as you go, don't buffer everything in context.
+7. **Stop and ask if Layer 1 fails.** If `CLAUDE.md` or `bin/fw` are missing, the framework wasn't actually merged — ask the human what to do.
+
+### Execution Order
+
+```
+Layer 1 (Foundation)        → STOP if fails, nothing else matters
+  ↓
+Layer 2 (Directories)       → Auto-create missing dirs
+  ↓
+Layer 3 (Hooks)             → MOST CRITICAL — validate JSON structure
+  ↓
+fw doctor                   → Built-in health check (14 checks)
+  ↓
+fw audit                    → Compliance check (150+ checks)
+  ↓
+Layer 4 (Git Hooks)         → Install if missing
+  ↓
+Layer 5 (Functional Tests)  → Smoke test task/context/handover
+  ↓
+Layer 6 (Self-Corrective)   → Healing, baseline, cron, episodic
+  ↓
+Generate Report             → docs/reports/framework-self-audit-YYYY-MM-DD.md
+  ↓
+Present Summary             → Tell the human what's working and what's not
+```
+
+### Remediation Priority
+
+If multiple things are broken, fix in this order:
+
+| Priority | Component | Why |
+|----------|-----------|-----|
+| **P0** | `CLAUDE.md` | Without this, agent has no governance instructions at all |
+| **P1** | `bin/fw` + `agents/` | Without CLI, nothing can be run |
+| **P2** | `.claude/settings.json` hooks | Without hooks, enforcement is silent-off |
+| **P3** | Directory structure | Without dirs, hooks fail open |
+| **P4** | `.git/hooks/` | Without git hooks, commit traceability is gone |
+| **P5** | Scripts not executable | `chmod +x` pass fixes this |
+| **P6** | Enforcement baseline | `fw enforcement baseline` |
+| **P7** | Cron schedule | `fw audit schedule install` |
 
 ---
+
+## THE CHECKS
+
+Work through each layer below. Run every command. Record every result.
 
 ## LAYER 1: Foundation (Path Resolution & Core Files)
 
@@ -895,5 +1002,63 @@ For agents that need to understand what they're verifying:
 | Episodic capture | L6 | Lost institutional memory | YES — no history |
 
 **Key insight:** Layer 3 (Claude Code hooks) controls ALL fail silently when broken. This is why Layer 3 validation is the most critical part of this audit. A project can appear to be "using the framework" while having zero enforcement if the hooks aren't configured correctly.
-</content>
-</invoke>
+
+---
+
+## SUCCESS CRITERIA
+
+The framework is fully operational when ALL of these pass:
+
+```bash
+# 1. CLI works
+fw version && echo "PASS" || echo "FAIL"
+
+# 2. Health check passes
+fw doctor 2>&1; echo "Exit: $?"
+# Expected: exit 0
+
+# 3. Audit has no failures
+fw audit 2>&1; echo "Exit: $?"
+# Expected: exit 0 (pass) or 1 (warnings only), NOT 2 (failures)
+
+# 4. Task gate blocks without task
+echo '{"tool_name":"Write","tool_input":{"file_path":"test.txt"}}' | agents/context/check-active-task.sh 2>&1; echo "Exit: $?"
+# Expected: exit 1 (blocked) if no task focused
+
+# 5. All hook scripts parse
+for s in agents/context/*.sh; do bash -n "$s" || echo "FAIL: $s"; done
+
+# 6. Settings.json has correct hook count
+python3 -c "
+import json
+s = json.load(open('.claude/settings.json'))
+h = s.get('hooks', {})
+pre = len(h.get('PreToolUse', []))
+post = len(h.get('PostToolUse', []))
+life = len(h.get('PreCompact', [])) + len(h.get('SessionStart', []))
+print(f'PreToolUse: {pre}/4, PostToolUse: {post}/3, Lifecycle: {life}/3')
+total = pre + post + life
+print(f'Total: {total}/10 — {\"PASS\" if total >= 8 else \"FAIL\"}')"
+
+# 7. Git hooks installed
+test -x .git/hooks/commit-msg && test -x .git/hooks/pre-push && echo "PASS" || echo "FAIL"
+
+# 8. Agent scripts executable
+fail=0; for s in agents/*//*.sh; do test -x "$s" || fail=1; done; [ $fail -eq 0 ] && echo "PASS" || echo "FAIL"
+```
+
+### Final Verdict
+
+Based on the checks above, declare one of:
+
+- **OPERATIONAL** — All 6 layers pass. Framework is fully governing this project.
+- **DEGRADED** — Layers 1-2 pass, but some hooks or git hooks missing. Partial governance.
+- **NON-FUNCTIONAL** — Layer 1 or Layer 3 fails. Framework is present but not governing. Agent operates ungoverned.
+
+Report the verdict prominently at the top of your audit report.
+
+---
+
+## CHANGELOG
+
+- **2026-03-01:** Initial version. Covers 6 enforcement layers, 14 self-corrective mechanisms, 8 common merge problems. Derived from controls inventory (704 lines) and dependency chain analysis (661 lines) across the full framework codebase.
