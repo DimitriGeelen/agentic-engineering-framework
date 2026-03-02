@@ -10,7 +10,9 @@
 set -euo pipefail
 
 FRAMEWORK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+# Resolve PROJECT_ROOT from git toplevel — framework/ is typically a subdirectory,
+# not the project root. Fall back to FRAMEWORK_ROOT for standalone installs.
+PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")}"
 
 if [[ "${1:-}" == "" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "Usage: fw ask [OPTIONS] \"question\""
