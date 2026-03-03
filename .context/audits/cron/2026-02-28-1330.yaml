@@ -1,0 +1,30 @@
+# Audit Results - 2026-02-28-1330
+timestamp: 2026-02-28T12:30:01Z
+sections: "structure,compliance,quality"
+summary:
+  pass: 8
+  warn: 1
+  fail: 1
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: FAIL
+    check: "YAML parse error: metrics-history.yaml"
+    mitigation: "Fix the YAML syntax in .context/project/metrics-history.yaml"
+  - level: PASS
+    check: "Fabric: 107 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 97/107 cards enriched (10 without edges)"
+  - level: WARN
+    check: "No active tasks found"
+    mitigation: "Create tasks for ongoing work"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
