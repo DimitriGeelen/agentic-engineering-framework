@@ -1,97 +1,87 @@
-# Watchtower CI/CD buildspec (Swarm pattern)
+# Watchtower CI/CD buildspec (LXC deployment model)
+# Migrated from Swarm/Docker to LXC in T-289 (see T-279 through T-284)
+#
+# Architecture:
+#   LXC 170 (192.168.10.170) runs two systemd services:
+#     - watchtower      :5050  (prod, /opt/watchtower-prod, tagged releases)
+#     - watchtower-dev  :5051  (dev, /opt/watchtower-dev, master branch)
+#
+# Dev auto-updates via systemd timer every 5 min (T-283) -- no CI needed.
+# Prod deploys on v* tag creation via this pipeline.
+#
 # IMPORTANT: version MUST be 37 (OneDev internal migration level)
 # IMPORTANT: ASCII-only comments (no UTF-8 arrows or dashes)
+#
+# PREREQUISITE: OneDev server SSH key must be in LXC authorized_keys:
+#   1. Get OneDev server key: ssh root@<onedev-host> 'cat /root/.ssh/id_ed25519.pub'
+#   2. Add to LXC: ssh root@192.168.10.170 'cat >> /root/.ssh/authorized_keys' <<< '<key>'
+#   3. Test: from OneDev host, ssh root@192.168.10.170 'hostname'
 version: 37
 jobs:
   # =========================================================================
   # PRODUCTION DEPLOYMENT (v* tags)
   # =========================================================================
-  - name: Build and Deploy Production
+  - name: Deploy Production to LXC
     steps:
-      - !CheckoutStep
-        name: Checkout
-        cloneCredential: !DefaultCredential {}
-        withLfs: false
-        withSubmodules: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-
       - !CommandStep
-        name: Build Docker Image
+        name: Deploy Tag to LXC
         runInContainer: true
-        image: docker:27-cli
+        image: alpine:3.19
         interpreter: !DefaultInterpreter
           commands: |
-            # L-BUILD-01: Use dedicated build container (CT 400) for isolation
-            export DOCKER_HOST=tcp://docker-builder.ring20.geelenandcompany.com:2375
+            apk add --no-cache openssh-client curl
 
-            VERSION=$(date +%Y%m%d-%H%M%S)
-            REGISTRY=192.168.10.201:5000
+            LXC_HOST=192.168.10.170
+            PROD_DIR=/opt/watchtower-prod
+            TAG=@tag@
 
-            APP_IMAGE=watchtower
-            echo "Building ${APP_IMAGE}:${VERSION} (PRODUCTION)"
-            docker build -t ${REGISTRY}/${APP_IMAGE}:${VERSION} -f Dockerfile .
-            docker tag ${REGISTRY}/${APP_IMAGE}:${VERSION} ${REGISTRY}/${APP_IMAGE}:latest
-            docker push ${REGISTRY}/${APP_IMAGE}:${VERSION}
-            docker push ${REGISTRY}/${APP_IMAGE}:latest
+            echo "=== Deploying ${TAG} to production ==="
 
-            # L-CICD-05: Verify push
-            sleep 2
-            if ! wget -q -O - "http://${REGISTRY}/v2/${APP_IMAGE}/tags/list" 2>/dev/null | grep -q "${VERSION}"; then
-              echo "ERROR: Image push verification failed!"
+            # SSH to LXC: fetch tags, checkout, install deps, restart
+            ssh -o StrictHostKeyChecking=no root@${LXC_HOST} << DEPLOY
+              set -e
+              cd ${PROD_DIR}
+
+              echo "Fetching tags..."
+              git fetch --tags --quiet
+
+              echo "Checking out ${TAG}..."
+              git checkout ${TAG}
+
+              echo "Installing dependencies..."
+              .venv/bin/pip install --quiet -r web/requirements.txt 2>/dev/null
+
+              echo "Restarting watchtower service..."
+              systemctl restart watchtower
+
+              echo "Waiting for service to start..."
+              sleep 3
+              systemctl is-active watchtower
+            DEPLOY
+
+            echo "=== Verifying health ==="
+            # Direct health check
+            HEALTH=$(curl -sf http://${LXC_HOST}:5050/health || echo "FAIL")
+            echo "Health: ${HEALTH}"
+
+            if echo "${HEALTH}" | grep -q '"app":"ok"'; then
+              echo "Production deployment successful: ${TAG}"
+            else
+              echo "ERROR: Health check failed after deploy!"
+              echo "Rolling back..."
+              ssh -o StrictHostKeyChecking=no root@${LXC_HOST} << ROLLBACK
+                cd ${PROD_DIR}
+                PREV_TAG=\$(git tag --sort=-v:refname | sed -n '2p')
+                if [ -n "\${PREV_TAG}" ]; then
+                  echo "Rolling back to \${PREV_TAG}"
+                  git checkout \${PREV_TAG}
+                  systemctl restart watchtower
+                else
+                  echo "No previous tag found for rollback!"
+                fi
+              ROLLBACK
               exit 1
             fi
-            echo "Image push verified: ${APP_IMAGE}:${VERSION}"
-
-            echo ${VERSION} > /onedev-build/version.txt
-        useTTY: true
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-
-      - !CommandStep
-        name: Deploy App to Swarm
-        runInContainer: true
-        image: docker:27-cli
-        interpreter: !DefaultInterpreter
-          commands: |
-            # L-CICD-21: Use host-networked helper to reach Swarm manager.
-            export DOCKER_HOST=tcp://docker-builder.ring20.geelenandcompany.com:2375
-
-            VERSION=$(cat /onedev-build/version.txt)
-            APP_IMAGE=watchtower
-            REGISTRY=192.168.10.201:5000
-            SWARM_SERVICE=watchtower_app
-            SWARM_MANAGER=192.168.10.201
-
-            echo "Deploying ${APP_IMAGE}:${VERSION} to Swarm (PRODUCTION)"
-
-            docker run --rm --network host docker:27-cli sh -c "
-              export DOCKER_HOST=tcp://${SWARM_MANAGER}:2375
-
-              echo 'Updating Swarm service...'
-              docker service update \
-                --image ${REGISTRY}/${APP_IMAGE}:${VERSION} \
-                ${SWARM_SERVICE}
-
-              echo 'Waiting for rolling update to converge...'
-              for i in \$(seq 1 30); do
-                RUNNING=\$(docker service ps ${SWARM_SERVICE} \
-                  --filter desired-state=running \
-                  --format '{{.CurrentState}}' | grep -c 'Running')
-                if [ \"\$RUNNING\" -ge 2 ]; then
-                  echo \"App service converged: \${RUNNING} replicas running\"
-                  exit 0
-                fi
-                if [ \"\$i\" = '30' ]; then
-                  echo 'ERROR: Swarm rolling update did not converge in 60s'
-                  echo 'Rolling back...'
-                  docker service rollback ${SWARM_SERVICE} || true
-                  docker service ps ${SWARM_SERVICE}
-                  exit 1
-                fi
-                sleep 2
-              done
-            "
-
-            echo "Production deployment complete"
         useTTY: true
         condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
 
@@ -101,105 +91,4 @@ jobs:
     retryCondition: never
     maxRetries: 3
     retryDelay: 30
-    timeout: 1800
-
-  # =========================================================================
-  # DEVELOPMENT DEPLOYMENT (develop branch)
-  # =========================================================================
-  - name: Build and Deploy Development
-    steps:
-      - !CheckoutStep
-        name: Checkout
-        cloneCredential: !DefaultCredential {}
-        withLfs: false
-        withSubmodules: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-
-      - !CommandStep
-        name: Build Docker Image (Dev)
-        runInContainer: true
-        image: docker:27-cli
-        interpreter: !DefaultInterpreter
-          commands: |
-            # L-BUILD-01: Use dedicated build container (CT 400) for isolation
-            export DOCKER_HOST=tcp://docker-builder.ring20.geelenandcompany.com:2375
-
-            VERSION=$(date +%Y%m%d-%H%M%S)
-            REGISTRY=192.168.10.201:5000
-
-            APP_IMAGE=watchtower-dev
-            echo "Building ${APP_IMAGE}:${VERSION} (DEVELOPMENT)"
-            docker build -t ${REGISTRY}/${APP_IMAGE}:${VERSION} -f Dockerfile .
-            docker tag ${REGISTRY}/${APP_IMAGE}:${VERSION} ${REGISTRY}/${APP_IMAGE}:latest
-            docker push ${REGISTRY}/${APP_IMAGE}:${VERSION}
-            docker push ${REGISTRY}/${APP_IMAGE}:latest
-
-            # L-CICD-05: Verify push
-            sleep 2
-            if ! wget -q -O - "http://${REGISTRY}/v2/${APP_IMAGE}/tags/list" 2>/dev/null | grep -q "${VERSION}"; then
-              echo "ERROR: Image push verification failed!"
-              exit 1
-            fi
-            echo "Image push verified: ${APP_IMAGE}:${VERSION}"
-
-            echo ${VERSION} > /onedev-build/version.txt
-        useTTY: true
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-
-      - !CommandStep
-        name: Deploy App to Swarm (Dev)
-        runInContainer: true
-        image: docker:27-cli
-        interpreter: !DefaultInterpreter
-          commands: |
-            # L-CICD-21: Use host-networked helper to reach Swarm manager.
-            export DOCKER_HOST=tcp://docker-builder.ring20.geelenandcompany.com:2375
-
-            VERSION=$(cat /onedev-build/version.txt)
-            APP_IMAGE=watchtower-dev
-            REGISTRY=192.168.10.201:5000
-            SWARM_SERVICE=watchtower-dev_app
-            SWARM_MANAGER=192.168.10.201
-
-            echo "Deploying ${APP_IMAGE}:${VERSION} to Swarm (DEVELOPMENT)"
-
-            docker run --rm --network host docker:27-cli sh -c "
-              export DOCKER_HOST=tcp://${SWARM_MANAGER}:2375
-
-              echo 'Updating Swarm service...'
-              docker service update \
-                --image ${REGISTRY}/${APP_IMAGE}:${VERSION} \
-                ${SWARM_SERVICE}
-
-              echo 'Waiting for rolling update to converge...'
-              for i in \$(seq 1 30); do
-                RUNNING=\$(docker service ps ${SWARM_SERVICE} \
-                  --filter desired-state=running \
-                  --format '{{.CurrentState}}' | grep -c 'Running')
-                if [ \"\$RUNNING\" -ge 2 ]; then
-                  echo \"App service converged: \${RUNNING} replicas running\"
-                  exit 0
-                fi
-                if [ \"\$i\" = '30' ]; then
-                  echo 'ERROR: Swarm rolling update did not converge in 60s'
-                  echo 'Rolling back...'
-                  docker service rollback ${SWARM_SERVICE} || true
-                  docker service ps ${SWARM_SERVICE}
-                  exit 1
-                fi
-                sleep 2
-              done
-            "
-
-            echo "Development deployment complete"
-        useTTY: true
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-
-    triggers:
-      - !BranchUpdateTrigger
-        branches: develop
-        paths: -:.claude/**
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 1800
+    timeout: 600
