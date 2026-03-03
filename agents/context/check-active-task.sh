@@ -56,8 +56,9 @@ case "$FILE_PATH" in
 esac
 
 # Exempt paths — framework operations that are part of task management itself
+# Anchored to PROJECT_ROOT to prevent matching arbitrary paths (e.g., /root/.claude/)
 case "$FILE_PATH" in
-    */.context/*|*/.tasks/*|*/.claude/*|*/.git/*)
+    "$PROJECT_ROOT"/.context/*|"$PROJECT_ROOT"/.tasks/*|"$PROJECT_ROOT"/.claude/*|"$PROJECT_ROOT"/.git/*)
         exit 0
         ;;
 esac
