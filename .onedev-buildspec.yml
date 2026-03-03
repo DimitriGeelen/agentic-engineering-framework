@@ -8,14 +8,18 @@
 #
 # Dev auto-updates via systemd timer every 5 min (T-283) -- no CI needed.
 # Prod deploys on v* tag creation via this pipeline.
+# GitHub mirror pushes on every branch update and tag creation (T-292).
 #
 # IMPORTANT: version MUST be 37 (OneDev internal migration level)
 # IMPORTANT: ASCII-only comments (no UTF-8 arrows or dashes)
 #
-# PREREQUISITE: OneDev server SSH key must be in LXC authorized_keys:
+# PREREQUISITE (LXC deploy): OneDev server SSH key must be in LXC authorized_keys:
 #   1. Get OneDev server key: ssh root@<onedev-host> 'cat /root/.ssh/id_ed25519.pub'
 #   2. Add to LXC: ssh root@192.168.10.170 'cat >> /root/.ssh/authorized_keys' <<< '<key>'
 #   3. Test: from OneDev host, ssh root@192.168.10.170 'hostname'
+#
+# PREREQUISITE (GitHub mirror): Job secret 'github-push-token' must contain a GitHub PAT
+#   with Contents:Read+Write permission scoped to DimitriGeelen/agentic-engineering-framework
 version: 37
 jobs:
   # =========================================================================
@@ -92,3 +96,25 @@ jobs:
     maxRetries: 3
     retryDelay: 30
     timeout: 600
+
+  # =========================================================================
+  # GITHUB MIRROR (all branches + tags) - T-292
+  # =========================================================================
+  - name: Push to GitHub Mirror
+    steps:
+      - !PushRepository
+        name: Push to GitHub
+        remoteUrl: https://github.com/DimitriGeelen/agentic-engineering-framework.git
+        userName: DimitriGeelen
+        passwordSecret: github-push-token
+        force: false
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    triggers:
+      - !BranchUpdateTrigger
+        branches: '**'
+      - !TagCreateTrigger
+        tags: '**'
+    retryCondition: never
+    maxRetries: 3
+    retryDelay: 30
+    timeout: 300

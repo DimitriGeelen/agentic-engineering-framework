@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-292: Cascade OneDev repo to GitHub
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-03T21:07:27Z
+# ============================================================================
+
+task_id: T-292
+task_name: "Cascade OneDev repo to GitHub"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-03T20:46:02Z
+completed: 2026-03-03T21:07:26Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-03-03T21:49:29+01:00
+last_commit: 2026-03-03T21:56:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Research artifact and filled inception template. Redact plaintext password from 4 handover files
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (OneDev 7.1+ confirmed, GitHub push verified, PAT stored as job secret)"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/handovers/S-2026-0217-1225.md"
+  - ".context/handovers/S-2026-0217-1404.md"
+  - ".context/handovers/S-2026-0217-1413.md"
+  - ".context/handovers/S-2026-0217-1517.md"
+  - "docs/reports/T-292-onedev-github-cascade.md"
+  - ".tasks/active/T-292-cascade-onedev-repo-to-github.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-03T21:49:29"
+    action: "T-292: Research artifact and filled inception template"
+  - time: "2026-03-03T21:56:00"
+    action: "T-292: Redact plaintext password from 4 handover files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 2
+  files_changed: 6
+  lines_added: 209
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-292-cascade-onedev-repo-to-github.md
+generated_by: context-agent-hybrid
