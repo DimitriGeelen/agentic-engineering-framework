@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-03T11:59:59Z
-last_update: 2026-03-03T12:03:11Z
+last_update: 2026-03-03T12:03:16Z
 date_finished: null
 ---
 
@@ -20,29 +20,19 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Audit showed FAIL on stale handover (15 unfilled TODOs) and WARN on uncommitted cron files. Session hygiene cleanup.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] Fresh handover generated with all TODOs filled
+- [x] Cron audit rotation committed (old deleted + new untracked)
+- [x] Working state files committed
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Handover has no TODOs (count should be 0)
+test "$(grep -c '\[TODO' .context/handovers/LATEST.md)" -eq 0
 
 ## Decisions
 
