@@ -336,3 +336,10 @@ decisions:
     date: 2026-03-01
     task: T-285
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-043
+    decision: "Prod-only pipeline (v* tag trigger). Dev handled by existing systemd timer (T-283)"
+    scope: project
+    date: 2026-03-03
+    task: T-289
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-289: Update OneDev CI/CD pipeline for LXC deployment model
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-03T11:54:27Z
+# ============================================================================
+
+task_id: T-289
+task_name: "Update OneDev CI/CD pipeline for LXC deployment model"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-03T11:49:53Z
+completed: 2026-03-03T11:54:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-03T12:54:23+01:00
+last_commit: 2026-03-03T12:54:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Rewrite OneDev pipeline for LXC deployment model
+
+# Key outcomes
+outcomes:
+  - "`.onedev-buildspec.yml` updated for LXC deployment (no Docker/Swarm references)"
+  - "Prod job: SSH to LXC, git fetch + checkout tag, pip install, restart watchtower"
+  - "Prod trigger: `v*` tag creation"
+  - "Health check verification after deploy with automatic rollback on failure"
+  - "Buildspec YAML parses correctly (version: 37 preserved)"
+  - "Dev not in pipeline (handled by systemd timer, T-283)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Prod-only pipeline (v* tag trigger). Dev handled by existing systemd timer (T-283)"
+    rationale: "Dev already auto-updates every 5 min via timer; adding CI for dev is redundant and adds SSH key complexity"
+    alternatives_rejected: ["Both prod + dev in pipeline (redundant with timer), remove pipeline entirely (loses automated prod deploy)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".onedev-buildspec.yml"
+  - ".tasks/active/T-289-update-onedev-cicd-pipeline-for-lxc-depl.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-03T12:54:23"
+    action: "T-289: Rewrite OneDev pipeline for LXC deployment model"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 131
+  lines_removed: 182
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-289-update-onedev-cicd-pipeline-for-lxc-depl.md
+generated_by: context-agent-hybrid

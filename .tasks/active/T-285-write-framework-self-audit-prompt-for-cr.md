@@ -12,7 +12,7 @@ tags: [audit, deployment, governance]
 components: [docs/prompts/framework-self-audit.md]
 related_tasks: [T-286]
 created: 2026-03-01T08:59:31Z
-last_update: 2026-03-01T09:38:01Z
+last_update: 2026-03-01T10:07:23Z
 date_finished: 2026-03-01T09:38:01Z
 ---
 
