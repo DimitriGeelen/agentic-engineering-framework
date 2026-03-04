@@ -312,6 +312,23 @@ GYAML
         echo -e "  ${GREEN}OK${NC}  fw already in PATH ($(which fw))"
     fi
 
+    # --- Auto-doctor (T-310) ---
+    echo ""
+    echo -e "${BOLD}Verifying setup...${NC}"
+    echo ""
+    local saved_project_root="${PROJECT_ROOT:-}"
+    export PROJECT_ROOT="$target_dir"
+    if type do_doctor >/dev/null 2>&1; then
+        do_doctor
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  fw doctor not available (standalone init)"
+    fi
+    if [ -n "$saved_project_root" ]; then
+        export PROJECT_ROOT="$saved_project_root"
+    else
+        unset PROJECT_ROOT
+    fi
+
     # --- Summary ---
     echo ""
     echo -e "${GREEN}=== Project Initialized ===${NC}"
@@ -327,8 +344,7 @@ GYAML
     else
         echo -e "${BOLD}Next steps:${NC}"
         echo "  1. cd $target_dir"
-        echo "  2. fw doctor                    # Verify setup"
-        echo "  3. fw work-on 'task name'       # Start your first task"
+        echo "  2. fw work-on 'task name'       # Start your first task"
         echo ""
         echo -e "${BOLD}Framework commands:${NC}"
         echo "  fw help                         # See all commands"
