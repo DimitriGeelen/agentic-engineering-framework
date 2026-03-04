@@ -4,7 +4,7 @@ name: "Register unregistered components and session cleanup"
 description: >
   Register block-plan-mode.sh and test-onboarding.sh in fabric. Fix stale handover.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-04T22:39:14Z
-last_update: 2026-03-04T22:39:14Z
-date_finished: null
+last_update: 2026-03-04T22:42:23Z
+date_finished: 2026-03-04T22:42:23Z
 ---
 
 # T-321: Register unregistered components and session cleanup
@@ -55,3 +55,6 @@ grep -q "End-to-end onboarding" .fabric/components/agents-onboarding-test-test-o
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-321-register-unregistered-components-and-ses.md
 - **Context:** Initial task creation
+
+### 2026-03-04T22:42:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
