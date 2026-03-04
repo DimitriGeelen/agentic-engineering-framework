@@ -119,6 +119,42 @@ Simulated fresh project onboarding at `/tmp/test-onboarding-294/`. Full walkthro
 
 ---
 
+## Multi-Perspective Research Findings (2026-03-04)
+
+### Lens 1: Bug Root Cause Analysis (agent: bug-analysis)
+Source: `/tmp/fw-agent-bug-analysis.md`
+
+| Bug | File:Line | Root Cause | Fix |
+|-----|-----------|-----------|-----|
+| Double output (doctor) | `bin/fw:1687` | Missing `exit $?` after `do_doctor` call | Add `exit $?` |
+| Double output (context init) | `agents/context/context.sh:71-72` | Missing `exit $?` after `do_init` call | Add `exit $?` |
+| Exit code 1 on success | `agents/context/lib/init.sh:148` | No explicit `return 0` at end of `do_init()` | Add `return 0` |
+| --start no focus | `agents/task-create/create-task.sh:268` | No call to `context.sh focus` when `START_WORK=true` | Add focus call after task creation |
+
+**Insight:** `fw work-on` (bin/fw:1100-1146) correctly handles focus at line 1139 — the bug is that `create-task.sh` doesn't replicate this behavior.
+
+### Lens 2: New User Perspective (agent: new-user-perspective)
+Source: `/tmp/fw-agent-new-user-perspective.md`
+
+Key findings:
+1. **"What IS this?"** — FRAMEWORK.md is clear in 30 seconds, but "governance framework for AI agents" still needs a concrete example
+2. **Install gaps:** OneDev credential setup assumes prior knowledge. No "what should fw doctor output?" reference. `fw setup` vs `fw init` difference unclear.
+3. **Jargon wall:** horizon, inception, episodic memory, antifragility, healing loop — 10+ framework-specific terms with no glossary
+4. **Prior knowledge assumed:** Git, CLI comfort, shell profile editing, Python, YAML
+5. **Time to first value:** 5-15 minutes to install, but 30+ minutes before seeing the framework *doing something useful* (audit, handover, pattern capture)
+
+### Lens 3: Historical Lessons (agent: episodic-lessons)
+Source: `/tmp/fw-agent-episodic-lessons.md`
+
+T-124 sprechloop experiment found 11 observations across 6 cycles. Key lessons for T-294:
+- **O-009 (template drift)** is PARTIALLY RESOLVED — manual sync works, no automated diff yet
+- **L-027:** Setup sentinels must use explicit flags, not file existence
+- **L-029:** Always dry-run onboarding on a clean project before shipping
+- **Budget gate deadlock (L-049):** Stale .budget-status blocks fw context init after compaction — init must be on the allowlist
+- **Task enforcement stale focus (G-013/T-232):** Already resolved but critical for new projects
+
+---
+
 ## Current State of Onboarding Machinery
 
 ### What Already Exists
