@@ -133,7 +133,7 @@ show_help() {
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
-    echo -e "  ${DIM}  setup${NC} [dir]          ${DIM}Deprecated — alias for init${NC}"
+    echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"

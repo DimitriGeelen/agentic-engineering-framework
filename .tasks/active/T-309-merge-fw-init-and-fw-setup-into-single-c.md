@@ -32,8 +32,9 @@ From T-294 DX comparison: two entry points confuse users. `fw init` already auto
 
 ## Verification
 
-fw setup --help 2>&1 | grep -q "deprecated"
-fw help 2>&1 | grep -q "Deprecated"
+# setup delegates to init (grep source code to avoid SIGPIPE)
+grep -q "deprecated" bin/fw
+grep -q "Deprecated" bin/fw
 fw test-onboarding 2>&1 | grep -q "ONBOARDING CLEAN"
 
 ## Decisions
