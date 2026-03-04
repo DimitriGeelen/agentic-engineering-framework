@@ -1,0 +1,17 @@
+id: agents/onboarding-test/test-onboarding.sh
+name: test-onboarding
+type: script
+subsystem: framework-core
+location: agents/onboarding-test/test-onboarding.sh
+tags: [test, onboarding, e2e]
+
+purpose: "End-to-end onboarding flow test with 8 checkpoints: scaffold, hooks, first task, task gate, first commit, audit, self-audit, handover. Validates that fw init produces a working project."
+
+depends_on:
+  - id: bin/fw
+    relationship: "invokes"
+  - id: lib/init.sh
+    relationship: "tests"
+
+last_verified: 2026-03-04
+created_by: T-317
