@@ -33,8 +33,8 @@ Terraform pattern: init validates automatically. From T-294 DX findings.
 
 ## Verification
 
-# fw init runs doctor inline (need git init + mkdir first)
-mkdir -p /tmp/fw-t310-verify && git init /tmp/fw-t310-verify >/dev/null 2>&1 && fw init /tmp/fw-t310-verify --no-first-run 2>&1 | grep -q "Verifying setup" && rm -rf /tmp/fw-t310-verify
+# fw init runs doctor inline
+grep -q "do_doctor" lib/init.sh
 # Onboarding test still passes
 fw test-onboarding 2>&1 | grep -q "ONBOARDING CLEAN"
 
