@@ -8,12 +8,14 @@ do_init() {
     local target_dir=""
     local provider="generic"
     local force=false
+    local first_run=true
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
             --provider) provider="$2"; shift 2 ;;
             --force) force=true; shift ;;
+            --no-first-run) first_run=false; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw init${NC} - Bootstrap a new project"
                 echo ""
@@ -25,6 +27,7 @@ do_init() {
                 echo "Options:"
                 echo "  --provider NAME   Generate provider-specific config: claude, cursor, generic (default: generic)"
                 echo "  --force           Overwrite existing files"
+                echo "  --no-first-run    Skip guided walkthrough after init"
                 echo "  -h, --help        Show this help"
                 echo ""
                 echo "Examples:"
@@ -315,16 +318,23 @@ GYAML
     echo ""
     echo "Directory: $target_dir"
     echo ""
-    echo -e "${BOLD}Next steps:${NC}"
-    echo "  1. cd $target_dir"
-    echo "  2. fw doctor                    # Verify setup"
-    echo "  3. fw context init              # Start first session"
-    echo "  4. fw task create --name '...'  # Create your first task"
-    echo ""
-    echo -e "${BOLD}Framework commands:${NC}"
-    echo "  fw help                         # See all commands"
-    echo "  fw audit                        # Check compliance"
-    echo "  fw handover --commit            # End-of-session handover"
+    # First-run walkthrough (T-304)
+    if [ "$first_run" = true ] && [ -t 0 ] && [ -t 1 ]; then
+        source "$FW_LIB_DIR/first-run.sh" 2>/dev/null || source "$(dirname "${BASH_SOURCE[0]}")/first-run.sh" 2>/dev/null || true
+        if type do_first_run >/dev/null 2>&1; then
+            do_first_run "$target_dir"
+        fi
+    else
+        echo -e "${BOLD}Next steps:${NC}"
+        echo "  1. cd $target_dir"
+        echo "  2. fw doctor                    # Verify setup"
+        echo "  3. fw work-on 'task name'       # Start your first task"
+        echo ""
+        echo -e "${BOLD}Framework commands:${NC}"
+        echo "  fw help                         # See all commands"
+        echo "  fw audit                        # Check compliance"
+        echo "  fw handover --commit            # End-of-session handover"
+    fi
 }
 
 # --- Provider Config Generators ---
