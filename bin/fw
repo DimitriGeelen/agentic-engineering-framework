@@ -109,6 +109,7 @@ show_help() {
     echo -e "${BOLD}Commands:${NC}"
     echo -e "  ${GREEN}audit${NC}                Run framework compliance audit"
     echo -e "  ${GREEN}self-audit${NC}           Standalone integrity check (Layers 1-4, no fw dependency)"
+    echo -e "  ${GREEN}test-onboarding${NC}     End-to-end onboarding flow test (8 checkpoints)"
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
     echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
@@ -870,6 +871,9 @@ case "$cmd" in
         ;;
     self-audit)
         exec "$AGENTS_DIR/audit/self-audit.sh" "$@"
+        ;;
+    test-onboarding)
+        exec "$AGENTS_DIR/onboarding-test/test-onboarding.sh" "$@"
         ;;
     plugin-audit)
         exec "$AGENTS_DIR/audit/plugin-audit.sh" "$@"

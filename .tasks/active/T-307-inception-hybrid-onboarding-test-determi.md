@@ -88,18 +88,18 @@ Static audits (T-286 self-audit, fw audit) check configuration but cannot catch 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Evidence from T-294 (7 flow-level bugs) and L-029 confirms static audits cannot catch onboarding flow bugs. 8-checkpoint design covers all T-294 issues. Hybrid approach (deterministic scaffolding + AI interpretation) provides diagnosis, not just detection. Scope is bounded: CLI script + AGENT.md, no skill/CI/platform testing.
+
+**Date**: 2026-03-04T21:16:20Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence from T-294 (7 flow-level bugs) and L-029 confirms static audits cannot catch onboarding flow bugs. 8-checkpoint design covers all T-294 issues. Hybrid approach (deterministic scaffolding + AI interpretation) provides diagnosis, not just detection. Scope is bounded: CLI script + AGENT.md, no skill/CI/platform testing.
+
+**Date**: 2026-03-04T21:16:20Z
 
 ## Updates
 
@@ -108,3 +108,8 @@ Static audits (T-286 self-audit, fw audit) check configuration but cannot catch 
 
 ### 2026-03-04T21:09:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T21:16:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence from T-294 (7 flow-level bugs) and L-029 confirms static audits cannot catch onboarding flow bugs. 8-checkpoint design covers all T-294 issues. Hybrid approach (deterministic scaffolding + AI interpretation) provides diagnosis, not just detection. Scope is bounded: CLI script + AGENT.md, no skill/CI/platform testing.
