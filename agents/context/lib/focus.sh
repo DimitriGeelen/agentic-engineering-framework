@@ -73,17 +73,19 @@ EOF
         echo "Task: $task_name"
 
         # Memory recall — surface relevant prior knowledge (T-246)
+        # Timeout: 10s to prevent hanging when Ollama/Qdrant is slow (T-323)
         local recall_script="$FRAMEWORK_ROOT/agents/context/lib/memory-recall.py"
         if [ -f "$recall_script" ]; then
             echo ""
-            python3 "$recall_script" --task "$task_id" --limit 5 2>/dev/null || true
+            timeout 10 python3 "$recall_script" --task "$task_id" --limit 5 2>/dev/null || true
         fi
 
         # Task briefing via semantic search (T-270)
+        # Timeout: 15s to prevent hanging when Ollama/Qdrant is slow (T-323)
         local ask_script="$FRAMEWORK_ROOT/lib/ask.py"
         if [ -f "$ask_script" ]; then
             local briefing
-            briefing=$(python3 "$ask_script" --concise --no-think \
+            briefing=$(timeout 15 python3 "$ask_script" --concise --no-think \
                 "Brief me on task $task_id: $task_name. What prior work, patterns, and decisions are relevant? What should I watch out for?" \
                 2>/dev/null) || true
             if [ -n "$briefing" ]; then
