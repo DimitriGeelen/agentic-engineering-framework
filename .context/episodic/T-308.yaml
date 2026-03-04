@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-308: Create /new-project Claude Code skill
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T22:21:03Z
+# ============================================================================
+
+task_id: T-308
+task_name: "Create /new-project Claude Code skill"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T17:28:39Z
+completed: 2026-03-04T22:21:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T18:29:11+01:00
+last_commit: 2026-03-04T23:20:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-294: Capture 5 remaining items (T-308–T-312) + final gap audit. Create /new-project Claude Code skill for guided onboarding
+
+# Key outcomes
+outcomes:
+  - "`.claude/commands/new-project.md` exists with step-by-step workflow"
+  - "Skill asks for project path and provider before running init"
+  - "Skill runs `fw init`, `fw doctor`, and `fw context init` in sequence"
+  - "Skill ends with `fw work-on` to create the first task"
+  - "Skill is listed in settings.json Skill tool section (auto-discovered)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".claude/commands/new-project.md"
+  - "docs/reports/T-294-framework-onboarding-portable-bootstrap.md"
+  - ".tasks/active/T-294-framework-onboarding-portable-project-bo.md"
+  - ".tasks/active/T-308-create-new-project-claude-code-skill.md"
+  - ".tasks/active/T-309-merge-fw-init-and-fw-setup-into-single-c.md"
+  - ".tasks/active/T-310-auto-run-fw-doctor-at-end-of-fw-init.md"
+  - ".tasks/active/T-311-create-install-script-curl--sh-for-frame.md"
+  - ".tasks/active/T-312-add-jargon-glossary-to-readme-or-framewo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T18:29:11"
+    action: "T-294: Capture 5 remaining items (T-308–T-312) + final gap audit"
+  - time: "2026-03-04T23:20:57"
+    action: "T-308: Create /new-project Claude Code skill for guided onboarding"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 292 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 292
+  commits: 2
+  files_changed: 8
+  lines_added: 440
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-308-create-new-project-claude-code-skill.md
+generated_by: context-agent-hybrid

@@ -4,7 +4,7 @@ name: "Create /new-project Claude Code skill"
 description: >
   Claude Code skill wrapping fw init/setup for in-session guided onboarding. Agent says /new-project, skill walks through setup interactively. Source: T-294 Phase 3 item T-N, uncaptured during dialogue.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:39Z
-last_update: 2026-03-04T22:17:13Z
-date_finished: null
+last_update: 2026-03-04T22:21:02Z
+date_finished: 2026-03-04T22:21:02Z
 ---
 
 # T-308: Create /new-project Claude Code skill
@@ -60,3 +60,6 @@ grep -q "fw work-on" .claude/commands/new-project.md
 
 ### 2026-03-04T22:17:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T22:21:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
