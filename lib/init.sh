@@ -82,9 +82,19 @@ do_init() {
     mkdir -p "$target_dir/.context/scans"
     mkdir -p "$target_dir/.context/bus/results"
     mkdir -p "$target_dir/.context/bus/blobs"
+    mkdir -p "$target_dir/.context/audits/cron"
+
+    # Create bypass-log.yaml if missing (T-302: prevents CTL-010 day-1 warning)
+    if [ ! -f "$target_dir/.context/bypass-log.yaml" ]; then
+        cat > "$target_dir/.context/bypass-log.yaml" << 'BYPASSEOF'
+# Git hook bypass log
+# Entries auto-added by post-commit hook when --no-verify is detected
+bypasses: []
+BYPASSEOF
+    fi
 
     echo -e "  ${GREEN}OK${NC}  .tasks/{active,completed,templates}"
-    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans,bus}"
+    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans,bus,audits/cron}"
 
     # --- .gitignore for volatile working memory files ---
     cat > "$target_dir/.context/working/.gitignore" << 'WGIT'
@@ -423,6 +433,17 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "__FRAMEWORK_ROOT__/agents/context/error-watchdog.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
           }
         ]
       }
