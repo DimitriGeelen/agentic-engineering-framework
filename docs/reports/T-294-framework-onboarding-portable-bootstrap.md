@@ -2,6 +2,77 @@
 
 **Type:** Inception research artifact
 **Created:** 2026-03-04
+**Status:** DRAFT — under active dialogue
+
+---
+
+## Proposed Task Breakdown (DRAFT)
+
+### Phase 1: Fix Broken Onboarding Path (bugs in existing code)
+
+These are bugs that make the current `fw init` → first task flow fail or confuse users. All are small fixes.
+
+| Task | Source | What To Fix | Scope |
+|------|--------|-------------|-------|
+| T-A: Fix `fw doctor` env var parsing | O-003 | `bin/fw:392` — `command.split()[0]` grabs `PROJECT_ROOT=...` instead of script path. Should skip env var assignments. | 1 file, ~5 lines |
+| T-B: Fix double output bug | O-004, O-006 | `fw` sources or calls functions twice — affects doctor, context init, possibly others. Root cause analysis needed. | 1 file, systemic |
+| T-C: Fix `fw context init` exit code | O-005 | Returns exit 1 on success. Scripts/CI interpret as failure. | 1 file, ~1 line |
+| T-D: Fix `--start` not setting focus | O-008 | `create-task.sh --start` sets status but doesn't call `context.sh focus T-XXX`. | 1 file, ~3 lines |
+| T-E: Fix `fw init` suggested commands | O-007 | "Next steps" recommends `fw task create --name '...'` without `--description`. Should recommend `fw work-on` instead. | 1 file, ~5 lines |
+
+**Dependency:** T-B (double output) may be root cause of several issues — investigate first.
+
+### Phase 2: New Project Baseline (missing artifacts and config)
+
+Things `fw init` should create but doesn't, causing false audit failures on day 1.
+
+| Task | Source | What To Build | Scope |
+|------|--------|---------------|-------|
+| T-F: Create README.md / QUICKSTART | O-001 | Human-readable entry point. Install deps → clone → init → first task → verify. One page. | 1 new file |
+| T-G: Fix audit false positives for new projects | O-009 | Audit should distinguish "new project" (< 5 commits, no handover yet) from "broken project". Grace period or new-project mode. | `audit.sh`, medium |
+| T-H: Complete `fw init` generated artifacts | O-009 | Init should create: cron audit dir, bypass-log.yaml, post-compact hook in settings.json. | `lib/init.sh`, small |
+
+### Phase 3: Production-Ready Onboarding (new features)
+
+Features that make onboarding polished and self-guided. Each is independent.
+
+| Task | Source | What To Build | Scope |
+|------|--------|---------------|-------|
+| T-I: `fw preflight` command | O-002 | Check all deps (python3, pyyaml, git, bash version, write perms) before init. Clear pass/fail with install instructions per platform. | New lib/preflight.sh |
+| T-J: `fw deps check` / `fw deps install` | Area 5 | Platform-aware dependency checker and optional installer. Subset of preflight focused on packages. | New lib/deps.sh |
+| T-K: First-run experience | Area 6B | After `fw init`, guided "first 5 minutes": create task → change → commit → audit → handover. Each step validates the previous. | New lib/first-run.sh or extend setup.sh |
+| T-L: Template drift detection | Area 6C | `fw doctor` check: compare project CLAUDE.md sections against template. `fw upgrade` to re-apply. | Extend bin/fw doctor + new lib/upgrade.sh |
+| T-M: Automated onboarding test | Area 6F | `fw test-onboarding /tmp/test` — creates, initializes, runs full cycle, validates, cleans up. CI-friendly. | New test script |
+| T-N: `/new-project` skill | Area 6G | Claude Code skill wrapping fw init/setup for in-session guided onboarding. | New .claude/commands/new-project.md |
+
+### Phase 4: Future / Parked
+
+| Item | Why Parked |
+|------|-----------|
+| Vendored/embedded mode (Approach B) | Needs separate inception — different architecture |
+| Package manager distribution (Approach C) | Premature — framework still evolving |
+| Git submodule mode (Approach D) | Low demand |
+| Cross-project dashboard | Watchtower handles this |
+| `fw upgrade` / migration | Depends on template drift detection (T-L) |
+
+---
+
+## Proposed Execution Sequence
+
+```
+Phase 1 (bugs):  T-B → T-A → T-C → T-D → T-E    [parallel after T-B]
+                      ↓
+Phase 2 (baseline): T-F + T-H → T-G               [F and H parallel]
+                      ↓
+Phase 3 (features): T-I → T-K → T-M               [critical path]
+                    T-J, T-L, T-N                   [independent, any order]
+                      ↓
+Verify:           Run T-M (automated onboarding test) as acceptance gate
+```
+
+**Estimated total:** 13 tasks across 3 phases. Phase 1 is ~1 session. Phase 2 is ~1 session. Phase 3 is ~2-3 sessions.
+
+---
 
 ## Dialogue Log
 

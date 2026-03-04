@@ -97,20 +97,25 @@ The framework works well internally (290+ completed tasks, validated via T-124 o
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Simulation found 9 real issues (4 P1, 5 P2). 13 build tasks identified across 3 phases. fw work-on is the only working path. Bugs in doctor, context init, task create need fixing. Missing README, preflight, audit grace period. Evidence: docs/reports/T-294-framework-onboarding-portable-bootstrap.md
+
+**Date**: 2026-03-04T14:52:28Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Simulation found 9 real issues (4 P1, 5 P2). 13 build tasks identified across 3 phases. fw work-on is the only working path. Bugs in doctor, context init, task create need fixing. Missing README, preflight, audit grace period. Evidence: docs/reports/T-294-framework-onboarding-portable-bootstrap.md
+
+**Date**: 2026-03-04T14:52:28Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-04T14:52:28Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Simulation found 9 real issues (4 P1, 5 P2). 13 build tasks identified across 3 phases. fw work-on is the only working path. Bugs in doctor, context init, task create need fixing. Missing README, preflight, audit grace period. Evidence: docs/reports/T-294-framework-onboarding-portable-bootstrap.md
