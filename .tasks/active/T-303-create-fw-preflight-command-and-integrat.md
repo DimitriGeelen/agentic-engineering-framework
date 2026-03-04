@@ -2,7 +2,15 @@
 id: T-303
 name: "Create fw preflight command and integrate into fw init"
 description: >
-  New lib/preflight.sh that validates all OS dependencies before init: python3 >= 3.8, PyYAML importable, git >= 2.0, bash >= 4.0, write permissions, git identity. On failure: print platform-specific install commands (apt, brew, pip). fw init calls preflight as automatic first step with clear output guiding the user. Also available standalone as fw preflight for manual checks. Source: T-294 simulation O-002, DX comparison (Terraform pattern).
+  New lib/preflight.sh that validates all OS dependencies before init.
+  Two modes: (1) fw preflight — standalone check, (2) fw init calls it as first step.
+  Check: python3 >= 3.8, PyYAML, git >= 2.0, bash >= 4.0, write perms, git identity.
+  Classifies deps as required vs recommended. Shows exact install commands with
+  why each dep is needed. Interactive install-with-consent: asks user before running
+  any install commands (required [Y/n], recommended [y/N]). Follows sovereignty
+  principle — detect silently, act only with consent. Same pattern as Tier 0.
+  In non-interactive mode (CI/piped): print commands only, never auto-install.
+  Source: T-294 simulation O-002, DX comparison (Terraform pattern).
 
 status: captured
 workflow_type: build
@@ -20,18 +28,23 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Sovereignty principle: framework detects gaps and proposes actions, human decides.
+Same pattern as Tier 0 (detect, inform, ask, execute with approval).
+See T-294 research artifact: `docs/reports/T-294-framework-onboarding-portable-bootstrap.md`
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw preflight` checks: python3 version, PyYAML, git version, bash version, write perms, git identity
+- [ ] Each dep classified as required or recommended with explanation of why it's needed
+- [ ] Platform detection (apt/brew/pip) for install commands
+- [ ] Interactive mode: prompts user before installing (required [Y/n], recommended [y/N])
+- [ ] Non-interactive mode: prints commands only, exits with pass/fail code
+- [ ] `fw init` calls preflight as first step, stops if required deps missing
+- [ ] `fw preflight --check-only` skips install prompts (alias for non-interactive)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Output is clear and actionable for someone who has never seen the framework
 
 ## Verification
 
