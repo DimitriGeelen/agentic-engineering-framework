@@ -1,0 +1,13 @@
+id: .context/project/controls.yaml
+name: controls
+type: data
+subsystem: context-fabric
+location: .context/project/controls.yaml
+tags: [context, project-memory]
+
+purpose: "Control register tracking framework enforcement mechanisms (gates, hooks, checks) and their implementation status."
+
+depends_on: []
+
+last_verified: 2026-03-04
+created_by: T-322

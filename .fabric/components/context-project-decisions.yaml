@@ -1,0 +1,13 @@
+id: .context/project/decisions.yaml
+name: decisions
+type: data
+subsystem: context-fabric
+location: .context/project/decisions.yaml
+tags: [context, project-memory]
+
+purpose: "Decision log recording architectural and process decisions with rationale and rejected alternatives."
+
+depends_on: []
+
+last_verified: 2026-03-04
+created_by: T-322

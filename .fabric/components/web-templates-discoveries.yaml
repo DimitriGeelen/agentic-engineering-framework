@@ -1,0 +1,15 @@
+id: web/templates/discoveries.html
+name: discoveries
+type: template
+subsystem: watchtower-web-ui
+location: web/templates/discoveries.html
+tags: [web, template, watchtower]
+
+purpose: "Jinja2 template rendering the discoveries page. Shows audit discovery results with pass/warn/fail indicators."
+
+depends_on:
+  - id: web/blueprints/discoveries.py
+    relationship: rendered-by
+
+last_verified: 2026-03-04
+created_by: T-322

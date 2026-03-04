@@ -1,0 +1,15 @@
+id: lib/first-run.sh
+name: first-run
+type: script
+subsystem: framework-core
+location: lib/first-run.sh
+tags: [lib, fw-subcommand, onboarding]
+
+purpose: "First-run experience walkthrough after fw init. Guides new users through governance cycle: create task, make commit, run audit. Auto-triggered when TTY detected."
+
+depends_on:
+  - id: lib/init.sh
+    relationship: invoked-by
+
+last_verified: 2026-03-04
+created_by: T-322

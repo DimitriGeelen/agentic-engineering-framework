@@ -1,0 +1,15 @@
+id: bin/watchtower.sh
+name: watchtower
+type: script
+subsystem: watchtower-web-ui
+location: bin/watchtower.sh
+tags: [bin, watchtower, web]
+
+purpose: "Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode."
+
+depends_on:
+  - id: web/app.py
+    relationship: launches
+
+last_verified: 2026-03-04
+created_by: T-322

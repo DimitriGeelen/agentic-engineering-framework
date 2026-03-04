@@ -1,0 +1,13 @@
+id: .context/project/metrics-history.yaml
+name: metrics-history
+type: data
+subsystem: context-fabric
+location: .context/project/metrics-history.yaml
+tags: [context, project-memory]
+
+purpose: "Historical metrics snapshots tracking task completion rates, commit velocity, and project health over time."
+
+depends_on: []
+
+last_verified: 2026-03-04
+created_by: T-322

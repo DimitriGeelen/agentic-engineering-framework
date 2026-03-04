@@ -1,0 +1,15 @@
+id: web/blueprints/discoveries.py
+name: discoveries
+type: route
+subsystem: watchtower-web-ui
+location: web/blueprints/discoveries.py
+tags: [web, blueprint, watchtower]
+
+purpose: "Flask blueprint serving /discoveries route. Displays audit discovery findings with WARN/FAIL status from cron and manual audits."
+
+depends_on:
+  - id: web/app.py
+    relationship: registered-by
+
+last_verified: 2026-03-04
+created_by: T-322

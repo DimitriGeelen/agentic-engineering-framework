@@ -1,0 +1,15 @@
+id: lib/preflight.sh
+name: preflight
+type: script
+subsystem: framework-core
+location: lib/preflight.sh
+tags: [lib, fw-subcommand, validation]
+
+purpose: "fw preflight subcommand. Validates system prerequisites (bash version, git version, python3, PyYAML) before framework operations."
+
+depends_on:
+  - id: bin/fw
+    relationship: invoked-by
+
+last_verified: 2026-03-04
+created_by: T-322

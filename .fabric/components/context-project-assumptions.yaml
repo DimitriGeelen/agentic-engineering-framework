@@ -1,0 +1,13 @@
+id: .context/project/assumptions.yaml
+name: assumptions
+type: data
+subsystem: context-fabric
+location: .context/project/assumptions.yaml
+tags: [context, project-memory]
+
+purpose: "Project assumption register. Tracks assumptions made during inception and build tasks, with validation status and evidence."
+
+depends_on: []
+
+last_verified: 2026-03-04
+created_by: T-322
