@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-309: Merge fw init and fw setup into single command
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T21:59:13Z
+# ============================================================================
+
+task_id: T-309
+task_name: "Merge fw init and fw setup into single command"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T17:28:40Z
+completed: 2026-03-04T21:59:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T22:58:11+01:00
+last_commit: 2026-03-04T22:59:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Deprecate fw setup — alias to fw init. Fix help text (DIM undefined) + verification SIGPIPE
+
+# Key outcomes
+outcomes:
+  - "`fw setup` prints deprecation notice and delegates to `fw init`"
+  - "`fw help` shows setup as deprecated alias"
+  - "`fw init` help text updated to \"auto-detects interactive mode\""
+  - "`fw test-onboarding` still passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix help text (DIM undefined) + verification SIGPIPE"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-309-merge-fw-init-and-fw-setup-into-single-c.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T22:58:11"
+    action: "T-309: Deprecate fw setup — alias to fw init"
+  - time: "2026-03-04T22:59:02"
+    action: "T-309: Fix help text (DIM undefined) + verification SIGPIPE"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 270 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 270
+  commits: 3
+  files_changed: 8
+  lines_added: 359
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-309-merge-fw-init-and-fw-setup-into-single-c.md
+generated_by: context-agent-hybrid
