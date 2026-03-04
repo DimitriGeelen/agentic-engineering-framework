@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-313: Fix settings.json hook generation — add missing 5 hooks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T20:32:47Z
+# ============================================================================
+
+task_id: T-313
+task_name: "Fix settings.json hook generation — add missing 5 hooks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T19:27:05Z
+completed: 2026-03-04T20:32:46Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T20:27:41+01:00
+last_commit: 2026-03-04T21:32:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-306: Create Phase 1-3 build tasks from inception GO decision. Fix settings.json hook generation — add missing 5 hooks
+
+# Key outcomes
+outcomes:
+  - "`generate_claude_code_config()` emits all 10 hooks matching framework's own settings.json"
+  - "Generated JSON is valid (parseable by python3 json module)"
+  - "Hook order matches framework: PreCompact, SessionStart, PreToolUse, PostToolUse"
+  - "PROJECT_ROOT set for hooks that need it (budget-gate, pre-compact, checkpoint, task-gate, tier0, resume)"
+  - "Hooks that don't need PROJECT_ROOT omit it (block-plan-mode, error-watchdog, check-dispatch)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix settings.json hook generation — add missing 5 hooks"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/init.sh"
+  - ".tasks/active/T-313-fix-settingsjson-hook-generation--add-mi.md"
+  - ".tasks/active/T-314-fix-claudemd-template--add-missing-7-gov.md"
+  - ".tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T20:27:41"
+    action: "T-306: Create Phase 1-3 build tasks from inception GO decision"
+  - time: "2026-03-04T21:32:42"
+    action: "T-313: Fix settings.json hook generation — add missing 5 hooks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 65
+  commits: 2
+  files_changed: 5
+  lines_added: 348
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-313-fix-settingsjson-hook-generation--add-mi.md
+generated_by: context-agent-hybrid

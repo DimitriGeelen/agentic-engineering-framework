@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-314: Fix CLAUDE.md template — add missing 7 governance sections
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T20:39:03Z
+# ============================================================================
+
+task_id: T-314
+task_name: "Fix CLAUDE.md template — add missing 7 governance sections"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T19:27:14Z
+completed: 2026-03-04T20:39:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T20:27:41+01:00
+last_commit: 2026-03-04T21:38:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-306: Create Phase 1-3 build tasks from inception GO decision. Fix CLAUDE.md template — add missing governance sections
+
+# Key outcomes
+outcomes:
+  - "Component Fabric section added (commands, cards, when to use)"
+  - "Plan Mode Prohibition section added (prohibits EnterPlanMode, directs to /plan)"
+  - "Auto-Restart section added (T-179 signal flow, safety)"
+  - "Autonomous Mode Boundaries added to Behavioral Rules (initiative vs authority)"
+  - "Agent/Human AC Split added to Behavioral Rules (T-193 partial-complete)"
+  - "Inception Discipline updated with C-001 research artifact and dialogue log rules"
+  - "Working with Tasks updated with structural flaws subsection and blast-radius"
+  - "Session Start Protocol updated with manual compaction section"
+  - "Quick Reference updated with Fabric commands and auto-restart row"
+  - "Sub-Agent Dispatch Protocol updated with dispatch patterns"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix CLAUDE.md template — add missing governance sections"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/templates/claude-project.md"
+  - ".tasks/active/T-313-fix-settingsjson-hook-generation--add-mi.md"
+  - ".tasks/active/T-314-fix-claudemd-template--add-missing-7-gov.md"
+  - ".tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T20:27:41"
+    action: "T-306: Create Phase 1-3 build tasks from inception GO decision"
+  - time: "2026-03-04T21:38:58"
+    action: "T-314: Fix CLAUDE.md template — add missing governance sections"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 71
+  commits: 2
+  files_changed: 5
+  lines_added: 420
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-314-fix-claudemd-template--add-missing-7-gov.md
+generated_by: context-agent-hybrid
