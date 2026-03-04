@@ -221,37 +221,25 @@ fw tier0 approve     # Approve a blocked destructive command
 
 ## Installation
 
-### 1. Clone the framework
+### Quick install
 
 ```bash
-git clone https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 ```
 
-For git authentication, use your OneDev access token as the password in HTTP Basic Auth:
-```bash
-# Store credentials (one-time)
-git credential-store --file ~/.git-credentials store <<EOF
-protocol=https
-host=onedev.docker.ring20.geelenandcompany.com
-username=admin
-password=<your-access-token>
-EOF
-git config --global credential.helper 'store --file ~/.git-credentials'
-```
+This checks prerequisites, clones to `~/.agentic-framework`, links `fw` to PATH, and runs `fw doctor`.
 
-Access tokens are managed at: `https://onedev.docker.ring20.geelenandcompany.com/~my/access-tokens`
+Set `INSTALL_DIR` to customize: `INSTALL_DIR=/opt/framework curl -fsSL .../install.sh | bash`
 
-### 2. Add `fw` to your PATH
+### Manual install
 
 ```bash
-# Option A: Add to shell profile
-echo 'export PATH="/path/to/agentic-engineering-framework/bin:$PATH"' >> ~/.bashrc
-
-# Option B: Symlink
-ln -s /path/to/agentic-engineering-framework/bin/fw /usr/local/bin/fw
+git clone https://github.com/DimitriGeelen/agentic-engineering-framework.git ~/.agentic-framework
+sudo ln -sf ~/.agentic-framework/bin/fw /usr/local/bin/fw
+fw doctor
 ```
 
-### 3. Verify installation
+### Verify
 
 ```bash
 fw version

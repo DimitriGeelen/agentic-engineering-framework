@@ -12,16 +12,23 @@ This is not a library. It's a set of structural rules, patterns, and enforcement
 
 ## Install
 
+**Quick install (recommended):**
+
 ```bash
-# Clone the framework
-git clone <repo-url> /opt/999-Agentic-Engineering-Framework
-cd /opt/999-Agentic-Engineering-Framework
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+```
 
-# Add fw to PATH (optional, recommended)
-sudo ln -sf "$(pwd)/bin/fw" /usr/local/bin/fw
+**Manual install:**
 
-# Verify
+```bash
+git clone https://github.com/DimitriGeelen/agentic-engineering-framework.git ~/.agentic-framework
+sudo ln -sf ~/.agentic-framework/bin/fw /usr/local/bin/fw
 fw doctor
+```
+
+**Options:** Set `INSTALL_DIR` to customize the install location:
+```bash
+INSTALL_DIR=/opt/framework curl -fsSL .../install.sh | bash
 ```
 
 ## Quickstart: New Project
