@@ -73,18 +73,18 @@ A-004: Users can tolerate a "pull + migrate" workflow for updates
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Three separable problems: (1) hook gen drift 5/10 missing, (2) CLAUDE.md 70pct governance loss, (3) 9 frozen artifacts need upgrade. Model is sound, generator never maintained. Phase 1 fix generators, Phase 2 fw upgrade, Phase 3 spike layered config.
+
+**Date**: 2026-03-04T19:26:10Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three separable problems: (1) hook gen drift 5/10 missing, (2) CLAUDE.md 70pct governance loss, (3) 9 frozen artifacts need upgrade. Model is sound, generator never maintained. Phase 1 fix generators, Phase 2 fw upgrade, Phase 3 spike layered config.
+
+**Date**: 2026-03-04T19:26:10Z
 
 ## Updates
 
@@ -93,3 +93,13 @@ A-004: Users can tolerate a "pull + migrate" workflow for updates
 
 ### 2026-03-04T18:53:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T19:26:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three separable problems found: (1) hook generation drift — 5/10 hooks missing, (2) CLAUDE.md template ~70% governance loss, (3) 9 frozen artifacts need upgrade path. Distribution model is sound; generator was never maintained. Phase 1: fix generators (bugs). Phase 2: build fw upgrade. Phase 3: spike layered config.
+
+### 2026-03-04T19:26:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three separable problems: (1) hook gen drift 5/10 missing, (2) CLAUDE.md 70pct governance loss, (3) 9 frozen artifacts need upgrade. Model is sound, generator never maintained. Phase 1 fix generators, Phase 2 fw upgrade, Phase 3 spike layered config.
