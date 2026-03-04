@@ -203,6 +203,22 @@ fw tier0 approve     # Approve a blocked destructive command
 | Approve Tier 0 | `fw tier0 approve` |
 | Project health | `fw doctor` |
 
+## Glossary
+
+| Term | Definition |
+|------|------------|
+| **Antifragility** | Constitutional directive #1. The system strengthens under stress — failures become learning events that improve future behavior, not just errors to recover from. |
+| **Blast Radius** | The set of downstream components affected by a change. Computed by the Component Fabric via `fw fabric blast-radius`. |
+| **Context Fabric** | The persistent memory system managed by the Context Agent. Stores working memory (session state), project memory (patterns, decisions), and episodic memory (task histories). Lives in `.context/`. |
+| **Enforcement Tiers** | Four levels of action governance. Tier 0: human-approved destructive actions. Tier 1: standard operations (require active task). Tier 2: human situational overrides. Tier 3: pre-approved safe operations. |
+| **Episodic Memory** | Condensed history of completed tasks — what was done, what worked, what failed. Auto-generated on task completion. Stored in `.context/episodic/`. Used by agents to learn from past experience. |
+| **Healing Loop** | The antifragile error-recovery cycle: classify failure, look up similar patterns, suggest recovery, log resolution. Triggered when a task enters `issues` status. See `fw healing`. |
+| **Horizon** | Priority scheduling field on tasks. `now` = ready to work on, `next` = ready after current work, `later` = parked/backlog. Controls handover suggestions and task ordering. |
+| **Inception** | A workflow type for exploring a problem space before committing to build. Produces a go/no-go decision with evidence. Build tasks are created separately after a GO decision. |
+| **Project Memory** | Patterns, decisions, and learnings accumulated across all tasks. Persists between sessions. Stored in `.context/project/`. |
+| **Sovereignty** | The human's absolute authority in the Authority Model. Humans can override anything but are accountable for the outcome. Structural gates enforce sovereignty — agents cannot bypass them. |
+| **Working Memory** | Active session state: current focus, pending actions, recent context. Lives in `.context/working/`. Refreshed each session via `fw context init`. |
+
 ## Installation
 
 ### 1. Clone the framework
@@ -245,11 +261,8 @@ fw doctor
 ## Setting Up a New Project
 
 ```bash
-# Quick init (non-interactive)
-fw init /path/to/project --provider claude  # or: cursor, generic
-
-# Guided wizard (recommended for first project)
-fw setup /path/to/project
+# Initialize project (auto-detects interactive mode)
+fw init /path/to/project
 
 # Then:
 cd /path/to/project

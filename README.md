@@ -72,7 +72,7 @@ fw handover --commit     # End session
 
 ## Documentation
 
-- **[FRAMEWORK.md](FRAMEWORK.md)** — Full operating guide (provider-neutral)
+- **[FRAMEWORK.md](FRAMEWORK.md)** — Full operating guide (provider-neutral, includes [glossary](FRAMEWORK.md#glossary))
 - **[CLAUDE.md](CLAUDE.md)** — Claude Code integration + complete reference
 - **[Watchtower](web/)** — Web dashboard for task/audit monitoring
 

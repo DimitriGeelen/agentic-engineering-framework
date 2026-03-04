@@ -4,7 +4,7 @@ name: "Add jargon glossary to README or FRAMEWORK.md"
 description: >
   New-user-perspective agent flagged 10+ undefined framework terms: horizon, inception, episodic memory, healing loop, antifragility, enforcement tiers, context fabric, sovereignty, working memory. Need definitions section. Source: T-294 new-user-perspective agent.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:42Z
-last_update: 2026-03-04T17:28:42Z
+last_update: 2026-03-04T22:13:23Z
 date_finished: null
 ---
 
@@ -20,29 +20,31 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-294 new-user-perspective agent flagged 10+ undefined terms. Adding glossary section to FRAMEWORK.md (where terms are used).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] FRAMEWORK.md has a "## Glossary" section
+- [x] All flagged terms defined: horizon, inception, episodic memory, healing loop, antifragility, enforcement tiers, context fabric, sovereignty, working memory
+- [x] Definitions are concise (1-2 sentences each)
+- [x] README.md cross-references the glossary
+- [x] Section placement is logical (after main content, before Installation)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Glossary section exists in FRAMEWORK.md
+grep -q "## Glossary" FRAMEWORK.md
+# All flagged terms present
+grep -q "Horizon" FRAMEWORK.md
+grep -q "Inception" FRAMEWORK.md
+grep -q "Episodic Memory" FRAMEWORK.md
+grep -q "Healing Loop" FRAMEWORK.md
+grep -q "Antifragility" FRAMEWORK.md
+grep -q "Enforcement Tiers" FRAMEWORK.md
+grep -q "Context Fabric" FRAMEWORK.md
+grep -q "Sovereignty" FRAMEWORK.md
+grep -q "Working Memory" FRAMEWORK.md
 
 ## Decisions
 
@@ -61,3 +63,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-312-add-jargon-glossary-to-readme-or-framewo.md
 - **Context:** Initial task creation
+
+### 2026-03-04T22:13:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
