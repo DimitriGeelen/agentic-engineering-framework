@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-312: Add jargon glossary to README or FRAMEWORK.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T22:17:02Z
+# ============================================================================
+
+task_id: T-312
+task_name: "Add jargon glossary to README or FRAMEWORK.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T17:28:42Z
+completed: 2026-03-04T22:17:01Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T23:16:56+01:00
+last_commit: 2026-03-04T23:16:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add jargon glossary to FRAMEWORK.md (11 terms) + fix deprecated fw setup reference
+
+# Key outcomes
+outcomes:
+  - "FRAMEWORK.md has a \"## Glossary\" section"
+  - "All flagged terms defined: horizon, inception, episodic memory, healing loop, antifragility, enforcement tiers, context fabric, sovereignty, working memory"
+  - "Definitions are concise (1-2 sentences each)"
+  - "README.md cross-references the glossary"
+  - "Section placement is logical (after main content, before Installation)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add jargon glossary to FRAMEWORK.md (11 terms) + fix deprecated fw setup reference"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "FRAMEWORK.md"
+  - "README.md"
+  - ".tasks/active/T-312-add-jargon-glossary-to-readme-or-framewo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T23:16:56"
+    action: "T-312: Add jargon glossary to FRAMEWORK.md (11 terms) + fix deprecated fw setup reference"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 288 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 288
+  commits: 2
+  files_changed: 9
+  lines_added: 377
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-312-add-jargon-glossary-to-readme-or-framewo.md
+generated_by: context-agent-hybrid

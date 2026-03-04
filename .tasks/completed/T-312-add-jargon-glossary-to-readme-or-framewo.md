@@ -4,7 +4,7 @@ name: "Add jargon glossary to README or FRAMEWORK.md"
 description: >
   New-user-perspective agent flagged 10+ undefined framework terms: horizon, inception, episodic memory, healing loop, antifragility, enforcement tiers, context fabric, sovereignty, working memory. Need definitions section. Source: T-294 new-user-perspective agent.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:42Z
-last_update: 2026-03-04T22:13:23Z
-date_finished: null
+last_update: 2026-03-04T22:17:01Z
+date_finished: 2026-03-04T22:17:01Z
 ---
 
 # T-312: Add jargon glossary to README or FRAMEWORK.md
@@ -66,3 +66,6 @@ grep -q "Working Memory" FRAMEWORK.md
 
 ### 2026-03-04T22:13:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T22:17:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
