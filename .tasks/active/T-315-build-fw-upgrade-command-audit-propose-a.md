@@ -4,7 +4,7 @@ name: "Build fw upgrade command (audit, propose, apply)"
 description: >
   Rails-style interactive upgrade for frozen artifacts. Phase 1: audit (hash frozen files vs current framework). Phase 2: propose (diff report per file). Phase 3: apply (replace/keep/merge per file, backup originals). Covers: settings.json hooks, CLAUDE.md sections, task templates, seed YAML merge by ID, git hooks reinstall, version marker update. Source: T-306 investigation, Agents 2+6+8+9 findings.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-04T19:27:23Z
-last_update: 2026-03-04T19:27:23Z
+last_update: 2026-03-04T20:44:13Z
 date_finished: null
 ---
 
@@ -20,29 +20,28 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-306 found existing `fw upgrade` (T-169) had bugs: settings.json regeneration silently skipped (generate_claude_code_config checks file existence), detection only checked for budget-gate, no backups. Fix these + verify all 6 upgrade phases work correctly with T-313/T-314 fixes.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] Settings.json detection counts hooks (not just checks for budget-gate)
+- [x] Settings.json regeneration uses force=true to override file existence check
+- [x] Backup (.bak) created before overwriting settings.json
+- [x] Backup (.bak) created before overwriting CLAUDE.md
+- [x] Dry-run shows correct hook count (N/10 hooks, missing M)
+- [x] Stale project (5 hooks) upgrades to 10 hooks after fw upgrade
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# fw upgrade exists and is callable
+grep -q 'do_upgrade' lib/upgrade.sh
+# Hook count detection present
+grep -q 'expected_hooks=10' lib/upgrade.sh
+# Backup mechanism present
+grep -q '.bak' lib/upgrade.sh
+# Force regeneration present
+grep -q 'force=true' lib/upgrade.sh
 
 ## Decisions
 
@@ -61,3 +60,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md
 - **Context:** Initial task creation
+
+### 2026-03-04T20:44:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

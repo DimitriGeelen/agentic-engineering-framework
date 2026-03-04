@@ -152,10 +152,12 @@ plus Claude Code-specific integration notes.
                 new_lines=$(echo "$governance" | wc -l)
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  Governance sections ($current_lines → $new_lines lines)"
             else
+                # Backup before overwriting
+                cp "$project_claude" "${project_claude}.bak"
                 # Write combined file, fix any leftover placeholders
                 project_header=$(echo "$project_header" | sed "s|__PROJECT_NAME__|$project_name|g")
                 printf '%s\n%s\n' "$project_header" "$governance" > "$project_claude"
-                echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template"
+                echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
             fi
         fi
     elif [ ! -f "$project_claude" ]; then
@@ -273,27 +275,44 @@ plus Claude Code-specific integration notes.
     echo -e "${YELLOW}[5/6] Claude Code hooks (.claude/settings.json)${NC}"
 
     local settings_file="$target_dir/.claude/settings.json"
+    local expected_hooks=10
     if [ -f "$settings_file" ]; then
-        # Check if budget-gate hook is present (added in recent framework versions)
-        if ! grep -q "budget-gate" "$settings_file" 2>/dev/null; then
+        # Count actual hooks vs expected (10 hooks in current framework)
+        local actual_hooks
+        actual_hooks=$(python3 -c "
+import json, sys
+try:
+    data = json.load(open('$settings_file'))
+    print(sum(len(v) for v in data.get('hooks', {}).values()))
+except: print(0)
+" 2>/dev/null || echo "0")
+
+        if [ "$actual_hooks" -lt "$expected_hooks" ]; then
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  Missing budget-gate hook"
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  $actual_hooks/$expected_hooks hooks (missing $(($expected_hooks - $actual_hooks)))"
             else
-                # Regenerate from init
+                # Backup before overwriting
+                cp "$settings_file" "${settings_file}.bak"
+                # Force regeneration (generate_claude_code_config skips if file exists)
+                local save_force="${force:-false}"
+                force=true
                 generate_claude_code_config "$target_dir"
-                echo -e "  ${GREEN}UPDATED${NC}  Hooks config regenerated"
+                force="$save_force"
+                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($actual_hooks → $expected_hooks). Backup: settings.json.bak"
             fi
         else
-            echo -e "  ${GREEN}OK${NC}  Hooks config current"
+            echo -e "  ${GREEN}OK${NC}  $actual_hooks/$expected_hooks hooks present"
         fi
     else
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
-            echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json"
+            echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json ($expected_hooks hooks)"
         else
+            force=true
             generate_claude_code_config "$target_dir"
-            echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json"
+            force=false
+            echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json ($expected_hooks hooks)"
         fi
     fi
 
