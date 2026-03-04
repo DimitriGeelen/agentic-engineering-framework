@@ -388,8 +388,13 @@ for event_type, hook_list in hooks.items():
             if not command:
                 issues.append(f'{event_type}[{i}].hooks[{j}] missing command')
                 continue
-            # Check script exists
-            script_path = command.split()[0]  # First word is the script
+            # Check script exists (skip env var assignments like PROJECT_ROOT=...)
+            parts = command.split()
+            script_path = parts[0]
+            for p in parts:
+                if '=' not in p:
+                    script_path = p
+                    break
             if not os.path.exists(script_path):
                 issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
             elif not os.access(script_path, os.X_OK):
