@@ -4,16 +4,16 @@ name: "Add timeout to focus.sh semantic search calls"
 description: >
   focus.sh memory-recall.py and ask.py calls lack timeouts, causing fw work-on to hang when Ollama/Qdrant is slow. Add 10s timeout.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-04T23:02:41Z
-last_update: 2026-03-04T23:02:41Z
-date_finished: null
+last_update: 2026-03-04T23:04:51Z
+date_finished: 2026-03-04T23:04:51Z
 ---
 
 # T-323: Add timeout to focus.sh semantic search calls
@@ -52,3 +52,6 @@ grep -q "timeout 15 python3" agents/context/lib/focus.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-323-add-timeout-to-focussh-semantic-search-c.md
 - **Context:** Initial task creation
+
+### 2026-03-04T23:04:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
