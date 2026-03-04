@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-322: Register 16 unregistered components in fabric
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T22:57:33Z
+# ============================================================================
+
+task_id: T-322
+task_name: "Register 16 unregistered components in fabric"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T22:52:41Z
+completed: 2026-03-04T22:56:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-04T23:56:35+01:00
+last_commit: 2026-03-04T23:56:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register 16 unregistered components in fabric (0 drift remaining)
+
+# Key outcomes
+outcomes:
+  - "All 16 components registered with fabric cards"
+  - "All cards have filled purpose (no TODO)"
+  - "`fw fabric drift` shows 0 unregistered"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/bin-watchtower.yaml"
+  - ".fabric/components/context-project-assumptions.yaml"
+  - ".fabric/components/context-project-controls.yaml"
+  - ".fabric/components/context-project-decisions.yaml"
+  - ".fabric/components/context-project-directives.yaml"
+  - ".fabric/components/context-project-gaps.yaml"
+  - ".fabric/components/context-project-issues.yaml"
+  - ".fabric/components/context-project-metrics-history.yaml"
+  - ".fabric/components/context-project-practices.yaml"
+  - ".fabric/components/context-project-risks.yaml"
+  - ".fabric/components/lib-ask.yaml"
+  - ".fabric/components/lib-first-run.yaml"
+  - ".fabric/components/lib-preflight.yaml"
+  - ".fabric/components/web-blueprints-discoveries.yaml"
+  - ".fabric/components/web-templates-discoveries.yaml"
+  - ".fabric/components/web-templates-feedback_analytics.yaml"
+  - ".tasks/active/T-322-register-16-unregistered-components-in-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T23:56:35"
+    action: "T-322: Register 16 unregistered components in fabric (0 drift remaining)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 17
+  lines_added: 279
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-322-register-16-unregistered-components-in-f.md
+generated_by: context-agent-hybrid
