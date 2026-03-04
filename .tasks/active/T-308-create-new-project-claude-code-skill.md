@@ -4,7 +4,7 @@ name: "Create /new-project Claude Code skill"
 description: >
   Claude Code skill wrapping fw init/setup for in-session guided onboarding. Agent says /new-project, skill walks through setup interactively. Source: T-294 Phase 3 item T-N, uncaptured during dialogue.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:39Z
-last_update: 2026-03-04T17:28:39Z
+last_update: 2026-03-04T22:17:13Z
 date_finished: null
 ---
 
@@ -20,29 +20,25 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Claude Code skill wrapping `fw init` for in-session guided onboarding. Follows pattern of existing skills in `.claude/commands/`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `.claude/commands/new-project.md` exists with step-by-step workflow
+- [x] Skill asks for project path and provider before running init
+- [x] Skill runs `fw init`, `fw doctor`, and `fw context init` in sequence
+- [x] Skill ends with `fw work-on` to create the first task
+- [x] Skill is listed in settings.json Skill tool section (auto-discovered)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Skill file exists
+test -f .claude/commands/new-project.md
+# Contains key workflow steps
+grep -q "fw init" .claude/commands/new-project.md
+grep -q "fw doctor" .claude/commands/new-project.md
+grep -q "fw work-on" .claude/commands/new-project.md
 
 ## Decisions
 
@@ -61,3 +57,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-308-create-new-project-claude-code-skill.md
 - **Context:** Initial task creation
+
+### 2026-03-04T22:17:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
