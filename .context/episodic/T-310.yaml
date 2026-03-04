@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-310: Auto-run fw doctor at end of fw init
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T21:53:40Z
+# ============================================================================
+
+task_id: T-310
+task_name: "Auto-run fw doctor at end of fw init"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T17:28:41Z
+completed: 2026-03-04T21:53:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T22:52:18+01:00
+last_commit: 2026-03-04T22:53:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Auto-run fw doctor at end of fw init. Fix verification commands. Fix verification — avoid SIGPIPE from piped grep
+
+# Key outcomes
+outcomes:
+  - "`fw init` runs `do_doctor` after creating all artifacts"
+  - "Doctor output appears inline before the \"Project Initialized\" summary"
+  - "PROJECT_ROOT is temporarily set to target dir for doctor, then restored"
+  - "Removed \"fw doctor\" from \"Next steps\" list (it already ran)"
+  - "`fw test-onboarding` still passes 27/27"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — avoid SIGPIPE from piped grep"
+    source: git-mined
+  - description: "Fix verification commands"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/init.sh"
+  - ".tasks/active/T-310-auto-run-fw-doctor-at-end-of-fw-init.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T22:52:18"
+    action: "T-310: Auto-run fw doctor at end of fw init"
+  - time: "2026-03-04T22:53:03"
+    action: "T-310: Fix verification commands"
+  - time: "2026-03-04T22:53:30"
+    action: "T-310: Fix verification — avoid SIGPIPE from piped grep"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 264 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 264
+  commits: 4
+  files_changed: 8
+  lines_added: 374
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-310-auto-run-fw-doctor-at-end-of-fw-init.md
+generated_by: context-agent-hybrid
