@@ -5,5 +5,8 @@ __pycache__/
 .playwright-mcp/
 .context/bus/
 
+# OneDev buildspec — ring20-specific, not for GitHub mirror
+.onedev-buildspec.yml
+
 # Temporary screenshots
 *.png
