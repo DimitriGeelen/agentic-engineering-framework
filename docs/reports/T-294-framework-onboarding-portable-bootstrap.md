@@ -16,6 +16,38 @@ User wants deep analysis of portability covering 6 areas:
 
 **Purpose:** Discover, identify, and define what onboarding steps and scripts need to be built.
 
+### User Feedback (mid-session)
+"It's not working correctly yet — simulate a new deployment and take back learnings."
+
+## Live Simulation Observations (2026-03-04)
+
+Simulated fresh project onboarding at `/tmp/test-onboarding-294/`. Full walkthrough from `git init` through `fw handover`.
+
+| ID | Severity | Finding | Root Cause |
+|----|----------|---------|------------|
+| O-001 | P1 | **No README, INSTALL, or QUICKSTART at framework root.** New user has no entry point. | Missing file |
+| O-002 | P2 | **No `fw preflight` command.** No way to validate deps before init. | Missing feature |
+| O-003 | P1 | **`fw doctor` FAILS on fresh project.** Hook validation treats `PROJECT_ROOT=...` env var assignment as script path. | Bug in `bin/fw:392` — `command.split()[0]` grabs env var, not script |
+| O-004 | P2 | **`fw doctor` output printed TWICE.** | Systemic — `fw` likely sources/calls function twice |
+| O-005 | P2 | **`fw context init` exits code 1 on success.** Misleading for scripts/CI. | Bug — non-zero exit on happy path |
+| O-006 | P2 | **`fw context init` output printed TWICE.** Same double-output bug as doctor. | Same root cause as O-004 |
+| O-007 | P1 | **`fw task create` without `--description` hangs on stdin.** The "Next steps" from `fw init` doesn't mention `--description` flag. | Missing flag in suggested command + stdin blocking |
+| O-008 | P1 | **`--start` flag on task create doesn't set focus.** Tier 1 hook blocks Write/Edit despite task being started-work. | `create-task.sh --start` sets status but doesn't call `context.sh focus` |
+| O-009 | P2 | **Audit shows 1 FAIL + 9 WARNs on brand-new project.** Several are false positives (pre-framework commit has no T-XXX, cron dir not created, post-compact hook not generated). | `fw init` doesn't create all expected artifacts; audit doesn't distinguish "new project" from "broken project" |
+
+### What Worked Well
+- `fw init` creates correct directory structure, seeds, CLAUDE.md, hooks
+- `fw work-on` is the correct shortcut — creates task + sets focus + starts work
+- Git commit-msg hook correctly rejects commits without T-XXX
+- `fw handover` works end-to-end
+- Error messages from commit hook are clear and actionable
+- Seed files (practices, decisions, patterns) are copied correctly
+
+### Key Insight
+**`fw work-on` is the only path that works correctly end-to-end.** The documented path (`fw task create` → `fw context focus`) has two bugs (O-007, O-008). The "Next steps" printed by `fw init` should recommend `fw work-on` instead.
+
+---
+
 ## Current State of Onboarding Machinery
 
 ### What Already Exists
