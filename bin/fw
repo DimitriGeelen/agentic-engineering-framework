@@ -131,9 +131,9 @@ show_help() {
     echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
-    echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (fast, non-interactive)"
+    echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
-    echo -e "  ${GREEN}setup${NC} [dir]          Guided 6-step project onboarding wizard"
+    echo -e "  ${DIM}  setup${NC} [dir]          ${DIM}Deprecated — alias for init${NC}"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"
@@ -1171,8 +1171,11 @@ print(len(tier0))
         do_upgrade "$@"
         ;;
     setup)
-        source "$FW_LIB_DIR/setup.sh"
-        do_setup "$@"
+        echo -e "${YELLOW}NOTE: 'fw setup' is deprecated — use 'fw init' instead.${NC}"
+        echo "  fw init auto-detects interactive mode and runs first-run walkthrough."
+        echo ""
+        source "$FW_LIB_DIR/init.sh"
+        do_init "$@"
         ;;
     harvest)
         source "$FW_LIB_DIR/harvest.sh"

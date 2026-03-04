@@ -4,7 +4,7 @@ name: "Merge fw init and fw setup into single command"
 description: >
   DX comparison top finding: two entry points (fw init vs fw setup) confuses new users. Every other tool has ONE command. Auto-detect TTY for interactive vs non-interactive, --yes flag for defaults. Source: T-294 DX comparison finding.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:40Z
-last_update: 2026-03-04T17:28:40Z
+last_update: 2026-03-04T21:54:41Z
 date_finished: null
 ---
 
@@ -20,29 +20,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+From T-294 DX comparison: two entry points confuse users. `fw init` already auto-detects TTY and has first-run walkthrough.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `fw setup` prints deprecation notice and delegates to `fw init`
+- [x] `fw help` shows setup as deprecated alias
+- [x] `fw init` help text updated to "auto-detects interactive mode"
+- [x] `fw test-onboarding` still passes
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+fw setup --help 2>&1 | grep -q "deprecated"
+fw help 2>&1 | grep -q "Deprecated"
+fw test-onboarding 2>&1 | grep -q "ONBOARDING CLEAN"
 
 ## Decisions
 
@@ -61,3 +53,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-309-merge-fw-init-and-fw-setup-into-single-c.md
 - **Context:** Initial task creation
+
+### 2026-03-04T21:54:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
