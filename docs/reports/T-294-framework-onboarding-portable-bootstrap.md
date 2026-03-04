@@ -143,6 +143,15 @@ Key findings:
 4. **Prior knowledge assumed:** Git, CLI comfort, shell profile editing, Python, YAML
 5. **Time to first value:** 5-15 minutes to install, but 30+ minutes before seeing the framework *doing something useful* (audit, handover, pattern capture)
 
+### Lens 4: DX Comparison (agent: dx-comparison)
+Source: `/tmp/fw-agent-dx-comparison.md`
+
+Compared fw to Cargo, Next.js, Rails, Terraform, Claude Code:
+- **fw strengths:** `fw doctor` is best-in-class (13 checks). `fw setup` wizard well-designed. Post-init cheat sheet thorough.
+- **"cargo run" gap:** Other tools produce runnable output in 1-3 commands. fw needs 5-7 before doing anything useful.
+- **Two entry points:** `fw init` vs `fw setup` is confusing. Every other tool has ONE command.
+- **Adoptable patterns:** Merge init+setup, add `--demo` mode, auto-run doctor, single "try next" command.
+
 ### Lens 3: Historical Lessons (agent: episodic-lessons)
 Source: `/tmp/fw-agent-episodic-lessons.md`
 
