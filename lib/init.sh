@@ -419,7 +419,47 @@ generate_claude_code_config() {
         cat > "$dir/.claude/settings.json" << 'SJSON'
 {
   "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/pre-compact.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
+      {
+        "matcher": "EnterPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__FRAMEWORK_ROOT__/agents/context/block-plan-mode.sh"
+          }
+        ]
+      },
       {
         "matcher": "Write|Edit",
         "hooks": [
@@ -435,6 +475,15 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/check-tier0.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/budget-gate.sh"
           }
         ]
       }
@@ -457,15 +506,13 @@ generate_claude_code_config() {
             "command": "__FRAMEWORK_ROOT__/agents/context/error-watchdog.sh"
           }
         ]
-      }
-    ],
-    "SessionStart": [
+      },
       {
-        "matcher": "compact",
+        "matcher": "Task|TaskOutput",
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
+            "command": "__FRAMEWORK_ROOT__/agents/context/check-dispatch.sh"
           }
         ]
       }
@@ -476,7 +523,7 @@ SJSON
         # Replace placeholders with actual paths
         sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
         sed -i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (Tier 0 + Tier 1 + checkpoint + error-watchdog hooks)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 10 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi
