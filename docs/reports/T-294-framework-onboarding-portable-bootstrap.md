@@ -87,8 +87,43 @@ User wants deep analysis of portability covering 6 areas:
 
 **Purpose:** Discover, identify, and define what onboarding steps and scripts need to be built.
 
-### User Feedback (mid-session)
+### User Feedback: Simulate deployment
 "It's not working correctly yet — simulate a new deployment and take back learnings."
+→ Led to live simulation with 9 observations (O-001 through O-009).
+
+### User Direction: Document before building
+"Let's draft structure, plan and tasks first. Start documenting, continue our conversation."
+→ Shifted to one-by-one walkthrough of each proposed task with human approval.
+
+### User Correction: Governance compliance
+"Have we created tasks for this?! WHY are you skipping framework governance?!"
+→ Started creating framework tasks for each approved item. All items now have tasks.
+
+### Dialogue Decisions (items 1-13)
+
+| Item | User Decision | Task | Notes |
+|------|--------------|------|-------|
+| 1. Double output bug | "fix it" — separate task | T-295 | |
+| 2. Exit code 1 | "separate task" | T-296 | |
+| 3. --start no focus | "separate task" | T-297 | |
+| 4. Init suggested commands | "separate task" | T-298 | |
+| 5. Doctor env var parsing | "separate task" | T-299 | |
+| 6. README.md | "separate task" | T-300 | |
+| 7. Audit grace period | "separate task" | T-301 | |
+| 8. Complete init artifacts | "separate task" | T-302 | |
+| 9. fw preflight | "both — init calls preflight, print + guide user" | T-303 | |
+| 10. fw deps install | "auto install is great but keep user in control" — merged into T-303 | T-303 | Sovereignty principle: detect silently, act with consent. Same pattern as Tier 0. Required [Y/n], recommended [y/N]. |
+| 11a. First-run experience | "opt-out, runs by default after init" | T-304 | |
+| 11b. Deep component walkthrough | "separate inception for scope" | T-305 | horizon: later |
+| 12. Template drift / upgrade | User identified bigger issue: split model causes version mingling. Need distribution model inception. | T-306 | Self-hosting constraint: framework develops itself using its own tooling — dev repo must stay. Question is how OTHER projects consume it cleanly. |
+| 13. Automated onboarding test | "deterministic script not powerful enough — need stochastic reasoning with structured guidance" | T-307 | Follows CLI/Agent/Skill hierarchy: bash scaffolding + AGENT.md interpretation + /test-onboarding skill. Inception to scope hybrid approach. |
+
+### Key Design Principles Established (from dialogue)
+
+1. **Sovereignty in automation:** Framework proposes, human decides. Auto-install shows exact commands, explains why each dep is needed, asks before executing. Same pattern as Tier 0.
+2. **Self-hosting is non-negotiable:** Framework develops itself using its own governance. The dev repo stays. Distribution model for other projects is a separate concern (T-306).
+3. **CLI/Agent/Skill hierarchy applies to new features:** Deterministic work in bash, interpretation in AGENT.md, in-session orchestration via skills.
+4. **Version mingling is an architectural problem:** The split model (live agents + frozen copies) creates a frankenstein version state in consumer projects. Needs inception (T-306).
 
 ## Live Simulation Observations (2026-03-04)
 
