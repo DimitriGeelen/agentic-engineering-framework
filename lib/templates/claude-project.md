@@ -175,10 +175,17 @@ When encountering task-level issues:
 2. Log error reference and healing loop suggestions
 3. Record resolution when fixed for pattern learning
 
+When discovering structural flaws (bugs in framework tooling, spec-reality gaps):
+1. **Register first, fix second.** Add the flaw to `gaps.yaml` BEFORE or alongside the fix
+2. Gaps persist in the register (visible in Watchtower, checked by audit); completed tasks archive and become invisible
+3. Each independent bug gets its own task (see Task Sizing Rules: "One bug = one task")
+
 When completing:
 1. Verify all acceptance criteria met
-2. Set status to `work-completed`
-3. Framework generates episodic summary for future reference
+2. If source files were changed: run `fw fabric blast-radius HEAD` to understand downstream impact
+3. Record any design choices in the task's `## Decisions` section (auto-captured to context fabric on completion)
+4. Set status to `work-completed`
+5. Framework auto-generates episodic summary and captures decisions for future reference
 
 ## Context Integration
 
@@ -205,6 +212,8 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 4. **Record** as learning + decision + workflow pattern
 
 **Trigger:** An organic question about "how we do X" + 3+ instances in episodic memory.
+
+**Canonical example:** T-097 analyzed sub-agent dispatching across 96 tasks → discovered the real problem (result management, not agent specialization) → produced dispatch protocol (T-098) and prompt templates (T-099). The framework used its own episodic memory as the evidence base for an architectural decision.
 
 ## fw CLI (Primary Interface)
 
@@ -406,6 +415,33 @@ Synthesizes current state from:
 - **Git State** — Uncommitted changes, recent commits
 - **Tasks** — Active tasks with status
 
+## Component Fabric
+
+The Component Fabric (`.fabric/`) is a structural topology map of every significant file in the framework. It enables impact analysis, dependency tracking, and onboarding.
+
+### When to Use
+
+- **Before modifying a file:** `fw fabric deps <path>` — see what depends on it and what it depends on
+- **Before committing:** `fw fabric blast-radius` — see downstream impact of your changes
+- **After creating new files:** `fw fabric register <path>` — create a component card
+- **Periodic health check:** `fw fabric drift` — detect unregistered, orphaned, or stale components
+
+### Key Commands
+
+| Command | Purpose |
+|---------|---------|
+| `fw fabric overview` | Compact subsystem summary |
+| `fw fabric deps <path>` | Show dependencies for a file |
+| `fw fabric impact <path>` | Full transitive downstream chain |
+| `fw fabric blast-radius [ref]` | Downstream impact of a commit |
+| `fw fabric search <keyword>` | Search by tags, name, purpose |
+| `fw fabric drift` | Detect unregistered/orphaned/stale |
+| `fw fabric register <path>` | Create component card for a file |
+
+### Component Cards
+
+Each component has a YAML card in `.fabric/components/` with: id, name, type, subsystem, location, purpose, interfaces, depends_on, depended_by. Cards are the source of truth for structural relationships.
+
 ## Context Budget Management (P-009)
 
 **Context is a finite, non-renewable resource within a session.** Treat it like a battery gauge.
@@ -513,12 +549,40 @@ fw bus clear T-XXX
 
 **Size gating:** Payloads < 2KB are inline. Payloads >= 2KB are auto-moved to `.context/bus/blobs/` and referenced.
 
+### Dispatch Patterns (from project history)
+
+**Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
+
+**Parallel Audit** (T-072): 3 agents review different artifact categories. Each returns pass/warn/fail summary. Combined into report.
+
+**Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
+
+**Sequential TDD** (T-058): Fresh agent per implementation task with review between.
+
 ## Agent Behavioral Rules
 
 These rules govern agent behavior during work. They are structural expectations, not suggestions.
 
 ### Choice Presentation
 Always present choices as a **numbered or lettered list** so the user can reply with just the identifier (e.g., "1" or "b"). Never present options as prose paragraphs.
+
+### Autonomous Mode Boundaries
+When the human says "proceed as you see fit", "go ahead", "do what you think is best", or similar broad directives, this delegates **initiative** (choosing what to work on), NOT **authority** (approving, completing, or bypassing). Specifically:
+
+**Delegated (agent may do autonomously):**
+- Choose which task to work on next
+- Choose implementation approach within a task
+- Run verification, tests, audits
+- Commit completed work and report back
+
+**NOT delegated (requires explicit human approval per action):**
+- Completing human-owned tasks (`owner: human`)
+- Using `--force` to bypass any gate (sovereignty, AC, verification)
+- Changing task ownership away from human
+- Destructive actions (Tier 0)
+- Any action the sovereignty gate or structural enforcement blocks
+
+**The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
@@ -532,6 +596,8 @@ When the active task has `workflow_type: inception`:
 3. **Do not write build artifacts** (production code, full apps) before `fw inception decide T-XXX go`
 4. **The commit-msg hook enforces this** — after 2 exploration commits, further commits are blocked until a decision is recorded
 5. After a GO decision, **create separate build tasks** for implementation — do not continue building under the inception task ID
+6. **Research artifact first (C-001)** — When starting inception work, create `docs/reports/T-XXX-*.md` BEFORE conducting research. Update the file incrementally as dialogue produces findings. Commit after each dialogue segment. The thinking trail IS the artifact — conversations are ephemeral, files are permanent.
+7. **Dialogue log (C-001 extension)** — For phases involving human dialogue, include a `## Dialogue Log` section in the research artifact. Record: questions the human posed, answers given, course corrections, and the outcome/decision that resulted.
 
 ### Web App Startup
 When building a web application:
@@ -546,10 +612,18 @@ For tasks involving hardware APIs (microphone, camera, GPS, Bluetooth):
 2. **List constraints in the exploration plan** before writing code
 3. **Test the API access path** in a minimal spike before building the full app
 
+### Agent/Human AC Split (T-193)
+Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteria`:
+- **Agent ACs:** Criteria the agent can verify (code, tests, commands). P-010 gates on these.
+- **Human ACs:** Criteria requiring human verification (UI behavior, subjective quality). Not blocking.
+- **NEVER check a `### Human` AC.** Only the human may verify and check these boxes.
+- When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
+- The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
+
 ### Verification Before Completion
 Before setting any task to `work-completed`:
 1. Run all commands in the task's `## Verification` section
-2. Check every acceptance criterion checkbox — all must be met
+2. Check every `### Agent` acceptance criterion checkbox (or all ACs if no split headers)
 3. If tests exist for the changed code, run them
 4. Report results to user with pass/fail evidence
 5. Do NOT call `fw task update --status work-completed` until all pass
@@ -564,6 +638,23 @@ When encountering errors or unexpected behavior:
 5. If disproved, form the next hypothesis — max **3 hypotheses** before escalating to user
 6. Never shotgun-debug (trying random fixes without understanding the cause)
 7. After resolution, record the pattern: `fw healing resolve T-XXX --mitigation "what fixed it"`
+
+## Plan Mode Prohibition
+
+**NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
+- No task gate — planning starts without a task
+- No session init — Session Start Protocol is skipped entirely
+- No research artifacts — plan files go to `.claude/plans/` (untracked, ephemeral)
+- Its system prompt says "This supercedes any other instructions" — overriding CLAUDE.md
+- Post-plan execution skips commit cadence, task updates, and check-ins
+
+**Use `/plan` instead** — the framework's governance-aware planning skill that:
+- Requires an active task (verified in Step 1)
+- Writes to `docs/plans/` (tracked, committed)
+- Respects instruction precedence
+
+If you need to explore before planning, use the Explore agent or `/explore` skill.
+If you need to plan implementation, create a task first, then use `/plan`.
 
 ## Session Start Protocol
 
@@ -581,6 +672,13 @@ When encountering errors or unexpected behavior:
 3. THEN proceed with implementation
 
 This gate is non-negotiable. The PreToolUse hook will block Write/Edit without an active task. Use `/start-work` if unsure.
+
+**Manual compaction (`/compact`):**
+- Auto-compaction is disabled by design (D-027 — compaction destroys working memory)
+- `/compact` is available for manual use when context is high and you want a clean slate
+- The PreCompact hook automatically generates a handover before compaction
+- The SessionStart:compact hook reinjects structured context into the fresh session
+- After compaction, follow the recovery steps below
 
 **After context compaction (mid-session recovery):**
 1. Run resume: `fw resume status`
@@ -634,6 +732,21 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | List assumptions | `fw assumption list` | Show all by status |
 | Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
 | Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
+| Fabric overview | `fw fabric overview` | `./agents/fabric/fabric.sh overview` |
+| Fabric deps | `fw fabric deps <path>` | `./agents/fabric/fabric.sh deps <path>` |
+| Fabric impact | `fw fabric impact <path>` | `./agents/fabric/fabric.sh impact <path>` |
+| Blast radius | `fw fabric blast-radius [ref]` | `./agents/fabric/fabric.sh blast-radius [ref]` |
+| Fabric drift | `fw fabric drift` | `./agents/fabric/fabric.sh drift` |
+| Register component | `fw fabric register <path>` | `./agents/fabric/fabric.sh register <path>` |
+| **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
+
+## Auto-Restart (T-179)
+
+When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts with `claude -c`. The `SessionStart:resume` hook then injects handover context into the fresh session.
+
+**Flow:** Budget critical → auto-handover → signal file → claude exits → wrapper detects → `sleep 3` → `claude -c` → context injected → `/resume` ready.
+
+**Safety:** 5-minute TTL on signal files, max 5 consecutive restarts, 3-second cancel window, opt-out via `--no-restart`.
 
 ## Session End Protocol
 
