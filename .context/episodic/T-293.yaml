@@ -1,0 +1,256 @@
+# ============================================================================
+# EPISODIC MEMORY - T-293: Fill stale handover and commit audit rotation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T18:52:51Z
+# ============================================================================
+
+task_id: T-293
+task_name: "Fill stale handover and commit audit rotation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T14:12:10Z
+completed: 2026-03-04T18:52:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-04T15:15:23+01:00
+last_commit: 2026-03-04T19:52:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fill handover S-2026-0304-1508 TODOs. Commit cron audit rotation (Feb 23 - Mar 4). Sync working state and task file. Fill stale handover S-2026-0304-1833 + commit audit rotation. Commit episodics, cron rotation, and task lifecycle updates. Fill stale handover S-2026-0304-1944 TODOs. Update ACs and complete task
+
+# Key outcomes
+outcomes:
+  - "Stale handover S-2026-0304-1833 filled (done in prior session)"
+  - "Stale handover S-2026-0304-1944 filled"
+  - "Audit cron rotation committed (old 2026-02-24 removed, new 2026-03-04 added)"
+  - "Episodics T-290 through T-304 committed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-03.yaml"
+  - ".context/audits/2026-03-04.yaml"
+  - ".context/audits/cron/2026-02-23-2230.yaml"
+  - ".context/audits/cron/2026-02-23-2245.yaml"
+  - ".context/audits/cron/2026-02-23-2330.yaml"
+  - ".context/audits/cron/2026-02-24-0230.yaml"
+  - ".context/audits/cron/2026-02-24-0300.yaml"
+  - ".context/audits/cron/2026-02-24-0315.yaml"
+  - ".context/audits/cron/2026-02-24-0330.yaml"
+  - ".context/audits/cron/2026-02-24-0345.yaml"
+  - ".context/audits/cron/2026-02-24-0400.yaml"
+  - ".context/audits/cron/2026-02-24-0415.yaml"
+  - ".context/audits/cron/2026-02-24-0445.yaml"
+  - ".context/audits/cron/2026-02-24-0500.yaml"
+  - ".context/audits/cron/2026-02-24-0515.yaml"
+  - ".context/audits/cron/2026-02-24-0545.yaml"
+  - ".context/audits/cron/2026-02-24-0600.yaml"
+  - ".context/audits/cron/2026-02-24-0615.yaml"
+  - ".context/audits/cron/2026-02-24-0630.yaml"
+  - ".context/audits/cron/2026-02-24-0645.yaml"
+  - ".context/audits/cron/2026-02-24-0715.yaml"
+  - ".context/audits/cron/2026-02-24-0730.yaml"
+  - ".context/audits/cron/2026-02-24-0745.yaml"
+  - ".context/audits/cron/2026-02-24-0815.yaml"
+  - ".context/audits/cron/2026-02-24-0830.yaml"
+  - ".context/audits/cron/2026-02-24-0900.yaml"
+  - ".context/audits/cron/2026-02-24-0930.yaml"
+  - ".context/audits/cron/2026-02-24-0945.yaml"
+  - ".context/audits/cron/2026-02-24-1000.yaml"
+  - ".context/audits/cron/2026-02-24-1015.yaml"
+  - ".context/audits/cron/2026-02-24-1045.yaml"
+  - ".context/audits/cron/2026-02-24-1100.yaml"
+  - ".context/audits/cron/2026-02-24-1115.yaml"
+  - ".context/audits/cron/2026-02-24-1145.yaml"
+  - ".context/audits/cron/2026-02-24-1200.yaml"
+  - ".context/audits/cron/2026-02-24-1215.yaml"
+  - ".context/audits/cron/2026-02-24-1245.yaml"
+  - ".context/audits/cron/2026-02-24-1300.yaml"
+  - ".context/audits/cron/2026-02-24-1315.yaml"
+  - ".context/audits/cron/2026-02-24-1345.yaml"
+  - ".context/audits/cron/2026-02-24-1400.yaml"
+  - ".context/audits/cron/2026-02-24-1415.yaml"
+  - ".context/audits/cron/2026-02-24-1430.yaml"
+  - ".context/audits/cron/2026-02-24-1445.yaml"
+  - ".context/audits/cron/2026-02-24-1500.yaml"
+  - ".context/audits/cron/2026-02-24-1515.yaml"
+  - ".context/audits/cron/2026-02-24-1745.yaml"
+  - ".context/audits/cron/2026-02-24-1815.yaml"
+  - ".context/audits/cron/2026-02-24-1830.yaml"
+  - ".context/audits/cron/2026-02-24-1845.yaml"
+  - ".context/audits/cron/2026-03-03-2230.yaml"
+  - ".context/audits/cron/2026-03-03-2245.yaml"
+  - ".context/audits/cron/2026-03-03-2300.yaml"
+  - ".context/audits/cron/2026-03-03-2315.yaml"
+  - ".context/audits/cron/2026-03-03-2330.yaml"
+  - ".context/audits/cron/2026-03-03-2345.yaml"
+  - ".context/audits/cron/2026-03-04-0000.yaml"
+  - ".context/audits/cron/2026-03-04-0015.yaml"
+  - ".context/audits/cron/2026-03-04-0030.yaml"
+  - ".context/audits/cron/2026-03-04-0045.yaml"
+  - ".context/audits/cron/2026-03-04-0100.yaml"
+  - ".context/audits/cron/2026-03-04-0115.yaml"
+  - ".context/audits/cron/2026-03-04-0130.yaml"
+  - ".context/audits/cron/2026-03-04-0145.yaml"
+  - ".context/audits/cron/2026-03-04-0200.yaml"
+  - ".context/audits/cron/2026-03-04-0215.yaml"
+  - ".context/audits/cron/2026-03-04-0230.yaml"
+  - ".context/audits/cron/2026-03-04-0245.yaml"
+  - ".context/audits/cron/2026-03-04-0300.yaml"
+  - ".context/audits/cron/2026-03-04-0315.yaml"
+  - ".context/audits/cron/2026-03-04-0330.yaml"
+  - ".context/audits/cron/2026-03-04-0345.yaml"
+  - ".context/audits/cron/2026-03-04-0400.yaml"
+  - ".context/audits/cron/2026-03-04-0415.yaml"
+  - ".context/audits/cron/2026-03-04-0430.yaml"
+  - ".context/audits/cron/2026-03-04-0445.yaml"
+  - ".context/audits/cron/2026-03-04-0500.yaml"
+  - ".context/audits/cron/2026-03-04-0515.yaml"
+  - ".context/audits/cron/2026-03-04-0530.yaml"
+  - ".context/audits/cron/2026-03-04-0545.yaml"
+  - ".context/audits/cron/2026-03-04-0600.yaml"
+  - ".context/audits/cron/2026-03-04-0615.yaml"
+  - ".context/audits/cron/2026-03-04-0630.yaml"
+  - ".context/audits/cron/2026-03-04-0645.yaml"
+  - ".context/audits/cron/2026-03-04-0700.yaml"
+  - ".context/audits/cron/2026-03-04-0715.yaml"
+  - ".context/audits/cron/2026-03-04-0730.yaml"
+  - ".context/audits/cron/2026-03-04-0745.yaml"
+  - ".context/audits/cron/2026-03-04-0800.yaml"
+  - ".context/audits/cron/2026-03-04-0815.yaml"
+  - ".context/audits/cron/2026-03-04-0830.yaml"
+  - ".context/audits/cron/2026-03-04-0845.yaml"
+  - ".context/audits/cron/2026-03-04-0900.yaml"
+  - ".context/audits/cron/2026-03-04-0915.yaml"
+  - ".context/audits/cron/2026-03-04-0930.yaml"
+  - ".context/audits/cron/2026-03-04-0945.yaml"
+  - ".context/audits/cron/2026-03-04-1000.yaml"
+  - ".context/audits/cron/2026-03-04-1015.yaml"
+  - ".context/audits/cron/2026-03-04-1030.yaml"
+  - ".context/audits/cron/2026-03-04-1045.yaml"
+  - ".context/audits/cron/2026-03-04-1100.yaml"
+  - ".context/audits/cron/2026-03-04-1115.yaml"
+  - ".context/audits/cron/2026-03-04-1130.yaml"
+  - ".context/audits/cron/2026-03-04-1145.yaml"
+  - ".context/audits/cron/2026-03-04-1200.yaml"
+  - ".context/audits/cron/2026-03-04-1215.yaml"
+  - ".context/audits/cron/2026-03-04-1230.yaml"
+  - ".context/audits/cron/2026-03-04-1245.yaml"
+  - ".context/audits/cron/2026-03-04-1300.yaml"
+  - ".context/audits/cron/2026-03-04-1315.yaml"
+  - ".context/audits/cron/2026-03-04-1330.yaml"
+  - ".context/audits/cron/2026-03-04-1345.yaml"
+  - ".context/audits/cron/2026-03-04-1400.yaml"
+  - ".context/audits/cron/2026-03-04-1415.yaml"
+  - ".context/audits/cron/2026-03-04-1430.yaml"
+  - ".context/audits/cron/2026-03-04-1445.yaml"
+  - ".context/audits/cron/2026-03-04-1500.yaml"
+  - ".context/audits/cron/2026-03-04-1515.yaml"
+  - ".context/audits/cron/2026-03-04-1530.yaml"
+  - ".context/audits/cron/2026-03-04-1545.yaml"
+  - ".context/audits/cron/2026-03-04-1600.yaml"
+  - ".context/audits/cron/2026-03-04-1615.yaml"
+  - ".context/audits/cron/2026-03-04-1630.yaml"
+  - ".context/audits/cron/2026-03-04-1645.yaml"
+  - ".context/audits/cron/2026-03-04-1700.yaml"
+  - ".context/audits/cron/2026-03-04-1715.yaml"
+  - ".context/audits/cron/2026-03-04-1730.yaml"
+  - ".context/audits/cron/2026-03-04-1745.yaml"
+  - ".context/audits/cron/2026-03-04-1800.yaml"
+  - ".context/audits/cron/2026-03-04-1815.yaml"
+  - ".context/audits/cron/2026-03-04-1830.yaml"
+  - ".context/audits/cron/2026-03-04-1845.yaml"
+  - ".context/audits/cron/2026-03-04-1900.yaml"
+  - ".context/audits/cron/2026-03-04-1915.yaml"
+  - ".context/audits/cron/2026-03-04-1930.yaml"
+  - ".context/audits/cron/2026-03-04-1945.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-295.yaml"
+  - ".context/episodic/T-296.yaml"
+  - ".context/episodic/T-297.yaml"
+  - ".context/episodic/T-298.yaml"
+  - ".context/episodic/T-299.yaml"
+  - ".context/episodic/T-300.yaml"
+  - ".context/episodic/T-301.yaml"
+  - ".context/episodic/T-302.yaml"
+  - ".context/episodic/T-303.yaml"
+  - ".context/episodic/T-304.yaml"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0304-1508.md"
+  - ".context/handovers/S-2026-0304-1833.md"
+  - ".context/handovers/S-2026-0304-1944.md"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/fw-vec-index.db"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - ".tasks/active/T-293-fill-stale-handover-and-commit-audit-rot.md"
+  - ".tasks/active/T-295-fix-double-output-bug-in-fw-doctor-and-c.md"
+  - ".tasks/active/T-300-create-readmemd-with-quickstart-guide.md"
+  - ".tasks/active/T-301-add-audit-grace-period-for-new-projects.md"
+  - ".tasks/active/T-302-complete-fw-init-generated-artifacts-cro.md"
+  - ".tasks/active/T-303-create-fw-preflight-command-and-integrat.md"
+  - ".tasks/active/T-304-build-opt-out-first-run-experience-after.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T15:15:23"
+    action: "T-293: Fill handover S-2026-0304-1508 TODOs"
+  - time: "2026-03-04T15:15:34"
+    action: "T-293: Commit cron audit rotation (Feb 23 - Mar 4)"
+  - time: "2026-03-04T15:15:46"
+    action: "T-293: Sync working state and task file"
+  - time: "2026-03-04T18:53:07"
+    action: "T-293: Fill stale handover S-2026-0304-1833 + commit audit rotation"
+  - time: "2026-03-04T19:50:36"
+    action: "T-293: Commit episodics, cron rotation, and task lifecycle updates"
+  - time: "2026-03-04T19:52:11"
+    action: "T-293: Fill stale handover S-2026-0304-1944 TODOs"
+  - time: "2026-03-04T19:52:50"
+    action: "T-293: Update ACs and complete task"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 280 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 280
+  commits: 7
+  files_changed: 169
+  lines_added: 4322
+  lines_removed: 1743
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-293-fill-stale-handover-and-commit-audit-rot.md
+generated_by: context-agent-hybrid
