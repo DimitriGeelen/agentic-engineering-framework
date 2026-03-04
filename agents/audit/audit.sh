@@ -217,6 +217,36 @@ fail() {
     FINDINGS+=("FAIL|$1|$3")
 }
 
+info() {
+    echo -e "${CYAN}[INFO]${NC} $1"
+    PASS_COUNT=$((PASS_COUNT + 1))
+    FINDINGS+=("INFO|$1|")
+}
+
+# --- New Project Grace Period (T-301) ---
+# Detect new projects: <5 commits and no handover → suppress known day-1 noise
+IS_NEW_PROJECT=false
+_commit_count=$(git -C "$PROJECT_ROOT" rev-list --count HEAD 2>/dev/null || echo "0")
+if [ "$_commit_count" -lt 5 ] && [ ! -f "$CONTEXT_DIR/handovers/LATEST.md" ]; then
+    IS_NEW_PROJECT=true
+fi
+
+# Grace-aware warn/fail: downgrades to info for new projects
+grace_warn() {
+    if [ "$IS_NEW_PROJECT" = true ]; then
+        info "$1 (grace: new project)"
+    else
+        warn "$1" "$2" "$3"
+    fi
+}
+grace_fail() {
+    if [ "$IS_NEW_PROJECT" = true ]; then
+        info "$1 (grace: new project)"
+    else
+        fail "$1" "$2" "$3"
+    fi
+}
+
 # Quiet mode: suppress terminal output (findings still collected for YAML)
 if [ "$QUIET" = true ]; then
     exec 3>&1 1>/dev/null
@@ -1395,11 +1425,11 @@ if [ "$total_recent" -gt 0 ]; then
     if [ "$ratio" -ge 95 ]; then
         pass "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)"
     elif [ "$ratio" -ge 80 ]; then
-        warn "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
+        grace_warn "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
              "$(git -C "$PROJECT_ROOT" log --oneline -20 | grep -v '^[a-f0-9]* T-' | head -3)" \
              "Ensure all commits use T-XXX prefix (commit-msg hook)"
     else
-        fail "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
+        grace_fail "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
              "Many commits missing task references — hook may not be installed" \
              "Run: fw git install-hooks"
     fi
@@ -1419,7 +1449,7 @@ if [ -d "$CRON_DIR" ]; then
              "Check cron schedule: crontab -l | grep agentic; cat /etc/cron.d/agentic-audit"
     fi
 else
-    warn "CTL-020: Cron audit directory missing ($CRON_DIR)" \
+    grace_warn "CTL-020: Cron audit directory missing ($CRON_DIR)" \
          "Directory not created" \
          "Run: fw audit schedule install"
 fi
@@ -1538,7 +1568,7 @@ else
     no_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     no_task=$(echo "$no_task" | tr -d '[:space:]')
     if [ "$no_task" -gt 0 ]; then
-        warn "CTL-010: No bypass log but $no_task commit(s) without T-XXX prefix" \
+        grace_warn "CTL-010: No bypass log but $no_task commit(s) without T-XXX prefix" \
              "post-commit hook may not be creating bypass-log.yaml" \
              "Check .git/hooks/post-commit exists and is executable"
     else
@@ -1821,7 +1851,7 @@ if [ -f "$HANDOVER_LATEST" ]; then
         pass "D8: Handover quality — no [TODO] in LATEST.md"
     fi
 else
-    warn "D8: No LATEST.md handover file found" \
+    grace_warn "D8: No LATEST.md handover file found" \
          "Missing handover file" \
          "Run: fw handover"
 fi

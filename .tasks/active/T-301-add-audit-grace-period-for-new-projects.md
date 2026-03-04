@@ -4,7 +4,7 @@ name: "Add audit grace period for new projects"
 description: >
   fw audit shows 1 FAIL + 9 WARNs on brand-new projects. False positives: pre-framework commits without T-XXX (CTL-008/CTL-010), missing first handover (D8), missing cron dir (CTL-020). Fix: detect new project state (< 5 commits, no handover yet) and suppress known day-1 noise with INFO instead of FAIL/WARN. Separate from fw init artifact fixes (T-H). Source: T-294 simulation O-009.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T16:17:08Z
-last_update: 2026-03-04T16:17:08Z
+last_update: 2026-03-04T18:25:41Z
 date_finished: null
 ---
 
@@ -25,24 +25,15 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] New project detection: <5 commits + no handover = IS_NEW_PROJECT
+- [x] grace_warn/grace_fail functions downgrade to info() for new projects
+- [x] CTL-008, CTL-010, CTL-020, D8 use grace functions
+- [x] Fresh project audit shows 0 warnings, 0 failures
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q "grace_warn\|grace_fail" /opt/999-Agentic-Engineering-Framework/agents/audit/audit.sh
+grep -q "IS_NEW_PROJECT" /opt/999-Agentic-Engineering-Framework/agents/audit/audit.sh
 
 ## Decisions
 
@@ -61,3 +52,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-301-add-audit-grace-period-for-new-projects.md
 - **Context:** Initial task creation
+
+### 2026-03-04T18:25:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
