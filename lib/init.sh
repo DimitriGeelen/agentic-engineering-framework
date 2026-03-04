@@ -69,6 +69,18 @@ do_init() {
     echo "  Provider:  $provider"
     echo ""
 
+    # --- Preflight check (T-303) ---
+    source "$FW_LIB_DIR/preflight.sh" 2>/dev/null || source "$(dirname "${BASH_SOURCE[0]}")/preflight.sh" 2>/dev/null || true
+    if type do_preflight >/dev/null 2>&1; then
+        if ! do_preflight --check-only; then
+            echo ""
+            echo -e "${RED}Preflight failed. Fix required dependencies before init.${NC}"
+            echo "Run: fw preflight (interactive mode to install)"
+            return 1
+        fi
+        echo ""
+    fi
+
     # --- Create directory structure ---
     echo -e "${YELLOW}Creating directory structure...${NC}"
 

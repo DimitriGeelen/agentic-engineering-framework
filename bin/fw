@@ -151,6 +151,7 @@ show_help() {
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
+    echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
@@ -1151,6 +1152,10 @@ print(len(tier0))
         ;;
     task)
         route_task "$@"
+        ;;
+    preflight)
+        source "$FW_LIB_DIR/preflight.sh"
+        do_preflight "$@"
         ;;
     init)
         source "$FW_LIB_DIR/init.sh"
