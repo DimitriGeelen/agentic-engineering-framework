@@ -4,16 +4,16 @@ name: "Fix --start flag not setting focus in create-task.sh"
 description: >
   create-task.sh --start sets status to started-work but does not call context.sh focus. Tier 1 hook blocks Write/Edit because focus.yaml has current_task: null. Fix: add context.sh focus call when START_WORK=true, matching the pattern in fw work-on (bin/fw:1139). Source: T-294 simulation O-008.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: []
-components: []
+components: [agents/task-create/create-task.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:11:41Z
-last_update: 2026-03-04T16:11:41Z
-date_finished: null
+last_update: 2026-03-04T18:17:54Z
+date_finished: 2026-03-04T18:17:54Z
 ---
 
 # T-297: Fix --start flag not setting focus in create-task.sh
@@ -25,13 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `create-task.sh --start` sets focus via `context.sh focus T-XXX`
+- [x] Verified: focus.yaml updates to new task ID when --start is used
 
 ## Verification
 
@@ -61,3 +56,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-297-fix---start-flag-not-setting-focus-in-cr.md
 - **Context:** Initial task creation
+
+### 2026-03-04T18:04:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-04T18:17:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

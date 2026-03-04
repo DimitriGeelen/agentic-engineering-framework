@@ -4,16 +4,16 @@ name: "Fix fw init suggested commands to recommend fw work-on"
 description: >
   fw init prints Next steps recommending 'fw task create --name ...' which hangs without --description flag (O-007) and doesn't set focus even with --start (O-008). Fix: change step 4 to recommend 'fw work-on "My first task" --type build' which is the only end-to-end working path. Location: lib/init.sh echo block at end of do_init(). Source: T-294 simulation O-007.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: []
-components: []
+components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:13:56Z
-last_update: 2026-03-04T16:13:56Z
-date_finished: null
+last_update: 2026-03-04T18:17:56Z
+date_finished: 2026-03-04T18:17:56Z
 ---
 
 # T-298: Fix fw init suggested commands to recommend fw work-on
@@ -25,13 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] First-session welcome suggests `fw work-on` instead of `fw task create`
+- [x] Removed redundant "Set focus" step (fw work-on handles it)
 
 ## Verification
 
@@ -61,3 +56,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-298-fix-fw-init-suggested-commands-to-recomm.md
 - **Context:** Initial task creation
+
+### 2026-03-04T18:11:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-04T18:17:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

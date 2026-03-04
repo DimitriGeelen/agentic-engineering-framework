@@ -4,16 +4,16 @@ name: "Fix fw doctor hook validation env var parsing"
 description: >
   fw doctor FAILS on every new project with 'script not found'. Root cause: bin/fw:392 uses command.split()[0] to extract script path from hook commands, but grabs PROJECT_ROOT=... env var assignment instead of the actual script path. Fix: skip tokens containing '=' when extracting script path. Source: T-294 simulation O-003.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: [T-294]
 created: 2026-03-04T16:14:53Z
-last_update: 2026-03-04T16:14:53Z
-date_finished: null
+last_update: 2026-03-04T18:17:58Z
+date_finished: 2026-03-04T18:17:58Z
 ---
 
 # T-299: Fix fw doctor hook validation env var parsing
@@ -25,13 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `fw doctor` passes on projects with `PROJECT_ROOT=... /path/script` hook commands
+- [x] Parser skips env var assignments (words containing `=`) to find script path
 
 ## Verification
 
@@ -61,3 +56,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-299-fix-fw-doctor-hook-validation-env-var-pa.md
 - **Context:** Initial task creation
+
+### 2026-03-04T18:14:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-04T18:17:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

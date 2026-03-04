@@ -4,16 +4,16 @@ name: "Fix double output bug in fw doctor and context init"
 description: >
   fw doctor and fw context init print all output twice. Root cause: bin/fw:1687 missing exit after do_doctor call, agents/context/context.sh:71 missing exit after do_init call. Fix: add exit $? after function calls in case blocks. Source: T-294 simulation O-004/O-006, confirmed by bug analysis agent.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
-components: []
+components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T15:02:55Z
-last_update: 2026-03-04T18:01:18Z
-date_finished: null
+last_update: 2026-03-04T18:18:03Z
+date_finished: 2026-03-04T18:16:58Z
 ---
 
 # T-295: Fix double output bug in fw doctor and context init
@@ -63,3 +63,6 @@ date_finished: null
 
 ### 2026-03-04T17:53:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T18:16:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

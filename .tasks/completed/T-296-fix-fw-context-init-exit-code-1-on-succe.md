@@ -4,16 +4,16 @@ name: "Fix fw context init exit code 1 on success"
 description: >
   fw context init returns exit code 1 even on successful initialization. Root cause: do_init() in agents/context/lib/init.sh ends without explicit return 0 — last command exit code leaks through. Fix: add return 0 at end of function. Source: T-294 simulation O-005.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: []
-components: []
+components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:06:35Z
-last_update: 2026-03-04T16:06:35Z
-date_finished: null
+last_update: 2026-03-04T18:17:52Z
+date_finished: 2026-03-04T18:17:52Z
 ---
 
 # T-296: Fix fw context init exit code 1 on success
@@ -25,13 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] `fw context init` exits with code 0 on success
+- [x] Root cause: SIGPIPE from `head -1` pipeline with `pipefail` + missing `return 0`
 
 ## Verification
 
@@ -61,3 +56,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-296-fix-fw-context-init-exit-code-1-on-succe.md
 - **Context:** Initial task creation
+
+### 2026-03-04T18:17:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-04T18:17:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
