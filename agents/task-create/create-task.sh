@@ -265,3 +265,8 @@ echo -e "${YELLOW}Next steps:${NC}"
 echo "1. Add context (design docs, specs, predecessor tasks) to the task file"
 echo "2. Reference this task in commits: git commit -m \"$TASK_ID: description\""
 echo "3. Update task status as work progresses"
+
+# If --start was used, also set focus (T-297)
+if [ "$START_WORK" = true ]; then
+    "$SCRIPT_DIR/../context/context.sh" focus "$TASK_ID" 2>/dev/null || true
+fi
