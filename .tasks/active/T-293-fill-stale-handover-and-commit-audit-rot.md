@@ -25,24 +25,16 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] Stale handover S-2026-0304-1833 filled (done in prior session)
+- [x] Stale handover S-2026-0304-1944 filled
+- [x] Audit cron rotation committed (old 2026-02-24 removed, new 2026-03-04 added)
+- [x] Episodics T-290 through T-304 committed
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Handover files exist and are not stale
+grep -q "Where We Are" .context/handovers/S-2026-0304-1944.md
+! grep -q "\[TODO:" .context/handovers/S-2026-0304-1944.md
 
 ## Decisions
 
