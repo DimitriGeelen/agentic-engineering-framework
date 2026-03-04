@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-315: Build fw upgrade command (audit, propose, apply)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T20:49:03Z
+# ============================================================================
+
+task_id: T-315
+task_name: "Build fw upgrade command (audit, propose, apply)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T19:27:23Z
+completed: 2026-03-04T20:49:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T20:27:41+01:00
+last_commit: 2026-03-04T21:48:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-306: Create Phase 1-3 build tasks from inception GO decision. Fix fw upgrade — hook count detection, force regen, backups
+
+# Key outcomes
+outcomes:
+  - "Settings.json detection counts hooks (not just checks for budget-gate)"
+  - "Settings.json regeneration uses force=true to override file existence check"
+  - "Backup (.bak) created before overwriting settings.json"
+  - "Backup (.bak) created before overwriting CLAUDE.md"
+  - "Dry-run shows correct hook count (N/10 hooks, missing M)"
+  - "Stale project (5 hooks) upgrades to 10 hooks after fw upgrade"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fw upgrade — hook count detection, force regen, backups"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-313-fix-settingsjson-hook-generation--add-mi.md"
+  - ".tasks/active/T-314-fix-claudemd-template--add-missing-7-gov.md"
+  - ".tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T20:27:41"
+    action: "T-306: Create Phase 1-3 build tasks from inception GO decision"
+  - time: "2026-03-04T21:48:58"
+    action: "T-315: Fix fw upgrade — hook count detection, force regen, backups"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 81 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 81
+  commits: 2
+  files_changed: 5
+  lines_added: 324
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-315-build-fw-upgrade-command-audit-propose-a.md
+generated_by: context-agent-hybrid
