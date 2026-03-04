@@ -11,11 +11,11 @@ status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: [portability, onboarding, dx]
+tags: [portability, onboarding, dx, parent]
 components: [lib/init.sh, lib/setup.sh, bin/fw, lib/templates/claude-project.md]
-related_tasks: [T-124, T-108, T-125, T-126, T-127]
+related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298, T-299, T-300, T-301, T-302, T-303, T-304, T-305]
 created: 2026-03-04T14:23:26Z
-last_update: 2026-03-04T14:23:26Z
+last_update: 2026-03-04T16:41:27Z
 date_finished: null
 ---
 
@@ -119,3 +119,6 @@ The framework works well internally (290+ completed tasks, validated via T-124 o
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Simulation found 9 real issues (4 P1, 5 P2). 13 build tasks identified across 3 phases. fw work-on is the only working path. Bugs in doctor, context init, task create need fixing. Missing README, preflight, audit grace period. Evidence: docs/reports/T-294-framework-onboarding-portable-bootstrap.md
+
+### 2026-03-04T16:41:27Z — status-update [task-update-agent]
+- **Change:** tags: +parent

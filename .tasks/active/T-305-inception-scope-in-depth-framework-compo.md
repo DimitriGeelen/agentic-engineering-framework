@@ -10,7 +10,7 @@ owner: human
 horizon: later
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-294]
 created: 2026-03-04T16:27:41Z
 last_update: 2026-03-04T16:27:41Z
 date_finished: null

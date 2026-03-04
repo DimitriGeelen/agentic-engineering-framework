@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-294]
 created: 2026-03-04T16:16:05Z
 last_update: 2026-03-04T16:16:05Z
 date_finished: null
