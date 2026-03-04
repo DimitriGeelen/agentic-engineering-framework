@@ -125,6 +125,25 @@ User wants deep analysis of portability covering 6 areas:
 3. **CLI/Agent/Skill hierarchy applies to new features:** Deterministic work in bash, interpretation in AGENT.md, in-session orchestration via skills.
 4. **Version mingling is an architectural problem:** The split model (live agents + frozen copies) creates a frankenstein version state in consumer projects. Needs inception (T-306).
 
+### Gap Audit (end of session)
+
+Before wrapping up, audited conversation against captured tasks. Found 5 uncaptured items:
+
+| Item | Task | Horizon | Source |
+|------|------|---------|--------|
+| `/new-project` Claude Code skill | T-308 | later | Phase 3 item T-N |
+| Merge `fw init` + `fw setup` | T-309 | later | DX comparison |
+| Auto-run `fw doctor` at end of init | T-310 | later | DX comparison |
+| Install script (`curl \| sh`) | T-311 | later | DX comparison |
+| Jargon glossary | T-312 | later | New-user-perspective agent |
+
+### Final Task Registry (T-294 children)
+
+**Build tasks (10):** T-295, T-296, T-297, T-298, T-299, T-300, T-301, T-302, T-303, T-304
+**Build tasks parked (5):** T-308, T-309, T-310, T-311, T-312
+**Inceptions (3):** T-305 (deep walkthrough), T-306 (distribution model), T-307 (hybrid test)
+**Total: 18 tasks** spawned from this inception.
+
 ## Live Simulation Observations (2026-03-04)
 
 Simulated fresh project onboarding at `/tmp/test-onboarding-294/`. Full walkthrough from `git init` through `fw handover`.
