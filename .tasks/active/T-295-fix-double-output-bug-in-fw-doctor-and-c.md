@@ -4,7 +4,7 @@ name: "Fix double output bug in fw doctor and context init"
 description: >
   fw doctor and fw context init print all output twice. Root cause: bin/fw:1687 missing exit after do_doctor call, agents/context/context.sh:71 missing exit after do_init call. Fix: add exit $? after function calls in case blocks. Source: T-294 simulation O-004/O-006, confirmed by bug analysis agent.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T15:02:55Z
-last_update: 2026-03-04T15:02:55Z
+last_update: 2026-03-04T18:01:18Z
 date_finished: null
 ---
 
@@ -25,13 +25,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw context init` does not print output twice
+- [x] `fw doctor` does not print output twice
+- [x] Investigation completed — double output not reproducible; SIGPIPE fix applied
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] Verify in fresh project context that no double output occurs
 
 ## Verification
 
@@ -61,3 +60,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-295-fix-double-output-bug-in-fw-doctor-and-c.md
 - **Context:** Initial task creation
+
+### 2026-03-04T17:53:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

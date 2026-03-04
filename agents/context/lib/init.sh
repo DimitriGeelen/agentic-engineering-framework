@@ -129,7 +129,7 @@ EOF
     # Display latest cron audit findings (T-184)
     local cron_audit_dir="$CONTEXT_DIR/audits/cron"
     local cron_latest
-    cron_latest=$(ls -t "$cron_audit_dir"/*.yaml 2>/dev/null | grep -v "LATEST-CRON" | head -1)
+    cron_latest=$(ls -t "$cron_audit_dir"/*.yaml 2>/dev/null | grep -v "LATEST-CRON" | head -1) || true
     if [ -n "$cron_latest" ]; then
         local cron_ts cron_pass cron_warn cron_fail cron_sections
         cron_ts=$(grep "^timestamp:" "$cron_latest" 2>/dev/null | cut -d' ' -f2) || true
@@ -145,4 +145,6 @@ EOF
             echo -e "  ${YELLOW}Run 'fw audit' for details${NC}"
         fi
     fi
+
+    return 0
 }
