@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-303: Create fw preflight command and integrate into fw init
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T18:40:37Z
+# ============================================================================
+
+task_id: T-303
+task_name: "Create fw preflight command and integrate into fw init"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T16:21:42Z
+completed: 2026-03-04T18:40:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T19:40:28+01:00
+last_commit: 2026-03-04T19:40:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create fw preflight with install-with-consent + integrate into fw init
+
+# Key outcomes
+outcomes:
+  - "`fw preflight` checks: python3 version, PyYAML, git version, bash version, write perms, git identity"
+  - "Each dep classified as required or recommended with explanation of why it's needed"
+  - "Platform detection (apt/brew/pip) for install commands"
+  - "Interactive mode: prompts user before installing (required [Y/n], recommended [y/N])"
+  - "Non-interactive mode: prints commands only, exits with pass/fail code"
+  - "`fw init` calls preflight as first step, stops if required deps missing"
+  - "`fw preflight --check-only` skips install prompts (alias for non-interactive)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/init.sh"
+  - "lib/preflight.sh"
+  - ".tasks/active/T-303-create-fw-preflight-command-and-integrat.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T19:40:28"
+    action: "T-303: Create fw preflight with install-with-consent + integrate into fw init"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 138 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 138
+  commits: 1
+  files_changed: 4
+  lines_added: 344
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-303-create-fw-preflight-command-and-integrat.md
+generated_by: context-agent-hybrid

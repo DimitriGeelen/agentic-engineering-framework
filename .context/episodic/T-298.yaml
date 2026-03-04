@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-298: Fix fw init suggested commands to recommend fw work-on
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T18:17:57Z
+# ============================================================================
+
+task_id: T-298
+task_name: "Fix fw init suggested commands to recommend fw work-on"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T16:13:56Z
+completed: 2026-03-04T18:17:56Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T19:13:52+01:00
+last_commit: 2026-03-04T19:13:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Recommend fw work-on in first-session welcome message
+
+# Key outcomes
+outcomes:
+  - "First-session welcome suggests `fw work-on` instead of `fw task create`"
+  - "Removed redundant \"Set focus\" step (fw work-on handles it)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/init.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T19:13:52"
+    action: "T-298: Recommend fw work-on in first-session welcome message"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 124 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 124
+  commits: 1
+  files_changed: 1
+  lines_added: 3
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-298-fix-fw-init-suggested-commands-to-recomm.md
+generated_by: context-agent-hybrid

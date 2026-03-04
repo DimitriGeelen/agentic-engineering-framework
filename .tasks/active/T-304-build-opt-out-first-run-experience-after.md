@@ -4,16 +4,16 @@ name: "Build opt-out first-run experience after fw init"
 description: >
   After fw init completes, automatically run a guided first-governance-cycle walkthrough (5 steps: create task, make change, commit with traceability, run audit, generate handover). Opt-out via --no-first-run flag on fw init. Shows the user the framework doing something useful immediately — closes the 'cargo run gap' from DX comparison. Prints each step, executes it, validates result. Source: T-294 DX comparison, Area 6B.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:27:33Z
-last_update: 2026-03-04T18:40:46Z
-date_finished: null
+last_update: 2026-03-04T18:44:14Z
+date_finished: 2026-03-04T18:44:14Z
 ---
 
 # T-304: Build opt-out first-run experience after fw init
@@ -59,3 +59,6 @@ grep -q "no-first-run" /opt/999-Agentic-Engineering-Framework/lib/init.sh
 
 ### 2026-03-04T18:40:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T18:44:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

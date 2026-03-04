@@ -4,16 +4,16 @@ name: "Create README.md with quickstart guide"
 description: >
   Framework repo has no README.md — zero entry point for humans. FRAMEWORK.md is agent-facing, not human-facing. Need: one-paragraph description, prerequisites (python3, git, bash), install (3 commands), bootstrap project (fw init, fw doctor), first task (fw work-on), links to FRAMEWORK.md and CLAUDE.md. Target: ~50-100 lines. Source: T-294 simulation O-001, new-user-perspective agent.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T16:16:05Z
-last_update: 2026-03-04T18:22:32Z
-date_finished: null
+last_update: 2026-03-04T18:25:31Z
+date_finished: 2026-03-04T18:25:31Z
 ---
 
 # T-300: Create README.md with quickstart guide
@@ -59,3 +59,6 @@ grep -q "FRAMEWORK.md" /opt/999-Agentic-Engineering-Framework/README.md
 
 ### 2026-03-04T18:22:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T18:25:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

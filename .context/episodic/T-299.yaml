@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-299: Fix fw doctor hook validation env var parsing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-04T18:17:59Z
+# ============================================================================
+
+task_id: T-299
+task_name: "Fix fw doctor hook validation env var parsing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T16:14:53Z
+completed: 2026-03-04T18:17:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-04T19:16:49+01:00
+last_commit: 2026-03-04T19:16:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix doctor hook validation to skip env var prefixes in command parsing
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` passes on projects with `PROJECT_ROOT=... /path/script` hook commands"
+  - "Parser skips env var assignments (words containing `=`) to find script path"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix doctor hook validation to skip env var prefixes in command parsing"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T19:16:49"
+    action: "T-299: Fix doctor hook validation to skip env var prefixes in command parsing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 123
+  commits: 1
+  files_changed: 1
+  lines_added: 7
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-299-fix-fw-doctor-hook-validation-env-var-pa.md
+generated_by: context-agent-hybrid
