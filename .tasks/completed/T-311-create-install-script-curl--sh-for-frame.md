@@ -4,7 +4,7 @@ name: "Create install script (curl | sh) for framework"
 description: >
   Every comparison tool (Cargo, Next.js, Claude Code) has package-manager or curl install. Framework requires git clone + PATH setup. One-liner install script would reduce friction. Source: T-294 DX comparison finding.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:28:41Z
-last_update: 2026-03-04T22:21:19Z
-date_finished: null
+last_update: 2026-03-04T22:25:27Z
+date_finished: 2026-03-04T22:25:27Z
 ---
 
 # T-311: Create install script (curl | sh) for framework
@@ -68,3 +68,6 @@ grep -q "install.sh" README.md
 
 ### 2026-03-04T22:21:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-04T22:25:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
