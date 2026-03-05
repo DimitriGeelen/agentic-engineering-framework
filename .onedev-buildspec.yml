@@ -1,0 +1,120 @@
+# Watchtower CI/CD buildspec (LXC deployment model)
+# Migrated from Swarm/Docker to LXC in T-289 (see T-279 through T-284)
+#
+# Architecture:
+#   LXC 170 (192.168.10.170) runs two systemd services:
+#     - watchtower      :5050  (prod, /opt/watchtower-prod, tagged releases)
+#     - watchtower-dev  :5051  (dev, /opt/watchtower-dev, master branch)
+#
+# Dev auto-updates via systemd timer every 5 min (T-283) -- no CI needed.
+# Prod deploys on v* tag creation via this pipeline.
+# GitHub mirror pushes on every branch update and tag creation (T-292).
+#
+# IMPORTANT: version MUST be 37 (OneDev internal migration level)
+# IMPORTANT: ASCII-only comments (no UTF-8 arrows or dashes)
+#
+# PREREQUISITE (LXC deploy): OneDev server SSH key must be in LXC authorized_keys:
+#   1. Get OneDev server key: ssh root@<onedev-host> 'cat /root/.ssh/id_ed25519.pub'
+#   2. Add to LXC: ssh root@192.168.10.170 'cat >> /root/.ssh/authorized_keys' <<< '<key>'
+#   3. Test: from OneDev host, ssh root@192.168.10.170 'hostname'
+#
+# PREREQUISITE (GitHub mirror): Job secret 'github-push-token' must contain a GitHub PAT
+#   with Contents:Read+Write permission scoped to DimitriGeelen/agentic-engineering-framework
+version: 37
+jobs:
+  # =========================================================================
+  # PRODUCTION DEPLOYMENT (v* tags)
+  # =========================================================================
+  - name: Deploy Production to LXC
+    steps:
+      - !CommandStep
+        name: Deploy Tag to LXC
+        runInContainer: true
+        image: alpine:3.19
+        interpreter: !DefaultInterpreter
+          commands: |
+            apk add --no-cache openssh-client curl
+
+            LXC_HOST=192.168.10.170
+            PROD_DIR=/opt/watchtower-prod
+            TAG=@tag@
+
+            echo "=== Deploying ${TAG} to production ==="
+
+            # SSH to LXC: fetch tags, checkout, install deps, restart
+            ssh -o StrictHostKeyChecking=no root@${LXC_HOST} << DEPLOY
+              set -e
+              cd ${PROD_DIR}
+
+              echo "Fetching tags..."
+              git fetch --tags --quiet
+
+              echo "Checking out ${TAG}..."
+              git checkout ${TAG}
+
+              echo "Installing dependencies..."
+              .venv/bin/pip install --quiet -r web/requirements.txt 2>/dev/null
+
+              echo "Restarting watchtower service..."
+              systemctl restart watchtower
+
+              echo "Waiting for service to start..."
+              sleep 3
+              systemctl is-active watchtower
+            DEPLOY
+
+            echo "=== Verifying health ==="
+            # Direct health check
+            HEALTH=$(curl -sf http://${LXC_HOST}:5050/health || echo "FAIL")
+            echo "Health: ${HEALTH}"
+
+            if echo "${HEALTH}" | grep -q '"app":"ok"'; then
+              echo "Production deployment successful: ${TAG}"
+            else
+              echo "ERROR: Health check failed after deploy!"
+              echo "Rolling back..."
+              ssh -o StrictHostKeyChecking=no root@${LXC_HOST} << ROLLBACK
+                cd ${PROD_DIR}
+                PREV_TAG=\$(git tag --sort=-v:refname | sed -n '2p')
+                if [ -n "\${PREV_TAG}" ]; then
+                  echo "Rolling back to \${PREV_TAG}"
+                  git checkout \${PREV_TAG}
+                  systemctl restart watchtower
+                else
+                  echo "No previous tag found for rollback!"
+                fi
+              ROLLBACK
+              exit 1
+            fi
+        useTTY: true
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+
+    triggers:
+      - !TagCreateTrigger
+        tags: v*
+    retryCondition: never
+    maxRetries: 3
+    retryDelay: 30
+    timeout: 600
+
+  # =========================================================================
+  # GITHUB MIRROR (all branches + tags) - T-292
+  # =========================================================================
+  - name: Push to GitHub Mirror
+    steps:
+      - !PushRepository
+        name: Push to GitHub
+        remoteUrl: https://github.com/DimitriGeelen/agentic-engineering-framework.git
+        userName: DimitriGeelen
+        passwordSecret: github-push-token
+        force: false
+        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+    triggers:
+      - !BranchUpdateTrigger
+        branches: '**'
+      - !TagCreateTrigger
+        tags: '**'
+    retryCondition: never
+    maxRetries: 3
+    retryDelay: 30
+    timeout: 300
