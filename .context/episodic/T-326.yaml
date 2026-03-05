@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-326: Rewrite README for onboarding clarity and showcase
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-05T02:11:32Z
+# ============================================================================
+
+task_id: T-326
+task_name: "Rewrite README for onboarding clarity and showcase"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-05T00:24:42Z
+completed: 2026-03-05T02:11:30Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-03-05T01:25:33+01:00
+last_commit: 2026-03-05T01:53:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Task with ACs from 5-agent README research (scores, personas, showcase priorities). Add subsystem showcase ACs, fabric-as-structure, Playwright screenshots plan. Rewrite README — value prop, subsystem showcase, screenshots, provider paths. Add task detail, task board, and timeline screenshots to README. Add fabric dependency graph screenshots + expanded CLI examples. Explain fabric-to-task integration and impact-driven workflow
+
+# Key outcomes
+outcomes:
+  - "Opening line is concrete and audience-aware (not \"governance framework for systematizing\")"
+  - "Value proposition section with before/after or problem/solution framing"
+  - "Highlights section (5-6 bullet points) before install section"
+  - "Progressive disclosure: overview → install → quickstart → deep docs"
+  - "Provider-neutral framing: universal core + provider-specific setup paths"
+  - "\"What's Inside\" section structured around the 12 Component Fabric subsystems"
+  - "Watchtower dashboard showcased with description of task board, audit results, discovery scanner"
+  - "Component Fabric showcased — blast radius, dependency tracking, drift detection"
+  - "Context Fabric showcased — 3-layer memory (working/project/episodic), semantic search"
+  - "Natural language search mentioned — `fw ask`, `fw recall`, semantic search across knowledge"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/screenshots/watchtower-audit.png"
+  - "docs/screenshots/watchtower-dashboard.png"
+  - "docs/screenshots/watchtower-discovery.png"
+  - "docs/screenshots/watchtower-fabric-graph.png"
+  - "docs/screenshots/watchtower-fabric-graph-subsystem.png"
+  - "docs/screenshots/watchtower-fabric.png"
+  - "docs/screenshots/watchtower-task-detail.png"
+  - "docs/screenshots/watchtower-tasks-board.png"
+  - "docs/screenshots/watchtower-tasks.png"
+  - "docs/screenshots/watchtower-timeline.png"
+  - ".gitignore"
+  - "README.md"
+  - ".tasks/active/T-326-rewrite-readme-for-onboarding-clarity-an.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T01:25:33"
+    action: "T-326: Task with ACs from 5-agent README research (scores, personas, showcase priorities)"
+  - time: "2026-03-05T01:27:20"
+    action: "T-326: Add subsystem showcase ACs, fabric-as-structure, Playwright screenshots plan"
+  - time: "2026-03-05T01:41:38"
+    action: "T-326: Rewrite README — value prop, subsystem showcase, screenshots, provider paths"
+  - time: "2026-03-05T01:45:59"
+    action: "T-326: Add task detail, task board, and timeline screenshots to README"
+  - time: "2026-03-05T01:51:50"
+    action: "T-326: Add fabric dependency graph screenshots + expanded CLI examples"
+  - time: "2026-03-05T01:53:21"
+    action: "T-326: Explain fabric-to-task integration and impact-driven workflow"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 106 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [docs, onboarding, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 106
+  commits: 6
+  files_changed: 13
+  lines_added: 449
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-326-rewrite-readme-for-onboarding-clarity-an.md
+generated_by: context-agent-hybrid

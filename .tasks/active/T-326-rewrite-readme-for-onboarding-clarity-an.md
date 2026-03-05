@@ -8,16 +8,16 @@ description: >
   Claude/Cursor/Copilot paths, (5) team lead section with CI/CD and Watchtower, (6) fix
   lib/setup.sh reference (should be lib/preflight.sh).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-05T00:53:21Z
-date_finished: null
+last_update: 2026-03-05T02:11:30Z
+date_finished: 2026-03-05T02:11:30Z
 ---
 
 # T-326: Rewrite README for onboarding clarity and showcase
@@ -68,32 +68,32 @@ for the user. Run `fw fabric overview` for the current topology:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Opening line is concrete and audience-aware (not "governance framework for systematizing")
-- [ ] Value proposition section with before/after or problem/solution framing
-- [ ] Highlights section (5-6 bullet points) before install section
-- [ ] Progressive disclosure: overview → install → quickstart → deep docs
-- [ ] Provider-neutral framing: universal core + provider-specific setup paths
-- [ ] "What's Inside" section structured around the 12 Component Fabric subsystems
-- [ ] Watchtower dashboard showcased with description of task board, audit results, discovery scanner
-- [ ] Component Fabric showcased — blast radius, dependency tracking, drift detection
-- [ ] Context Fabric showcased — 3-layer memory (working/project/episodic), semantic search
-- [ ] Natural language search mentioned — `fw ask`, `fw recall`, semantic search across knowledge
-- [ ] Healing loop showcased — self-diagnosing error recovery, pattern matching
-- [ ] Audit system showcased — 90+ checks, cron schedule, discovery scanner
-- [ ] Team/CI section mentioning Watchtower dashboard and audit integration
-- [ ] Architecture section explains structure (not just a directory listing)
-- [ ] Fix `lib/setup.sh` reference → `lib/preflight.sh`
-- [ ] Collapsible sections (`<details>`) for secondary information
-- [ ] All links valid (`grep -r` check)
+- [x] Opening line is concrete and audience-aware (not "governance framework for systematizing")
+- [x] Value proposition section with before/after or problem/solution framing
+- [x] Highlights section (5-6 bullet points) before install section
+- [x] Progressive disclosure: overview → install → quickstart → deep docs
+- [x] Provider-neutral framing: universal core + provider-specific setup paths
+- [x] "What's Inside" section structured around the 12 Component Fabric subsystems
+- [x] Watchtower dashboard showcased with description of task board, audit results, discovery scanner
+- [x] Component Fabric showcased — blast radius, dependency tracking, drift detection
+- [x] Context Fabric showcased — 3-layer memory (working/project/episodic), semantic search
+- [x] Natural language search mentioned — `fw ask`, `fw recall`, semantic search across knowledge
+- [x] Healing loop showcased — self-diagnosing error recovery, pattern matching
+- [x] Audit system showcased — 90+ checks, cron schedule, discovery scanner
+- [x] Team/CI section mentioning Watchtower dashboard and audit integration
+- [x] Architecture section explains structure (not just a directory listing)
+- [x] Fix `lib/setup.sh` reference → `lib/preflight.sh`
+- [x] Collapsible sections (`<details>`) for secondary information
+- [x] All links valid (`grep -r` check)
 
 ### Screenshots (via Playwright MCP)
 Use `browser_navigate` + `browser_take_screenshot` to capture Watchtower pages for the README.
 Target screenshots (save to `docs/screenshots/`):
-- [ ] `watchtower-dashboard.png` — Cockpit/main dashboard overview
-- [ ] `watchtower-tasks.png` — Task board with status columns
-- [ ] `watchtower-fabric.png` — Component Fabric dependency graph
-- [ ] `watchtower-audit.png` — Audit results page
-- [ ] `watchtower-discovery.png` — Discovery scanner findings
+- [x] `watchtower-dashboard.png` — Cockpit/main dashboard overview
+- [x] `watchtower-tasks-board.png` — Task board with status columns
+- [x] `watchtower-fabric.png` — Component Fabric dependency graph
+- [x] `watchtower-audit.png` — Audit results page
+- [x] `watchtower-discovery.png` — Discovery scanner findings
 
 Watchtower runs at http://localhost:3000. Ensure it's started before capturing.
 
@@ -123,8 +123,8 @@ Watchtower runs at http://localhost:3000. Ensure it's started before capturing.
 # README exists and has content
 test -s README.md
 
-# No broken internal links
-grep -oP '\[.*?\]\(((?!http)[^)]+)\)' README.md | grep -oP '\(([^)]+)\)' | tr -d '()' | while read f; do test -e "$f" || echo "BROKEN: $f"; done | grep -c BROKEN | grep -q '^0$'
+# No broken internal links (exits 0 if none broken)
+test -z "$(grep -oE '\[[^]]*\]\([^)]+\)' README.md | grep -v 'http' | sed 's/.*(\(.*\))/\1/' | while read f; do test -e "$f" || echo "BROKEN: $f"; done)"
 
 # lib/setup.sh reference is gone
 ! grep -q 'lib/setup' README.md
@@ -159,3 +159,6 @@ grep -qi 'semantic search\|natural language\|fw ask\|fw recall' README.md
 
 ### 2026-03-05T00:36:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-05T02:11:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
