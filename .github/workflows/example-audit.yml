@@ -1,0 +1,29 @@
+# Example: Run framework audit on every PR
+# Copy this to your project's .github/workflows/ directory
+name: Framework Audit
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run governance audit
+        uses: DimitriGeelen/agentic-engineering-framework@v1
+        id: audit
+        with:
+          fail-on-warnings: 'false'
+
+      - name: Audit summary
+        if: always()
+        run: |
+          echo "Pass: ${{ steps.audit.outputs.pass-count }}"
+          echo "Warn: ${{ steps.audit.outputs.warn-count }}"
+          echo "Fail: ${{ steps.audit.outputs.fail-count }}"
+          echo "Result: ${{ steps.audit.outputs.result }}"

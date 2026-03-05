@@ -1,0 +1,86 @@
+name: 'Agentic Engineering Framework Audit'
+description: 'Run governance compliance checks on your AI-agent-managed codebase'
+author: 'DimitriGeelen'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  fail-on-warnings:
+    description: 'Fail the action on warnings (not just failures)'
+    required: false
+    default: 'false'
+  framework-version:
+    description: 'Framework version to install (default: latest)'
+    required: false
+    default: 'latest'
+
+outputs:
+  pass-count:
+    description: 'Number of checks that passed'
+  warn-count:
+    description: 'Number of checks with warnings'
+  fail-count:
+    description: 'Number of checks that failed'
+  result:
+    description: 'Overall result: pass, warn, or fail'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install framework
+      shell: bash
+      run: |
+        if [ ! -f "bin/fw" ]; then
+          echo "Installing Agentic Engineering Framework..."
+          curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+        fi
+
+    - name: Run audit
+      id: audit
+      shell: bash
+      run: |
+        # Check if framework is initialized
+        if [ ! -d ".tasks" ] || [ ! -d ".context" ]; then
+          echo "::warning::Framework not initialized. Run 'fw init' first."
+          echo "pass-count=0" >> "$GITHUB_OUTPUT"
+          echo "warn-count=0" >> "$GITHUB_OUTPUT"
+          echo "fail-count=0" >> "$GITHUB_OUTPUT"
+          echo "result=skip" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        # Run audit
+        echo "::group::Agentic Engineering Framework Audit"
+        AUDIT_OUTPUT=$(fw audit 2>&1) || true
+        echo "$AUDIT_OUTPUT"
+        echo "::endgroup::"
+
+        # Parse results
+        PASS_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Pass:\s*\K\d+' || echo "0")
+        WARN_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Warn:\s*\K\d+' || echo "0")
+        FAIL_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Fail:\s*\K\d+' || echo "0")
+
+        echo "pass-count=${PASS_COUNT}" >> "$GITHUB_OUTPUT"
+        echo "warn-count=${WARN_COUNT}" >> "$GITHUB_OUTPUT"
+        echo "fail-count=${FAIL_COUNT}" >> "$GITHUB_OUTPUT"
+
+        # Determine result
+        FAIL_ON_WARNINGS="${{ inputs.fail-on-warnings }}"
+
+        if [ "${FAIL_COUNT}" -gt 0 ]; then
+          echo "result=fail" >> "$GITHUB_OUTPUT"
+          echo "::error::Audit failed with ${FAIL_COUNT} failure(s)"
+          exit 1
+        elif [ "${WARN_COUNT}" -gt 0 ] && [ "${FAIL_ON_WARNINGS}" = "true" ]; then
+          echo "result=warn" >> "$GITHUB_OUTPUT"
+          echo "::error::Audit has ${WARN_COUNT} warning(s) (fail-on-warnings enabled)"
+          exit 1
+        elif [ "${WARN_COUNT}" -gt 0 ]; then
+          echo "result=warn" >> "$GITHUB_OUTPUT"
+          echo "::warning::Audit passed with ${WARN_COUNT} warning(s)"
+        else
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+          echo "Audit passed — all ${PASS_COUNT} checks clean"
+        fi

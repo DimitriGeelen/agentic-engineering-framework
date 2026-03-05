@@ -264,7 +264,14 @@ Follow [FRAMEWORK.md](FRAMEWORK.md) as the operating guide. Full CLI and git hoo
 
 - **Shared enforcement**: Git hooks install per-repo via `fw git install-hooks`. Every team member gets commit validation automatically
 - **Dashboard**: Deploy [Watchtower](web/) for team-wide visibility into tasks, audit results, and compliance
-- **CI/CD**: Run `fw audit` in your pipeline to gate PRs on compliance
+- **CI/CD**: Use the GitHub Action to gate PRs on compliance:
+
+```yaml
+# .github/workflows/audit.yml
+- uses: DimitriGeelen/agentic-engineering-framework@v1
+  with:
+    fail-on-warnings: 'false'
+```
 
 ## When to Use / When Not to Use
 
