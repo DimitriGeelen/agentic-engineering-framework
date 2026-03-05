@@ -131,6 +131,37 @@ $ fw fabric impact agents/context/context.sh
 
 Each component has a YAML card in `.fabric/components/` tracking: type, subsystem, purpose, interfaces, dependencies, and reverse dependencies.
 
+**How it connects to tasks:**
+
+Every task has a `components:` field in its frontmatter that links it to the files it touches:
+
+```yaml
+# .tasks/active/T-295-fix-double-output-bug.md
+components: [agents/context/lib/init.sh]
+```
+
+This creates a two-way link: the task knows which components it affects, and the fabric knows which tasks have touched each component. When an agent starts working on a task, it can query the fabric to understand scope before writing a single line:
+
+```bash
+# Starting T-295: "Fix double output bug in fw doctor and context init"
+# Step 1: What does init.sh depend on?
+$ fw fabric deps agents/context/lib/init.sh
+  → Depends on: context-dispatcher (agents/context/context.sh)
+
+# Step 2: What depends on init.sh? (what could break)
+$ fw fabric impact agents/context/lib/init.sh
+  → Depended by: fw (bin/fw), context-dispatcher
+  → Transitive: hook-config, budget-gate, checkpoint...
+
+# Step 3: After making changes, check blast radius before committing
+$ fw fabric blast-radius HEAD
+  → 1 file changed: agents/context/lib/init.sh
+  → 2 direct downstream: fw, context-dispatcher
+  → Recommendation: test fw doctor and fw context init
+```
+
+This turns "I changed a file, hope nothing breaks" into "I know exactly what's downstream and I tested the right things." The agent doesn't guess about impact — it queries the structural map and makes informed decisions about what to verify.
+
 ### Git Traceability
 Every commit must reference a task. Pre-push hooks validate traceability. Bypass exceptions are logged, never silent.
 
