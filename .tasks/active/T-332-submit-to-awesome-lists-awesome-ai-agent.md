@@ -4,7 +4,7 @@ name: "Submit to awesome lists (awesome-ai-agents, awesome-agents, awesome-copil
 description: >
   Submit PRs to: (1) e2b-dev/awesome-ai-agents, (2) kyrolabs/awesome-agents, (3) github/awesome-copilot agents section. One-line description, correct alphabetical position, link to GitHub repo. Requires 30+ stars for some lists. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:40Z
-last_update: 2026-03-05T01:12:40Z
+last_update: 2026-03-05T02:11:50Z
 date_finished: null
 ---
 
@@ -20,29 +20,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Prepare awesome-list submissions per `docs/reports/T-327-visibility-strategy.md` (action #8). Research findings in `docs/reports/T-332-awesome-list-research.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Research doc with target lists, formats, and requirements at `docs/reports/T-332-awesome-list-research.md`
+- [x] Ready-to-submit PR descriptions drafted for each target list
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] PRs submitted (may need 30+ stars first for some lists)
+- [ ] PRs merged or pending review
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f docs/reports/T-332-awesome-list-research.md
 
 ## Decisions
 
@@ -61,3 +53,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-332-submit-to-awesome-lists-awesome-ai-agent.md
 - **Context:** Initial task creation
+
+### 2026-03-05T02:11:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
