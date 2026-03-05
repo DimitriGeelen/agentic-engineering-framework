@@ -8,7 +8,7 @@ description: >
   Claude/Cursor/Copilot paths, (5) team lead section with CI/CD and Watchtower, (6) fix
   lib/setup.sh reference (should be lib/preflight.sh).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -16,7 +16,7 @@ tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-05T00:27:20Z
+last_update: 2026-03-05T00:53:21Z
 date_finished: null
 ---
 
@@ -156,3 +156,6 @@ grep -qi 'semantic search\|natural language\|fw ask\|fw recall' README.md
 - **Action:** 5-agent research completed, findings synthesized
 - **Findings:** README scores 2.5-3.7/10. Top issues: abstract opening, no visuals, no value prop, non-Claude users lost, Team Lead persona completely unserved
 - **Research:** 5 files in /tmp/fw-agent-readme-*.md (ephemeral — copy to docs/reports/ before work)
+
+### 2026-03-05T00:36:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

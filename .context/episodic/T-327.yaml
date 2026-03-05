@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-327: Research project visibility and growth strategy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-05T01:12:13Z
+# ============================================================================
+
+task_id: T-327
+task_name: "Research project visibility and growth strategy"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-05T01:03:59Z
+completed: 2026-03-05T01:12:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-05T02:08:38+01:00
+last_commit: 2026-03-05T02:08:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  5-agent visibility research — synthesized strategy document
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-327-visibility-strategy.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T02:08:38"
+    action: "T-327: 5-agent visibility research — synthesized strategy document"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 1
+  lines_added: 132
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-327-research-project-visibility-and-growth-s.md
+generated_by: context-agent-hybrid

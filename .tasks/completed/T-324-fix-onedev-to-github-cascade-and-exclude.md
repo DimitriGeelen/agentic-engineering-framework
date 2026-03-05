@@ -5,7 +5,7 @@ description: >
   Local master was 90+ commits ahead of both remotes. OneDev-to-GitHub mirror cascade not firing.
   Investigated buildspec sensitivity, concluded no actual secrets. Restored cascade.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -13,8 +13,8 @@ tags: [git, ci-cd]
 components: [.onedev-buildspec.yml, .gitignore]
 related_tasks: [T-292, T-289]
 created: 2026-03-04T23:33:23Z
-last_update: 2026-03-05T00:32:00Z
-date_finished: null
+last_update: 2026-03-05T00:30:30Z
+date_finished: 2026-03-05T00:30:30Z
 ---
 
 # T-324: Fix OneDev-to-GitHub cascade and exclude buildspec from GitHub
@@ -66,3 +66,6 @@ test -f docs/reports/T-324-onedev-server-jobs.md
 
 ### 2026-03-05T00:20:00Z — sync complete
 - **Action:** Pushed to OneDev (Tier 0 bypass for D2), pushed to GitHub (Tier 0 bypass), verified cascade works.
+
+### 2026-03-05T00:30:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
