@@ -4,16 +4,16 @@ name: "Build GitHub Action for fw audit in CI/CD"
 description: >
   Create action.yml + Dockerfile for GitHub Actions marketplace. Enables teams to run fw audit as a CI/CD gate on PRs. High discovery channel for compliance-minded teams. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:37Z
-last_update: 2026-03-05T01:27:53Z
-date_finished: null
+last_update: 2026-03-05T01:31:31Z
+date_finished: 2026-03-05T01:31:31Z
 ---
 
 # T-331: Build GitHub Action for fw audit in CI/CD
@@ -25,10 +25,10 @@ GitHub Action for running `fw audit` in CI/CD pipelines. Ref: `docs/reports/T-32
 ## Acceptance Criteria
 
 ### Agent
-- [ ] action.yml exists at repo root with proper GitHub Action metadata
-- [ ] Composite action with install + audit steps
-- [ ] Example workflow file provided (.github/workflows/example-audit.yml)
-- [ ] README documents the action usage
+- [x] action.yml exists at repo root with proper GitHub Action metadata
+- [x] Composite action with install + audit steps
+- [x] Example workflow file provided (.github/workflows/example-audit.yml)
+- [x] README documents the action usage
 
 ### Human
 - [ ] Action works when tested in a real GitHub Actions workflow
@@ -60,3 +60,6 @@ grep -q "fw audit" action.yml
 
 ### 2026-03-05T01:27:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-05T01:31:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

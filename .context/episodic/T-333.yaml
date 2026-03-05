@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-333: Create CONTRIBUTING.md and tag good first issues
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-05T01:25:03Z
+# ============================================================================
+
+task_id: T-333
+task_name: "Create CONTRIBUTING.md and tag good first issues"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-05T01:12:44Z
+completed: 2026-03-05T01:25:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-05T02:24:42+01:00
+last_commit: 2026-03-05T02:24:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add CONTRIBUTING.md, issue templates, and 6 good first issues
+
+# Key outcomes
+outcomes:
+  - "CONTRIBUTING.md exists with setup instructions, PR process, architecture overview"
+  - "Bug report issue template created (.github/ISSUE_TEMPLATE/)"
+  - "Feature request issue template created"
+  - "GitHub issues created for good first issues (6 created)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add CONTRIBUTING.md, issue templates, and 6 good first issues"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CONTRIBUTING.md"
+  - ".github/ISSUE_TEMPLATE/bug-report.yml"
+  - ".github/ISSUE_TEMPLATE/feature-request.yml"
+  - ".tasks/active/T-333-create-contributingmd-and-tag-good-first.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T02:24:42"
+    action: "T-333: Add CONTRIBUTING.md, issue templates, and 6 good first issues"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 4
+  lines_added: 297
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-333-create-contributingmd-and-tag-good-first.md
+generated_by: context-agent-hybrid

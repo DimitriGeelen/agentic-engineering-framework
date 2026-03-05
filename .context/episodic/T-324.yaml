@@ -1,0 +1,119 @@
+# ============================================================================
+# EPISODIC MEMORY - T-324: Fix OneDev-to-GitHub cascade and exclude buildspec from GitHub
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-05T00:30:31Z
+# ============================================================================
+
+task_id: T-324
+task_name: "Fix OneDev-to-GitHub cascade and exclude buildspec from GitHub"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T23:33:23Z
+completed: 2026-03-05T00:30:30Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-03-05T00:34:32+01:00
+last_commit: 2026-03-05T01:29:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Exclude .onedev-buildspec.yml from git tracking (ring20-specific). Fill handover TODOs to unblock pre-push audit. Re-track buildspec — no actual secrets, restores OneDev-to-GitHub cascade. Persist research artifacts from /tmp to docs/reports (T-324, T-325, T-326). Housekeeping — cron audits, bypass log, working state, task file syncs. Fill ACs, decisions, verification — ready for completion
+
+# Key outcomes
+outcomes:
+  - "OneDev remote is in sync with local master"
+  - "GitHub remote is in sync with local master"
+  - "OneDev-to-GitHub cascade triggers on push (verified: pushed to OneDev, GitHub updated)"
+  - "`.onedev-buildspec.yml` tracked in git (required for OneDev CI jobs)"
+  - "Research artifacts persisted to docs/reports/"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Re-track buildspec in git"
+    rationale: "3-agent research found no actual secrets — username is public repo owner, passwordSecret is just a reference name, IPs are non-routable RFC 1918. OneDev requires the file in the repo tree (hardcoded path)."
+    alternatives_rejected: ["(1) Exclude from git — kills OneDev CI cascade. (2) Branch-based separation — high complexity. (3) Scrub sensitive data — OneDev doesn't support variable substitution for userName."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-05.yaml"
+  - ".context/audits/cron/2026-02-25-0045.yaml"
+  - ".context/audits/cron/2026-02-25-0115.yaml"
+  - ".context/audits/cron/2026-03-05-0015.yaml"
+  - ".context/audits/cron/2026-03-05-0030.yaml"
+  - ".context/audits/cron/2026-03-05-0045.yaml"
+  - ".context/audits/cron/2026-03-05-0100.yaml"
+  - ".context/audits/cron/2026-03-05-0115.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/bypass-log.yaml"
+  - ".context/handovers/S-2026-0305-0037.md"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - "docs/reports/T-324-buildspec-exclusion.md"
+  - "docs/reports/T-324-buildspec-scrub.md"
+  - "docs/reports/T-324-onedev-server-jobs.md"
+  - "docs/reports/T-325-enforcement-points.md"
+  - "docs/reports/T-325-handoff-research.md"
+  - "docs/reports/T-325-notification-gaps.md"
+  - "docs/reports/T-326-persona-analysis.md"
+  - "docs/reports/T-326-provider-neutrality.md"
+  - "docs/reports/T-326-readme-best-practices.md"
+  - "docs/reports/T-326-readme-showcase.md"
+  - ".gitignore"
+  - ".onedev-buildspec.yml"
+  - ".tasks/active/T-324-fix-onedev-to-github-cascade-and-exclude.md"
+  - ".tasks/active/T-325-actionable-human-ac-handoffs--enforce-qu.md"
+  - ".tasks/active/T-326-rewrite-readme-for-onboarding-clarity-an.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T00:34:32"
+    action: "T-324: Exclude .onedev-buildspec.yml from git tracking (ring20-specific)"
+  - time: "2026-03-05T00:38:08"
+    action: "T-324: Fill handover TODOs to unblock pre-push audit"
+  - time: "2026-03-05T01:19:58"
+    action: "T-324: Re-track buildspec — no actual secrets, restores OneDev-to-GitHub cascade"
+  - time: "2026-03-05T01:29:03"
+    action: "T-324: Persist research artifacts from /tmp to docs/reports (T-324, T-325, T-326)"
+  - time: "2026-03-05T01:29:10"
+    action: "T-324: Housekeeping — cron audits, bypass log, working state, task file syncs"
+  - time: "2026-03-05T01:29:51"
+    action: "T-324: Fill ACs, decisions, verification — ready for completion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 57 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [git, ci-cd]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 57
+  commits: 6
+  files_changed: 34
+  lines_added: 2975
+  lines_removed: 426
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-324-fix-onedev-to-github-cascade-and-exclude.md
+generated_by: context-agent-hybrid

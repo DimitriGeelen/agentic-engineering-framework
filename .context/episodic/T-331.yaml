@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-331: Build GitHub Action for fw audit in CI/CD
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-05T01:31:32Z
+# ============================================================================
+
+task_id: T-331
+task_name: "Build GitHub Action for fw audit in CI/CD"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-05T01:12:37Z
+completed: 2026-03-05T01:31:31Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-05T02:31:14+01:00
+last_commit: 2026-03-05T02:31:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add GitHub Action for fw audit in CI/CD pipelines
+
+# Key outcomes
+outcomes:
+  - "action.yml exists at repo root with proper GitHub Action metadata"
+  - "Composite action with install + audit steps"
+  - "Example workflow file provided (.github/workflows/example-audit.yml)"
+  - "README documents the action usage"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "action.yml"
+  - ".github/workflows/example-audit.yml"
+  - "README.md"
+  - ".tasks/active/T-331-build-github-action-for-fw-audit-in-cicd.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T02:31:14"
+    action: "T-331: Add GitHub Action for fw audit in CI/CD pipelines"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 4
+  lines_added: 138
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-331-build-github-action-for-fw-audit-in-cicd.md
+generated_by: context-agent-hybrid
