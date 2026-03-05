@@ -1,83 +1,111 @@
-# Bypass Log - Agentic Engineering Framework
-# Records all commits made without task references
-# Reviewed by: audit agent
-
 bypasses:
-  - timestamp: 2026-02-13T18:46:10Z
-    action: "v0.1 base start"
-    commit: acb4594
-    authorized_by: human
-    reason: "Bootstrap exception - task system did not exist prior to this commit"
-    retroactive_task: null
-  - timestamp: 2026-02-17T23:55:01Z
-    action: "T-124: Cycle 2 findings — promote T-128, create T-136 and T-137"
-    commit: c53d74c
-    authorized_by: human
-    reason: "T-124 inception experiment mid-flight — cycle 2 findings commit, not a decision point"
-    retroactive_task: null
-  - timestamp: 2026-02-18T06:19:59Z
-    action: "T-124: Cycle 3 protocol — test structural enforcement fixes"
-    commit: 839cc88
-    authorized_by: human
-    reason: "T-124 inception mid-experiment — cycle 3 prep commit"
-    retroactive_task: null
-  - timestamp: 2026-02-19T10:09:31Z
-    action: "T-191: Phase 1a research landscape — 14 sources, 7 domains, synthesis"
-    commit: d95ceca
-    authorized_by: human
-    reason: "T-191 is a 5-10 session inception; the 2-commit inception gate is designed for short inceptions and is too restrictive for deep multi-session explorations. Research artifact (Phase 1a, 299 lines) cannot wait for a premature go/no-go decision."
-    retroactive_task: null
-  - timestamp: 2026-02-19T12:51:41Z
-    action: "T-191: Phase 1b — AEF budget management subsystem topology map"
-    commit: 0b8fbb5
-    authorized_by: human
-    reason: "T-191 inception gate: multi-session inception (Phase 1b), logged per L-002"
-    retroactive_task: null
-  - timestamp: 2026-02-19T13:13:21Z
-    action: "T-191: Phase 1c — UI component documentation patterns research"
-    commit: e5d93df
-    authorized_by: human
-    reason: "T-191 inception gate: multi-session inception (Phase 1c), logged per L-002"
-    retroactive_task: null
-  - timestamp: 2026-02-19T15:53:40Z
-    action: "T-194: Phase 0 — genesis discussion artifact (T-151 review, ISO 27001 mapping, control inventory)"
-    commit: 9dd306d
-    authorized_by: human
-    reason: "Inception task T-194 Phase 0 research artifact — inception gate bypass per L-002"
-    retroactive_task: null
-  - timestamp: 2026-02-19T17:33:35Z
-    action: "T-194: Watchtower risks page — heatmap, open risks table, issues, gaps"
-    commit: 5d74e78
-    authorized_by: human
-    reason: "Inception gate: T-194 Watchtower risks page is Phase 1 build artifact, not a new exploration commit"
-    retroactive_task: null
-  - timestamp: 2026-02-20T06:52:32Z
-    action: "T-191: Phase 2b — all 6 use cases validated with human (requirements dialogue)"
-    commit: 3c25e4ea59401642671770c15055f0963fe366ad
-    authorized_by: human
-    reason: "T-191 deep inception (5-10 sessions), Phase 2 of 5 — decision premature"
-    retroactive_task: null
-  - timestamp: 2026-02-20T06:57:30Z
-    action: "T-191: Phase 2a/2c — minimum viable schema + requirements synthesis"
-    commit: 01d3479ee45d7aaf13e163e9da80f6385d37ebaf
-    authorized_by: human
-    reason: "T-191 deep inception Phase 2, decision premature"
-    retroactive_task: null
-  - timestamp: 2026-02-20T07:03:42Z
-    action: "T-191: Phase 3d — prototype 10 component cards, 2 subsystems, test against 6 use cases"
-    commit: a26a6ba54cdf9be930256cd426b0e62924bc88ab
-    authorized_by: human
-    reason: "T-191 deep inception Phase 3, decision premature"
-    retroactive_task: null
-  - timestamp: 2026-02-20T07:04:24Z
-    action: "T-191: Phase 3 — data model report with prototype findings and schema refinements"
-    commit: f4d7eda1ebfe0c941fb989b311e16a1dbf595c64
-    authorized_by: human
-    reason: "T-191 deep inception Phase 3, decision premature"
-    retroactive_task: null
-  - timestamp: 2026-02-20T07:10:28Z
-    action: "T-191: Phase 4 — enforcement & tooling design (CLI, hooks, drift, granularity)"
-    commit: a076cf6028842953c7f83e50c683fb5ef30ad16b
-    authorized_by: human
-    reason: "T-191 deep inception Phase 4, decision premature"
-    retroactive_task: null
+- timestamp: 2026-02-13 18:46:10+00:00
+  action: v0.1 base start
+  commit: acb4594
+  authorized_by: human
+  reason: Bootstrap exception - task system did not exist prior to this commit
+  retroactive_task: null
+- timestamp: 2026-02-17 23:55:01+00:00
+  action: "T-124: Cycle 2 findings \u2014 promote T-128, create T-136 and T-137"
+  commit: c53d74c
+  authorized_by: human
+  reason: "T-124 inception experiment mid-flight \u2014 cycle 2 findings commit, not\
+    \ a decision point"
+  retroactive_task: null
+- timestamp: 2026-02-18 06:19:59+00:00
+  action: "T-124: Cycle 3 protocol \u2014 test structural enforcement fixes"
+  commit: 839cc88
+  authorized_by: human
+  reason: "T-124 inception mid-experiment \u2014 cycle 3 prep commit"
+  retroactive_task: null
+- timestamp: 2026-02-19 10:09:31+00:00
+  action: "T-191: Phase 1a research landscape \u2014 14 sources, 7 domains, synthesis"
+  commit: d95ceca
+  authorized_by: human
+  reason: T-191 is a 5-10 session inception; the 2-commit inception gate is designed
+    for short inceptions and is too restrictive for deep multi-session explorations.
+    Research artifact (Phase 1a, 299 lines) cannot wait for a premature go/no-go decision.
+  retroactive_task: null
+- timestamp: 2026-02-19 12:51:41+00:00
+  action: "T-191: Phase 1b \u2014 AEF budget management subsystem topology map"
+  commit: 0b8fbb5
+  authorized_by: human
+  reason: 'T-191 inception gate: multi-session inception (Phase 1b), logged per L-002'
+  retroactive_task: null
+- timestamp: 2026-02-19 13:13:21+00:00
+  action: "T-191: Phase 1c \u2014 UI component documentation patterns research"
+  commit: e5d93df
+  authorized_by: human
+  reason: 'T-191 inception gate: multi-session inception (Phase 1c), logged per L-002'
+  retroactive_task: null
+- timestamp: 2026-02-19 15:53:40+00:00
+  action: "T-194: Phase 0 \u2014 genesis discussion artifact (T-151 review, ISO 27001\
+    \ mapping, control inventory)"
+  commit: 9dd306d
+  authorized_by: human
+  reason: "Inception task T-194 Phase 0 research artifact \u2014 inception gate bypass\
+    \ per L-002"
+  retroactive_task: null
+- timestamp: 2026-02-19 17:33:35+00:00
+  action: "T-194: Watchtower risks page \u2014 heatmap, open risks table, issues,\
+    \ gaps"
+  commit: 5d74e78
+  authorized_by: human
+  reason: 'Inception gate: T-194 Watchtower risks page is Phase 1 build artifact,
+    not a new exploration commit'
+  retroactive_task: null
+- timestamp: 2026-02-20 06:52:32+00:00
+  action: "T-191: Phase 2b \u2014 all 6 use cases validated with human (requirements\
+    \ dialogue)"
+  commit: 3c25e4ea59401642671770c15055f0963fe366ad
+  authorized_by: human
+  reason: "T-191 deep inception (5-10 sessions), Phase 2 of 5 \u2014 decision premature"
+  retroactive_task: null
+- timestamp: 2026-02-20 06:57:30+00:00
+  action: "T-191: Phase 2a/2c \u2014 minimum viable schema + requirements synthesis"
+  commit: 01d3479ee45d7aaf13e163e9da80f6385d37ebaf
+  authorized_by: human
+  reason: T-191 deep inception Phase 2, decision premature
+  retroactive_task: null
+- timestamp: 2026-02-20 07:03:42+00:00
+  action: "T-191: Phase 3d \u2014 prototype 10 component cards, 2 subsystems, test\
+    \ against 6 use cases"
+  commit: a26a6ba54cdf9be930256cd426b0e62924bc88ab
+  authorized_by: human
+  reason: T-191 deep inception Phase 3, decision premature
+  retroactive_task: null
+- timestamp: 2026-02-20 07:04:24+00:00
+  action: "T-191: Phase 3 \u2014 data model report with prototype findings and schema\
+    \ refinements"
+  commit: f4d7eda1ebfe0c941fb989b311e16a1dbf595c64
+  authorized_by: human
+  reason: T-191 deep inception Phase 3, decision premature
+  retroactive_task: null
+- timestamp: 2026-02-20 07:10:28+00:00
+  action: "T-191: Phase 4 \u2014 enforcement & tooling design (CLI, hooks, drift,\
+    \ granularity)"
+  commit: a076cf6028842953c7f83e50c683fb5ef30ad16b
+  authorized_by: human
+  reason: T-191 deep inception Phase 4, decision premature
+  retroactive_task: null
+- timestamp: '2026-03-05T00:05:58Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master
+  command_hash: 46bee1887cbb238d33b646c6276761458ae18c6ae5c0890de6371aa0e03a0cf3
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-05T00:12:08Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master
+  command_hash: b8059d4a23d8fd586a012d0751a16c8eab71e584992c93c2741d9c2cd0551acc
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-05T00:20:20Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master
+  command_hash: 46bee1887cbb238d33b646c6276761458ae18c6ae5c0890de6371aa0e03a0cf3
+  authorized_by: human
+  mechanism: fw tier0 approve

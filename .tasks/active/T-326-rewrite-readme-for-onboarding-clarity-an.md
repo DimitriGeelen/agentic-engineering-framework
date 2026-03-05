@@ -16,7 +16,7 @@ tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-05T00:25:33Z
+last_update: 2026-03-05T00:27:20Z
 date_finished: null
 ---
 
