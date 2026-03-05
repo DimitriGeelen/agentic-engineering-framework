@@ -91,15 +91,45 @@ Three-layer persistent memory:
 Includes semantic search via `fw recall` — find patterns by meaning, not just keywords.
 
 ### Component Fabric (Structural Topology)
-Maps every significant file, its dependencies, and what depends on it. Know the blast radius before you commit.
+A live topology map of every significant file in your project — what it depends on, what depends on it, and what breaks if you change it. 126 components across 12 subsystems, with 175 dependency edges tracked.
 
-```bash
-fw fabric deps agents/git/git.sh    # What depends on this?
-fw fabric blast-radius HEAD          # What will this commit affect?
-fw fabric drift                      # Detect unregistered/orphaned files
-```
+**Interactive dependency graph** — filter by subsystem, switch layouts, click nodes to inspect:
+
+![Dependency Graph](docs/screenshots/watchtower-fabric-graph.png)
+
+**Subsystem view** — see how Framework Core connects to Watchtower, Audit, Healing, and other subsystems:
+
+![Subsystem Dependencies](docs/screenshots/watchtower-fabric-graph-subsystem.png)
+
+**Subsystem overview** — browse all components with search and filtering:
 
 ![Component Fabric](docs/screenshots/watchtower-fabric.png)
+
+**CLI examples:**
+
+```bash
+# What depends on this file?
+$ fw fabric deps agents/git/git.sh
+  → agents/git/lib/commit.sh, agents/git/lib/hooks.sh, ... (6 dependents)
+
+# What will this commit affect downstream?
+$ fw fabric blast-radius HEAD
+  → 3 files changed, 12 downstream components potentially affected
+
+# Find unregistered or orphaned components
+$ fw fabric drift
+  → 2 unregistered files, 0 orphaned cards, 1 stale component
+
+# Search by keyword
+$ fw fabric search "audit"
+  → audit-yaml-validator, plugin-audit, self-audit (3 matches)
+
+# Full transitive impact chain
+$ fw fabric impact agents/context/context.sh
+  → 9 direct dependents, 23 transitive downstream
+```
+
+Each component has a YAML card in `.fabric/components/` tracking: type, subsystem, purpose, interfaces, dependencies, and reverse dependencies.
 
 ### Git Traceability
 Every commit must reference a task. Pre-push hooks validate traceability. Bypass exceptions are logged, never silent.
