@@ -16,7 +16,7 @@ tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-05T00:28:00Z
+last_update: 2026-03-05T00:25:33Z
 date_finished: null
 ---
 
@@ -36,6 +36,35 @@ Key research files:
 - `fw-agent-persona-analysis.md` — 4 persona evaluations
 - `fw-agent-readme-showcase.md` — 18 features ranked by wow/differentiation/value
 
+### Structural Idea: Use Component Fabric as README Skeleton
+
+The Component Fabric maps 12 subsystems — use these as the organizing principle for the
+"What's Inside" or "Features" section. Each subsystem gets a short description + what it does
+for the user. Run `fw fabric overview` for the current topology:
+
+| Subsystem | README angle |
+|-----------|-------------|
+| **Watchtower Web UI** (37 components) | Live dashboard — task board, audit results, discovery scanner, metrics |
+| **Context Fabric** (13 components) | 3-layer memory — working/project/episodic. Agents remember across sessions |
+| **Framework Core** (10 components) | `fw` CLI — single entry point for all operations |
+| **Git Traceability** (7 components) | Every commit traces to a task. Hooks enforce it structurally |
+| **Component Fabric** (7 components) | Structural topology map — blast radius, impact analysis, dependency tracking |
+| **Healing Loop** (5 components) | Self-healing — failures become patterns, patterns prevent repeat failures |
+| **Learnings Pipeline** (4 components) | Knowledge graduation — learnings → practices → framework rules |
+| **Context Budget** (3 components) | Prevents context window exhaustion. Auto-handover at critical |
+| **Task Management** (2 components) | Task-first enforcement. File edits blocked without active task |
+| **Audit System** (2 components) | Continuous compliance checking — cron + pre-push + on-demand |
+| **Handover System** (1 component) | Session continuity — structured handover docs for next session |
+| **Hook Enforcement** (1 component) | PreToolUse/PostToolUse gates — task gate, Tier 0, budget gate |
+
+### Missing from Current README (explicitly requested)
+- **Watchtower dashboard** — not mentioned beyond a one-line link. Should show screenshots.
+- **Component Fabric** — not mentioned at all. Blast radius, dependency tracking, drift detection.
+- **Context Fabric** — not mentioned. 3-layer memory, semantic search, episodic recall.
+- **Natural language search** — `fw ask`, `fw recall`, semantic search across all project knowledge.
+- **Healing loop** — not mentioned. Self-diagnosing, pattern-matching error recovery.
+- **Audit system** — barely mentioned. 30-min cron, 90+ checks, discovery scanner.
+
 ## Acceptance Criteria
 
 ### Agent
@@ -44,11 +73,29 @@ Key research files:
 - [ ] Highlights section (5-6 bullet points) before install section
 - [ ] Progressive disclosure: overview → install → quickstart → deep docs
 - [ ] Provider-neutral framing: universal core + provider-specific setup paths
+- [ ] "What's Inside" section structured around the 12 Component Fabric subsystems
+- [ ] Watchtower dashboard showcased with description of task board, audit results, discovery scanner
+- [ ] Component Fabric showcased — blast radius, dependency tracking, drift detection
+- [ ] Context Fabric showcased — 3-layer memory (working/project/episodic), semantic search
+- [ ] Natural language search mentioned — `fw ask`, `fw recall`, semantic search across knowledge
+- [ ] Healing loop showcased — self-diagnosing error recovery, pattern matching
+- [ ] Audit system showcased — 90+ checks, cron schedule, discovery scanner
 - [ ] Team/CI section mentioning Watchtower dashboard and audit integration
 - [ ] Architecture section explains structure (not just a directory listing)
-- [ ] Fix `lib/setup.sh` reference → `lib/preflight.sh` (line 97)
+- [ ] Fix `lib/setup.sh` reference → `lib/preflight.sh`
 - [ ] Collapsible sections (`<details>`) for secondary information
 - [ ] All links valid (`grep -r` check)
+
+### Screenshots (via Playwright MCP)
+Use `browser_navigate` + `browser_take_screenshot` to capture Watchtower pages for the README.
+Target screenshots (save to `docs/screenshots/`):
+- [ ] `watchtower-dashboard.png` — Cockpit/main dashboard overview
+- [ ] `watchtower-tasks.png` — Task board with status columns
+- [ ] `watchtower-fabric.png` — Component Fabric dependency graph
+- [ ] `watchtower-audit.png` — Audit results page
+- [ ] `watchtower-discovery.png` — Discovery scanner findings
+
+Watchtower runs at http://localhost:3000. Ensure it's started before capturing.
 
 ### Human
 - [ ] README passes the "10-second test" — visitor understands WHAT and WHY within 10 seconds
@@ -87,6 +134,13 @@ grep -q '<details>' README.md
 
 # Provider-neutral: mentions at least 2 non-Claude agents
 grep -cEi 'cursor|copilot|cline|aider' README.md | grep -qv '^0$'
+
+# Key subsystems mentioned
+grep -qi 'watchtower' README.md
+grep -qi 'component fabric' README.md
+grep -qi 'context fabric\|memory system\|episodic' README.md
+grep -qi 'healing' README.md
+grep -qi 'semantic search\|natural language\|fw ask\|fw recall' README.md
 
 ## Decisions
 
