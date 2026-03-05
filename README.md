@@ -339,4 +339,6 @@ This framework develops itself using its own governance. 325 tasks completed, 96
 
 ## License
 
-Proprietary. All rights reserved.
+Apache 2.0 — see [LICENSE](LICENSE).
+
+Copyright 2025-2026 Geelen & Company
