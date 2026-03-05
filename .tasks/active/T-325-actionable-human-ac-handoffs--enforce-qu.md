@@ -14,7 +14,7 @@ tags: [governance, ux, handoff]
 components: [agents/task-create/update-task.sh, agents/handover/handover.sh, agents/task-create/create-task.sh]
 related_tasks: [T-193, T-285, T-289]
 created: 2026-03-04T23:51:59Z
-last_update: 2026-03-04T23:55:00Z
+last_update: 2026-03-04T23:53:56Z
 date_finished: null
 ---
 
@@ -38,7 +38,11 @@ Two gaps:
 ## Exploration Plan
 
 1. **Spike 1: Template + CLAUDE.md rule change** (30 min)
-   - Draft new human AC format with required `Steps:` block
+   - Draft new human AC format with required `Steps:` block containing:
+     - **Exact commands** to run (copy-pasteable, no placeholders the human must figure out)
+     - **Expected output** (what success looks like — exact text, status code, or screenshot description)
+     - **Environment prerequisites** (SSH access, URLs, credentials location, required tools)
+     - **Failure recovery** (what to do if it doesn't work — specific diagnostic commands)
    - Draft CLAUDE.md rule for writing actionable human ACs
    - Validate against 5 existing tasks: would it have helped?
 

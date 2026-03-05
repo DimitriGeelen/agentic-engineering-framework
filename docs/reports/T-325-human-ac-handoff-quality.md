@@ -72,6 +72,14 @@ Key insight: "Commands, not paragraphs" — every system that succeeds at handof
 - Identified the two gaps: actionability + discoverability
 - User approved sending 4 research agents
 
+### Inception review
+- User approved all 4 spikes and go/no-go criteria
+- User feedback: Steps block must be more explicit — not just "steps exist" but require:
+  - **Exact commands** (copy-pasteable, no placeholders human must figure out)
+  - **Expected output** (what success looks like)
+  - **Environment prerequisites** (SSH access, URLs, credential locations, required tools)
+  - **Failure recovery** (diagnostic commands if it doesn't work)
+
 ## Assumptions to Test
 
 - A-1: Enforcing a `Steps:` block in human ACs will improve completion rates
