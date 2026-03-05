@@ -5,5 +5,7 @@ __pycache__/
 .playwright-mcp/
 .context/bus/
 
-# Temporary screenshots
+# Temporary screenshots (Playwright MCP output)
 *.png
+# But track documentation screenshots
+!docs/screenshots/*.png
