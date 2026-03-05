@@ -67,7 +67,15 @@ fw handover --commit
 The framework is organized into 12 subsystems — 126 components working together:
 
 ### Task Management
-Create, track, and enforce tasks with acceptance criteria and verification gates. One command to start: `fw work-on "Fix the bug" --type build`.
+Create, track, and enforce tasks with acceptance criteria, verification gates, decisions, and episodic summaries. One command to start: `fw work-on "Fix the bug" --type build`.
+
+Every task is a rich artifact — not just a title and status:
+
+![Task Detail](docs/screenshots/watchtower-task-detail.png)
+
+Kanban board tracks tasks across Captured → In Progress → Issues → Completed:
+
+![Task Board](docs/screenshots/watchtower-tasks-board.png)
 
 ### Watchtower Web Dashboard
 Live project command center with task board, audit results, discovery scanner, and metrics. Surfaces items needing attention and prioritizes work direction.
@@ -136,6 +144,10 @@ Monitors actual token usage from the session transcript. Blocks operations at cr
 ### Handover System
 Session continuity via structured handover documents. Never lose context — the framework bridges sessions automatically with suggested first actions and work-in-progress state.
 
+Visual timeline across all sessions:
+
+![Timeline](docs/screenshots/watchtower-timeline.png)
+
 ### Learnings Pipeline
 Knowledge graduates from individual task findings to project-wide practices:
 
@@ -192,8 +204,6 @@ Follow [FRAMEWORK.md](FRAMEWORK.md) as the operating guide. Full CLI and git hoo
 - **Shared enforcement**: Git hooks install per-repo via `fw git install-hooks`. Every team member gets commit validation automatically
 - **Dashboard**: Deploy [Watchtower](web/) for team-wide visibility into tasks, audit results, and compliance
 - **CI/CD**: Run `fw audit` in your pipeline to gate PRs on compliance
-
-![Task Board](docs/screenshots/watchtower-tasks.png)
 
 ## When to Use / When Not to Use
 
