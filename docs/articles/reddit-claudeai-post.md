@@ -33,6 +33,9 @@ The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-eng
 ![Task Board](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-tasks-board.png)
 *Tasks flow through Captured → In Progress → Issues → Completed — visible and auditable.*
 
+![Dependency Graph](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-fabric-graph.png)
+*Interactive dependency graph — before changing a file, the agent knows what depends on it.*
+
 **Quick demo:**
 
 ```bash
