@@ -58,7 +58,7 @@ This maps directly to the four requirements:
 |-------------|-------------------|
 | **Clear direction** | Task-first enforcement. Every action has a task with acceptance criteria and verification commands. |
 | **Memory of previous reasoning** | Three-layer Context Fabric — working memory, project memory, episodic memory. |
-| **Awareness of context** | Component Fabric maps your codebase structurally. Budget management prevents context exhaustion. |
+| **Awareness of context** | Component Fabric maps your codebase structurally — the agent knows what depends on what it is changing and can assess downstream impact before writing a line of code. Budget management prevents context exhaustion. |
 | **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
 
 Tasks flow through a visible lifecycle — Captured, In Progress, Issues, Completed — tracked on a Kanban board that surfaces what needs attention:
