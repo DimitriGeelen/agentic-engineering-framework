@@ -10,9 +10,9 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-326, T-332, T-334]
 created: 2026-03-05T01:12:29Z
-last_update: 2026-03-05T02:03:17Z
+last_update: 2026-03-06T19:38:02Z
 date_finished: null
 ---
 
@@ -21,6 +21,8 @@ date_finished: null
 ## Context
 
 Launch article for dev.to targeting Claude Code users. Ref: `docs/reports/T-327-visibility-strategy.md` (action #6).
+
+**Review research:** `docs/reports/T-329-article-review.md` — 5-agent qualitative review (factual accuracy, completeness, tone, technical clarity, structure) cross-referenced against README.
 
 ## Acceptance Criteria
 
