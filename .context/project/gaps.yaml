@@ -435,3 +435,35 @@ gaps:
     last_reviewed: 2026-02-22
     closed_date: 2026-02-22
     related_task: T-242
+
+  - id: G-015
+    title: "Sub-agent results bypass task governance — no structural linking"
+    description: >
+      Sub-agents dispatched via Claude Code's Task tool write results to /tmp/fw-agent-*.md
+      (outside PROJECT_ROOT). These writes: (1) bypass check-active-task.sh (path outside project),
+      (2) don't trigger PreToolUse hooks (sub-agent context), (3) are never registered against
+      the active task via fw bus or any other mechanism. Research artifacts exist in an
+      ungoverned limbo until manually linked. fw bus (lib/bus.sh, 365 lines) was built for
+      exactly this use case but has zero usage across 170+ tasks (tracked as G-009).
+    spec_reference: "CLAUDE.md §Sub-Agent Dispatch Protocol, §Result Ledger (fw bus)"
+    severity: medium
+    trigger_condition: >
+      Sub-agent results are lost or must be manually linked for the 3rd time.
+      T-329 (article review) is occurrence #1. T-073 (episodic enrichment) was a near-miss.
+    evidence_collected: >
+      T-329: 5 review agents wrote to /tmp/fw-agent-*-review.md. Active task T-329 had
+      no reference until manual consolidation to docs/reports/T-329-article-review.md.
+      MEMORY.md prescribes old /tmp/ pattern (stale, predates fw bus). CLAUDE.md prescribes
+      fw bus post (never enforced). G-009 confirms bus has zero adoption.
+      T-073: 9 agents returned full content in-context, 177K spike.
+      T-178 inception identified bus has zero adoption, recommended simplification.
+      Learnings L-025, L-053, L-055, L-057 all document result management failures.
+    suggested_resolution: >
+      Short term: Update MEMORY.md to reference fw bus post. Medium term: Add audit check
+      for orphaned /tmp/fw-agent-* files without bus entries. Long term: PostToolUse hook
+      on Task tool that auto-links results. Pragmatic: Accept docs/reports/T-XXX-* as
+      de facto standard and add task-update hook that checks for matching report files.
+    status: watching
+    created: 2026-03-06
+    last_reviewed: 2026-03-06
+    related_task: T-329
