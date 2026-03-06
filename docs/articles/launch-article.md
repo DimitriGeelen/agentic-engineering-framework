@@ -57,9 +57,34 @@ This maps directly to the four requirements:
 | Requirement | Framework mechanism |
 |-------------|-------------------|
 | **Clear direction** | Task-first enforcement. Every action has a task with acceptance criteria and verification commands. |
-| **Memory of previous reasoning** | Three-layer context fabric — working memory (session), project memory (patterns, decisions), episodic memory (completed task histories). |
-| **Awareness of context** | Context budget management monitors token usage, auto-generates handovers before exhaustion. Session continuity across restarts. |
+| **Memory of previous reasoning** | Three-layer Context Fabric — working memory, project memory, episodic memory. |
+| **Awareness of context** | Component Fabric maps your codebase structurally. Budget management prevents context exhaustion. |
 | **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
+
+## The authority model
+
+In transition management, the single most common failure mode is unclear accountability. Who decides? Who approves? Who can override?
+
+The framework codifies this:
+
+```
+Human     → SOVEREIGNTY  → Can override anything, is accountable
+Framework → AUTHORITY    → Enforces rules, checks gates, logs everything
+Agent     → INITIATIVE   → Can propose, request, suggest — never decides
+```
+
+The agent may choose which task to work on. It may choose an implementation approach. It may not bypass a structural gate, complete a human-owned task, or execute a destructive command without approval. Initiative is not authority. This distinction prevents the most dangerous failure mode in agentic systems: the agent making consequential decisions that no one reviewed.
+
+The tiered approval model enforces this mechanically:
+
+| Tier | Scope | Approval |
+|------|-------|----------|
+| **0** | Destructive commands (`--force`, `rm -rf`, `DROP TABLE`) | Human must approve |
+| **1** | All file modifications | Active task required |
+| **2** | Situational exceptions | Single-use, logged |
+| **3** | Read-only operations | Pre-approved |
+
+This is the same principle as quality gates in transition management. You do not prevent action. You ensure the right checks occur at the right points.
 
 ## How it works in practice
 
@@ -95,16 +120,52 @@ $ git push --force
 fw handover --commit
 ```
 
-The tiered model is deliberate:
+## Context Fabric — memory across sessions
 
-| Tier | Scope | Approval |
-|------|-------|----------|
-| **0** | Destructive commands (`--force`, `rm -rf`, `DROP TABLE`) | Human must approve |
-| **1** | All file modifications | Active task required |
-| **2** | Situational exceptions | Single-use, logged |
-| **3** | Read-only operations | Pre-approved |
+The most expensive failure in agent-assisted development is not a bug. It is lost context. An agent works for an hour, the session ends, and the next session starts from zero. Decisions are re-made. Mistakes are repeated. The reasoning trail disappears.
 
-This is the same principle as quality gates in transition management. You do not prevent action. You ensure the right checks occur at the right points.
+The Context Fabric solves this with three layers of persistent memory:
+
+- **Working memory** — current session state, active focus, pending actions
+- **Project memory** — patterns, decisions, and learnings that persist across all sessions. When the agent encounters a failure it has seen before, the resolution is already there
+- **Episodic memory** — condensed histories of every completed task, auto-generated at completion. Not raw logs. Structured summaries: what was done, what was decided, what was learned
+
+Semantic search across all three layers means the agent can recall relevant context by meaning:
+
+```bash
+fw recall "authentication timeout pattern"
+# → Returns: L-037 (from T-118), FP-003 (from T-089), episodic T-042
+```
+
+This is the "memory of previous reasoning" requirement. Without it, every session is a cold start. With it, the framework accumulates institutional knowledge — the same way a well-run programme office does.
+
+![Watchtower Dashboard](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-dashboard.png)
+*The Watchtower dashboard surfaces tasks awaiting human verification, work direction, and system health in one view.*
+
+## Component Fabric — structural awareness
+
+Before changing a file, you should know what depends on it. In a programme, this is stakeholder impact analysis. In a codebase, it is dependency tracking.
+
+The Component Fabric is a live topology map of every significant file in the project. 126 components across 12 subsystems, with 175 dependency edges tracked. Each component has a YAML card recording what it does, what it depends on, and what depends on it.
+
+```bash
+# What depends on this file?
+$ fw fabric deps agents/git/git.sh
+  → 6 dependents: commit.sh, hooks.sh, ...
+
+# What will this commit break downstream?
+$ fw fabric blast-radius HEAD
+  → 3 files changed, 12 downstream components potentially affected
+
+# Detect unregistered files (structural drift)
+$ fw fabric drift
+  → 2 unregistered files, 0 orphaned cards
+```
+
+This turns "I changed a file, hope nothing breaks" into "I know exactly what is downstream and I tested the right things." The agent queries the structural map before writing code. It is informed impact analysis, not guesswork.
+
+![Component Fabric — dependency graph](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-fabric-graph.png)
+*Interactive dependency graph — filter by subsystem, switch layouts, click nodes to inspect relationships.*
 
 ## The healing loop
 
@@ -136,9 +197,24 @@ This is the equivalent of assurance reporting. Not retrospective. Continuous. Dr
 
 ## Evidence
 
-I used the framework to build the framework. 325 tasks completed. 96% commit traceability. Every architectural decision recorded with rationale and rejected alternatives. The framework is its own proof of concept.
+I used the framework to build the framework. 325 tasks completed. 96% commit traceability. Every architectural decision recorded with rationale and rejected alternatives.
+
+A typical commit log:
+
+```
+27e8ed1 T-332: Research awesome list targets — 5 lists with ready-to-submit entries
+d8cd81e T-326: Complete README rewrite — all 17 agent ACs + 5 screenshots verified
+2138d17 T-329: Draft launch article — I built guardrails for Claude Code
+25ba46e T-328: Add NOTICE file for Apache 2.0 attribution preservation
+c6287d4 T-328: Add Apache 2.0 license (Geelen & Company) and update README
+```
+
+Every commit traces to a task. Every task has acceptance criteria that were verified before completion. Every decision is recorded with rationale. The framework is its own proof of concept.
 
 It is provider-neutral. Full structural enforcement with Claude Code via hooks. CLI governance with Cursor and any other agent. The `fw` CLI is the single entry point — same pattern as having one programme office, not five.
+
+![Task detail](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-task-detail.png)
+*A task is a rich artifact — acceptance criteria, verification commands, decisions, and episodic summary. Not a one-line ticket.*
 
 ## Try it
 
