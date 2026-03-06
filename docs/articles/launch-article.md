@@ -221,6 +221,14 @@ It is provider-neutral. Full structural enforcement with Claude Code via hooks. 
 ![Task detail](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-task-detail.png)
 *A task is a rich artifact — acceptance criteria, verification commands, decisions, and episodic summary. Not a one-line ticket.*
 
+## Where it stands
+
+I want to be straightforward about this: the framework is alpha. It is under active development. There are bugs. There are rough edges. I have taken steps to make it usable for others — install script, Homebrew tap, documentation, GitHub Action — but it has not been tested by a wide audience yet.
+
+What I can say is that I use it daily for real work. 325 tasks completed. The governance model holds. The context continuity works. The healing loop genuinely improves over time. I find it already valuable enough that I would not go back to ungoverned agent development.
+
+If that sounds interesting, try it. If you find bugs, report them. If you see improvements, contribute. This is not a finished product — it is a working framework that I believe is heading in the right direction.
+
 ## Try it
 
 ```bash
