@@ -51,7 +51,7 @@ This isn't honor-system governance. The framework blocks the action mechanically
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 
 # Or via Homebrew (macOS/Linux)
-brew tap DimitriGeelen/agentic-fw && brew install fw
+brew install DimitriGeelen/agentic-fw/fw
 
 # Initialize in your project
 cd your-project && fw init

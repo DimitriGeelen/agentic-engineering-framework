@@ -242,8 +242,8 @@ If that sounds interesting, try it. If you find bugs, report them. If you see im
 # Install
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 
-# Or via Homebrew
-brew tap DimitriGeelen/agentic-fw && brew install fw
+# Or via Homebrew (macOS/Linux)
+brew install DimitriGeelen/agentic-fw/fw
 
 # Initialize in your project
 cd your-project && fw init
