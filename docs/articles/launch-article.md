@@ -11,9 +11,9 @@ cover_image:
 
 Over 25 years of working on complex IT programmes I arrived at a principle I now believe is universal: effective intelligent action — whether by a person, a team, or an AI agent — requires five things. Clear direction. Awareness of context — what happened before, what was decided, what failed. Awareness of resource constraints. Awareness of what your actions will affect downstream. And people who are genuinely engaged and capable of acting. Remove any one and the system degrades.
 
-I did not derive this from AI theory. I derived it from watching transitions succeed and fail. At Shell I built the Global Transition Management Framework — 8 assurance areas, 50+ templates, quality gates including Hypercare. Personally led 80+ transitions. Adopted as the global standard, used for 1,000+ transitions globally. Assurance data captured by design. Governable without parallel bureaucracy.
+I did not derive this from AI theory. I derived it from watching transitions succeed and fail. At Shell I built a governance framework for IT transitions — quality gates, assurance areas, structured handovers. Shell adopted it as the global standard. It has been used for over 1,000 transitions worldwide.
 
-When I started building with agentic coding tools I recognised the same pattern. So I built a framework for it.
+When I started building with agentic coding tools I recognised the same failure modes. So I built a framework for that too.
 
 ## The problem is structural
 
@@ -67,32 +67,9 @@ Tasks flow through a visible lifecycle — Captured, In Progress, Issues, Comple
 ![Task Board](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-tasks-board.png)
 *Tasks are not hidden in text files. They are visible, trackable, and auditable.*
 
-## The authority model
-
-In transition management, the single most common failure mode is unclear accountability. Who decides? Who approves? Who can override?
-
-The framework codifies this:
-
-```
-Human     → SOVEREIGNTY  → Can override anything, is accountable
-Framework → AUTHORITY    → Enforces rules, checks gates, logs everything
-Agent     → INITIATIVE   → Can propose, request, suggest — never decides
-```
-
-The agent may choose which task to work on. It may choose an implementation approach. It may not bypass a structural gate, complete a human-owned task, or execute a destructive command without approval. Initiative is not authority. This distinction prevents the most dangerous failure mode in agentic systems: the agent making consequential decisions that no one reviewed.
-
-The tiered approval model enforces this mechanically:
-
-| Tier | Scope | Approval |
-|------|-------|----------|
-| **0** | Destructive commands (`--force`, `rm -rf`, `DROP TABLE`) | Human must approve |
-| **1** | All file modifications | Active task required |
-| **2** | Situational exceptions | Single-use, logged |
-| **3** | Read-only operations | Pre-approved |
-
-This is the same principle as quality gates in transition management. You do not prevent action. You ensure the right checks occur at the right points.
-
 ## How it works in practice
+
+Here is what this looks like in a terminal.
 
 **Before governance:**
 
@@ -126,6 +103,35 @@ $ git push --force
 fw handover --commit
 ```
 
+That Tier 0 block is not a warning. It is a gate. Which leads to the question: who has authority over what?
+
+## The authority model
+
+In transition management, the single most common failure mode is unclear accountability. Who decides? Who approves? Who can override?
+
+The framework codifies this:
+
+```
+Human     → SOVEREIGNTY  → Can override anything, is accountable
+Framework → AUTHORITY    → Enforces rules, checks gates, logs everything
+Agent     → INITIATIVE   → Can propose, request, suggest — never decides
+```
+
+The agent may choose which task to work on. It may choose an implementation approach. It may not bypass a structural gate, complete a human-owned task, or execute a destructive command without approval. Initiative is not authority. This distinction prevents the most dangerous failure mode in agentic systems: the agent making consequential decisions that no one reviewed.
+
+The tiered approval model enforces this mechanically:
+
+| Tier | Scope | Approval |
+|------|-------|----------|
+| **0** | Destructive commands (`--force`, `rm -rf`, `DROP TABLE`) | Human must approve |
+| **1** | All file modifications | Active task required |
+| **2** | Situational exceptions | Single-use, logged |
+| **3** | Read-only operations | Pre-approved |
+
+You do not prevent action. You ensure the right checks occur at the right points.
+
+The gates handle enforcement. But what happens to the knowledge the agent builds up during a session?
+
 ## Context Fabric — memory across sessions
 
 The most expensive failure in agent-assisted development is not a bug. It is lost context. An agent works for an hour, the session ends, and the next session starts from zero. Decisions are re-made. Mistakes are repeated. The reasoning trail disappears.
@@ -150,7 +156,7 @@ Without this, every session is a cold start. With it, the framework accumulates 
 
 ## Component Fabric — structural awareness
 
-Before changing a file, you should know what depends on it. In a programme, this is stakeholder impact analysis. In a codebase, it is dependency tracking.
+Memory tells the agent what happened before. But it also needs to know what it is about to affect. In a programme, this is stakeholder impact analysis. In a codebase, it is dependency tracking.
 
 The Component Fabric is a live topology map of every significant file in the project. 126 components across 12 subsystems, with 175 dependency edges tracked. Each component has a YAML card recording what it does, what it depends on, and what depends on it.
 
@@ -175,7 +181,7 @@ The difference is between modifying a file without knowing its dependents and mo
 
 ## The healing loop
 
-In transition management, the most valuable assurance data comes from failures. The same applies here.
+Context and structural awareness handle the forward path. But what about failures?
 
 When a task encounters issues, the framework classifies the failure, searches for similar patterns, and suggests recovery:
 
@@ -188,7 +194,7 @@ The escalation ladder is deliberate: **A** — do not repeat the same failure. *
 
 ## Continuous audit
 
-90+ compliance checks run automatically — every 30 minutes, on every push, and on demand:
+The healing loop handles individual failures. To catch systemic drift, the framework audits itself. 90+ compliance checks run automatically — every 30 minutes, on every push, and on demand:
 
 ```bash
 $ fw audit
