@@ -23,7 +23,7 @@ AI coding agents — Claude Code, Cursor, Copilot, Aider — are capable tools. 
 
 **No memory.** Every session starts from zero. The agent does not know what it did yesterday, what decisions were made, what failed. You re-explain context repeatedly. Or worse — the agent contradicts a decision from the previous session because it has no record of it.
 
-**No authority model.** The agent executes destructive commands — force pushes, file deletions, hard resets — autonomously. Not maliciously. Simply because nothing prevents it.
+**No risk awareness.** The agent may ask before a force push, but it has no model for understanding why that action is risky, what it affects, or who should approve it. There is no structured authority model — no distinction between what the agent may decide and what requires human approval.
 
 **No learning loop.** Failures are not recorded. The same mistake recurs across sessions because there is no mechanism to capture what went wrong and surface it next time.
 
