@@ -31,9 +31,9 @@ These are not tool-specific problems. They are governance problems. The same one
 
 ## What I built
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) applies structural governance to AI coding agents. Not guidelines. Not best practices. Enforcement.
+The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) applies structural governance to AI coding agents — not guidelines or best practices, but mechanical enforcement.
 
-The core principle: **nothing gets done without a task.** This is not a convention. It is a gate. The framework intercepts every file modification and blocks it unless an active task exists.
+The core principle: **nothing gets done without a task.** This is enforced as a gate, not a convention. With Claude Code, the framework intercepts every file modification and blocks it unless an active task exists.
 
 ```
 Agent attempts to edit a file
@@ -57,15 +57,15 @@ This maps directly to those five requirements:
 | Requirement | Framework mechanism |
 |-------------|-------------------|
 | **Clear direction** | Task-first enforcement. Every action has a task with acceptance criteria and verification commands. |
-| **Awareness of context** | Context Fabric — three layers of persistent memory (working, project, episodic). The agent recalls prior decisions, learned patterns, and failure resolutions across sessions. |
-| **Awareness of context window** | Context budget management tracks resource consumption and triggers automatic handover before the agent loses coherence. No session ends in an unrecoverable state. |
-| **Awareness of impact** | Component Fabric — a live structural map of the codebase. Before changing a file, the agent knows what depends on it and can assess downstream impact. Informed analysis, not guesswork. |
+| **Awareness of context** | Context Fabric (the framework's memory subsystem) — three layers of persistent memory (working, project, episodic). The agent recalls prior decisions, learned patterns, and failure resolutions across sessions. |
+| **Awareness of context window** | Context budget management tracks resource consumption and triggers automatic handover before the agent loses coherence. |
+| **Awareness of impact** | Component Fabric — a live structural map of the codebase. Before changing a file, the agent queries what depends on it and assesses downstream impact. |
 | **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
 
 Tasks flow through a visible lifecycle — Captured, In Progress, Issues, Completed — tracked on a Kanban board that surfaces what needs attention:
 
 ![Task Board](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-tasks-board.png)
-*Tasks are not hidden in text files. They are visible, trackable, and auditable — the same way a programme board works.*
+*Tasks are not hidden in text files. They are visible, trackable, and auditable.*
 
 ## The authority model
 
@@ -134,7 +134,7 @@ The Context Fabric solves this with three layers of persistent memory:
 
 - **Working memory** — current session state, active focus, pending actions
 - **Project memory** — patterns, decisions, and learnings that persist across all sessions. When the agent encounters a failure it has seen before, the resolution is already there
-- **Episodic memory** — condensed histories of every completed task, auto-generated at completion. Not raw logs. Structured summaries: what was done, what was decided, what was learned
+- **Episodic memory** — condensed histories of every completed task, auto-generated at completion. What was done, what was decided, what was learned
 
 Semantic search across all three layers means the agent can recall relevant context by meaning:
 
@@ -143,7 +143,7 @@ fw recall "authentication timeout pattern"
 # → Returns: L-037 (from T-118), FP-003 (from T-089), episodic T-042
 ```
 
-This is the "memory of previous reasoning" requirement. Without it, every session is a cold start. With it, the framework accumulates institutional knowledge — the same way a well-run programme office does.
+Without this, every session is a cold start. With it, the framework accumulates institutional knowledge — the same way it does in a well-run organisation.
 
 ![Watchtower Dashboard](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-dashboard.png)
 *The Watchtower dashboard surfaces tasks awaiting human verification, work direction, and system health in one view.*
@@ -168,7 +168,7 @@ $ fw fabric drift
   → 2 unregistered files, 0 orphaned cards
 ```
 
-This turns "I changed a file, hope nothing breaks" into "I know exactly what is downstream and I tested the right things." The agent queries the structural map before writing code. It is informed impact analysis, not guesswork.
+The difference is between modifying a file without knowing its dependents and modifying it with a verified understanding of downstream impact.
 
 ![Component Fabric — dependency graph](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-fabric-graph.png)
 *Interactive dependency graph — filter by subsystem, switch layouts, click nodes to inspect relationships.*
@@ -184,7 +184,7 @@ fw healing diagnose T-015            # Classify and suggest
 fw healing resolve T-015 --mitigation "Added retry logic"  # Record as pattern
 ```
 
-The escalation ladder is deliberate: **A** — do not repeat the same failure. **B** — improve technique. **C** — improve tooling. **D** — change ways of working. Over 325 tasks, these patterns compound. The framework learns from its own history.
+The escalation ladder is deliberate: **A** — do not repeat the same failure. **B** — improve technique. **C** — improve tooling. **D** — change ways of working. Over 312 completed tasks, these patterns accumulate. Resolutions from prior failures are surfaced when similar issues recur.
 
 ## Continuous audit
 
@@ -203,7 +203,7 @@ This is the equivalent of assurance reporting. Not retrospective. Continuous. Dr
 
 ## Evidence
 
-I used the framework to build the framework. 325 tasks completed. 96% commit traceability. Every architectural decision recorded with rationale and rejected alternatives.
+I used the framework to build the framework. 312 tasks completed. 96% commit traceability across the full task history. Every architectural decision recorded with rationale and rejected alternatives.
 
 A typical commit log:
 
@@ -224,11 +224,11 @@ The framework is built with and tested against Claude Code — that is where the
 
 ## Where it stands
 
-I want to be straightforward about this: the framework is alpha. It is under active development. There are bugs. There are rough edges. I have taken steps to make it usable for others — install script, Homebrew tap, documentation, GitHub Action — but it has not been tested by a wide audience yet.
+I use this daily for real work. 312 tasks completed. The governance model holds. The context continuity works. The healing loop genuinely improves over time. I would not go back to ungoverned agent development.
 
-What I can say is that I use it daily for real work. 325 tasks completed. The governance model holds. The context continuity works. The healing loop genuinely improves over time. I find it already valuable enough that I would not go back to ungoverned agent development.
+That said, the framework is alpha. It is under active development. There are bugs. There are rough edges. I have taken steps to make it usable for others — install script, Homebrew tap, documentation, GitHub Action — but it has not been tested by a wide audience yet.
 
-If that sounds interesting, try it. If you find bugs, report them. If you see improvements, contribute. This is not a finished product — it is a working framework that I believe is heading in the right direction.
+If that sounds interesting, try it. If you find bugs, report them. If you see improvements, contribute. This is not a finished product — it is a working framework heading in the right direction.
 
 ## Try it
 
