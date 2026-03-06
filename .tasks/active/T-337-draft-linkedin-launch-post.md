@@ -13,7 +13,7 @@ tags: [launch, visibility]
 components: []
 related_tasks: [T-329, T-334, T-336]
 created: 2026-03-06T23:26:45Z
-last_update: 2026-03-06T23:26:45Z
+last_update: 2026-03-06T23:28:05Z
 date_finished: null
 ---
 
@@ -36,7 +36,7 @@ LinkedIn post for launch sequence. Draft at `docs/articles/linkedin-post.md`.
 ## Verification
 
 test -f docs/articles/linkedin-post.md
-grep -q "linkedin" docs/articles/linkedin-post.md
+grep -qi "linkedin" docs/articles/linkedin-post.md
 
 ## Decisions
 
