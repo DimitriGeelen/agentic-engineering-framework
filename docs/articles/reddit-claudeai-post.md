@@ -25,6 +25,14 @@ The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-eng
 - **Continuous audit** — 90+ compliance checks run every 30 minutes, on push, and on demand.
 - **Healing loop** — failures are diagnosed, recorded as patterns, and surfaced when similar issues recur.
 
+**What it looks like:**
+
+![Watchtower Dashboard](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-dashboard.png)
+*Dashboard surfaces tasks, audit results, and work direction in one view.*
+
+![Task Board](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-tasks-board.png)
+*Tasks flow through Captured → In Progress → Issues → Completed — visible and auditable.*
+
 **Quick demo:**
 
 ```bash
