@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-326, T-332, T-334]
 created: 2026-03-05T01:12:29Z
-last_update: 2026-03-06T19:38:02Z
+last_update: 2026-03-06T21:26:50Z
 date_finished: null
 ---
 
@@ -34,8 +34,8 @@ Launch article for dev.to targeting Claude Code users. Ref: `docs/reports/T-327-
 - [x] Has dev.to frontmatter (title, tags, canonical_url)
 
 ### Human
-- [ ] Article reviewed and edited for voice/tone
-- [ ] Published on dev.to
+- [x] Article reviewed and edited for voice/tone
+- [x] Published on dev.to — https://dev.to/irrindar/i-built-guardrails-for-ai-coding-agents-same-governance-principle-new-domain-28j3
 - [ ] Cross-posted to Hashnode with canonical URL
 
 ## Verification
