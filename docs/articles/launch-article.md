@@ -1,7 +1,7 @@
 ---
 title: "I built guardrails for AI coding agents — same governance principle, new domain"
 published: false
-description: "Over 25 years of IT programme governance taught me that effective intelligent action requires four things. I applied that principle to AI coding agents."
+description: "Over 25 years of IT programme governance taught me that effective intelligent action requires five things. I applied that principle to AI coding agents."
 tags: ai, claudecode, opensource, devtools
 canonical_url: https://dev.to/dimitrigeelen/i-built-guardrails-for-ai-coding-agents-same-governance-principle-new-domain
 cover_image:
@@ -9,7 +9,7 @@ cover_image:
 
 # I built guardrails for AI coding agents — same governance principle, new domain
 
-Over 25 years of working on complex IT programmes I arrived at a principle I now believe is universal: effective intelligent action — whether by a person, a team, or an AI agent — requires four things. Clear direction. Memory of previous reasoning. Awareness of the context you are operating in. And people who are genuinely engaged and capable of acting. Remove any one and the system degrades.
+Over 25 years of working on complex IT programmes I arrived at a principle I now believe is universal: effective intelligent action — whether by a person, a team, or an AI agent — requires five things. Clear direction. Awareness of context — what happened before, what was decided, what failed. Awareness of resource constraints. Awareness of what your actions will affect downstream. And people who are genuinely engaged and capable of acting. Remove any one and the system degrades.
 
 I did not derive this from AI theory. I derived it from watching transitions succeed and fail. At Shell I built the Global Transition Management Framework — 8 assurance areas, 50+ templates, quality gates including Hypercare. Personally led 80+ transitions. Adopted as the global standard, used for 1,000+ transitions globally. Assurance data captured by design. Governable without parallel bureaucracy.
 
@@ -52,13 +52,14 @@ Agent attempts to edit a file
     Edit proceeds           Every commit traces to a task
 ```
 
-This maps directly to the four requirements:
+This maps directly to those five requirements:
 
 | Requirement | Framework mechanism |
 |-------------|-------------------|
 | **Clear direction** | Task-first enforcement. Every action has a task with acceptance criteria and verification commands. |
-| **Memory of previous reasoning** | Three-layer Context Fabric — working memory, project memory, episodic memory. |
-| **Awareness of context** | Component Fabric maps your codebase structurally — the agent knows what depends on what it is changing and can assess downstream impact before writing a line of code. Budget management prevents context exhaustion. |
+| **Awareness of context** | Context Fabric — three layers of persistent memory (working, project, episodic). The agent recalls prior decisions, learned patterns, and failure resolutions across sessions. |
+| **Awareness of context window** | Context budget management tracks resource consumption and triggers automatic handover before the agent loses coherence. No session ends in an unrecoverable state. |
+| **Awareness of impact** | Component Fabric — a live structural map of the codebase. Before changing a file, the agent knows what depends on it and can assess downstream impact. Informed analysis, not guesswork. |
 | **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
 
 Tasks flow through a visible lifecycle — Captured, In Progress, Issues, Completed — tracked on a Kanban board that surfaces what needs attention:
@@ -216,7 +217,7 @@ c6287d4 T-328: Add Apache 2.0 license (Geelen & Company) and update README
 
 Every commit traces to a task. Every task has acceptance criteria that were verified before completion. Every decision is recorded with rationale. The framework is its own proof of concept.
 
-It is provider-neutral. Full structural enforcement with Claude Code via hooks. CLI governance with Cursor and any other agent. The `fw` CLI is the single entry point — same pattern as having one programme office, not five.
+The framework is built with and tested against Claude Code — that is where the full structural enforcement lives, via hooks that intercept every file modification, every destructive command, every context threshold. But the design is provider-neutral. Cursor gets `.cursorrules` generation and CLI governance. Copilot, Aider, Devin — any agent that can follow a system prompt and run shell commands gets the same `fw` CLI. One governance interface, regardless of which agent is executing.
 
 ![Task detail](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-task-detail.png)
 *A task is a rich artifact — acceptance criteria, verification commands, decisions, and episodic summary. Not a one-line ticket.*
@@ -249,7 +250,7 @@ Open source under Apache 2.0: [github.com/DimitriGeelen/agentic-engineering-fram
 
 ## The principle holds
 
-Effective intelligent action requires clear direction, memory, context awareness, and capable engaged actors. This was true for Shell's global transitions. It is true for AI coding agents. The domain changed. The principle did not.
+Effective intelligent action requires clear direction, context awareness, awareness of constraints and impact, and capable engaged actors. This was true for Shell's global transitions. It is true for AI coding agents. The domain changed. The principle did not.
 
 ---
 
