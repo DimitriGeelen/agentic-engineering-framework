@@ -61,6 +61,11 @@ This maps directly to the four requirements:
 | **Awareness of context** | Component Fabric maps your codebase structurally. Budget management prevents context exhaustion. |
 | **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
 
+Tasks flow through a visible lifecycle — Captured, In Progress, Issues, Completed — tracked on a Kanban board that surfaces what needs attention:
+
+![Task Board](https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/docs/screenshots/watchtower-tasks-board.png)
+*Tasks are not hidden in text files. They are visible, trackable, and auditable — the same way a programme board works.*
+
 ## The authority model
 
 In transition management, the single most common failure mode is unclear accountability. Who decides? Who approves? Who can override?
