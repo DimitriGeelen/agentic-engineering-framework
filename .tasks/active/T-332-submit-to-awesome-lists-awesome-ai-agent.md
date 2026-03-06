@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:40Z
-last_update: 2026-03-05T02:11:50Z
+last_update: 2026-03-06T22:43:34Z
 date_finished: null
 ---
 
@@ -29,7 +29,11 @@ Prepare awesome-list submissions per `docs/reports/T-327-visibility-strategy.md`
 - [x] Ready-to-submit PR descriptions drafted for each target list
 
 ### Human
-- [ ] PRs submitted (may need 30+ stars first for some lists)
+- [x] PRs submitted (may need 30+ stars first for some lists)
+  - https://github.com/bradAGI/awesome-cli-coding-agents/pull/2
+  - https://github.com/e2b-dev/awesome-sdks-for-ai-agents/pull/78
+  - kyrolabs/awesome-agents: deferred (needs traction/stars)
+  - alebcay/awesome-shell: blocked (needs 50 stars)
 - [ ] PRs merged or pending review
 
 ## Verification
