@@ -1,48 +1,42 @@
 ---
-title: "I built guardrails for Claude Code — here's what I learned"
+title: "I built guardrails for AI coding agents — same governance principle, new domain"
 published: false
-description: "After 325 tasks with AI coding agents, I built a governance framework that enforces task traceability, blocks destructive commands, and preserves context across sessions. Here's what went wrong without it — and what changed."
+description: "Over 25 years of IT programme governance taught me that effective intelligent action requires four things. I applied that principle to AI coding agents."
 tags: ai, claudecode, opensource, devtools
-canonical_url: https://dev.to/dimitrigeelen/i-built-guardrails-for-claude-code-heres-what-i-learned
+canonical_url: https://dev.to/dimitrigeelen/i-built-guardrails-for-ai-coding-agents-same-governance-principle-new-domain
 cover_image:
 ---
 
-# I built guardrails for Claude Code — here's what I learned
+# I built guardrails for AI coding agents — same governance principle, new domain
 
-I've been using Claude Code daily for six months. It's the most productive tool I've ever used — and also the most dangerous.
+Over 25 years of working on complex IT programmes I arrived at a principle I now believe is universal: effective intelligent action — whether by a person, a team, or an AI agent — requires four things. Clear direction. Memory of previous reasoning. Awareness of the context you are operating in. And people who are genuinely engaged and capable of acting. Remove any one and the system degrades.
 
-Not dangerous like "it writes bad code." Dangerous like: it force-pushed to main at 2 AM. It deleted files without telling me why. It lost all context when the session ended, so the next session started from zero and made the same mistakes again.
+I did not derive this from AI theory. I derived it from watching transitions succeed and fail. At Shell I built the Global Transition Management Framework — 8 assurance areas, 50+ templates, quality gates including Hypercare. Personally led 80+ transitions. Adopted as the global standard, used for 1,000+ transitions globally. Assurance data captured by design. Governable without parallel bureaucracy.
 
-After the third time an agent made a destructive decision I hadn't approved, I stopped blaming the agent. The problem wasn't Claude. The problem was me — I had given a power tool to an autonomous system with no structural constraints.
+When I started building with agentic coding tools I recognised the same pattern. So I built a framework for it.
 
-So I built them.
+## The problem is structural
 
-## The problem nobody talks about
+AI coding agents — Claude Code, Cursor, Copilot, Aider — are capable tools. What they lack is governance. Without it, the same failure modes appear that I have seen in every ungoverned programme:
 
-Everyone's excited about AI writing code faster. Nobody's talking about what happens when AI agents operate on your codebase *without governance.*
+**No traceability.** Files change with no record of why. No task, no decision trail, no audit history. Three weeks later you are reading a diff with no way to reconstruct the reasoning behind it.
 
-Here's what I kept running into:
+**No memory.** Every session starts from zero. The agent does not know what it did yesterday, what decisions were made, what failed. You re-explain context repeatedly. Or worse — the agent contradicts a decision from the previous session because it has no record of it.
 
-**No traceability.** Files changed with no record of *why*. No task, no ticket, no context. Three weeks later, I'm reading a diff going "who wrote this and what were they thinking?" The answer was: an AI agent, and there's no way to find out.
+**No authority model.** The agent executes destructive commands — force pushes, file deletions, hard resets — autonomously. Not maliciously. Simply because nothing prevents it.
 
-**Context amnesia.** Every session starts from zero. The agent doesn't know what it did yesterday, what decisions were made, what failed, or what's in progress. You explain the same context over and over. Or worse — the agent makes a decision that contradicts one you made last session, because it has no memory of it.
+**No learning loop.** Failures are not recorded. The same mistake recurs across sessions because there is no mechanism to capture what went wrong and surface it next time.
 
-**Autonomous destruction.** `git push --force`. `rm -rf`. Dropping database tables. Not maliciously — just... autonomously. The agent decided it was the right move. Nobody asked me.
-
-**Invisible technical debt.** Failures happen, but nobody records them. The same mistake gets repeated across sessions because there's no learning loop. The agent doesn't know it already tried approach X and it failed.
-
-This isn't a Claude Code problem. This is an *any AI agent* problem. Cursor, Copilot, Aider, Devin — they all share the same gap: the agent has capability without governance.
+These are not tool-specific problems. They are governance problems. The same ones I spent two decades solving in enterprise IT.
 
 ## What I built
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) is a governance layer for AI coding agents. Not guidelines. Not "best practices." Structural enforcement.
+The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) applies structural governance to AI coding agents. Not guidelines. Not best practices. Enforcement.
 
-The core principle is simple: **nothing gets done without a task.**
-
-This is enforced mechanically. Try to edit a file without an active task? Blocked:
+The core principle: **nothing gets done without a task.** This is not a convention. It is a gate. The framework intercepts every file modification and blocks it unless an active task exists.
 
 ```
-Agent tries to edit a file
+Agent attempts to edit a file
     │
     ▼
 ┌─────────────────────┐
@@ -55,89 +49,77 @@ Agent tries to edit a file
 └─────────────────────┘
     │ ✓ Budget OK
     ▼
-    Edit proceeds ✓        Every commit traces back to a task
+    Edit proceeds           Every commit traces to a task
 ```
 
-Not honor-system governance. The framework blocks the action *before it happens* using pre-operation hooks.
+This maps directly to the four requirements:
 
-### Before and after
+| Requirement | Framework mechanism |
+|-------------|-------------------|
+| **Clear direction** | Task-first enforcement. Every action has a task with acceptance criteria and verification commands. |
+| **Memory of previous reasoning** | Three-layer context fabric — working memory (session), project memory (patterns, decisions), episodic memory (completed task histories). |
+| **Awareness of context** | Context budget management monitors token usage, auto-generates handovers before exhaustion. Session continuity across restarts. |
+| **Engaged, capable actors** | Tiered authority model. The agent has initiative but not authority. Destructive actions require human approval. |
 
-**Before (raw Claude Code):**
+## How it works in practice
+
+**Before governance:**
 
 ```bash
-# Agent just... does stuff
-echo "some new feature" >> app.py
+# Agent operates without constraints
 git add . && git commit -m "updates"
-git push --force origin main  # 💀
+git push --force origin main
 ```
 
-No task. No traceability. Destructive command executed without approval.
+No task reference. No traceability. Destructive command executed without approval.
 
-**After (with framework):**
+**After governance:**
 
 ```bash
-# Start with a task
-fw work-on "Add user authentication" --type build
+# Work starts with a task
+fw work-on "Add JWT validation" --type build
 
-# Agent works within governance
-# Every file edit requires an active task (enforced by hooks)
 # Every commit references the task
 fw git commit -m "T-042: Add JWT validation middleware"
 
-# Destructive commands are blocked
+# Destructive commands are intercepted
 $ git push --force
 ══════════════════════════════════════════════════════════
   TIER 0 BLOCK — Destructive Command Detected
 ══════════════════════════════════════════════════════════
   Risk: FORCE PUSH overwrites remote history
-  To proceed: fw tier0 approve (requires human)
+  To proceed: fw tier0 approve (requires human approval)
 ══════════════════════════════════════════════════════════
 
-# Session ends with context preserved
+# Session ends with context preserved for the next
 fw handover --commit
 ```
 
-Every action is traced. Destructive commands require human approval. Context survives between sessions.
+The tiered model is deliberate:
 
-## The four things that actually matter
-
-After 325 tasks, here's what governance boils down to:
-
-### 1. Task-first enforcement
-
-Every file modification requires an active task. Not as a convention — as a structural gate. The `PreToolUse` hook runs before every Write, Edit, or Bash command and checks whether a task exists and has focus set.
-
-This means every commit traces back to a task. Every task has acceptance criteria. Every decision is recorded. When you look at a file change six months later, you can trace it back to the task that caused it, the criteria that defined it, and the decision that shaped it.
-
-### 2. Tiered approval for destructive actions
-
-Not all commands are equal. The framework classifies them:
-
-| Tier | What | Approval |
-|------|------|----------|
-| **0** | `--force`, `rm -rf`, `DROP TABLE` | Human must approve |
+| Tier | Scope | Approval |
+|------|-------|----------|
+| **0** | Destructive commands (`--force`, `rm -rf`, `DROP TABLE`) | Human must approve |
 | **1** | All file modifications | Active task required |
 | **2** | Situational exceptions | Single-use, logged |
-| **3** | Read-only (status, health) | Pre-approved |
+| **3** | Read-only operations | Pre-approved |
 
-The Tier 0 gate catches the commands that keep me up at night. Force pushes, hard resets, deleting directories. The agent cannot execute these without my explicit sign-off.
+This is the same principle as quality gates in transition management. You do not prevent action. You ensure the right checks occur at the right points.
 
-### 3. Session continuity
+## The healing loop
 
-When a session ends (or context runs out), the framework generates a handover document: what was done, what's in progress, what decisions were made, what to do next. The next session picks up where the last one left off.
+In transition management, the most valuable assurance data comes from failures. The same applies here.
+
+When a task encounters issues, the framework classifies the failure, searches for similar patterns, and suggests recovery:
 
 ```bash
-# End of session
-fw handover --commit
-
-# Next session
-fw resume
-# → Shows: last session state, active tasks, suggested first action
+fw healing diagnose T-015            # Classify and suggest
+fw healing resolve T-015 --mitigation "Added retry logic"  # Record as pattern
 ```
 
-No more explaining the same context twice. No more contradicting yesterday's decisions. The framework remembers so the agent doesn't have to.
+The escalation ladder is deliberate: **A** — do not repeat the same failure. **B** — improve technique. **C** — improve tooling. **D** — change ways of working. Over 325 tasks, these patterns compound. The framework learns from its own history.
 
-### 4. Continuous audit
+## Continuous audit
 
 90+ compliance checks run automatically — every 30 minutes, on every push, and on demand:
 
@@ -148,23 +130,15 @@ $ fw audit
 Pass: 94
 Warn: 5
 Fail: 2
-
-=== PRIORITY ACTIONS ===
-1. Fill handover TODOs
-2. Review pending tasks
 ```
 
-The audit catches drift before it becomes a problem: unchecked acceptance criteria, missing task references in commits, stale handovers, bypass log entries without justification.
+This is the equivalent of assurance reporting. Not retrospective. Continuous. Drift is detected before it becomes a problem.
 
-## What surprised me
+## Evidence
 
-**The framework governs itself.** I used the framework to build the framework. 325 tasks completed, 96% commit traceability, every architectural decision recorded. It's its own proof of concept.
+I used the framework to build the framework. 325 tasks completed. 96% commit traceability. Every architectural decision recorded with rationale and rejected alternatives. The framework is its own proof of concept.
 
-**Context budget management was the sleeper feature.** AI agents have a finite context window. When it runs out, they lose everything. The framework monitors token usage and auto-generates a handover before context exhaustion. This alone saved me dozens of lost sessions.
-
-**The healing loop compounds.** When a task fails, the framework records the failure pattern. The next time something similar happens, it surfaces the previous resolution. After 325 tasks, the pattern library is genuinely useful — the framework learns from its own mistakes.
-
-**Governance doesn't slow you down.** Running `fw work-on "Fix the bug"` takes 2 seconds. But it gives you: a task file, acceptance criteria, verification commands, episodic memory when it's done, and a commit trail back to the decision. That's not overhead — that's infrastructure.
+It is provider-neutral. Full structural enforcement with Claude Code via hooks. CLI governance with Cursor and any other agent. The `fw` CLI is the single entry point — same pattern as having one programme office, not five.
 
 ## Try it
 
@@ -182,18 +156,12 @@ cd your-project && fw init
 fw work-on "Set up project structure" --type build
 ```
 
-The framework works with Claude Code (full enforcement via hooks), Cursor (`.cursorrules` + CLI), and any other CLI-capable agent (generic mode).
+Open source under Apache 2.0: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
-It's open source under Apache 2.0: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
+## The principle holds
 
-## The takeaway
-
-AI coding agents are incredible. They're also unsupervised autonomous systems operating on your most valuable asset — your codebase.
-
-You wouldn't give a contractor access to your production servers without governance. Don't give an AI agent access to your codebase without it either.
-
-The agent has capability. The framework gives it accountability.
+Effective intelligent action requires clear direction, memory, context awareness, and capable engaged actors. This was true for Shell's global transitions. It is true for AI coding agents. The domain changed. The principle did not.
 
 ---
 
-*If you're using Claude Code, Cursor, or any AI coding agent daily, I'd love to hear how you're handling governance. What goes wrong? What works? Drop a comment or open a Discussion on [GitHub](https://github.com/DimitriGeelen/agentic-engineering-framework/discussions).*
+*I am interested in how others are approaching governance for AI coding agents. If you have experience — or questions — I would welcome the conversation on [GitHub Discussions](https://github.com/DimitriGeelen/agentic-engineering-framework/discussions).*
