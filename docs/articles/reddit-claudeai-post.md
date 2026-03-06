@@ -12,7 +12,7 @@ I've been using Claude Code daily for months and kept running into the same prob
 - **No memory.** Every session starts from zero. The agent doesn't know what it did yesterday, what decisions were made, what failed.
 - **No risk awareness.** Force push? Hard reset? Nothing prevents it structurally. The agent may ask, but there's no model for understanding *why* that action is risky.
 
-I spent 25 years doing IT programme governance at Shell, and these are the same failure modes I saw in every ungoverned programme. So I built a framework to fix them.
+Over 25 years of working on complex IT programmes I arrived at a principle: effective intelligent action — whether by a person, a team, or an AI agent — requires clear direction, context awareness, awareness of constraints and impact, and capable engaged actors. When I started using agentic coding tools, I recognised the same failure modes I had seen in every ungoverned programme. So I applied the same governance principle to a new domain.
 
 **What it does:**
 
