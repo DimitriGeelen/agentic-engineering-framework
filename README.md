@@ -50,6 +50,9 @@ This isn't honor-system governance. The framework blocks the action mechanically
 # Install
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 
+# Or via Homebrew (macOS/Linux)
+brew tap DimitriGeelen/agentic-fw && brew install fw
+
 # Initialize in your project
 cd your-project && fw init
 
@@ -335,7 +338,7 @@ web/                      Watchtower dashboard (Flask + htmx)
 
 ## Self-Governing
 
-This framework develops itself using its own governance. 325 tasks completed, 96% commit traceability, every decision recorded. The framework is its own proof of concept.
+This framework develops itself using its own governance. 312 tasks completed, 96% commit traceability, every decision recorded. The framework is its own proof of concept.
 
 ## License
 
