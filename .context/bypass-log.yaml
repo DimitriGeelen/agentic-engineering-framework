@@ -451,3 +451,129 @@ bypasses:
   command_hash: 4dbaeacda2ba7acffd2637632d9ed72b45da2a3694a267f6c2286e21777e5a95
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-08T14:12:09Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master 2>&1
+  command_hash: 4dbaeacda2ba7acffd2637632d9ed72b45da2a3694a267f6c2286e21777e5a95
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T14:17:32Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master 2>&1
+  command_hash: 4dbaeacda2ba7acffd2637632d9ed72b45da2a3694a267f6c2286e21777e5a95
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:00:12Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master 2>&1
+  command_hash: 4dbaeacda2ba7acffd2637632d9ed72b45da2a3694a267f6c2286e21777e5a95
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:03:49Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master v1.2.0 2>&1
+  command_hash: eec5150c279c0b9bf07e0cac8ead24d8da1a696419b8dd7a517563fa5e034615
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:04:07Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master v1.2.0 2>&1
+  command_hash: 178a8785cf92409ee3c17f56bb8b35216c66c32a013a9ec356a61a14b936cd24
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:04:21Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master 2>&1
+  command_hash: 7c07ec8b55e7eb34b36dcad2453d9c805f12861d1d2b5b414887fefd37f74256
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:09:01Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master v1.2.1 2>&1
+  command_hash: a3b297f83cb21bdc4a517eaaafa2e84be1289714bf2aceb66afc8bab0076a491
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:11:35Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master v1.2.2 2>&1
+  command_hash: 4e2788b5b5d59ce4d3bd7c77d3a016f9a2c1eda14977cf924cb5226a2d81a372
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:21:18Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master v1.2.3 2>&1
+  command_hash: e9d507c296347deaa3b4fce81fda624a9d8175984ff539fc9fee8306e1502828
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T16:53:07Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master v1.2.4
+  command_hash: 03a9d6aa7e0c92e9081a301b49f75971951a90a817806000d534bce9a9fbaa0f
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T17:18:34Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master
+  command_hash: 46bee1887cbb238d33b646c6276761458ae18c6ae5c0890de6371aa0e03a0cf3
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T17:33:55Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master
+  command_hash: 46bee1887cbb238d33b646c6276761458ae18c6ae5c0890de6371aa0e03a0cf3
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T18:40:59Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify onedev master 2>&1
+  command_hash: 4dbaeacda2ba7acffd2637632d9ed72b45da2a3694a267f6c2286e21777e5a95
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T18:41:32Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master 2>&1
+  command_hash: 7c07ec8b55e7eb34b36dcad2453d9c805f12861d1d2b5b414887fefd37f74256
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T18:42:00Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github v1.2.5 2>&1
+  command_hash: 01ada04dcdb9f904636da8a0a7aa33ce72fe43804f705ee14f017e5e2f947bd5
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T19:53:33Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push github master --tags --no-verify 2>&1
+  command_hash: 6bad7baa08f1205cd3999587b61e395efbbfb916c412c7247a3a30a13878e3d9
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T20:05:05Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push onedev master --no-verify 2>&1
+  command_hash: 1442de2fe28595abbd6a636ddbf59f0b955279835ee884d7115ad9dc6c6635f9
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T20:05:25Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push github master --no-verify 2>&1
+  command_hash: 4151b05d1ef4d00e237c10f06429ba3997ae7ff910dab044d7a4dda3dbeecf29
+  authorized_by: human
+  mechanism: fw tier0 approve

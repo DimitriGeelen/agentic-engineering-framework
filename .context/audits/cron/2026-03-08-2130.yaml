@@ -1,5 +1,5 @@
-# Audit Results - 2026-02-28-2130
-timestamp: 2026-02-28T20:30:01Z
+# Audit Results - 2026-03-08-2130
+timestamp: 2026-03-08T20:30:01Z
 sections: "structure,compliance,quality"
 summary:
   pass: 8
@@ -20,11 +20,11 @@ findings:
     check: "YAML parse error: metrics-history.yaml"
     mitigation: "Fix the YAML syntax in .context/project/metrics-history.yaml"
   - level: PASS
-    check: "Fabric: 107 registered, 0 unregistered"
+    check: "Fabric: 127 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 97/107 cards enriched (10 without edges)"
+    check: "Fabric edges: 117/127 cards enriched (10 without edges)"
+  - level: PASS
+    check: "All 25 active tasks are valid"
   - level: WARN
-    check: "No active tasks found"
-    mitigation: "Create tasks for ongoing work"
-  - level: PASS
-    check: "All active tasks meet quality thresholds"
+    check: "Task T-349 has short description (39 chars)"
+    mitigation: "Expand description in T-349-streamline-fw-init-output-for-new-users.md"

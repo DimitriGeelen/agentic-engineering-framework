@@ -357,3 +357,10 @@ decisions:
     date: 2026-03-08
     task: T-348
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-046
+    decision: "GO — proceed with implementation (tightened scope)"
+    scope: project
+    date: 2026-03-08
+    task: T-325
+    rationale: "Auto-captured from task file on completion"
