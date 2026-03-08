@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-341: Rewrite 7 deep-dive posts in Dimitri voice using style guide
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T08:55:18Z
+# ============================================================================
+
+task_id: T-341
+task_name: "Rewrite 7 deep-dive posts in Dimitri voice using style guide"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T08:37:39Z
+completed: 2026-03-08T08:55:17Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T09:55:12+01:00
+last_commit: 2026-03-08T09:55:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Rewrite 7 deep-dive posts in Dimitri voice using style guide
+
+# Key outcomes
+outcomes:
+  - "All 7 posts rewritten with principle-first openings (not developer anecdotes)"
+  - "Each post has 1-2 standalone bold pulled quotes in domain-neutral language"
+  - "Cross-domain parallels precede AI-specific scenarios in each opening"
+  - "No one-sentence dramatic paragraphs remain"
+  - "No emojis or exclamation marks in post bodies"
+  - "Each post bookends (closing echoes opening thesis)"
+  - "No \"we\" used — only \"I\" (personal) or \"the framework\" (institutional)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/deep-dives/01-task-gate.md"
+  - "docs/articles/deep-dives/02-tier0-protection.md"
+  - "docs/articles/deep-dives/03-context-budget.md"
+  - "docs/articles/deep-dives/04-three-layer-memory.md"
+  - "docs/articles/deep-dives/05-healing-loop.md"
+  - "docs/articles/deep-dives/06-authority-model.md"
+  - "docs/articles/deep-dives/07-component-fabric.md"
+  - ".tasks/active/T-341-rewrite-7-deep-dive-posts-in-dimitri-voi.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T09:55:12"
+    action: "T-341: Rewrite 7 deep-dive posts in Dimitri voice using style guide"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 1
+  files_changed: 8
+  lines_added: 273
+  lines_removed: 539
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-341-rewrite-7-deep-dive-posts-in-dimitri-voi.md
+generated_by: context-agent-hybrid

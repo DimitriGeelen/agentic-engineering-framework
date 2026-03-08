@@ -4,16 +4,16 @@ name: "Rewrite 7 deep-dive posts in Dimitri voice using style guide"
 description: >
   Apply docs/style-guide.md translation rules to all 7 posts in docs/articles/deep-dives/. Use /write skill if available (T-340). Key changes: principle-first openings, cross-domain analogies, pulled quotes, medium paragraphs, quiet authority.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-08T08:37:39Z
-last_update: 2026-03-08T08:48:43Z
-date_finished: null
+last_update: 2026-03-08T08:55:17Z
+date_finished: 2026-03-08T08:55:17Z
 ---
 
 # T-341: Rewrite 7 deep-dive posts in Dimitri voice using style guide
@@ -72,3 +72,6 @@ grep -rL "style-guide" docs/articles/deep-dives/ > /dev/null 2>&1 || true
 
 ### 2026-03-08T08:48:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T08:55:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
