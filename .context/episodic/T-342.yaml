@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-342: Implement human AC format requirements from T-325
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T09:45:51Z
+# ============================================================================
+
+task_id: T-342
+task_name: "Implement human AC format requirements from T-325"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T09:43:49Z
+completed: 2026-03-08T09:45:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T10:45:44+01:00
+last_commit: 2026-03-08T10:45:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Implement human AC format requirements — CLAUDE.md rule, template, WARN gate
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md has \"Human AC Format Requirements\" section with Steps/Expected/If-not rules"
+  - "Task template `.tasks/templates/default.md` has actionable Human AC guidance"
+  - "`update-task.sh` emits WARN when human ACs lack Steps blocks at partial-complete"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "CLAUDE.md"
+  - ".tasks/active/T-342-implement-human-ac-format-requirements-f.md"
+  - ".tasks/templates/default.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T10:45:44"
+    action: "T-342: Implement human AC format requirements — CLAUDE.md rule, template, WARN gate"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 102
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-342-implement-human-ac-format-requirements-f.md
+generated_by: context-agent-hybrid
