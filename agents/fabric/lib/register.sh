@@ -14,7 +14,7 @@ do_register() {
 
     # Resolve to relative path from project root
     local rel_path
-    rel_path=$(realpath --relative-to="$PROJECT_ROOT" "$file_path" 2>/dev/null || echo "$file_path")
+    rel_path=$(python3 -c "import os; print(os.path.relpath(os.path.abspath('$file_path'), os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file_path")
 
     if [ ! -f "$PROJECT_ROOT/$rel_path" ]; then
         echo -e "${RED}Error: File not found: $rel_path${NC}"
@@ -109,7 +109,7 @@ do_scan() {
         for file in $glob_pattern; do
             [ -f "$file" ] || continue
             local rel_path
-            rel_path=$(realpath --relative-to="$PROJECT_ROOT" "$file" 2>/dev/null || echo "$file")
+            rel_path=$(python3 -c "import os; print(os.path.relpath(os.path.abspath('$file'), os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file")
             if echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
                 skipped=$((skipped + 1))
             else

@@ -781,8 +781,72 @@ else:
 PYTASK_SHOW
             ;;
         verify)
-            # T-193: List tasks with unchecked human ACs (awaiting human verification)
-            python3 << 'PYTASK_VERIFY'
+            # Two modes:
+            # - No args (T-193): List tasks with unchecked human ACs
+            # - With task ID (T-070): Run verification commands from task
+            local task_id="${1:-}"
+
+            if [ -n "$task_id" ]; then
+                # T-070: Run verification commands for specific task
+                local task_file=""
+                for subdir in active completed; do
+                    for f in "$PROJECT_ROOT/.tasks/$subdir/$task_id"*.md; do
+                        if [ -f "$f" ]; then
+                            task_file="$f"
+                            break 2
+                        fi
+                    done
+                done
+
+                if [ -z "$task_file" ]; then
+                    echo -e "${RED}ERROR: Task $task_id not found${NC}" >&2
+                    exit 1
+                fi
+
+                # Extract ## Verification block
+                local verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
+                                   grep -v "^##" | \
+                                   grep -v '^\`\`\`' | \
+                                   grep -v "^#" | \
+                                   grep -v "^$")
+
+                if [ -z "$verification" ]; then
+                    echo -e "${YELLOW}No verification commands found in task $task_id${NC}"
+                    exit 0
+                fi
+
+                # Run each command
+                local passed=0
+                local failed=0
+                local total=0
+
+                echo -e "${CYAN}=== Verification: $task_id ===${NC}"
+                echo
+
+                while IFS= read -r cmd; do
+                    ((total++))
+                    echo -e "[$total] ${BOLD}$cmd${NC}"
+
+                    if eval "$cmd" >/dev/null 2>&1; then
+                        echo -e "  ${GREEN}✓ PASS${NC}"
+                        ((passed++))
+                    else
+                        echo -e "  ${RED}✗ FAIL${NC}"
+                        ((failed++))
+                    fi
+                done <<< "$verification"
+
+                echo
+                echo -e "${BOLD}Verification:${NC} $passed/$total passed"
+
+                if [ $failed -gt 0 ]; then
+                    exit 1
+                else
+                    exit 0
+                fi
+            else
+                # T-193: List tasks with unchecked human ACs (awaiting human verification)
+                python3 << 'PYTASK_VERIFY'
 import os, re
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
@@ -860,6 +924,7 @@ if results:
 else:
     print(f'{GREEN}No tasks awaiting human verification{NC}')
 PYTASK_VERIFY
+            fi
             ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
@@ -869,17 +934,18 @@ PYTASK_VERIFY
             echo "  update    Update task status (auto-triggers healing/episodic)"
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"
-            echo "  verify    List tasks awaiting human verification (T-193)"
+            echo "  verify [T-XXX]    Run verification commands (T-070) or list awaiting tasks (T-193)"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
             echo '  fw task update T-XXX --status issues --reason "API timeout"'
             echo '  fw task update T-XXX --add-tag "watchtower,ui"'
             echo '  fw task update T-XXX --status work-completed'
+            echo '  fw task verify T-XXX  # Run verification commands from task'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
-            echo '  fw task verify'
+            echo '  fw task verify  # List tasks awaiting human verification'
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
