@@ -30,7 +30,7 @@ Soft launch post for r/ClaudeAI per T-334 launch sequence. Draft at `docs/articl
 - [x] Includes title, body, and posting notes
 
 ### Human
-- [ ] Post reviewed for tone/voice
+- [x] Post reviewed for tone/voice
 - [ ] Posted to r/ClaudeAI
 
 ## Verification

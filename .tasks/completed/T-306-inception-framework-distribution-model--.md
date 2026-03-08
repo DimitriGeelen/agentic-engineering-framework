@@ -4,7 +4,7 @@ name: "Inception: framework distribution model — split vs self-contained"
 description: >
   The current shared tooling model has the framework repo serving two roles: (1) self-hosting development project using its own governance, (2) live tool consumed by other projects. This creates version mingling — other projects execute live agents but hold frozen copies of CLAUDE.md, settings.json, seeds, templates. Half the project runs at init-time version, half at current version. This inception explores: how to create a clean distribution boundary between the self-hosting dev repo and what other projects consume. Constraint: the framework MUST remain self-hosting (it develops itself using its own tooling). The dev repo stays. The question is how other projects get a clean, versioned, non-entangled copy. Options include: versioned releases, vendored distribution, clean CLI separation. Related research: docs/reports/T-294-framework-onboarding-portable-bootstrap.md (Area 1, DX comparison). Source: T-294 dialogue — user identified split model as architecturally problematic.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T16:41:57Z
-last_update: 2026-03-04T18:53:12Z
-date_finished: null
+last_update: 2026-03-08T20:49:22Z
+date_finished: 2026-03-08T20:49:22Z
 ---
 
 # T-306: Inception: framework distribution model — split vs self-contained
@@ -49,9 +49,9 @@ A-004: Users can tolerate a "pull + migrate" workflow for updates
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated with concrete version mismatch examples
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated with concrete version mismatch examples
+- [x] Assumptions tested
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
@@ -103,3 +103,6 @@ A-004: Users can tolerate a "pull + migrate" workflow for updates
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Three separable problems: (1) hook gen drift 5/10 missing, (2) CLAUDE.md 70pct governance loss, (3) 9 frozen artifacts need upgrade. Model is sound, generator never maintained. Phase 1 fix generators, Phase 2 fw upgrade, Phase 3 spike layered config.
+
+### 2026-03-08T20:49:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

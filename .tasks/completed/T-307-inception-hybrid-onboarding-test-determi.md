@@ -4,7 +4,7 @@ name: "Inception: hybrid onboarding test (deterministic + AI interpretation)"
 description: >
   A pure deterministic script cannot interpret nuanced onboarding results (expected day-1 noise vs real failures, CLAUDE.md quality, UX clarity). Need hybrid approach: deterministic scaffolding (bash runs steps, captures output) + stochastic reasoning (AI interprets results). Follows CLI/Agent/Skill hierarchy: (1) CLI fw test-onboarding runs mechanical steps, (2) agents/onboarding-test/ with bash script + AGENT.md intelligence, (3) /test-onboarding skill for in-session use. This inception scopes: what checkpoints, what interpretation criteria, how to structure the AGENT.md, what 'good' looks like at each step. Evidence: T-294 live simulation found 9 issues that no deterministic script would have caught. L-029: dry-running onboarding catches bugs unit tests miss. Source: T-294 dialogue.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:15:20Z
-last_update: 2026-03-04T21:09:17Z
-date_finished: null
+last_update: 2026-03-08T20:49:25Z
+date_finished: 2026-03-08T20:49:25Z
 ---
 
 # T-307: Inception: hybrid onboarding test (deterministic + AI interpretation)
@@ -61,10 +61,10 @@ Static audits (T-286 self-audit, fw audit) check configuration but cannot catch 
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested (A-1 through A-4)
-- [ ] Go/No-Go decision made
-- [ ] Research artifact complete: `docs/reports/T-307-hybrid-onboarding-test.md`
+- [x] Problem statement validated
+- [x] Assumptions tested (A-1 through A-4)
+- [x] Go/No-Go decision made
+- [x] Research artifact complete: `docs/reports/T-307-hybrid-onboarding-test.md`
 
 ## Go/No-Go Criteria
 
@@ -113,3 +113,6 @@ Static audits (T-286 self-audit, fw audit) check configuration but cannot catch 
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Evidence from T-294 (7 flow-level bugs) and L-029 confirms static audits cannot catch onboarding flow bugs. 8-checkpoint design covers all T-294 issues. Hybrid approach (deterministic scaffolding + AI interpretation) provides diagnosis, not just detection. Scope is bounded: CLI script + AGENT.md, no skill/CI/platform testing.
+
+### 2026-03-08T20:49:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

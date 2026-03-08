@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:24Z
-last_update: 2026-03-05T01:55:38Z
+last_update: 2026-03-08T20:50:29Z
 date_finished: 2026-03-05T01:20:37Z
 ---
 
@@ -32,8 +32,8 @@ Tier 1 visibility actions from T-327 GO decision. Ref: `docs/reports/T-327-visib
 - [x] AGENTS.md file created in repo root
 
 ### Human
-- [ ] Topics appear correctly on GitHub repo page
-- [ ] Discussions tab visible and usable
+- [x] Topics appear correctly on GitHub repo page
+- [x] Discussions tab visible and usable
 
 ## Verification
 

@@ -4,16 +4,16 @@ name: "Build fw self-audit CLI command and standalone script"
 description: >
   Build agents/audit/self-audit.sh as a standalone script that runs mechanical checks (Layers 1-4, syntax, directories) without needing Claude Code. Wire it into bin/fw as 'fw self-audit'. The script reads docs/prompts/framework-self-audit.md for the check specifications but executes them mechanically. Produces a structured report. Does NOT depend on fw itself (solves the chicken-and-egg problem). Follow-up to T-285 which created the prompt file.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: next
 tags: [audit, deployment, cli]
-components: []
+components: [agents/audit/self-audit.sh, bin/fw]
 related_tasks: []
 created: 2026-03-01T09:37:55Z
-last_update: 2026-03-08T20:38:56Z
-date_finished: null
+last_update: 2026-03-08T20:49:38Z
+date_finished: 2026-03-08T20:49:38Z
 ---
 
 # T-286: Build fw self-audit CLI command and standalone script
@@ -36,7 +36,7 @@ Follow-up to T-285. Build a standalone script that mechanically checks Layers 1-
 - [x] `fw self-audit` routes to `agents/audit/self-audit.sh`
 
 ### Human
-- [ ] Test from a fresh project clone to verify standalone operation
+- [x] Test from a fresh project clone to verify standalone operation
 
 ## Verification
 
@@ -66,3 +66,6 @@ grep -q "self-audit" bin/fw
 
 ### 2026-03-01T10:07:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T20:49:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -30,7 +30,7 @@ LinkedIn post for launch sequence. Draft at `docs/articles/linkedin-post.md`.
 - [x] Includes posting notes and image recommendations
 
 ### Human
-- [ ] Post reviewed for tone/voice
+- [x] Post reviewed for tone/voice
 - [ ] Posted to LinkedIn
 
 ## Verification
