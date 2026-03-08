@@ -668,4 +668,11 @@ learnings:
   date: 2026-03-08
   context: Added via context agent
   application: TBD
+- id: L-082
+  learning: "Audit trend analysis is a leading indicator — address recurring items proactively. T-319/T-320 had template ACs that passed the gate because unchecked placeholders were never detected. Pre-compact handover skeletons with unfilled [TODO]s cause D8 FAIL cascade. Fix: retroactively correct completed task ACs, generate fresh handovers instead of patching stale ones."
+  source: P-010
+  task: T-348
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
 candidates: []
