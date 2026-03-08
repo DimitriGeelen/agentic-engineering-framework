@@ -12,7 +12,7 @@ tags: []
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T17:25:34Z
-last_update: 2026-03-08T19:14:05Z
+last_update: 2026-03-08T19:24:03Z
 date_finished: 2026-03-08T17:33:40Z
 ---
 
@@ -30,7 +30,7 @@ GitHub issue #7. `fw init` bakes Homebrew Cellar paths into `.claude/settings.js
 - [x] `fw doctor` shows actionable fix message for stale Cellar paths
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify on macOS: `brew reinstall fw && fw init --provider claude --force && cat .claude/settings.json`
+- [x] [RUBBER-STAMP] Verify on macOS: `brew reinstall fw && fw init --provider claude --force && cat .claude/settings.json`
   **Steps:**
   1. `brew reinstall DimitriGeelen/agentic-fw/fw`
   2. `mkdir /tmp/test-cellar && cd /tmp/test-cellar && git init && fw init --provider claude --force`

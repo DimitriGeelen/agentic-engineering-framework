@@ -4,16 +4,16 @@ name: "Fix related_tasks per-character link rendering in Watchtower"
 description: >
   Fix related_tasks per-character link rendering in Watchtower
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-08T16:59:40Z
-last_update: 2026-03-08T16:59:40Z
-date_finished: null
+last_update: 2026-03-08T17:19:59Z
+date_finished: 2026-03-08T17:19:59Z
 ---
 
 # T-353: Fix related_tasks per-character link rendering in Watchtower
@@ -53,3 +53,6 @@ grep -q 'parent: \["T-072"\]' .context/episodic/T-076.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-353-fix-relatedtasks-per-character-link-rend.md
 - **Context:** Initial task creation
+
+### 2026-03-08T17:19:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

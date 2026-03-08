@@ -4,16 +4,16 @@ name: "Fix hook path resolution in fw init for Homebrew installs"
 description: >
   Fix hook path resolution in fw init for Homebrew installs
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 created: 2026-03-08T15:57:48Z
-last_update: 2026-03-08T15:57:48Z
-date_finished: null
+last_update: 2026-03-08T16:03:31Z
+date_finished: 2026-03-08T15:59:54Z
 ---
 
 # T-352: Fix hook path resolution in fw init for Homebrew installs
@@ -59,3 +59,6 @@ tmpdir=$(mktemp -d) && git init -q "$tmpdir" && fw init "$tmpdir" --provider cla
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-352-fix-hook-path-resolution-in-fw-init-for-.md
 - **Context:** Initial task creation
+
+### 2026-03-08T15:59:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

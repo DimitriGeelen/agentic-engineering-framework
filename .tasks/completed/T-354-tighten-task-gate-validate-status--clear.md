@@ -4,16 +4,16 @@ name: "Tighten task gate: validate status + clear focus on completion"
 description: >
   Tighten task gate: validate status + clear focus on completion
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-03-08T17:11:25Z
-last_update: 2026-03-08T17:11:25Z
-date_finished: null
+last_update: 2026-03-08T17:20:25Z
+date_finished: 2026-03-08T17:20:25Z
 ---
 
 # T-354: Tighten task gate: validate status + clear focus on completion
@@ -54,3 +54,6 @@ tmpdir=$(mktemp -d) && mkdir -p "$tmpdir/.tasks/active" "$tmpdir/.context/workin
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-354-tighten-task-gate-validate-status--clear.md
 - **Context:** Initial task creation
+
+### 2026-03-08T17:20:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

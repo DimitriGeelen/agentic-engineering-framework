@@ -4,7 +4,7 @@ name: "Post-init validation: verify fw init produced correct and complete output
 description: >
   Inception: Post-init validation: verify fw init produced correct and complete output
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-08T17:36:15Z
-last_update: 2026-03-08T17:36:15Z
-date_finished: null
+last_update: 2026-03-08T19:16:41Z
+date_finished: 2026-03-08T19:16:41Z
 ---
 
 # T-356: Post-init validation: verify fw init produced correct and complete output
@@ -101,3 +101,6 @@ A4. Different providers (claude, cursor, generic) produce different outputs — 
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** 31 checkable items, fw doctor covers only 26%. Option B (independent validate-init.sh) with #@init: tags in init.sh for self-documenting manifest. Cron audit compares tag count vs check count. Would have caught T-352 and T-355.
+
+### 2026-03-08T19:16:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
