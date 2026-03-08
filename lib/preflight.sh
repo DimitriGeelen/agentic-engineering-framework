@@ -289,6 +289,11 @@ do_preflight() {
     fi
 
     # Re-check required after install attempt
+    if [ "$req_count" -eq 0 ]; then
+        echo -e "${GREEN}Required dependencies satisfied.${NC}"
+        return 0
+    fi
+
     local still_missing=0
     for dep in "${REQUIRED_MISSING[@]}"; do
         case "$dep" in
