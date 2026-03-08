@@ -67,34 +67,116 @@ if [ -z "${PROJECT_ROOT:-}" ]; then
     PROJECT_ROOT=$(find_project_root) || true
 fi
 
-# --- Auto-init prompt ---
-# If no project detected and command is not init/help/version, offer to initialize
+# --- Auto-init dialogue ---
+# If no project detected and command is not init/help/version, offer guided initialization
 if [ -z "$PROJECT_ROOT" ]; then
     _cmd="${1:-}"
     if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
        [ "$_cmd" != "--version" ] && [ -n "$_cmd" ]; then
-        echo -e "${YELLOW}No framework project detected in the current directory.${NC}"
-        echo ""
-        printf "Would you like to initialize the framework here? (%s) [Y/n] " "$PWD"
-        read -r answer </dev/tty
-        if [ -z "$answer" ] || [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+
+        # Non-TTY: silently use defaults (cwd + claude)
+        if [ ! -t 0 ]; then
+            FRAMEWORK_ROOT=$(resolve_framework) || true
+            if [ -n "$FRAMEWORK_ROOT" ]; then
+                export PROJECT_ROOT="$PWD"
+                export FRAMEWORK_ROOT
+                source "$FRAMEWORK_ROOT/lib/init.sh"
+                do_init "$PWD" --provider claude 2>/dev/null
+                exec "$0" "$@"
+            fi
+            # Fall through to normal "no framework" error if resolve fails
+        else
+            echo -e "${YELLOW}No framework project detected in the current directory.${NC}"
+            echo ""
+
+            # --- Q1: Where to initialize ---
+            _git_root=$(git -C "$PWD" rev-parse --show-toplevel 2>/dev/null) || true
+            _init_dir="$PWD"
+
+            if [ -n "$_git_root" ] && [ "$_git_root" != "$PWD" ]; then
+                # Git root differs from cwd — offer choices
+                echo -e "${BOLD}Where would you like to initialize?${NC}"
+                echo ""
+                echo -e "  ${CYAN}1)${NC} ${_git_root}  ${GREEN}(git root — recommended)${NC}"
+                echo -e "  ${CYAN}2)${NC} ${PWD}"
+                echo -e "  ${CYAN}3)${NC} Custom path"
+                echo -e "  ${CYAN}s)${NC} Skip"
+                echo ""
+                printf "Choose [1]: "
+                read -r _dir_choice </dev/tty
+                case "${_dir_choice:-1}" in
+                    1) _init_dir="$_git_root" ;;
+                    2) _init_dir="$PWD" ;;
+                    3)
+                        printf "Enter path: "
+                        read -r _custom_path </dev/tty
+                        if [ -z "$_custom_path" ]; then
+                            echo -e "${RED}No path entered.${NC}"
+                            exit 1
+                        fi
+                        _init_dir="${_custom_path/#\~/$HOME}"
+                        if [ ! -d "$_init_dir" ]; then
+                            echo -e "${YELLOW}Directory does not exist. Creating...${NC}"
+                            mkdir -p "$_init_dir"
+                        fi
+                        ;;
+                    s|S|n|N)
+                        echo -e "${CYAN}Skipped. Run 'fw init' when you're ready.${NC}"
+                        exit 0
+                        ;;
+                    *)
+                        echo -e "${RED}Invalid choice.${NC}"
+                        exit 1
+                        ;;
+                esac
+            else
+                # cwd IS git root (or no git) — simple Y/n
+                printf "Initialize framework in ${BOLD}%s${NC}? [Y/n] " "$PWD"
+                read -r _confirm </dev/tty
+                if [ -n "$_confirm" ] && [ "$_confirm" != "y" ] && [ "$_confirm" != "Y" ]; then
+                    echo -e "${CYAN}Skipped. Run 'fw init' when you're ready.${NC}"
+                    exit 0
+                fi
+            fi
+
+            echo ""
+
+            # --- Q2: Which provider ---
+            echo -e "${BOLD}Which AI provider are you using?${NC}"
+            echo ""
+            echo -e "  ${CYAN}1)${NC} Claude Code  ${GREEN}(recommended)${NC}"
+            echo -e "  ${CYAN}2)${NC} Cursor"
+            echo -e "  ${CYAN}3)${NC} Generic / other"
+            echo ""
+            printf "Choose [1]: "
+            read -r _prov_choice </dev/tty
+            case "${_prov_choice:-1}" in
+                1) _provider="claude" ;;
+                2) _provider="cursor" ;;
+                3) _provider="generic" ;;
+                *)
+                    echo -e "${YELLOW}Unknown choice, using claude.${NC}"
+                    _provider="claude"
+                    ;;
+            esac
+
+            echo ""
+
+            # --- Run init ---
             FRAMEWORK_ROOT=$(resolve_framework) || true
             if [ -z "$FRAMEWORK_ROOT" ]; then
                 echo -e "${RED}ERROR: Cannot find framework installation${NC}" >&2
                 exit 1
             fi
-            export PROJECT_ROOT="$PWD"
+            export PROJECT_ROOT="$_init_dir"
             export FRAMEWORK_ROOT
             source "$FRAMEWORK_ROOT/lib/init.sh"
-            do_init "$PWD"
+            do_init "$_init_dir" --provider "$_provider"
             echo ""
             echo -e "${GREEN}Project initialized! Re-running: fw $*${NC}"
             echo ""
             exec "$0" "$@"
-        else
-            echo -e "${CYAN}Skipped. Run 'fw init' when you're ready.${NC}"
-            exit 0
         fi
     fi
 fi
