@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-306: Inception: framework distribution model — split vs self-contained
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T20:49:23Z
+# ============================================================================
+
+task_id: T-306
+task_name: "Inception: framework distribution model — split vs self-contained"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T16:41:57Z
+completed: 2026-03-08T20:49:22Z
+duration_days: 4
+updates_count: 4
+first_commit: 2026-03-04T19:57:04+01:00
+last_commit: 2026-03-04T20:28:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fill inception template + create research artifact. GO decision — 10-agent investigation findings + phased build plan. Create Phase 1-3 build tasks from inception GO decision. Fill handover TODOs for S-2026-0304-2027
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with concrete version mismatch examples"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/handovers/S-2026-0304-2027.md"
+  - "docs/reports/T-306-framework-distribution-model.md"
+  - ".tasks/active/T-306-inception-framework-distribution-model--.md"
+  - ".tasks/active/T-313-fix-settingsjson-hook-generation--add-mi.md"
+  - ".tasks/active/T-314-fix-claudemd-template--add-missing-7-gov.md"
+  - ".tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T19:57:04"
+    action: "T-306: Fill inception template + create research artifact"
+  - time: "2026-03-04T20:26:55"
+    action: "T-306: GO decision — 10-agent investigation findings + phased build plan"
+  - time: "2026-03-04T20:27:41"
+    action: "T-306: Create Phase 1-3 build tasks from inception GO decision"
+  - time: "2026-03-04T20:28:54"
+    action: "T-306: Fill handover TODOs for S-2026-0304-2027"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 6007 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6007
+  commits: 4
+  files_changed: 7
+  lines_added: 587
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-306-inception-framework-distribution-model--.md
+generated_by: context-agent-hybrid

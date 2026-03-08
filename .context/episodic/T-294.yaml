@@ -1,0 +1,142 @@
+# ============================================================================
+# EPISODIC MEMORY - T-294: Framework onboarding: portable project bootstrap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T20:49:20Z
+# ============================================================================
+
+task_id: T-294
+task_name: "Framework onboarding: portable project bootstrap"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T14:23:26Z
+completed: 2026-03-08T20:49:19Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-03-04T15:29:04+01:00
+last_commit: 2026-03-04T18:30:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Research artifact and inception template for onboarding portability. Live simulation observations — 9 findings from fresh project test. Draft task breakdown + GO decision (13 tasks, 3 phases). Add multi-perspective research findings (3 agents). Add DX comparison findings (Cargo, Next.js, Rails, Terraform, Claude Code). Create T-295 — Fix double output bug (O-004/O-006). Create T-296 — Fix context init exit code (O-005). Create T-297 — Fix --start not setting focus (O-008). Create T-298 — Fix init suggested commands (O-007). Create T-299 — Fix doctor hook validation parsing (O-003). Create T-300 — README.md with quickstart guide (O-001). Create T-301 — Audit grace period for new projects (O-009). Create T-302 — Complete fw init artifacts (O-009). Create T-303 — fw preflight + init integration (O-002). Update T-303 — add install-with-consent pattern (sovereignty). Create T-304 (first-run, opt-out) + T-305 (deep walkthrough inception). Link all child tasks (T-295–T-305) bidirectionally. Create T-306 — Inception: distribution model (split vs self-contained). Create T-307 (hybrid test inception) + document all dialogue decisions. Capture 5 remaining items (T-308–T-312) + final gap audit. Fill handover TODOs for S-2026-0304-1829
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "All 6 areas explored with findings documented"
+  - "Assumptions tested against real framework state"
+  - "Prioritized list of build tasks identified"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Create T-299 — Fix doctor hook validation parsing (O-003)"
+    source: git-mined
+  - description: "Create T-298 — Fix init suggested commands (O-007)"
+    source: git-mined
+  - description: "Create T-297 — Fix --start not setting focus (O-008)"
+    source: git-mined
+  - description: "Create T-296 — Fix context init exit code (O-005)"
+    source: git-mined
+  - description: "Create T-295 — Fix double output bug (O-004/O-006)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/handovers/S-2026-0304-1829.md"
+  - "docs/reports/T-294-framework-onboarding-portable-bootstrap.md"
+  - ".tasks/active/T-294-framework-onboarding-portable-project-bo.md"
+  - ".tasks/active/T-295-fix-double-output-bug-in-fw-doctor-and-c.md"
+  - ".tasks/active/T-296-fix-fw-context-init-exit-code-1-on-succe.md"
+  - ".tasks/active/T-297-fix---start-flag-not-setting-focus-in-cr.md"
+  - ".tasks/active/T-298-fix-fw-init-suggested-commands-to-recomm.md"
+  - ".tasks/active/T-299-fix-fw-doctor-hook-validation-env-var-pa.md"
+  - ".tasks/active/T-300-create-readmemd-with-quickstart-guide.md"
+  - ".tasks/active/T-301-add-audit-grace-period-for-new-projects.md"
+  - ".tasks/active/T-302-complete-fw-init-generated-artifacts-cro.md"
+  - ".tasks/active/T-303-create-fw-preflight-command-and-integrat.md"
+  - ".tasks/active/T-304-build-opt-out-first-run-experience-after.md"
+  - ".tasks/active/T-305-inception-scope-in-depth-framework-compo.md"
+  - ".tasks/active/T-306-inception-framework-distribution-model--.md"
+  - ".tasks/active/T-307-inception-hybrid-onboarding-test-determi.md"
+  - ".tasks/active/T-308-create-new-project-claude-code-skill.md"
+  - ".tasks/active/T-309-merge-fw-init-and-fw-setup-into-single-c.md"
+  - ".tasks/active/T-310-auto-run-fw-doctor-at-end-of-fw-init.md"
+  - ".tasks/active/T-311-create-install-script-curl--sh-for-frame.md"
+  - ".tasks/active/T-312-add-jargon-glossary-to-readme-or-framewo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T15:29:04"
+    action: "T-294: Research artifact and inception template for onboarding portability"
+  - time: "2026-03-04T15:34:10"
+    action: "T-294: Live simulation observations — 9 findings from fresh project test"
+  - time: "2026-03-04T15:53:02"
+    action: "T-294: Draft task breakdown + GO decision (13 tasks, 3 phases)"
+  - time: "2026-03-04T15:53:55"
+    action: "T-294: Add multi-perspective research findings (3 agents)"
+  - time: "2026-03-04T15:58:02"
+    action: "T-294: Add DX comparison findings (Cargo, Next.js, Rails, Terraform, Claude Code)"
+  - time: "2026-03-04T16:03:02"
+    action: "T-294: Create T-295 — Fix double output bug (O-004/O-006)"
+  - time: "2026-03-04T17:06:41"
+    action: "T-294: Create T-296 — Fix context init exit code (O-005)"
+  - time: "2026-03-04T17:11:46"
+    action: "T-294: Create T-297 — Fix --start not setting focus (O-008)"
+  - time: "2026-03-04T17:14:01"
+    action: "T-294: Create T-298 — Fix init suggested commands (O-007)"
+  - time: "2026-03-04T17:14:58"
+    action: "T-294: Create T-299 — Fix doctor hook validation parsing (O-003)"
+  - time: "2026-03-04T17:16:10"
+    action: "T-294: Create T-300 — README.md with quickstart guide (O-001)"
+  - time: "2026-03-04T17:17:16"
+    action: "T-294: Create T-301 — Audit grace period for new projects (O-009)"
+  - time: "2026-03-04T17:19:01"
+    action: "T-294: Create T-302 — Complete fw init artifacts (O-009)"
+  - time: "2026-03-04T17:21:47"
+    action: "T-294: Create T-303 — fw preflight + init integration (O-002)"
+  - time: "2026-03-04T17:25:07"
+    action: "T-294: Update T-303 — add install-with-consent pattern (sovereignty)"
+  - time: "2026-03-04T17:27:48"
+    action: "T-294: Create T-304 (first-run, opt-out) + T-305 (deep walkthrough inception)"
+  - time: "2026-03-04T17:41:45"
+    action: "T-294: Link all child tasks (T-295–T-305) bidirectionally"
+  - time: "2026-03-04T17:42:05"
+    action: "T-294: Create T-306 — Inception: distribution model (split vs self-contained)"
+  - time: "2026-03-04T18:16:05"
+    action: "T-294: Create T-307 (hybrid test inception) + document all dialogue decisions"
+  - time: "2026-03-04T18:29:11"
+    action: "T-294: Capture 5 remaining items (T-308–T-312) + final gap audit"
+  - time: "2026-03-04T18:30:56"
+    action: "T-294: Fill handover TODOs for S-2026-0304-1829"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 21 commit(s), 6145 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, onboarding, dx, parent]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6145
+  commits: 21
+  files_changed: 21
+  lines_added: 1987
+  lines_removed: 146
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-294-framework-onboarding-portable-project-bo.md
+generated_by: context-agent-hybrid

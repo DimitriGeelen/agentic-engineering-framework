@@ -7,7 +7,7 @@ description: >
   experience. Covers: approaches (shared vs vendored), content separation,
   step sequence, post-startup, OS dependencies, and missing tooling.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ tags: [portability, onboarding, dx, parent]
 components: [lib/init.sh, lib/setup.sh, bin/fw, lib/templates/claude-project.md]
 related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298, T-299, T-300, T-301, T-302, T-303, T-304, T-305, T-306, T-307, T-308, T-309, T-310, T-311, T-312]
 created: 2026-03-04T14:23:26Z
-last_update: 2026-03-08T20:14:57Z
-date_finished: null
+last_update: 2026-03-08T20:49:19Z
+date_finished: 2026-03-08T20:49:19Z
 ---
 
 # T-294: Framework onboarding: portable project bootstrap
@@ -70,10 +70,10 @@ The framework works well internally (290+ completed tasks, validated via T-124 o
 ## Acceptance Criteria
 
 - [x] Problem statement validated
-- [ ] All 6 areas explored with findings documented
-- [ ] Assumptions tested against real framework state
-- [ ] Prioritized list of build tasks identified
-- [ ] Go/No-Go decision made
+- [x] All 6 areas explored with findings documented
+- [x] Assumptions tested against real framework state
+- [x] Prioritized list of build tasks identified
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
@@ -122,3 +122,6 @@ The framework works well internally (290+ completed tasks, validated via T-124 o
 
 ### 2026-03-04T16:41:27Z — status-update [task-update-agent]
 - **Change:** tags: +parent
+
+### 2026-03-08T20:49:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
