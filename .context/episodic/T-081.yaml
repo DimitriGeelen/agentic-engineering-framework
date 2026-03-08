@@ -67,7 +67,7 @@ related_tasks:
   blocked: []
   absorbed: []
   spawned: []
-  parent: "T-079"
+  parent: ["T-079"]
 
 # Tags for retrieval
 tags:
