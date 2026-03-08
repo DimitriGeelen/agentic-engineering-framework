@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-08-1052
-timestamp: 2026-03-08T09:52:38Z
+# Audit Results - 2026-03-08-1258
+timestamp: 2026-03-08T11:58:03Z
 summary:
   pass: 100
-  warn: 6
+  warn: 8
   fail: 2
 findings:
   - level: PASS
@@ -22,11 +22,12 @@ findings:
   - level: PASS
     check: "Fabric edges: 116/126 cards enriched (10 without edges)"
   - level: PASS
-    check: "All 28 active tasks are valid"
+    check: "All 30 active tasks are valid"
+  - level: WARN
+    check: "Task T-343 has short description (35 chars)"
+    mitigation: "Expand description in T-343-auto-init-prompt-on-missing-project.md"
   - level: PASS
-    check: "All active tasks meet quality thresholds"
-  - level: PASS
-    check: "Git traceability: 99% (1052/1061 commits reference tasks)"
+    check: "Git traceability: 98% (1058/1074 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -47,7 +48,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 330 episodic summaries have quality content"
+    check: "All 331 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -69,15 +70,16 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-342)"
+    check: "CTL-001: Focus file has active task (T-344)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 1 (last commit: 32 seconds ago)"
+    check: "CTL-004: Tool counter at 4 (last commit: 56 seconds ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: urgent)"
-  - level: PASS
-    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+    check: "CTL-018: Budget status valid JSON (level: ok)"
+  - level: WARN
+    check: "CTL-008: Task reference traceability 90% (2/20 without T-XXX)"
+    mitigation: "Ensure all commits use T-XXX prefix (commit-msg hook)"
   - level: PASS
     check: "CTL-020: 4 cron audit file(s) in last hour"
   - level: PASS
@@ -85,7 +87,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (239 handovers, 75 compactions)"
+    check: "CTL-006: Handover coverage for compactions (240 handovers, 76 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -159,7 +161,7 @@ findings:
   - level: PASS
     check: "CTL-013: T-342 verification re-run: 3/3 pass"
   - level: WARN
-    check: "CTL-013: T-324 verification re-run: 2 command(s) failing"
+    check: "CTL-013: T-324 verification re-run: 1 command(s) failing"
     mitigation: "Review T-324 — environment may have changed"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
@@ -198,14 +200,18 @@ findings:
   - level: PASS
     check: "CTL-025: T-341 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-343 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-344 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/330)"
+    check: "D1: Episodic quality — 0% [TODO] (3/331)"
   - level: FAIL
-    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(168h) T-289(117h) T-295(87h) T-300(87h) T-303(87h) T-304(87h) T-326(79h) T-328(80h) T-330(80h) T-331(80h) T-333(80h) T-335(35h) T-336(35h) T-337(34h)"
+    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(170h) T-289(120h) T-295(89h) T-300(89h) T-303(89h) T-304(89h) T-326(81h) T-328(82h) T-330(82h) T-331(82h) T-333(82h) T-335(37h) T-336(37h) T-337(36h)"
     mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
   - level: FAIL
-    check: "D8: Handover quality — LATEST.md has 119 [TODO] sections"
+    check: "D8: Handover quality — LATEST.md has 127 [TODO] sections"
     mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - level: PASS
     check: "D10: Decision-without-dialogue — none detected"
@@ -217,9 +223,9 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=14 avg=33 ratio=0.4x)"
+    check: "D3: Commit velocity — normal (PASS today=22 avg=26 ratio=0.8x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 14_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 22_commits_24h)"
   - level: WARN
     check: "D6: Completion velocity — sustained drop (drop recent_avg=0.3 vs earlier_avg=4.1)"
     mitigation: "Check for blockers or process issues slowing work"

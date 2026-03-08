@@ -1,5 +1,5 @@
-# Audit Results - 2026-02-28-1230
-timestamp: 2026-02-28T11:30:01Z
+# Audit Results - 2026-03-08-1130
+timestamp: 2026-03-08T10:30:01Z
 sections: "structure,compliance,quality"
 summary:
   pass: 9
@@ -19,11 +19,11 @@ findings:
   - level: PASS
     check: "All 11 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 107 registered, 0 unregistered"
+    check: "Fabric: 126 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 97/107 cards enriched (10 without edges)"
+    check: "Fabric edges: 116/126 cards enriched (10 without edges)"
+  - level: PASS
+    check: "All 29 active tasks are valid"
   - level: WARN
-    check: "No active tasks found"
-    mitigation: "Create tasks for ongoing work"
-  - level: PASS
-    check: "All active tasks meet quality thresholds"
+    check: "Task T-343 has short description (35 chars)"
+    mitigation: "Expand description in T-343-auto-init-prompt-on-missing-project.md"

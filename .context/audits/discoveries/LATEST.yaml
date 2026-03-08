@@ -1,15 +1,15 @@
-timestamp: 2026-03-08T09:52:38Z
+timestamp: 2026-03-08T11:58:03Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/330)"
+    check: "D1: Episodic quality — 0% [TODO] (3/331)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(168h) T-289(117h) T-295(87h) T-300(87h) T-303(87h) T-304(87h) T-326(79h) T-328(80h) T-330(80h) T-331(80h) T-333(80h) T-335(35h) T-336(35h) T-337(34h)"
+    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(170h) T-289(120h) T-295(89h) T-300(89h) T-303(89h) T-304(89h) T-326(81h) T-328(82h) T-330(82h) T-331(82h) T-333(82h) T-335(37h) T-336(37h) T-337(36h)"
     mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
   - id: D8
     level: FAIL
-    check: "D8: Handover quality — LATEST.md has 119 [TODO] sections"
+    check: "D8: Handover quality — LATEST.md has 127 [TODO] sections"
     mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - id: D10
     level: PASS
@@ -26,10 +26,10 @@ findings:
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=14 avg=33 ratio=0.4x)"
+    check: "D3: Commit velocity — normal (PASS today=22 avg=26 ratio=0.8x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 14_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 22_commits_24h)"
   - id: D6
     level: WARN
     check: "D6: Completion velocity — sustained drop (drop recent_avg=0.3 vs earlier_avg=4.1)"
