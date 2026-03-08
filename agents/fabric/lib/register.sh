@@ -73,7 +73,14 @@ tags: []
 
 purpose: "TODO: describe what this component does"
 
-depends_on: []
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
 
 last_verified: $(date -u +%Y-%m-%d)
 created_by: ${CURRENT_TASK:-unknown}
@@ -82,7 +89,7 @@ EOF
     echo -e "${GREEN}Card created: $card_file${NC}"
     echo "  Type: $comp_type"
     echo "  Subsystem: $subsystem"
-    echo -e "  ${YELLOW}Fill in: purpose, depends_on, tags${NC}"
+    echo -e "  ${YELLOW}Fill in: purpose, depends_on (use {target: path, type: calls} format), tags${NC}"
     return 0
 }
 
