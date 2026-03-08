@@ -675,4 +675,11 @@ learnings:
   date: 2026-03-08
   context: Added via context agent
   application: TBD
+- id: L-083
+  learning: "Homebrew Cellar paths are versioned and non-stable — brew upgrade removes old version directories, silently breaking any hardcoded path. Always resolve through /usr/local/opt/<pkg> symlink which Homebrew maintains across versions. Pattern: detect Cellar in resolved path and substitute opt equivalent."
+  source: P-001
+  task: T-355
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
 candidates: []
