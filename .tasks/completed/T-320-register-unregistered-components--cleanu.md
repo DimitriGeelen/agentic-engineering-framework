@@ -25,13 +25,8 @@ date_finished: 2026-03-04T22:42:55Z
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [x] Unregistered components have .fabric/components/ cards
+- [x] No orphaned component cards remain
 
 ## Verification
 
