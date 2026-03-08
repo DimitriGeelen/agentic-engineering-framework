@@ -578,6 +578,19 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
     fi
 
+    # === Clear focus if this was the focused task (T-354) ===
+    # Only for full completion (not partial-complete — human still needs focus)
+    if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
+        FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
+        if [ -f "$FOCUS_FILE" ]; then
+            FOCUSED_TASK=$(grep "^current_task:" "$FOCUS_FILE" | sed 's/current_task:[[:space:]]*//')
+            if [ "$FOCUSED_TASK" = "$TASK_ID" ]; then
+                _sed_i "s/^current_task:.*/current_task: null/" "$FOCUS_FILE"
+                echo -e "${YELLOW}Focus cleared (task completed). Set new focus: fw work-on T-XXX${NC}"
+            fi
+        fi
+    fi
+
     # === Auto-populate components field (T-224) ===
     # Resolve git diff paths to component IDs via .fabric/components/*.yaml location field
     FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
