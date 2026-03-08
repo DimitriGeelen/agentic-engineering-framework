@@ -4,7 +4,9 @@ type: script
 subsystem: audit
 location: agents/audit/plugin-audit.sh
 tags: []
-purpose: ============================================================================
+purpose: Scans enabled Claude Code plugins for task-system awareness. Classifies each
+  skill/agent/command as TASK-AWARE, TASK-SILENT, or TASK-OVERRIDING based on framework
+  governance integration.
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown

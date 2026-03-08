@@ -4,7 +4,7 @@ name: "Layer 0: Fix broken purpose fields in component cards"
 description: >
   Prerequisite for doc generation. Build fw docs heal command: reads each card, if purpose is broken/placeholder, extract first comment block from source file and update card. ~60% of 127 cards need fixing. See docs/reports/T-362-auto-doc-generation.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [documentation, fabric]
 components: []
 related_tasks: []
 created: 2026-03-08T22:03:24Z
-last_update: 2026-03-08T22:03:24Z
+last_update: 2026-03-08T22:07:57Z
 date_finished: null
 ---
 
@@ -20,40 +20,18 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Prerequisite for T-364 doc generator. Audit found only 6/127 cards needed fixing (1 broken, 4 echo, 1 thin) — much less than the 60% estimate. Fixed by extracting descriptions from source file headers.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] All 127 component cards have non-trivial purpose fields (>10 chars, no placeholders)
+- [x] All modified cards parse as valid YAML
+- [x] Fixed cards: plugin-audit, bus-handler, mcp-reaper, claude-fw, fw, task_detail
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "import yaml, glob; cards=[yaml.safe_load(open(f)) for f in glob.glob('.fabric/components/*.yaml')]; bad=[c['name'] for c in cards if not c.get('purpose') or len(str(c['purpose']))<10 or '=====' in str(c['purpose'])]; assert not bad, f'Broken: {bad}'; print(f'All {len(cards)} cards have valid purposes')"
 
 ## Decisions
 
@@ -72,3 +50,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-363-layer-0-fix-broken-purpose-fields-in-com.md
 - **Context:** Initial task creation
+
+### 2026-03-08T22:07:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
