@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-FW_VERSION="1.2.3"
+FW_VERSION="1.2.4"
 
 # Colors
 RED='\033[0;31m'
