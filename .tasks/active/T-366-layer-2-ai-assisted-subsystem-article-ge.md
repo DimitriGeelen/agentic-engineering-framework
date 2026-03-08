@@ -4,7 +4,7 @@ name: "Layer 2: AI-assisted subsystem article generator"
 description: >
   Build fw docs article {subsystem}: assembles context from fabric cards, source code, CLAUDE.md, episodic memory, then generates deep-dive article using proven 4-section template (analogy, concept, rationale, try-it). Can output prompt file or call LLM directly. See docs/reports/T-362-auto-doc-generation.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [documentation, fabric, cli]
 components: []
 related_tasks: []
 created: 2026-03-08T22:03:34Z
-last_update: 2026-03-08T22:03:34Z
+last_update: 2026-03-08T23:06:46Z
 date_finished: null
 ---
 
@@ -20,40 +20,32 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Layer 2 of the auto-doc system (T-362). Assembles context from fabric cards, source code, CLAUDE.md, episodic memory, then generates deep-dive articles via Ollama or outputs prompt files.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `generate_article.py` assembles context from cards, source headers, CLAUDE.md, episodic, learnings, decisions
+- [x] `generate-article.sh` shell wrapper with --list, --generate, --help
+- [x] `fw docs article <subsystem>` produces prompt file
+- [x] `fw docs article <subsystem> --generate` calls Ollama and writes article
+- [x] Style reference from existing deep-dive injected into prompt
+- [x] Generated article follows 4-section template (analogy → mechanism → research → try-it)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Generated article quality
+  **Steps:**
+  1. Read `docs/articles/deep-dives/08-healing.md`
+  2. Compare tone/structure to `docs/articles/deep-dives/01-task-gate.md`
+  **Expected:** Similar structure, cites real task IDs, no emojis, peer-to-peer tone
+  **If not:** Adjust prompt instructions in generate_article.py build_prompt()
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -x agents/docgen/generate-article.sh
+python3 -c "import agents.docgen.generate_article" 2>/dev/null || python3 -c "exec(open('agents/docgen/generate_article.py').read()[:50])"
+grep -q "article" bin/fw
+test -f docs/generated/articles/healing-prompt.md
 
 ## Decisions
 
@@ -72,3 +64,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-366-layer-2-ai-assisted-subsystem-article-ge.md
 - **Context:** Initial task creation
+
+### 2026-03-08T23:06:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

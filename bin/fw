@@ -1087,6 +1087,10 @@ case "$cmd" in
         exec "$AGENTS_DIR/context/context.sh" "$@"
         ;;
     docs)
+        if [ "${1:-}" = "article" ]; then
+            shift
+            exec "$AGENTS_DIR/docgen/generate-article.sh" "$@"
+        fi
         exec "$AGENTS_DIR/docgen/generate-component.sh" "$@"
         ;;
     fabric)
