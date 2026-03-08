@@ -547,6 +547,18 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         echo -e "${YELLOW}Partial-complete: $HUMAN_AC_UNCHECKED_REMAINING human AC(s) pending verification${NC}"
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
         echo "Finalize after verification: fw task update $TASK_ID --status work-completed"
+
+        # T-325: Check human AC quality — warn if Steps blocks are missing
+        HUMAN_AC_SECTION=$(sed -n '/^### Human/,/^## \|^### [^H]/p' "$TASK_FILE" 2>/dev/null | head -n -1)
+        HUMAN_AC_COUNT=$(echo "$HUMAN_AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+        HUMAN_AC_WITH_STEPS=$(echo "$HUMAN_AC_SECTION" | grep -cE '^\s+\*\*Steps:\*\*' || true)
+        if [ "$HUMAN_AC_COUNT" -gt 0 ] && [ "$HUMAN_AC_WITH_STEPS" -lt "$HUMAN_AC_COUNT" ]; then
+            MISSING=$((HUMAN_AC_COUNT - HUMAN_AC_WITH_STEPS))
+            echo ""
+            echo -e "${YELLOW}Human AC quality: $MISSING of $HUMAN_AC_COUNT criteria lack Steps/Expected blocks.${NC}"
+            echo -e "${YELLOW}  Tip: Add Steps: with numbered instructions so the reviewer can act immediately.${NC}"
+            echo -e "${YELLOW}  See CLAUDE.md 'Human AC Format Requirements' for the required format.${NC}"
+        fi
     else
         DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
         if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]; then

@@ -619,6 +619,29 @@ Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteri
 - When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
 - The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
 
+### Human AC Format Requirements (T-325)
+When writing `### Human` acceptance criteria, each criterion MUST include:
+- **Steps:** block with numbered, copy-pasteable instructions (no placeholders the human must figure out)
+- **Expected:** what success looks like (exact text, status code, or observable outcome)
+- **If not:** diagnostic steps or fallback action
+
+Optionally prefix the criterion with a confidence marker:
+- `[RUBBER-STAMP]` — mechanical action, no judgment needed (publish, deploy, click)
+- `[REVIEW]` — genuine human judgment required (tone, UX, architecture decisions)
+
+**Example:**
+```
+- [ ] [REVIEW] Voice/tone matches writing style
+  **Steps:**
+  1. Read first 3 paragraphs of the article
+  2. Compare to published posts at blog.dimitrigeelen.com
+  3. Check for anti-patterns: emojis, exclamation marks, "we", hedging
+  **Expected:** Reads like a peer-to-peer governance discussion, not a product pitch
+  **If not:** Note specific paragraphs for agent revision
+```
+
+If a human AC cannot be made specific (e.g., "code quality is acceptable"), replace it with a measurable proxy or remove it. Vague ACs that nobody acts on are worse than no AC.
+
 ### Verification Before Completion
 Before setting any task to `work-completed`:
 1. Run all commands in the task's `## Verification` section
