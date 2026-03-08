@@ -4,16 +4,16 @@ name: "Streamline fw init output for new users"
 description: >
   Streamline fw init output for new users
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/init.sh, lib/preflight.sh]
 related_tasks: []
 created: 2026-03-08T13:09:14Z
-last_update: 2026-03-08T13:09:14Z
-date_finished: null
+last_update: 2026-03-08T13:35:35Z
+date_finished: 2026-03-08T13:35:35Z
 ---
 
 # T-349: Streamline fw init output for new users
@@ -42,9 +42,9 @@ Streamline fw init from ~60 lines of output to ~10 lines. Remove triple doctor r
 ## Acceptance Criteria
 
 ### Agent
-- [ ] fw init output is under 15 lines (excluding preflight failures)
-- [ ] fw doctor runs zero times during fw init
-- [ ] No interactive prompts during fw init (preflight recommended deps suppressed)
+- [x] fw init output is under 15 lines (excluding preflight failures)
+- [x] fw doctor runs zero times during fw init
+- [x] No interactive prompts during fw init (preflight recommended deps suppressed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -89,3 +89,6 @@ Streamline fw init from ~60 lines of output to ~10 lines. Remove triple doctor r
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-349-streamline-fw-init-output-for-new-users.md
 - **Context:** Initial task creation
+
+### 2026-03-08T13:35:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
