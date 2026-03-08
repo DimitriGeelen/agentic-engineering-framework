@@ -4,16 +4,16 @@ name: "Implement post-init validation with #@init: tags"
 description: >
   Implement the T-356 GO decision: (1) Add #@init: tags to lib/init.sh for all 31 creation units, (2) Create lib/validate-init.sh that parses tags and validates each unit, (3) Call validate-init from end of fw init, (4) Register both components in Fabric with dependency edge, (5) Add cron audit check for tag-count drift. See docs/reports/T-356-post-init-validation.md for full design.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/init.sh, lib/validate-init.sh]
 related_tasks: [T-356]
 created: 2026-03-08T18:17:48Z
-last_update: 2026-03-08T18:17:48Z
-date_finished: null
+last_update: 2026-03-08T19:14:03Z
+date_finished: 2026-03-08T19:14:03Z
 ---
 
 # T-357: Implement post-init validation with #@init: tags
@@ -70,3 +70,6 @@ grep -q 'validate-init' bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-357-implement-post-init-validation-with-init.md
 - **Context:** Initial task creation
+
+### 2026-03-08T19:14:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
