@@ -640,4 +640,32 @@ learnings:
   application: "When a variable has a wrong default, fix the default in the source script — not just the callers or generators.
     The source is the last line of defense. Applied: replaced PROJECT_ROOT=${PROJECT_ROOT:-$FRAMEWORK_ROOT} with
     PROJECT_ROOT=${PROJECT_ROOT:-$(git -C $FRAMEWORK_ROOT rev-parse --show-toplevel)} in all 19 agent scripts."
+- id: L-078
+  learning: "macOS /bin/bash is 3.2 — scripts with #!/bin/bash use it even when Homebrew bash 5+ is installed. Check PATH bash version, not BASH_VERSINFO. Also: bash 3.2 + set -u treats empty arrays as unbound — guard with length check before iterating."
+  source: P-001
+  task: T-344
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
+- id: L-079
+  learning: "macOS grep lacks -P (Perl regex). Use grep -oE (extended regex) instead of grep -oP for portable version extraction patterns."
+  source: P-001
+  task: T-344
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
+- id: L-080
+  learning: "Retagging a release requires: delete remote tag, push new tag, recompute tarball SHA256, update Homebrew formula. Homebrew caches aggressively — users need brew update before reinstall."
+  source: P-001
+  task: T-344
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
+- id: L-081
+  learning: "macOS BSD sed requires -i '' (with empty backup extension) for in-place edits. GNU sed uses -i alone. Detect with: sed --version 2>/dev/null | grep -q GNU"
+  source: P-001
+  task: T-344
+  date: 2026-03-08
+  context: Added via context agent
+  application: TBD
 candidates: []

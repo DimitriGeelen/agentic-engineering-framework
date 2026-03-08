@@ -537,8 +537,14 @@ generate_claude_code_config() {
 }
 SJSON
         # Replace placeholders with actual paths
-        sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
-        sed -i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
+        # macOS BSD sed requires -i '' (backup ext), GNU sed uses -i alone
+        if sed --version 2>/dev/null | grep -q GNU; then
+            sed -i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
+            sed -i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
+        else
+            sed -i '' "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
+            sed -i '' "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
+        fi
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 10 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
