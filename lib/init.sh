@@ -81,19 +81,42 @@ do_init() {
     fi
 
     # --- Create directory structure ---
+    #@init: dir-4mf .tasks/active
+    # Active tasks directory
     mkdir -p "$target_dir/.tasks/active"
+    #@init: dir-7hn .tasks/completed
+    # Completed tasks archive
     mkdir -p "$target_dir/.tasks/completed"
+    #@init: dir-2pw .tasks/templates
+    # Task templates
     mkdir -p "$target_dir/.tasks/templates"
+    #@init: dir-9kc .context/working
+    # Working memory (session state)
     mkdir -p "$target_dir/.context/working"
+    #@init: dir-3xe .context/project
+    # Project memory (patterns, decisions, learnings)
     mkdir -p "$target_dir/.context/project"
+    #@init: dir-6ja .context/episodic
+    # Episodic memory (task histories)
     mkdir -p "$target_dir/.context/episodic"
+    #@init: dir-1rv .context/handovers
+    # Session handover documents
     mkdir -p "$target_dir/.context/handovers"
+    #@init: dir-8qb .context/scans
+    # Codebase scan results
     mkdir -p "$target_dir/.context/scans"
+    #@init: dir-5wd .context/bus/results
+    # Sub-agent result bus
     mkdir -p "$target_dir/.context/bus/results"
+    #@init: dir-0tg .context/bus/blobs
+    # Sub-agent blob storage
     mkdir -p "$target_dir/.context/bus/blobs"
+    #@init: dir-3yn .context/audits/cron
+    # Cron audit results
     mkdir -p "$target_dir/.context/audits/cron"
 
-    # Create bypass-log.yaml if missing (T-302: prevents CTL-010 day-1 warning)
+    #@init: yaml-5rc .context/bypass-log.yaml bypasses
+    # Git hook bypass log
     if [ ! -f "$target_dir/.context/bypass-log.yaml" ]; then
         cat > "$target_dir/.context/bypass-log.yaml" << 'BYPASSEOF'
 # Git hook bypass log
@@ -102,7 +125,8 @@ bypasses: []
 BYPASSEOF
     fi
 
-    # .gitignore for volatile working memory files
+    #@init: file-2nb .context/working/.gitignore
+    # Volatile file exclusions
     cat > "$target_dir/.context/working/.gitignore" << 'WGIT'
 # Volatile session files — regenerated each session
 .tool-counter
@@ -116,6 +140,8 @@ WGIT
     echo -e "  ${GREEN}✓${NC}  Context fabric (.context/)"
 
     # --- Copy task templates (all .md files from framework templates) ---
+    #@init: file-8cz .tasks/templates/default.md
+    # Default task template
     local template_count=0
     for tmpl in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
         [ -f "$tmpl" ] || continue
@@ -126,7 +152,8 @@ WGIT
         echo -e "  ${YELLOW}⚠${NC}   No task templates found"
     fi
 
-    # --- Create .framework.yaml ---
+    #@init: yaml-8kj .framework.yaml project_name,framework_path,version,provider
+    # Project configuration
     local project_name
     project_name=$(basename "$target_dir")
     local init_timestamp
@@ -144,6 +171,8 @@ FYAML
 
     # --- Seed governance files ---
 
+    #@init: yaml-7dg .context/project/practices.yaml practices
+    # Graduated practices
     if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" "$target_dir/.context/project/practices.yaml"
@@ -156,6 +185,8 @@ PRAML
         fi
     fi
 
+    #@init: yaml-4fs .context/project/decisions.yaml decisions
+    # Architectural decisions
     if [ ! -f "$target_dir/.context/project/decisions.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" "$target_dir/.context/project/decisions.yaml"
@@ -168,6 +199,8 @@ DYAML
         fi
     fi
 
+    #@init: yaml-1qm .context/project/patterns.yaml failure_patterns
+    # Failure/success/workflow patterns
     if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" "$target_dir/.context/project/patterns.yaml"
@@ -183,6 +216,8 @@ PYAML
         fi
     fi
 
+    #@init: yaml-6wt .context/project/learnings.yaml learnings
+    # Project learnings
     if [ ! -f "$target_dir/.context/project/learnings.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/learnings.yaml" << 'LYAML'
 # Project Learnings - Knowledge gained during development
@@ -191,6 +226,8 @@ learnings:
 LYAML
     fi
 
+    #@init: yaml-9he .context/project/assumptions.yaml assumptions
+    # Tracked assumptions
     if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/assumptions.yaml" << 'AYAML'
 # Project Assumptions - Tracked via inception workflow
@@ -200,6 +237,8 @@ assumptions: []
 AYAML
     fi
 
+    #@init: yaml-3bp .context/project/directives.yaml directives
+    # Constitutional directives
     if [ ! -f "$target_dir/.context/project/directives.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/directives.yaml" << 'DRYAML'
 # Project Directives - Constitutional principles (priority order)
@@ -228,6 +267,8 @@ directives:
 DRYAML
     fi
 
+    #@init: yaml-0vk .context/project/gaps.yaml gaps
+    # Spec-reality gaps register
     if [ ! -f "$target_dir/.context/project/gaps.yaml" ] || [ "${force:-false}" = true ]; then
         cat > "$target_dir/.context/project/gaps.yaml" << 'GYAML'
 # Gaps Register — Spec-Reality gaps with decision triggers
@@ -242,16 +283,27 @@ GYAML
     # --- Generate provider config ---
     case "$provider" in
         claude)
+            #@init: file-7xr CLAUDE.md ?claude,generic
+            # Agent instruction file
             generate_claude_md "$target_dir" >/dev/null
+            #@init: json-3fz .claude/settings.json hooks ?claude,generic
+            # Claude Code hooks configuration
+            #@init: hookpaths-6vc .claude/settings.json ?claude,generic
+            # Hook script paths all resolve
+            #@init: file-4ej .claude/commands/resume.md ?claude,generic
+            # Resume slash command
             generate_claude_code_config "$target_dir" >/dev/null
             echo -e "  ${GREEN}✓${NC}  CLAUDE.md generated"
             echo -e "  ${GREEN}✓${NC}  Claude Code hooks (10 configured)"
             ;;
         cursor)
+            #@init: file-6qs .cursorrules ?cursor
+            # Cursor rules file
             generate_cursorrules "$target_dir" >/dev/null
             echo -e "  ${GREEN}✓${NC}  .cursorrules generated"
             ;;
         generic)
+            # Tags declared in claude branch with ?claude,generic condition
             generate_claude_md "$target_dir" >/dev/null
             generate_claude_code_config "$target_dir" >/dev/null
             echo -e "  ${GREEN}✓${NC}  CLAUDE.md generated"
@@ -265,6 +317,12 @@ GYAML
     esac
 
     # --- Install git hooks (if git repo) ---
+    #@init: exec-9wm .git/hooks/commit-msg "Task Reference" ?git
+    # Task reference enforcement hook
+    #@init: exec-2hd .git/hooks/post-commit "Bypass Detection" ?git
+    # Bypass detection and context checkpoint hook
+    #@init: exec-1kp .git/hooks/pre-push "audit" ?git
+    # Pre-push audit enforcement hook
     if [ -d "$target_dir/.git" ]; then
         PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks >/dev/null 2>&1 && \
             echo -e "  ${GREEN}✓${NC}  Git hooks installed" || \
@@ -280,6 +338,18 @@ GYAML
             echo -e "  ${GREEN}✓${NC}  fw added to PATH"
         else
             echo -e "  ${YELLOW}⚠${NC}   Add fw to PATH: export PATH=\"$FRAMEWORK_ROOT/bin:\$PATH\""
+        fi
+    fi
+
+    # --- Post-init validation (T-357) ---
+    echo ""
+    echo -e "${BOLD}Validating...${NC}"
+    source "$FW_LIB_DIR/validate-init.sh" 2>/dev/null || \
+        source "$(dirname "${BASH_SOURCE[0]}")/validate-init.sh" 2>/dev/null || true
+    if type do_validate_init >/dev/null 2>&1; then
+        if ! do_validate_init "$target_dir" --provider "$provider"; then
+            echo ""
+            echo -e "${YELLOW}Init completed with validation errors — check output above${NC}"
         fi
     fi
 

@@ -8,6 +8,9 @@ purpose: fw init - Bootstrap a new project with the Agentic Engineering Framewor
 depends_on:
 - target: agents/git/git.sh
   type: calls
+- target: lib/validate-init.sh
+  type: calls
+  description: "Post-init validation at end of fw init"
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-02-21'
@@ -16,3 +19,6 @@ depended_by:
   type: called_by
 - target: lib/setup.sh
   type: called_by
+- target: lib/validate-init.sh
+  type: reads_tags
+  description: "Parses #@init: tags to determine validation checks"
