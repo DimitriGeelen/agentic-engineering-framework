@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-348: Fix update-task.sh sed failing on macOS BSD sed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:33:25Z
+# ============================================================================
+
+task_id: T-348
+task_name: "Fix update-task.sh sed failing on macOS BSD sed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T12:34:08Z
+completed: 2026-03-08T12:55:20Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-03-08T13:55:13+01:00
+last_commit: 2026-03-08T14:04:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace all sed -i calls with portable _sed_i helper. Fix audit trends — retroactive ACs for T-319/T-320, fill handover. Add L-082 learning — audit trend proactive addressing
+
+# Key outcomes
+outcomes:
+  - "`lib/compat.sh` created with portable `_sed_i()` function"
+  - "Zero `sed -i ` calls remain in *.sh files (excluding echo strings)"
+  - "`update-task.sh` status transitions work (tested on GNU sed)"
+  - "`focus.sh` set-focus works (tested on GNU sed)"
+  - "All files that use `_sed_i` source compat.sh or have inline fallback"
+  - "[RUBBER-STAMP] `fw task update` works on macOS after Homebrew reinstall"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix audit trends — retroactive ACs for T-319/T-320, fill handover"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Temp file helper (`_sed_i` in `lib/compat.sh`)"
+    rationale: "Works on ALL systems without detection logic. Single function, easy to audit."
+    alternatives_rejected: ["GNU/BSD detection at each callsite (verbose, 20+ if/else blocks); `perl -i -pe` (adds dependency); `sed -i.bak && rm` (leaves temp files on failure)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/context.sh"
+  - "agents/context/lib/decision.sh"
+  - "agents/context/lib/focus.sh"
+  - "agents/context/lib/learning.sh"
+  - "agents/context/lib/pattern.sh"
+  - "agents/git/git.sh"
+  - "agents/git/lib/common.sh"
+  - "agents/observe/observe.sh"
+  - "agents/resume/resume.sh"
+  - "agents/task-create/update-task.sh"
+  - "bin/fw"
+  - ".context/handovers/S-2026-0308-1403.md"
+  - ".context/project/learnings.yaml"
+  - "lib/compat.sh"
+  - "lib/init.sh"
+  - "lib/setup.sh"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-348-fix-update-tasksh-sed-failing-on-macos-b.md"
+  - ".tasks/completed/T-319-register-unregistered-components--cleanu.md"
+  - ".tasks/completed/T-320-register-unregistered-components--cleanu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T13:55:13"
+    action: "T-348: Replace all sed -i calls with portable _sed_i helper"
+  - time: "2026-03-08T14:03:57"
+    action: "T-348: Fix audit trends — retroactive ACs for T-319/T-320, fill handover"
+  - time: "2026-03-08T14:04:14"
+    action: "T-348: Add L-082 learning — audit trend proactive addressing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cli, macos, portability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 4
+  files_changed: 45
+  lines_added: 885
+  lines_removed: 265
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-348-fix-update-tasksh-sed-failing-on-macos-b.md
+generated_by: context-agent-hybrid

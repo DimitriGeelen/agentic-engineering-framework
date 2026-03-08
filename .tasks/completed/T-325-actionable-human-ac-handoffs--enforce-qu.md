@@ -6,7 +6,7 @@ description: >
   executable steps, (2) no proactive notification when human action is needed. Explore enforcement
   and surfacing mechanisms.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,8 +14,8 @@ tags: [governance, ux, handoff]
 components: [agents/task-create/update-task.sh, agents/handover/handover.sh, agents/task-create/create-task.sh]
 related_tasks: [T-193, T-285, T-289]
 created: 2026-03-04T23:51:59Z
-last_update: 2026-03-08T09:43:42Z
-date_finished: null
+last_update: 2026-03-08T19:30:13Z
+date_finished: 2026-03-08T19:30:13Z
 ---
 
 # T-325: Actionable human AC handoffs — enforce quality, surface pending reviews
@@ -125,3 +125,6 @@ test -f docs/reports/T-325-human-ac-handoff-quality.md
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** All assumptions validated. Scope: agent must write human ACs with step-by-step instructions (Steps/Expected/If-not). CLAUDE.md rule + template update + WARN gate in update-task.sh. Surfacing/notification deferred to separate task.
+
+### 2026-03-08T19:30:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

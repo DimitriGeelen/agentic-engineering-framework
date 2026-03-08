@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-325: Actionable human AC handoffs — enforce quality, surface pending reviews
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:30:14Z
+# ============================================================================
+
+task_id: T-325
+task_name: "Actionable human AC handoffs — enforce quality, surface pending reviews"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-03-04T23:51:59Z
+completed: 2026-03-08T19:30:13Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-03-05T00:53:56+01:00
+last_commit: 2026-03-08T10:43:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Research artifact + filled inception template (4-agent investigation). Spike 1 Steps block must include exact commands, expected output, prereqs, failure recovery. Complete inception spikes, record GO decision (scoped to instruction quality)
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "GO — proceed with implementation (tightened scope)"
+    rationale: "All 4 assumptions validated. 4/5 real tasks improved. 0% false positive on gate. Zero breaking changes."
+    alternatives_rejected: ["Broader scope including notification/surfacing mechanisms (user confirmed: core is instruction quality, not discoverability)."]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-325-human-ac-handoff-quality.md"
+  - ".tasks/active/T-325-actionable-human-ac-handoffs--enforce-qu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T00:53:56"
+    action: "T-325: Research artifact + filled inception template (4-agent investigation)"
+  - time: "2026-03-05T01:00:06"
+    action: "T-325: Spike 1 Steps block must include exact commands, expected output, prereqs, failure recovery"
+  - time: "2026-03-08T10:43:42"
+    action: "T-325: Complete inception spikes, record GO decision (scoped to instruction quality)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 5498 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, ux, handoff]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5498
+  commits: 3
+  files_changed: 2
+  lines_added: 400
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-325-actionable-human-ac-handoffs--enforce-qu.md
+generated_by: context-agent-hybrid
