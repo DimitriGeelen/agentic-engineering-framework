@@ -18,3 +18,7 @@ depended_by:
 - target: lib/setup.sh
   type: called_by
 last_enriched: '2026-02-21'
+docs:
+- path: docs/articles/deep-dives/01-task-gate.md
+  title: 'Deep Dive: The Task Gate'
+  type: deep-dive

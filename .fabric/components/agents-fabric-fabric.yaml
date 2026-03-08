@@ -26,3 +26,7 @@ depended_by:
   type: called_by
 - target: bin/fw
   type: called_by
+docs:
+- path: docs/articles/deep-dives/07-component-fabric.md
+  title: 'Deep Dive: Component Fabric'
+  type: deep-dive

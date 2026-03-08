@@ -47,6 +47,22 @@
         &rarr; <code>{{ component.route.handler }}</code></p>
     {% endif %}
 
+    {% if component.docs %}
+    <p><strong>Documentation:</strong></p>
+    <ul style="margin-top: 0.25rem;">
+        {% for doc in component.docs %}
+        <li>
+            <a href="https://github.com/DimitriGeelen/agentic-engineering-framework/blob/master/{{ doc.path }}" target="_blank">
+                {{ doc.title | default(doc.path) }}
+            </a>
+            {% if doc.type %}
+            <span style="font-size: 0.7rem; padding: 0.1rem 0.3rem; border: 1px solid var(--pico-muted-border-color); border-radius: 3px; margin-left: 0.25rem;">{{ doc.type }}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <footer style="font-size: 0.8rem; color: var(--pico-muted-color);">
         Last verified: {{ component.last_verified | default('?') }}
         {% if component.created_by %} | Created by: <code>{{ component.created_by }}</code>{% endif %}

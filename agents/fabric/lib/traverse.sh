@@ -102,7 +102,7 @@ def traverse(component_data, depth, prefix=''):
     # What does this component write to?
     for dep in component_data.get('depends_on', []):
         if dep.get('type') == 'writes':
-            target_id = dep['target']
+            target_id = dep.get('target', '')
             # Find the target card
             target_data = cards.get(target_id)
             if target_data:
