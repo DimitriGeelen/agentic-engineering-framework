@@ -244,6 +244,7 @@ show_help() {
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}consolidate${NC} <cmd>   Memory consolidation (scan, apply, report)"
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
+    echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -1124,6 +1125,19 @@ case "$cmd" in
                 exit 1
                 ;;
         esac
+        ;;
+    fix-learned)
+        # Shortcut: fw fix-learned T-XXX "what was learned"
+        fl_task="${1:-}"
+        fl_text="${2:-}"
+        if [ -z "$fl_task" ] || [ -z "$fl_text" ]; then
+            echo -e "${RED}Usage: fw fix-learned T-XXX \"what was learned from this bugfix\"${NC}"
+            echo ""
+            echo "Shortcut for capturing learnings during bugfix cycles (G-016)."
+            echo "Equivalent to: fw context add-learning \"text\" --task T-XXX --source P-001"
+            exit 1
+        fi
+        exec "$AGENTS_DIR/context/context.sh" add-learning "$fl_text" --task "$fl_task" --source P-001
         ;;
     note)
         exec "$AGENTS_DIR/observe/observe.sh" "$@"
