@@ -285,8 +285,16 @@ GYAML
 
     # --- Done ---
     echo ""
-    echo -e "${GREEN}Done!${NC} Start working:"
-    echo -e "  ${BOLD}fw work-on \"your first task\" --type build${NC}"
+    echo -e "${GREEN}Done!${NC} Choose your path:"
+    echo ""
+    echo -e "  ${BOLD}1. Think first${NC} — explore before building:"
+    echo -e "     fw inception start \"Define goals and architecture\""
+    echo ""
+    echo -e "  ${BOLD}2. Build now${NC} — you know what to build:"
+    echo -e "     fw work-on \"your first task\" --type build"
+    echo ""
+    echo -e "  ${BOLD}3. Dashboard${NC} — see your project at a glance:"
+    echo -e "     fw serve"
     echo ""
     echo -e "All commands: ${BOLD}fw help${NC}"
 }
