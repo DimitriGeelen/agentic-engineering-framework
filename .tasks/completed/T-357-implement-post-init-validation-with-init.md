@@ -12,7 +12,7 @@ tags: []
 components: [bin/fw, lib/init.sh, lib/validate-init.sh]
 related_tasks: [T-356]
 created: 2026-03-08T18:17:48Z
-last_update: 2026-03-08T19:14:03Z
+last_update: 2026-03-08T19:24:03Z
 date_finished: 2026-03-08T19:14:03Z
 ---
 
@@ -34,7 +34,7 @@ T-356 inception GO decision. Design: `docs/reports/T-356-post-init-validation.md
 - [x] Both components registered in Fabric with `init.sh → validate-init.sh` dependency edge
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw init --provider claude --force` in a temp dir and verify validation output
+- [x] [RUBBER-STAMP] Run `fw init --provider claude --force` in a temp dir and verify validation output
   **Steps:**
   1. `mkdir /tmp/test-validate && cd /tmp/test-validate && git init`
   2. `fw init --provider claude --force`

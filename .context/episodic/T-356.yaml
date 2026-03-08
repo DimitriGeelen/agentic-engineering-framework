@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-356: Post-init validation: verify fw init produced correct and complete output
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:16:42Z
+# ============================================================================
+
+task_id: T-356
+task_name: "Post-init validation: verify fw init produced correct and complete output"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-03-08T17:36:15Z
+completed: 2026-03-08T19:16:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T18:37:23+01:00
+last_commit: 2026-03-08T19:17:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — post-init validation exploration template. GO decision — validate-init with #@init: tags design
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-356-post-init-validation.md"
+  - ".tasks/active/T-356-post-init-validation-verify-fw-init-prod.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T18:37:23"
+    action: "T-356: Inception — post-init validation exploration template"
+  - time: "2026-03-08T19:17:40"
+    action: "T-356: GO decision — validate-init with #@init: tags design"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 100 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 100
+  commits: 2
+  files_changed: 2
+  lines_added: 409
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-356-post-init-validation-verify-fw-init-prod.md
+generated_by: context-agent-hybrid
