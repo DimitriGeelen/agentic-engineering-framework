@@ -416,6 +416,55 @@ print(f'{unenriched} {total}')
     fi
 fi
 
+# Fabric drift: check for unregistered source files
+WATCH_PATTERNS="$PROJECT_ROOT/.fabric/watch-patterns.yaml"
+if [ -f "$WATCH_PATTERNS" ] && [ -d "$PROJECT_ROOT/.fabric/components" ]; then
+    drift_result=$(python3 << 'DRIFTEOF'
+import yaml, glob, os
+
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", ".")
+COMP_DIR = os.path.join(PROJECT_ROOT, ".fabric", "components")
+WATCH_FILE = os.path.join(PROJECT_ROOT, ".fabric", "watch-patterns.yaml")
+
+# Get all registered locations
+registered = set()
+for f in glob.glob(os.path.join(COMP_DIR, "*.yaml")):
+    try:
+        with open(f) as fh:
+            d = yaml.safe_load(fh)
+        if d and d.get("location"):
+            registered.add(d["location"])
+    except Exception:
+        pass
+
+# Get files matching watch patterns
+with open(WATCH_FILE) as f:
+    data = yaml.safe_load(f)
+patterns = data.get("patterns", []) if data else []
+unregistered = []
+for p in patterns:
+    g = p.get("glob", "") if isinstance(p, dict) else str(p)
+    if not g:
+        continue
+    for match in glob.glob(os.path.join(PROJECT_ROOT, g), recursive=True):
+        rel = os.path.relpath(match, PROJECT_ROOT)
+        if os.path.isfile(match) and rel not in registered:
+            unregistered.append(rel)
+
+print(f"{len(unregistered)} {len(registered)}")
+DRIFTEOF
+    )
+    drift_unreg=$(echo "$drift_result" | awk '{print $1}')
+    drift_total=$(echo "$drift_result" | awk '{print $2}')
+    if [ "$drift_unreg" -gt 0 ] 2>/dev/null; then
+        warn "Fabric drift: $drift_unreg source file(s) have no fabric card" \
+             "$drift_unreg unregistered files matching watch-patterns.yaml" \
+             "Run: fw fabric scan"
+    else
+        pass "Fabric drift: All watched source files registered ($drift_total cards)"
+    fi
+fi
+
 echo ""
 fi # end structure
 
