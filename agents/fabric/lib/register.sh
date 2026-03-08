@@ -32,31 +32,59 @@ do_register() {
         return 0
     fi
 
-    # Infer type from path
-    local comp_type="script"
-    case "$rel_path" in
-        web/blueprints/*.py) comp_type="route" ;;
-        web/templates/_*.html) comp_type="fragment" ;;
-        web/templates/*.html) comp_type="template" ;;
-        .context/project/*.yaml|.context/working/*) comp_type="data" ;;
-        .claude/*) comp_type="config" ;;
-        *.yaml|*.json) comp_type="config" ;;
-    esac
+    # Check for project-specific subsystem rules (T-369)
+    local rules_file="$FABRIC_DIR/subsystem-rules.yaml"
+    local comp_type=""
+    local subsystem=""
+    if [ -f "$rules_file" ]; then
+        local rule_result
+        rule_result=$(python3 -c "
+import yaml, fnmatch
+with open('$rules_file') as f:
+    data = yaml.safe_load(f)
+rules = data.get('rules', []) if data else []
+for r in rules:
+    if fnmatch.fnmatch('$rel_path', r.get('pattern', '')):
+        print(r.get('type', ''), r.get('subsystem', ''))
+        break
+else:
+    print('')
+" 2>/dev/null || echo "")
+        if [ -n "$rule_result" ]; then
+            comp_type=$(echo "$rule_result" | awk '{print $1}')
+            subsystem=$(echo "$rule_result" | awk '{print $2}')
+        fi
+    fi
 
-    # Infer subsystem from path
-    local subsystem="unknown"
-    case "$rel_path" in
-        agents/context/*) subsystem="context-fabric" ;;
-        agents/audit/*) subsystem="audit" ;;
-        agents/git/*) subsystem="git-traceability" ;;
-        agents/handover/*) subsystem="handover" ;;
-        agents/healing/*) subsystem="healing" ;;
-        agents/fabric/*) subsystem="component-fabric" ;;
-        agents/task-create/*) subsystem="task-management" ;;
-        web/*) subsystem="watchtower" ;;
-        lib/*) subsystem="framework-core" ;;
-        bin/*) subsystem="framework-core" ;;
-    esac
+    # Infer type from path (fallback if no rule matched)
+    if [ -z "$comp_type" ]; then
+        comp_type="script"
+        case "$rel_path" in
+            web/blueprints/*.py) comp_type="route" ;;
+            web/templates/_*.html) comp_type="fragment" ;;
+            web/templates/*.html) comp_type="template" ;;
+            .context/project/*.yaml|.context/working/*) comp_type="data" ;;
+            .claude/*) comp_type="config" ;;
+            *.yaml|*.json) comp_type="config" ;;
+        esac
+    fi
+
+    # Infer subsystem from path (fallback if no rule matched)
+    if [ -z "$subsystem" ]; then
+        subsystem="unknown"
+        case "$rel_path" in
+            agents/context/*) subsystem="context-fabric" ;;
+            agents/audit/*) subsystem="audit" ;;
+            agents/git/*) subsystem="git-traceability" ;;
+            agents/handover/*) subsystem="handover" ;;
+            agents/healing/*) subsystem="healing" ;;
+            agents/fabric/*) subsystem="component-fabric" ;;
+            agents/task-create/*) subsystem="task-management" ;;
+            web/*) subsystem="watchtower" ;;
+            lib/*) subsystem="framework-core" ;;
+            bin/*) subsystem="framework-core" ;;
+        esac
+    fi
 
     # Infer name from filename
     local name
