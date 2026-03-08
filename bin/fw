@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-FW_VERSION="1.2.4"
+FW_VERSION="1.2.6"
 
 # Colors
 RED='\033[0;31m'
@@ -45,12 +45,14 @@ resolve_framework() {
     # If fw is inside the framework repo (bin/fw), use that
     local candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
     if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
-        # T-355: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
-        # Cellar paths are versioned (/usr/local/Cellar/fw/1.2.4/libexec) and break on upgrade.
-        # The opt symlink (/usr/local/opt/fw/libexec) always points to the active version.
-        if [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
-            local brew_prefix="${candidate%/Cellar/fw/*/libexec}"
-            local opt_path="$brew_prefix/opt/fw/libexec"
+        # T-355/T-359: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
+        # Cellar paths are versioned (/usr/local/Cellar/agentic-fw/1.2.6/libexec) and break on upgrade.
+        # The opt symlink (/usr/local/opt/agentic-fw/libexec) always points to the active version.
+        if [[ "$candidate" == */Cellar/agentic-fw/*/libexec ]] || [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
+            local formula_name="${candidate#*Cellar/}"
+            formula_name="${formula_name%%/*}"
+            local brew_prefix="${candidate%/Cellar/*/libexec}"
+            local opt_path="$brew_prefix/opt/$formula_name/libexec"
             if [ -d "$opt_path" ] && [ -f "$opt_path/FRAMEWORK.md" ]; then
                 echo "$opt_path"
                 return 0
