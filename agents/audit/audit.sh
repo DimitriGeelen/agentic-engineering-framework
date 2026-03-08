@@ -814,6 +814,38 @@ else
          "Run: fw init --force (or create practices file manually)"
 fi
 
+# Bugfix-learning coverage (G-016 detective control)
+LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
+bugfix_total=0
+bugfix_with_learning=0
+
+if [ -d "$TASKS_DIR/completed" ]; then
+    # Find completed tasks with "fix" or "bug" in name (case-insensitive)
+    while IFS= read -r task_file; do
+        [ -z "$task_file" ] && continue
+        task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
+        [ -z "$task_id" ] && continue
+        bugfix_total=$((bugfix_total + 1))
+        # Check if any learning references this task
+        if [ -f "$LEARNINGS_FILE" ] && grep -q "task: ${task_id}" "$LEARNINGS_FILE" 2>/dev/null; then
+            bugfix_with_learning=$((bugfix_with_learning + 1))
+        fi
+    done < <(grep -rli "^name:.*\(fix\|bug\)" "$TASKS_DIR/completed" 2>/dev/null || true)
+fi
+
+if [ "$bugfix_total" -gt 0 ]; then
+    coverage=$((bugfix_with_learning * 100 / bugfix_total))
+    if [ "$coverage" -ge 40 ]; then
+        pass "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total bugfixes have learnings)"
+    else
+        warn "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
+             "Only ${coverage}% of bugfixes have associated learnings (target: 40%)" \
+             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX \"description\""
+    fi
+else
+    pass "Bugfix-learning coverage: no completed bugfix tasks found"
+fi
+
 echo ""
 fi # end learning
 

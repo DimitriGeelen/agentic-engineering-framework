@@ -4,7 +4,7 @@ name: "Add bugfix-learning coverage ratio to audit section 5"
 description: >
   Detective control for G-016: audit checks ratio of bugfix tasks with learnings. Warn below 40%.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: [meta, audit, learning]
 components: []
 related_tasks: []
 created: 2026-03-08T12:34:04Z
-last_update: 2026-03-08T12:34:04Z
+last_update: 2026-03-08T14:04:54Z
 date_finished: null
 ---
 
@@ -20,40 +20,18 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Detective control for G-016: audit section 5 now checks ratio of completed bugfix tasks that have associated learnings in learnings.yaml. Warns below 40%.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Audit section 5 (learning) includes bugfix-learning coverage check
+- [x] Check counts completed tasks with "fix" or "bug" in name, cross-refs learnings.yaml
+- [x] Warns below 40% coverage with actionable mitigation message
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+fw audit --section learning 2>&1 | grep -q "Bugfix-learning coverage"
 
 ## Decisions
 
@@ -72,3 +50,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-346-add-bugfix-learning-coverage-ratio-to-au.md
 - **Context:** Initial task creation
+
+### 2026-03-08T14:04:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
