@@ -2,19 +2,19 @@
 # Agentic Engineering Framework — Install Script
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 #
 # Configuration (environment variables):
 #   INSTALL_DIR   — Where to install (default: ~/.agentic-framework)
 #   REPO_URL      — Git clone URL (default: GitHub)
-#   BRANCH        — Branch to clone (default: main)
+#   BRANCH        — Branch to clone (default: master)
 
 set -euo pipefail
 
 # --- Configuration ---
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.agentic-framework}"
 REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-framework.git}"
-BRANCH="${BRANCH:-main}"
+BRANCH="${BRANCH:-master}"
 SYMLINK_DIR="/usr/local/bin"
 
 # --- Colors ---

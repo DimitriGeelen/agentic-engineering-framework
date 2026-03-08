@@ -92,7 +92,7 @@ Short-term context, accumulated knowledge, and historical reference have differe
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 
 # See current memory state

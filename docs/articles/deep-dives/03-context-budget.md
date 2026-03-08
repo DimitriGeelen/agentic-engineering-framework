@@ -61,7 +61,7 @@ This means catastrophic context loss costs at most 15 minutes of work. Without i
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 
 # Check current context budget
