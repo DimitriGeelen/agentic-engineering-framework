@@ -1086,6 +1086,9 @@ case "$cmd" in
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
         ;;
+    docs)
+        exec "$AGENTS_DIR/docgen/generate-component.sh" "$@"
+        ;;
     fabric)
         exec "$AGENTS_DIR/fabric/fabric.sh" "$@"
         ;;
