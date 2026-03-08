@@ -25,13 +25,13 @@ T-356 inception GO decision. Design: `docs/reports/T-356-post-init-validation.md
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All creation units in `lib/init.sh` have `#@init: <type>-<key> <path> [args]` tags (31 units)
-- [ ] Each `#@init:` tag has a human-readable comment on the next line
-- [ ] `lib/validate-init.sh` exists and parses `#@init:` tags from `init.sh`
-- [ ] `validate-init.sh` checks: dir exists, file exists, yaml valid + keys, json valid + keys, exec + contains
-- [ ] `fw init` calls `validate-init.sh` at the end and shows pass/fail per unit
-- [ ] `fw validate-init [target-dir]` works as standalone command
-- [ ] Both components registered in Fabric with `init.sh → validate-init.sh` dependency edge
+- [x] All creation units in `lib/init.sh` have `#@init: <type>-<key> <path> [args]` tags (30 units)
+- [x] Each `#@init:` tag has a human-readable comment on the next line
+- [x] `lib/validate-init.sh` exists and parses `#@init:` tags from `init.sh`
+- [x] `validate-init.sh` checks: dir exists, file exists, yaml valid + keys, json valid + keys, exec + contains, hookpaths
+- [x] `fw init` calls `validate-init.sh` at the end and shows pass/fail per unit
+- [x] `fw validate-init [target-dir]` works as standalone command
+- [x] Both components registered in Fabric with `init.sh → validate-init.sh` dependency edge
 
 ### Human
 - [ ] [RUBBER-STAMP] Run `fw init --provider claude --force` in a temp dir and verify validation output
