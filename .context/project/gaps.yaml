@@ -467,3 +467,38 @@ gaps:
     created: 2026-03-06
     last_reviewed: 2026-03-06
     related_task: T-329
+
+  - id: G-016
+    title: "Learning capture has no structural trigger for bugfix tasks"
+    description: >
+      72% of bugfix tasks (31/43) produce zero learning entries. Learning capture
+      relies entirely on behavioral rules (CLAUDE.md guidance, session capture
+      checklist) which are consistently skipped during ops-heavy fix cycles.
+      update-task.sh auto-captures decisions on work-completed but NOT learnings.
+      healing resolve captures both but is designed for issues->recovery flow,
+      not fix-commit-complete. Concrete cost: T-030 (portability fix, 2026-02-13,
+      no learning) -> T-344 (same class, 2026-03-08, 23 days later, 3 fix-retag
+      cycles that could have been anticipated).
+    spec_reference: "CLAUDE.md §Error Escalation Ladder, §Session End Protocol"
+    severity: medium
+    evidence_collected: >
+      43 bugfix tasks in completed/: 12 with learnings (28%), 31 without (72%).
+      T-344 had 3 macOS compat bugs, all fixed, no learnings until human called
+      it out. T-030 (same bug class) also had no learnings. healing resolve was
+      never invoked during T-344. Session handover had [TODO] placeholders.
+      Audit section 5 checks practice count but not bugfix-to-learning ratio.
+    decision_trigger: >
+      Same bug class reappears 3rd time without a connecting learning entry.
+      Or: bugfix-to-learning ratio stays below 35% for 20+ additional bugfix tasks.
+    trigger_check:
+      type: manual
+      hint: "Review bugfix tasks at session end — did field-discovered bugs produce learnings?"
+    possible_resolution:
+      - "Behavioral: Bug-Fix Learning Checkpoint practice in CLAUDE.md (DONE)"
+      - "Detective: Audit section 5 checks bugfix-learning coverage ratio"
+      - "Preventive: fw fix-learned shortcut for fast capture during fix cycles"
+      - "Structural: update-task.sh prompts for learning when completing bugfix tasks"
+    status: watching
+    created: 2026-03-08
+    last_reviewed: 2026-03-08
+    related_task: T-345

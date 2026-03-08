@@ -661,6 +661,21 @@ When encountering errors or unexpected behavior:
 6. Never shotgun-debug (trying random fixes without understanding the cause)
 7. After resolution, record the pattern: `fw healing resolve T-XXX --mitigation "what fixed it"`
 
+### Bug-Fix Learning Checkpoint
+When fixing a bug discovered through real-world usage (user testing, production incident, cross-platform failure):
+1. **Classify the bug** — Is this a new failure class, or a repeat of a known pattern?
+2. **Check learnings.yaml** — Does a learning already exist for this class?
+3. If new class: `fw context add-learning "description" --task T-XXX --source P-001`
+4. If systemic (same class hit 2+ times): register in `gaps.yaml`, consider tooling fix (Level C/D)
+
+**Trigger:** Any fix cycle addressing a bug found by someone other than the agent (user report, CI failure, production monitoring, cross-platform testing).
+
+**Not triggered by:** Fixes for bugs found during development (pre-commit). Those are normal development, not field discoveries.
+
+**The test:** "If another agent encounters this same class of bug in 6 months, would a learning entry help them fix it faster?" If yes, capture it now.
+
+**Evidence:** 72% of bugfix tasks (31/43) produced zero learnings. T-030 (portability fix) and T-344 (same class, 23 days later) had no learning connecting them. See G-016.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
