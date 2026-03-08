@@ -2,7 +2,7 @@
 
 ## Title
 
-Temporal memory tells you what happened — spatial memory tells you what exists
+Governing AI Agents: The Component Fabric — structural awareness for AI agents
 
 ## Post Body
 

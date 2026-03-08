@@ -2,7 +2,7 @@
 
 ## Title
 
-The absence of a gate is itself a risk decision
+Governing AI Agents: Tier 0 Protection — stopping destructive commands before they execute
 
 ## Post Body
 

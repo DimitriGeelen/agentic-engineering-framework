@@ -2,7 +2,7 @@
 
 ## Title
 
-Unmonitored resource consumption is not a technical problem — it is a governance failure
+Governing AI Agents: Context Budget — treating your agent's memory as a finite resource
 
 ## Post Body
 

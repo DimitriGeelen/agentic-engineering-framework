@@ -2,7 +2,7 @@
 
 ## Title
 
-Delegation without boundaries is not empowerment — it is abdication
+Governing AI Agents: The Authority Model — why initiative is not authority
 
 ## Post Body
 

@@ -2,7 +2,7 @@
 
 ## Title
 
-Memory is not one thing
+Governing AI Agents: Three-Layer Memory — giving agents institutional knowledge
 
 ## Post Body
 

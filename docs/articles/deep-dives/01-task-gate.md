@@ -2,7 +2,7 @@
 
 ## Title
 
-Without a task, there is no accountability
+Governing AI Agents: The Task Gate — how one rule creates full traceability
 
 ## Post Body
 

@@ -2,7 +2,7 @@
 
 ## Title
 
-Every failure that strengthens the system was worth having
+Governing AI Agents: The Healing Loop — how failure makes the system stronger
 
 ## Post Body
 
