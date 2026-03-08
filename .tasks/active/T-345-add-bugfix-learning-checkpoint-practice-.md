@@ -4,9 +4,9 @@ name: "Add bugfix learning checkpoint practice and G-016 gap"
 description: >
   Add bugfix learning checkpoint practice and G-016 gap
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [meta, learning, practices]
 components: []
