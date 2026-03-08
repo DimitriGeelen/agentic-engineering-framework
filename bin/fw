@@ -81,6 +81,7 @@ if [ -z "$PROJECT_ROOT" ]; then
             if [ -n "$FRAMEWORK_ROOT" ]; then
                 export PROJECT_ROOT="$PWD"
                 export FRAMEWORK_ROOT
+                FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
                 source "$FRAMEWORK_ROOT/lib/init.sh"
                 do_init "$PWD" --provider claude 2>/dev/null
                 exec "$0" "$@"
@@ -171,6 +172,7 @@ if [ -z "$PROJECT_ROOT" ]; then
             fi
             export PROJECT_ROOT="$_init_dir"
             export FRAMEWORK_ROOT
+            FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
             source "$FRAMEWORK_ROOT/lib/init.sh"
             do_init "$_init_dir" --provider "$_provider"
             echo ""
