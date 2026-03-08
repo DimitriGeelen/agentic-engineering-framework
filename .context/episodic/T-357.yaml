@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-357: Implement post-init validation with #@init: tags
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:14:04Z
+# ============================================================================
+
+task_id: T-357
+task_name: "Implement post-init validation with #@init: tags"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T18:17:48Z
+completed: 2026-03-08T19:14:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T19:18:38+01:00
+last_commit: 2026-03-08T19:30:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create build task for post-init validation with #@init: tags. Implement post-init validation with #@init: tags
+
+# Key outcomes
+outcomes:
+  - "All creation units in `lib/init.sh` have `#@init: <type>-<key> <path> [args]` tags (30 units)"
+  - "Each `#@init:` tag has a human-readable comment on the next line"
+  - "`lib/validate-init.sh` exists and parses `#@init:` tags from `init.sh`"
+  - "`validate-init.sh` checks: dir exists, file exists, yaml valid + keys, json valid + keys, exec + contains, hookpaths"
+  - "`fw init` calls `validate-init.sh` at the end and shows pass/fail per unit"
+  - "`fw validate-init [target-dir]` works as standalone command"
+  - "Both components registered in Fabric with `init.sh → validate-init.sh` dependency edge"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-validate-init.yaml"
+  - "lib/init.sh"
+  - "lib/validate-init.sh"
+  - ".tasks/active/T-357-implement-post-init-validation-with-init.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T19:18:38"
+    action: "T-357: Create build task for post-init validation with #@init: tags"
+  - time: "2026-03-08T19:30:57"
+    action: "T-357: Implement post-init validation with #@init: tags"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 56 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 56
+  commits: 2
+  files_changed: 6
+  lines_added: 489
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-357-implement-post-init-validation-with-init.md
+generated_by: context-agent-hybrid
