@@ -70,7 +70,7 @@ AI agents need the same structure. Broad delegation within clear boundaries is n
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 
 # See the authority model in action

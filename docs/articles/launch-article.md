@@ -240,7 +240,7 @@ If that sounds interesting, try it. If you find bugs, report them. If you see im
 
 ```bash
 # Install
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 
 # Or via Homebrew (macOS/Linux)
 brew install DimitriGeelen/agentic-fw/fw

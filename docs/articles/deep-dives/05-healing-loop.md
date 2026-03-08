@@ -98,7 +98,7 @@ The healing loop is not only reactive. When a practice repeats across 3+ tasks, 
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 
 # View known failure patterns

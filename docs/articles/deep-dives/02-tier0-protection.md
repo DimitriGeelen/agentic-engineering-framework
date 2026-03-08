@@ -66,7 +66,7 @@ A human developer has years of muscle memory around dangerous commands. They hes
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 # Destructive commands through Claude Code will now be intercepted
 ```

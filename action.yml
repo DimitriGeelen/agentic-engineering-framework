@@ -34,7 +34,7 @@ runs:
       run: |
         if [ ! -f "bin/fw" ]; then
           echo "Installing Agentic Engineering Framework..."
-          curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+          curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
         fi
 
     - name: Run audit

@@ -54,7 +54,7 @@ Across 312 completed tasks, the framework achieved 96% commit traceability — e
 ### Try it
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
 fw work-on "My first governed task" --type build
 ```

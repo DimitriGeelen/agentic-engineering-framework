@@ -224,7 +224,7 @@ fw tier0 approve     # Approve a blocked destructive command
 ### Quick install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 ```
 
 This checks prerequisites, clones to `~/.agentic-framework`, links `fw` to PATH, and runs `fw doctor`.
