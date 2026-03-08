@@ -4,7 +4,7 @@ name: "Inception: link documentation to Component Fabric endpoints"
 description: >
   Explore how documentation pages (guides, concept explanations, deep-dives) can be linked to their corresponding Component Fabric entries, creating bidirectional navigation between what-it-is (docs) and where-it-is (code). Use cases: doc page links to fabric component, fabric component links to relevant docs, Watchtower shows docs alongside component details.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-08T08:20:49Z
-last_update: 2026-03-08T08:20:49Z
+last_update: 2026-03-08T21:30:32Z
 date_finished: null
 ---
 
@@ -20,68 +20,75 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Zero bidirectional links exist between documentation (7 deep-dives, launch article, CLAUDE.md sections) and Component Fabric entries (127 cards). A user reading about "the healing loop" cannot navigate to the code. A user viewing a component in Watchtower sees no reference to explanatory docs. This creates two disconnected views of the same system.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Adding an optional `docs` field to component cards won't break existing fabric tooling (drift, blast-radius, traverse, query) — **VALIDATED**: all tooling uses `.get()` with defaults, no strict schema
+2. At least 5 of 7 deep-dives map cleanly to specific components — **VALIDATED**: 7/7 map cleanly
+3. Watchtower component detail template can render doc links with minimal changes — **VALIDATED**: template is simple Jinja2, adding a section is trivial
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. ~~Check if fabric tooling has strict schema validation~~ — Done, no strict schema
+2. ~~Check deep-dive → component mapping feasibility~~ — Done, 7/7 clean
+3. ~~Assess 4 design options~~ — Done, see research artifact
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None. This is YAML field additions and template changes.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Add `docs` field to component cards, populate for 7 deep-dives, show in Watchtower component detail page.
+**OUT:** Doc-side component links (frontmatter in .md files), full `/docs` index page, CLAUDE.md section→component linking. These are follow-ups if Option A proves useful.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Adding `docs` field doesn't break fabric tooling — CONFIRMED
+- Watchtower can render doc links with minimal template changes — CONFIRMED
+- At least 5/7 deep-dives map cleanly to components — CONFIRMED (7/7)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Schema validation breaks — NOT the case
+- Mapping is too many-to-many — NOT the case (each deep-dive maps to 2-5 components)
+- No demand signal — demand exists (this was captured as a task)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+test -f docs/reports/T-339-doc-fabric-linking.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: All 3 assumptions validated. docs field safe to add (no strict schema), 7/7 deep-dives map to components, Watchtower template change is trivial. Option A (docs field in cards) recommended. See docs/reports/T-339-doc-fabric-linking.md
+
+**Date**: 2026-03-08T21:32:58Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: All 3 assumptions validated. docs field safe to add (no strict schema), 7/7 deep-dives map to components, Watchtower template change is trivial. Option A (docs field in cards) recommended. See docs/reports/T-339-doc-fabric-linking.md
+
+**Date**: 2026-03-08T21:32:58Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-08T21:30:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-08T21:32:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All 3 assumptions validated. docs field safe to add (no strict schema), 7/7 deep-dives map to components, Watchtower template change is trivial. Option A (docs field in cards) recommended. See docs/reports/T-339-doc-fabric-linking.md
