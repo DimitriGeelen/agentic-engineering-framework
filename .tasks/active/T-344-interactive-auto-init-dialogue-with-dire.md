@@ -6,16 +6,16 @@ description: >
   (1) where to initialize (git root vs cwd vs custom), (2) which provider (claude/cursor/generic).
   Uses detect-and-confirm pattern — smart defaults, Enter-through, non-TTY safe.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [cli, ux, onboarding]
 components: [bin/fw]
 related_tasks: [T-343, T-294, T-304]
 created: 2026-03-08T11:20:14Z
-last_update: 2026-03-08T11:20:14Z
-date_finished: null
+last_update: 2026-03-08T12:30:00Z
+date_finished: 2026-03-08T12:30:00Z
 ---
 
 # T-344: Interactive auto-init dialogue with directory and provider selection
