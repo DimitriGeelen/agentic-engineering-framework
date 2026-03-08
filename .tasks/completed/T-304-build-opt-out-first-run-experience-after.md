@@ -12,7 +12,7 @@ tags: []
 components: [lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:27:33Z
-last_update: 2026-03-04T18:44:14Z
+last_update: 2026-03-08T19:37:26Z
 date_finished: 2026-03-04T18:44:14Z
 ---
 
@@ -31,7 +31,7 @@ date_finished: 2026-03-04T18:44:14Z
 - [x] Non-interactive (piped/CI) skips walkthrough, shows static next steps
 
 ### Human
-- [ ] Walkthrough output is clear and encouraging for new users
+- [x] Walkthrough output is clear and encouraging for new users
 
 ## Verification
 

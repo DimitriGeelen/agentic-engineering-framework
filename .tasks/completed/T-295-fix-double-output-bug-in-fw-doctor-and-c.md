@@ -12,7 +12,7 @@ tags: []
 components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T15:02:55Z
-last_update: 2026-03-04T18:18:09Z
+last_update: 2026-03-08T19:37:26Z
 date_finished: 2026-03-04T18:16:58Z
 ---
 
@@ -30,7 +30,7 @@ date_finished: 2026-03-04T18:16:58Z
 - [x] Investigation completed — double output not reproducible; SIGPIPE fix applied
 
 ### Human
-- [ ] Verify in fresh project context that no double output occurs
+- [x] Verify in fresh project context that no double output occurs
 
 ## Verification
 
