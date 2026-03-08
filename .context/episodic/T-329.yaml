@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-329: Write launch article: I built guardrails for Claude Code
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T20:16:37Z
+# ============================================================================
+
+task_id: T-329
+task_name: "Write launch article: I built guardrails for Claude Code"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-05T01:12:29Z
+completed: 2026-03-08T20:16:36Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-03-05T03:03:16+01:00
+last_commit: 2026-03-06T23:41:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Draft launch article — I built guardrails for Claude Code. Rewrite article in author voice — Shell governance framing. Add Context Fabric, Component Fabric, authority model + 3 screenshots. Add Kanban board screenshot to article. Add honest alpha status section — work in progress, try it anyway. Expand Component Fabric description in requirements table. Expand provider support section and fix frontmatter four→five. Link review research — 5-agent qualitative review consolidated. Save pending corrections checklist for post-investigation pickup. Register G-015 — sub-agent results bypass task governance. Apply review corrections — tone, accuracy, overstatements, task count. Update corrections checklist — 11 of 17 applied. Structural improvements — swap sections, add transitions, tighten opening. Fix authority model claim — risk awareness, not command blocking. Article published on dev.to — human ACs checked. Hashnode cross-post published — all ACs complete
+
+# Key outcomes
+outcomes:
+  - "Article draft exists at `docs/articles/launch-article.md`"
+  - "1200-1800 words"
+  - "Contains code snippets from actual framework"
+  - "Contains before/after comparison"
+  - "Has dev.to frontmatter (title, tags, canonical_url)"
+  - "Article reviewed and edited for voice/tone"
+  - "Published on dev.to — https://dev.to/irrindar/i-built-guardrails-for-ai-coding-agents-same-governance-principle-new-domain-28j3"
+  - "Cross-posted to Hashnode with canonical URL — https://devnull42.hashnode.dev/i-built-guardrails-for-ai-coding-agents-same-governance-principle-new-domain"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix authority model claim — risk awareness, not command blocking"
+    source: git-mined
+  - description: "Expand provider support section and fix frontmatter four→five"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/gaps.yaml"
+  - "docs/articles/launch-article.md"
+  - "docs/reports/T-329-article-review.md"
+  - "docs/reports/T-329-pending-corrections.md"
+  - ".tasks/active/T-329-write-launch-article-i-built-guardrails-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-05T03:03:16"
+    action: "T-329: Draft launch article — I built guardrails for Claude Code"
+  - time: "2026-03-06T18:27:39"
+    action: "T-329: Rewrite article in author voice — Shell governance framing"
+  - time: "2026-03-06T18:28:54"
+    action: "T-329: Add Context Fabric, Component Fabric, authority model + 3 screenshots"
+  - time: "2026-03-06T18:30:18"
+    action: "T-329: Add Kanban board screenshot to article"
+  - time: "2026-03-06T18:32:18"
+    action: "T-329: Add honest alpha status section — work in progress, try it anyway"
+  - time: "2026-03-06T18:36:58"
+    action: "T-329: Expand Component Fabric description in requirements table"
+  - time: "2026-03-06T20:38:02"
+    action: "T-329: Expand provider support section and fix frontmatter four→five"
+  - time: "2026-03-06T20:39:27"
+    action: "T-329: Link review research — 5-agent qualitative review consolidated"
+  - time: "2026-03-06T20:40:27"
+    action: "T-329: Save pending corrections checklist for post-investigation pickup"
+  - time: "2026-03-06T20:44:23"
+    action: "T-329: Register G-015 — sub-agent results bypass task governance"
+  - time: "2026-03-06T20:46:18"
+    action: "T-329: Apply review corrections — tone, accuracy, overstatements, task count"
+  - time: "2026-03-06T20:46:40"
+    action: "T-329: Update corrections checklist — 11 of 17 applied"
+  - time: "2026-03-06T20:48:23"
+    action: "T-329: Structural improvements — swap sections, add transitions, tighten opening"
+  - time: "2026-03-06T22:26:50"
+    action: "T-329: Fix authority model claim — risk awareness, not command blocking"
+  - time: "2026-03-06T22:57:38"
+    action: "T-329: Article published on dev.to — human ACs checked"
+  - time: "2026-03-06T23:41:18"
+    action: "T-329: Hashnode cross-post published — all ACs complete"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 5464 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5464
+  commits: 16
+  files_changed: 5
+  lines_added: 1049
+  lines_removed: 195
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-329-write-launch-article-i-built-guardrails-.md
+generated_by: context-agent-hybrid

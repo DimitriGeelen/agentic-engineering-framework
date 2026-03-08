@@ -15,7 +15,7 @@ tags: [portability, onboarding, dx, parent]
 components: [lib/init.sh, lib/setup.sh, bin/fw, lib/templates/claude-project.md]
 related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298, T-299, T-300, T-301, T-302, T-303, T-304, T-305, T-306, T-307, T-308, T-309, T-310, T-311, T-312]
 created: 2026-03-04T14:23:26Z
-last_update: 2026-03-04T16:41:27Z
+last_update: 2026-03-08T20:14:57Z
 date_finished: null
 ---
 

@@ -4,7 +4,7 @@ name: "Write launch article: I built guardrails for Claude Code"
 description: >
   Write and publish a dev.to article titled 'I built guardrails for Claude Code — here's what I learned.' 1200-1800 words, code snippets from framework, before/after comparisons. Cross-post to Hashnode with canonical URL. Tags: #ai, #claudecode, #opensource, #devtools. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-326, T-332, T-334]
 created: 2026-03-05T01:12:29Z
-last_update: 2026-03-06T22:41:19Z
-date_finished: null
+last_update: 2026-03-08T20:16:36Z
+date_finished: 2026-03-08T20:16:36Z
 ---
 
 # T-329: Write launch article: I built guardrails for Claude Code
@@ -65,3 +65,6 @@ grep -q "tags:" docs/articles/launch-article.md
 
 ### 2026-03-05T02:00:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T20:16:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
