@@ -96,6 +96,7 @@ def create_app() -> Flask:
     from web.blueprints.risks import bp as risks_bp
     from web.blueprints.fabric import bp as fabric_bp
     from web.blueprints.discoveries import bp as discoveries_bp
+    from web.blueprints.docs import bp as docs_bp
 
     app.register_blueprint(core_bp)
     app.register_blueprint(tasks_bp)
@@ -110,6 +111,7 @@ def create_app() -> Flask:
     app.register_blueprint(risks_bp)
     app.register_blueprint(fabric_bp)
     app.register_blueprint(discoveries_bp)
+    app.register_blueprint(docs_bp)
 
     # -------------------------------------------------------------------
     # Health endpoint

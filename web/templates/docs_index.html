@@ -1,0 +1,48 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p style="color: var(--pico-muted-color);">{{ total }} component reference docs, auto-generated from Component Fabric</p>
+</div>
+
+{% for subsystem, components in subsystems | dictsort %}
+<details open>
+    <summary>
+        <strong>{{ subsystem }}</strong>
+        <small style="color: var(--pico-muted-color); margin-left: 0.5rem;">{{ components | length }} components</small>
+    </summary>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Component</th>
+                <th scope="col">Type</th>
+                <th scope="col">Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comp in components %}
+            <tr>
+                <td>
+                    <a href="/docs/generated/{{ comp.card_name }}"
+                       hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                        {{ comp.name }}
+                    </a>
+                </td>
+                <td>
+                    <span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px;
+                        {% if comp.type == 'script' %}background: #2d3748; color: #a0aec0;
+                        {% elif comp.type == 'route' %}background: #2b6cb0; color: #bee3f8;
+                        {% elif comp.type == 'template' %}background: #2c7a7b; color: #b2f5ea;
+                        {% elif comp.type == 'data' %}background: #744210; color: #fefcbf;
+                        {% elif comp.type == 'hook' %}background: #742a2a; color: #fed7d7;
+                        {% elif comp.type == 'config' %}background: #553c9a; color: #e9d8fd;
+                        {% else %}background: #4a5568; color: #e2e8f0;
+                        {% endif %}">
+                        {{ comp.type }}
+                    </span>
+                </td>
+                <td><small>{{ comp.purpose }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endfor %}
