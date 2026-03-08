@@ -45,6 +45,17 @@ resolve_framework() {
     # If fw is inside the framework repo (bin/fw), use that
     local candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
     if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
+        # T-355: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
+        # Cellar paths are versioned (/usr/local/Cellar/fw/1.2.4/libexec) and break on upgrade.
+        # The opt symlink (/usr/local/opt/fw/libexec) always points to the active version.
+        if [[ "$candidate" == */Cellar/fw/*/libexec ]]; then
+            local brew_prefix="${candidate%/Cellar/fw/*/libexec}"
+            local opt_path="$brew_prefix/opt/fw/libexec"
+            if [ -d "$opt_path" ] && [ -f "$opt_path/FRAMEWORK.md" ]; then
+                echo "$opt_path"
+                return 0
+            fi
+        fi
         echo "$candidate"
         return 0
     fi
@@ -518,9 +529,14 @@ for event_type, hook_list in hooks.items():
                     script_path = p
                     break
             if not os.path.exists(script_path):
-                issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
+                if '/Cellar/' in script_path:
+                    issues.append(f'{event_type}: stale Homebrew Cellar path (run fw init --provider claude --force to fix): {os.path.basename(script_path)}')
+                else:
+                    issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
             elif not os.access(script_path, os.X_OK):
                 warnings.append(f'{event_type}: script not executable: {os.path.basename(script_path)}')
+            elif '/Cellar/' in script_path:
+                warnings.append(f'Hook uses Cellar path (will break on brew upgrade). Run: fw init --provider claude --force')
             # Track expected hooks
             basename = os.path.basename(script_path)
             if basename in expected:
