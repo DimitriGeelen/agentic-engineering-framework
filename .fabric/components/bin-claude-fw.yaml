@@ -4,7 +4,10 @@ type: script
 subsystem: framework-core
 location: bin/claude-fw
 tags: []
-purpose: claude-fw — Claude Code wrapper with auto-restart support
+purpose: Claude Code wrapper with auto-restart support. Runs claude normally, then
+  checks for a restart signal file written by checkpoint.sh when auto-handover fires
+  at critical budget. If found and fresh, auto-restarts with claude -c to continue
+  seamlessly.
 depends_on:
 - target: C-008
   type: reads

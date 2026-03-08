@@ -4,7 +4,9 @@ type: template
 subsystem: watchtower
 location: web/templates/task_detail.html
 tags: []
-purpose: 'Page template: '
+purpose: Jinja2 template rendering individual task detail pages in Watchtower. Shows
+  task frontmatter, acceptance criteria with checkboxes, verification commands, decisions,
+  and update history with markdown rendering.
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown

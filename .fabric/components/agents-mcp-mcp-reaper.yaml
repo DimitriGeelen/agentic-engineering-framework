@@ -4,7 +4,9 @@ type: script
 subsystem: healing
 location: agents/mcp/mcp-reaper.sh
 tags: []
-purpose: mcp-reaper.sh — Detect and kill orphaned MCP processes
+purpose: Detects and kills orphaned MCP server processes (playwright-mcp, context7-mcp)
+  left behind when Claude Code sessions crash. Identifies orphans via PPID=1, MCP
+  command pattern, age threshold, and dead PGID leader.
 depends_on: []
 last_verified: 2026-02-20
 created_by: unknown

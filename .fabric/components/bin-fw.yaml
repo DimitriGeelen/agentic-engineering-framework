@@ -4,7 +4,9 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: fw - Agentic Engineering Framework CLI
+purpose: Single entry point for all framework operations. Reads .framework.yaml from
+  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
+  agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls

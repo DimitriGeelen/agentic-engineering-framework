@@ -4,7 +4,9 @@ type: script
 subsystem: context-fabric
 location: agents/context/bus-handler.sh
 tags: []
-purpose: bus-handler.sh — Process incoming bus messages from inbox
+purpose: Processes incoming bus messages from the inbox directory. Triggered by systemd.path
+  when files appear in .context/bus/inbox/. Routes typed YAML envelopes to appropriate
+  handlers for sub-agent result management.
 depends_on:
 - target: lib/bus.sh
   type: reads
