@@ -79,20 +79,25 @@ A4. Different providers (claude, cursor, generic) produce different outputs — 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 31 checkable items, fw doctor covers only 26%. Option B (independent validate-init.sh) with #@init: tags in init.sh for self-documenting manifest. Cron audit compares tag count vs check count. Would have caught T-352 and T-355.
+
+**Date**: 2026-03-08T18:16:56Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 31 checkable items, fw doctor covers only 26%. Option B (independent validate-init.sh) with #@init: tags in init.sh for self-documenting manifest. Cron audit compares tag count vs check count. Would have caught T-352 and T-355.
+
+**Date**: 2026-03-08T18:16:56Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-08T18:16:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 31 checkable items, fw doctor covers only 26%. Option B (independent validate-init.sh) with #@init: tags in init.sh for self-documenting manifest. Cron audit compares tag count vs check count. Would have caught T-352 and T-355.
