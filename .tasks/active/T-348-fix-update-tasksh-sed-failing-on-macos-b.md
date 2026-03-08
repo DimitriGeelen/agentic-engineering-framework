@@ -4,16 +4,16 @@ name: "Fix update-task.sh sed failing on macOS BSD sed"
 description: >
   update-task.sh uses sed -i without BSD compat. Same class as L-081.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [cli, macos, portability]
-components: []
+components: [C-001, agents/context/lib/decision.sh, agents/context/lib/focus.sh, C-002, agents/context/lib/pattern.sh, agents/git/git.sh, agents/git/lib/common.sh, agents/observe/observe.sh, agents/resume/resume.sh, agents/task-create/update-task.sh, bin/fw, lib/init.sh, lib/setup.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-08T12:34:08Z
-last_update: 2026-03-08T12:53:48Z
-date_finished: null
+last_update: 2026-03-08T12:55:20Z
+date_finished: 2026-03-08T12:55:20Z
 ---
 
 # T-348: Fix update-task.sh sed failing on macOS BSD sed
@@ -69,3 +69,6 @@ bash -n agents/task-create/update-task.sh
 
 ### 2026-03-08T12:53:48Z — status-update [task-update-agent]
 - **Change:** tags: +portability
+
+### 2026-03-08T12:55:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -350,3 +350,10 @@ decisions:
     date: 2026-03-05
     task: T-324
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-045
+    decision: "Temp file helper (`_sed_i` in `lib/compat.sh`)"
+    scope: project
+    date: 2026-03-08
+    task: T-348
+    rationale: "Auto-captured from task file on completion"

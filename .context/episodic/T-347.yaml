@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-347: Build fw fix-learned shortcut for fast learning capture
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T14:10:37Z
+# ============================================================================
+
+task_id: T-347
+task_name: "Build fw fix-learned shortcut for fast learning capture"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T12:34:06Z
+completed: 2026-03-08T14:10:36Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T15:09:22+01:00
+last_commit: 2026-03-08T15:09:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-346, T-347: Add bugfix-learning audit check and fw fix-learned shortcut
+
+# Key outcomes
+outcomes:
+  - "`fw fix-learned` shows usage when called without args"
+  - "`fw fix-learned T-XXX \"text\"` delegates to context agent add-learning"
+  - "Command listed in `fw help` output"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "T-346, T-347: Add bugfix-learning audit check and fw fix-learned shortcut"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "bin/fw"
+  - ".tasks/active/T-346-add-bugfix-learning-coverage-ratio-to-au.md"
+  - ".tasks/active/T-347-build-fw-fix-learned-shortcut-for-fast-l.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T15:09:22"
+    action: "T-346, T-347: Add bugfix-learning audit check and fw fix-learned shortcut"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 96 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cli, learning, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 96
+  commits: 2
+  files_changed: 28
+  lines_added: 813
+  lines_removed: 217
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-347-build-fw-fix-learned-shortcut-for-fast-l.md
+generated_by: context-agent-hybrid
