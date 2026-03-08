@@ -370,7 +370,7 @@ generate_claude_code_config() {
     mkdir -p "$dir/.claude/commands"
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
-        cat > "$dir/.claude/settings.json" << 'SJSON'
+        cat > "$dir/.claude/settings.json" << SJSON
 {
   "hooks": {
     "PreCompact": [
@@ -379,7 +379,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/pre-compact.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/pre-compact.sh"
           }
         ]
       }
@@ -390,7 +390,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
           }
         ]
       },
@@ -399,7 +399,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/post-compact-resume.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
           }
         ]
       }
@@ -410,7 +410,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/block-plan-mode.sh"
+            "command": "$FRAMEWORK_ROOT/agents/context/block-plan-mode.sh"
           }
         ]
       },
@@ -419,7 +419,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/check-active-task.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/check-active-task.sh"
           }
         ]
       },
@@ -428,7 +428,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/check-tier0.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/check-tier0.sh"
           }
         ]
       },
@@ -437,7 +437,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/budget-gate.sh"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/budget-gate.sh"
           }
         ]
       }
@@ -448,7 +448,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=__PROJECT_ROOT__ __FRAMEWORK_ROOT__/agents/context/checkpoint.sh post-tool"
+            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/checkpoint.sh post-tool"
           }
         ]
       },
@@ -457,7 +457,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/error-watchdog.sh"
+            "command": "$FRAMEWORK_ROOT/agents/context/error-watchdog.sh"
           }
         ]
       },
@@ -466,7 +466,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "__FRAMEWORK_ROOT__/agents/context/check-dispatch.sh"
+            "command": "$FRAMEWORK_ROOT/agents/context/check-dispatch.sh"
           }
         ]
       }
@@ -474,9 +474,6 @@ generate_claude_code_config() {
   }
 }
 SJSON
-        # Replace placeholders with actual paths (portable via _sed_i)
-        _sed_i "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" "$dir/.claude/settings.json"
-        _sed_i "s|__PROJECT_ROOT__|$dir|g" "$dir/.claude/settings.json"
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 10 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
