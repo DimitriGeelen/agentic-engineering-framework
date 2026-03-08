@@ -2,57 +2,48 @@
 
 ## Title
 
-My AI agent kept making the same mistake. So I taught it to learn from failure.
+Every failure that strengthens the system was worth having
 
 ## Post Body
 
-Third time this week. The agent tries to parse a YAML file, hits a syntax error, and instead of investigating, it rewrites the file from scratch. Loses the existing comments, the careful ordering, the embedded references.
+**Systems that merely recover from failure are fragile. Systems that learn from failure are antifragile.**
 
-I explain the fix. It works. Next session: same mistake. Zero recall.
+In incident management, the difference between a mature organisation and an immature one is not the frequency of failures — it is what happens after. An immature team fixes the immediate problem and moves on. A mature team classifies the incident, searches for precedents, applies the known playbook, records the resolution, and updates the playbook. The fix is temporary. The learning is permanent.
 
-AI agents don't learn from failure by default. Every error is experienced in isolation. There's no mechanism to say "we've seen this before, here's what worked."
+AI coding agents, by default, are immature systems. Every error is experienced in isolation. The agent encounters a YAML parse error, rewrites the file from scratch (losing comments, ordering, and embedded references), and the problem is "solved." Next session, same error, same destructive response, zero recall. There is no mechanism to say "this has happened before, and here is what worked."
 
-### The healing loop
+I built a healing loop — a system that classifies failures, matches them against known patterns, suggests recovery using a graduated escalation, and records every resolution for future reference. **The system does not just recover. It strengthens.**
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) implements an antifragile healing loop — a system that literally gets stronger from failures:
+### The loop
 
 ```
 Error occurs
-  ↓
-1. CLASSIFY — What type of failure? (code, dependency, environment, design, external)
-  ↓
-2. LOOKUP — Have we seen this before? Search pattern database
-  ↓
-3. SUGGEST — Recommend recovery using escalation ladder
-  ↓
-4. RESOLVE — Apply fix, record what worked
-  ↓
-5. LOG — Store as pattern for future reference
+  1. CLASSIFY — What type? (code, dependency, environment, design, external)
+  2. LOOKUP  — Have we seen this before? Search pattern database
+  3. SUGGEST — Recommend recovery using escalation ladder
+  4. RESOLVE — Apply fix, record what worked
+  5. LOG     — Store as pattern for future reference
 ```
 
-When a task hits an issue:
+When a task encounters an issue:
 
 ```bash
-# Task hits a problem
 fw task update T-042 --status issues --reason "YAML parse error in config.yaml"
-
 # Healing loop activates automatically
 fw healing diagnose T-042
 ```
 
-Output:
+The diagnosis searches the pattern database and returns known resolutions:
 
 ```
-🔍 Diagnosis for T-042
+Diagnosis for T-042
   Symptom: YAML parse error in config.yaml
   Classification: code (syntax)
 
   Similar patterns found:
-  ├── P-023: YAML parse errors (seen 4 times)
-  │   Resolution: Validate before overwrite, preserve comments
-  │   Success rate: 100%
-  └── P-041: Config file corruption during edit
-      Resolution: Read file first, edit in-place, don't rewrite
+    P-023: YAML parse errors (seen 4 times)
+      Resolution: Validate before overwrite, preserve comments
+      Success rate: 100%
 
   Suggested recovery:
   1. Read current file content
@@ -67,76 +58,42 @@ Not every failure deserves the same response. The framework uses a graduated esc
 
 | Level | Response | Example |
 |-------|----------|---------|
-| **A** | Don't repeat it | "We tried X, it failed — don't try X again" |
+| **A** | Do not repeat it | "Approach X failed — do not try X again" |
 | **B** | Improve technique | "When parsing YAML, validate first" |
 | **C** | Improve tooling | "Add a pre-commit YAML lint check" |
 | **D** | Change ways of working | "All config changes go through a validation pipeline" |
 
-Most failures need Level A (don't do that again). But when the same failure class appears 3+ times, it escalates: maybe the tooling needs to prevent it (C), or maybe the workflow needs to change (D).
-
-### Pattern database
-
-Every resolved failure becomes a pattern:
-
-```yaml
-# patterns.yaml
-- id: P-023
-  type: failure
-  category: code
-  symptom: "YAML parse error after agent edit"
-  root_cause: "Agent rewrites entire file instead of editing in-place"
-  resolution: "Read file, edit specific lines, validate after"
-  task_origin: T-015
-  occurrences: 4
-  last_seen: 2026-03-01
-  success_rate: 1.0
-```
-
-When a new error matches an existing pattern, the agent gets the resolution immediately — no trial-and-error, no repeated mistakes.
+Most failures need Level A. But when the same failure class appears 3+ times, it escalates. The tooling needs to prevent it (C), or the workflow needs to change (D). The escalation is not automatic — the agent proposes, the framework logs, the human decides.
 
 ### Antifragility in practice
 
-This is the key insight: **every failure makes the system more capable.**
+- First YAML parse error: 20 minutes of debugging. Pattern recorded as P-023.
+- Second occurrence: recognised in seconds. Known fix applied.
+- Third occurrence: escalated to Level C. YAML validation added to the verification gate.
+- Fourth occurrence: does not happen. The gate catches it before commit.
 
-- First YAML parse error: costs 20 minutes of debugging
-- Pattern recorded: P-023
-- Second occurrence: recognized in seconds, resolved with known fix
-- Third occurrence: escalated to Level C — added YAML validation to verification gate
-- Fourth occurrence: **doesn't happen** because the gate catches it before commit
+The system did not just recover from the failure. It became immune to it.
 
-The system didn't just recover from the failure. It became immune to it.
+### The research behind the design
 
-### The thinking behind this
-
-The healing loop concept came from an observation about how mature engineering organizations work. When a production incident occurs at a well-run company, the response isn't just "fix it" — it's: classify, find similar incidents, apply known playbooks, record the resolution, update the playbook.
-
-We formalized this into what we call the **error escalation ladder**. It was informed by ISO 27001's four-level assurance model, adapted for software:
+I formalised the healing loop after studying how the framework's own governance model compared to ISO 27001's four-level assurance structure:
 
 | Level | ISO Equivalent | Framework Implementation |
 |-------|---------------|-------------------------|
-| Risk identification | Risk assessment | `.context/project/risks.yaml` (38 risks cataloged) |
+| Risk identification | Risk assessment | 38 risks cataloged in risk register |
 | Control design | Control adequacy | 23 controls mapped to risks |
 | Operational testing | OE testing | 20 of 23 controls auto-testable every 30 min |
 | Discovery | Continuous improvement | Pattern detection across time |
 
-The real breakthrough came from T-194, a multi-session inception that started with a governance failure: I asked the agent to investigate audit scheduling, and it completed the investigation in 2 minutes without ever consulting me — the human owner of the task. That failure sparked a deep review of all our controls, which revealed:
+The research (T-194) started with a governance failure: I asked the agent to investigate audit scheduling, and it completed the investigation in 2 minutes without consulting me — the human owner of the task. That failure sparked a deep review of all controls. The review revealed that the framework had 23 controls, not 11 as assumed. The inventory was incomplete without a formal register. High-risk items had the weakest controls — an inverted correlation. One critical risk (human sovereignty) had no structural control at all.
 
-- We had **23 controls** (not 11 as assumed — our inventory was incomplete)
-- **High-risk items had the weakest controls** — inverted correlation
-- One critical risk (human sovereignty) had **NO structural control at all**
-
-The healing loop was our answer to Level 4: instead of just checking "are controls working?", actively search for patterns the controls miss. We call this the discovery layer (T-200): **12 discovery capabilities** that analyze patterns across time, finding things no single check can see. Example: "58% episodic decay rate" — discovered by looking across all 170+ episodic records, impossible to see from any single task.
+The healing loop was the answer to the fourth level: instead of only checking whether controls work, actively search for patterns the controls miss. This became the discovery layer (T-200) — 12 capabilities that analyse patterns across time, finding things no single check can see. One example: the 58% episodic decay rate was discovered by looking across all 170+ episodic records. No individual task audit could have surfaced it.
 
 ### The proactive side
 
-The healing loop isn't only reactive. When the agent notices a practice repeating across 3+ tasks, it considers codifying it:
+The healing loop is not only reactive. When a practice repeats across 3+ tasks, the agent considers codifying it: mine episodic memory for evidence, assess whether codification adds value, codify if warranted, record as learning and decision. This is how the framework improves its own governance over time. It is not a static rule set. It is a system that evolves based on what it encounters.
 
-1. **Mine** episodic memory for evidence
-2. **Assess** whether codification adds value
-3. **Codify** if warranted (protocol, template, guideline)
-4. **Record** as learning + decision
-
-This is how the framework improves its own governance over time. It's not just a set of static rules — it's a system that evolves based on what it encounters.
+**A system that only recovers from failure is fragile. A system that learns from failure is antifragile. The domain changed from incident management to AI agent governance. The principle did not.**
 
 ### Try it
 
@@ -154,15 +111,15 @@ fw healing diagnose T-042
 fw healing resolve T-042 --mitigation "Added YAML validation step"
 ```
 
-GitHub: https://github.com/DimitriGeelen/agentic-engineering-framework
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ---
 
 ## Platform Notes
 
-**Reddit (r/ClaudeAI, r/ChatGPTCoding):** The "rewrites the file from scratch" behavior is a known pain point. People will relate immediately.
-**LinkedIn:** Frame as organizational learning — "The best teams don't just fix bugs, they build immunity. The same principle applies to AI agents."
-**Dev.to:** Expand with the full pattern YAML schema and how to seed patterns from your own experience.
+**Dev.to / Hashnode:** Use as-is. Can expand with the full pattern YAML schema and how to seed patterns from experience.
+**LinkedIn:** Open with "The best teams do not just fix incidents. They build immunity. The same principle applies to AI agents."
+**Reddit (r/ClaudeAI):** Shorten. Lead with the "rewrites the file from scratch" scenario.
 
 ## Hashtags
 

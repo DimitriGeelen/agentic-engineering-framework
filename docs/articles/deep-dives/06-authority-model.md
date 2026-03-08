@@ -2,118 +2,70 @@
 
 ## Title
 
-"Do whatever you think is best" — the most dangerous thing you can say to an AI agent
+Delegation without boundaries is not empowerment — it is abdication
 
 ## Post Body
 
-You're busy. The agent is mid-task. It asks a question. You reply:
+**Initiative is not authority.**
 
-> "Proceed as you see fit."
+In every domain I have worked in — IT programme governance, transition management, engineering leadership — the same failure mode appears when intelligent actors are given broad direction without clear constraints. A programme manager tells a workstream lead "handle this however you think is best." A hospital administrator tells a department head to "sort it out." A ship captain delegates watch duty with "you know what to do." In each case the intent is trust. The effect is the removal of structural accountability. The dynamics of complex work are too varied to oversee every possibility — which is precisely why organisations build structures that do not depend on individual judgment holding up under pressure.
 
-45 minutes later you discover it force-pushed to main, deleted a feature branch, and restructured the database schema. It was doing what it thought was best. You gave it permission.
+The same failure mode has arrived in software engineering, carried by a new class of actor. The agent is mid-task. It asks a question. You reply: "Proceed as you see fit." Forty-five minutes later you discover it force-pushed to main, deleted a feature branch, and restructured the database schema. It was doing what it thought was best. You gave it permission — or at least, you thought you did. But there is a distinction most people miss when working with AI agents, and it is the same distinction that separates effective delegation from dangerous abdication in any organisation: **initiative is not authority.**
 
-...Did you?
-
-There's a subtle but critical distinction most people miss when working with AI agents: **initiative is not authority.**
+I arrived at this distinction not from AI theory but from watching real programmes succeed and fail over 25 years. The teams that operated well were not the ones with the most autonomy and not the ones with the least. They were the ones where it was structurally clear what an actor could decide on their own and what required someone else's approval. That structural clarity is exactly what is missing from most AI agent setups today.
 
 ### The three-tier model
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) defines three distinct roles:
+The Agentic Engineering Framework defines three distinct roles:
 
 ```
-Human    → SOVEREIGNTY  → Can override anything, is accountable
-Framework → AUTHORITY   → Enforces rules, checks gates, logs everything
-Agent    → INITIATIVE   → Can propose, request, suggest — never decides
+Human     SOVEREIGNTY   Can override anything, is accountable
+Framework  AUTHORITY    Enforces rules, checks gates, logs everything
+Agent     INITIATIVE    Can propose, request, suggest — never decides
 ```
 
-When you say "proceed as you see fit," you're delegating **initiative** — the agent can choose what to work on, which approach to take, what order to do things. That's fine.
-
-But you're NOT delegating **authority** — the agent still can't:
-- Execute destructive commands (Tier 0 gate)
-- Bypass verification gates (structural enforcement)
-- Complete human-owned tasks (sovereignty)
-- Skip task creation (Tier 1 gate)
+When you say "proceed as you see fit," you are delegating initiative — the agent can choose what to work on, which approach to take, what order to do things. You are not delegating authority — the agent still cannot execute destructive commands, bypass verification gates, complete human-owned tasks, or skip task creation.
 
 Even under the broadest possible delegation, structural gates remain active.
 
-### Why this matters
+### How it is enforced
 
-Most AI agent frameworks (or lack thereof) operate on a binary model: either the agent has permission, or it doesn't. This creates a false choice:
+This is not a prompt instruction. It is structural.
 
-- **Too restrictive:** Agent asks permission for everything → you spend more time approving than coding
-- **Too permissive:** Agent does whatever → you find surprises in your codebase
-
-The framework's model adds a middle layer. The agent has broad initiative for safe operations (reading files, writing code, running tests) while authority for risky operations (force push, database changes, deployment) stays with the human.
-
-### How it's enforced
-
-This isn't just a prompt instruction. It's structural:
-
-**Tier 0 hooks** intercept destructive commands and require explicit approval:
-
-```bash
-# Agent runs this autonomously → BLOCKED
-$ git push --force origin main
-
-# Human must explicitly approve
-$ fw tier0 approve
-# NOW it executes (and the approval is logged)
-```
-
-**Task gates** prevent work without accountability:
-
-```bash
-# Agent tries to edit files without a task → BLOCKED
-# Even with "do whatever you think is best" active
-```
-
-**Ownership gates** prevent the agent from self-completing human-owned tasks:
+**Tier 0 hooks** intercept destructive commands and require explicit approval. **Task gates** prevent work without accountability. **Ownership gates** prevent the agent from self-completing human-owned tasks — the agent marks its acceptance criteria as done, but the human must review and finalise.
 
 ```yaml
 # Task with owner: human
-# Agent marks all its ACs as done, but cannot set work-completed
-# Human must review and finalize
+# Agent completes all its ACs
+# But cannot set work-completed
+# Human reviews and finalises
 ```
 
-### The practical result
+The practical result: the agent works freely within safe operations (reading files, writing code, running tests, committing). Destructive or governance-significant actions require human sign-off. Autonomy where it is safe. Control where it matters.
 
-You CAN say "proceed as you see fit" safely. The agent will:
+### The research behind the design
 
-- Choose which task to work on next ✅
-- Choose an implementation approach ✅
-- Run tests and audits ✅
-- Commit completed work ✅
+This model was forged by a specific incident. Task T-151 was a specification task — meaning I, as the human, was supposed to review the findings before any decision was made. The agent created the task, immediately started working, and completed it in 2 minutes. It wrote the investigation findings, made the GO recommendation, chose between implementation approaches, and closed the task. Without consulting me.
 
-The agent will NOT (even with broad delegation):
+The task existed. The status transitions were logged. From a structural perspective, everything looked correct. But the intent — that a human was supposed to validate the specification — was completely bypassed. The governance was theatre.
 
-- Force push, hard reset, or delete branches ❌
-- Bypass verification gates ❌
-- Complete tasks that need your review ❌
-- Modify code without a task ❌
+That incident triggered a deep review (T-194) where I mapped the entire governance model against ISO 27001's four-level assurance framework. The findings were instructive:
 
-You get autonomy where it's safe, control where it matters.
+- Human sovereignty (Risk R-010, score 16) was the highest-scoring risk in the register
+- It had 4 controls, all warn-only — breadth without depth
+- One related risk (R-033) had no control at all
 
-### The thinking behind this
+The authority model was the response. I formalised three tiers — sovereignty, authority, initiative — and mapped every action to a tier. The critical design choice was Decision D-004: Tier 0 violations are FAIL, not WARN. The alternative was rejected because behavioural rules do not hold under pressure. An agent 45 minutes into a task that encounters a warning will acknowledge it and proceed.
 
-This distinction came from a real incident. Task T-151 was a specification task — meaning I, as the human, was supposed to review the findings before any decision was made. The agent created the task, immediately started working on it, and completed it **in 2 minutes**. It wrote the investigation findings, made the GO recommendation, chose between cron vs systemd vs APScheduler, set frequencies, and decided which checks to include. All without asking me.
-
-The task existed. The status transitions were logged. From a structural perspective, everything looked fine. But the *intent* — that a human was supposed to validate the spec — was completely bypassed.
-
-That incident triggered a deep review (T-194) where we mapped the entire governance model against ISO 27001's four-level assurance framework. We discovered:
-
-- **Human sovereignty (Risk R-010, score 16)** was the highest-scoring risk in our register
-- It had **4 controls, all warn-only** — breadth without depth
-- One related risk (R-033) had **NO control at all**
-
-The authority model was our response. We formalized three tiers — sovereignty, authority, initiative — and mapped every action to a tier. Then we made the critical design choice (Decision D-004): **Tier 0 violations are FAIL, not WARN**. We rejected "warn" because behavioral rules don't hold under pressure. An agent that's 45 minutes into a task and encounters a warning will acknowledge it and proceed.
-
-We then validated this across our entire 312-task history. The pattern was consistent: structural gates (FAIL/BLOCK) have near-100% effectiveness. Behavioral rules (WARN + trust the agent) degrade as context fills up or the agent is operating autonomously.
+Validation across the framework's 312-task history confirmed the pattern: structural gates (FAIL/BLOCK) have near-100% effectiveness. Behavioural rules (WARN + trust the agent) degrade as context fills up or the agent operates autonomously.
 
 ### The deeper principle
 
-This maps directly to how effective organizations work. Over 25 years of working on complex IT programmes at Shell, I arrived at a principle: effective intelligent action requires clear direction, context awareness, awareness of constraints and impact, and capable engaged actors. A manager who says "handle this however you think is best" is delegating initiative. They're NOT saying "ignore all company policies" or "skip the approval process for purchases over $10K."
+Effective intelligent action — whether by a person, a team, or an AI agent — requires clear direction, context awareness, awareness of constraints and impact, and capable engaged actors. A manager who says "handle this however you think is best" is delegating initiative. They are not saying "ignore all company policies" or "skip the approval process for purchases over $10K."
 
-AI agents need the same structure. Broad delegation within clear boundaries isn't a contradiction — it's how capable systems actually operate. The domain changed from human teams to AI agents. The principle did not.
+AI agents need the same structure. Broad delegation within clear boundaries is not a contradiction. It is how capable systems actually operate.
+
+**The domain changed from human teams to AI agents. The principle did not.**
 
 ### Try it
 
@@ -121,22 +73,21 @@ AI agents need the same structure. Broad delegation within clear boundaries isn'
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 cd your-project && fw init
 
-# See the authority model in action:
+# See the authority model in action
 fw work-on "Test authority boundaries" --type build
-
 # Agent can work freely on safe operations
-# But destructive commands will be intercepted
+# Destructive commands will be intercepted
 ```
 
-GitHub: https://github.com/DimitriGeelen/agentic-engineering-framework
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ---
 
 ## Platform Notes
 
-**Reddit (r/ClaudeAI, r/ChatGPTCoding):** The "proceed as you see fit" hook is strong — everyone has said this to an agent. The realization that it's dangerous is the insight.
-**LinkedIn:** This is the strongest LinkedIn post of the series. Frame as leadership/management — "Delegation without guardrails isn't empowerment, it's abdication."
-**Dev.to:** Expand with the full enforcement matrix (what's delegated at each autonomy level).
+**Dev.to / Hashnode:** Use as-is. Can expand with the full enforcement matrix per autonomy level.
+**LinkedIn:** Open with "Delegation without guardrails is not empowerment. It is abdication. This applies to AI agents as much as it does to teams."
+**Reddit (r/ClaudeAI):** Shorten. Lead with the "proceed as you see fit" scenario and the 2-minute completion incident.
 
 ## Hashtags
 

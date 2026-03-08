@@ -2,73 +2,21 @@
 
 ## Title
 
-My AI agent "fixed" one file and broke 6 others. Here's how I gave it structural awareness.
+Temporal memory tells you what happened — spatial memory tells you what exists
 
 ## Post Body
 
-I asked the agent to refactor the authentication module. Simple enough — extract some shared logic, clean up the interfaces.
+**You cannot govern what you cannot see.**
 
-It did a great job on the auth module. Clean code, good abstractions, well-tested.
+In enterprise architecture, one of the earliest governance activities is building a structural map — what components exist, how they connect, what depends on what. A programme manager who does not know the dependency chain between workstreams cannot assess the impact of a delay. A hospital administrator who does not know which departments share a sterilisation unit cannot plan maintenance. The map is not documentation for its own sake. It is the basis for impact analysis: before changing something, understand what it touches.
 
-Problem: 6 other modules imported from the auth module. The agent changed the function signatures without knowing those dependents existed. The project wouldn't build.
+AI coding agents operate without this map. An agent asked to refactor the authentication module will produce clean code, good abstractions, well-tested output. It will also change function signatures without knowing that six other modules import from the file it modified. The project will not build. The agent did nothing wrong. It simply did not know what it could not see.
 
-The agent didn't do anything wrong. It just didn't know about the downstream impact. It had no structural map of how files depend on each other.
+The Agentic Engineering Framework had excellent temporal memory — it knew what happened (tasks, decisions, episodic histories). But it had almost zero spatial memory. It did not know what exists, where things are, or how they connect. I recognised this gap during a conversation about research persistence (session S-2026-0219): **as the codebase grows, reading all documents will not work anymore. The system needs a structural map.**
 
-### Impact analysis before editing
+### The Component Fabric
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) includes a Component Fabric — a structural topology map of every significant file in the project:
-
-```bash
-# Before changing auth.ts, check what depends on it
-$ fw fabric deps lib/auth.ts
-
-lib/auth.ts
-  Depends on:
-    lib/crypto.ts (encryption utilities)
-    lib/config.ts (auth configuration)
-
-  Depended by:
-    api/middleware/auth-check.ts
-    api/routes/login.ts
-    api/routes/register.ts
-    api/routes/oauth.ts
-    workers/token-refresh.ts
-    tests/auth.test.ts
-```
-
-Six dependents. Now you know: if you change a function signature in `auth.ts`, these six files need to be updated too.
-
-### Blast radius
-
-The fabric's killer feature is blast radius analysis — run it before committing to see what your changes affect downstream:
-
-```bash
-$ fw fabric blast-radius HEAD
-
-Changes in this commit:
-  Modified: lib/auth.ts
-
-Direct dependents (6):
-  api/middleware/auth-check.ts
-  api/routes/login.ts
-  api/routes/register.ts
-  api/routes/oauth.ts
-  workers/token-refresh.ts
-  tests/auth.test.ts
-
-Transitive impact (3 more):
-  api/routes/profile.ts (via auth-check.ts)
-  api/routes/settings.ts (via auth-check.ts)
-  api/app.ts (via middleware)
-
-Total blast radius: 9 files
-```
-
-Before this commit reaches production, you know exactly which 9 files might be affected. The agent can proactively check (and update) each one.
-
-### How the fabric works
-
-Every significant file gets a component card:
+The Component Fabric (`.fabric/`) is a topology map of every significant file in the project. Every file gets a component card:
 
 ```yaml
 # .fabric/components/lib-auth.yaml
@@ -81,81 +29,76 @@ purpose: "Core authentication logic — token validation, session management"
 interfaces:
   - validateToken(token: string): boolean
   - createSession(userId: string): Session
-  - refreshToken(session: Session): string
 depends_on: [lib-crypto, lib-config]
 depended_by: [api-auth-check, api-login, api-register, api-oauth, worker-token-refresh]
 ```
 
-The fabric is queryable:
+Before changing a file, the agent checks what depends on it:
 
 ```bash
-# Search by keyword
-fw fabric search "authentication"
+$ fw fabric deps lib/auth.ts
 
-# Full transitive dependency chain
-fw fabric impact lib/auth.ts
-
-# Detect unregistered or stale components
-fw fabric drift
+lib/auth.ts
+  Depends on:    lib/crypto.ts, lib/config.ts
+  Depended by:   6 files (auth-check, login, register, oauth, token-refresh, auth.test)
 ```
+
+Six dependents. The agent now knows: changing a function signature in `auth.ts` requires updating six files.
+
+### Blast radius
+
+The fabric enables blast radius analysis — run it before committing to see what changes affect downstream:
+
+```bash
+$ fw fabric blast-radius HEAD
+
+Changes in this commit:
+  Modified: lib/auth.ts
+
+Direct dependents: 6
+Transitive impact: 3 more (via auth-check.ts middleware)
+Total blast radius: 9 files
+```
+
+Before the commit reaches production, the full impact is visible. The agent can proactively check and update each affected file.
 
 ### Drift detection
 
-Code evolves. New files get added. Old files get deleted. Dependencies change. The fabric detects when its map drifts from reality:
+Code evolves. New files appear. Old files are deleted. Dependencies change. The fabric detects when its map drifts from reality:
 
 ```bash
 $ fw fabric drift
 
-Unregistered (new files without component cards):
-  lib/auth-v2.ts — created 2 days ago, no card
-
-Orphaned (cards pointing to missing files):
-  .fabric/components/lib-old-auth.yaml → lib/old-auth.ts (deleted)
-
-Stale (dependency changes detected):
-  lib/auth.ts — new import of lib/rate-limiter.ts not in card
+Unregistered:  lib/auth-v2.ts (created 2 days ago, no card)
+Orphaned:      lib-old-auth.yaml points to deleted file
+Stale:         lib/auth.ts — new import of lib/rate-limiter.ts not in card
 ```
 
-This keeps the structural map accurate over time, even as the codebase evolves.
+The structural map stays accurate over time. This is not optional maintenance — drift detection runs automatically and flags discrepancies.
 
-### The thinking behind this
+### The research behind the design
 
-The Component Fabric was born from a conversation during session S-2026-0219. I was discussing sub-agent research persistence (T-190) when I realized the deeper problem:
+The Component Fabric was born from a formal inception (T-191) that ran across multiple sessions and produced 8 research documents: genesis discussion, research landscape (14 sources across 7 domains), topology prototype, UI patterns research, requirements analysis, data model, enforcement design, and architecture proposal.
 
-> "As our codebase grows, we get functions, routines, sequences of steps and dependencies that make up the application functionality. It becomes more and more difficult to debug and enhance the application. Going forward as the app gets more complex, reading all documents will not work anymore."
-
-The framework had excellent **temporal memory** — it knew what happened (tasks, decisions, episodic histories). But it had almost zero **spatial memory** — it didn't know what exists, where things are, or how they connect.
-
-This became a formal inception (T-191) that ran across 5-10 sessions and produced **8 research documents**:
-
-1. **Genesis discussion** — problem framing and 6 use cases
-2. **Research landscape** — 14 sources across 7 domains (architecture mining, dependency analysis, UI documentation)
-3. **AEF topology sample** — prototype structural map of the actual framework
-4. **UI patterns research** — how to make UI elements identifiable without visual inspection
-5. **Requirements** — 6 validated use cases, all scored HIGH priority
-6. **Data model** — component card schema with 10 prototype cards
-7. **Enforcement design** — proactive gates + retroactive drift detection
-8. **Architecture proposal** — build decomposition into 11 tasks
-
-Five key design principles emerged from the research:
+Five design principles emerged:
 
 1. **Structural self-awareness** — the system knows what it is, not just what happened
-2. **Earn your detail** — granularity is adaptive (starts coarse, deepens where complexity warrants)
-3. **UI as first-class** — UI elements documented as explicitly as backend (agents can't see screens)
+2. **Earn your detail** — granularity is adaptive (coarse by default, detailed where complexity warrants)
+3. **UI as first-class** — UI elements documented as explicitly as backend (agents cannot see screens)
 4. **Enforced, not optional** — component registration is a gate, not a suggestion
-5. **"The thinking trail IS the artifact"** — every step of the intellectual process is persisted
+5. **"The thinking trail IS the artifact"** — every step of the research process is persisted
 
 That last principle is meta — it was learned during the Component Fabric inception itself and then applied to all future research tasks. If you lose the final deliverable, the thinking trail can reconstruct it. If you lose the thinking trail, the final deliverable is an unjustified assertion.
 
-### Why agents need this
+A later integration spike (T-222) validated three aspects: CLAUDE.md awareness (zero existing mentions of fabric), task-component linking (72% automatic file resolution, 0% false positives), and drift detection. The fabric does not need to be perfect. 72% automatic resolution with zero false positives is already a substantial improvement over the alternative — hoping the agent reads the right files.
 
-Human developers build mental models of their codebase. They know "if I change auth, I need to check the middleware." This knowledge is implicit, built over months of working with the code.
+### Why agents need spatial memory
 
-AI agents don't have implicit knowledge. Every session, they see the codebase fresh. Without a structural map, they can only see what they're directly looking at — not the ripple effects of their changes.
+Human developers build mental models of their codebase over months. They know implicitly: "if I change auth, I need to check the middleware." This knowledge is tacit, accumulated through experience, never written down.
 
-We validated this during a later integration spike (T-222) that tested three gaps: CLAUDE.md awareness (zero mentions of fabric), task-component linking (72% file resolution, 0% false positives), and drift detection. The fabric doesn't need to be perfect — 72% automatic resolution with zero false positives is already a massive improvement over "hope the agent reads the right files."
+AI agents do not have tacit knowledge. Every session, they see the codebase fresh. Without a structural map, they can only see what they are directly looking at — not the ripple effects of their changes. The Component Fabric makes structural knowledge explicit and queryable. The agent does not need months of experience. It checks the blast radius before every change.
 
-The Component Fabric makes structural knowledge explicit and queryable. The agent doesn't need months of experience with your codebase. It can check the blast radius before every change.
+**Temporal memory without spatial memory is half a governance model. The domain changed from enterprise architecture to AI agent awareness. The principle did not.**
 
 ### Try it
 
@@ -163,7 +106,7 @@ The Component Fabric makes structural knowledge explicit and queryable. The agen
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/main/install.sh | bash
 cd your-project && fw init
 
-# Register your key files
+# Register key files
 fw fabric register lib/auth.ts
 fw fabric register api/routes/login.ts
 
@@ -172,15 +115,15 @@ fw fabric deps lib/auth.ts
 fw fabric blast-radius HEAD
 ```
 
-GitHub: https://github.com/DimitriGeelen/agentic-engineering-framework
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ---
 
 ## Platform Notes
 
-**Reddit (r/ClaudeAI, r/ChatGPTCoding):** The "refactored one file, broke six" scenario is extremely common. Developers will relate instantly.
-**LinkedIn:** Frame as architecture — "In enterprise systems, we'd never change a shared interface without impact analysis. AI agents need the same discipline."
-**Dev.to:** Expand with the full component card schema, how to auto-generate cards from imports, and the interactive Watchtower graph visualization.
+**Dev.to / Hashnode:** Use as-is. Can expand with the full component card schema and the interactive Watchtower graph visualisation.
+**LinkedIn:** Open with "In enterprise systems, no one changes a shared interface without impact analysis. AI agents need the same discipline."
+**Reddit (r/ClaudeAI):** Shorten. Lead with the "refactored one file, broke six" scenario.
 
 ## Hashtags
 

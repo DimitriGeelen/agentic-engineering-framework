@@ -2,94 +2,61 @@
 
 ## Title
 
-Your AI agent has a memory that degrades. Here's how to manage it like a battery gauge.
+Unmonitored resource consumption is not a technical problem — it is a governance failure
 
 ## Post Body
 
-There's a failure mode with AI coding agents that nobody warns you about until it happens:
+**Every finite resource requires active management. Context is no exception.**
 
-Your agent is 45 minutes into a complex refactoring task. It's made good changes across 8 files. Then it starts repeating itself. Contradicting earlier decisions. Forgetting file names it just read. Eventually it outputs garbage and the session dies.
+In programme management, the most dangerous resource is the one nobody tracks. A project that monitors budget and timeline but ignores team capacity will fail — not from lack of money, but from exhaustion that degrades decision quality long before the budget runs out. The degradation is invisible at first. Decisions become slightly worse. Then noticeably worse. Then someone makes a call that contradicts a decision from two weeks earlier, and nobody catches it because the institutional memory has thinned.
 
-What happened? **The context window filled up.**
+The same failure mode appears in AI coding agents, compressed from weeks into minutes. A large language model has a fixed context window — a working memory that holds every message, every file read, every tool result. When the window fills, earlier context is lost. The carefully constructed plan, the acceptance criteria, the architectural decisions — gone. The agent does not know it is degrading. It continues working confidently with corrupted context, producing changes that contradict its own earlier work.
 
-Large language models have a fixed context window — think of it as working memory. Every message, every file read, every tool result consumes tokens. When you hit the limit, the model starts losing earlier context. Your carefully constructed plan, your acceptance criteria, your architectural decisions — gone.
-
-And the worst part: the agent doesn't know it's degrading. It keeps working confidently with corrupted context, producing changes that contradict its own earlier work.
+I recognised this as a resource management problem, not a technical limitation. The context window is a battery. It drains with use. **Unmonitored, it fails at the worst possible moment — deep into complex work, with the most to lose.**
 
 ### Treating context as a battery
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) monitors actual token usage in real-time and enforces escalating gates:
+The Agentic Engineering Framework monitors actual token usage in real-time and enforces escalating gates:
 
 ```
-Token Usage     Level       What Happens
-─────────────────────────────────────────────
-0-120K          ✅ OK       Work normally
-120K-150K       ⚠️ WARN     Commit first, only small tasks
-150K-170K       🔴 URGENT   Wrap up, no new work
-170K+           ⛔ CRITICAL  BLOCKED — only commits and handover allowed
+Token Usage     Level       Response
+0-120K          OK          Work normally
+120K-150K       WARN        Commit first, only small tasks
+150K-170K       URGENT      Wrap up, no new work
+170K+           CRITICAL    BLOCKED — only commits and handover
 ```
 
-This isn't a suggestion displayed in the terminal. It's a **PreToolUse hook** that literally blocks Write/Edit/Bash calls when you hit critical:
+This is not a suggestion. A PreToolUse hook blocks Write, Edit, and Bash calls when the budget reaches critical. The agent physically cannot start new work — it can only commit what exists and generate a handover for the next session.
 
-```
-⛔ CONTEXT BUDGET: CRITICAL (172K/200K tokens used)
-   Blocked: Edit to src/api/handler.ts
-   Allowed: git commit, fw handover, fw task update
+### The safety net
 
-   Your context is nearly exhausted. Commit your work and
-   generate a handover for the next session.
-```
+When the budget hits critical, the framework automatically generates a handover document — capturing what was done, what remains, which decisions were made, and what the next session should do first. If the session was started via the `claude-fw` wrapper, it auto-restarts a fresh session with the handover injected as context. The new agent picks up where the previous one left off.
 
-### Auto-handover: the safety net
+The handover is not a summary. It is a structured document with current git state, acceptance criteria status, active decisions with rationale, and a suggested first action. Explicit handover preserves 95%+ of critical context. The alternative — LLM-based auto-compaction — preserves roughly 60-70%.
 
-When the budget hits critical, the framework automatically:
+### The research behind the design
 
-1. **Generates a handover document** — captures what was done, what's pending, what decisions were made
-2. **Writes a restart signal** — if you're using the `claude-fw` wrapper, it auto-restarts a fresh session
-3. **Injects context into the new session** — the new agent picks up where the old one left off
+The first version of context budget management was a tool-call counter. Every 50 tool calls, display a warning. The correlation between tool calls and actual token consumption is weak — a single file read can consume 10K tokens while a simple edit consumes 200. The counter was useless.
 
-The handover isn't just "task T-042 is in progress." It includes:
-- Current git state and uncommitted changes
-- Which acceptance criteria are met vs. pending
-- Active decisions and their rationale
-- Suggested first action for the next session
-
-### The thinking behind this
-
-The first version of context budget management was a simple tool-call counter. Every 50 tool calls, display a warning. It was useless — the correlation between tool calls and actual token consumption is weak. A single file read can consume 10K tokens; a simple edit consumes 200.
-
-We did a formal research spike (T-138, T-174) comparing approaches:
+I ran a formal research spike (T-138, T-174) comparing three approaches:
 
 | Approach | Accuracy | Overhead |
 |----------|----------|----------|
-| Tool-call counting | Low (no correlation) | Zero |
-| JSONL transcript reading | High (actual tokens) | ~50ms per check |
-| LLM self-assessment | Unreliable (agent doesn't know) | High |
+| Tool-call counting | Low | Zero |
+| JSONL transcript reading | High | ~50ms per check |
+| LLM self-assessment | Unreliable | High |
 
-Decision D-009: "Monitor context budget via token reading from JSONL transcript, not tool-call counting." The agent's session writes every API response to a JSONL file on disk. The budget gate reads this file, counts actual token usage, and makes enforcement decisions based on real data.
+Decision D-009: monitor via token reading from the JSONL transcript. The agent's session writes every API response to a JSONL file on disk. The budget gate reads this file, counts actual tokens, and enforces based on real data.
 
-We also researched whether Claude Code's built-in auto-compaction could replace this. Short answer: no. Auto-compaction triggers at ~98% (167K tokens) and uses LLM summarization — which **destroys working memory**. The summarizer decides what's important, and it often drops acceptance criteria, pending decisions, and architectural context. We disabled auto-compaction entirely (Decision D-027) and built our own handover system instead.
-
-The handover vs. compaction research (T-174) used 3 parallel investigation agents and found that explicit handover preserves 95%+ of critical context, while LLM-based compaction preserves roughly 60-70%. The handover is a structured document the agent writes deliberately, not a summary the system generates automatically.
+The deeper question was whether Claude Code's built-in auto-compaction could replace this entirely. It cannot. Auto-compaction triggers at ~98% capacity and uses LLM summarization — which destroys working memory. The summarizer decides what is important, and it routinely drops acceptance criteria, pending decisions, and architectural context. I disabled auto-compaction (Decision D-027) and built explicit handover instead. The research (T-174, using 3 parallel investigation agents) confirmed: deliberate handover outperforms automatic summarization because the agent writes it with full context, not a summarizer working from lossy compression.
 
 ### The commit cadence rule
 
-The budget system also enforces a commit cadence:
+The budget system also enforces a commit cadence: commit after every meaningful unit of work, not just at session end. Each commit is a checkpoint. If context runs out between commits, everything since the last commit is safe. The framework targets one commit every 15-20 minutes of active work.
 
-> Commit after every meaningful unit of work — not just at session end.
+This means catastrophic context loss costs at most 15 minutes of work. Without it, a single session failure can lose 45 minutes or more.
 
-Each commit is a checkpoint. If context runs out between commits, everything since the last commit is safe. The framework targets at least one commit every 15-20 minutes of active work.
-
-This means even catastrophic context loss costs you at most 15 minutes of work, not 45.
-
-### Why this matters
-
-Without context budget management, you have two bad options:
-
-1. **Short sessions** — waste time on setup/teardown, never tackle big tasks
-2. **Long sessions** — risk context corruption destroying hours of work
-
-With it, you get long productive sessions with automatic safety nets. The agent works until it physically can't, then hands off gracefully instead of degrading silently.
+**A resource that degrades invisibly requires governance that intervenes structurally. The domain changed from programme budgets to context windows. The principle did not.**
 
 ### Try it
 
@@ -99,19 +66,18 @@ cd your-project && fw init
 
 # Check current context budget
 ./agents/context/checkpoint.sh status
-
 # The budget gate runs automatically on every tool call
 ```
 
-GitHub: https://github.com/DimitriGeelen/agentic-engineering-framework
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ---
 
 ## Platform Notes
 
-**Reddit (r/ClaudeAI, r/ChatGPTCoding):** The "agent going insane at 45 minutes" is universally relatable. People will have their own horror stories.
-**LinkedIn:** Frame as resource management — "In any system, unmonitored resource consumption leads to degraded output. AI agents are no different."
-**Dev.to:** Include the actual token counting mechanism and how to tune thresholds.
+**Dev.to / Hashnode:** Use as-is. Can expand with the token counting mechanism and threshold tuning.
+**LinkedIn:** Open with "In any system, unmonitored resource consumption leads to degraded output. AI agents are no different."
+**Reddit (r/ClaudeAI):** Shorten. Lead with the "agent going incoherent at 45 minutes" scenario.
 
 ## Hashtags
 

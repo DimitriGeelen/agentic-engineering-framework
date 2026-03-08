@@ -2,36 +2,34 @@
 
 ## Title
 
-Every session, my AI agent forgot everything. So I gave it a memory system.
+Memory is not one thing
 
 ## Post Body
 
-Day 1: "Let's use YAML for config files." Agent writes YAML config.
-Day 2: "Let's restructure the config." Agent writes JSON config.
-Day 3: Me, staring at two config formats: "We decided YAML on day 1."
-Agent: "I have no record of that decision."
+**Undocumented decisions get re-debated. In every organisation. At every scale.**
 
-This is the fundamental problem with AI coding agents: **every session starts from zero.** The agent doesn't know what it did yesterday. Doesn't know what failed last week. Doesn't know why you chose PostgreSQL over MongoDB.
+A programme governance team meets on Tuesday and agrees: all configuration will use YAML. By Thursday, a workstream lead — who missed Tuesday's meeting — delivers a JSON config. The following week, a new team member creates a TOML file because "it seemed reasonable." Three configuration formats now coexist, each reasonable in isolation, collectively incoherent. The decision was made. It was not persisted in a form that survived the meeting.
 
-Prompt instructions help ("always use YAML for configs") but they don't scale. By the time you've enumerated every decision, convention, and lesson learned, your system prompt is 50K tokens of accumulated context that's impossible to maintain.
+The same failure mode appears in AI coding agents, compressed from weeks into hours. Day one: the agent and I agree on YAML for configuration. Day two, new session: the agent writes JSON. It has no record of the decision. It is not being inconsistent — it genuinely does not know. Every session starts from zero. The agent does not know what it did yesterday, what failed last week, or why PostgreSQL was chosen over MongoDB.
 
-### Three layers of memory
+Prompt instructions help ("always use YAML for configs") but they do not scale. By the time you have enumerated every decision, convention, and lesson learned, the system prompt is 50K tokens of accumulated context that no one maintains.
 
-The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-engineering-framework) implements three distinct memory layers, each serving a different purpose:
+**The problem is not that the agent forgets. The problem is that forgetting is the default, and remembering requires structure.**
 
-**1. Working Memory — what's happening now**
+### Three layers
+
+The Agentic Engineering Framework implements three distinct memory layers, each serving a different temporal purpose:
+
+**Working Memory — what is happening now.** Session state, current focus, active tasks. Updated continuously. Volatile — lost when the session ends, captured into the other layers before that happens.
 
 ```yaml
 # .context/working/session.yaml
 session_id: S-2026-0308-0809
-start_time: 2026-03-08T08:09:33Z
 focus: T-042
 active_tasks: [T-042, T-038]
 ```
 
-This is the agent's "what am I doing right now" context. Updated continuously. Lost when the session ends — but that's fine, because it's captured into...
-
-**2. Project Memory — what we know**
+**Project Memory — what the project knows.** Decisions, patterns, and learnings accumulated across all sessions. When the agent starts a new session, it reads project memory and knows: YAML is the configuration standard, this API timeout has occurred before, approach X was tried and failed.
 
 ```yaml
 # .context/project/decisions.yaml
@@ -43,96 +41,53 @@ This is the agent's "what am I doing right now" context. Updated continuously. L
   rejected: ["JSON (no comments)", "TOML (less familiar to team)"]
 ```
 
-Decisions, patterns, and learnings accumulated across all sessions. When the agent starts a new session, it reads project memory and knows: we use YAML, we've seen this API timeout before, we tried approach X and it failed.
-
-```yaml
-# .context/project/learnings.yaml
-- id: L-023
-  task: T-092
-  learning: "Bash quoted arguments inside $() need careful escaping"
-  source: P-001
-  promoted: true  # Proven valuable enough to become a practice
-```
-
-**3. Episodic Memory — what happened**
+**Episodic Memory — what happened.** Condensed histories of completed tasks. Not the full git log — a distilled summary of what was tried, what worked, what was learned. When a similar task arises months later, the agent reads the episodic summary instead of repeating trial-and-error.
 
 ```yaml
 # .context/episodic/T-042.yaml
 task: T-042
 summary: "Cleaned up module imports across 8 files"
-duration_minutes: 45
 approach: "AST-based analysis, removed circular dependencies first"
 outcome: success
-decisions_made: [D-014]
-patterns_encountered: [circular-import-resolution]
 key_insight: "Start with leaf modules, work inward"
 ```
 
-Condensed histories of completed tasks. Not the full git log — a distilled summary of what was tried, what worked, what was learned. When a similar task comes up months later, the agent can read the episodic summary instead of repeating trial-and-error.
-
-### How it flows
+### How memory flows
 
 ```
 Session starts
-  ↓
-Read project memory (decisions, patterns, learnings)
-  ↓
-Restore working memory (what was in progress)
-  ↓
-Work... make decisions, encounter issues, learn things
-  ↓
-Continuous capture (decisions → project memory, issues → patterns)
-  ↓
+  Read project memory (decisions, patterns, learnings)
+  Restore working memory (what was in progress)
+Work — make decisions, encounter issues, learn
+  Continuous capture (decisions to project memory, issues to patterns)
 Session ends
-  ↓
-Generate episodic summary (what happened, condensed)
-  ↓
-Generate handover (state + recommendations for next session)
+  Generate episodic summary (condensed history)
+  Generate handover (state + recommendations for next session)
 ```
 
-The agent at session start isn't starting from zero. It has access to every decision ever made, every failure pattern ever encountered, and the full history of similar tasks.
+The agent at session start is not starting from zero. It has access to every decision ever made, every failure pattern encountered, and the full history of similar tasks.
 
-### Real example
+### The research behind the design
 
-Session 47 encounters an API timeout. The healing loop fires, searches patterns:
+The three-layer model did not start as a design. It emerged from failures.
 
-```
-🔍 Similar pattern found: P-087 (from T-015, 2 months ago)
-   Symptom: API timeout during batch processing
-   Root cause: Missing connection pool limit
-   Resolution: Set max_connections=10, add retry with backoff
-   Success rate since fix: 100% (0 recurrences)
-```
+The first memory system was a single `context.yaml` file with everything — current task, decisions, learnings, patterns. Within two weeks it was 500 lines long and the agent spent more time reading context than doing work.
 
-The agent doesn't guess. It applies the known fix. Two months of institutional knowledge, available instantly.
+A formal memory audit found that 58% of task files were empty in their "Updates" section — the running log I had designed was almost never populated. Meanwhile, git had a perfect record of every change with timestamps and diffs. That led to the hybrid episodic design (T-117): **git owns the timeline, task files own the decisions.** I stopped asking agents to maintain chronological logs (they forgot) and instead mined git history automatically at task completion. The episodic generator merges git data with task data to produce a condensed history.
 
-### The thinking behind this
+The three-layer separation crystallized through a research spike on Google's context engineering principles (T-120) and a deep reflection on sub-agent dispatch patterns (T-097, which analyzed all 96 tasks at that point). The key finding: investigation agents need results in working memory (0% savings from offloading), while content generators must never return results to working memory (96% savings from writing to disk). Some memory is hot and ephemeral. Some is warm and persistent. Some is cold and archival. The pattern mapped directly to three layers.
 
-The three-layer model didn't start as a design. It emerged from failures.
-
-The first memory system was simple: a single `context.yaml` file with everything in it — current task, decisions, learnings, patterns. Within two weeks it was 500 lines long and the agent spent more time reading context than doing work.
-
-We did a formal memory audit (2026-02-15) and found that **58% of task files were empty** — the "Updates" section we'd designed as a running log was almost never populated. Meanwhile, git had a perfect record of every change with timestamps and diffs.
-
-That led to the hybrid episodic design (T-117): **git owns the timeline, task files own the decisions.** We stopped asking agents to maintain a chronological log (they forgot) and instead mined git history automatically at task completion. The episodic generator merges git data (commits, files changed, timeline) with task data (decisions, acceptance criteria) to produce a condensed history.
-
-The three-layer separation crystallized through a research spike on Google's context engineering principles (T-120) and a deep reflection on our own sub-agent dispatch patterns (T-097, which analyzed all 96 tasks at that point). Key finding: **investigation agents NEED results in working memory (0% savings from offloading), while content generators must NEVER return results to working memory (96% savings from writing to disk).**
-
-That pattern — some memory is hot and ephemeral, some is warm and persistent, some is cold and archival — mapped directly to three layers:
-
-- Working memory = hot (session-scoped, fast, volatile)
-- Project memory = warm (persistent, searchable, growing)
-- Episodic memory = cold (archival, condensed, referenced on demand)
-
-We also learned that memory decay is real. A discovery analysis (T-200) found a **58% episodic decay rate** — more than half of episodic records lose practical value within weeks. The solution wasn't to discard them, but to distill patterns upward: if the same failure appears in 3+ episodic records, it graduates to a pattern in project memory. If a pattern proves reliable across 5+ tasks, it graduates to a practice. This is Decision D-003: "3+ occurrences triggers practice candidate."
+I also learned that memory decay is real. A discovery analysis (T-200) found a 58% episodic decay rate — more than half of episodic records lose practical value within weeks. The solution was not to discard them but to distill patterns upward: if the same failure appears in 3+ episodic records, it graduates to a pattern in project memory. If a pattern proves reliable across 5+ tasks, it graduates to a practice. This is Decision D-003: "3+ occurrences triggers practice candidate."
 
 ### The key insight
 
-Memory isn't one thing. Short-term context (working memory) has different requirements than accumulated knowledge (project memory) and historical reference (episodic memory). By separating them, each can be optimized:
+Short-term context, accumulated knowledge, and historical reference have different requirements. By separating them, each can be optimised:
 
-- Working memory is fast, volatile, small
-- Project memory is persistent, searchable, growing
-- Episodic memory is archival, condensed, referenced on demand
+- Working memory: fast, volatile, small
+- Project memory: persistent, searchable, growing
+- Episodic memory: archival, condensed, referenced on demand
+
+**The domain changed from organisational knowledge management to AI agent memory. The principle did not.**
 
 ### Try it
 
@@ -150,15 +105,15 @@ fw context add-decision "Use YAML for configs" --task T-042 --rationale "Human r
 fw context add-learning "Always set connection pool limits" --task T-042
 ```
 
-GitHub: https://github.com/DimitriGeelen/agentic-engineering-framework
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ---
 
 ## Platform Notes
 
-**Reddit (r/ClaudeAI, r/ChatGPTCoding):** The YAML/JSON anecdote is instantly relatable. Focus on the "every session starts from zero" problem.
-**LinkedIn:** Frame as knowledge management — "In any organization, undocumented decisions get re-debated. AI agents have the same problem, compressed into hours instead of months."
-**Dev.to:** Expand with the full YAML schema for each memory layer and how to build custom queries.
+**Dev.to / Hashnode:** Use as-is. Can expand with the full YAML schema for each layer and custom queries.
+**LinkedIn:** Open with "In any organisation, undocumented decisions get re-debated. AI agents have the same problem, compressed into hours instead of months."
+**Reddit (r/ClaudeAI):** Shorten. Lead with the YAML/JSON anecdote, then the three-layer solution.
 
 ## Hashtags
 
