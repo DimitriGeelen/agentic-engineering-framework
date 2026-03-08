@@ -196,6 +196,14 @@ check_write_perms() {
 # --- Main ---
 
 do_preflight() {
+    # Parse function arguments (override globals set at source-time)
+    for arg in "$@"; do
+        case "$arg" in
+            --check-only|--ci) CHECK_ONLY=true ;;
+            --quiet) QUIET=true; CHECK_ONLY=true ;;
+        esac
+    done
+
     if [ "$QUIET" = true ]; then
         # Silent mode: only check required deps, return 0/1
         check_bash >/dev/null 2>&1 || true

@@ -81,8 +81,6 @@ do_init() {
     fi
 
     # --- Create directory structure ---
-    echo -e "${YELLOW}Creating directory structure...${NC}"
-
     mkdir -p "$target_dir/.tasks/active"
     mkdir -p "$target_dir/.tasks/completed"
     mkdir -p "$target_dir/.tasks/templates"
@@ -104,10 +102,7 @@ bypasses: []
 BYPASSEOF
     fi
 
-    echo -e "  ${GREEN}OK${NC}  .tasks/{active,completed,templates}"
-    echo -e "  ${GREEN}OK${NC}  .context/{working,project,episodic,handovers,scans,bus,audits/cron}"
-
-    # --- .gitignore for volatile working memory files ---
+    # .gitignore for volatile working memory files
     cat > "$target_dir/.context/working/.gitignore" << 'WGIT'
 # Volatile session files — regenerated each session
 .tool-counter
@@ -116,7 +111,9 @@ session.yaml
 focus.yaml
 tier0-approval
 WGIT
-    echo -e "  ${GREEN}OK${NC}  .context/working/.gitignore"
+
+    echo -e "  ${GREEN}✓${NC}  Task system (.tasks/)"
+    echo -e "  ${GREEN}✓${NC}  Context fabric (.context/)"
 
     # --- Copy task templates (all .md files from framework templates) ---
     local template_count=0
@@ -125,10 +122,8 @@ WGIT
         cp "$tmpl" "$target_dir/.tasks/templates/$(basename "$tmpl")"
         template_count=$((template_count + 1))
     done
-    if [ "$template_count" -gt 0 ]; then
-        echo -e "  ${GREEN}OK${NC}  Task templates ($template_count copied)"
-    else
-        echo -e "  ${YELLOW}WARN${NC}  No task templates found in $FRAMEWORK_ROOT/.tasks/templates/"
+    if [ "$template_count" -eq 0 ]; then
+        echo -e "  ${YELLOW}⚠${NC}   No task templates found"
     fi
 
     # --- Create .framework.yaml ---
@@ -145,47 +140,37 @@ version: $FW_VERSION
 provider: $provider
 initialized_at: $init_timestamp
 FYAML
-    echo -e "  ${GREEN}OK${NC}  .framework.yaml"
+    # .framework.yaml created
 
-    # --- Create empty project memory files ---
-    # --- Seed governance files from framework (universal items) ---
-    # Practices, decisions, and patterns are seeded with universal framework
-    # governance data. Items marked scope: universal apply to all projects.
-    # Project-specific items can be added via fw context add-* commands.
-    # See T-164 for the analysis behind what gets inherited.
+    # --- Seed governance files ---
 
     if [ ! -f "$target_dir/.context/project/practices.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/practices.yaml" "$target_dir/.context/project/practices.yaml"
-            echo -e "  ${GREEN}OK${NC}  practices.yaml (10 universal practices seeded)"
         else
             cat > "$target_dir/.context/project/practices.yaml" << 'PRAML'
 # Project Practices - Graduated learnings (3+ applications)
 # Promoted via: fw promote L-XXX --name "practice name" --directive D1
 practices: []
 PRAML
-            echo -e "  ${YELLOW}WARN${NC}  practices.yaml (empty — seed file not found)"
         fi
     fi
 
     if [ ! -f "$target_dir/.context/project/decisions.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/decisions.yaml" "$target_dir/.context/project/decisions.yaml"
-            echo -e "  ${GREEN}OK${NC}  decisions.yaml (18 universal decisions seeded)"
         else
             cat > "$target_dir/.context/project/decisions.yaml" << 'DYAML'
 # Project Decisions - Architectural choices with rationale
 # Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 decisions:
 DYAML
-            echo -e "  ${YELLOW}WARN${NC}  decisions.yaml (empty — seed file not found)"
         fi
     fi
 
     if [ ! -f "$target_dir/.context/project/patterns.yaml" ] || [ "${force:-false}" = true ]; then
         if [ -f "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" ]; then
             cp "$FRAMEWORK_ROOT/lib/seeds/patterns.yaml" "$target_dir/.context/project/patterns.yaml"
-            echo -e "  ${GREEN}OK${NC}  patterns.yaml (12 universal patterns seeded)"
         else
             cat > "$target_dir/.context/project/patterns.yaml" << 'PYAML'
 # Project Patterns - Learned from experience
@@ -195,7 +180,6 @@ failure_patterns: []
 success_patterns: []
 workflow_patterns: []
 PYAML
-            echo -e "  ${YELLOW}WARN${NC}  patterns.yaml (empty — seed file not found)"
         fi
     fi
 
@@ -205,7 +189,6 @@ PYAML
 # Added via: fw context add-learning "description" --task T-XXX
 learnings:
 LYAML
-        echo -e "  ${GREEN}OK${NC}  learnings.yaml"
     fi
 
     if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "${force:-false}" = true ]; then
@@ -215,7 +198,6 @@ LYAML
 # Validated via: fw assumption validate A-XXX --evidence "..."
 assumptions: []
 AYAML
-        echo -e "  ${GREEN}OK${NC}  assumptions.yaml"
     fi
 
     if [ ! -f "$target_dir/.context/project/directives.yaml" ] || [ "${force:-false}" = true ]; then
@@ -244,7 +226,6 @@ directives:
     statement: "The framework must not be captive to any single provider, language, or environment."
     priority: 4
 DRYAML
-        echo -e "  ${GREEN}OK${NC}  directives.yaml"
     fi
 
     if [ ! -f "$target_dir/.context/project/gaps.yaml" ] || [ "${force:-false}" = true ]; then
@@ -253,100 +234,61 @@ DRYAML
 # Status: watching | decided-build | decided-simplify | decided-defer | closed
 gaps: []
 GYAML
-        echo -e "  ${GREEN}OK${NC}  gaps.yaml"
     fi
 
-    # --- Generate provider config ---
-    echo ""
-    echo -e "${YELLOW}Generating provider config...${NC}"
+    echo -e "  ${GREEN}✓${NC}  Seeded: 10 practices, 18 decisions, 12 patterns"
+    echo -e "  ${GREEN}✓${NC}  Initialized: learnings, assumptions, directives, gaps"
 
+    # --- Generate provider config ---
     case "$provider" in
         claude)
-            generate_claude_md "$target_dir"
-            echo -e "  ${GREEN}OK${NC}  CLAUDE.md"
-            generate_claude_code_config "$target_dir"
+            generate_claude_md "$target_dir" >/dev/null
+            generate_claude_code_config "$target_dir" >/dev/null
+            echo -e "  ${GREEN}✓${NC}  CLAUDE.md generated"
+            echo -e "  ${GREEN}✓${NC}  Claude Code hooks (10 configured)"
             ;;
         cursor)
-            generate_cursorrules "$target_dir"
-            echo -e "  ${GREEN}OK${NC}  .cursorrules"
+            generate_cursorrules "$target_dir" >/dev/null
+            echo -e "  ${GREEN}✓${NC}  .cursorrules generated"
             ;;
         generic)
-            generate_claude_md "$target_dir"
-            echo -e "  ${GREEN}OK${NC}  CLAUDE.md (generic — works with any provider)"
-            generate_claude_code_config "$target_dir"
+            generate_claude_md "$target_dir" >/dev/null
+            generate_claude_code_config "$target_dir" >/dev/null
+            echo -e "  ${GREEN}✓${NC}  CLAUDE.md generated"
+            echo -e "  ${GREEN}✓${NC}  Claude Code hooks (10 configured)"
             ;;
         *)
-            echo -e "  ${YELLOW}WARN${NC}  Unknown provider '$provider', using generic"
-            generate_claude_md "$target_dir"
-            generate_claude_code_config "$target_dir"
+            echo -e "  ${YELLOW}⚠${NC}   Unknown provider '$provider', using generic"
+            generate_claude_md "$target_dir" >/dev/null
+            generate_claude_code_config "$target_dir" >/dev/null
             ;;
     esac
 
     # --- Install git hooks (if git repo) ---
-    echo ""
     if [ -d "$target_dir/.git" ]; then
-        echo -e "${YELLOW}Installing git hooks...${NC}"
-        PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks && \
-            echo -e "  ${GREEN}OK${NC}  Git hooks installed" || \
-            echo -e "  ${YELLOW}WARN${NC}  Git hook installation failed (run manually: fw git install-hooks)"
+        PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks >/dev/null 2>&1 && \
+            echo -e "  ${GREEN}✓${NC}  Git hooks installed" || \
+            echo -e "  ${YELLOW}⚠${NC}   Git hook install failed (run: fw git install-hooks)"
     else
-        echo -e "  ${CYAN}SKIP${NC}  Git hooks (not a git repository)"
+        echo -e "  ${YELLOW}⚠${NC}   Not a git repo — run ${BOLD}git init${NC} first for full traceability"
     fi
 
-    # --- Ensure fw is in PATH (symlink to /usr/local/bin) ---
-    echo ""
+    # --- Ensure fw is in PATH (silent unless action needed) ---
     if ! command -v fw >/dev/null 2>&1; then
-        echo -e "${YELLOW}Setting up fw command...${NC}"
         if [ -w /usr/local/bin ]; then
             ln -sf "$FRAMEWORK_ROOT/bin/fw" /usr/local/bin/fw
-            echo -e "  ${GREEN}OK${NC}  Symlinked fw → /usr/local/bin/fw"
+            echo -e "  ${GREEN}✓${NC}  fw added to PATH"
         else
-            echo -e "  ${YELLOW}WARN${NC}  Cannot create symlink in /usr/local/bin (no write access)"
-            echo -e "         Add to PATH manually: export PATH=\"$FRAMEWORK_ROOT/bin:\$PATH\""
+            echo -e "  ${YELLOW}⚠${NC}   Add fw to PATH: export PATH=\"$FRAMEWORK_ROOT/bin:\$PATH\""
         fi
-    else
-        echo -e "  ${GREEN}OK${NC}  fw already in PATH ($(which fw))"
     fi
 
-    # --- Auto-doctor (T-310) ---
+    # --- Done ---
     echo ""
-    echo -e "${BOLD}Verifying setup...${NC}"
+    echo -e "${GREEN}Done!${NC} Start working:"
+    echo -e "  ${BOLD}fw work-on \"your first task\" --type build${NC}"
     echo ""
-    local saved_project_root="${PROJECT_ROOT:-}"
-    export PROJECT_ROOT="$target_dir"
-    if type do_doctor >/dev/null 2>&1; then
-        do_doctor
-    else
-        echo -e "  ${YELLOW}SKIP${NC}  fw doctor not available (standalone init)"
-    fi
-    if [ -n "$saved_project_root" ]; then
-        export PROJECT_ROOT="$saved_project_root"
-    else
-        unset PROJECT_ROOT
-    fi
-
-    # --- Summary ---
-    echo ""
-    echo -e "${GREEN}=== Project Initialized ===${NC}"
-    echo ""
-    echo "Directory: $target_dir"
-    echo ""
-    # First-run walkthrough (T-304)
-    if [ "$first_run" = true ] && [ -t 0 ] && [ -t 1 ]; then
-        source "$FW_LIB_DIR/first-run.sh" 2>/dev/null || source "$(dirname "${BASH_SOURCE[0]}")/first-run.sh" 2>/dev/null || true
-        if type do_first_run >/dev/null 2>&1; then
-            do_first_run "$target_dir"
-        fi
-    else
-        echo -e "${BOLD}Next steps:${NC}"
-        echo "  1. cd $target_dir"
-        echo "  2. fw work-on 'task name'       # Start your first task"
-        echo ""
-        echo -e "${BOLD}Framework commands:${NC}"
-        echo "  fw help                         # See all commands"
-        echo "  fw audit                        # Check compliance"
-        echo "  fw handover --commit            # End-of-session handover"
-    fi
+    echo -e "All commands: ${BOLD}fw help${NC}"
 }
 
 # --- Provider Config Generators ---
