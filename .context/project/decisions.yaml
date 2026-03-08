@@ -343,3 +343,10 @@ decisions:
     date: 2026-03-03
     task: T-289
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-044
+    decision: "Re-track buildspec in git"
+    scope: project
+    date: 2026-03-05
+    task: T-324
+    rationale: "Auto-captured from task file on completion"

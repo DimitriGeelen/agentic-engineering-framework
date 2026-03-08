@@ -1,0 +1,223 @@
+# Audit Results - 2026-03-07-0016
+timestamp: 2026-03-06T23:16:06Z
+summary:
+  pass: 96
+  warn: 6
+  fail: 2
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 11 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 126 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 116/126 cards enriched (10 without edges)"
+  - level: PASS
+    check: "All 23 active tasks are valid"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 99% (1035/1044 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: PASS
+    check: "Bypass log exists"
+  - level: PASS
+    check: "Commit-msg hook installed"
+  - level: PASS
+    check: "No Tier 0 violations detected"
+  - level: PASS
+    check: "Practices documented: 7 practice(s) in 015-Practices.md"
+  - level: PASS
+    check: "All practices have traceable origins"
+  - level: PASS
+    check: "All practice origins resolve to actual tasks"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 325 episodic summaries have quality content"
+  - level: PASS
+    check: "No orphaned episodic files"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
+  - level: PASS
+    check: "Gaps register: 3 watching, no triggers fired"
+  - level: PASS
+    check: "Handover open questions: none"
+  - level: PASS
+    check: "Graduation pipeline: 0 learnings (threshold: 20)"
+  - level: PASS
+    check: "All 41 completed inceptions have research artifacts"
+  - level: PASS
+    check: "C-001: All 4 active inceptions have research artifacts"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-336)"
+  - level: WARN
+    check: "CTL-003: Budget status file stale (23min old)"
+    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
+  - level: PASS
+    check: "CTL-004: Tool counter at 5 (last commit: 23 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: warn)"
+  - level: PASS
+    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+  - level: PASS
+    check: "CTL-020: 4 cron audit file(s) in last hour"
+  - level: PASS
+    check: "CTL-002: Tier 0 guard installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-005: Error watchdog installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-006: Handover coverage for compactions (235 handovers, 73 compactions)"
+  - level: PASS
+    check: "CTL-007: Post-compact resume hook configured in settings.json"
+  - level: PASS
+    check: "CTL-009: Inception T-294 has decision (21 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-306 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-325 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-084 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-097 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-107 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-109 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-110 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-118 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-120 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-124 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-138 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-154 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-157 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-158 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-164 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-174 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-178 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-179 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-181 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-190 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-191 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-194 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-200 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-222 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-235 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-254 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-261 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-292 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
+  - level: PASS
+    check: "CTL-011: pre-push hook installed and executable"
+  - level: WARN
+    check: "CTL-012: Completed task T-319 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-012: Completed task T-320 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-013: T-324 verification re-run: 2 command(s) failing"
+    mitigation: "Review T-324 — environment may have changed"
+  - level: PASS
+    check: "CTL-013: T-323 verification re-run: 2/2 pass"
+  - level: PASS
+    check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-025: T-285 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-289 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-295 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-300 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-303 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-304 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-326 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-328 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-330 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-331 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-333 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-335 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-336 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
+  - level: PASS
+    check: "D1: Episodic quality — 0% [TODO] (3/325)"
+  - level: FAIL
+    check: "D2: Human review queue — 2 task(s) waiting >72h: T-285(133h) T-289(83h) T-295(53h) T-300(52h) T-303(52h) T-304(52h) T-326(45h) T-328(45h) T-330(45h) T-331(45h) T-333(45h)"
+    mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
+  - level: FAIL
+    check: "D8: Handover quality — LATEST.md has 91 [TODO] sections"
+    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
+  - level: PASS
+    check: "D10: Decision-without-dialogue — none detected"
+  - level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - level: WARN
+    check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
+    mitigation: "Review flagged tasks for process issues"
+  - level: PASS
+    check: "D3: Commit velocity — normal (PASS today=0 avg=35 ratio=0.0x)"
+  - level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 25_commits_24h)"
+  - level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=8.0 earlier=3.0)"
+  - level: PASS
+    check: "D12: Bypass log — no log file"
+  - level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - level: PASS
+    check: "CTL-016: No failure patterns recorded"

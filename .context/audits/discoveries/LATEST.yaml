@@ -1,15 +1,16 @@
-timestamp: 2026-03-05T00:09:31Z
+timestamp: 2026-03-08T08:33:41Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/316)"
+    check: "D1: Episodic quality — 0% [TODO] (3/327)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 1 task(s) waiting >72h: T-285(86h) T-289(36h)"
+    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(166h) T-289(116h) T-295(86h) T-300(86h) T-303(85h) T-304(85h) T-326(78h) T-328(79h) T-330(79h) T-331(79h) T-333(79h) T-335(34h) T-336(33h) T-337(33h)"
     mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
   - id: D8
-    level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
+    level: FAIL
+    check: "D8: Handover quality — LATEST.md has 99 [TODO] sections"
+    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - id: D10
     level: PASS
     check: "D10: Decision-without-dialogue — none detected"
@@ -25,14 +26,15 @@ findings:
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: WARN
-    check: "D3: Commit velocity — WARN drop today=9 avg=38 ratio=0.2x"
+    check: "D3: Commit velocity — WARN drop today=2 avg=33 ratio=0.1x"
     mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 95_commits_24h)"
+    check: "D7: Commit bunching — none (PASS 2_commits_24h)"
   - id: D6
-    level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=8.7 earlier=3.6)"
+    level: WARN
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.0 vs earlier_avg=4.1)"
+    mitigation: "Check for blockers or process issues slowing work"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -41,7 +43,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 9
-  warn: 2
-  fail: 1
+  pass: 7
+  warn: 3
+  fail: 2
   total: 12

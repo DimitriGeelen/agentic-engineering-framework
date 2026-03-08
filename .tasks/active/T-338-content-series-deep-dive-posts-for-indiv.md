@@ -6,16 +6,16 @@ description: >
   Each post stands alone, targets a specific pain point, and links back to the repo.
   Platform-flexible: Reddit (r/ClaudeAI, r/ChatGPTCoding), LinkedIn, Dev.to.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [launch, visibility, content]
 components: []
 related_tasks: [T-334, T-336, T-337, T-329]
 created: 2026-03-08T08:09:33Z
-last_update: 2026-03-08T08:09:33Z
-date_finished: null
+last_update: 2026-03-08T08:20:53Z
+date_finished: 2026-03-08T08:20:53Z
 ---
 
 # T-338: Content series: deep-dive posts for individual framework concepts
@@ -38,10 +38,11 @@ Series:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] 7 deep-dive posts drafted in `docs/articles/deep-dives/`
-- [ ] Each post has title, body, platform notes, and hashtags
-- [ ] Each post stands alone (no required reading order)
-- [ ] Each post links back to GitHub repo
+- [x] 7 deep-dive posts drafted in `docs/articles/deep-dives/`
+- [x] Each post has title, body, platform notes, and hashtags
+- [x] Each post stands alone (no required reading order)
+- [x] Each post links back to GitHub repo
+- [x] Each post enriched with real research context, thinking process, and decisions from task history
 
 ### Human
 - [ ] Posts reviewed for tone/voice
@@ -69,3 +70,6 @@ test "$(ls docs/articles/deep-dives/*.md 2>/dev/null | wc -l)" -ge 7
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-338-content-series-deep-dive-posts-for-indiv.md
 - **Context:** Initial task creation
+
+### 2026-03-08T08:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

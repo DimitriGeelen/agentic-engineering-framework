@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-338: Content series: deep-dive posts for individual framework concepts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T08:20:54Z
+# ============================================================================
+
+task_id: T-338
+task_name: "Content series: deep-dive posts for individual framework concepts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T08:09:33Z
+completed: 2026-03-08T08:20:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T09:14:19+01:00
+last_commit: 2026-03-08T09:20:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Draft 7 deep-dive content posts for framework concepts. Enrich deep-dive posts with research context, thinking process, and decisions
+
+# Key outcomes
+outcomes:
+  - "7 deep-dive posts drafted in `docs/articles/deep-dives/`"
+  - "Each post has title, body, platform notes, and hashtags"
+  - "Each post stands alone (no required reading order)"
+  - "Each post links back to GitHub repo"
+  - "Each post enriched with real research context, thinking process, and decisions from task history"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/deep-dives/01-task-gate.md"
+  - "docs/articles/deep-dives/02-tier0-protection.md"
+  - "docs/articles/deep-dives/03-context-budget.md"
+  - "docs/articles/deep-dives/04-three-layer-memory.md"
+  - "docs/articles/deep-dives/05-healing-loop.md"
+  - "docs/articles/deep-dives/06-authority-model.md"
+  - "docs/articles/deep-dives/07-component-fabric.md"
+  - ".tasks/active/T-338-content-series-deep-dive-posts-for-indiv.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T09:14:19"
+    action: "T-338: Draft 7 deep-dive content posts for framework concepts"
+  - time: "2026-03-08T09:20:34"
+    action: "T-338: Enrich deep-dive posts with research context, thinking process, and decisions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [launch, visibility, content]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 8
+  lines_added: 1067
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-338-content-series-deep-dive-posts-for-indiv.md
+generated_by: context-agent-hybrid

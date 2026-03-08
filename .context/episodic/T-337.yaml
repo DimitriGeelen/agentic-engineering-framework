@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-337: Draft LinkedIn launch post
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-06T23:28:22Z
+# ============================================================================
+
+task_id: T-337
+task_name: "Draft LinkedIn launch post"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-06T23:26:45Z
+completed: 2026-03-06T23:28:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-07T00:28:05+01:00
+last_commit: 2026-03-07T00:28:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Draft LinkedIn launch post. Fix case-sensitive verification command
+
+# Key outcomes
+outcomes:
+  - "Post draft at `docs/articles/linkedin-post.md`"
+  - "Includes posting notes and image recommendations"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix case-sensitive verification command"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/linkedin-post.md"
+  - ".tasks/active/T-337-draft-linkedin-launch-post.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-07T00:28:05"
+    action: "T-337: Draft LinkedIn launch post"
+  - time: "2026-03-07T00:28:21"
+    action: "T-337: Fix case-sensitive verification command"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [launch, visibility]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 2
+  lines_added: 117
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-337-draft-linkedin-launch-post.md
+generated_by: context-agent-hybrid

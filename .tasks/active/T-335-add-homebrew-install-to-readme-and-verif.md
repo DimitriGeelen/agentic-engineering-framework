@@ -5,16 +5,16 @@ description: >
   The launch article (T-329) and Homebrew tap (T-330) advertise `brew tap DimitriGeelen/agentic-fw && brew install fw`
   but the README Quickstart only shows the curl install. Add Homebrew as an install option in the README.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [docs, install]
 components: [README.md]
 related_tasks: [T-329, T-330]
 created: 2026-03-06T22:12:20Z
-last_update: 2026-03-06T22:12:20Z
-date_finished: null
+last_update: 2026-03-06T22:17:23Z
+date_finished: 2026-03-06T22:14:02Z
 ---
 
 # T-335: Add Homebrew install to README and verify tap documentation
@@ -56,3 +56,6 @@ grep -q "curl -fsSL" README.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-335-add-homebrew-install-to-readme-and-verif.md
 - **Context:** Initial task creation
+
+### 2026-03-06T22:14:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
