@@ -14,7 +14,7 @@ tags: [governance, ux, handoff]
 components: [agents/task-create/update-task.sh, agents/handover/handover.sh, agents/task-create/create-task.sh]
 related_tasks: [T-193, T-285, T-289]
 created: 2026-03-04T23:51:59Z
-last_update: 2026-03-05T00:00:06Z
+last_update: 2026-03-08T09:31:00Z
 date_finished: null
 ---
 
@@ -103,11 +103,16 @@ test -f docs/reports/T-325-human-ac-handoff-quality.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives. -->
+**Decision**: GO
 
-## Decision
+**Rationale**: All 4 assumptions validated. Scoped to instruction quality: CLAUDE.md rule + template + WARN gate. Surfacing/notification deferred.
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+### 2026-03-08 — GO decision (detail)
+- **Chose:** GO — proceed with implementation (tightened scope)
+- **Scope:** Agent must write human ACs with step-by-step instructions (Steps/Expected/If-not). Three deliverables: CLAUDE.md rule, template update, WARN gate in update-task.sh.
+- **Deferred:** Surfacing/notification (resume, handover, CLI) — separate task if needed.
+- **Why:** All 4 assumptions validated. 4/5 real tasks improved. 0% false positive on gate. Zero breaking changes.
+- **Rejected:** Broader scope including notification/surfacing mechanisms (user confirmed: core is instruction quality, not discoverability).
 
 ## Updates
 
@@ -115,3 +120,8 @@ test -f docs/reports/T-325-human-ac-handoff-quality.md
 - **Action:** Created inception with 4-agent research phase
 - **Findings:** 46 tasks analyzed, clear correlation between AC specificity and completion rate
 - **Research artifact:** docs/reports/T-325-human-ac-handoff-quality.md
+
+### 2026-03-08T09:42:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All assumptions validated. Scope: agent must write human ACs with step-by-step instructions (Steps/Expected/If-not). CLAUDE.md rule + template update + WARN gate in update-task.sh. Surfacing/notification deferred to separate task.
