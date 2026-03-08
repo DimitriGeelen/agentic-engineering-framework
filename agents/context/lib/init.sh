@@ -113,6 +113,32 @@ EOF
         echo "  Run 'fw help' for all commands, 'fw doctor' to check setup."
     fi
 
+    # Auto-generate watch-patterns.yaml if missing (T-367)
+    local fabric_dir="$PROJECT_ROOT/.fabric"
+    local watch_file="$fabric_dir/watch-patterns.yaml"
+    if [ ! -f "$watch_file" ] && [ -d "$fabric_dir" ]; then
+        cat > "$watch_file" << 'WPEOF'
+# Fabric watch patterns — source files to track for drift detection
+# Generated automatically by fw context init
+# Edit to match your project's source layout
+patterns:
+  - glob: "src/**/*.py"
+  - glob: "src/**/*.rs"
+  - glob: "crates/*/src/**/*.rs"
+  - glob: "lib/**/*.py"
+  - glob: "lib/**/*.sh"
+  - glob: "web/**/*.py"
+  - glob: "agents/**/*.sh"
+  - glob: "agents/**/*.py"
+  - glob: "bin/*"
+  - glob: "**/*.ts"
+  - glob: "**/*.go"
+WPEOF
+        echo ""
+        echo -e "${GREEN}Generated .fabric/watch-patterns.yaml${NC} (default patterns)"
+        echo "  Edit to match your project layout, then run: fw fabric scan"
+    fi
+
     # Auto-run watchtower scan (Phase 4)
     # Watchtower requires the web module which lives in the framework repo
     if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && python3 -c "import web.watchtower" 2>/dev/null; then
