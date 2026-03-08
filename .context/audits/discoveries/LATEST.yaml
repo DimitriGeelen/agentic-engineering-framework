@@ -1,15 +1,16 @@
-timestamp: 2026-03-08T13:52:07Z
+timestamp: 2026-03-08T19:51:41Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/333)"
+    check: "D1: Episodic quality — 0% [TODO] (3/345)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(172h) T-289(121h) T-295(91h) T-300(91h) T-303(91h) T-304(91h) T-326(83h) T-328(84h) T-330(84h) T-331(84h) T-333(84h) T-335(39h) T-336(39h) T-337(38h)"
+    check: "D2: Human review queue — 7 task(s) waiting >72h: T-285(178h) T-289(127h) T-300(97h) T-326(89h) T-328(90h) T-331(90h) T-333(90h) T-336(45h) T-337(44h)"
     mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
   - id: D8
-    level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
+    level: FAIL
+    check: "D8: Handover quality — LATEST.md has 163 [TODO] sections"
+    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - id: D10
     level: PASS
     check: "D10: Decision-without-dialogue — none detected"
@@ -24,15 +25,15 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - id: D3
-    level: PASS
-    check: "D3: Commit velocity — normal (PASS today=45 avg=26 ratio=1.7x)"
+    level: WARN
+    check: "D3: Commit velocity — WARN spike today=75 avg=26 ratio=2.8x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 45_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 75_commits_24h)"
   - id: D6
-    level: WARN
-    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.7 vs earlier_avg=4.1)"
-    mitigation: "Check for blockers or process issues slowing work"
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=4.7 earlier=4.7)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -41,7 +42,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 9
+  pass: 8
   warn: 2
-  fail: 1
+  fail: 2
   total: 12

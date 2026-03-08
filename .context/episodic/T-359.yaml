@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-359: Rename Homebrew formula to avoid brocode/fw collision
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:56:35Z
+# ============================================================================
+
+task_id: T-359
+task_name: "Rename Homebrew formula to avoid brocode/fw collision"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T19:14:22Z
+completed: 2026-03-08T19:56:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T20:44:45+01:00
+last_commit: 2026-03-08T20:50:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Rename Homebrew formula from fw to agentic-fw — avoid brocode/fw collision. Bump version to 1.2.6, fix Cellar path detection for agentic-fw formula name
+
+# Key outcomes
+outcomes:
+  - "Tap repo has `Formula/agentic-fw.rb` with class `AgenticFw`"
+  - "Old `Formula/fw.rb` deleted from tap repo"
+  - "Tap README updated with `brew install agentic-fw` instructions"
+  - "Migration note added to formula caveats"
+  - "Main README updated: `brew install DimitriGeelen/agentic-fw/agentic-fw`"
+  - "Launch article and Reddit post updated with new formula name"
+  - "[RUBBER-STAMP] Verify install works with new formula name on macOS"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Bump version to 1.2.6, fix Cellar path detection for agentic-fw formula name"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "docs/articles/launch-article.md"
+  - "docs/articles/reddit-claudeai-post.md"
+  - "README.md"
+  - ".tasks/active/T-359-rename-homebrew-formula-to-avoid-brocode.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T20:44:45"
+    action: "T-359: Rename Homebrew formula from fw to agentic-fw — avoid brocode/fw collision"
+  - time: "2026-03-08T20:50:47"
+    action: "T-359: Bump version to 1.2.6, fix Cellar path detection for agentic-fw formula name"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [homebrew, distribution]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 2
+  files_changed: 5
+  lines_added: 36
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-359-rename-homebrew-formula-to-avoid-brocode.md
+generated_by: context-agent-hybrid

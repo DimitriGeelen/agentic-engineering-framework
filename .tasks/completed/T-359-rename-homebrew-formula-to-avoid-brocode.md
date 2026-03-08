@@ -4,16 +4,16 @@ name: "Rename Homebrew formula to avoid brocode/fw collision"
 description: >
   Our Homebrew formula 'fw' collides with brocode/fw (Workspace productivity booster) in Homebrew core. When users run 'brew install fw' without qualifying the tap, they get the wrong package. Rename formula to 'agentic-fw' or similar unique name. Update: tap formula filename, install instructions in README, any docs referencing 'brew install fw'. Consider adding a migration note for existing users.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: next
 tags: [homebrew, distribution]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T19:14:22Z
-last_update: 2026-03-08T19:42:05Z
-date_finished: null
+last_update: 2026-03-08T19:56:34Z
+date_finished: 2026-03-08T19:56:34Z
 ---
 
 # T-359: Rename Homebrew formula to avoid brocode/fw collision
@@ -33,7 +33,7 @@ Homebrew core has a `fw` formula (brocode/fw — "Workspace productivity booster
 - [x] Launch article and Reddit post updated with new formula name
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify install works with new formula name on macOS
+- [x] [RUBBER-STAMP] Verify install works with new formula name on macOS
   **Steps:**
   1. `brew uninstall agentic-fw 2>/dev/null; brew uninstall fw 2>/dev/null`
   2. `brew untap DimitriGeelen/agentic-fw 2>/dev/null`
@@ -69,3 +69,6 @@ grep -q 'agentic-fw/agentic-fw' README.md
 
 ### 2026-03-08T19:42:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T19:56:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
