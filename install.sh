@@ -150,10 +150,9 @@ main() {
 
     echo -e "${GREEN}${BOLD}Installation complete!${NC}"
     echo ""
-    echo "  Get started:"
-    echo "    cd /path/to/your-project"
-    echo "    git init"
-    echo "    fw init"
+    echo "  Get started (in current dir, or specify a path):"
+    echo "    fw init                  # current directory"
+    echo "    fw init /path/to/project # specific directory"
     echo ""
     echo "  Then choose your path:"
     echo ""
