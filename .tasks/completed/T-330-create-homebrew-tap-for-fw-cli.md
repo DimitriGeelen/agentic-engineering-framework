@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:33Z
-last_update: 2026-03-05T01:34:13Z
+last_update: 2026-03-08T19:33:25Z
 date_finished: 2026-03-05T01:34:13Z
 ---
 
@@ -30,7 +30,7 @@ Homebrew tap for standard CLI distribution. Ref: `docs/reports/T-327-visibility-
 - [x] README with install/usage/update/uninstall instructions
 
 ### Human
-- [ ] `brew tap DimitriGeelen/agentic-fw && brew install fw` works on a macOS machine
+- [x] `brew tap DimitriGeelen/agentic-fw && brew install fw` works on a macOS machine
 
 ## Verification
 

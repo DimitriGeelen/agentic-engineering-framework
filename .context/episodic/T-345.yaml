@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-345: Add bugfix learning checkpoint practice and G-016 gap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T19:30:25Z
+# ============================================================================
+
+task_id: T-345
+task_name: "Add bugfix learning checkpoint practice and G-016 gap"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T12:25:51Z
+completed: 2026-03-08T12:25:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-03-08T13:27:36+01:00
+last_commit: 2026-03-08T13:28:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add Bug-Fix Learning Checkpoint practice and register G-016. Update ACs and verification commands. Task completed — practice, gap, and learnings all in place
+
+# Key outcomes
+outcomes:
+  - "Bug-Fix Learning Checkpoint practice added to CLAUDE.md under Agent Behavioral Rules"
+  - "G-016 registered in gaps.yaml with evidence, trigger, and resolution options"
+  - "Three learnings captured from T-344 fix cycle (L-078, L-079, L-080)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add Bug-Fix Learning Checkpoint practice and register G-016"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/project/gaps.yaml"
+  - ".tasks/active/T-345-add-bugfix-learning-checkpoint-practice-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T13:27:36"
+    action: "T-345: Add Bug-Fix Learning Checkpoint practice and register G-016"
+  - time: "2026-03-08T13:28:04"
+    action: "T-345: Update ACs and verification commands"
+  - time: "2026-03-08T13:28:24"
+    action: "T-345: Task completed — practice, gap, and learnings all in place"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [meta, learning, practices]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 4
+  files_changed: 29
+  lines_added: 880
+  lines_removed: 188
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-345-add-bugfix-learning-checkpoint-practice-.md
+generated_by: context-agent-hybrid

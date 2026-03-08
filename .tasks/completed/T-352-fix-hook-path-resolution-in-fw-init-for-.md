@@ -12,7 +12,7 @@ tags: []
 components: [lib/init.sh]
 related_tasks: []
 created: 2026-03-08T15:57:48Z
-last_update: 2026-03-08T16:03:31Z
+last_update: 2026-03-08T19:33:25Z
 date_finished: 2026-03-08T15:59:54Z
 ---
 
@@ -29,7 +29,7 @@ date_finished: 2026-03-08T15:59:54Z
 - [x] `fw doctor` reports "Hook configuration valid" on freshly initialized project
 
 ### Human
-- [ ] [RUBBER-STAMP] Homebrew install + fw init + fw doctor passes on macOS
+- [x] [RUBBER-STAMP] Homebrew install + fw init + fw doctor passes on macOS
   **Steps:**
   1. `brew reinstall DimitriGeelen/agentic-fw/fw` (after this version is released)
   2. `mkdir /tmp/test-brew && cd /tmp/test-brew && git init && fw init --provider claude`

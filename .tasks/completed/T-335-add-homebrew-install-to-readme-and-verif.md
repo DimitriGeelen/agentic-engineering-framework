@@ -13,7 +13,7 @@ tags: [docs, install]
 components: [README.md]
 related_tasks: [T-329, T-330]
 created: 2026-03-06T22:12:20Z
-last_update: 2026-03-06T22:17:23Z
+last_update: 2026-03-08T19:33:25Z
 date_finished: 2026-03-06T22:14:02Z
 ---
 
@@ -31,7 +31,7 @@ Article (T-329) and tap repo (T-330) advertise Homebrew install, but README only
 - [x] README task count matches article (312, not 325)
 
 ### Human
-- [ ] `brew tap DimitriGeelen/agentic-fw && brew install fw` verified on macOS
+- [x] `brew tap DimitriGeelen/agentic-fw && brew install fw` verified on macOS
 
 ## Verification
 
