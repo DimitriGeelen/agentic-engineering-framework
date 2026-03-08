@@ -46,24 +46,93 @@ This isn't honor-system governance. The framework blocks the action mechanically
 
 ## Quickstart
 
+### Install
+
 ```bash
-# Install
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 
 # Or via Homebrew (macOS/Linux)
 brew install DimitriGeelen/agentic-fw/fw
+```
 
-# Initialize in your project
-cd your-project && fw init
+### Path 1: Fresh Project with Inception (Thinking First)
 
-# Start your first task (creates task + sets focus + starts work)
+Start with exploration — define goals, validate assumptions, then build.
+
+```bash
+mkdir my-project && cd my-project && git init
+fw init --provider claude
+
+# Start with inception — explore the problem space before writing code
+fw inception start "Define project goals and architecture"
+
+# Research, explore constraints, document findings
+# When ready to commit to a direction:
+fw inception decide T-001 go
+
+# Inception creates follow-up build tasks automatically
+fw work-on "Implement core module" --type build
+```
+
+Best for: greenfield projects, complex domains, when you need to think before you build.
+
+### Path 2: Fresh Project, Start Building
+
+You know what to build. Skip exploration, fire off tasks.
+
+```bash
+mkdir my-project && cd my-project && git init
+fw init --provider claude
+
+# Start working immediately
 fw work-on "Set up project structure" --type build
 
-# When done
+# Create more tasks as you go
+fw work-on "Add authentication" --type build
+fw work-on "Write API endpoints" --type build
+
+# When done for the day
 fw handover --commit
 ```
 
-**What `fw init` creates:** `.context/` (memory system), `.tasks/` (task files), git hooks (commit validation), and a provider config file (CLAUDE.md, .cursorrules, or FRAMEWORK.md depending on your agent).
+Best for: well-defined projects, prototypes, when requirements are clear.
+
+### Path 3: Existing Project
+
+Bring governance to a codebase that already exists.
+
+```bash
+cd existing-project
+fw init --provider claude    # or: cursor, generic
+
+# Register key components so the framework knows your structure
+fw fabric register src/auth.ts
+fw fabric register src/api/routes.ts
+fw fabric drift              # Detect what else should be registered
+
+# Start governing — all new work goes through tasks
+fw work-on "Fix login timeout bug" --type build
+
+# Run an audit to see where you stand
+fw audit
+```
+
+Best for: brownfield projects, adding governance to active codebases, team onboarding.
+
+### Start the Dashboard
+
+Watchtower gives you a live view of tasks, audit results, discovery scanner, and metrics.
+
+```bash
+fw serve                     # Starts on http://localhost:3000
+fw serve --port 5000         # Custom port
+```
+
+![Watchtower Dashboard](docs/screenshots/watchtower-dashboard.png)
+
+### What `fw init` creates
+
+`.context/` (memory system), `.tasks/` (task files), git hooks (commit validation), and a provider config file (CLAUDE.md, .cursorrules, or FRAMEWORK.md depending on your agent).
 
 ## What's Inside
 
