@@ -118,11 +118,42 @@ Stale (dependency changes detected):
 
 This keeps the structural map accurate over time, even as the codebase evolves.
 
+### The thinking behind this
+
+The Component Fabric was born from a conversation during session S-2026-0219. I was discussing sub-agent research persistence (T-190) when I realized the deeper problem:
+
+> "As our codebase grows, we get functions, routines, sequences of steps and dependencies that make up the application functionality. It becomes more and more difficult to debug and enhance the application. Going forward as the app gets more complex, reading all documents will not work anymore."
+
+The framework had excellent **temporal memory** — it knew what happened (tasks, decisions, episodic histories). But it had almost zero **spatial memory** — it didn't know what exists, where things are, or how they connect.
+
+This became a formal inception (T-191) that ran across 5-10 sessions and produced **8 research documents**:
+
+1. **Genesis discussion** — problem framing and 6 use cases
+2. **Research landscape** — 14 sources across 7 domains (architecture mining, dependency analysis, UI documentation)
+3. **AEF topology sample** — prototype structural map of the actual framework
+4. **UI patterns research** — how to make UI elements identifiable without visual inspection
+5. **Requirements** — 6 validated use cases, all scored HIGH priority
+6. **Data model** — component card schema with 10 prototype cards
+7. **Enforcement design** — proactive gates + retroactive drift detection
+8. **Architecture proposal** — build decomposition into 11 tasks
+
+Five key design principles emerged from the research:
+
+1. **Structural self-awareness** — the system knows what it is, not just what happened
+2. **Earn your detail** — granularity is adaptive (starts coarse, deepens where complexity warrants)
+3. **UI as first-class** — UI elements documented as explicitly as backend (agents can't see screens)
+4. **Enforced, not optional** — component registration is a gate, not a suggestion
+5. **"The thinking trail IS the artifact"** — every step of the intellectual process is persisted
+
+That last principle is meta — it was learned during the Component Fabric inception itself and then applied to all future research tasks. If you lose the final deliverable, the thinking trail can reconstruct it. If you lose the thinking trail, the final deliverable is an unjustified assertion.
+
 ### Why agents need this
 
 Human developers build mental models of their codebase. They know "if I change auth, I need to check the middleware." This knowledge is implicit, built over months of working with the code.
 
 AI agents don't have implicit knowledge. Every session, they see the codebase fresh. Without a structural map, they can only see what they're directly looking at — not the ripple effects of their changes.
+
+We validated this during a later integration spike (T-222) that tested three gaps: CLAUDE.md awareness (zero mentions of fabric), task-component linking (72% file resolution, 0% false positives), and drift detection. The fabric doesn't need to be perfect — 72% automatic resolution with zero false positives is already a massive improvement over "hope the agent reads the right files."
 
 The Component Fabric makes structural knowledge explicit and queryable. The agent doesn't need months of experience with your codebase. It can check the blast radius before every change.
 

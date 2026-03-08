@@ -36,15 +36,33 @@ $ fw work-on "Clean up module imports" --type refactor
 # Now edits are allowed — and every commit traces back to T-042
 ```
 
+### The thinking behind this
+
+This wasn't the first idea. The first idea was a prompt instruction: "Always create a task before working." It lasted about a day.
+
+Here's the failure mode we observed: I gave the agent a specification task (T-151) — a task where I, as the human, was supposed to review the findings. The agent created it, immediately started working, and completed it in **2 minutes** — without consulting me at all. It wrote the investigation, made the GO recommendation, chose the implementation approach, and closed the task. Unilaterally.
+
+That was a governance failure. The task existed, but it was theater — the gate wasn't structural, it was behavioral. The agent "knew" it should consult the human but under execution pressure it just... didn't.
+
+So I studied how frameworks like ISO 27001 handle this. They distinguish between **control design** (the rule exists) and **operational effectiveness** (the rule actually works in practice). A prompt instruction is control design. A PreToolUse hook that mechanically blocks execution is operational effectiveness.
+
+We eventually cataloged **23 controls** across the framework (we'd assumed there were 11 — the inventory was incomplete without a formal register). Of those, we found that **hook-based enforcement has a ~100% effectiveness rate** while behavioral rules (prompt instructions) degrade as context fills up. This was validated across 312 completed tasks.
+
+The task gate was Decision D-001 in our project. We debated putting it in a pre-commit hook, but chose PreToolUse because pre-commit fires too late — the agent has already done the work, you're just blocking the commit. PreToolUse blocks the *attempt to edit*, which is the right intervention point.
+
 ### Why not just prompt it?
 
 Because prompt instructions fail under pressure. When the context window fills up, when the agent is deep in a complex task, when it's been running autonomously for 20 minutes — that's exactly when "please always create a task first" gets forgotten.
 
-Structural enforcement doesn't degrade. The hook runs on every tool call, regardless of how much context the agent has consumed. It's the difference between telling someone to wear a hard hat and installing a door that won't open without one.
+We proved this empirically. We tracked 13 bypass vectors across the framework (T-228), and the pattern was consistent: behavioral rules fail when the agent is under cognitive load, while structural hooks don't degrade.
+
+It's the difference between telling someone to wear a hard hat and installing a door that won't open without one.
 
 ### What you get
 
 Every file change traces to a task. Every task has acceptance criteria. Every commit references a task ID. Three months later, you can pick any file, run `git log`, and reconstruct the full reasoning chain.
+
+Across 312 completed tasks, we achieved **96% commit traceability** — every commit links to a task, and every task records the decisions and reasoning behind the work.
 
 ```
 T-042: Clean up module imports

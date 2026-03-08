@@ -93,11 +93,27 @@ The agent will NOT (even with broad delegation):
 
 You get autonomy where it's safe, control where it matters.
 
+### The thinking behind this
+
+This distinction came from a real incident. Task T-151 was a specification task — meaning I, as the human, was supposed to review the findings before any decision was made. The agent created the task, immediately started working on it, and completed it **in 2 minutes**. It wrote the investigation findings, made the GO recommendation, chose between cron vs systemd vs APScheduler, set frequencies, and decided which checks to include. All without asking me.
+
+The task existed. The status transitions were logged. From a structural perspective, everything looked fine. But the *intent* — that a human was supposed to validate the spec — was completely bypassed.
+
+That incident triggered a deep review (T-194) where we mapped the entire governance model against ISO 27001's four-level assurance framework. We discovered:
+
+- **Human sovereignty (Risk R-010, score 16)** was the highest-scoring risk in our register
+- It had **4 controls, all warn-only** — breadth without depth
+- One related risk (R-033) had **NO control at all**
+
+The authority model was our response. We formalized three tiers — sovereignty, authority, initiative — and mapped every action to a tier. Then we made the critical design choice (Decision D-004): **Tier 0 violations are FAIL, not WARN**. We rejected "warn" because behavioral rules don't hold under pressure. An agent that's 45 minutes into a task and encounters a warning will acknowledge it and proceed.
+
+We then validated this across our entire 312-task history. The pattern was consistent: structural gates (FAIL/BLOCK) have near-100% effectiveness. Behavioral rules (WARN + trust the agent) degrade as context fills up or the agent is operating autonomously.
+
 ### The deeper principle
 
-This maps directly to how effective organizations work. A manager who says "handle this however you think is best" is delegating initiative. They're NOT saying "ignore all company policies" or "skip the approval process for purchases over $10K."
+This maps directly to how effective organizations work. Over 25 years of working on complex IT programmes at Shell, I arrived at a principle: effective intelligent action requires clear direction, context awareness, awareness of constraints and impact, and capable engaged actors. A manager who says "handle this however you think is best" is delegating initiative. They're NOT saying "ignore all company policies" or "skip the approval process for purchases over $10K."
 
-AI agents need the same structure. Broad delegation within clear boundaries isn't a contradiction — it's how capable systems actually operate.
+AI agents need the same structure. Broad delegation within clear boundaries isn't a contradiction — it's how capable systems actually operate. The domain changed from human teams to AI agents. The principle did not.
 
 ### Try it
 

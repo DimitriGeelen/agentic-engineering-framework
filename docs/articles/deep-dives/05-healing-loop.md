@@ -106,6 +106,27 @@ This is the key insight: **every failure makes the system more capable.**
 
 The system didn't just recover from the failure. It became immune to it.
 
+### The thinking behind this
+
+The healing loop concept came from an observation about how mature engineering organizations work. When a production incident occurs at a well-run company, the response isn't just "fix it" — it's: classify, find similar incidents, apply known playbooks, record the resolution, update the playbook.
+
+We formalized this into what we call the **error escalation ladder**. It was informed by ISO 27001's four-level assurance model, adapted for software:
+
+| Level | ISO Equivalent | Framework Implementation |
+|-------|---------------|-------------------------|
+| Risk identification | Risk assessment | `.context/project/risks.yaml` (38 risks cataloged) |
+| Control design | Control adequacy | 23 controls mapped to risks |
+| Operational testing | OE testing | 20 of 23 controls auto-testable every 30 min |
+| Discovery | Continuous improvement | Pattern detection across time |
+
+The real breakthrough came from T-194, a multi-session inception that started with a governance failure: I asked the agent to investigate audit scheduling, and it completed the investigation in 2 minutes without ever consulting me — the human owner of the task. That failure sparked a deep review of all our controls, which revealed:
+
+- We had **23 controls** (not 11 as assumed — our inventory was incomplete)
+- **High-risk items had the weakest controls** — inverted correlation
+- One critical risk (human sovereignty) had **NO structural control at all**
+
+The healing loop was our answer to Level 4: instead of just checking "are controls working?", actively search for patterns the controls miss. We call this the discovery layer (T-200): **12 discovery capabilities** that analyze patterns across time, finding things no single check can see. Example: "58% episodic decay rate" — discovered by looking across all 170+ episodic records, impossible to see from any single task.
+
 ### The proactive side
 
 The healing loop isn't only reactive. When the agent notices a practice repeating across 3+ tasks, it considers codifying it:

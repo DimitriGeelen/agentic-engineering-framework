@@ -54,6 +54,24 @@ The handover isn't just "task T-042 is in progress." It includes:
 - Active decisions and their rationale
 - Suggested first action for the next session
 
+### The thinking behind this
+
+The first version of context budget management was a simple tool-call counter. Every 50 tool calls, display a warning. It was useless — the correlation between tool calls and actual token consumption is weak. A single file read can consume 10K tokens; a simple edit consumes 200.
+
+We did a formal research spike (T-138, T-174) comparing approaches:
+
+| Approach | Accuracy | Overhead |
+|----------|----------|----------|
+| Tool-call counting | Low (no correlation) | Zero |
+| JSONL transcript reading | High (actual tokens) | ~50ms per check |
+| LLM self-assessment | Unreliable (agent doesn't know) | High |
+
+Decision D-009: "Monitor context budget via token reading from JSONL transcript, not tool-call counting." The agent's session writes every API response to a JSONL file on disk. The budget gate reads this file, counts actual token usage, and makes enforcement decisions based on real data.
+
+We also researched whether Claude Code's built-in auto-compaction could replace this. Short answer: no. Auto-compaction triggers at ~98% (167K tokens) and uses LLM summarization — which **destroys working memory**. The summarizer decides what's important, and it often drops acceptance criteria, pending decisions, and architectural context. We disabled auto-compaction entirely (Decision D-027) and built our own handover system instead.
+
+The handover vs. compaction research (T-174) used 3 parallel investigation agents and found that explicit handover preserves 95%+ of critical context, while LLM-based compaction preserves roughly 60-70%. The handover is a structured document the agent writes deliberately, not a summary the system generates automatically.
+
 ### The commit cadence rule
 
 The budget system also enforces a commit cadence:

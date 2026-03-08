@@ -106,6 +106,26 @@ Session 47 encounters an API timeout. The healing loop fires, searches patterns:
 
 The agent doesn't guess. It applies the known fix. Two months of institutional knowledge, available instantly.
 
+### The thinking behind this
+
+The three-layer model didn't start as a design. It emerged from failures.
+
+The first memory system was simple: a single `context.yaml` file with everything in it — current task, decisions, learnings, patterns. Within two weeks it was 500 lines long and the agent spent more time reading context than doing work.
+
+We did a formal memory audit (2026-02-15) and found that **58% of task files were empty** — the "Updates" section we'd designed as a running log was almost never populated. Meanwhile, git had a perfect record of every change with timestamps and diffs.
+
+That led to the hybrid episodic design (T-117): **git owns the timeline, task files own the decisions.** We stopped asking agents to maintain a chronological log (they forgot) and instead mined git history automatically at task completion. The episodic generator merges git data (commits, files changed, timeline) with task data (decisions, acceptance criteria) to produce a condensed history.
+
+The three-layer separation crystallized through a research spike on Google's context engineering principles (T-120) and a deep reflection on our own sub-agent dispatch patterns (T-097, which analyzed all 96 tasks at that point). Key finding: **investigation agents NEED results in working memory (0% savings from offloading), while content generators must NEVER return results to working memory (96% savings from writing to disk).**
+
+That pattern — some memory is hot and ephemeral, some is warm and persistent, some is cold and archival — mapped directly to three layers:
+
+- Working memory = hot (session-scoped, fast, volatile)
+- Project memory = warm (persistent, searchable, growing)
+- Episodic memory = cold (archival, condensed, referenced on demand)
+
+We also learned that memory decay is real. A discovery analysis (T-200) found a **58% episodic decay rate** — more than half of episodic records lose practical value within weeks. The solution wasn't to discard them, but to distill patterns upward: if the same failure appears in 3+ episodic records, it graduates to a pattern in project memory. If a pattern proves reliable across 5+ tasks, it graduates to a practice. This is Decision D-003: "3+ occurrences triggers practice candidate."
+
 ### The key insight
 
 Memory isn't one thing. Short-term context (working memory) has different requirements than accumulated knowledge (project memory) and historical reference (episodic memory). By separating them, each can be optimized:

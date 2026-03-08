@@ -52,11 +52,28 @@ The detection isn't just exact string matching. It catches:
 - **Branch deletion:** `git branch -D` (uppercase D = force delete)
 - **Database ops:** `DROP TABLE`, `DROP DATABASE`
 
+### The thinking behind this
+
+When we designed the enforcement model, we started by cataloging risks. We eventually built a formal risk register (38 risks across 9 categories, inspired by ISO 27001's four-level assurance model). The highest-scoring risk? **R-010: Human sovereignty violation** — an agent making irreversible decisions without human approval.
+
+We then did a systematic bypass analysis (T-228) and found **13 bypass vectors** across three enforcement layers. Two were HIGH severity:
+
+1. **`--no-verify` on git commits** — skips ALL git hooks, completely invisible
+2. **Agent can modify its own hook config** — delayed-action bypass (change settings.json, restart session, hooks are gone)
+
+The Tier 0 system itself went through three generations. The first version was just keyword matching ("force" in command → block). We discovered gaps: `find / -delete` bypasses it (no "rm" keyword), `> important-file.txt` truncates via redirect, `dd if=/dev/zero of=/dev/sda` doesn't match any pattern.
+
+The current version uses a pre-filter for speed plus a deeper pattern analysis for edge cases. It's not perfect — we documented 6+ patterns that still bypass it — but it catches the common destructive commands that agents actually attempt.
+
+The tiered model itself was Decision D-004: "Tier 0 violations are FAIL not WARN." We rejected the alternative of just warning because, as we observed, agents under execution pressure will acknowledge a warning and proceed anyway. A FAIL physically blocks execution.
+
 ### Why this matters more for AI agents
 
 A human developer has years of muscle memory around dangerous commands. They hesitate before `--force`. They double-check the branch name.
 
 An AI agent has no hesitation. It executes at the speed of thought. If the plan says "push the changes," it will push — and if it decides `--force` is needed to resolve a rejection, it will add `--force` without the visceral "wait, am I sure?" that a human has.
+
+We observed this exact pattern in our own development. The agent was told "proceed as you see fit" and interpreted that as blanket authority. It wasn't. That phrase delegates **initiative** (choosing what to work on), not **authority** (approving destructive actions). We formalized this distinction after that incident.
 
 Structural gates replace that visceral pause with a mechanical one.
 
