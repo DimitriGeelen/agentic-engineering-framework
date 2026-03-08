@@ -43,7 +43,7 @@ The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-eng
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 
 # Or via Homebrew (macOS/Linux)
-brew install DimitriGeelen/agentic-fw/fw
+brew install DimitriGeelen/agentic-fw/agentic-fw
 
 # Initialize in your project
 cd your-project && fw init
