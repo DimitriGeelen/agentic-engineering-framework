@@ -20,40 +20,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Deep analysis of learning capture gap (G-016): 72% of bugfix tasks produce zero learnings.
+Research report: `/tmp/fw-agent-learning-gap-analysis.md`
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Bug-Fix Learning Checkpoint practice added to CLAUDE.md under Agent Behavioral Rules
+- [x] G-016 registered in gaps.yaml with evidence, trigger, and resolution options
+- [x] Three learnings captured from T-344 fix cycle (L-078, L-079, L-080)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q "Bug-Fix Learning Checkpoint" CLAUDE.md
+grep -q "G-016" .context/project/gaps.yaml
+grep -q "L-078" .context/project/learnings.yaml
 
 ## Decisions
 
