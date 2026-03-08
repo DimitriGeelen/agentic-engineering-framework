@@ -4,16 +4,16 @@ name: "Add bugfix-learning coverage ratio to audit section 5"
 description: >
   Detective control for G-016: audit checks ratio of bugfix tasks with learnings. Warn below 40%.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: [meta, audit, learning]
-components: []
+components: [C-004, bin/fw]
 related_tasks: []
 created: 2026-03-08T12:34:04Z
-last_update: 2026-03-08T14:04:54Z
-date_finished: null
+last_update: 2026-03-08T14:09:55Z
+date_finished: 2026-03-08T14:09:55Z
 ---
 
 # T-346: Add bugfix-learning coverage ratio to audit section 5
@@ -31,7 +31,7 @@ Detective control for G-016: audit section 5 now checks ratio of completed bugfi
 
 ## Verification
 
-fw audit --section learning 2>&1 | grep -q "Bugfix-learning coverage"
+grep -q "Bugfix-learning coverage" <(fw audit --section learning 2>&1)
 
 ## Decisions
 
@@ -53,3 +53,6 @@ fw audit --section learning 2>&1 | grep -q "Bugfix-learning coverage"
 
 ### 2026-03-08T14:04:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T14:09:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

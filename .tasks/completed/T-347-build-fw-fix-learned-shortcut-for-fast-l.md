@@ -4,16 +4,16 @@ name: "Build fw fix-learned shortcut for fast learning capture"
 description: >
   Reduce friction of learning capture during fix cycles. One-liner: fw fix-learned T-XXX text.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: [cli, learning, ux]
-components: []
+components: [C-004, bin/fw]
 related_tasks: []
 created: 2026-03-08T12:34:06Z
-last_update: 2026-03-08T14:08:39Z
-date_finished: null
+last_update: 2026-03-08T14:10:36Z
+date_finished: 2026-03-08T14:10:36Z
 ---
 
 # T-347: Build fw fix-learned shortcut for fast learning capture
@@ -31,8 +31,8 @@ One-liner shortcut for capturing bugfix learnings: `fw fix-learned T-XXX "text"`
 
 ## Verification
 
-fw fix-learned 2>&1 | grep -q "Shortcut for capturing learnings"
-fw help 2>&1 | grep -q "fix-learned"
+grep -q "Shortcut for capturing learnings" <(fw fix-learned 2>&1 || true)
+grep -q "fix-learned" <(fw help 2>&1)
 
 ## Decisions
 
@@ -54,3 +54,6 @@ fw help 2>&1 | grep -q "fix-learned"
 
 ### 2026-03-08T14:08:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T14:10:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,16 +1,15 @@
-timestamp: 2026-03-08T11:58:03Z
+timestamp: 2026-03-08T13:52:07Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/331)"
+    check: "D1: Episodic quality — 0% [TODO] (3/333)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(170h) T-289(120h) T-295(89h) T-300(89h) T-303(89h) T-304(89h) T-326(81h) T-328(82h) T-330(82h) T-331(82h) T-333(82h) T-335(37h) T-336(37h) T-337(36h)"
+    check: "D2: Human review queue — 11 task(s) waiting >72h: T-285(172h) T-289(121h) T-295(91h) T-300(91h) T-303(91h) T-304(91h) T-326(83h) T-328(84h) T-330(84h) T-331(84h) T-333(84h) T-335(39h) T-336(39h) T-337(38h)"
     mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
   - id: D8
-    level: FAIL
-    check: "D8: Handover quality — LATEST.md has 127 [TODO] sections"
-    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
+    level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
   - id: D10
     level: PASS
     check: "D10: Decision-without-dialogue — none detected"
@@ -26,13 +25,13 @@ findings:
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=22 avg=26 ratio=0.8x)"
+    check: "D3: Commit velocity — normal (PASS today=45 avg=26 ratio=1.7x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 22_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 45_commits_24h)"
   - id: D6
     level: WARN
-    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.3 vs earlier_avg=4.1)"
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.7 vs earlier_avg=4.1)"
     mitigation: "Check for blockers or process issues slowing work"
   - id: D12
     level: PASS
@@ -42,7 +41,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 8
+  pass: 9
   warn: 2
-  fail: 2
+  fail: 1
   total: 12

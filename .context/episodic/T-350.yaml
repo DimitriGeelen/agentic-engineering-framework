@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-350: Fix main→master branch references in install scripts and docs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T13:42:22Z
+# ============================================================================
+
+task_id: T-350
+task_name: "Fix main→master branch references in install scripts and docs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T13:37:29Z
+completed: 2026-03-08T13:42:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T14:39:04+01:00
+last_commit: 2026-03-08T14:39:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix main→master branch references in install scripts and docs
+
+# Key outcomes
+outcomes:
+  - "Zero `raw.githubusercontent.com/.../main/install.sh` references remain in codebase"
+  - "`install.sh` BRANCH default is `master`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix main→master branch references in install scripts and docs"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "action.yml"
+  - "docs/articles/deep-dives/01-task-gate.md"
+  - "docs/articles/deep-dives/02-tier0-protection.md"
+  - "docs/articles/deep-dives/03-context-budget.md"
+  - "docs/articles/deep-dives/04-three-layer-memory.md"
+  - "docs/articles/deep-dives/05-healing-loop.md"
+  - "docs/articles/deep-dives/06-authority-model.md"
+  - "docs/articles/deep-dives/07-component-fabric.md"
+  - "docs/articles/launch-article.md"
+  - "docs/articles/reddit-claudeai-post.md"
+  - "FRAMEWORK.md"
+  - "install.sh"
+  - "README.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T14:39:04"
+    action: "T-350: Fix main→master branch references in install scripts and docs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 13
+  lines_added: 15
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-350-fix-mainmaster-branch-references-in-inst.md
+generated_by: context-agent-hybrid
