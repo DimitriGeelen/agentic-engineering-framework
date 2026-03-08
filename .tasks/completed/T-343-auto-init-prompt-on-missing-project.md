@@ -12,7 +12,7 @@ tags: []
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T10:12:12Z
-last_update: 2026-03-08T10:14:47Z
+last_update: 2026-03-08T19:37:26Z
 date_finished: 2026-03-08T10:14:47Z
 ---
 
@@ -31,7 +31,7 @@ When a user installs fw via Homebrew and runs any command in a non-initialized d
 - [x] `fw init`, `fw help`, `fw version` are excluded from the prompt
 
 ### Human
-- [ ] [RUBBER-STAMP] Interactive prompt works correctly in a real terminal
+- [x] [RUBBER-STAMP] Interactive prompt works correctly in a real terminal
   **Steps:**
   1. `mkdir /tmp/test-fw-init && cd /tmp/test-fw-init`
   2. Run `fw doctor` — should prompt Y/n

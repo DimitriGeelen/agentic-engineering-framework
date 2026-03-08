@@ -20,7 +20,7 @@ tags: []
 components: [bin/fw, lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:21:42Z
-last_update: 2026-03-04T18:40:35Z
+last_update: 2026-03-08T19:37:26Z
 date_finished: 2026-03-04T18:40:35Z
 ---
 
@@ -44,7 +44,7 @@ See T-294 research artifact: `docs/reports/T-294-framework-onboarding-portable-b
 - [x] `fw preflight --check-only` skips install prompts (alias for non-interactive)
 
 ### Human
-- [ ] Output is clear and actionable for someone who has never seen the framework
+- [x] Output is clear and actionable for someone who has never seen the framework
 
 ## Verification
 
