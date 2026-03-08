@@ -116,6 +116,43 @@ if [ -z "$ACTIVE_FILE" ]; then
     exit 2
 fi
 
+# --- Status validation (T-354) ---
+# Task file exists in active/ but may be captured (not started) or work-completed
+# (partial-complete). Only started-work and issues are workable statuses.
+TASK_STATUS=$(grep "^status:" "$ACTIVE_FILE" | head -1 | sed 's/status:[[:space:]]*//')
+case "$TASK_STATUS" in
+    started-work|issues)
+        # Workable statuses — allow
+        ;;
+    captured)
+        echo "" >&2
+        echo "BLOCKED: Task $CURRENT_TASK has status 'captured' (work not started)." >&2
+        echo "" >&2
+        echo "To unblock:" >&2
+        echo "  fw work-on $CURRENT_TASK   (sets status to started-work)" >&2
+        echo "" >&2
+        echo "Attempting to modify: $FILE_PATH" >&2
+        echo "Policy: P-002 (Task must be started before modifying files)" >&2
+        exit 2
+        ;;
+    work-completed)
+        echo "" >&2
+        echo "BLOCKED: Task $CURRENT_TASK has status 'work-completed'." >&2
+        echo "" >&2
+        echo "To unblock:" >&2
+        echo "  fw work-on T-XXX   (resume another task)" >&2
+        echo "  fw work-on 'name'  (create a new task)" >&2
+        echo "" >&2
+        echo "Attempting to modify: $FILE_PATH" >&2
+        echo "Policy: P-002 (Cannot modify files under a completed task)" >&2
+        exit 2
+        ;;
+    "")
+        # Legacy task without status field — warn but allow
+        echo "NOTE: Task $CURRENT_TASK has no status field in task file." >&2
+        ;;
+esac
+
 # --- Inception awareness ---
 # If the active task is inception type with no decision, warn (don't block)
 # ACTIVE_FILE already resolved above
