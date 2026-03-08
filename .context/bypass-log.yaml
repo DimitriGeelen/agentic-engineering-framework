@@ -230,3 +230,10 @@ bypasses:
   command_hash: e864119093dfaab3b39672b092b49ed90b3bd175d5bbeeb113aafa4f906dba73
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-08T10:12:03Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify
+  command_hash: 17ae408de401b976a260714fce696f4e20f139ec9663a57da987b44316bfe81a
+  authorized_by: human
+  mechanism: fw tier0 approve

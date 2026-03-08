@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-343: Auto-init prompt on missing project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T10:14:48Z
+# ============================================================================
+
+task_id: T-343
+task_name: "Auto-init prompt on missing project"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T10:12:12Z
+completed: 2026-03-08T10:14:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T11:14:41+01:00
+last_commit: 2026-03-08T11:14:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add auto-init prompt when running fw in uninitialized directory
+
+# Key outcomes
+outcomes:
+  - "`bin/fw` prompts Y/n when no project detected and command is not init/help/version"
+  - "Y (or Enter) runs `fw init` then re-executes the original command via `exec`"
+  - "n prints skip message and exits cleanly"
+  - "`fw init`, `fw help`, `fw version` are excluded from the prompt"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-343-auto-init-prompt-on-missing-project.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T11:14:41"
+    action: "T-343: Add auto-init prompt when running fw in uninitialized directory"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 99
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-343-auto-init-prompt-on-missing-project.md
+generated_by: context-agent-hybrid

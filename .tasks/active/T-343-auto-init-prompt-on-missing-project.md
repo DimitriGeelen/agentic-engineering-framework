@@ -4,16 +4,16 @@ name: "Auto-init prompt on missing project"
 description: >
   Auto-init prompt on missing project
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T10:12:12Z
-last_update: 2026-03-08T10:12:12Z
-date_finished: null
+last_update: 2026-03-08T10:14:47Z
+date_finished: 2026-03-08T10:14:47Z
 ---
 
 # T-343: Auto-init prompt on missing project
@@ -65,3 +65,6 @@ grep -q 'exec "$0" "$@"' bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-343-auto-init-prompt-on-missing-project.md
 - **Context:** Initial task creation
+
+### 2026-03-08T10:14:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
