@@ -21,9 +21,11 @@ BOLD="${BOLD:-\033[1m}"
 NC="${NC:-\033[0m}"
 
 CHECK_ONLY=false
+QUIET=false
 for arg in "$@"; do
     case "$arg" in
         --check-only|--ci) CHECK_ONLY=true ;;
+        --quiet) QUIET=true; CHECK_ONLY=true ;;
     esac
 done
 
@@ -194,6 +196,19 @@ check_write_perms() {
 # --- Main ---
 
 do_preflight() {
+    if [ "$QUIET" = true ]; then
+        # Silent mode: only check required deps, return 0/1
+        check_bash >/dev/null 2>&1 || true
+        check_git >/dev/null 2>&1 || true
+        check_python3 >/dev/null 2>&1 || true
+        check_pyyaml >/dev/null 2>&1 || true
+        check_write_perms >/dev/null 2>&1 || true
+        [ ${#REQUIRED_MISSING[@]} -eq 0 ] && return 0
+        # On failure, show what's missing
+        echo -e "  ${RED}✗${NC}  Missing: ${REQUIRED_MISSING[*]}"
+        return 1
+    fi
+
     echo -e "${BOLD}fw preflight${NC} — Dependency Check"
     echo ""
 

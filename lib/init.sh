@@ -65,23 +65,19 @@ do_init() {
         return 1
     fi
 
-    echo -e "${BOLD}fw init${NC} - Bootstrapping project"
-    echo ""
-    echo "  Target:    $target_dir"
-    echo "  Framework: $FRAMEWORK_ROOT"
-    echo "  Provider:  $provider"
+    local project_display
+    project_display=$(basename "$target_dir")
+    echo -e "${BOLD}Setting up agentic governance for ${project_display}...${NC}"
     echo ""
 
-    # --- Preflight check (T-303) ---
+    # --- Preflight check (T-303) — quiet mode, only fails on missing required deps ---
     source "$FW_LIB_DIR/preflight.sh" 2>/dev/null || source "$(dirname "${BASH_SOURCE[0]}")/preflight.sh" 2>/dev/null || true
     if type do_preflight >/dev/null 2>&1; then
-        if ! do_preflight --check-only; then
+        if ! do_preflight --quiet; then
             echo ""
-            echo -e "${RED}Preflight failed. Fix required dependencies before init.${NC}"
-            echo "Run: fw preflight (interactive mode to install)"
+            echo -e "${RED}Preflight failed. Run 'fw preflight' for details.${NC}"
             return 1
         fi
-        echo ""
     fi
 
     # --- Create directory structure ---
