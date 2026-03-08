@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-344: Interactive auto-init dialogue with directory and provider selection
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T20:31:51Z
+# ============================================================================
+
+task_id: T-344
+task_name: "Interactive auto-init dialogue with directory and provider selection"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T11:20:14Z
+completed: 2026-03-08T12:30:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-03-08T12:45:21+01:00
+last_commit: 2026-03-08T13:30:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace Y/n auto-init with guided 2-question dialogue. Task completed, episodic generated. Fix FW_LIB_DIR unbound variable in auto-init path. Fix preflight.sh macOS compatibility. Fix empty array unbound variable on macOS bash 3.2. Fix BSD sed -i compatibility in init.sh
+
+# Key outcomes
+outcomes:
+  - "Auto-init shows numbered directory choices (git root if different from cwd, cwd, custom)"
+  - "Auto-init prompts for provider (claude default, cursor, generic)"
+  - "Enter-through on both prompts selects sensible defaults (git root or cwd + claude)"
+  - "Non-TTY environments skip dialogue and use defaults silently"
+  - "Commands init/help/version/-h/-v/--help/--version are still excluded from prompt"
+  - "`do_init` called with correct `--provider` flag based on selection"
+  - "Re-exec of original command works after init completes"
+  - "[REVIEW] Dialogue flow feels natural in a real terminal"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix BSD sed -i compatibility in init.sh"
+    source: git-mined
+  - description: "Fix empty array unbound variable on macOS bash 3.2"
+    source: git-mined
+  - description: "Fix preflight.sh macOS compatibility"
+    source: git-mined
+  - description: "Fix FW_LIB_DIR unbound variable in auto-init path"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/learnings.yaml"
+  - "lib/init.sh"
+  - "lib/preflight.sh"
+  - ".tasks/active/T-344-interactive-auto-init-dialogue-with-dire.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T12:45:21"
+    action: "T-344: Replace Y/n auto-init with guided 2-question dialogue"
+  - time: "2026-03-08T12:45:48"
+    action: "T-344: Task completed, episodic generated"
+  - time: "2026-03-08T12:57:33"
+    action: "T-344: Fix FW_LIB_DIR unbound variable in auto-init path"
+  - time: "2026-03-08T13:03:46"
+    action: "T-344: Fix preflight.sh macOS compatibility"
+  - time: "2026-03-08T13:16:56"
+    action: "T-344: Fix empty array unbound variable on macOS bash 3.2"
+  - time: "2026-03-08T13:30:53"
+    action: "T-344: Fix BSD sed -i compatibility in init.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cli, ux, onboarding]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 7
+  files_changed: 31
+  lines_added: 978
+  lines_removed: 185
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-344-interactive-auto-init-dialogue-with-dire.md
+generated_by: context-agent-hybrid

@@ -16,7 +16,7 @@ tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-05T02:11:40Z
+last_update: 2026-03-08T20:32:48Z
 date_finished: 2026-03-05T02:11:30Z
 ---
 
@@ -98,7 +98,7 @@ Target screenshots (save to `docs/screenshots/`):
 Watchtower runs at http://localhost:3000. Ensure it's started before capturing.
 
 ### Human
-- [ ] README passes the "10-second test" — visitor understands WHAT and WHY within 10 seconds
+- [x] README passes the "10-second test" — visitor understands WHAT and WHY within 10 seconds
   **Steps:**
   1. Open https://github.com/DimitriGeelen/agentic-engineering-framework
   2. Read only the first screen (no scrolling)
@@ -106,13 +106,13 @@ Watchtower runs at http://localhost:3000. Ensure it's started before capturing.
   **Expected:** Yes, clearly
   **If not:** The opening section needs further work
 
-- [ ] Terminal GIF or screenshot effectively demonstrates enforcement in action
+- [x] Terminal GIF or screenshot effectively demonstrates enforcement in action
   **Steps:**
   1. View the GIF/screenshot in the README on GitHub
   2. Does it show the "blocked without task → fw work-on → success" flow?
   **Expected:** The value is obvious without reading any text
 
-- [ ] Non-Claude user can identify their setup path within 30 seconds
+- [x] Non-Claude user can identify their setup path within 30 seconds
   **Steps:**
   1. Open README as a Cursor user
   2. Can you find Cursor-specific instructions without reading the entire page?

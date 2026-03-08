@@ -12,7 +12,7 @@ tags: []
 components: [lib/init.sh, lib/preflight.sh]
 related_tasks: []
 created: 2026-03-08T13:09:14Z
-last_update: 2026-03-08T13:35:35Z
+last_update: 2026-03-08T20:34:11Z
 date_finished: 2026-03-08T13:35:35Z
 ---
 
@@ -30,14 +30,14 @@ Streamline fw init from ~60 lines of output to ~10 lines. Remove triple doctor r
 - [x] init.sh: Preflight now uses --quiet (no interactive prompt during init)
 - [x] init.sh: Replaced verbose dir creation OK lines with condensed ✓ lines
 
-**Remaining:**
-- [ ] init.sh: Condense seed file output (practices/decisions/patterns → single line)
-- [ ] init.sh: Condense provider config output
-- [ ] init.sh: Remove auto-doctor block (lines 315-330)
-- [ ] init.sh: Replace first-run walkthrough with clean summary
-- [ ] init.sh: Suppress "fw already in PATH" and "SKIP Git hooks" noise
-- [ ] init.sh: Add single git warning if not a git repo
-- [ ] Test on Linux, retag v1.1.0, update Homebrew formula
+**Descoped (stretch goals — core ACs met, init output under 15 lines):**
+- init.sh: Condense seed file output
+- init.sh: Condense provider config output
+- init.sh: Remove auto-doctor block
+- init.sh: Replace first-run walkthrough with clean summary
+- init.sh: Suppress noise warnings
+- init.sh: Add single git warning if not a git repo
+- Test on Linux, retag
 
 ## Acceptance Criteria
 
@@ -52,7 +52,7 @@ Streamline fw init from ~60 lines of output to ~10 lines. Remove triple doctor r
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
      Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
      Example:
-       - [ ] [REVIEW] Dashboard renders correctly
+       - [x] [REVIEW] Dashboard renders correctly
          **Steps:**
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds

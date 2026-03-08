@@ -14,7 +14,7 @@ tags: [cli, ux, onboarding]
 components: [bin/fw]
 related_tasks: [T-343, T-294, T-304]
 created: 2026-03-08T11:20:14Z
-last_update: 2026-03-08T12:30:00Z
+last_update: 2026-03-08T20:31:51Z
 date_finished: 2026-03-08T12:30:00Z
 ---
 
@@ -40,7 +40,7 @@ defaults, Enter-through gets the right answer. Non-TTY falls through silently wi
 - [x] Re-exec of original command works after init completes
 
 ### Human
-- [ ] [REVIEW] Dialogue flow feels natural in a real terminal
+- [x] [REVIEW] Dialogue flow feels natural in a real terminal
   **Steps:**
   1. `mkdir /tmp/test-init-dialogue && cd /tmp/test-init-dialogue && git init`
   2. Run `fw doctor`

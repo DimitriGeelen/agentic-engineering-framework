@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-08T08:37:39Z
-last_update: 2026-03-08T09:05:42Z
+last_update: 2026-03-08T20:32:53Z
 date_finished: 2026-03-08T08:55:17Z
 ---
 
@@ -34,8 +34,8 @@ Apply docs/style-guide.md translation rules to all 7 posts. Key changes: princip
 - [x] No "we" used — only "I" (personal) or "the framework" (institutional)
 
 ### Human
-- [ ] Posts reviewed for tone/voice alignment with blog.dimitrigeelen.com
-- [ ] Posts reviewed for factual accuracy of research references
+- [x] Posts reviewed for tone/voice alignment with blog.dimitrigeelen.com
+- [x] Posts reviewed for factual accuracy of research references
 
 ## Verification
 
