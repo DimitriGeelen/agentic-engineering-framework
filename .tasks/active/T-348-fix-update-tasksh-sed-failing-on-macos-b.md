@@ -4,7 +4,7 @@ name: "Fix update-task.sh sed failing on macOS BSD sed"
 description: >
   update-task.sh uses sed -i without BSD compat. Same class as L-081.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [cli, macos, portability]
 components: []
 related_tasks: []
 created: 2026-03-08T12:34:08Z
-last_update: 2026-03-08T12:34:08Z
+last_update: 2026-03-08T12:53:48Z
 date_finished: null
 ---
 
@@ -20,51 +20,42 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Portable `_sed_i` helper using temp files — works on both GNU sed (Linux) and BSD sed (macOS). Replaces all `sed -i` calls across 12 files. See L-081.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/compat.sh` created with portable `_sed_i()` function
+- [x] Zero `sed -i ` calls remain in *.sh files (excluding echo strings)
+- [x] `update-task.sh` status transitions work (tested on GNU sed)
+- [x] `focus.sh` set-focus works (tested on GNU sed)
+- [x] All files that use `_sed_i` source compat.sh or have inline fallback
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] `fw task update` works on macOS after Homebrew reinstall
+  **Steps:**
+  1. `brew update && brew reinstall dimitrigeelen/agentic-fw/fw`
+  2. `cd` to a test project and run `fw init --force --provider claude`
+  3. Run `fw task create --name "test" --type build --owner human --start`
+  4. Run `fw task update T-001 --status work-completed --force`
+  **Expected:** No sed errors, task moves to completed/
+  **If not:** Copy the error output and report
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# No unprotected sed -i calls (excluding echo strings in resolve.sh)
+test "$(grep -r 'sed -i ' --include='*.sh' lib/ agents/ bin/ | grep -v '_sed_i\|echo\|#' | wc -l)" -eq 0
+# compat.sh exists and is valid bash
+bash -n lib/compat.sh
+# update-task.sh loads without syntax errors
+bash -n agents/task-create/update-task.sh
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-08 — Portable sed approach
+- **Chose:** Temp file helper (`_sed_i` in `lib/compat.sh`)
+- **Why:** Works on ALL systems without detection logic. Single function, easy to audit.
+- **Rejected:** GNU/BSD detection at each callsite (verbose, 20+ if/else blocks); `perl -i -pe` (adds dependency); `sed -i.bak && rm` (leaves temp files on failure)
 
 ## Updates
 
@@ -72,3 +63,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-348-fix-update-tasksh-sed-failing-on-macos-b.md
 - **Context:** Initial task creation
+
+### 2026-03-08T12:53:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-08T12:53:48Z — status-update [task-update-agent]
+- **Change:** tags: +portability

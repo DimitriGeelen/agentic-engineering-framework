@@ -11,6 +11,11 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")}"
 LIB_DIR="$SCRIPT_DIR/lib"
 
+# Source portable compat helpers (_sed_i)
+source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
+    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
+}
+
 # Source common utilities
 source "$LIB_DIR/common.sh"
 

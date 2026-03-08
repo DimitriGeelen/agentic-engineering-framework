@@ -57,7 +57,7 @@ learnings:
 EOF
     elif grep -q '^learnings: \[\]' "$learnings_file"; then
         # Migrate old empty-array format: learnings: [] -> learnings:
-        sed -i 's/^learnings: \[\]/learnings:/' "$learnings_file"
+        _sed_i 's/^learnings: \[\]/learnings:/' "$learnings_file"
     fi
 
     # Insert new learning before the candidates section

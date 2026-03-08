@@ -40,7 +40,7 @@ do_focus() {
 
         # Update focus.yaml
         if [ -f "$focus_file" ]; then
-            sed -i "s/^current_task:.*/current_task: $task_id/" "$focus_file"
+            _sed_i "s/^current_task:.*/current_task: $task_id/" "$focus_file"
         else
             # Create minimal focus file
             cat > "$focus_file" << EOF
@@ -64,7 +64,7 @@ EOF
                 else
                     touched="$touched, $task_id"
                 fi
-                sed -i "s/^tasks_touched:.*/tasks_touched: [$touched]/" "$session_file"
+                _sed_i "s/^tasks_touched:.*/tasks_touched: [$touched]/" "$session_file"
             fi
         fi
 

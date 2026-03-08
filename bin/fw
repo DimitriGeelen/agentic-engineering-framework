@@ -215,6 +215,9 @@ export FRAMEWORK_ROOT
 AGENTS_DIR="$FRAMEWORK_ROOT/agents"
 FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
 
+# --- Cross-platform helpers ---
+source "$FW_LIB_DIR/compat.sh" 2>/dev/null || true
+
 # --- Help ---
 
 show_help() {

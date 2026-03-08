@@ -233,7 +233,7 @@ setup_step_provider() {
     # Update .framework.yaml with provider + mark step done
     if [ -f "$dir/.framework.yaml" ]; then
         if grep -q "^provider:" "$dir/.framework.yaml"; then
-            sed -i "s|^provider:.*|provider: $provider|" "$dir/.framework.yaml"
+            _sed_i "s|^provider:.*|provider: $provider|" "$dir/.framework.yaml"
         else
             echo "provider: $provider" >> "$dir/.framework.yaml"
         fi

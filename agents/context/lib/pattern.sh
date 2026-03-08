@@ -98,7 +98,7 @@ workflow_patterns: []
 EOF
     elif grep -q '^patterns: \[\]' "$patterns_file" && ! grep -q 'failure_patterns:' "$patterns_file"; then
         # Migrate old single-key format to three-section format
-        sed -i 's/^patterns: \[\]/\nfailure_patterns: []\n\nsuccess_patterns: []\n\nworkflow_patterns: []/' "$patterns_file"
+        _sed_i 's/^patterns: \[\]/\nfailure_patterns: []\n\nsuccess_patterns: []\n\nworkflow_patterns: []/' "$patterns_file"
     fi
 
     # Build YAML entry

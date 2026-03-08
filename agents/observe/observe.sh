@@ -18,6 +18,11 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 # Resolve PROJECT_ROOT from git toplevel — framework/ is typically a subdirectory,
 # not the project root. Fall back to FRAMEWORK_ROOT for standalone installs.
 PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")}"
+
+# Source portable compat helpers (_sed_i)
+source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
+    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
+}
 INBOX_FILE="$PROJECT_ROOT/.context/inbox.yaml"
 
 # Colors
@@ -87,7 +92,7 @@ do_capture() {
     ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
     # Replace empty array marker
-    sed -i 's/^observations: \[\]/observations:/' "$INBOX_FILE"
+    _sed_i 's/^observations: \[\]/observations:/' "$INBOX_FILE"
 
     local urgent_field=""
     if [ "$urgent" = true ]; then
@@ -197,7 +202,7 @@ do_promote() {
         --owner human
 
     # Mark as promoted
-    sed -i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: promoted/;s/promoted_to: null/promoted_to: task/}" "$INBOX_FILE"
+    _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: promoted/;s/promoted_to: null/promoted_to: task/}" "$INBOX_FILE"
 
     echo ""
     echo -e "${GREEN}$obs_id promoted to task${NC}"
@@ -220,7 +225,7 @@ do_dismiss() {
     done
 
     ensure_inbox
-    sed -i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: dismissed/}" "$INBOX_FILE"
+    _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: dismissed/}" "$INBOX_FILE"
     echo -e "${GREEN}$obs_id dismissed:${NC} $reason"
 }
 

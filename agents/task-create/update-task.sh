@@ -21,6 +21,12 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplev
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 CONTEXT_DIR="$PROJECT_ROOT/.context"
 
+# Source portable compat helpers (sed_i)
+source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
+    # Inline fallback if compat.sh not found
+    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -384,7 +390,7 @@ print(text)
             fi
         fi
 
-        sed -i '' "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
+        _sed_i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")
     fi
@@ -404,7 +410,7 @@ if [ -n "$NEW_OWNER" ]; then
             exit 1
         fi
     fi
-    sed -i '' "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
+    _sed_i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"
     CHANGES+=("owner: $OLD_OWNER → $NEW_OWNER")
 fi
@@ -417,7 +423,7 @@ if [ -n "$NEW_TYPE" ]; then
         exit 1
     fi
     OLD_TYPE=$(grep "^workflow_type:" "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//')
-    sed -i '' "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
+    _sed_i "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
     echo "Type:    ${OLD_TYPE:-unset} → $NEW_TYPE"
     CHANGES+=("workflow_type: ${OLD_TYPE:-unset} → $NEW_TYPE")
 fi
@@ -431,10 +437,11 @@ if [ -n "$NEW_HORIZON" ]; then
     fi
     OLD_HORIZON=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
     if [ -n "$OLD_HORIZON" ]; then
-        sed -i '' "s/^horizon:.*/horizon: $NEW_HORIZON/" "$TASK_FILE"
+        _sed_i "s/^horizon:.*/horizon: $NEW_HORIZON/" "$TASK_FILE"
     else
         # Add horizon field after status line (for tasks created before this field existed)
-        sed -i '' "/^status:.*/a horizon: $NEW_HORIZON" "$TASK_FILE"
+        _sed_i "/^status:.*/a\\
+horizon: $NEW_HORIZON" "$TASK_FILE"
     fi
     echo "Horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON"
     CHANGES+=("horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON")
@@ -455,7 +462,7 @@ if [ -n "$NEW_TAGS" ] || [ -n "$ADD_TAGS" ]; then
                 else tag_yaml="${tag_yaml}, ${t}"; fi
             done
             tag_yaml="${tag_yaml}]"
-            sed -i '' "s/^tags:.*/tags: $tag_yaml/" "$TASK_FILE"
+            _sed_i "s/^tags:.*/tags: $tag_yaml/" "$TASK_FILE"
             echo "Tags:    → $tag_yaml"
             CHANGES+=("tags: → $tag_yaml")
         elif [ -n "$ADD_TAGS" ]; then
@@ -493,14 +500,15 @@ with open(sys.argv[2], 'w') as f:
             else tag_yaml="${tag_yaml}, ${t}"; fi
         done
         tag_yaml="${tag_yaml}]"
-        sed -i '' "/^owner:.*/a tags: $tag_yaml" "$TASK_FILE"
+        _sed_i "/^owner:.*/a\\
+tags: $tag_yaml" "$TASK_FILE"
         echo "Tags:    $tag_yaml (added)"
         CHANGES+=("tags: $tag_yaml (added)")
     fi
 fi
 
 # Update last_update timestamp
-sed -i '' "s/^last_update:.*/last_update: $TIMESTAMP/" "$TASK_FILE"
+_sed_i "s/^last_update:.*/last_update: $TIMESTAMP/" "$TASK_FILE"
 
 # Append update entry
 if [ ${#CHANGES[@]} -gt 0 ]; then
@@ -537,14 +545,14 @@ fi
 # Trigger 2: work-completed → finalize
 if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATUS" != "work-completed" ]; then
     # Set date_finished
-    sed -i '' "s/^date_finished:.*/date_finished: $TIMESTAMP/" "$TASK_FILE"
+    _sed_i "s/^date_finished:.*/date_finished: $TIMESTAMP/" "$TASK_FILE"
     echo ""
     echo -e "${GREEN}date_finished set to $TIMESTAMP${NC}"
 
     # Move to completed/ (or partial-complete: stay in active/)
     if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
         # T-193: Agent done but human ACs pending — stay in active/
-        sed -i '' "s/^owner:.*/owner: human/" "$TASK_FILE"
+        _sed_i "s/^owner:.*/owner: human/" "$TASK_FILE"
         HUMAN_AC_UNCHECKED_REMAINING=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
         echo -e "${YELLOW}Partial-complete: $HUMAN_AC_UNCHECKED_REMAINING human AC(s) pending verification${NC}"
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
@@ -604,10 +612,11 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         # Update components field if we found any
         if [ -n "$RESOLVED_COMPONENTS" ]; then
             if grep -q "^components:" "$TASK_FILE" 2>/dev/null; then
-                sed -i '' "s|^components:.*|components: [$RESOLVED_COMPONENTS]|" "$TASK_FILE"
+                _sed_i "s|^components:.*|components: [$RESOLVED_COMPONENTS]|" "$TASK_FILE"
             else
                 # Add field after tags line
-                sed -i '' "/^tags:.*/a components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
+                _sed_i "/^tags:.*/a\\
+components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             fi
             COMP_COUNT=$(echo "$RESOLVED_COMPONENTS" | tr ',' '\n' | wc -l)
             echo -e "${GREEN}Components: $COMP_COUNT resolved from git history${NC}"

@@ -129,7 +129,7 @@ plus Claude Code-specific integration notes.
         # Fix any leftover placeholders in existing file
         if grep -q "__PROJECT_NAME__" "$project_claude" 2>/dev/null; then
             if [ "$dry_run" != true ]; then
-                sed -i "s|__PROJECT_NAME__|$project_name|g" "$project_claude"
+                _sed_i "s|__PROJECT_NAME__|$project_name|g" "$project_claude"
                 echo -e "  ${GREEN}FIXED${NC}  Replaced __PROJECT_NAME__ placeholder"
                 changes=$((changes + 1))
             else

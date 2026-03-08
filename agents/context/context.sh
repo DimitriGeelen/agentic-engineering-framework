@@ -29,6 +29,11 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplev
 CONTEXT_DIR="$PROJECT_ROOT/.context"
 LIB_DIR="$SCRIPT_DIR/lib"
 
+# Source portable compat helpers (_sed_i)
+source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
+    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'

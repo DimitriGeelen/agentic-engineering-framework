@@ -59,11 +59,7 @@ update_task_timestamp() {
         local timestamp
         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
         # Update last_update in frontmatter
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/^last_update:.*$/last_update: $timestamp/" "$task_file"
-        else
-            sed -i "s/^last_update:.*$/last_update: $timestamp/" "$task_file"
-        fi
+        _sed_i "s/^last_update:.*$/last_update: $timestamp/" "$task_file"
     fi
 }
 

@@ -72,7 +72,7 @@ decisions:
 EOF
     elif grep -q '^decisions: \[\]' "$decisions_file"; then
         # Migrate old empty-array format: decisions: [] -> decisions:
-        sed -i 's/^decisions: \[\]/decisions:/' "$decisions_file"
+        _sed_i 's/^decisions: \[\]/decisions:/' "$decisions_file"
     fi
 
     # Build YAML entry

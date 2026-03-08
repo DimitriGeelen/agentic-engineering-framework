@@ -12,6 +12,11 @@ CONTEXT_DIR="$PROJECT_ROOT/.context"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
 WORKING_DIR="$CONTEXT_DIR/working"
 
+# Source portable compat helpers (sed_i)
+source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
+    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
+}
+
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -305,7 +310,7 @@ EOF
             if [ ! -f "$TASKS_DIR/active"/*"$current_focus"* ] 2>/dev/null; then
                 echo -e "${YELLOW}⚠ Focus task $current_focus no longer active${NC}"
                 # Clear focus if task completed
-                sed -i "s/^current_task:.*/current_task:/" "$WORKING_DIR/focus.yaml"
+                _sed_i "s/^current_task:.*/current_task:/" "$WORKING_DIR/focus.yaml"
                 echo "  Cleared stale focus"
             else
                 echo -e "${GREEN}✓ Focus valid: $current_focus${NC}"
