@@ -58,14 +58,17 @@ RECOMMENDED_INSTALL_CMDS=()
 # --- Check functions ---
 
 check_bash() {
-    local ver
-    ver="${BASH_VERSION%%(*}"
-    ver="${BASH_VERSINFO[0]}"
-    if [ "$ver" -ge 4 ]; then
-        echo -e "  ${GREEN}OK${NC}  bash $BASH_VERSION (>= 4.0 required)"
+    # Check the bash available in PATH, not the running shell
+    # (macOS ships /bin/bash 3.2 but Homebrew installs bash 5+ elsewhere)
+    local bash_path ver major
+    bash_path=$(command -v bash 2>/dev/null || echo "/bin/bash")
+    ver=$("$bash_path" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    major="${ver%%.*}"
+    if [ -n "$major" ] && [ "$major" -ge 4 ] 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  bash $ver (>= 4.0 required)"
         return 0
     else
-        echo -e "  ${RED}FAIL${NC}  bash $BASH_VERSION (>= 4.0 required)"
+        echo -e "  ${RED}FAIL${NC}  bash ${ver:-unknown} (>= 4.0 required)"
         echo -e "       ${CYAN}Why:${NC} Framework uses associative arrays and other bash 4+ features"
         REQUIRED_MISSING+=("bash >= 4.0")
         case "$PKG_MGR" in
@@ -90,7 +93,7 @@ check_git() {
         return 1
     fi
     local ver
-    ver=$(git --version | grep -oP '\d+\.\d+' | head -1)
+    ver=$(git --version | grep -oE '[0-9]+\.[0-9]+' | head -1)
     local major="${ver%%.*}"
     if [ "$major" -ge 2 ]; then
         echo -e "  ${GREEN}OK${NC}  git $ver (>= 2.0 required)"
@@ -292,7 +295,7 @@ do_preflight() {
             "python3"*) python3 --version >/dev/null 2>&1 || still_missing=$((still_missing + 1)) ;;
             "PyYAML") python3 -c "import yaml" 2>/dev/null || still_missing=$((still_missing + 1)) ;;
             "git"*) git --version >/dev/null 2>&1 || still_missing=$((still_missing + 1)) ;;
-            "bash"*) [ "${BASH_VERSINFO[0]}" -ge 4 ] 2>/dev/null || still_missing=$((still_missing + 1)) ;;
+            "bash"*) local bm; bm=$(bash --version 2>/dev/null | head -1 | grep -oE '[0-9]+' | head -1); [ "${bm:-0}" -ge 4 ] 2>/dev/null || still_missing=$((still_missing + 1)) ;;
             "write permissions") [ -w "${PROJECT_ROOT:-.}" ] || still_missing=$((still_missing + 1)) ;;
         esac
     done
