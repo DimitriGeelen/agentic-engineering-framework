@@ -10,8 +10,8 @@ tags:
 - hook
 - PostToolUse
 - auto-handover
-purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages
-  inception checkpoints.
+purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover
+  at critical, detects compaction, manages inception checkpoints.
 interfaces:
   input: 'Invoked as PostToolUse hook or CLI: checkpoint.sh {post-tool|reset|status}'
   output: Warnings to stderr, writes state files
@@ -52,3 +52,7 @@ shared_constants:
 last_verified: 2026-02-20
 created_by: T-191
 last_enriched: '2026-02-21'
+docs:
+- path: docs/articles/deep-dives/03-context-budget.md
+  title: 'Deep Dive: Context Budget Management'
+  type: deep-dive

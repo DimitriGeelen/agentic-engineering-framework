@@ -22,3 +22,7 @@ depended_by:
   type: called_by
 - target: C-008
   type: called_by
+docs:
+- path: docs/articles/deep-dives/03-context-budget.md
+  title: 'Deep Dive: Context Budget Management'
+  type: deep-dive

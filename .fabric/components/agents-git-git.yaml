@@ -32,3 +32,10 @@ depended_by:
   type: called_by
 - target: lib/upgrade.sh
   type: called_by
+docs:
+- path: docs/articles/deep-dives/01-task-gate.md
+  title: 'Deep Dive: The Task Gate'
+  type: deep-dive
+- path: docs/articles/deep-dives/06-authority-model.md
+  title: 'Deep Dive: The Authority Model'
+  type: deep-dive

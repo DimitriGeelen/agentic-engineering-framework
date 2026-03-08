@@ -12,3 +12,7 @@ depended_by:
 - target: C-001
   type: called_by
 last_enriched: '2026-02-21'
+docs:
+- path: docs/articles/deep-dives/04-three-layer-memory.md
+  title: 'Deep Dive: Three-Layer Memory'
+  type: deep-dive

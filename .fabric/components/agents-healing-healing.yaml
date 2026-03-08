@@ -22,3 +22,7 @@ depended_by:
   type: called_by
 - target: bin/fw
   type: called_by
+docs:
+- path: docs/articles/deep-dives/05-healing-loop.md
+  title: 'Deep Dive: The Healing Loop'
+  type: deep-dive

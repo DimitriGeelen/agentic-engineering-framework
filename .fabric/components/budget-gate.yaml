@@ -3,36 +3,39 @@ name: budget-gate
 type: hook
 subsystem: budget-management
 location: agents/context/budget-gate.sh
-tags: [budget, enforcement, context, hook, PreToolUse]
-
-purpose: "Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009."
-
+tags:
+- budget
+- enforcement
+- context
+- hook
+- PreToolUse
+purpose: Block Write/Edit/Bash tool execution when context budget reaches critical
+  level (>=170K tokens). Primary enforcement for P-009.
 interfaces:
-  input: "stdin JSON from Claude Code PreToolUse hook: {tool_name, tool_input}"
-  output: "exit 0 (allow) or exit 2 (block)"
-
+  input: 'stdin JSON from Claude Code PreToolUse hook: {tool_name, tool_input}'
+  output: exit 0 (allow) or exit 2 (block)
 depends_on:
-  - target: F-003
-    type: reads
-    location: agents/context/budget-gate.sh:52
-    contract: "JSON with fields: level, tokens, timestamp, source"
-  - target: budget-gate-counter
-    type: reads
-    location: agents/context/budget-gate.sh:148
-    contract: "Text integer — invocation counter for recheck interval"
-  # transcript: external dependency (Claude Code JSONL) — not a framework component
-
+- target: F-003
+  type: reads
+  location: agents/context/budget-gate.sh:52
+  contract: 'JSON with fields: level, tokens, timestamp, source'
+- target: budget-gate-counter
+  type: reads
+  location: agents/context/budget-gate.sh:148
+  contract: Text integer — invocation counter for recheck interval
 depended_by:
-  - target: C-009
-    type: triggers
-    location: .claude/settings.json:54-60
-    contract: "PreToolUse hook on Write|Edit|Bash"
-
+- target: C-009
+  type: triggers
+  location: .claude/settings.json:54-60
+  contract: PreToolUse hook on Write|Edit|Bash
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
   TOKEN_CRITICAL: 170000
-  note: "Duplicated in C-008 (checkpoint.sh) — shared constant smell"
-
+  note: Duplicated in C-008 (checkpoint.sh) — shared constant smell
 last_verified: 2026-02-20
 created_by: T-191
+docs:
+- path: docs/articles/deep-dives/03-context-budget.md
+  title: 'Deep Dive: Context Budget Management'
+  type: deep-dive

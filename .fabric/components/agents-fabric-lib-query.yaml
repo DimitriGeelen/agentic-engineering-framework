@@ -12,3 +12,7 @@ depended_by:
 - target: agents/fabric/fabric.sh
   type: called_by
 last_enriched: '2026-02-21'
+docs:
+- path: docs/articles/deep-dives/07-component-fabric.md
+  title: 'Deep Dive: Component Fabric'
+  type: deep-dive

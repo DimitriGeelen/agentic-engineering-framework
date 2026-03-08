@@ -12,3 +12,7 @@ depended_by:
 - target: agents/healing/healing.sh
   type: called_by
 last_enriched: '2026-02-21'
+docs:
+- path: docs/articles/deep-dives/05-healing-loop.md
+  title: 'Deep Dive: The Healing Loop'
+  type: deep-dive
