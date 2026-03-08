@@ -68,7 +68,7 @@ related_tasks:
   blocked: []
   absorbed: []
   spawned: []
-  parent: "T-072 (Comprehensive context and memory audit identified root cause)"
+  parent: ["T-072"]
 
 # Tags for retrieval
 tags:

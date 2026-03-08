@@ -245,9 +245,14 @@
         {% for edge_type, tasks_list in episodic.related_tasks.items() %}
             {% if tasks_list %}
             <li><em>{{ edge_type }}:</em>
-                {% for rt in tasks_list %}
-                <a href="/tasks/{{ rt }}">{{ rt }}</a>{% if not loop.last %}, {% endif %}
-                {% endfor %}
+                {% if tasks_list is string %}
+                    {% set task_id = tasks_list.split(' ')[0].split('(')[0].strip() %}
+                    <a href="/tasks/{{ task_id }}">{{ tasks_list }}</a>
+                {% else %}
+                    {% for rt in tasks_list %}
+                    <a href="/tasks/{{ rt }}">{{ rt }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% endif %}
             </li>
             {% endif %}
         {% endfor %}
