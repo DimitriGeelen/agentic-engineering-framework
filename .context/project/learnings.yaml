@@ -624,4 +624,20 @@ learnings:
   date: 2026-02-25
   context: "After deploying watchtower, fw deploy status --app watchtower failed with 'not found'. Had to add watchtower entry (prod:5050, dev:5051) to /opt/claude-shared-toolkit/skills/infrastructure/ring20-deployer/ports.yaml."
   application: "When deploying a new app: add to ports.yaml before or immediately after first deployment."
+- id: L-077
+  learning: "Fix wrong defaults at the source, not at the caller. T-101 fixed PROJECT_ROOT for fw-init-generated settings.json
+    (adding PROJECT_ROOT= prefix to hook commands) but left the broken default (FRAMEWORK_ROOT) in all 19 scripts. Hand-written
+    settings.json files (or any invocation without PROJECT_ROOT set) silently wrote to framework/.context/ instead of .context/.
+    Result: watchtower timeline showed 1 entry instead of 8 for months. The correct fix: make each script resolve PROJECT_ROOT
+    via git rev-parse --show-toplevel, so the default is right regardless of how the script is invoked."
+  source: P-002 (structural enforcement over agent discipline)
+  task: T-101
+  date: 2026-03-02
+  context: "Discovered in job-search-tool project. Pre-compact hook wrote handovers to framework/.context/handovers/ (7 files)
+    while watchtower timeline read from .context/handovers/ (1 file). T-101 (Feb 17) identified the bug class but fixed it at
+    the wrong layer — the settings.json generator, not the scripts themselves. Defense in depth: fix the default so it's correct
+    even when the caller doesn't set the variable."
+  application: "When a variable has a wrong default, fix the default in the source script — not just the callers or generators.
+    The source is the last line of defense. Applied: replaced PROJECT_ROOT=${PROJECT_ROOT:-$FRAMEWORK_ROOT} with
+    PROJECT_ROOT=${PROJECT_ROOT:-$(git -C $FRAMEWORK_ROOT rev-parse --show-toplevel)} in all 19 agent scripts."
 candidates: []
