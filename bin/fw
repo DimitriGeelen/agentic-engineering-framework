@@ -67,6 +67,38 @@ if [ -z "${PROJECT_ROOT:-}" ]; then
     PROJECT_ROOT=$(find_project_root) || true
 fi
 
+# --- Auto-init prompt ---
+# If no project detected and command is not init/help/version, offer to initialize
+if [ -z "$PROJECT_ROOT" ]; then
+    _cmd="${1:-}"
+    if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
+       [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
+       [ "$_cmd" != "--version" ] && [ -n "$_cmd" ]; then
+        echo -e "${YELLOW}No framework project detected in the current directory.${NC}"
+        echo ""
+        printf "Would you like to initialize the framework here? (%s) [Y/n] " "$PWD"
+        read -r answer </dev/tty
+        if [ -z "$answer" ] || [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+            FRAMEWORK_ROOT=$(resolve_framework) || true
+            if [ -z "$FRAMEWORK_ROOT" ]; then
+                echo -e "${RED}ERROR: Cannot find framework installation${NC}" >&2
+                exit 1
+            fi
+            export PROJECT_ROOT="$PWD"
+            export FRAMEWORK_ROOT
+            source "$FRAMEWORK_ROOT/lib/init.sh"
+            do_init "$PWD"
+            echo ""
+            echo -e "${GREEN}Project initialized! Re-running: fw $*${NC}"
+            echo ""
+            exec "$0" "$@"
+        else
+            echo -e "${CYAN}Skipped. Run 'fw init' when you're ready.${NC}"
+            exit 0
+        fi
+    fi
+fi
+
 # Resolve FRAMEWORK_ROOT
 FRAMEWORK_ROOT=$(resolve_framework) || true
 
