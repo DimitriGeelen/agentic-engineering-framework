@@ -7,17 +7,30 @@ and overridable via environment variables for production deployment.
 import os
 from pathlib import Path
 
+import yaml as _yaml
+
 # Resolve PROJECT_ROOT once (same logic as shared.py)
 _APP_DIR = Path(__file__).resolve().parent
 _FRAMEWORK_ROOT = _APP_DIR.parent
 _PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(_FRAMEWORK_ROOT)))
+
+# Load persisted settings (T-395: config survives restarts)
+_SETTINGS_FILE = _PROJECT_ROOT / ".context" / "settings.yaml"
+_saved = {}
+try:
+    if _SETTINGS_FILE.exists():
+        _saved = _yaml.safe_load(_SETTINGS_FILE.read_text()) or {}
+except Exception:
+    pass
 
 
 class Config:
     """Watchtower configuration — reads from environment with sensible defaults."""
 
     # -- Ollama ----------------------------------------------------------
-    OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+    OLLAMA_HOST = os.environ.get(
+        "OLLAMA_HOST", _saved.get("ollama_host", "http://localhost:11434")
+    )
     PRIMARY_MODEL = os.environ.get("FW_PRIMARY_MODEL", "qwen3:14b")
     FALLBACK_MODEL = os.environ.get("FW_FALLBACK_MODEL", "dolphin-llama3:8b")
     EMBEDDING_MODEL = os.environ.get("FW_EMBEDDING_MODEL", "nomic-embed-text-v2-moe")
