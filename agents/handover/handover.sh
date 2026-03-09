@@ -358,17 +358,42 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
 
 tasks.sort(key=lambda t: (t[0], t[1]))
 current_horizon = None
+# Collect work-completed tasks to summarize at end of each horizon group
+pending_completed = []
 for _, tid, tname, tstatus, h in tasks:
     if h != current_horizon:
+        # Flush any accumulated work-completed tasks from previous horizon
+        if pending_completed:
+            print(f'### Awaiting Human Review ({len(pending_completed)} tasks)')
+            print()
+            print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
+            print()
+            for pc_tid, pc_name in pending_completed:
+                print(f'- **{pc_tid}**: {pc_name}')
+            print()
+            pending_completed = []
         current_horizon = h
         print(f'<!-- horizon: {h} -->')
         print()
+    # Work-completed tasks: just list them (no [TODO] blocks)
+    if tstatus == 'work-completed':
+        pending_completed.append((tid, tname))
+        continue
     print(f'### {tid}: {tname}')
     print(f'- **Status:** {tstatus} (horizon: {h})')
     print(f'- **Last action:** [TODO: What was just done on this task]')
     print(f'- **Next step:** [TODO: What should happen next]')
     print(f'- **Blockers:** [TODO: Any blockers, or "None"]')
     print(f'- **Insight:** [TODO: Key understanding gained, if any]')
+    print()
+# Flush remaining work-completed tasks
+if pending_completed:
+    print(f'### Awaiting Human Review ({len(pending_completed)} tasks)')
+    print()
+    print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
+    print()
+    for pc_tid, pc_name in pending_completed:
+        print(f'- **{pc_tid}**: {pc_name}')
     print()
 PYEOF
 

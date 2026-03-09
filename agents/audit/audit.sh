@@ -1925,7 +1925,7 @@ else
 fi
 
 # D8: Handover Quality Decay (Score 20)
-# Scan LATEST.md and recent handovers for [TODO] strings
+# Scan LATEST.md for [TODO] strings + check archive for TODO rot (T-393)
 HANDOVER_LATEST="$CONTEXT_DIR/handovers/LATEST.md"
 if [ -f "$HANDOVER_LATEST" ]; then
     d8_todos=$(grep -c '\[TODO' "$HANDOVER_LATEST" 2>/dev/null || true)
@@ -1941,6 +1941,27 @@ if [ -f "$HANDOVER_LATEST" ]; then
              "Fill remaining [TODO] sections in LATEST.md"
     else
         pass "D8: Handover quality — no [TODO] in LATEST.md"
+    fi
+
+    # D8b: Check last 10 handovers for TODO rot (archive check, T-393)
+    d8b_stale=0
+    d8b_checked=0
+    for hf in $(ls -t "$CONTEXT_DIR/handovers"/S-*.md 2>/dev/null | head -10); do
+        d8b_checked=$((d8b_checked + 1))
+        hf_todos=$(grep -c '\[TODO' "$hf" 2>/dev/null || true)
+        hf_todos=$(echo "$hf_todos" | tr -d '[:space:]')
+        [ "${hf_todos:-0}" -gt 3 ] && d8b_stale=$((d8b_stale + 1))
+    done
+    if [ "$d8b_stale" -gt 5 ]; then
+        fail "D8b: Handover archive rot — $d8b_stale/$d8b_checked recent handovers have unfilled [TODO]s" \
+             "Auto-generated handovers are not being filled" \
+             "Clean stale handovers or fix template to reduce [TODO] generation"
+    elif [ "$d8b_stale" -gt 2 ]; then
+        warn "D8b: Handover archive — $d8b_stale/$d8b_checked recent handovers have [TODO]s" \
+             "Some auto-generated handovers were not filled" \
+             "Review and fill recent handovers"
+    elif [ "$d8b_checked" -gt 0 ]; then
+        pass "D8b: Handover archive — $d8b_stale/$d8b_checked recent handovers have [TODO]s"
     fi
 else
     grace_warn "D8: No LATEST.md handover file found" \
