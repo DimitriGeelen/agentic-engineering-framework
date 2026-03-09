@@ -38,8 +38,9 @@ Creates handover documents for session continuity
 ## Related
 
 ### Tasks
-- T-175: Eliminate emergency/full handover distinction — single handover
 - T-260: Fix LATEST.md handover sync — symlink instead of copy
+- T-372: Investigate blind task-completion suggestion pattern + mitigate
+- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-handover.yaml`*

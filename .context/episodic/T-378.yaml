@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-378: Fernet encrypted API key storage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T09:53:14Z
+# ============================================================================
+
+task_id: T-378
+task_name: "Fernet encrypted API key storage"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T09:41:40Z
+completed: 2026-03-09T09:53:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-09T10:53:05+01:00
+last_commit: 2026-03-09T10:53:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fernet encrypted API key storage with env-var override
+
+# Key outcomes
+outcomes:
+  - "web/secrets_store.py created with get/set/delete/list API"
+  - "PBKDF2 key derivation from /etc/machine-id with Fernet encryption"
+  - "Environment variable override (OPENROUTER_API_KEY takes precedence)"
+  - ".context/secrets/ gitignored"
+  - "Store/retrieve/delete/list all verified working"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".gitignore"
+  - ".tasks/active/T-378-fernet-encrypted-api-key-storage.md"
+  - "web/secrets_store.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T10:53:05"
+    action: "T-378: Fernet encrypted API key storage with env-var override"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, keys]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 3
+  lines_added: 170
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-378-fernet-encrypted-api-key-storage.md
+generated_by: context-agent-hybrid

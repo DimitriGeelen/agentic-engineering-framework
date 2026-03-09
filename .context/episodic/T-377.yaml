@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-377: LLM Provider abstraction layer with Ollama + OpenRouter
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T09:51:07Z
+# ============================================================================
+
+task_id: T-377
+task_name: "LLM Provider abstraction layer with Ollama + OpenRouter"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T09:41:38Z
+completed: 2026-03-09T09:51:06Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-09T10:50:58+01:00
+last_commit: 2026-03-09T10:50:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  LLM provider abstraction — Ollama + OpenRouter with hot-switching
+
+# Key outcomes
+outcomes:
+  - "web/llm/ package created with provider.py, ollama_provider.py, openrouter_provider.py, manager.py"
+  - "LLMProvider ABC with chat_stream, list_models, is_available"
+  - "ask.py refactored to use provider abstraction (no direct ollama import)"
+  - "ProviderManager supports hot-switching and lazy OpenRouter registration"
+  - "All search/ask tests pass (36/36)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-377-llm-provider-abstraction-layer-with-olla.md"
+  - "web/ask.py"
+  - "web/llm/__init__.py"
+  - "web/llm/manager.py"
+  - "web/llm/ollama_provider.py"
+  - "web/llm/openrouter_provider.py"
+  - "web/llm/provider.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T10:50:58"
+    action: "T-377: LLM provider abstraction — Ollama + OpenRouter with hot-switching"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [llm, openrouter]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 7
+  lines_added: 411
+  lines_removed: 90
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-377-llm-provider-abstraction-layer-with-olla.md
+generated_by: context-agent-hybrid

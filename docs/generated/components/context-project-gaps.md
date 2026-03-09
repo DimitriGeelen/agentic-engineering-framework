@@ -22,11 +22,11 @@ decided-simplify — trigger fired, decided to simplify spec
 ## Related
 
 ### Tasks
-- T-231: Update git hook messages and register enforcement gaps
 - T-232: Fix task-gate completed-task bypass
 - T-242: Block built-in EnterPlanMode from bypassing framework governance
 - T-329: Write launch article: I built guardrails for Claude Code
 - T-345: Add bugfix learning checkpoint practice and G-016 gap
+- T-372: Investigate blind task-completion suggestion pattern + mitigate
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-gaps.yaml`*

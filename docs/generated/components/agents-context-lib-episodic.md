@@ -21,11 +21,6 @@ task file owns AC + decisions, episodic merges both automatically.
 
 - [Deep Dive: Three-Layer Memory](docs/articles/deep-dives/04-three-layer-memory.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-165: Fix 20 broken Watchtower task links — YAML quoting bugs in task and episodic files
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-episodic.yaml`*
 *Last verified: 2026-02-20*

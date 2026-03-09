@@ -4,16 +4,16 @@ name: "Settings page: Ollama host/port config and model dropdown"
 description: >
   Add Ollama host and port fields to the settings page. Replace manual text inputs for primary/fallback model with dropdowns populated from available models (fetched via Test Connection). Persist host/port to settings.yaml and reinitialize provider on save. Predecessor: T-388.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/settings.py, web/templates/settings.html]
 related_tasks: []
 created: 2026-03-09T11:35:43Z
-last_update: 2026-03-09T11:35:43Z
-date_finished: null
+last_update: 2026-03-09T11:47:35Z
+date_finished: 2026-03-09T11:47:35Z
 ---
 
 # T-390: Settings page: Ollama host/port config and model dropdown
@@ -70,3 +70,6 @@ curl -sf 'http://localhost:3000/settings/models?format=datalist' | grep -q 'opti
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-390-settings-page-ollama-hostport-config-and.md
 - **Context:** Initial task creation
+
+### 2026-03-09T11:47:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

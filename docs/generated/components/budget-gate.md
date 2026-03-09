@@ -39,9 +39,6 @@ Performance target: <100ms per invocation
 ## Related
 
 ### Tasks
-- T-173: Budget gate: always allow full handover, not just emergency skeleton
-- T-176: Adjust budget gate thresholds for no-compaction architecture
-- T-182: Reframe handover messaging from emergency panic to calm wrap-up
 - T-271: Fix budget-gate stale critical status trap
 
 ---

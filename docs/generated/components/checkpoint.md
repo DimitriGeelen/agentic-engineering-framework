@@ -52,10 +52,6 @@ When fixing a bug discovered through real-world usage (user testing, production 
 ## Related
 
 ### Tasks
-- T-175: Eliminate emergency/full handover distinction — single handover
-- T-176: Adjust budget gate thresholds for no-compaction architecture
-- T-177: Clean up compact hooks for manual-only use
-- T-182: Reframe handover messaging from emergency panic to calm wrap-up
 - T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
 
 ---

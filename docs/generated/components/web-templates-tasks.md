@@ -24,12 +24,6 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 |-----------|-------------|
 | `web/blueprints/tasks.py` | rendered_by |
 
-## Related
-
-### Tasks
-- T-181: Web UI inline editing — edit tasks, docs, and artifacts in-browser
-- T-183: Productionize web UI inline editing (T-181 follow-up)
-
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-tasks.yaml`*
 *Last verified: 2026-02-20*

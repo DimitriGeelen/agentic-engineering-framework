@@ -34,11 +34,11 @@
 ## Related
 
 ### Tasks
-- T-245: sqlite-vec embedding layer — semantic search for project knowledge
-- T-256: Ask endpoint — /search/ask with ollama SSE streaming
 - T-265: Saved answers — curated Q&A for retrieval flywheel
 - T-267: User feedback — thumbs up/down on Q&A answers
 - T-268: Multi-turn Q&A conversation
+- T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
+- T-389: Save inferred question title instead of raw input in Q&A
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-route.yaml`*

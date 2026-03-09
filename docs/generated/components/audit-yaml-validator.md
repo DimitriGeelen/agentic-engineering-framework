@@ -40,11 +40,11 @@ Sections: structure, compliance, quality, traceability, enforcement,
 ## Related
 
 ### Tasks
-- T-249: Refine D5 lifecycle anomaly detection to reduce false positive rate
-- T-275: Pre-deploy quality gate — audit section + gated fw deploy
 - T-301: Add audit grace period for new projects
 - T-346: Add bugfix-learning coverage ratio to audit section 5
 - T-347: Build fw fix-learned shortcut for fast learning capture
+- T-368: Add fabric drift check to fw audit
+- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
 
 ---
 *Auto-generated from Component Fabric. Card: `audit-yaml-validator.yaml`*

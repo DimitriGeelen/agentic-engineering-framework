@@ -25,7 +25,6 @@ Creates properly structured tasks following the framework specification
 ## Related
 
 ### Tasks
-- T-165: Fix 20 broken Watchtower task links — YAML quoting bugs in task and episodic files
 - T-297: Fix --start flag not setting focus in create-task.sh
 
 ---

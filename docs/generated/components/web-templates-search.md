@@ -15,11 +15,11 @@
 ## Related
 
 ### Tasks
-- T-262: Replace LLM with Qwen3-14B + thinking mode toggle
 - T-265: Saved answers — curated Q&A for retrieval flywheel
 - T-266: Streaming UX — marked.js, syntax highlighting, copy buttons
 - T-267: User feedback — thumbs up/down on Q&A answers
 - T-268: Multi-turn Q&A conversation
+- T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-search.yaml`*

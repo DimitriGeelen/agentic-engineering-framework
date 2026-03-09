@@ -23,11 +23,11 @@ Used by agents to improve future work.
 ## Related
 
 ### Tasks
-- T-206: Fix add-learning YAML indentation + ID bug
-- T-277: First deployment — Watchtower to Ring20 production
 - T-278: Harvest deployment learnings — templates to learnings.yaml
 - T-344: Interactive auto-init dialogue with directory and provider selection
 - T-348: Fix update-task.sh sed failing on macOS BSD sed
+- T-372: Investigate blind task-completion suggestion pattern + mitigate
+- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-data.yaml`*

@@ -65,11 +65,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-347: Build fw fix-learned shortcut for fast learning capture
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
 - T-355: Fix Homebrew Cellar path hardcoding in fw init — use opt symlink
 - T-357: Implement post-init validation with #@init: tags
 - T-359: Rename Homebrew formula to avoid brocode/fw collision
+- T-364: Layer 1: Component reference doc generator
+- T-366: Layer 2: AI-assisted subsystem article generator
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

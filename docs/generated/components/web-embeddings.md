@@ -22,6 +22,7 @@ Configuration (T-273: config-driven, no hardcoded paths)
 - T-263: RAG quick wins — prompt, embeddings, chunking
 - T-265: Saved answers — curated Q&A for retrieval flywheel
 - T-273: Production readiness — WSGI, health endpoint, config, error handling
+- T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
 
 ---
 *Auto-generated from Component Fabric. Card: `web-embeddings.yaml`*

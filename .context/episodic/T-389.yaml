@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-389: Save inferred question title instead of raw input in Q&A
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T11:44:18Z
+# ============================================================================
+
+task_id: T-389
+task_name: "Save inferred question title instead of raw input in Q&A"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T11:35:21Z
+completed: 2026-03-09T11:44:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T12:43:33+01:00
+last_commit: 2026-03-09T12:43:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Save inferred question title instead of raw voice-transcribed input
+
+# Key outcomes
+outcomes:
+  - "System prompt includes rule 8 requesting `<!-- Q: ... -->` comment"
+  - "LLM produces clean inferred title (verified: \"how doez the healng loop workk\" → \"How does the healing loop work in this framework?\")"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "web/ask.py"
+  - "web/blueprints/discovery.py"
+  - "web/static/js/search-qa.js"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T12:43:33"
+    action: "T-389: Save inferred question title instead of raw voice-transcribed input"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 3
+  lines_added: 28
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-389-save-inferred-question-title-instead-of-.md
+generated_by: context-agent-hybrid

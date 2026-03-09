@@ -23,11 +23,6 @@ fw promote status
 |-----------|-------------|
 | `bin/fw` | called_by |
 
-## Related
-
-### Tasks
-- T-166: Implement governance inheritance in fw init — seed practices, decisions, and patterns
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-promote.yaml`*
 *Last verified: 2026-02-20*

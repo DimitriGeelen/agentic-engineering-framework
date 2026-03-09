@@ -57,11 +57,11 @@ When building a web application:
 ## Related
 
 ### Tasks
-- T-215: Component Fabric — Watchtower UI page (visual browser + graph)
-- T-234: Fix 404/403 error handlers — project_root undefined in base.html
-- T-241: Wire discovery findings into session-start and Watchtower
 - T-273: Production readiness — WSGI, health endpoint, config, error handling
 - T-277: First deployment — Watchtower to Ring20 production
+- T-365: Watchtower /docs route for generated documentation
+- T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
+- T-379: Settings page with engine selector and config persistence
 
 ---
 *Auto-generated from Component Fabric. Card: `web-app.yaml`*

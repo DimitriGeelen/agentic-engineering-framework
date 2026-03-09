@@ -35,12 +35,6 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
 
-## Related
-
-### Tasks
-- T-165: Fix 20 broken Watchtower task links — YAML quoting bugs in task and episodic files
-- T-181: Web UI inline editing — edit tasks, docs, and artifacts in-browser
-
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*
 *Last verified: 2026-02-20*

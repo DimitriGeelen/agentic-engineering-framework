@@ -23,6 +23,8 @@ Implements: fw fabric register, fw fabric scan
 
 ### Tasks
 - T-208: Component Fabric — agent structure and fw routing
+- T-369: Make fabric subsystem inference configurable
+- T-370: Document depends_on edge format in fabric skeleton card
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-register.yaml`*
