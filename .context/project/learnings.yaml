@@ -696,4 +696,11 @@ learnings:
   date: 2026-03-09
   context: Added via context agent
   application: TBD
+- id: L-086
+  learning: "Handover template generated [TODO] blocks for ALL tasks including work-completed ones, causing 5,982 unfilled TODOs across 98 handovers. D8 audit only checked LATEST.md, missing archive rot. Fix: skip work-completed in template, add D8b archive check, bulk-clean stale files."
+  source: P-001
+  task: T-393
+  date: 2026-03-09
+  context: Added via context agent
+  application: TBD
 candidates: []
