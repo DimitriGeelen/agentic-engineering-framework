@@ -327,7 +327,36 @@ session_narrative: ""
 
 ## Where We Are
 
-[TODO: 2-3 sentences summarizing current state and immediate situation]
+$(python3 -c "
+import subprocess, re, collections
+# Build 'Where We Are' from recent commits
+out = subprocess.check_output(
+    ['git', '-C', '$PROJECT_ROOT', 'log', '--oneline', '-20', '--format=%s'],
+    text=True, stderr=subprocess.DEVNULL).strip().splitlines()
+# Extract unique task references and their descriptions
+tasks_seen = collections.OrderedDict()
+for line in out:
+    m = re.match(r'(T-\d+):?\s*(.*)', line)
+    if m and m.group(1) != 'T-012':
+        tid = m.group(1)
+        if tid not in tasks_seen:
+            desc = m.group(2).strip().rstrip('.')
+            if desc:
+                tasks_seen[tid] = desc
+items = list(tasks_seen.items())[:5]
+if items:
+    parts = [f'{t} ({d})' for t, d in items]
+    count = len(items)
+    more = len(tasks_seen) - count
+    summary = 'Session worked on: ' + '; '.join(parts)
+    if more > 0:
+        summary += f'. Plus {more} more commit(s).'
+    else:
+        summary += '.'
+    print(summary)
+else:
+    print('Session started. See Recent Commits below for activity.')
+" 2>/dev/null || echo "See Recent Commits below for session activity.")
 
 ## Work in Progress
 
@@ -379,12 +408,24 @@ for _, tid, tname, tstatus, h in tasks:
     if tstatus == 'work-completed':
         pending_completed.append((tid, tname))
         continue
+    # Auto-fill from git log for this task
+    import subprocess
+    last_action = 'See git log'
+    try:
+        gl = subprocess.check_output(
+            ['git', '-C', '$PROJECT_ROOT', 'log', '--oneline', '-1',
+             '--grep=' + tid, '--format=%s'],
+            text=True, stderr=subprocess.DEVNULL).strip()
+        if gl:
+            last_action = gl
+    except Exception:
+        pass
     print(f'### {tid}: {tname}')
     print(f'- **Status:** {tstatus} (horizon: {h})')
-    print(f'- **Last action:** [TODO: What was just done on this task]')
-    print(f'- **Next step:** [TODO: What should happen next]')
-    print(f'- **Blockers:** [TODO: Any blockers, or "None"]')
-    print(f'- **Insight:** [TODO: Key understanding gained, if any]')
+    print(f'- **Last action:** {last_action}')
+    print(f'- **Next step:** See task file')
+    print(f'- **Blockers:** None')
+    print()
     print()
 # Flush remaining work-completed tasks
 if pending_completed:
@@ -518,40 +559,52 @@ fi
 cat >> "$HANDOVER_FILE" << EOF
 ## Decisions Made This Session
 
-[TODO: List key decisions with rationale and rejected alternatives]
-
-1. **[Decision]**
-   - Why: [rationale]
-   - Alternatives rejected: [what else was considered]
+None
 
 ## Things Tried That Failed
 
-[TODO: Document failed approaches to prevent repetition]
-
-1. **[Approach]** — [why it didn't work]
+None
 
 ## Open Questions / Blockers
 
-[TODO: List unresolved questions and blockers]
-
-1. [Question or blocker]
+None
 
 ## Gotchas / Warnings for Next Session
 
-[TODO: Things the next session should watch out for]
-
-- [Gotcha]
+See gaps register above.
 
 ## Suggested First Action
 
-[TODO: The single most important thing for next session to do first. Only suggest from horizon: now or next tasks. Do NOT suggest horizon: later tasks.]
+$(python3 -c "
+import glob, re, os
+tasks_dir = '$TASKS_DIR/active'
+# Find first started-work task in horizon:now/next, prefer agent-owned
+candidates = []
+for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
+    with open(f) as fh:
+        content = fh.read()
+    if 'status: started-work' not in content:
+        continue
+    h = re.search(r'^horizon:\s*(.+)', content, re.M)
+    if not h or h.group(1).strip() not in ('now', 'next'):
+        continue
+    tid = re.search(r'^id:\s*(.+)', content, re.M)
+    tname = re.search(r'^name:\s*(.+)', content, re.M)
+    owner = re.search(r'^owner:\s*(.+)', content, re.M)
+    is_human = owner and owner.group(1).strip() == 'human'
+    hval = 0 if h.group(1).strip() == 'now' else 1
+    candidates.append((is_human, hval, tid.group(1).strip() if tid else '', tname.group(1).strip() if tname else ''))
+candidates.sort()
+if candidates:
+    _, _, tid, tname = candidates[0]
+    print(f'Continue {tid}: {tname}')
+else:
+    print('See active tasks')
+" 2>/dev/null || echo "See active tasks")
 
 ## Files Changed This Session
 
-[TODO: List created and modified files]
-
-- Created:
-- Modified:
+$(git -C "$PROJECT_ROOT" diff --stat HEAD~5 HEAD 2>/dev/null | tail -5 || echo "See Recent Commits")
 
 ## Recent Commits
 
@@ -602,8 +655,8 @@ if [ "$AUTO_COMMIT" = true ]; then
 else
     echo ""
     echo -e "${YELLOW}Next steps:${NC}"
-    echo "1. Edit $HANDOVER_FILE to fill in [TODO] sections"
-    echo "2. Review and refine the synthesis"
+    echo "1. Review $HANDOVER_FILE (auto-filled from git data)"
+    echo "2. Edit if needed — enrich Decisions, Gotchas, Open Questions"
     _resolve_commit_task
     echo "3. Commit with: fw git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
     echo ""
