@@ -267,14 +267,15 @@ directives:
 DRYAML
     fi
 
-    #@init: yaml-0vk .context/project/gaps.yaml gaps
-    # Spec-reality gaps register
-    if [ ! -f "$target_dir/.context/project/gaps.yaml" ] || [ "${force:-false}" = true ]; then
-        cat > "$target_dir/.context/project/gaps.yaml" << 'GYAML'
-# Gaps Register — Spec-Reality gaps with decision triggers
+    #@init: yaml-0vk .context/project/concerns.yaml concerns
+    # Unified concerns register (T-397: gaps + risks)
+    if [ ! -f "$target_dir/.context/project/concerns.yaml" ] || [ "${force:-false}" = true ]; then
+        cat > "$target_dir/.context/project/concerns.yaml" << 'CYAML'
+# Concerns Register — Unified gap and risk tracking (T-397)
+# Type: gap (spec-reality) | risk (forward-looking)
 # Status: watching | decided-build | decided-simplify | decided-defer | closed
-gaps: []
-GYAML
+concerns: []
+CYAML
     fi
 
     echo -e "  ${GREEN}✓${NC}  Seeded: 10 practices, 18 decisions, 12 patterns"

@@ -29,123 +29,90 @@
     .badge-medium { background-color: #f1c40f; color: #2d3436; }
     .badge-low { background-color: #27ae60; color: white; }
     .badge-closed { background-color: #95a5a6; color: white; }
-    .badge-build { background-color: #2980b9; color: white; }
     .badge-watching { background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); }
-    .badge-ack { background-color: #8e44ad; color: white; }
-    .badge-open { background-color: #e74c3c; color: white; }
-    .badge-resolved { background-color: #27ae60; color: white; }
-    .badge-recurring { background-color: #e67e22; color: white; }
+    .badge-gap { background-color: #3498db; color: white; }
+    .badge-risk { background-color: #e67e22; color: white; }
 
     .risk-table { font-size: 0.85rem; }
     .risk-table td, .risk-table th { padding: 0.4rem 0.6rem; }
     .risk-table .score-cell { font-weight: 700; text-align: center; }
 
-    .three-register { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
-    @media (max-width: 768px) { .three-register { grid-template-columns: 1fr; } }
     .register-card { border: 1px solid var(--pico-muted-border-color); border-radius: 8px; padding: 1rem; text-align: center; }
-    .register-card .icon { font-size: 1.5rem; margin-bottom: 0.25rem; }
     .register-card .rname { font-weight: 600; }
     .register-card .rdesc { font-size: 0.8rem; color: var(--pico-muted-color); }
-
-    .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 2rem; }
-    .cat-chip { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem; border: 1px solid var(--pico-muted-border-color); border-radius: 6px; font-size: 0.8rem; }
-    .cat-chip .cat-count { font-weight: 700; }
 </style>
 
 <div class="page-header">
     <h1>{{ page_title }}</h1>
-    <p>Three-register assurance model for framework governance. Risks are forward-looking (what could go wrong), issues are backward-looking (what did go wrong), gaps are present-tense (spec vs reality).</p>
+    <p>Unified concerns register &mdash; gaps (what IS wrong) and risks (what COULD go wrong) in one view. Consolidated from three-register model (T-397).</p>
 </div>
 
 <!-- About This Page -->
 <details style="margin-bottom: 2rem;">
     <summary style="font-weight: 600;">About this page</summary>
     <div style="font-size: 0.875rem; padding-top: 0.5rem;">
-        <p><strong>Scoring model:</strong> Likelihood (1-5: Rare &rarr; Almost certain) &times; Impact (1-5: Negligible &rarr; Severe) = Score (1-25).<br>
-        Ranking thresholds: <span class="badge badge-low">LOW</span> 1-4, <span class="badge badge-medium">MEDIUM</span> 5-9, <span class="badge badge-high">HIGH</span> 10-16, <span class="badge badge-urgent">URGENT</span> 17-25.</p>
-        <p><strong>Control status:</strong>
-            <span class="badge badge-closed">CLOSED</span> = mitigated,
-            <span class="badge badge-build">BUILD</span> = control designed but not yet built,
-            <span class="badge badge-ack">ACK</span> = acknowledged / accepted risk,
-            <span class="badge badge-watching">WATCH</span> = monitoring for change.</p>
-        <p><strong>Constitutional Directives:</strong> Risk management is driven by D1 (Antifragility &mdash; failures are learning events) and D2 (Reliability &mdash; auditable, no silent failures).</p>
-        <p><strong>Artifacts:</strong></p>
-        <ul style="margin: 0;">
-            <li><a href="/project/docs--reports--T-194-assurance-genesis-discussion" hx-get="/project/docs--reports--T-194-assurance-genesis-discussion" hx-target="#content" hx-push-url="true">Genesis discussion</a> &mdash; how the assurance model was designed (T-194)</li>
-            <li><a href="/project/docs--reports--T-194-risk-landscape" hx-get="/project/docs--reports--T-194-risk-landscape" hx-target="#content" hx-push-url="true">Risk landscape analysis</a> &mdash; methodology, evidence mining, cross-cutting patterns</li>
-            <li><a href="/project/docs--reports--T-194-control-register" hx-get="/project/docs--reports--T-194-control-register" hx-target="#content" hx-push-url="true">Control register design</a> &mdash; schema decisions, control inventory, design adequacy</li>
-        </ul>
-        <p style="color: var(--pico-muted-color); margin-top: 0.5rem;">
-            Data sources: <code>.context/project/risks.yaml</code>, <code>.context/project/issues.yaml</code>, <code>.context/project/gaps.yaml</code>
-        </p>
+        <p><strong>Types:</strong>
+            <span class="badge badge-gap">GAP</span> = spec-reality divergence (present tense),
+            <span class="badge badge-risk">RISK</span> = forward-looking concern (future tense).</p>
+        <p><strong>Risk scoring:</strong> Likelihood (1-5) &times; Impact (1-5) = Score (1-25).<br>
+        Ranking: <span class="badge badge-low">LOW</span> 1-4, <span class="badge badge-medium">MEDIUM</span> 5-9, <span class="badge badge-high">HIGH</span> 10-16, <span class="badge badge-urgent">URGENT</span> 17-25.</p>
+        <p><strong>Data source:</strong> <code>.context/project/concerns.yaml</code></p>
     </div>
 </details>
 
-<!-- Four Register Overview -->
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+<!-- Overview Cards -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
     <div class="register-card">
-        <div class="rname">Risks</div>
-        <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ total_risks }}</div>
-        <div class="rdesc">Forward-looking &middot; L&times;I scored</div>
+        <div class="rname">Watching</div>
+        <div style="font-size: 1.5rem; font-weight: 700;">{{ total_watching }}</div>
+        <div class="rdesc">Active concerns being monitored</div>
+    </div>
+    <div class="register-card">
+        <div class="rname">Closed</div>
+        <div style="font-size: 1.5rem; font-weight: 700; color: #27ae60;">{{ total_closed }}</div>
+        <div class="rdesc">Resolved &middot; {{ total_gaps }} gaps + {{ total_risks }} risks</div>
     </div>
     <div class="register-card">
         <div class="rname">Controls</div>
-        <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ total_controls }}</div>
+        <div style="font-size: 1.5rem; font-weight: 700;">{{ total_controls }}</div>
         <div class="rdesc">{{ controls_active }} active &middot; {{ controls_blocking }} blocking</div>
     </div>
-    <div class="register-card">
-        <div class="rname">Issues</div>
-        <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ total_issues }}</div>
-        <div class="rdesc">Past incidents &middot; Resolution tracked</div>
-    </div>
-    <div class="register-card">
-        <div class="rname">Gaps</div>
-        <div class="num" style="font-size: 1.5rem; font-weight: 700;">{{ watching_gaps | length }}</div>
-        <div class="rdesc">Spec-reality &middot; Watching</div>
-    </div>
 </div>
 
-<!-- Risk Summary Stats -->
-<h2>Risk Overview</h2>
-<div class="risk-stats">
-    <div class="risk-stat">
-        <p class="num">{{ open_risks | length }}</p>
-        <p class="label">Open</p>
-    </div>
-    <div class="risk-stat">
-        <p class="num" style="color: #c0392b;">{{ risk_by_ranking.get('urgent', 0) }}</p>
-        <p class="label">Urgent</p>
-    </div>
-    <div class="risk-stat">
-        <p class="num" style="color: #e67e22;">{{ risk_by_ranking.get('high', 0) }}</p>
-        <p class="label">High</p>
-    </div>
-    <div class="risk-stat">
-        <p class="num" style="color: #27ae60;">{{ risk_by_status.get('closed', 0) }}</p>
-        <p class="label">Closed</p>
-    </div>
-</div>
-
-<!-- Ranking Distribution Bar -->
-{% set total_open = risk_by_ranking.get('urgent', 0) + risk_by_ranking.get('high', 0) + risk_by_ranking.get('medium', 0) + risk_by_ranking.get('low', 0) %}
-{% if total_open > 0 %}
-<div class="ranking-bar">
-    {% if risk_by_ranking.get('urgent', 0) > 0 %}
-    <div class="segment seg-urgent" style="flex: {{ risk_by_ranking['urgent'] }};">{{ risk_by_ranking['urgent'] }} urgent</div>
+<!-- Watching Concerns -->
+<h2>Watching ({{ watching | length }})</h2>
+{% if watching %}
+{% for c in watching %}
+<article style="border-left: 4px solid {% if c.type == 'risk' %}#e67e22{% else %}#3498db{% endif %};">
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <span><code>{{ c.id }}</code> &mdash; {{ c.title }}</span>
+        <span>
+            {% if c.type == 'risk' %}<span class="badge badge-risk">RISK</span>{% else %}<span class="badge badge-gap">GAP</span>{% endif %}
+            {% if c.severity == 'high' %}<span class="badge badge-high">HIGH</span>
+            {% elif c.severity == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
+            {% else %}<span class="badge badge-low">LOW</span>{% endif %}
+        </span>
+    </header>
+    <p>{{ c.description }}</p>
+    {% if c.type == 'risk' and c.score %}
+    <p style="font-size: 0.875rem;"><strong>Score:</strong> {{ c.likelihood }} &times; {{ c.impact }} = {{ c.score }}
+        {% if c.controls %} | <strong>Controls:</strong> {{ c.controls | join(', ') }}{% endif %}
+    </p>
     {% endif %}
-    {% if risk_by_ranking.get('high', 0) > 0 %}
-    <div class="segment seg-high" style="flex: {{ risk_by_ranking['high'] }};">{{ risk_by_ranking['high'] }} high</div>
+    {% if c.residual_notes %}
+    <p style="font-size: 0.875rem; color: var(--pico-muted-color);"><strong>Residual:</strong> {{ c.residual_notes }}</p>
     {% endif %}
-    {% if risk_by_ranking.get('medium', 0) > 0 %}
-    <div class="segment seg-medium" style="flex: {{ risk_by_ranking['medium'] }};">{{ risk_by_ranking['medium'] }} medium</div>
+    {% if c.decision_trigger %}
+    <p style="font-size: 0.875rem;"><strong>Trigger:</strong> {{ c.decision_trigger }}</p>
     {% endif %}
-    {% if risk_by_ranking.get('low', 0) > 0 %}
-    <div class="segment seg-low" style="flex: {{ risk_by_ranking['low'] }};">{{ risk_by_ranking['low'] }} low</div>
-    {% endif %}
-</div>
+</article>
+{% endfor %}
+{% else %}
+<p style="color: var(--pico-muted-color); font-style: italic;">No concerns being watched.</p>
 {% endif %}
 
-<!-- Risk Heatmap (L × I) -->
+<!-- Risk Heatmap (if any risk-type entries) -->
+{% if risks %}
 <h3>Risk Heatmap (Likelihood &times; Impact)</h3>
 <table class="heatmap" role="grid">
     <thead>
@@ -181,129 +148,20 @@
         {% endfor %}
     </tbody>
 </table>
-
-<!-- Categories -->
-<h3>By Category</h3>
-<div class="category-grid">
-    {% for cat, count in risk_by_category | dictsort %}
-    <div class="cat-chip">
-        <span>{{ cat | capitalize }}</span>
-        <span class="cat-count">{{ count }}</span>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- Open Risks Table -->
-<h2>Open Risks ({{ open_risks | length }})</h2>
-{% if open_risks %}
-<div style="overflow-x: auto;">
-<table class="risk-table" role="grid">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Risk</th>
-            <th>Category</th>
-            <th>L</th>
-            <th>I</th>
-            <th>Score</th>
-            <th>Ranking</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for r in open_risks %}
-        <tr>
-            <td><code>{{ r.id }}</code></td>
-            <td>{{ r.title }}</td>
-            <td>{{ r.category | default('?') | capitalize }}</td>
-            <td class="score-cell">{{ r.likelihood | default('?') }}</td>
-            <td class="score-cell">{{ r.impact | default('?') }}</td>
-            <td class="score-cell">{{ r.score | default('?') }}</td>
-            <td>
-                {% if r.ranking == 'urgent' %}<span class="badge badge-urgent">URGENT</span>
-                {% elif r.ranking == 'high' %}<span class="badge badge-high">HIGH</span>
-                {% elif r.ranking == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
-                {% else %}<span class="badge badge-low">LOW</span>
-                {% endif %}
-            </td>
-            <td>
-                {% if r.control_status == 'decided-build' %}<span class="badge badge-build">BUILD</span>
-                {% elif r.control_status == 'acknowledged' %}<span class="badge badge-ack">ACK</span>
-                {% elif r.control_status == 'watching' %}<span class="badge badge-watching">WATCH</span>
-                {% else %}<span class="badge badge-closed">{{ r.control_status | default('?') | upper }}</span>
-                {% endif %}
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-</div>
-{% else %}
-<p style="color: var(--pico-muted-color); font-style: italic;">All risks are closed. No open risks.</p>
 {% endif %}
-
-<!-- Risk Details (collapsible) -->
-<details style="margin-top: 1rem;">
-    <summary>All Risks ({{ total_risks }})</summary>
-    <div style="overflow-x: auto;">
-    <table class="risk-table" role="grid">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Risk</th>
-                <th>Score</th>
-                <th>Ranking</th>
-                <th>Controls</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for r in risks | sort(attribute='score', reverse=True) %}
-            <tr>
-                <td><code>{{ r.id }}</code></td>
-                <td>
-                    {{ r.title }}
-                    {% if r.residual_notes %}
-                    <br><small style="color: var(--pico-muted-color);">{{ r.residual_notes }}</small>
-                    {% endif %}
-                </td>
-                <td class="score-cell">{{ r.score | default('?') }}</td>
-                <td>
-                    {% if r.ranking == 'urgent' %}<span class="badge badge-urgent">URGENT</span>
-                    {% elif r.ranking == 'high' %}<span class="badge badge-high">HIGH</span>
-                    {% elif r.ranking == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
-                    {% else %}<span class="badge badge-low">LOW</span>
-                    {% endif %}
-                </td>
-                <td><small>{{ r.controls | join(', ') if r.controls else 'None' }}</small></td>
-                <td>
-                    {% if r.control_status == 'closed' %}<span class="badge badge-closed">CLOSED</span>
-                    {% elif r.control_status == 'decided-build' %}<span class="badge badge-build">BUILD</span>
-                    {% elif r.control_status == 'acknowledged' %}<span class="badge badge-ack">ACK</span>
-                    {% elif r.control_status == 'watching' %}<span class="badge badge-watching">WATCH</span>
-                    {% else %}<span class="badge">{{ r.control_status | default('?') | upper }}</span>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    </div>
-</details>
 
 <!-- Controls Section -->
 {% if controls %}
 <h2>Controls ({{ total_controls }})</h2>
 <p style="font-size: 0.875rem; color: var(--pico-muted-color);">
-    Enforcement mechanisms that mitigate risks. See <a href="/enforcement" hx-get="/enforcement" hx-target="#content" hx-push-url="true">Enforcement page</a> for hook status.
-    Schema: 8 fields per control, anchored on Constitutional Directives (D-Phase2-001).
+    Enforcement mechanisms. See <a href="/enforcement" hx-get="/enforcement" hx-target="#content" hx-push-url="true">Enforcement page</a> for hook status.
 </p>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
     {% for ctype, count in control_by_type | dictsort %}
-    <div class="cat-chip">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.75rem; border: 1px solid var(--pico-muted-border-color); border-radius: 6px; font-size: 0.8rem;">
         <span>{{ ctype | replace('_', ' ') | capitalize }}</span>
-        <span class="cat-count">{{ count }}</span>
+        <span style="font-weight: 700;">{{ count }}</span>
     </div>
     {% endfor %}
 </div>
@@ -318,7 +176,6 @@
             <th>Blocking</th>
             <th>Mitigates</th>
             <th>Status</th>
-            <th>Failure Mode</th>
         </tr>
     </thead>
     <tbody>
@@ -334,13 +191,11 @@
             </td>
             <td><small>{{ c.mitigates | join(', ') if c.mitigates else 'None' }}</small></td>
             <td>
-                {% if c.status == 'active' %}<span class="badge badge-resolved">ACTIVE</span>
+                {% if c.status == 'active' %}<span class="badge badge-low">ACTIVE</span>
                 {% elif c.status == 'partial' %}<span class="badge badge-medium">PARTIAL</span>
-                {% elif c.status == 'planned' %}<span class="badge badge-build">PLANNED</span>
                 {% else %}<span class="badge badge-closed">{{ c.status | upper }}</span>
                 {% endif %}
             </td>
-            <td><small style="color: var(--pico-muted-color);">{{ c.failure_mode | default('Unknown') }}</small></td>
         </tr>
     {% endfor %}
     </tbody>
@@ -348,74 +203,35 @@
 </div>
 {% endif %}
 
-<!-- Issues Section -->
-<h2>Issues ({{ total_issues }})</h2>
-{% if open_issues %}
-<h3>Open ({{ open_issues | length }})</h3>
-{% for issue in open_issues %}
-<article style="border-left: 4px solid #e74c3c;">
-    <header style="display: flex; justify-content: space-between; align-items: center;">
-        <span><code>{{ issue.id }}</code> &mdash; {{ issue.title }}</span>
-        <span>
-            <span class="badge badge-open">{{ issue.status | default('open') | upper }}</span>
-            {% if issue.related_risk %}<span class="badge badge-high">{{ issue.related_risk }}</span>{% endif %}
-        </span>
-    </header>
-    <p>{{ issue.description }}</p>
-    {% if issue.impact %}
-    <p style="font-size: 0.875rem;"><strong>Impact:</strong> {{ issue.impact }}</p>
-    {% endif %}
-    {% if issue.resolution %}
-    <p style="font-size: 0.875rem;"><strong>Resolution:</strong> {{ issue.resolution }}</p>
-    {% endif %}
-    <footer style="font-size: 0.8rem; color: var(--pico-muted-color); border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-        {{ issue.date | default('?') }}
-        {% if issue.related_tasks %} | Tasks: {{ issue.related_tasks | join(', ') }}{% endif %}
-    </footer>
-</article>
-{% endfor %}
-{% endif %}
-
-{% if resolved_issues %}
-<details{% if not open_issues %} open{% endif %}>
-    <summary>Resolved ({{ resolved_issues | length }})</summary>
-    {% for issue in resolved_issues %}
-    <article style="border-left: 4px solid #27ae60;">
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <span><code>{{ issue.id }}</code> &mdash; {{ issue.title }}</span>
-            <span>
-                <span class="badge badge-resolved">RESOLVED</span>
-                {% if issue.related_risk %}<span class="badge" style="background-color: #95a5a6; color: white;">{{ issue.related_risk }}</span>{% endif %}
-            </span>
-        </header>
-        <p>{{ issue.description }}</p>
-        {% if issue.resolution %}
-        <p style="font-size: 0.875rem;"><strong>Resolution:</strong> {{ issue.resolution }}</p>
-        {% endif %}
-        <footer style="font-size: 0.8rem; color: var(--pico-muted-color); border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
-            {{ issue.date | default('?') }}
-            {% if issue.related_tasks %} | Tasks: {{ issue.related_tasks | join(', ') }}{% endif %}
-        </footer>
-    </article>
-    {% endfor %}
+<!-- Closed Concerns (collapsible) -->
+<details style="margin-top: 2rem;">
+    <summary>Closed Concerns ({{ closed | length }})</summary>
+    <div style="overflow-x: auto;">
+    <table class="risk-table" role="grid">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Concern</th>
+                <th>Severity</th>
+                <th>Resolution</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for c in closed %}
+            <tr>
+                <td><code>{{ c.id }}</code></td>
+                <td>{% if c.type == 'risk' %}<span class="badge badge-risk">RISK</span>{% else %}<span class="badge badge-gap">GAP</span>{% endif %}</td>
+                <td>{{ c.title }}</td>
+                <td>
+                    {% if c.severity == 'high' %}<span class="badge badge-high">HIGH</span>
+                    {% elif c.severity == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
+                    {% else %}<span class="badge badge-low">LOW</span>{% endif %}
+                </td>
+                <td><small style="color: var(--pico-muted-color);">{{ c.resolution | default('See task') | truncate(100) }}</small></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
 </details>
-{% endif %}
-
-{% if not open_issues and not resolved_issues %}
-<p style="color: var(--pico-muted-color); font-style: italic;">No issues recorded in <code>.context/project/issues.yaml</code>.</p>
-{% endif %}
-
-<!-- Gaps (watching) -->
-{% if watching_gaps %}
-<h3>Watching Gaps ({{ watching_gaps | length }})</h3>
-<p style="font-size: 0.875rem; color: var(--pico-muted-color);">Spec-reality gaps currently being monitored. See <a href="/gaps" hx-get="/gaps" hx-target="#content" hx-push-url="true">Gaps page</a> for full register.</p>
-{% for g in watching_gaps %}
-<article style="border-left: 4px solid #f1c40f;">
-    <header style="display: flex; justify-content: space-between; align-items: center;">
-        <span><code>{{ g.id }}</code> &mdash; {{ g.title }}</span>
-        <span class="badge badge-watching">WATCHING</span>
-    </header>
-    <p>{{ g.description }}</p>
-</article>
-{% endfor %}
-{% endif %}

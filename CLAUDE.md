@@ -166,7 +166,7 @@ When encountering errors or unexpected behavior (**NEVER silently work around th
 6. If the error seems minor but you cannot explain it: that is a signal, not noise — investigate anyway
 
 When discovering structural flaws (bugs in framework tooling, spec-reality gaps):
-1. **Register first, fix second.** Add the flaw to `gaps.yaml` BEFORE or alongside the fix
+1. **Register first, fix second.** Add the flaw to `concerns.yaml` BEFORE or alongside the fix
 2. Gaps persist in the register (visible in Watchtower, checked by audit); completed tasks archive and become invisible
 3. Each independent bug gets its own task (see Task Sizing Rules: "One bug = one task")
 
@@ -690,7 +690,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 1. **Classify the bug** — Is this a new failure class, or a repeat of a known pattern?
 2. **Check learnings.yaml** — Does a learning already exist for this class?
 3. If new class: `fw context add-learning "description" --task T-XXX --source P-001`
-4. If systemic (same class hit 2+ times): register in `gaps.yaml`, consider tooling fix (Level C/D)
+4. If systemic (same class hit 2+ times): register in `concerns.yaml`, consider tooling fix (Level C/D)
 
 **Trigger:** Any fix cycle addressing a bug found by someone other than the agent (user report, CI failure, production monitoring, cross-platform testing).
 
@@ -704,7 +704,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 After fixing any problem discovered by the human (not found during development):
 1. **Fix the symptom** — make it work (Level A/B/C)
 2. **Ask: "Why did the framework allow this?"** — not "why did the code break" but "what structural omission let this go undetected?"
-3. **If the framework was blind for >7 days:** register a gap in `gaps.yaml` — even if it's a single incident, sustained blindness reveals a systemic flaw
+3. **If the framework was blind for >7 days:** register a gap in `concerns.yaml` — even if it's a single incident, sustained blindness reveals a systemic flaw
 4. **Do not close the gap until prevention exists** — mitigation (cleaned up the mess) is not prevention (can't happen again). Ask: "Did I fix the symptom, or did I fix the reason the framework couldn't detect it?"
 5. **The human test:** If you're about to close a gap or complete a fix, and you can't explain what structural change prevents recurrence, the gap is not closed.
 

@@ -1082,12 +1082,14 @@ echo ""
 fi # end observations
 
 # ============================================
-# SECTION 8: GAPS REGISTER CHECKS
+# SECTION 8: CONCERNS REGISTER CHECKS (T-397: was gaps register)
 # ============================================
 if should_run_section "gaps"; then
-echo "=== GAPS REGISTER CHECKS ==="
+echo "=== CONCERNS REGISTER CHECKS ==="
 
-GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+# T-397: Unified concerns register (was gaps.yaml)
+GAPS_FILE="$CONTEXT_DIR/project/concerns.yaml"
+[ -f "$GAPS_FILE" ] || GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
 
 if [ -f "$GAPS_FILE" ]; then
     watching_count=$(grep -c 'status: watching' "$GAPS_FILE" 2>/dev/null) || watching_count=0
@@ -1104,7 +1106,9 @@ with open('$GAPS_FILE') as f:
     data = yaml.safe_load(f)
 
 triggered = 0
-for gap in data.get('gaps', []):
+# T-397: concerns.yaml uses 'concerns' key, fallback to 'gaps'
+items = data.get('concerns', data.get('gaps', []))
+for gap in items:
     if gap.get('status') != 'watching':
         continue
     tc = gap.get('trigger_check', {})
@@ -1152,7 +1156,7 @@ PYEOF
             echo "$trigger_output"
             warn "Gap trigger(s) fired — review gaps register" \
                  "Auto-check found trigger conditions met" \
-                 "Review .context/project/gaps.yaml and decide: build or simplify"
+                 "Review .context/project/concerns.yaml and decide: build or simplify"
         fi
 
         if [ "${trigger_count:-0}" -eq 0 ]; then
@@ -1162,7 +1166,7 @@ PYEOF
         pass "Gaps register: no gaps being watched"
     fi
 else
-    echo -e "  ${CYAN}SKIP${NC}  No gaps register (.context/project/gaps.yaml)"
+    echo -e "  ${CYAN}SKIP${NC}  No concerns register (.context/project/concerns.yaml)"
 fi
 
 echo ""
@@ -2045,9 +2049,10 @@ case "$d10_level" in
         ;;
 esac
 
-# D11: Gap Register Staleness (Score 15, T-248)
-# Gaps in "watching" status for >30 days with no recent update
-GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+# D11: Concerns Register Staleness (Score 15, T-248/T-397)
+# Concerns in "watching" status for >30 days with no recent update
+GAPS_FILE="$CONTEXT_DIR/project/concerns.yaml"
+[ -f "$GAPS_FILE" ] || GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
 if [ -f "$GAPS_FILE" ]; then
     d11_result=$(python3 << D11EOF
 import yaml
@@ -2955,13 +2960,17 @@ if os.path.isdir(ep_dir):
 episodic_quality_pct = int(round(ep_good / ep_total * 100)) if ep_total > 0 else 100
 
 # Open gaps
-gaps_file = os.path.join(CONTEXT_DIR, "project", "gaps.yaml")
+# T-397: Unified concerns register
+gaps_file = os.path.join(CONTEXT_DIR, "project", "concerns.yaml")
+if not os.path.exists(gaps_file):
+    gaps_file = os.path.join(CONTEXT_DIR, "project", "gaps.yaml")
 open_gaps = 0
 if os.path.exists(gaps_file):
     try:
         with open(gaps_file) as f:
             gd = yaml.safe_load(f)
-        open_gaps = sum(1 for g in (gd or {}).get("gaps", []) if g.get("status") == "watching")
+        items = (gd or {}).get("concerns", (gd or {}).get("gaps", []))
+        open_gaps = sum(1 for g in items if g.get("status") == "watching")
     except Exception:
         pass
 
