@@ -178,6 +178,12 @@ def search_view():
             except Exception:
                 continue
 
+    # Tag cloud for empty state (T-392)
+    tag_cloud = []
+    if not query:
+        from web.search_utils import aggregate_tags
+        tag_cloud = aggregate_tags(limit=24)
+
     return render_page(
         "search.html",
         page_title="Search",
@@ -187,6 +193,7 @@ def search_view():
         stats=stats,
         vec_stats=vec_stats,
         saved_answers=saved_answers,
+        tag_cloud=tag_cloud,
     )
 
 

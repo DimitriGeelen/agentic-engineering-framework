@@ -81,6 +81,35 @@
     font-size: 0.78rem;
 }
 
+/* ── Tag cloud (T-392) ───────────────────────────────── */
+.tag-cloud-section { margin-bottom: 1rem; }
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+.tag-chip {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--pico-muted-border-color);
+    color: var(--pico-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+.tag-chip:hover {
+    background: var(--pico-primary);
+    color: #fff;
+}
+.tag-sm { font-size: 0.72rem; }
+.tag-md { font-size: 0.82rem; font-weight: 500; }
+.tag-lg { font-size: 0.92rem; font-weight: 600; }
+.tag-xl { font-size: 1.02rem; font-weight: 700; }
+
 /* ── Search pills ─────────────────────────────────────── */
 .search-pill {
     font-size: 0.8rem !important;
