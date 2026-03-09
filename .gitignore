@@ -4,6 +4,8 @@ __pycache__/
 .context/working/.prev-token-reading
 .playwright-mcp/
 .context/bus/
+.context/secrets/
+.context/settings.yaml
 
 # Temporary screenshots (Playwright MCP output)
 *.png
