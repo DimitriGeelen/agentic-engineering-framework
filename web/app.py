@@ -79,6 +79,10 @@ def create_app() -> Flask:
 
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
 
+    # Jinja2 filter: convert project path to Watchtower URL (T-376)
+    from web.search_utils import path_to_link
+    app.jinja_env.filters["path_to_link"] = path_to_link
+
     # -------------------------------------------------------------------
     # Register blueprints
     # -------------------------------------------------------------------

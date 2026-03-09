@@ -6,13 +6,12 @@ with snippet highlighting. Index is rebuilt on demand when stale.
 T-237: Phase 1 — BM25 keyword search via tantivy.
 """
 
-import os
-import re
 import time
 from pathlib import Path
 
 import tantivy
 
+from web.search_utils import categorize, collect_files, extract_task_id, extract_title
 from web.shared import PROJECT_ROOT
 
 # Index lives in /tmp — ephemeral, rebuilt as needed
@@ -26,75 +25,6 @@ _index = None
 _index_built_at = 0.0
 
 
-def _categorize(path_str: str) -> str:
-    """Classify a file path into a search result category."""
-    if ".tasks/active/" in path_str:
-        return "Active Tasks"
-    if ".tasks/completed/" in path_str:
-        return "Completed Tasks"
-    if ".context/episodic/" in path_str:
-        return "Episodic Memory"
-    if ".context/project/" in path_str:
-        return "Project Memory"
-    if ".context/qa/" in path_str:
-        return "Saved Answers"
-    if ".context/handovers/" in path_str:
-        return "Handovers"
-    if ".fabric/components/" in path_str:
-        return "Component Fabric"
-    if "docs/reports/" in path_str:
-        return "Research Reports"
-    if "/agents/" in path_str:
-        return "Agent Docs"
-    return "Specifications"
-
-
-def _extract_title(path: Path, content: str) -> str:
-    """Extract a human-readable title from file content."""
-    # YAML frontmatter: look for name: field
-    name_match = re.search(r'^name:\s*["\']?(.+?)["\']?\s*$', content, re.MULTILINE)
-    if name_match:
-        return name_match.group(1).strip()
-
-    # Markdown heading
-    heading_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
-    if heading_match:
-        return heading_match.group(1).strip()
-
-    # Fallback: filename
-    return path.stem.replace("-", " ").replace("_", " ").title()
-
-
-def _collect_files() -> list[Path]:
-    """Collect all indexable files from the project."""
-    files = []
-    search_dirs = [
-        PROJECT_ROOT / ".tasks",
-        PROJECT_ROOT / ".context" / "episodic",
-        PROJECT_ROOT / ".context" / "project",
-        PROJECT_ROOT / ".context" / "handovers",
-        PROJECT_ROOT / ".fabric" / "components",
-        PROJECT_ROOT / ".context" / "qa",
-        PROJECT_ROOT / "docs" / "reports",
-    ]
-
-    for d in search_dirs:
-        if d.exists():
-            for f in d.rglob("*"):
-                if f.is_file() and f.suffix in (".md", ".yaml", ".yml"):
-                    files.append(f)
-
-    # Top-level specs
-    for f in PROJECT_ROOT.glob("*.md"):
-        files.append(f)
-
-    # Agent docs
-    for f in PROJECT_ROOT.glob("agents/*/AGENT.md"):
-        files.append(f)
-
-    return files
-
-
 def _build_schema() -> tantivy.Schema:
     """Build the tantivy schema."""
     builder = tantivy.SchemaBuilder()
@@ -104,21 +34,6 @@ def _build_schema() -> tantivy.Schema:
     builder.add_text_field("category", stored=True, tokenizer_name="raw")
     builder.add_text_field("task_id", stored=True, tokenizer_name="raw")
     return builder.build()
-
-
-def _extract_task_id(path: Path, content: str) -> str:
-    """Extract T-XXX task ID from path or content."""
-    # From filename
-    match = re.search(r"(T-\d+)", path.name)
-    if match:
-        return match.group(1)
-
-    # From content (id: field or task_id: field)
-    match = re.search(r"^(?:id|task_id):\s*(T-\d+)", content, re.MULTILINE)
-    if match:
-        return match.group(1)
-
-    return ""
 
 
 def build_index() -> tantivy.Index:
@@ -137,7 +52,7 @@ def build_index() -> tantivy.Index:
     index = tantivy.Index(schema, path=str(INDEX_DIR))
     writer = index.writer(heap_size=50_000_000)
 
-    files = _collect_files()
+    files = collect_files()
     indexed = 0
 
     for fpath in files:
@@ -147,9 +62,9 @@ def build_index() -> tantivy.Index:
                 continue
 
             rel_path = str(fpath.relative_to(PROJECT_ROOT))
-            title = _extract_title(fpath, content)
-            category = _categorize(rel_path)
-            task_id = _extract_task_id(fpath, content)
+            title = extract_title(fpath, content)
+            category = categorize(rel_path)
+            task_id = extract_task_id(fpath, content)
 
             writer.add_document(tantivy.Document(
                 title=title,
