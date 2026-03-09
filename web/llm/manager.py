@@ -87,8 +87,20 @@ def get_manager() -> ProviderManager:
 
     _manager = ProviderManager()
 
-    # Always register Ollama (local-first)
-    ollama_provider = OllamaProvider(host=Config.OLLAMA_HOST)
+    # Always register Ollama (local-first) — use saved host if available (T-390)
+    ollama_host = Config.OLLAMA_HOST
+    try:
+        import yaml
+        from web.shared import PROJECT_ROOT
+
+        sf = PROJECT_ROOT / ".context" / "settings.yaml"
+        if sf.exists():
+            saved = yaml.safe_load(sf.read_text()) or {}
+            if saved.get("ollama_host"):
+                ollama_host = saved["ollama_host"]
+    except Exception:
+        pass
+    ollama_provider = OllamaProvider(host=ollama_host)
     _manager.register(ollama_provider)
 
     # Register OpenRouter if API key is available
