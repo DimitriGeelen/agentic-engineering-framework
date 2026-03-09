@@ -4,16 +4,16 @@ name: "Auto-generate watch-patterns.yaml on fw context init"
 description: >
   When .fabric/watch-patterns.yaml doesn't exist, fw context init should generate a default from common source patterns (src/**/*.py, **/*.ts, **/*.go, etc). Unblocks fw fabric scan for non-framework projects. See R-1 in fabric silent-degradation analysis.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [fabric, onboarding]
-components: []
+components: [agents/context/lib/init.sh]
 related_tasks: []
 created: 2026-03-08T22:27:27Z
-last_update: 2026-03-08T22:32:45Z
-date_finished: null
+last_update: 2026-03-08T22:57:05Z
+date_finished: 2026-03-08T22:57:05Z
 ---
 
 # T-367: Auto-generate watch-patterns.yaml on fw context init
@@ -55,3 +55,6 @@ grep -q "src/\*\*/\*.py" agents/context/lib/init.sh
 
 ### 2026-03-08T22:32:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:57:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

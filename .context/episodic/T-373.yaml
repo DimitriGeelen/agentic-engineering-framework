@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-373: Investigate agent pattern: suggesting closure of untested Human ACs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T06:32:35Z
+# ============================================================================
+
+task_id: T-373
+task_name: "Investigate agent pattern: suggesting closure of untested Human ACs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T06:12:21Z
+completed: 2026-03-09T06:32:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T07:32:27+01:00
+last_commit: 2026-03-09T07:32:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix perverse incentive for blind human task closure
+
+# Key outcomes
+outcomes:
+  - "Root cause identified (D2 perverse incentive + handover framing + completion bias)"
+  - "D2 audit thresholds redesigned (WARN >14d, FAIL >30d, not 48h/72h)"
+  - "CLAUDE.md rule: evidence-based completion suggestions only"
+  - "Handover reframed: \"Awaiting Your Action\" not \"pending problem\""
+  - "Resume separates human-owned from agent-actionable tasks"
+  - "Learning captured"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix perverse incentive for blind human task closure"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/handover/handover.sh"
+  - "agents/resume/resume.sh"
+  - "CLAUDE.md"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-372-blind-completion-investigation.md"
+  - ".tasks/active/T-373-investigate-agent-pattern-suggesting-clo.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T07:32:27"
+    action: "T-373: Fix perverse incentive for blind human task closure"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, meta]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 7
+  lines_added: 141
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-373-investigate-agent-pattern-suggesting-clo.md
+generated_by: context-agent-hybrid

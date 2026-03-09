@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-08T21:55:31Z
-last_update: 2026-03-08T21:55:31Z
+last_update: 2026-03-08T22:03:47Z
 date_finished: null
 ---
 
@@ -72,20 +72,25 @@ test -f docs/reports/T-362-auto-doc-generation.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: All assumptions validated by 3 research agents. Two-layer design: Layer 1 (mechanical reference docs) covers 80% of value, Layer 2 (AI-assisted articles) adds narrative depth. Prerequisite: fix 60% broken purpose fields. See docs/reports/T-362-auto-doc-generation.md
+
+**Date**: 2026-03-08T22:03:13Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: All assumptions validated by 3 research agents. Two-layer design: Layer 1 (mechanical reference docs) covers 80% of value, Layer 2 (AI-assisted articles) adds narrative depth. Prerequisite: fix 60% broken purpose fields. See docs/reports/T-362-auto-doc-generation.md
+
+**Date**: 2026-03-08T22:03:13Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-08T22:03:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All assumptions validated by 3 research agents. Two-layer design: Layer 1 (mechanical reference docs) covers 80% of value, Layer 2 (AI-assisted articles) adds narrative depth. Prerequisite: fix 60% broken purpose fields. See docs/reports/T-362-auto-doc-generation.md

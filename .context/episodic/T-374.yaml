@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-374: Build framework walkthrough guides with audience tracks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T07:28:42Z
+# ============================================================================
+
+task_id: T-374
+task_name: "Build framework walkthrough guides with audience tracks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T07:24:56Z
+completed: 2026-03-09T07:28:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T08:28:34+01:00
+last_commit: 2026-03-09T08:28:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Build walkthrough guides — 3 audience tracks linking to 160+ existing docs
+
+# Key outcomes
+outcomes:
+  - "README index with track selection and subsystem dependency map"
+  - "Track 1: New User (core governance cycle — 6 subsystems)"
+  - "Track 2: Contributor (internal architecture — 6 subsystems + patterns)"
+  - "Track 3: Agent Implementer (enforcement, memory model, integration points)"
+  - "All tracks link to existing generated docs (no content duplication)"
+  - "Subsystems ordered by dependency, not alphabetically"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/walkthrough/01-new-user.md"
+  - "docs/walkthrough/02-contributor.md"
+  - "docs/walkthrough/03-agent-implementer.md"
+  - "docs/walkthrough/README.md"
+  - ".tasks/active/T-374-build-framework-walkthrough-guides-with-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T08:28:34"
+    action: "T-374: Build walkthrough guides — 3 audience tracks linking to 160+ existing docs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 628
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-374-build-framework-walkthrough-guides-with-.md
+generated_by: context-agent-hybrid
