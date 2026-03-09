@@ -577,3 +577,19 @@ bypasses:
   command_hash: 4151b05d1ef4d00e237c10f06429ba3997ae7ff910dab044d7a4dda3dbeecf29
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-08T23:05:29Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master && git push --no-verify onedev
+    master
+  command_hash: 542cb58ec0fb0983fe00be9000c18a02bb2d413d09ed6f33db42a8c43d0413f8
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-08T23:16:33Z'
+  tier: 0
+  risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+  command_preview: git push --no-verify github master && git push --no-verify onedev
+    master
+  command_hash: 542cb58ec0fb0983fe00be9000c18a02bb2d413d09ed6f33db42a8c43d0413f8
+  authorized_by: human
+  mechanism: fw tier0 approve

@@ -32,11 +32,6 @@ Active tasks with no recent update
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
 
-## Related
-
-### Tasks
-- T-172: Docs page — discover research docs, commands, and skills
-
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-core.yaml`*
 *Last verified: 2026-02-20*

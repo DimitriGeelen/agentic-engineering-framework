@@ -32,7 +32,6 @@ Add a pattern to project memory
 ## Related
 
 ### Tasks
-- T-166: Implement governance inheritance in fw init — seed practices, decisions, and patterns
 - T-348: Fix update-task.sh sed failing on macOS BSD sed
 
 ---

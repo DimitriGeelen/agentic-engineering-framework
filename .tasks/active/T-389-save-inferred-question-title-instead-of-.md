@@ -4,16 +4,16 @@ name: "Save inferred question title instead of raw input in Q&A"
 description: >
   When saving Q&A answers via /search/save, store the LLM's inferred/rephrased question as the title and filename instead of the raw typed text (which contains voice-transcription typos). Add a 'suggested_title' field to the SSE done event from the LLM, modify the system prompt to request a clean title, update the save endpoint to use it. Predecessor: T-388.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-003]
 related_tasks: []
 created: 2026-03-09T11:35:21Z
-last_update: 2026-03-09T11:35:21Z
-date_finished: null
+last_update: 2026-03-09T11:44:17Z
+date_finished: 2026-03-09T11:44:17Z
 ---
 
 # T-389: Save inferred question title instead of raw input in Q&A
@@ -25,24 +25,18 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] System prompt includes rule 8 requesting `<!-- Q: ... -->` comment
+- [x] LLM produces clean inferred title (verified: "how doez the healng loop workk" → "How does the healing loop work in this framework?")
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Ask a voice-transcribed question in the search page, save it, and verify the saved file uses a clean title
+  **Steps:**
+  1. Go to http://localhost:3000/search
+  2. Type a question with typos (e.g. "whats teh compoennt fabrik")
+  3. Wait for the answer, click Save
+  4. Check `.context/qa/` for the new file — filename should use clean words
+  **Expected:** File title is clean (e.g. "What is the Component Fabric?"), raw query preserved as metadata
+  **If not:** Check if `<!-- Q: ... -->` comment appears in the answer text
 
 ## Verification
 
@@ -72,3 +66,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-389-save-inferred-question-title-instead-of-.md
 - **Context:** Initial task creation
+
+### 2026-03-09T11:44:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

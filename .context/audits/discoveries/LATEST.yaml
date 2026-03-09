@@ -1,15 +1,15 @@
-timestamp: 2026-03-08T20:03:24Z
+timestamp: 2026-03-09T17:27:21Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/346)"
+    check: "D1: Episodic quality — 0% [TODO] (3/386)"
   - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 7 task(s) waiting >72h: T-285(178h) T-289(128h) T-300(97h) T-326(89h) T-328(90h) T-331(90h) T-333(90h) T-336(45h) T-337(44h)"
-    mitigation: "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
-  - id: D8
     level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
+    check: "D2: Human review queue — 19 task(s) awaiting human action (normal)"
+  - id: D8
+    level: FAIL
+    check: "D8: Handover quality — LATEST.md has 107 [TODO] sections"
+    mitigation: "Fill handover: edit .context/handovers/LATEST.md or run fw handover"
   - id: D10
     level: PASS
     check: "D10: Decision-without-dialogue — none detected"
@@ -24,15 +24,14 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - id: D3
-    level: WARN
-    check: "D3: Commit velocity — WARN spike today=78 avg=26 ratio=3.0x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=48 avg=38 ratio=1.3x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 78_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 85_commits_24h)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.0 earlier=4.7)"
+    check: "D6: Completion velocity — normal (PASS recent=14.7 earlier=5.6)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -41,7 +40,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 9
-  warn: 2
+  pass: 10
+  warn: 1
   fail: 1
   total: 12

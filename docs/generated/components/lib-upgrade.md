@@ -26,7 +26,6 @@ Project-specific content is preserved.
 ## Related
 
 ### Tasks
-- T-169: Build fw upgrade command — sync framework improvements to consumer projects
 - T-315: Build fw upgrade command (audit, propose, apply)
 - T-348: Fix update-task.sh sed failing on macOS BSD sed
 

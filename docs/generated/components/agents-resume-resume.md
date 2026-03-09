@@ -24,9 +24,9 @@ Synthesizes current state from handover, working memory, git, and tasks
 ## Related
 
 ### Tasks
-- T-185: Add inception research audit check and resume docs/reports scanning (T-178 GO)
 - T-241: Wire discovery findings into session-start and Watchtower
 - T-348: Fix update-task.sh sed failing on macOS BSD sed
+- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-resume-resume.yaml`*

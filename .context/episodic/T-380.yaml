@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T10:08:39Z
+# ============================================================================
+
+task_id: T-380
+task_name: "Search UX redesign: unified input, elevated Q&A, relevance bars"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T09:41:43Z
+completed: 2026-03-09T10:06:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-09T11:06:17+01:00
+last_commit: 2026-03-09T11:06:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Search UX redesign — unified input, elevated Q&A, relevance bars, category pills
+
+# Key outcomes
+outcomes:
+  - "Unified search input with auto-detect (questions trigger Q&A, keywords trigger search)"
+  - "AI answer elevated to distinct article above results (not hidden in details)"
+  - "Category pills replace accordion details for filtering"
+  - "5-segment relevance bars with labels replace raw scores"
+  - "Empty state with suggestion pills"
+  - "path_to_link Jinja2 filter used for server-side path resolution"
+  - "Default search mode changed from keyword to hybrid"
+  - "Follow-up input for multi-turn conversations"
+  - "All search tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-380-search-ux-redesign-unified-input-elevate.md"
+  - "web/blueprints/discovery.py"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T11:06:17"
+    action: "T-380: Search UX redesign — unified input, elevated Q&A, relevance bars, category pills"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ui, search]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 1
+  files_changed: 3
+  lines_added: 310
+  lines_removed: 364
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-380-search-ux-redesign-unified-input-elevate.md
+generated_by: context-agent-hybrid

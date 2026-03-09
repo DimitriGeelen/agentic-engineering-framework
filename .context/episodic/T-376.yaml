@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T09:47:29Z
+# ============================================================================
+
+task_id: T-376
+task_name: "Python dedup: extract search_utils.py from search.py/embeddings.py"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T09:41:20Z
+completed: 2026-03-09T09:47:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T10:46:35+01:00
+last_commit: 2026-03-09T10:46:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Extract search_utils.py — deduplicate 4 functions + add path_to_link filter
+
+# Key outcomes
+outcomes:
+  - "web/search_utils.py created with categorize, extract_title, extract_task_id, collect_files, path_to_link"
+  - "search.py and embeddings.py import from search_utils instead of defining duplicates"
+  - "path_to_link registered as Jinja2 filter in app.py"
+  - "All search tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "web/app.py"
+  - "web/embeddings.py"
+  - "web/search.py"
+  - "web/search_utils.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T10:46:35"
+    action: "T-376: Extract search_utils.py — deduplicate 4 functions + add path_to_link filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 4
+  lines_added: 140
+  lines_removed: 164
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-376-python-dedup-extract-searchutilspy-from-.md
+generated_by: context-agent-hybrid

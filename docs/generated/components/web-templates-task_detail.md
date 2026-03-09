@@ -15,8 +15,6 @@
 ## Related
 
 ### Tasks
-- T-181: Web UI inline editing — edit tasks, docs, and artifacts in-browser
-- T-183: Productionize web UI inline editing (T-181 follow-up)
 - T-353: Fix related_tasks per-character link rendering in Watchtower
 
 ---

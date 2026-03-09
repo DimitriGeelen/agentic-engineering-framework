@@ -20,12 +20,6 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 |--------|-------------|
 | `agents/handover/handover.sh` | calls |
 
-## Related
-
-### Tasks
-- T-175: Eliminate emergency/full handover distinction — single handover
-- T-177: Clean up compact hooks for manual-only use
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-pre-compact.yaml`*
 *Last verified: 2026-02-20*

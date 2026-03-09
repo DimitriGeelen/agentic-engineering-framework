@@ -96,6 +96,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-dispatch.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-fabric-new-file.sh"
+          }
+        ]
       }
     ]
   }

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-390: Settings page: Ollama host/port config and model dropdown
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T11:47:36Z
+# ============================================================================
+
+task_id: T-390
+task_name: "Settings page: Ollama host/port config and model dropdown"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T11:35:43Z
+completed: 2026-03-09T11:47:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T12:47:25+01:00
+last_commit: 2026-03-09T12:47:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Settings page — Ollama host/port config and model autocomplete
+
+# Key outcomes
+outcomes:
+  - "Settings page renders Ollama Host field with current value"
+  - "Model datalist endpoint returns available models for autocomplete"
+  - "Saved ollama_host persisted to settings.yaml and used on init"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-390-settings-page-ollama-hostport-config-and.md"
+  - "web/blueprints/settings.py"
+  - "web/llm/manager.py"
+  - "web/templates/settings.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T12:47:25"
+    action: "T-390: Settings page — Ollama host/port config and model autocomplete"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 82
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-390-settings-page-ollama-hostport-config-and.md
+generated_by: context-agent-hybrid
