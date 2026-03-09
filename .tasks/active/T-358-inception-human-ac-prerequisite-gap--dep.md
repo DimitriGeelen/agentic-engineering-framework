@@ -13,7 +13,7 @@ description: >
   steps, (3) what to check, (4) expected output verbatim. If the human has
   to ask for clarification, the AC failed its purpose.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: next
@@ -21,7 +21,7 @@ tags: [governance, quality]
 components: []
 related_tasks: [T-357, T-325]
 created: 2026-03-08T18:42:46Z
-last_update: 2026-03-08T18:42:46Z
+last_update: 2026-03-09T06:52:56Z
 date_finished: null
 ---
 
@@ -29,43 +29,44 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Human ACs assume the agent's dev environment (code available locally, server running). When the human tests, they may need to deploy/upgrade/restart first. T-325 mandates Steps/Expected/If-not format but doesn't address prerequisite discovery. Result: humans can't execute ACs without asking "what do I need to do first?" Evidence: 3/5 surveyed active tasks missing deployment prerequisites. See `docs/reports/T-358-human-ac-prerequisite-gap.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. T-325 format is sufficient if agents are reminded to include prerequisites — no new tooling needed
+2. The gap is in guidance, not enforcement — agents write good ACs when told to include prerequisites
+3. A one-paragraph CLAUDE.md addition is the right fix level
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Survey active task Human ACs (done — 3/5 missing prerequisites)
+2. Check if T-325 format naturally catches this (finding: no, covers structure not content)
+3. Draft CLAUDE.md addition and assess fit
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None — governance/documentation change only.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Add prerequisite awareness guidance to CLAUDE.md Human AC Format Requirements
+**OUT:** New enforcement gates, tooling changes, retroactive AC fixes
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
+- [x] Problem statement validated (3/5 tasks missing prerequisites)
+- [x] Assumptions tested (T-325 covers format not prerequisites)
 - [ ] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Evidence shows >=2 tasks with missing prerequisites (found 3)
+- Fix is additive to T-325 (confirmed — one paragraph)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- T-325 already covers prerequisites (it doesn't)
+- Fix requires structural enforcement changes (it doesn't)
 
 ## Verification
 
@@ -94,3 +95,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-09T06:52:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
