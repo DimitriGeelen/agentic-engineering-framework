@@ -79,6 +79,17 @@ def create_app() -> Flask:
 
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
 
+    # Dynamic version from git tags (T-386)
+    import subprocess as _sp
+    try:
+        _ver = _sp.check_output(
+            ["git", "describe", "--tags", "--always"],
+            cwd=str(PROJECT_ROOT), stderr=_sp.DEVNULL, text=True,
+        ).strip()
+    except Exception:
+        _ver = "dev"
+    app.jinja_env.globals["fw_version"] = _ver
+
     # Jinja2 filter: convert project path to Watchtower URL (T-376)
     from web.search_utils import path_to_link
     app.jinja_env.filters["path_to_link"] = path_to_link
