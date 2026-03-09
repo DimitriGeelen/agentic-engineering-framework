@@ -621,3 +621,69 @@ gaps:
     created: 2026-03-09
     last_reviewed: 2026-03-09
     related_task: T-393
+
+  - id: G-019
+    title: "Agent treats symptom-level fixes as complete — no self-escalation to systemic root cause"
+    description: >
+      When discovering a problem, the agent fixes the immediate symptom and declares the
+      work done. It does not self-escalate from "fix the broken thing" to "why did the
+      framework allow this to happen?" The Error Escalation Ladder (Levels A→D) exists in
+      CLAUDE.md but the agent reliably stops at Level B/C (fix technique/tooling) without
+      reaching Level D (change ways of working) unless the human forces the escalation.
+
+      This is a gap in agent reasoning, not in tooling. The framework provides the
+      escalation ladder, the gap register, the learning system — but the agent's default
+      behavior is to fix-and-close rather than fix-and-investigate-root-cause.
+    spec_reference: "CLAUDE.md §Error Escalation Ladder, §Proactive Level D"
+    severity: high
+    evidence_collected: >
+      G-018 discovery (T-393) required 3 human corrections:
+      1. Agent replaced [TODO]s with "Session state not recorded" — human said the text
+         is alarming, context has value, reconstruct it. Agent had treated cleanup as
+         sufficient without considering the human-facing output quality.
+      2. Agent closed G-018 — human asked what prevents recurrence. Agent had treated
+         the template fix + audit fix as sufficient without addressing prevention.
+      3. Agent rewrote G-018 about handover specifics — human said the gap is the
+         SYSTEMIC omission (no guard against silent decay), not the specific symptom
+         (handover TODOs). Agent couldn't self-escalate from symptom to root cause.
+
+      Each correction required the human to explicitly say "no, think bigger." The
+      agent had the framework tools to do this (Error Escalation Ladder Level D,
+      Proactive Level D reflection, gap register) but did not apply them without
+      human prompting.
+    root_cause_analysis: >
+      The agent's completion bias: when a fix works (template changed, tests pass,
+      audit clean), the agent pattern-matches to "task done" and moves to wrap-up.
+      The escalation ladder is framed as a response to failure, not as a mandatory
+      post-fix reflection. Nothing in the framework forces the agent to ask:
+      "Why did the framework allow this? Is this a symptom of something bigger?"
+
+      The Proactive Level D rule says to codify when "3+ tasks show the same pattern"
+      but it doesn't say to escalate when a SINGLE fix reveals a systemic flaw. A
+      single dramatic discovery (5,982 [TODO]s) should trigger the same escalation
+      as 3 gradual incidents — but the rule doesn't cover this case.
+    what_remains: >
+      A. MANDATORY POST-FIX REFLECTION: After fixing a bug discovered in production
+         (user-found, not dev-found), the agent should ask: "What structural gap
+         allowed this? Should this be a gap registration, not just a learning?"
+         This is stronger than the Bug-Fix Learning Checkpoint (which captures
+         learnings but not gap escalation).
+
+      B. SINGLE-INCIDENT ESCALATION: The Proactive Level D rule requires 3+ instances.
+         But some single incidents reveal systemic flaws (5,982 [TODO]s = one discovery
+         that shows 23 days of undetected decay). Add guidance: "If a single fix reveals
+         the framework was blind to a class of problem for >7 days, register a gap."
+
+      C. CLOSURE DISCIPLINE: Agent should not close a gap until prevention is verified,
+         not just mitigation. "Did we fix the symptom, or did we fix the reason the
+         framework couldn't detect/prevent it?"
+    decision_trigger: >
+      Agent closes a gap or completes a fix without addressing root cause, and the
+      human has to correct the escalation level again.
+    trigger_check:
+      type: manual
+      hint: "Review completed gaps — did the resolution address prevention or just mitigation?"
+    status: watching
+    created: 2026-03-09
+    last_reviewed: 2026-03-09
+    related_task: T-393
