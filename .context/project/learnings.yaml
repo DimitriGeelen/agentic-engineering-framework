@@ -682,4 +682,11 @@ learnings:
   date: 2026-03-08
   context: Added via context agent
   application: TBD
+- id: L-084
+  learning: "Execution gates (R-033, P-010) only fire on tool invocation, not on agent proposals/suggestions. An agent can suggest --force batch-completion of 12 human-owned tasks without triggering any gate. The fix is behavioral (CLAUDE.md anti-pattern rule) + advisory (handover surfaces unchecked Human ACs). The structural query tool (fw task verify) already existed but wasn't used — behavioral rules must reference available tools."
+  source: P-001
+  task: T-372
+  date: 2026-03-09
+  context: Added via context agent
+  application: TBD
 candidates: []

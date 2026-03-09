@@ -502,3 +502,37 @@ gaps:
     created: 2026-03-08
     last_reviewed: 2026-03-08
     related_task: T-345
+
+  - id: G-017
+    title: "Execution gates do not cover proposal/suggestion layer"
+    description: >
+      Four structural gates (R-033, P-010, T-193, CLAUDE.md rules) protect
+      task completion execution. But agents can freely suggest --force bypass
+      or batch-completion of human-owned tasks without triggering any gate.
+      The proposal/suggestion phase is ungated. An agent suggested batch-closing
+      12 human-owned tasks with --force without reviewing any Human ACs.
+      The sovereignty gate blocked execution but not the suggestion itself.
+    spec_reference: "CLAUDE.md §Autonomous Mode Boundaries, §Blind Completion Anti-Pattern"
+    severity: medium
+    evidence_collected: >
+      T-372: Agent proposed batch 'fw task update T-XXX --status work-completed --force'
+      for 12 human-owned tasks. 4 had blocking Human ACs (T-289 prod pipeline,
+      T-331 untested action, T-364 doc quality, T-366 AI tone). R-033 gate
+      blocked execution; nothing blocked the suggestion. fw task verify already
+      existed but agent didn't use it.
+    decision_trigger: >
+      Agent bypasses the behavioral rule (CLAUDE.md §Blind Completion Anti-Pattern)
+      and suggests --force for human-owned tasks again. Or: 2+ human-owned tasks
+      are completed via --force without Human AC review in a single session.
+    trigger_check:
+      type: manual
+      hint: "Review bypass-log.yaml — any --force completions of human-owned tasks without Human AC review?"
+    possible_resolution:
+      - "Behavioral: CLAUDE.md §Blind Completion Anti-Pattern (DONE — T-372)"
+      - "Advisory: Handover surfaces unchecked Human ACs (DONE — T-372)"
+      - "Detective: PostToolUse hook warns on --force proposals (Sprint 2)"
+      - "Structural: Explicit partial-complete state in task lifecycle (Sprint 3)"
+    status: watching
+    created: 2026-03-09
+    last_reviewed: 2026-03-09
+    related_task: T-372
