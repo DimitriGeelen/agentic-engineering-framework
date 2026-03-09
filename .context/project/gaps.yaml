@@ -578,13 +578,29 @@ gaps:
       2. Audit: D8b checks last 10 archive handovers for [TODO] rot
       3. Cleanup: 98 stale handovers cleaned, summaries reconstructed from git history
       New handovers generate ~31 [TODO]s (only for active tasks + global sections).
-    remaining_risk: >
-      Auto-compaction handovers still have global [TODO]s (Where We Are, Decisions,
-      etc.) that cannot be filled without agent context. These are acceptable — they're
-      high-level sections, not per-task noise. The pre-compact hook could potentially
-      fill some from git log data (like the reconstruction script did for cleanup).
-    status: closed
+    what_remains: >
+      Auto-compaction handovers still generate ~31 [TODO]s per handover for:
+      - Global sections: Where We Are, Decisions, Gotchas, Suggested Action, Files Changed
+      - Per non-completed task: Last action, Next step, Blockers, Insight
+      pre-compact.sh calls handover.sh mechanically — no agent context exists to fill
+      these sections. The reconstruction script proved git history CAN populate "Where We
+      Are" automatically. The same approach could be applied to the handover template:
+      auto-fill sections from git log, task status, and recent commits at generation time
+      instead of emitting [TODO]s that the auto-path cannot fill.
+    prevention_needed:
+      - "handover.sh: Auto-fill 'Where We Are' from git log + tasks_touched (proven by T-393 reconstruction script)"
+      - "handover.sh: Auto-fill 'Files Changed' from git diff --name-only (data is available)"
+      - "handover.sh: Auto-fill 'Recent Commits' already works — extend pattern to other sections"
+      - "handover.sh: Replace remaining [TODO] sections with 'Not applicable (auto-generated)' or auto-derived content"
+      - "pre-compact.sh: Validate generated handover has 0 [TODO]s before committing"
+    decision_trigger: >
+      D8b audit fires warn or fail (3+ of last 10 handovers have [TODO]s).
+      This means the reduced template is still producing rot.
+    trigger_check:
+      type: auto
+      check: "grep -rl '\\[TODO' .context/handovers/S-*.md | tail -10 | xargs grep -l '\\[TODO' | wc -l"
+      threshold: ">= 3 of last 10 means rot is recurring"
+    status: watching
     created: 2026-03-09
     last_reviewed: 2026-03-09
-    closed_date: 2026-03-09
     related_task: T-393
