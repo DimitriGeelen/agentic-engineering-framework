@@ -25,16 +25,25 @@
                 </select>
             </label>
 
+            <!-- Ollama connection (T-390) -->
+            <label>Ollama Host
+                <input type="text" name="ollama_host" value="{{ ollama_host }}"
+                       placeholder="http://localhost:11434"
+                       aria-describedby="ollama-host-help">
+                <small id="ollama-host-help">Full URL including protocol and port (e.g. http://192.168.10.107:11434)</small>
+            </label>
+
             <div class="grid">
                 <label>Primary Model
-                    <input type="text" name="primary_model" value="{{ primary_model }}"
-                           placeholder="e.g. qwen3:14b or anthropic/claude-3-haiku">
+                    <input type="text" name="primary_model" id="primary-model-input" value="{{ primary_model }}"
+                           list="model-datalist" placeholder="e.g. qwen3:14b">
                 </label>
                 <label>Fallback Model
-                    <input type="text" name="fallback_model" value="{{ fallback_model }}"
-                           placeholder="e.g. dolphin-llama3:8b">
+                    <input type="text" name="fallback_model" id="fallback-model-input" value="{{ fallback_model }}"
+                           list="model-datalist" placeholder="e.g. dolphin-llama3:8b">
                 </label>
             </div>
+            <datalist id="model-datalist"></datalist>
         </fieldset>
 
         <div class="grid" style="grid-template-columns: auto 1fr;">
@@ -117,6 +126,24 @@
 
     <div id="key-result"></div>
 </article>
+
+<!-- Auto-populate model datalist (T-390) -->
+<script>
+function loadModelDatalist() {
+    fetch('{{ url_for("settings.list_models") }}?format=datalist')
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+            var dl = document.getElementById('model-datalist');
+            if (dl) dl.innerHTML = html;
+        })
+        .catch(function() {});
+}
+document.addEventListener('DOMContentLoaded', loadModelDatalist);
+var providerSelect = document.getElementById('provider-select');
+if (providerSelect) providerSelect.addEventListener('change', function() {
+    setTimeout(loadModelDatalist, 500);
+});
+</script>
 
 <!-- Info -->
 <article>

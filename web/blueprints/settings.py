@@ -55,6 +55,7 @@ def settings_page():
         settings=settings,
         primary_model=settings.get("primary_model", Config.PRIMARY_MODEL),
         fallback_model=settings.get("fallback_model", Config.FALLBACK_MODEL),
+        ollama_host=settings.get("ollama_host", Config.OLLAMA_HOST),
     )
 
 
@@ -66,8 +67,20 @@ def save_settings():
     provider = request.form.get("provider", "ollama")
     primary_model = request.form.get("primary_model", "").strip()
     fallback_model = request.form.get("fallback_model", "").strip()
+    ollama_host = request.form.get("ollama_host", "").strip()
 
     manager = get_manager()
+
+    # Update Ollama host if changed (T-390)
+    if ollama_host and provider == "ollama":
+        from web.llm.ollama_provider import OllamaProvider
+
+        current = manager.get("ollama")
+        if not current or getattr(current, "_host", "") != ollama_host:
+            new_provider = OllamaProvider(host=ollama_host)
+            manager.register(new_provider)  # replaces existing
+            Config.OLLAMA_HOST = ollama_host
+            log.info("Ollama host updated to %s", ollama_host)
 
     # Switch provider
     try:
@@ -82,6 +95,8 @@ def save_settings():
         settings["primary_model"] = primary_model
     if fallback_model:
         settings["fallback_model"] = fallback_model
+    if ollama_host:
+        settings["ollama_host"] = ollama_host
     _save_settings(settings)
 
     return Response(
@@ -169,8 +184,16 @@ def list_models():
     """Return model list for the active provider (htmx)."""
     from web.llm import get_manager
 
+    fmt = request.args.get("format", "options")
     manager = get_manager()
     models = manager.active.list_models()
+
+    if fmt == "datalist":
+        # T-390: Return datalist options for autocomplete
+        if not models:
+            return Response("")
+        options = [f'<option value="{m.id}">' for m in models]
+        return Response("\n".join(options))
 
     if not models:
         return Response("<option value=''>No models available</option>")
