@@ -116,3 +116,50 @@ User query → rag_retrieve(hybrid + rerank) → format_rag_context → ollama.c
 - Persistence: where do settings live? (YAML file? SQLite?)
 - Per-user vs global settings (Watchtower is typically single-user)
 **Deliverable:** Settings page wireframe and config persistence recommendation.
+
+---
+
+## Research Results Synthesis
+
+### Assumption Validation
+
+| # | Assumption | Result | Agent |
+|---|-----------|--------|-------|
+| 1 | OpenRouter uses OpenAI-compatible API | **VALIDATED** — `openai` SDK works with base_url swap. SSE streaming identical. | Agent 2 |
+| 2 | Settings can persist without server restart | **VALIDATED** — ProviderManager hot-switches per-request. YAML config with runtime reload. | Agents 2, 5 |
+| 3 | Template can be restructured without build step | **VALIDATED** — Classic `<script>` tags in base.html, Jinja2 includes. search.html 567→15 lines. | Agent 4 |
+| 4 | Fernet provides adequate key storage | **VALIDATED** — Tested: PBKDF2 from /etc/machine-id + Fernet roundtrip works. Zero new deps. keyring NOT viable (headless LXC). | Agent 3 |
+| 5 | Elevating Q&A improves discoverability | **VALIDATED** — Research confirms (Perplexity, NN/g): AI answers should be first-class, not hidden. | Agent 1 |
+
+### Key Decisions from Research
+
+1. **UX Layout: "Unified Smart Input" (Option C)** — Single input auto-detects search vs Q&A. Questions get AI answer above results. Keywords get search results with category pills. Mode selector hidden behind "Advanced".
+
+2. **LLM Abstraction: Strategy Pattern** — `LLMProvider` ABC with `OllamaProvider` + `OpenRouterProvider`. New `web/llm/` package (4 files). Only 1 new dep: `openai`.
+
+3. **Key Storage: Hybrid (Option E)** — Fernet encrypted file + env-var fallback. Machine-bound via /etc/machine-id. Zero new deps (cryptography already installed).
+
+4. **Template: 4-Phase Migration** — Python dedup → JS extraction (3 files) → path-to-link server-side → Jinja2 partials. All independent of UX redesign.
+
+5. **Settings Page: Single scrollable page with article cards** — YAML persistence at `.context/settings.yaml`. htmx-powered engine selector. Gear icon in nav.
+
+### Estimated Build Tasks
+
+| # | Task | Scope | Dependencies |
+|---|------|-------|-------------|
+| 1 | Python dedup + search_utils.py | Extract 4 shared functions + path_to_link | None |
+| 2 | LLM Provider abstraction layer | web/llm/ package, refactor ask.py | None |
+| 3 | Fernet key storage | web/secrets_store.py | None |
+| 4 | Settings page + config persistence | Blueprint, template, YAML, hot reload | Tasks 2, 3 |
+| 5 | Search UX redesign | Unified input, relevance bars, category pills, empty state | Task 1 |
+| 6 | JS extraction + template partials | Extract inline JS, Jinja2 includes | Task 5 |
+
+**Total: 6 build tasks.** Fits within the 6-task cap from Go/No-Go criteria.
+
+### Detailed Agent Reports
+
+- Agent 1 (UX): `/tmp/fw-agent-search-ux-patterns.md`
+- Agent 2 (OpenRouter): `/tmp/fw-agent-openrouter-abstraction.md`
+- Agent 3 (Key Storage): `/tmp/fw-agent-key-storage.md`
+- Agent 4 (Template): `/tmp/fw-agent-template-architecture.md`
+- Agent 5 (Settings): `/tmp/fw-agent-settings-page.md`
