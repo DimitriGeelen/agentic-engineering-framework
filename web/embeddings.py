@@ -21,6 +21,7 @@ import ollama
 import sqlite_vec
 
 from web.config import Config
+from web.search_utils import categorize, collect_files, extract_task_id, extract_title
 from web.shared import PROJECT_ROOT
 
 log = logging.getLogger(__name__)
@@ -71,77 +72,8 @@ def _embed_single(text: str) -> bytes:
 
 
 # ---------------------------------------------------------------------------
-# File collection & chunking (mirrors web/search.py)
+# File collection & chunking
 # ---------------------------------------------------------------------------
-
-def _categorize(path_str: str) -> str:
-    """Classify a file path into a search result category."""
-    if ".tasks/active/" in path_str:
-        return "Active Tasks"
-    if ".tasks/completed/" in path_str:
-        return "Completed Tasks"
-    if ".context/episodic/" in path_str:
-        return "Episodic Memory"
-    if ".context/project/" in path_str:
-        return "Project Memory"
-    if ".context/handovers/" in path_str:
-        return "Handovers"
-    if ".fabric/components/" in path_str:
-        return "Component Fabric"
-    if "docs/reports/" in path_str:
-        return "Research Reports"
-    if "/agents/" in path_str:
-        return "Agent Docs"
-    return "Specifications"
-
-
-def _extract_title(path: Path, content: str) -> str:
-    """Extract a human-readable title from file content."""
-    name_match = re.search(r'^name:\s*["\']?(.+?)["\']?\s*$', content, re.MULTILINE)
-    if name_match:
-        return name_match.group(1).strip()
-    heading_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
-    if heading_match:
-        return heading_match.group(1).strip()
-    return path.stem.replace("-", " ").replace("_", " ").title()
-
-
-def _extract_task_id(path: Path, content: str) -> str:
-    """Extract T-XXX task ID from path or content."""
-    match = re.search(r"(T-\d+)", path.name)
-    if match:
-        return match.group(1)
-    match = re.search(r"^(?:id|task_id):\s*(T-\d+)", content, re.MULTILINE)
-    if match:
-        return match.group(1)
-    return ""
-
-
-def _collect_files() -> list[Path]:
-    """Collect all indexable files from the project."""
-    files = []
-    search_dirs = [
-        PROJECT_ROOT / ".tasks",
-        PROJECT_ROOT / ".context" / "episodic",
-        PROJECT_ROOT / ".context" / "project",
-        PROJECT_ROOT / ".context" / "handovers",
-        PROJECT_ROOT / ".fabric" / "components",
-        PROJECT_ROOT / ".context" / "qa",
-        PROJECT_ROOT / "docs" / "reports",
-    ]
-    for d in search_dirs:
-        if d.exists():
-            for f in d.rglob("*"):
-                if f.is_file() and f.suffix in (".md", ".yaml", ".yml"):
-                    files.append(f)
-    # Top-level specs
-    for f in PROJECT_ROOT.glob("*.md"):
-        files.append(f)
-    # Agent docs
-    for f in PROJECT_ROOT.glob("agents/*/AGENT.md"):
-        files.append(f)
-    return files
-
 
 def _chunk_content(content: str, max_chars: int = 1500) -> list[str]:
     """Split content into chunks suitable for embedding.
@@ -254,7 +186,7 @@ def build_index() -> dict:
         DB_PATH.unlink()
 
     db = _init_db()
-    files = _collect_files()
+    files = collect_files()
 
     # Collect all chunks with metadata
     all_chunks = []
@@ -267,9 +199,9 @@ def build_index() -> dict:
                 continue
 
             rel_path = str(fpath.relative_to(PROJECT_ROOT))
-            title = _extract_title(fpath, content)
-            category = _categorize(rel_path)
-            task_id = _extract_task_id(fpath, content)
+            title = extract_title(fpath, content)
+            category = categorize(rel_path)
+            task_id = extract_task_id(fpath, content)
             chunks = _chunk_content(content)
 
             for i, chunk in enumerate(chunks):
