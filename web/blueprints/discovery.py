@@ -232,6 +232,7 @@ def search_save():
     question = (data.get("question") or "").strip()
     answer = (data.get("answer") or "").strip()
     sources = data.get("sources") or []
+    inferred_title = (data.get("inferred_title") or "").strip()  # T-389
 
     if not question or not answer:
         return json.dumps({"error": "Question and answer are required"}), 400
@@ -239,8 +240,9 @@ def search_save():
     qa_dir = PROJECT_ROOT / ".context" / "qa"
     qa_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate slug from question
-    slug = re_mod.sub(r"[^a-z0-9]+", "-", question.lower())[:60].strip("-")
+    # Use inferred title for slug/heading if available, fall back to raw question (T-389)
+    display_title = inferred_title if inferred_title else question
+    slug = re_mod.sub(r"[^a-z0-9]+", "-", display_title.lower())[:60].strip("-")
     date_str = datetime.now().strftime("%Y-%m-%d")
     filename = f"{date_str}-{slug}.md"
     filepath = qa_dir / filename
@@ -260,10 +262,12 @@ def search_save():
         path = s.get("path", "")
         source_lines.append(f"- [{num}] {title} (`{path}`)")
 
+    # T-389: Use clean inferred title as heading, preserve raw question as metadata
     content = (
-        f"# {question}\n\n"
-        f"**Date:** {date_str}\n\n"
-        f"## Answer\n\n"
+        f"# {display_title}\n\n"
+        f"**Date:** {date_str}\n"
+        + (f"**Original query:** {question}\n\n" if inferred_title and inferred_title != question else "\n")
+        + f"## Answer\n\n"
         f"{answer}\n\n"
         f"## Sources\n\n"
         + ("\n".join(source_lines) if source_lines else "No sources recorded.")

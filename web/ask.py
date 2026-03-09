@@ -100,7 +100,10 @@ command flags, or configuration options that do not appear in the sources.
 answer this fully" and suggest which topics or files might help.
 5. Keep answers concise and actionable. Use markdown formatting with code blocks for commands.
 6. For how-to questions, provide step-by-step instructions.
-7. For why questions, explain the rationale and link to decisions if available."""
+7. For why questions, explain the rationale and link to decisions if available.
+8. End your response with a hidden HTML comment that cleanly rephrases the user's question \
+in one sentence: <!-- Q: Clean rephrased question here -->. This is used for saving. \
+Fix any typos, grammar issues, or voice-transcription errors in the original question."""
 
 
 def format_rag_context(chunks: list[dict]) -> str:
