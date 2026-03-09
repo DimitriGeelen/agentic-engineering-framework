@@ -1,21 +1,42 @@
-# Gaps Register — Spec-Reality Gaps with Decision Triggers
+# Concerns Register — Unified risk and gap tracking (T-397)
 #
-# Purpose: Structural memory for things we chose NOT to build yet.
-# Each gap has a trigger condition — when the trigger fires, we decide:
-# build the feature, or simplify the spec.
+# Consolidates risks.yaml (forward-looking) and gaps.yaml (spec-reality)
+# into a single register. Origin: T-396 Option D decision.
+#
+# Purpose: Track all concerns — things that ARE wrong (gaps) and things
+# that COULD go wrong (risks) — in one audited, handover-surfaced,
+# CLAUDE.md-referenced register.
 #
 # Checked by: audit agent (Section 8)
-# Surfaced in: handover documents
+# Surfaced in: handover documents, /risks web page
+# CLI: fw gaps (existing)
+#
+# Type values:
+#   gap   — Spec-reality divergence (present tense: "this IS wrong")
+#   risk  — Forward-looking concern (future tense: "this COULD go wrong")
 #
 # Status values:
-#   watching         — gap identified, waiting for trigger
+#   watching         — concern identified, waiting for trigger
 #   decided-build    — trigger fired, decided to build
 #   decided-simplify — trigger fired, decided to simplify spec
 #   decided-defer    — trigger evaluated, explicitly deferred again
 #   closed           — resolved (built or simplified)
+#
+# Risk-specific optional fields (type: risk only):
+#   likelihood: 1-5 (Rare/Unlikely/Possible/Likely/Almost certain)
+#   impact: 1-5 (Negligible/Minor/Moderate/Major/Severe)
+#   score: L × I
+#   ranking: low|medium|high|urgent
+#   controls: [CTL-XXX] from controls.yaml
+#   residual_notes: What risk remains after controls
 
-gaps:
+concerns:
+  # ══════════════════════════════════════════════
+  # GAPS (type: gap) — migrated from gaps.yaml
+  # ══════════════════════════════════════════════
+
   - id: G-001
+    type: gap
     title: "Enforcement tiers — Tier 1 implemented, Tier 0 remains spec-only"
     description: >
       010-TaskSystem.md defines 4 enforcement tiers. Trigger fired: third-party
@@ -66,6 +87,7 @@ gaps:
     closed_date: 2026-02-17
 
   - id: G-002
+    type: gap
     title: "Status transitions not validated"
     description: >
       010-TaskSystem.md originally defined 6 statuses including 'refined' and
@@ -86,6 +108,7 @@ gaps:
     closed_date: 2026-02-14
 
   - id: G-003
+    type: gap
     title: "Unused frontmatter fields (priority, tags, agents.supporting)"
     description: >
       Task template had 11 frontmatter fields. Removed priority, tags,
@@ -105,6 +128,7 @@ gaps:
     closed_date: 2026-02-14
 
   - id: G-004
+    type: gap
     title: "Multi-agent collaboration untested"
     description: >
       Spec describes primary + supporting agents on a single task, with all
@@ -130,6 +154,7 @@ gaps:
     last_reviewed: 2026-02-14
 
   - id: G-005
+    type: gap
     title: "Graduation pipeline has no tooling"
     description: >
       015-Practices.md defines a graduation pipeline:
@@ -161,6 +186,7 @@ gaps:
     closed_date: 2026-02-16
 
   - id: G-006
+    type: gap
     title: "Only default.md template exists"
     description: >
       Simplified default.md to match actual usage. Removed dead sections
@@ -181,6 +207,7 @@ gaps:
     closed_date: 2026-02-14
 
   - id: G-007
+    type: gap
     title: "Budget gate non-functional for shared-tooling projects"
     description: >
       budget-gate.sh, pre-compact.sh, and post-compact-resume.sh all used
@@ -216,6 +243,7 @@ gaps:
     closed_date: 2026-02-18
 
   - id: G-008
+    type: gap
     title: "Sub-agent dispatch protocol has no structural enforcement"
     description: >
       CLAUDE.md §Sub-Agent Dispatch Protocol defines clear rules: investigators
@@ -243,24 +271,6 @@ gaps:
       cause: uncontrolled context intake from tool results. Mitigation: use
       browser_run_code for navigation, browser_take_screenshot for visuals,
       never browser_snapshot on pages with large DOM.
-    decision_trigger: >
-      Third instance of context explosion from uncontrolled tool output (T-073
-      sub-agents, T-158 TaskOutput, T-170 Playwright snapshots). Pattern is
-      confirmed: any tool that returns unbounded content will eventually crash
-      the session. Discipline alone is proven insufficient across 3 incidents.
-    trigger_fired: true
-    trigger_fired_date: 2026-02-18
-    trigger_check:
-      type: manual
-      hint: "Monitor for context spikes after Task tool dispatches or Playwright calls"
-    possible_enforcement:
-      - "PreToolUse hook on Task tool: warn if >3 parallel bg agents"
-      - "PostToolUse hook on TaskOutput: warn if result >5K chars"
-      - "Agent prompt linter: check for 'write to file' in bg agent prompts"
-      - "Make fw bus post the ONLY way to return bg agent results"
-      - "Practice: never use browser_snapshot/browser_navigate on data-heavy pages"
-    status: closed
-    closed_date: 2026-02-20
     resolution: >
       T-225 built PostToolUse hook (check-dispatch.sh) on Task|TaskOutput.
       Warns at 5K chars, critical at 20K chars. Combined with the dispatch
@@ -268,94 +278,63 @@ gaps:
       documentation (CLAUDE.md), prompt injection (preamble.md), runtime
       guard (check-dispatch.sh). Remaining items (PreToolUse parallel count,
       prompt linter) are lower priority — can be added if incidents recur.
+    status: closed
+    closed_date: 2026-02-20
     created: 2026-02-18
     last_reviewed: 2026-02-20
 
   - id: G-009
+    type: gap
     title: "Research artifact persistence has no structural enforcement"
     description: >
       Sub-agent dispatch protocol (CLAUDE.md) says content generators "MUST write to disk"
       and investigators should use fw bus. Reality: fw bus has NEVER been used (empty dirs).
       5+ agents dispatched in session S-2026-0218-1920 returned full content to orchestrator
-      context — would have been lost without human intervention. L-055 validated that
-      general-purpose agents CAN write to disk when instructed. The protocol exists but
-      nothing enforces it. Related to G-008 (context explosion) but specifically about
-      knowledge loss, not token management.
+      context — would have been lost without human intervention.
     severity: medium
     evidence:
       - "T-174: 3 agent outputs manually saved to docs/reports/ after user caught the gap"
       - "T-178 experiment: Explore agents can't write (read-only); general-purpose can"
       - ".context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks"
       - "fw bus designed (D-026), built (T-109), documented in CLAUDE.md — never used"
-    trigger_check:
-      type: count
-      threshold: 3
-      hint: "Monitor for sub-agent dispatches that don't persist results to disk"
-    trigger_fired: true
-    trigger_fired_date: 2026-02-18
-    possible_enforcement:
-      - "Use general-purpose agent type for all research (not Explore)"
-      - "Orchestrator pre-defines output path and includes in prompt"
-      - "Audit check: inception tasks must have docs/reports/ artifact"
-      - "PostToolUse hook on Task: verify file was written if prompt included output path"
-    status: closed
-    closed_date: 2026-02-20
     resolution: >
       T-226 escalated the commit-msg hook research artifact check from warn to block.
       After the first inception commit, subsequent commits are blocked unless
-      docs/reports/T-XXX-*.md exists on disk or in staged changes. Combined with
-      C-001 guidance in CLAUDE.md, audit research section, and dispatch preamble (T-217),
-      provides layered enforcement: documentation + commit gate + post-completion audit.
-    related_task: T-178
+      docs/reports/T-XXX-*.md exists on disk or in staged changes.
+    status: closed
+    closed_date: 2026-02-20
     created: 2026-02-18
     last_reviewed: 2026-02-20
+    related_task: T-178
 
   - id: G-010
+    type: gap
     title: "P-010 AC gate has no distinction between agent-verifiable and human-verifiable criteria"
     description: >
       The P-010 acceptance criteria gate in update-task.sh counts ALL checkboxes
       under ## Acceptance Criteria and blocks work-completed if any are unchecked.
       For tasks with behavior ACs (UI/UX criteria requiring human observation), this
-      creates a perverse incentive: agents check behavior boxes based on code existence
-      rather than observed behavior, because leaving them unchecked blocks completion.
-      Discovered via sprechloop G-006 (T-057: 7 of 8 behavior ACs checked by agent
-      without human verification).
+      creates a perverse incentive.
     spec_reference: "CLAUDE.md §Verification Before Completion, §Enforcement Tiers"
     severity: high
-    evidence_collected: >
-      Sprechloop T-057: 7/8 ACs described user-observable behavior, all checked by
-      agent based on code written. Task marked work-completed, both gates passed.
-      Also likely T-054 (1 behavior AC) and T-055 (2 behavior ACs). Systemic for
-      any project with UI/UX tasks.
     resolution: >
       T-192 inception: GO decision for Option A (AC tagging). ### Agent / ### Human
-      section headers in AC section. P-010 gates only on ### Agent ACs. Tasks with
-      unchecked ### Human ACs stay in active/ with owner: human (not moved to completed/).
-      Discoverability via fw task verify command + web UI cockpit attention section.
-      Backward compatible: tasks without headers work as before.
+      section headers in AC section. P-010 gates only on ### Agent ACs.
       T-193 built the implementation. T-216 added placeholder detection on top.
-      Validated across T-215, T-218, T-219 — all used Agent/Human split correctly,
-      human ACs stayed unchecked until human sign-off, partial-complete flow worked.
-    related_task: T-192
     status: closed
     created: 2026-02-19
     last_reviewed: 2026-02-20
     closed_date: 2026-02-20
 
   - id: G-011
+    type: gap
     title: "PostToolUse hooks are advisory-only — cannot block actions"
     description: >
       Claude Code PostToolUse hooks always exit 0 (advisory). Error-watchdog.sh
       and check-dispatch.sh can warn but not prevent the agent from ignoring errors
-      or dispatching too many agents. The agent can proceed without investigating
-      after error-watchdog fires. Architecturally limited by Claude Code hook design.
+      or dispatching too many agents.
     spec_reference: "CLAUDE.md §Enforcement Tiers"
     severity: low
-    why_not_now: >
-      PostToolUse hooks see results (post-action), PreToolUse sees intent (pre-action).
-      Cannot promote most PostToolUse checks to PreToolUse because the information
-      needed (exit codes, output size) only exists after execution. CLAUDE.md behavioral
-      rules remain the primary control for post-action compliance.
     decision_trigger: >
       Agent repeatedly ignores error-watchdog warnings (3+ instances in one session)
       and the resulting bug requires >1 hour to fix.
@@ -369,19 +348,16 @@ gaps:
     related_task: T-228
 
   - id: G-012
+    type: gap
     title: "NotebookEdit and other side-effect tools not covered by PreToolUse task gate"
     description: >
       The PreToolUse task gate (check-active-task.sh) only fires for Write|Edit per the
       settings.json matcher. NotebookEdit, WebFetch, and MCP tools can produce side effects
-      without task context. check-active-task.sh was updated to handle notebook_path (T-230),
-      but the settings.json matcher still needs updating to include NotebookEdit.
+      without task context.
     spec_reference: "CLAUDE.md §Enforcement Tiers"
     severity: low
-    evidence_collected: "T-228 analysis: B-012. fw doctor now warns about this gap."
     resolution: >
       Accepted risk. This project has no Jupyter notebooks and no foreseeable use case.
-      NotebookEdit would only matter in a data science project using the framework.
-      If a future project needs it, they add NotebookEdit to their own settings.json matcher.
     status: closed
     created: 2026-02-21
     last_reviewed: 2026-02-21
@@ -389,15 +365,13 @@ gaps:
     related_task: T-230
 
   - id: G-013
+    type: gap
     title: "Task gate accepts completed task IDs — no active-file validation"
     description: >
       check-active-task.sh only checked if CURRENT_TASK was non-empty in focus.yaml.
-      It did not verify the task file exists in .tasks/active/. A completed task ID
-      left in focus.yaml passed the gate, allowing Write/Edit without an active task.
-      Discovered when T-012 (completed) remained in focus across sessions.
+      It did not verify the task file exists in .tasks/active/.
     spec_reference: "CLAUDE.md §Enforcement Tiers — Tier 1"
     severity: high
-    evidence_collected: "Session S-2026-0221: T-012 completed but still in focus, all edits allowed"
     resolution: >
       Added active-file validation after reading CURRENT_TASK. The gate now does
       find .tasks/active/${CURRENT_TASK}-*.md and blocks if no match found.
@@ -408,28 +382,15 @@ gaps:
     related_task: T-232
 
   - id: G-014
+    type: gap
     title: "Built-in EnterPlanMode bypasses all framework governance"
     description: >
       Claude Code's built-in EnterPlanMode tool bypasses framework governance:
-      no task gate, no session init, no research artifacts, and its system prompt
-      says "This supercedes any other instructions" — overriding CLAUDE.md rules.
-      Plan files go to .claude/plans/ (untracked, ephemeral) instead of docs/plans/.
-      Post-plan execution creates bias that skips commit cadence and check-ins.
+      no task gate, no session init, no research artifacts.
     spec_reference: "CLAUDE.md §Plan Mode Prohibition, §Instruction Precedence"
     severity: high
-    evidence_collected: >
-      T-241 implementation: entered plan mode, skipped fw context init, skipped
-      LATEST.md, implemented all 7 steps in one batch, no task updates recorded,
-      no commit cadence followed. The only gate that fired was check-active-task.sh
-      blocking the first edit (Tier 1), but everything before that was ungoverned.
     resolution: >
-      T-242 multi-layer defense:
-      Layer 1 (agent discipline): CLAUDE.md §Plan Mode Prohibition — explicit rule
-      to never use EnterPlanMode, with /plan as the governed alternative.
-      Layer 2 (structural): PreToolUse hook on EnterPlanMode matcher with
-      block-plan-mode.sh (exit 2). CONFIRMED working — tested after session restart,
-      hook fires and blocks with exit code 2.
-      Layer 3 (gap registration): This entry.
+      T-242 multi-layer defense: CLAUDE.md rule + PreToolUse hook + gap registration.
     status: closed
     created: 2026-02-22
     last_reviewed: 2026-02-22
@@ -437,56 +398,30 @@ gaps:
     related_task: T-242
 
   - id: G-015
+    type: gap
     title: "Sub-agent results bypass task governance — no structural linking"
     description: >
       Sub-agents dispatched via Claude Code's Task tool write results to /tmp/fw-agent-*.md
-      (outside PROJECT_ROOT). These writes: (1) bypass check-active-task.sh (path outside project),
-      (2) don't trigger PreToolUse hooks (sub-agent context), (3) are never registered against
-      the active task via fw bus or any other mechanism. Research artifacts exist in an
-      ungoverned limbo until manually linked. fw bus (lib/bus.sh, 365 lines) was built for
-      exactly this use case but has zero usage across 170+ tasks (tracked as G-009).
+      (outside PROJECT_ROOT). These writes bypass check-active-task.sh and are never
+      registered against the active task.
     spec_reference: "CLAUDE.md §Sub-Agent Dispatch Protocol, §Result Ledger (fw bus)"
     severity: medium
     trigger_condition: >
       Sub-agent results are lost or must be manually linked for the 3rd time.
-      T-329 (article review) is occurrence #1. T-073 (episodic enrichment) was a near-miss.
-    evidence_collected: >
-      T-329: 5 review agents wrote to /tmp/fw-agent-*-review.md. Active task T-329 had
-      no reference until manual consolidation to docs/reports/T-329-article-review.md.
-      MEMORY.md prescribes old /tmp/ pattern (stale, predates fw bus). CLAUDE.md prescribes
-      fw bus post (never enforced). G-009 confirms bus has zero adoption.
-      T-073: 9 agents returned full content in-context, 177K spike.
-      T-178 inception identified bus has zero adoption, recommended simplification.
-      Learnings L-025, L-053, L-055, L-057 all document result management failures.
-    suggested_resolution: >
-      Short term: Update MEMORY.md to reference fw bus post. Medium term: Add audit check
-      for orphaned /tmp/fw-agent-* files without bus entries. Long term: PostToolUse hook
-      on Task tool that auto-links results. Pragmatic: Accept docs/reports/T-XXX-* as
-      de facto standard and add task-update hook that checks for matching report files.
     status: watching
     created: 2026-03-06
     last_reviewed: 2026-03-06
     related_task: T-329
 
   - id: G-016
+    type: gap
     title: "Learning capture has no structural trigger for bugfix tasks"
     description: >
       72% of bugfix tasks (31/43) produce zero learning entries. Learning capture
-      relies entirely on behavioral rules (CLAUDE.md guidance, session capture
-      checklist) which are consistently skipped during ops-heavy fix cycles.
-      update-task.sh auto-captures decisions on work-completed but NOT learnings.
-      healing resolve captures both but is designed for issues->recovery flow,
-      not fix-commit-complete. Concrete cost: T-030 (portability fix, 2026-02-13,
-      no learning) -> T-344 (same class, 2026-03-08, 23 days later, 3 fix-retag
-      cycles that could have been anticipated).
+      relies entirely on behavioral rules which are consistently skipped during
+      ops-heavy fix cycles.
     spec_reference: "CLAUDE.md §Error Escalation Ladder, §Session End Protocol"
     severity: medium
-    evidence_collected: >
-      43 bugfix tasks in completed/: 12 with learnings (28%), 31 without (72%).
-      T-344 had 3 macOS compat bugs, all fixed, no learnings until human called
-      it out. T-030 (same bug class) also had no learnings. healing resolve was
-      never invoked during T-344. Session handover had [TODO] placeholders.
-      Audit section 5 checks practice count but not bugfix-to-learning ratio.
     decision_trigger: >
       Same bug class reappears 3rd time without a connecting learning entry.
       Or: bugfix-to-learning ratio stays below 35% for 20+ additional bugfix tasks.
@@ -504,179 +439,53 @@ gaps:
     related_task: T-345
 
   - id: G-017
+    type: gap
     title: "Execution gates do not cover proposal/suggestion layer"
     description: >
-      Four structural gates (R-033, P-010, T-193, CLAUDE.md rules) protect
-      task completion execution. But agents can freely suggest --force bypass
-      or batch-completion of human-owned tasks without triggering any gate.
-      The proposal/suggestion phase is ungated. An agent suggested batch-closing
-      12 human-owned tasks with --force without reviewing any Human ACs.
-      The sovereignty gate blocked execution but not the suggestion itself.
+      Four structural gates protect task completion execution. But agents can freely
+      suggest --force bypass or batch-completion of human-owned tasks without
+      triggering any gate.
     spec_reference: "CLAUDE.md §Autonomous Mode Boundaries, §Blind Completion Anti-Pattern"
     severity: medium
-    evidence_collected: >
-      T-372: Agent proposed batch 'fw task update T-XXX --status work-completed --force'
-      for 12 human-owned tasks. 4 had blocking Human ACs (T-289 prod pipeline,
-      T-331 untested action, T-364 doc quality, T-366 AI tone). R-033 gate
-      blocked execution; nothing blocked the suggestion. fw task verify already
-      existed but agent didn't use it.
     decision_trigger: >
-      Agent bypasses the behavioral rule (CLAUDE.md §Blind Completion Anti-Pattern)
-      and suggests --force for human-owned tasks again. Or: 2+ human-owned tasks
-      are completed via --force without Human AC review in a single session.
+      Agent bypasses the behavioral rule and suggests --force for human-owned tasks again.
     trigger_check:
       type: manual
       hint: "Review bypass-log.yaml — any --force completions of human-owned tasks without Human AC review?"
-    possible_resolution:
-      - "Behavioral: CLAUDE.md §Blind Completion Anti-Pattern (DONE — T-372)"
-      - "Advisory: Handover surfaces unchecked Human ACs (DONE — T-372)"
-      - "Detective: PostToolUse hook warns on --force proposals (Sprint 2)"
-      - "Structural: Explicit partial-complete state in task lifecycle (Sprint 3)"
     status: watching
     created: 2026-03-09
     last_reviewed: 2026-03-09
     related_task: T-372
 
   - id: G-018
+    type: gap
     title: "No structural guard against silent quality decay in generated artifacts"
     description: >
       The framework generates artifacts automatically (handovers, episodics, component
-      docs) but has no structural mechanism to detect or prevent gradual quality decay
-      in those artifacts. Quality checks are point-in-time (LATEST.md only), not
-      cumulative. Decay that accumulates gradually across many files over many sessions
-      evades all current detection — the framework is blind to slow rot.
-
-      This violates D1 (antifragility): the system should strengthen under stress, but
-      instead it silently degrades. It violates D2 (reliability): "no silent failures"
-      — but 5,982 unfilled [TODO]s accumulated silently over 23 days. And it violates
-      D3 (usability): the timeline became cluttered with skeleton handovers that looked
-      like lost context.
+      docs) but has no structural mechanism to detect or prevent gradual quality decay.
+      Quality checks are point-in-time (LATEST.md only), not cumulative.
     spec_reference: "CLAUDE.md §Four Constitutional Directives (D1, D2, D3)"
     severity: high
-    evidence_collected: >
-      INCIDENT — Handover TODO rot (T-393):
-      273 handover files, 98 with unfilled [TODO]s, 5,982 total. Rot accumulated from
-      2026-02-14 to 2026-03-09 (23 days). D8 audit checked only LATEST.md — archive rot
-      invisible. Auto-compaction generated handovers with obligations ([TODO]s) that the
-      automated pathway could never fulfill. Trend analysis flagged "D8 repeated 3 times"
-      but this was treated as recurring fresh problem, never escalated to systemic gap.
-
-      PATTERN — Three omissions compounded:
-      1. Generator creates obligations it cannot fulfill: handover.sh emits [TODO]s that
-         only an agent can fill, but pre-compact.sh calls it without an agent.
-      2. Audit checks are point-in-time, not cumulative: D8 scans one file (LATEST.md),
-         not the archive. A problem fixed in LATEST passes the check while 97 stale files
-         accumulate behind it.
-      3. Trend analysis detects but does not escalate: "D8 repeated 3 times" was visible
-         in audit output but no rule promotes a repeated warning to a gap registration.
-    root_cause_analysis: >
-      The framework assumes all artifacts are either (a) created by an agent with context
-      to fill them, or (b) generated mechanically with complete data. Handovers fall into
-      neither category: they are generated mechanically but contain sections that require
-      agent context (situational awareness, decisions, gotchas). This mismatch between
-      generator capability and template requirements is the structural flaw.
-
-      More broadly: the audit system is designed to catch point-in-time violations, not
-      gradual accumulation. A file can fail D8 repeatedly, get fixed each time, while the
-      archive grows worse. There is no "cumulative quality" metric — no check that asks
-      "is the overall corpus of X getting better or worse over time?"
     what_was_fixed: >
-      T-393 mitigations (symptom-level):
-      1. Template: work-completed tasks no longer generate [TODO] blocks (91 → 31 per handover)
-      2. Audit: D8b now checks last 10 archive handovers (not just LATEST)
-      3. Cleanup: 98 stale handovers restored with git-derived summaries
-      4. Learning L-086 codified
+      T-393/T-395: Zero-TODO handover generator, D8b archive checks, corpus cleanup.
     what_remains: >
-      The systemic omissions are not yet resolved:
-
-      A. GENERATOR COMPLETENESS PRINCIPLE: No rule requires that auto-generated artifacts
-         be structurally complete at generation time. handover.sh still emits ~31 [TODO]s
-         that auto-compaction cannot fill. Fix: generators must produce complete output
-         from available data — if a section can't be auto-derived, omit it or fill from
-         available sources (git log, task files, metrics), never emit [TODO].
-
-      B. CUMULATIVE QUALITY AUDITING: Audit checks remain point-in-time. No check asks
-         "what percentage of the handover archive has quality issues?" Fix: audit sections
-         that check generated artifacts should sample the corpus, not just the latest.
-
-      C. TREND-TO-GAP ESCALATION: Trend analysis surfaces patterns ("D8 repeated 3 times")
-         but there is no rule or automation that promotes a repeated trend finding to a gap
-         registration. The human must notice and act. Fix: define a threshold (e.g., same
-         finding appears 5+ times across audits) that auto-registers or flags for gap review.
-    prevention_needed:
-      - "PRINCIPLE: Auto-generated artifacts must have zero unfillable placeholders — if you can't fill it, don't emit it"
-      - "TOOLING: handover.sh auto-fills all sections from git log, task state, metrics (proven by T-393 reconstruction)"
-      - "TOOLING: pre-compact.sh validates 0 [TODO]s before committing auto-generated handover"
-      - "AUDIT: Cumulative quality checks — sample N recent artifacts, not just latest"
-      - "AUDIT: Trend-to-gap escalation — same finding 5+ times triggers gap review prompt"
-    decision_trigger: >
-      Any of: (1) D8b fires warn/fail, (2) another auto-generated artifact type shows
-      cumulative decay, (3) trend analysis shows a finding repeated 5+ times without
-      gap registration.
-    trigger_check:
-      type: auto
-      check: "grep -c 'times)' .context/audits/2026-*.yaml | awk -F: '$2>0{print}' | wc -l"
-      threshold: ">= 3 audit reports with repeated findings means escalation is not working"
+      A. Generator completeness principle not codified
+      B. Cumulative quality auditing not implemented
+      C. Trend-to-gap escalation not automated
     status: watching
     created: 2026-03-09
     last_reviewed: 2026-03-09
     related_task: T-393
 
   - id: G-019
+    type: gap
     title: "Agent treats symptom-level fixes as complete — no self-escalation to systemic root cause"
     description: >
-      When discovering a problem, the agent fixes the immediate symptom and declares the
-      work done. It does not self-escalate from "fix the broken thing" to "why did the
-      framework allow this to happen?" The Error Escalation Ladder (Levels A→D) exists in
-      CLAUDE.md but the agent reliably stops at Level B/C (fix technique/tooling) without
-      reaching Level D (change ways of working) unless the human forces the escalation.
-
-      This is a gap in agent reasoning, not in tooling. The framework provides the
-      escalation ladder, the gap register, the learning system — but the agent's default
-      behavior is to fix-and-close rather than fix-and-investigate-root-cause.
+      When discovering a problem, the agent fixes the immediate symptom and declares
+      the work done. It does not self-escalate from "fix the broken thing" to "why did
+      the framework allow this to happen?"
     spec_reference: "CLAUDE.md §Error Escalation Ladder, §Proactive Level D"
     severity: high
-    evidence_collected: >
-      G-018 discovery (T-393) required 3 human corrections:
-      1. Agent replaced [TODO]s with "Session state not recorded" — human said the text
-         is alarming, context has value, reconstruct it. Agent had treated cleanup as
-         sufficient without considering the human-facing output quality.
-      2. Agent closed G-018 — human asked what prevents recurrence. Agent had treated
-         the template fix + audit fix as sufficient without addressing prevention.
-      3. Agent rewrote G-018 about handover specifics — human said the gap is the
-         SYSTEMIC omission (no guard against silent decay), not the specific symptom
-         (handover TODOs). Agent couldn't self-escalate from symptom to root cause.
-
-      Each correction required the human to explicitly say "no, think bigger." The
-      agent had the framework tools to do this (Error Escalation Ladder Level D,
-      Proactive Level D reflection, gap register) but did not apply them without
-      human prompting.
-    root_cause_analysis: >
-      The agent's completion bias: when a fix works (template changed, tests pass,
-      audit clean), the agent pattern-matches to "task done" and moves to wrap-up.
-      The escalation ladder is framed as a response to failure, not as a mandatory
-      post-fix reflection. Nothing in the framework forces the agent to ask:
-      "Why did the framework allow this? Is this a symptom of something bigger?"
-
-      The Proactive Level D rule says to codify when "3+ tasks show the same pattern"
-      but it doesn't say to escalate when a SINGLE fix reveals a systemic flaw. A
-      single dramatic discovery (5,982 [TODO]s) should trigger the same escalation
-      as 3 gradual incidents — but the rule doesn't cover this case.
-    what_remains: >
-      A. MANDATORY POST-FIX REFLECTION: After fixing a bug discovered in production
-         (user-found, not dev-found), the agent should ask: "What structural gap
-         allowed this? Should this be a gap registration, not just a learning?"
-         This is stronger than the Bug-Fix Learning Checkpoint (which captures
-         learnings but not gap escalation).
-
-      B. SINGLE-INCIDENT ESCALATION: The Proactive Level D rule requires 3+ instances.
-         But some single incidents reveal systemic flaws (5,982 [TODO]s = one discovery
-         that shows 23 days of undetected decay). Add guidance: "If a single fix reveals
-         the framework was blind to a class of problem for >7 days, register a gap."
-
-      C. CLOSURE DISCIPLINE: Agent should not close a gap until prevention is verified,
-         not just mitigation. "Did we fix the symptom, or did we fix the reason the
-         framework couldn't detect/prevent it?"
     decision_trigger: >
       Agent closes a gap or completes a fix without addressing root cause, and the
       human has to correct the escalation level again.
@@ -687,3 +496,85 @@ gaps:
     created: 2026-03-09
     last_reviewed: 2026-03-09
     related_task: T-393
+
+  # ══════════════════════════════════════════════
+  # RISKS (type: risk) — migrated from risks.yaml
+  # Only open/active risks. Closed risks archived
+  # to docs/archive/risks-archived.yaml
+  # ══════════════════════════════════════════════
+
+  - id: R-018
+    type: risk
+    title: "Invalid YAML data disappears without error"
+    description: >
+      YAML with special characters breaks parsing; downstream tools skip
+      the entry silently. No validation gate exists.
+    severity: medium
+    likelihood: 3
+    impact: 3
+    score: 9
+    ranking: medium
+    controls: [CTL-013]
+    residual_notes: "No validation gate. Needs schema validation."
+    evidence: [T-143, L-048]
+    status: watching
+    created: 2026-02-19
+    last_reviewed: 2026-03-09
+    related_task: T-143
+
+  - id: R-024
+    type: risk
+    title: "UI silently drops data on parse errors"
+    description: >
+      Watchtower skips tasks/items that fail YAML parsing without error message.
+      Same root cause as R-018.
+    severity: medium
+    likelihood: 3
+    impact: 3
+    score: 9
+    ranking: medium
+    controls: []
+    residual_notes: "Same root cause as R-018. Needs schema validation."
+    evidence: [T-143, L-048]
+    status: watching
+    created: 2026-02-19
+    last_reviewed: 2026-03-09
+    related_task: T-143
+
+  - id: R-032
+    type: risk
+    title: "Long inception gate conflict"
+    description: >
+      2-commit inception gate incompatible with 5-10 session deep explorations.
+      Forces --no-verify, which is logged but not ideal.
+    severity: medium
+    likelihood: 4
+    impact: 2
+    score: 8
+    ranking: medium
+    controls: []
+    residual_notes: "Bypass is the current workaround. Needs configurable threshold."
+    evidence: [L-002, T-191]
+    status: watching
+    created: 2026-02-19
+    last_reviewed: 2026-03-09
+    related_task: T-191
+
+  - id: R-036
+    type: risk
+    title: "Multi-agent coordination untested"
+    description: >
+      Framework designed for multi-agent but all tasks are single-owner.
+      Coordination failures will occur when scaling.
+    severity: medium
+    likelihood: 3
+    impact: 3
+    score: 9
+    ranking: medium
+    controls: []
+    residual_notes: "No mitigation until tested. See also G-004."
+    evidence: [G-004]
+    status: watching
+    created: 2026-02-19
+    last_reviewed: 2026-03-09
+    related_task: G-004

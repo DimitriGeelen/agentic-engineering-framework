@@ -298,12 +298,15 @@ else
 fi
 
 # Step 1.7: Gaps register status
-GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
+# T-397: Unified concerns register (was gaps.yaml)
+GAPS_FILE="$CONTEXT_DIR/project/concerns.yaml"
+# Fallback to gaps.yaml for backward compat
+[ -f "$GAPS_FILE" ] || GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
 WATCHING_GAPS=0
 if [ -f "$GAPS_FILE" ]; then
     WATCHING_GAPS=$(grep -c 'status: watching' "$GAPS_FILE" 2>/dev/null) || WATCHING_GAPS=0
     if [ "$WATCHING_GAPS" -gt 0 ]; then
-        echo -e "${CYAN}Gaps register: $WATCHING_GAPS watching${NC}"
+        echo -e "${CYAN}Concerns register: $WATCHING_GAPS watching${NC}"
     fi
 fi
 
@@ -538,17 +541,19 @@ if [ "$WATCHING_GAPS" -gt 0 ]; then
     {
         echo "## Gaps Register"
         echo ""
-        echo "**$WATCHING_GAPS spec-reality gap(s) being watched** — see \`.context/project/gaps.yaml\`"
+        echo "**$WATCHING_GAPS concern(s) being watched** — see \`.context/project/concerns.yaml\`"
         echo ""
         python3 << PYEOF
 import yaml
 with open("$GAPS_FILE") as f:
     data = yaml.safe_load(f)
-for gap in data.get('gaps', []):
-    if gap.get('status') != 'watching':
+# T-397: concerns.yaml uses 'concerns' key, fallback to 'gaps'
+items = data.get('concerns', data.get('gaps', []))
+for item in items:
+    if item.get('status') != 'watching':
         continue
-    sev = gap.get('severity', 'unknown')
-    print(f"- **{gap['id']}** [{sev}]: {gap['title']}")
+    sev = item.get('severity', 'unknown')
+    print(f"- **{item['id']}** [{sev}]: {item['title']}")
 PYEOF
         echo ""
         echo "Run \`fw audit\` to check if any trigger conditions are met."

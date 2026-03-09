@@ -7,7 +7,7 @@
 # type:         pretooluse|posttooluse|sessionstart|git_hook|script_gate|behavioral|monitoring|infrastructure|auditor
 # impl:         File path or CLAUDE.md §section
 # blocking:     true = prevents action, false = warns/logs
-# mitigates:    [R-XXX] references to risks.yaml
+# mitigates:    [R-XXX] references to concerns.yaml or archived risks (T-397)
 # status:       active|partial|planned|disabled
 # failure_mode: How this control breaks (D1: antifragility)
 

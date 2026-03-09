@@ -1,4 +1,4 @@
-"""Risks blueprint — three-register assurance model (T-194)."""
+"""Risks blueprint — unified concerns register (T-397, formerly T-194 three-register model)."""
 
 import yaml
 from flask import Blueprint
@@ -21,44 +21,26 @@ def _load_yaml(filename):
 
 @bp.route("/risks")
 def risk_register():
-    """Risk & Issue register page under Govern."""
-    risks_data = _load_yaml("risks.yaml")
-    issues_data = _load_yaml("issues.yaml")
-    gaps_data = _load_yaml("gaps.yaml")
+    """Unified concerns register — gaps + risks in one view (T-397)."""
+    concerns_data = _load_yaml("concerns.yaml")
     controls_data = _load_yaml("controls.yaml")
 
-    risks = risks_data.get("risks", [])
-    issues = issues_data.get("issues", [])
-    gaps = gaps_data.get("gaps", [])
+    all_concerns = concerns_data.get("concerns", [])
     controls = controls_data.get("controls", [])
 
-    # Compute summary stats
-    risk_by_ranking = {"urgent": 0, "high": 0, "medium": 0, "low": 0}
-    risk_by_status = {"closed": 0, "decided-build": 0, "acknowledged": 0, "watching": 0}
-    risk_by_category = {}
-    open_risks = []
+    # Split by type
+    gaps = [c for c in all_concerns if c.get("type") == "gap"]
+    risks = [c for c in all_concerns if c.get("type") == "risk"]
 
+    # Concerns by status
+    watching = [c for c in all_concerns if c.get("status") == "watching"]
+    closed = [c for c in all_concerns if c.get("status") == "closed"]
+
+    # Risk-specific stats
+    risk_by_ranking = {"urgent": 0, "high": 0, "medium": 0, "low": 0}
     for r in risks:
         ranking = r.get("ranking", "low")
-        status = r.get("control_status", "acknowledged")
-        category = r.get("category", "unknown")
-
         risk_by_ranking[ranking] = risk_by_ranking.get(ranking, 0) + 1
-        risk_by_status[status] = risk_by_status.get(status, 0) + 1
-        risk_by_category[category] = risk_by_category.get(category, 0) + 1
-
-        if status != "closed":
-            open_risks.append(r)
-
-    # Sort open risks by score descending
-    open_risks.sort(key=lambda r: r.get("score", 0), reverse=True)
-
-    # Issue stats
-    open_issues = [i for i in issues if i.get("status") != "resolved"]
-    resolved_issues = [i for i in issues if i.get("status") == "resolved"]
-
-    # Gaps stats
-    watching_gaps = [g for g in gaps if g.get("status") == "watching"]
 
     # Control stats
     controls_active = [c for c in controls if c.get("status") == "active"]
@@ -70,19 +52,19 @@ def risk_register():
 
     return render_page(
         "risks.html",
-        page_title="Risk Register",
+        page_title="Concerns",
+        concerns=all_concerns,
+        gaps=gaps,
         risks=risks,
-        issues=issues,
         controls=controls,
-        open_risks=open_risks,
+        watching=watching,
+        closed=closed,
         risk_by_ranking=risk_by_ranking,
-        risk_by_status=risk_by_status,
-        risk_by_category=risk_by_category,
-        open_issues=open_issues,
-        resolved_issues=resolved_issues,
-        watching_gaps=watching_gaps,
+        total_concerns=len(all_concerns),
+        total_gaps=len(gaps),
         total_risks=len(risks),
-        total_issues=len(issues),
+        total_watching=len(watching),
+        total_closed=len(closed),
         total_controls=len(controls),
         controls_active=len(controls_active),
         controls_blocking=len(controls_blocking),

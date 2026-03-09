@@ -118,7 +118,10 @@ def learnings():
 @bp.route("/gaps")
 def gaps():
     gaps_list = []
-    gf = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
+    # T-397: Unified concerns register (was gaps.yaml)
+    gf = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
+    if not gf.exists():
+        gf = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
     if gf.exists():
         try:
             with open(gf) as f:
@@ -126,7 +129,7 @@ def gaps():
         except yaml.YAMLError:
             data = None
         if isinstance(data, dict):
-            gaps_list = data.get("gaps", [])
+            gaps_list = data.get("concerns", data.get("gaps", []))
 
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
 
