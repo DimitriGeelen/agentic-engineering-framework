@@ -142,25 +142,34 @@ def search_view():
     vec_stats = None
 
     if query and len(query) >= 2:
-        if mode == "semantic":
-            from web.embeddings import search as vec_search, index_stats as vec_index_stats
-            search_results = vec_search(query)
-            # Convert flat results to categorized format for template
-            for item in search_results.get("results", []):
-                cat = item.get("category", "Other")
-                if cat not in results:
-                    results[cat] = []
-                results[cat].append(item)
-            vec_stats = vec_index_stats()
-        elif mode == "hybrid":
-            from web.embeddings import hybrid_search, index_stats as vec_index_stats
-            search_results = hybrid_search(query)
-            for item in search_results.get("results", []):
-                cat = item.get("category", "Other")
-                if cat not in results:
-                    results[cat] = []
-                results[cat].append(item)
-            vec_stats = vec_index_stats()
+        vec_ready = False
+        if mode in ("semantic", "hybrid"):
+            # T-395: check if vector index is ready before attempting (avoids multi-minute hang)
+            try:
+                from web.embeddings import is_index_ready
+                vec_ready = is_index_ready()
+            except Exception:
+                pass
+
+        if mode in ("semantic", "hybrid") and vec_ready:
+            try:
+                if mode == "semantic":
+                    from web.embeddings import search as vec_search, index_stats as vec_index_stats
+                    search_results = vec_search(query)
+                else:
+                    from web.embeddings import hybrid_search, index_stats as vec_index_stats
+                    search_results = hybrid_search(query)
+                for item in search_results.get("results", []):
+                    cat = item.get("category", "Other")
+                    if cat not in results:
+                        results[cat] = []
+                    results[cat].append(item)
+                vec_stats = vec_index_stats()
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning("Vector search failed, falling back to keyword: %s", e)
+                search_results = bm25_search(query)
+                results = search_results.get("categories", {})
         else:
             search_results = bm25_search(query)
             results = search_results.get("categories", {})

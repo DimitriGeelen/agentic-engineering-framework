@@ -30,12 +30,25 @@ log = logging.getLogger(__name__)
 # Configuration (T-273: config-driven, no hardcoded paths)
 # ---------------------------------------------------------------------------
 
+# Lazy Ollama client — re-created when Config.OLLAMA_HOST changes (T-395)
+_ollama_client = None
+_ollama_client_host = None
+
+
+def _get_ollama_client() -> ollama.Client:
+    """Get or create Ollama client, respecting runtime config changes."""
+    global _ollama_client, _ollama_client_host
+    if _ollama_client is None or _ollama_client_host != Config.OLLAMA_HOST:
+        _ollama_client = ollama.Client(host=Config.OLLAMA_HOST, timeout=Config.OLLAMA_TIMEOUT)
+        _ollama_client_host = Config.OLLAMA_HOST
+    return _ollama_client
+
 MODEL_NAME = Config.EMBEDDING_MODEL
 EMBEDDING_DIM = 768
 CHUNK_OVERLAP = 150  # chars of overlap between adjacent chunks (T-263)
 RERANKER_MODEL = Config.RERANKER_MODEL
 DB_PATH = Config.VECTOR_DB_PATH
-STALE_SECONDS = 120  # rebuild if older than 2 minutes
+STALE_SECONDS = 3600  # rebuild if older than 1 hour (T-395: was 120s, caused search hangs)
 
 # Singleton state
 _db = None
@@ -49,7 +62,7 @@ _db_built_at = 0.0
 def _embed(texts: list[str]) -> list[bytes]:
     """Embed a batch of texts via Ollama, returning raw float32 bytes for sqlite-vec."""
     try:
-        resp = ollama.embed(model=MODEL_NAME, input=texts)
+        resp = _get_ollama_client().embed(model=MODEL_NAME, input=texts)
     except Exception as e:
         log.error("Ollama embed error: %s", e)
         raise
@@ -157,12 +170,42 @@ def _init_db() -> sqlite3.Connection:
     return db
 
 
+def is_index_ready() -> bool:
+    """Check if the vector index exists and has data (T-395: avoids triggering rebuild)."""
+    if _db is not None and _db_built_at > 0:
+        return True
+    if not DB_PATH.exists() or DB_PATH.stat().st_size < 4096:
+        return False
+    try:
+        db = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+        db.enable_load_extension(True)
+        sqlite_vec.load(db)
+        db.enable_load_extension(False)
+        count = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+        db.close()
+        return count > 0
+    except Exception:
+        return False
+
+
 def _get_db() -> sqlite3.Connection:
-    """Get the database connection, rebuilding index if stale."""
+    """Get the database connection, reusing existing index if available."""
     global _db, _db_built_at
 
     if _db is not None and (time.time() - _db_built_at) < STALE_SECONDS:
         return _db
+
+    # Reuse existing DB file if it has data (T-395: avoid expensive full rebuild on every search)
+    if DB_PATH.exists() and DB_PATH.stat().st_size > 4096:
+        try:
+            _db = _init_db()
+            count = _db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+            if count > 0:
+                _db_built_at = time.time()
+                log.info("Reusing existing vector index with %d documents", count)
+                return _db
+        except Exception:
+            pass  # Fall through to full rebuild
 
     build_index()
     return _db
@@ -280,7 +323,7 @@ def _rerank_score(query: str, document: str) -> float:
 
     prompt = f"<Instruct>: {_RERANKER_INSTRUCT}\n<Query>: {query}\n<Document>: {document}"
     try:
-        resp = ollama.generate(
+        resp = _get_ollama_client().generate(
             model=RERANKER_MODEL,
             system=_RERANKER_SYSTEM,
             prompt=prompt,
@@ -297,7 +340,7 @@ def _rerank_score(query: str, document: str) -> float:
 def _rerank_available() -> bool:
     """Check if the reranker model is installed."""
     try:
-        models = [m.model for m in ollama.list().models]
+        models = [m.model for m in _get_ollama_client().list().models]
         return any(RERANKER_MODEL.lower() in m.lower() for m in models)
     except Exception:
         return False
