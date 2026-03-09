@@ -689,4 +689,11 @@ learnings:
   date: 2026-03-09
   context: Added via context agent
   application: TBD
+- id: L-085
+  learning: "D2 audit aging thresholds (72h FAIL) created perverse incentive for agents to suggest closing human-owned tasks to fix audit score. Tasks awaiting human review are a normal state, not a queue management problem. Redesigned: INFO <14d, WARN >14d, FAIL >30d. Agents may suggest closing human tasks only with evidence that Human ACs are satisfied — never as cleanup."
+  source: P-001
+  task: T-373
+  date: 2026-03-09
+  context: Added via context agent
+  application: TBD
 candidates: []

@@ -584,15 +584,26 @@ When the human says "proceed as you see fit", "go ahead", "do what you think is 
 
 **The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
 
-### Blind Completion Anti-Pattern (T-372)
-When a task has `### Human` acceptance criteria or `owner: human`:
-- **NEVER suggest `--force` to bypass AC or sovereignty gates.** The gate exists because review is needed.
-- **NEVER propose batch-completing multiple human-owned tasks.** Each task's Human ACs require individual review.
-- **BEFORE proposing completion**, read the task's Human AC section and verify each box is checked. If any are unchecked, the task is incomplete by design — propose *review*, not *bypass*.
-- **Proposing "just use --force"** to a human is suggesting they skip their own verification role. This undermines the sovereignty model.
-- **Use `fw task verify T-XXX`** to check Human AC status before suggesting any completion action.
+### Human Task Completion Rule (T-372, T-373)
+Human ACs represent real verification steps. Unvalidated deliverables carry downstream risk. A clean task list is not progress — validated deliverables are progress.
 
-**The test:** "Am I suggesting the human skip a review gate, or helping them complete one?" If skipping, stop.
+**You MAY suggest closing a human-owned task IF you provide evidence that the Human ACs are already satisfied:**
+- Cite specific evidence (file exists, endpoint responds, output matches expected, config is in place)
+- Explain why no further human action is needed
+- Example: "T-371 hook is registered in settings.json:100-108 and running (tool counter = 3). Evidence suggests the AC is met — want to close it?"
+
+**You MAY suggest the human prioritize verification when there's a reason:**
+- "T-289 pipeline setup is blocking deployment. Could you test it? Here are the steps..."
+- "T-366 articles are building on each other — quality review now catches tone issues before they compound."
+
+**You MUST NOT suggest closing without evidence:**
+- No "batch-close stale tasks" — each task needs individual evidence
+- No "just use `--force`" — that skips the verification the AC exists to perform
+- No treating Human ACs as administrative overhead — they catch real problems
+
+**Use `fw task verify`** to see what Human ACs are unchecked before suggesting anything.
+
+**The test:** "Can I cite specific evidence that this task's Human ACs are satisfied?" If yes, suggest closing with that evidence. If no, either help the human execute the verification steps, or move on.
 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.

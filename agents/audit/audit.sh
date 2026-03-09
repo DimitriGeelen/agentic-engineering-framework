@@ -1857,6 +1857,10 @@ fi
 
 # D2: Human Review Queue Aging (Score 20)
 # Scan active tasks for work-completed with owner:human, calculate age
+# T-373: Redesigned thresholds. Tasks awaiting human review are a NORMAL state,
+# not a problem. Only escalate when genuinely forgotten (>30 days).
+# Previous thresholds (72h FAIL, 48h WARN) created perverse incentive for agents
+# to suggest closing tasks to "fix" the audit score.
 d2_info=0
 d2_warn=0
 d2_fail=0
@@ -1886,15 +1890,16 @@ except: print(0)
 " 2>/dev/null)
         age_hours=$((age_seconds / 3600))
 
-        if [ "$age_hours" -ge 72 ]; then
+        # T-373: Only flag genuinely forgotten tasks (>30 days)
+        # Tasks <30 days are normal — human reviews on their own schedule
+        if [ "$age_hours" -ge 720 ]; then
             d2_fail=$((d2_fail + 1))
-            d2_details="$d2_details $t_id(${age_hours}h)"
-        elif [ "$age_hours" -ge 48 ]; then
+            d2_details="$d2_details $t_id($((age_hours / 24))d)"
+        elif [ "$age_hours" -ge 336 ]; then
             d2_warn=$((d2_warn + 1))
-            d2_details="$d2_details $t_id(${age_hours}h)"
-        elif [ "$age_hours" -ge 24 ]; then
+            d2_details="$d2_details $t_id($((age_hours / 24))d)"
+        else
             d2_info=$((d2_info + 1))
-            d2_details="$d2_details $t_id(${age_hours}h)"
         fi
     fi
 done
@@ -1902,17 +1907,17 @@ shopt -u nullglob
 
 d2_total=$((d2_info + d2_warn + d2_fail))
 if [ "$d2_fail" -gt 0 ]; then
-    fail "D2: Human review queue — $d2_fail task(s) waiting >72h:$d2_details" \
-         "Critical review delay" \
-         "Review pending tasks at :3000/tasks or run: fw task list --status work-completed"
+    fail "D2: Human review queue — $d2_fail task(s) waiting >30d:$d2_details" \
+         "Tasks may be forgotten" \
+         "Review with: fw task verify (lists unchecked Human ACs)"
 elif [ "$d2_warn" -gt 0 ]; then
-    warn "D2: Human review queue — $d2_warn task(s) waiting >48h:$d2_details" \
-         "Review items aging" \
-         "Review pending tasks at :3000/tasks"
+    warn "D2: Human review queue — $d2_warn task(s) waiting >14d:$d2_details" \
+         "Aging review items" \
+         "Review with: fw task verify"
 elif [ "$d2_info" -gt 0 ]; then
-    pass "D2: Human review queue — $d2_info task(s) waiting >24h:$d2_details"
+    pass "D2: Human review queue — $d2_info task(s) awaiting human action (normal)"
 else
-    pass "D2: Human review queue — no aging items"
+    pass "D2: Human review queue — no pending items"
 fi
 
 # D8: Handover Quality Decay (Score 20)

@@ -44,20 +44,32 @@ show_help() {
 # Get active task count and list
 get_active_tasks() {
     local count=0
+    local agent_count=0
+    local human_count=0
     local tasks=""
+    local human_tasks=""
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
         [ -f "$f" ] || continue
         task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
         task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_owner=$(grep "^owner:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
         if [ -n "$task_id" ]; then
             count=$((count + 1))
-            tasks="$tasks  - $task_id: $task_name ($task_status)\n"
+            # T-373: Separate human-owned work-completed tasks from agent-actionable
+            if [ "$task_status" = "work-completed" ] && [ "$task_owner" = "human" ]; then
+                human_count=$((human_count + 1))
+                human_tasks="$human_tasks  - $task_id: $task_name (awaiting human review)\n"
+            else
+                agent_count=$((agent_count + 1))
+                tasks="$tasks  - $task_id: $task_name ($task_status)\n"
+            fi
         fi
     done
     shopt -u nullglob
-    echo "$count|$tasks"
+    # Return: total|agent_tasks|human_count|human_tasks
+    echo "$count|$tasks|$human_count|$human_tasks"
 }
 
 # Get uncommitted changes
@@ -110,12 +122,18 @@ cmd_status() {
     fi
     echo ""
 
-    # Active tasks
-    IFS='|' read -r task_count task_list <<< "$(get_active_tasks)"
-    echo -e "${BOLD}Active Tasks:${NC} $task_count"
-    if [ "$task_count" -gt 0 ]; then
+    # Active tasks (T-373: separate agent-actionable from human-owned)
+    IFS='|' read -r task_count task_list human_count human_list <<< "$(get_active_tasks)"
+    local actionable=$((task_count - human_count))
+    echo -e "${BOLD}Active Tasks:${NC} $task_count total ($actionable actionable, $human_count awaiting human)"
+    if [ "$actionable" -gt 0 ]; then
         echo -e "$task_list"
-    else
+    fi
+    if [ "$human_count" -gt 0 ]; then
+        echo -e "  ${CYAN}--- Awaiting human action (not agent-actionable) ---${NC}"
+        echo -e "$human_list"
+    fi
+    if [ "$task_count" -eq 0 ]; then
         echo -e "  ${GREEN}No active tasks${NC}"
     fi
     echo ""

@@ -44,6 +44,15 @@ All fire on **execution** (tool invocation). None fire on **proposal** (reasonin
 - **D1:** Explicit `partial-complete` state
 - **D2:** File-based approval artifact protocol
 
+## T-373 Refinement
+
+T-372 overcorrected: "never suggest closing human tasks." The correct rule (per human feedback):
+- Suggesting closure is fine **IF you provide evidence** that Human ACs are satisfied
+- Suggesting the human prioritize verification is fine **IF there's a reason** (blocking other work, aging)
+- What's prohibited: suggesting closure **without evidence** — that's asking the human to skip validation
+
+Root cause was not "suggesting closure" but "suggesting closure without evidence of validation."
+
 ## Gap Registration
 
 New gap: G-017 — "Execution gates do not cover proposal/suggestion layer"

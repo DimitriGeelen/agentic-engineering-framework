@@ -420,15 +420,14 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
         partial.append((tid.group(1), tname.group(1) if tname else "?", unchecked, ac_preview))
 
 if partial:
-    print("## Human Review Pending")
+    print("## Awaiting Your Action (Human)")
     print()
-    print(f"**{len(partial)} task(s) with unchecked Human ACs** — these need human review before closing.")
+    print(f"**{len(partial)} task(s) with unchecked Human ACs.** These are waiting for you — not for agent cleanup.")
+    print("Review each when ready. No urgency implied.")
     print()
     for tid, tname, count, preview in partial:
         print(f"- **{tid}**: {tname} ({count} unchecked)")
         print(f"  - e.g.: {preview}")
-    print()
-    print("Review each task's `### Human` section, check the boxes, then: `fw task update T-XXX --status work-completed`")
     print()
 PCEOF
 )
