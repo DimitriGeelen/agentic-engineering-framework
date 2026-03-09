@@ -1,22 +1,22 @@
 ---
-id: T-381
-name: "JS extraction and template partials from search.html"
+id: T-387
+name: "Add doc generator to cron jobs and test suite"
 description: >
-  Extract 416 lines of inline JS from search.html into web/static/js/{utils.js, markdown-render.js, search-qa.js}. Create Jinja2 partials in web/templates/_partials/. Reduce search.html from 567 to ~15 lines. Depends on T-380 (UX redesign). Parent: T-375.
+  Incorporate fw docs --all into the cron audit cycle (agents/audit/audit.sh) so component docs regenerate automatically. Also add to test suite to verify generation works. Triggered by T-364 doc generator being manual-only.
 
 status: captured
-workflow_type: refactor
+workflow_type: build
 owner: agent
-horizon: now
-tags: [ui, refactor]
+horizon: next
+tags: [docs, cron, automation]
 components: []
 related_tasks: []
-created: 2026-03-09T09:41:45Z
-last_update: 2026-03-09T09:41:45Z
+created: 2026-03-09T11:11:06Z
+last_update: 2026-03-09T11:11:06Z
 date_finished: null
 ---
 
-# T-381: JS extraction and template partials from search.html
+# T-387: Add doc generator to cron jobs and test suite
 
 ## Context
 
@@ -68,7 +68,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-09T09:41:45Z — task-created [task-create-agent]
+### 2026-03-09T11:11:06Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-381-js-extraction-and-template-partials-from.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-387-add-doc-generator-to-cron-jobs-and-test-.md
 - **Context:** Initial task creation

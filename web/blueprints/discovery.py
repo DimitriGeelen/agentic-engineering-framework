@@ -166,6 +166,18 @@ def search_view():
             results = search_results.get("categories", {})
         stats = index_stats()
 
+    # Load saved Q&A answers for the sidebar (T-385)
+    saved_answers = []
+    qa_dir = PROJECT_ROOT / ".context" / "qa"
+    if qa_dir.exists():
+        for f in sorted(qa_dir.glob("*.md"), reverse=True)[:8]:
+            try:
+                content = f.read_text()
+                title = content.split("\n")[0].lstrip("# ").strip()
+                saved_answers.append({"title": title[:80], "file": f.name})
+            except Exception:
+                continue
+
     return render_page(
         "search.html",
         page_title="Search",
@@ -174,6 +186,7 @@ def search_view():
         results=results,
         stats=stats,
         vec_stats=vec_stats,
+        saved_answers=saved_answers,
     )
 
 

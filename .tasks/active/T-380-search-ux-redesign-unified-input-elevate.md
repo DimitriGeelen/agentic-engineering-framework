@@ -4,16 +4,16 @@ name: "Search UX redesign: unified input, elevated Q&A, relevance bars"
 description: >
   Redesign search page: unified smart input (auto-detect search vs Q&A), AI answer above results in distinct article, category pills replacing accordions, 5-segment relevance bars, empty state with suggestions. Depends on T-376 (search_utils dedup). Parent: T-375.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ui, search]
-components: []
+components: [C-003, web/templates/search.html]
 related_tasks: []
 created: 2026-03-09T09:41:43Z
-last_update: 2026-03-09T09:57:46Z
-date_finished: null
+last_update: 2026-03-09T10:06:25Z
+date_finished: 2026-03-09T10:06:25Z
 ---
 
 # T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
@@ -71,3 +71,6 @@ curl -sf "http://localhost:3000/search?q=healing&mode=hybrid" | grep -q "search-
 
 ### 2026-03-09T09:57:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-09T10:06:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

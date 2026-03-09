@@ -7,6 +7,52 @@ var _lastSources = [];
 var _lastModel = '';
 var _conversationHistory = [];
 
+/* ── Recent Searches (localStorage) ────────────────────── */
+var _RECENT_KEY = 'wt-recent-searches';
+var _MAX_RECENT = 8;
+
+function _getRecentSearches() {
+    try { return JSON.parse(localStorage.getItem(_RECENT_KEY)) || []; }
+    catch(e) { return []; }
+}
+
+function _addRecentSearch(query) {
+    if (!query || query.length < 2) return;
+    var recent = _getRecentSearches().filter(function(q) { return q !== query; });
+    recent.unshift(query);
+    if (recent.length > _MAX_RECENT) recent = recent.slice(0, _MAX_RECENT);
+    try { localStorage.setItem(_RECENT_KEY, JSON.stringify(recent)); } catch(e) {}
+}
+
+function _renderRecentSearches() {
+    var container = document.getElementById('recent-searches');
+    var list = document.getElementById('recent-searches-list');
+    if (!container || !list) return;
+    var recent = _getRecentSearches();
+    if (recent.length === 0) { container.style.display = 'none'; return; }
+    list.innerHTML = '';
+    recent.forEach(function(q) {
+        var chip = document.createElement('a');
+        chip.className = 'recent-chip';
+        chip.textContent = q.length > 40 ? q.substring(0, 37) + '...' : q;
+        chip.title = q;
+        chip.href = '?q=' + encodeURIComponent(q) + '&mode=hybrid';
+        chip.setAttribute('hx-get', '/search?q=' + encodeURIComponent(q) + '&mode=hybrid');
+        chip.setAttribute('hx-target', '#content');
+        chip.setAttribute('hx-swap', 'innerHTML');
+        chip.setAttribute('hx-push-url', 'true');
+        list.appendChild(chip);
+    });
+    container.style.display = 'block';
+    if (typeof htmx !== 'undefined') htmx.process(list);
+}
+
+function clearRecentSearches() {
+    try { localStorage.removeItem(_RECENT_KEY); } catch(e) {}
+    var container = document.getElementById('recent-searches');
+    if (container) container.style.display = 'none';
+}
+
 /* ── Unified Submit ────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('search-form');
@@ -15,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', function(e) {
             var q = input.value.trim();
+            if (q.length >= 2) _addRecentSearch(q);
             if (q.length >= 2 && isQuestion(q)) {
                 e.preventDefault();
                 if (window.htmx) htmx.trigger(form, 'htmx:abort');
@@ -23,6 +70,9 @@ document.addEventListener('DOMContentLoaded', function() {
             /* else: normal form submission for search */
         });
     }
+
+    /* Render recent searches */
+    _renderRecentSearches();
 
     /* Auto-trigger Q&A if query in URL looks like a question */
     var urlQuery = document.getElementById('search-input').value.trim();

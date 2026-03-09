@@ -1,22 +1,22 @@
 ---
-id: T-376
-name: "Python dedup: extract search_utils.py from search.py/embeddings.py"
+id: T-386
+name: "Dynamic version from git tags in Watchtower footer"
 description: >
-  Extract duplicated functions (_categorize, _extract_title, _extract_task_id, _collect_files, path-to-link) from web/search.py and web/embeddings.py into web/search_utils.py. Register as Jinja2 filter. Parent: T-375.
+  Replace hardcoded v1.0.0 in base.html footer with dynamic version from git describe or fw version.
 
-status: started-work
-workflow_type: refactor
+status: captured
+workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: next
+tags: [ui, version]
 components: []
 related_tasks: []
-created: 2026-03-09T09:41:20Z
-last_update: 2026-03-09T09:41:20Z
+created: 2026-03-09T11:10:20Z
+last_update: 2026-03-09T11:10:20Z
 date_finished: null
 ---
 
-# T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
+# T-386: Dynamic version from git tags in Watchtower footer
 
 ## Context
 
@@ -68,7 +68,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-09T09:41:20Z — task-created [task-create-agent]
+### 2026-03-09T11:10:20Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-376-python-dedup-extract-searchutilspy-from-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-386-dynamic-version-from-git-tags-in-watchto.md
 - **Context:** Initial task creation
