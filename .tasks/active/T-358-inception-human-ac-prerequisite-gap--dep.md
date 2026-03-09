@@ -21,7 +21,7 @@ tags: [governance, quality]
 components: []
 related_tasks: [T-357, T-325]
 created: 2026-03-08T18:42:46Z
-last_update: 2026-03-09T06:52:56Z
+last_update: 2026-03-09T06:54:38Z
 date_finished: null
 ---
 
@@ -56,7 +56,7 @@ None — governance/documentation change only.
 
 - [x] Problem statement validated (3/5 tasks missing prerequisites)
 - [x] Assumptions tested (T-325 covers format not prerequisites)
-- [ ] Go/No-Go decision made
+- [x] Go/No-Go decision made (GO — see Decision section)
 
 ## Go/No-Go Criteria
 
@@ -78,18 +78,18 @@ None — governance/documentation change only.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 3/5 active tasks missing deployment prerequisites in Human ACs. Fix is additive: one paragraph to CLAUDE.md T-325 section. No new tooling needed.
+
+**Date**: 2026-03-09T06:54:45Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 3/5 active tasks missing deployment prerequisites in Human ACs. Fix is additive: one paragraph to CLAUDE.md T-325 section. No new tooling needed.
+
+**Date**: 2026-03-09T06:54:45Z
 
 ## Updates
 
@@ -98,3 +98,8 @@ None — governance/documentation change only.
 
 ### 2026-03-09T06:52:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-09T06:54:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 3/5 active tasks missing deployment prerequisites in Human ACs. Fix is additive: one paragraph to CLAUDE.md T-325 section. No new tooling needed.
