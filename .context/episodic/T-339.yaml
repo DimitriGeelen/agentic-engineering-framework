@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-339: Inception: link documentation to Component Fabric endpoints
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T08:49:51Z
+# ============================================================================
+
+task_id: T-339
+task_name: "Inception: link documentation to Component Fabric endpoints"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T08:20:49Z
+completed: 2026-03-09T08:49:49Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-08T22:38:47+01:00
+last_commit: 2026-03-08T22:38:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — doc-fabric linking GO decision with 5-agent deep-dive
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-339-doc-fabric-linking.md"
+  - ".tasks/active/T-339-inception-link-documentation-to-componen.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T22:38:47"
+    action: "T-339: Inception research — doc-fabric linking GO decision with 5-agent deep-dive"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1469 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1469
+  commits: 1
+  files_changed: 2
+  lines_added: 168
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-339-inception-link-documentation-to-componen.md
+generated_by: context-agent-hybrid
