@@ -1,0 +1,130 @@
+<div class="page-header">
+    <h1>Settings</h1>
+    <p>LLM engine configuration, API keys, and preferences.</p>
+</div>
+
+<!-- Engine Selection -->
+<article>
+    <header><strong>LLM Engine</strong></header>
+
+    <form hx-post="{{ url_for('settings.save_settings') }}" hx-target="#save-result" hx-swap="innerHTML">
+        <fieldset>
+            <label>Provider
+                <select name="provider" id="provider-select"
+                        hx-get="{{ url_for('settings.list_models') }}"
+                        hx-target="#model-options"
+                        hx-trigger="change"
+                        hx-swap="innerHTML">
+                    {% for p in providers %}
+                    <option value="{{ p.name }}"
+                            {% if p.name == active_provider %}selected{% endif %}
+                            {% if not p.available %}disabled{% endif %}>
+                        {{ p.name | capitalize }}{% if not p.available %} (unavailable){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <div class="grid">
+                <label>Primary Model
+                    <input type="text" name="primary_model" value="{{ primary_model }}"
+                           placeholder="e.g. qwen3:14b or anthropic/claude-3-haiku">
+                </label>
+                <label>Fallback Model
+                    <input type="text" name="fallback_model" value="{{ fallback_model }}"
+                           placeholder="e.g. dolphin-llama3:8b">
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="grid" style="grid-template-columns: auto 1fr;">
+            <button type="submit">Save</button>
+            <button type="button" class="outline"
+                    hx-post="{{ url_for('settings.test_connection') }}"
+                    hx-target="#save-result" hx-swap="innerHTML">Test Connection</button>
+        </div>
+    </form>
+
+    <div id="save-result"></div>
+
+    <details>
+        <summary>Available models</summary>
+        <select id="model-options" size="6" style="width:100%;font-family:monospace">
+            <option disabled>Click to load models...</option>
+        </select>
+        <button class="outline secondary" style="margin-top:0.5rem"
+                hx-get="{{ url_for('settings.list_models') }}"
+                hx-target="#model-options" hx-swap="innerHTML">Refresh Models</button>
+    </details>
+</article>
+
+<!-- API Keys -->
+<article>
+    <header><strong>API Keys</strong></header>
+
+    {% if api_keys %}
+    <table>
+        <thead>
+            <tr><th>Name</th><th>Source</th><th>Value</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for key in api_keys %}
+            <tr>
+                <td><code>{{ key.name }}</code></td>
+                <td>
+                    {% if key.source == 'env' %}
+                    <kbd>{{ key.env_var }}</kbd>
+                    {% else %}
+                    <small>encrypted</small>
+                    {% endif %}
+                </td>
+                <td><code>{{ key.masked }}</code></td>
+                <td>
+                    {% if key.source != 'env' %}
+                    <button class="outline secondary" style="padding:0.25rem 0.5rem;font-size:0.8rem"
+                            hx-post="{{ url_for('settings.delete_api_key_route') }}"
+                            hx-vals='{"key_name": "{{ key.name }}"}'
+                            hx-target="#key-result" hx-swap="innerHTML"
+                            hx-confirm="Delete {{ key.name }} key?">Delete</button>
+                    {% else %}
+                    <small class="secondary">env override</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p><small>No API keys configured. Add one below to enable cloud providers.</small></p>
+    {% endif %}
+
+    <form hx-post="{{ url_for('settings.save_api_key') }}" hx-target="#key-result" hx-swap="innerHTML">
+        <fieldset>
+            <div class="grid">
+                <label>Key Name
+                    <select name="key_name">
+                        <option value="openrouter">OpenRouter</option>
+                        <option value="openai">OpenAI</option>
+                    </select>
+                </label>
+                <label>API Key
+                    <input type="password" name="key_value" placeholder="sk-or-..." autocomplete="off">
+                </label>
+            </div>
+        </fieldset>
+        <button type="submit">Save Key (Encrypted)</button>
+    </form>
+
+    <div id="key-result"></div>
+</article>
+
+<!-- Info -->
+<article>
+    <header><strong>How it works</strong></header>
+    <ul>
+        <li><strong>Ollama</strong> — Local models. No API key needed. Models must be pulled first (<code>ollama pull model</code>).</li>
+        <li><strong>OpenRouter</strong> — Cloud gateway to 200+ models (Claude, GPT, Gemini, Llama, etc). Requires an API key from <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>.</li>
+        <li><strong>Key storage</strong> — Keys are encrypted with Fernet (machine-bound via <code>/etc/machine-id</code>). Environment variables override stored keys.</li>
+        <li><strong>Hot-switching</strong> — Changing the provider takes effect immediately, no restart needed.</li>
+    </ul>
+</article>
