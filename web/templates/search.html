@@ -10,56 +10,56 @@
 <style>
 /* ── Search hero ──────────────────────────────────────── */
 .search-hero { margin-bottom: 1.5rem; }
+.search-hero form[role="search"] { display: block !important; }
+.search-hero fieldset[role="group"] > input[type="search"] { flex: 1 1 0%; min-width: 0; }
+.search-hero fieldset[role="group"] > button { flex: 0 0 auto; white-space: nowrap; }
 
-.search-bar-row {
-    display: flex;
-    align-items: stretch;
-    gap: 0.5rem;
-}
-
-.search-input-wrap {
-    flex: 1;
-    position: relative;
+/* ── Controls row (pills + gear + hint) ──────────────── */
+.search-controls {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.search-input-wrap .search-icon {
-    position: absolute;
-    left: 0.75rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    stroke: var(--pico-muted-color);
-    stroke-width: 2;
-    fill: none;
-    pointer-events: none;
-    z-index: 1;
+.search-mode-pills {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 999px;
+    overflow: hidden;
 }
 
-.search-input-wrap input[type="search"] {
-    padding-left: 2.5rem;
+.mode-pill {
+    background: none;
+    border: none;
+    border-right: 1px solid var(--pico-muted-border-color);
+    padding: 0.2rem 0.7rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--pico-muted-color);
+    transition: background 0.15s, color 0.15s;
     margin: 0;
-    font-size: 1rem;
-    border-radius: var(--pico-border-radius);
+    border-radius: 0;
+    line-height: 1.4;
+    font-weight: 500;
 }
-
-.search-mode-select {
-    max-width: 8rem;
-    margin: 0;
-}
-
-.search-submit {
-    margin: 0;
-    white-space: nowrap;
+.mode-pill:last-child { border-right: none; }
+.mode-pill:hover { background: var(--pico-primary-focus); color: var(--pico-color); }
+.mode-pill.active {
+    background: var(--pico-primary);
+    color: #fff;
 }
 
 .search-settings-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.6rem;
+    width: 1.75rem;
+    height: 1.75rem;
     border: 1px solid var(--pico-muted-border-color);
-    border-radius: var(--pico-border-radius);
+    border-radius: 50%;
     color: var(--pico-muted-color);
     text-decoration: none;
     transition: color 0.15s, border-color 0.15s;
@@ -69,16 +69,16 @@
     border-color: var(--pico-primary);
 }
 .search-settings-btn svg {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 0.9rem;
+    height: 0.9rem;
     stroke: currentColor;
     stroke-width: 2;
     fill: none;
 }
 
 .search-hint {
-    margin-top: 0.35rem;
     color: var(--pico-muted-color);
+    font-size: 0.78rem;
 }
 
 /* ── Search pills ─────────────────────────────────────── */
