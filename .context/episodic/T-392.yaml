@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-392: Tag cloud for topic-based document browsing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T13:32:00Z
+# ============================================================================
+
+task_id: T-392
+task_name: "Tag cloud for topic-based document browsing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T11:36:23Z
+completed: 2026-03-09T13:31:57Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`aggregate_tags()` function in `web/search_utils.py` collects tags from episodic YAML"
+  - "Tags filtered (min count 2, skip single-char/directive-ref noise)"
+  - "Top 24 tags passed to search template on empty state only"
+  - "Tag cloud renders above \"Try a search\" / \"Saved answers\" cards"
+  - "Tags have size classes (sm/md/lg/xl) based on frequency"
+  - "Each tag is a clickable link that triggers a hybrid search"
+  - "Tag cloud hidden when search results are showing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 115 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 115
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-392-tag-cloud-for-topic-based-document-brows.md
+generated_by: context-agent-hybrid

@@ -63,7 +63,27 @@
 {% endif %}
 
 {% elif not query %}
-<!-- Empty state: two-column with suggestions + saved answers -->
+<!-- Empty state -->
+
+<!-- Tag cloud (T-392) -->
+{% if tag_cloud %}
+<div class="tag-cloud-section">
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+        <strong style="font-size: 0.85rem;">Browse by topic</strong>
+        <small style="color: var(--pico-muted-color);">{{ tag_cloud|length }} topics from {{ tag_cloud|map(attribute='count')|sum }} tagged items</small>
+    </div>
+    <div class="tag-cloud">
+        {% for item in tag_cloud %}
+        {% set size_class = 'tag-xl' if item.count >= 25 else ('tag-lg' if item.count >= 15 else ('tag-md' if item.count >= 8 else 'tag-sm')) %}
+        <a href="?q={{ item.tag | urlencode }}&mode=hybrid" class="tag-chip {{ size_class }}"
+           hx-get="{{ url_for('discovery.search_view', q=item.tag, mode='hybrid') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           title="{{ item.count }} items">{{ item.tag }}</a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Two-column: suggestions + saved answers -->
 <div class="search-empty-grid">
     <!-- Left: Quick suggestions -->
     <article class="search-card">

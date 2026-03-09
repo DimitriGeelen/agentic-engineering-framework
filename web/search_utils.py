@@ -91,6 +91,40 @@ def collect_files() -> list[Path]:
     return files
 
 
+def aggregate_tags(limit: int = 30) -> list[dict]:
+    """Aggregate tags from episodic memory for the tag cloud (T-392).
+
+    Returns a list of {"tag": str, "count": int} sorted by count descending.
+    Excludes low-value tags (single-char, pure IDs like D-001, P-001).
+    """
+    import yaml as _yaml
+
+    counts: dict[str, int] = {}
+    ep_dir = PROJECT_ROOT / ".context" / "episodic"
+    if ep_dir.exists():
+        for f in ep_dir.glob("T-*.yaml"):
+            try:
+                with open(f) as fh:
+                    data = _yaml.safe_load(fh)
+                if isinstance(data, dict):
+                    for tag in data.get("tags", []):
+                        t = str(tag).strip()
+                        if t:
+                            counts[t] = counts.get(t, 0) + 1
+            except Exception:
+                continue
+
+    # Filter out noise: single-char, pure directive refs (D1, D2), policy refs (P-xxx)
+    skip = re.compile(r'^(D\d|P-\d|[A-Z]-\d|.{0,2})$')
+    filtered = [
+        {"tag": t, "count": c}
+        for t, c in counts.items()
+        if not skip.match(t) and c >= 2
+    ]
+    filtered.sort(key=lambda x: (-x["count"], x["tag"]))
+    return filtered[:limit]
+
+
 def path_to_link(path: str) -> str:
     """Convert a project-relative file path to a Watchtower URL.
 
