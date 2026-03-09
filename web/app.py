@@ -67,8 +67,8 @@ def create_app() -> Flask:
     def csrf_protect():
         """Validate CSRF token on state-changing requests."""
         if request.method in ("POST", "PATCH", "PUT", "DELETE"):
-            # Skip CSRF for health endpoint
-            if request.endpoint == "health":
+            # Skip CSRF for health and API endpoints
+            if request.endpoint == "health" or request.path.startswith("/api/"):
                 return
             token = (
                 request.form.get("_csrf_token")
@@ -102,6 +102,7 @@ def create_app() -> Flask:
     from web.blueprints.discoveries import bp as discoveries_bp
     from web.blueprints.docs import bp as docs_bp
     from web.blueprints.settings import bp as settings_bp
+    from web.blueprints.api import bp as api_bp
 
     app.register_blueprint(core_bp)
     app.register_blueprint(tasks_bp)
@@ -118,6 +119,7 @@ def create_app() -> Flask:
     app.register_blueprint(discoveries_bp)
     app.register_blueprint(docs_bp)
     app.register_blueprint(settings_bp)
+    app.register_blueprint(api_bp)
 
     # -------------------------------------------------------------------
     # Health endpoint
