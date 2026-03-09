@@ -662,6 +662,8 @@ Optionally prefix the criterion with a confidence marker:
   **If not:** Note specific paragraphs for agent revision
 ```
 
+**Prerequisite awareness (T-358):** Steps must start from the human's actual environment, not the agent's dev context. If the feature requires deployment, upgrade, or setup before testing (e.g., `brew upgrade fw`, restart a service, push config), include those steps first. Ask: "What must the human do before step 1 is possible?" If the answer isn't "nothing," add prerequisite steps.
+
 If a human AC cannot be made specific (e.g., "code quality is acceptable"), replace it with a measurable proxy or remove it. Vague ACs that nobody acts on are worse than no AC.
 
 ### Verification Before Completion
