@@ -700,6 +700,18 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 **Evidence:** 72% of bugfix tasks (31/43) produced zero learnings. T-030 (portability fix) and T-344 (same class, 23 days later) had no learning connecting them. See G-016.
 
+### Post-Fix Root Cause Escalation (G-019)
+After fixing any problem discovered by the human (not found during development):
+1. **Fix the symptom** — make it work (Level A/B/C)
+2. **Ask: "Why did the framework allow this?"** — not "why did the code break" but "what structural omission let this go undetected?"
+3. **If the framework was blind for >7 days:** register a gap in `gaps.yaml` — even if it's a single incident, sustained blindness reveals a systemic flaw
+4. **Do not close the gap until prevention exists** — mitigation (cleaned up the mess) is not prevention (can't happen again). Ask: "Did I fix the symptom, or did I fix the reason the framework couldn't detect it?"
+5. **The human test:** If you're about to close a gap or complete a fix, and you can't explain what structural change prevents recurrence, the gap is not closed.
+
+**Trigger:** Human corrects the agent's escalation level, or agent discovers a problem that existed undetected for >7 days.
+
+**Evidence:** G-018 required 3 human corrections to escalate from symptom (handover TODOs) to root cause (no guard against silent quality decay). See G-019.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
