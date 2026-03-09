@@ -4,7 +4,7 @@ name: "Execute launch sequence: r/ClaudeAI soft launch → Show HN → amplifica
 description: >
   Launch sequence: Week -1: Post to r/ClaudeAI with 'here is what I built' framing + submit to Console.dev and TLDR newsletters. Week 0: Show HN Tuesday 9 AM PT with 200-word intro comment. Week +1: Product Hunt + r/programming + pitch Latent Space. Requires: demo video, all GitHub quick wins done, CONTRIBUTING.md ready. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:46Z
-last_update: 2026-03-05T01:12:46Z
+last_update: 2026-03-09T06:52:01Z
 date_finished: null
 ---
 
@@ -20,29 +20,53 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Launch sequence per `docs/reports/T-327-visibility-strategy.md` Tier 3 actions (#11-#14). All prerequisite GitHub quick wins done (topics, discussions, v1.0.0 release, AGENTS.md, CONTRIBUTING.md). Post drafts at `docs/articles/{reddit-claudeai-post,linkedin-post,launch-article}.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Launch prerequisites verified (topics, discussions, release, AGENTS.md, CONTRIBUTING.md)
+- [x] Post drafts exist and are ready for human review
+- [x] Prerequisite gap documented (demo video missing — human-produced)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking. -->
-<!-- Remove this section if all criteria are agent-verifiable. -->
+- [ ] [REVIEW] Review and post r/ClaudeAI draft (`docs/articles/reddit-claudeai-post.md`)
+  **Steps:**
+  1. Read `docs/articles/reddit-claudeai-post.md`
+  2. Edit tone/content as needed
+  3. Post to r/ClaudeAI
+  **Expected:** Post live on r/ClaudeAI
+  **If not:** Note what needs changing for agent revision
+
+- [ ] [REVIEW] Review and post LinkedIn draft (`docs/articles/linkedin-post.md`)
+  **Steps:**
+  1. Read `docs/articles/linkedin-post.md`
+  2. Post to LinkedIn
+  **Expected:** Post live on LinkedIn
+  **If not:** Note what needs changing
+
+- [ ] Record 3-min demo video (Tier 1 action #5 — blocks Show HN for maximum impact)
+  **Steps:**
+  1. Record: Tier 0 block → task gate → audit pass flow
+  2. Upload to YouTube or embed in README
+  **Expected:** Video linked in repo README
+  **If not:** Proceed without video (text-only launch)
+
+- [ ] Show HN submission (Tuesday 9 AM PT, 200-word intro comment)
+  **Steps:**
+  1. Submit link to GitHub repo on news.ycombinator.com
+  2. Post intro comment (see visibility strategy doc)
+  3. Engage with comments for 6 hours
+  **Expected:** HN post live
+  **If not:** Try next Tuesday
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f docs/articles/reddit-claudeai-post.md
+test -f docs/articles/linkedin-post.md
+test -f docs/articles/launch-article.md
+test -f CONTRIBUTING.md
+test -f AGENTS.md
 
 ## Decisions
 
@@ -61,3 +85,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-334-execute-launch-sequence-rclaudeai-soft-l.md
 - **Context:** Initial task creation
+
+### 2026-03-09T06:52:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
