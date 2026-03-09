@@ -4,16 +4,16 @@ name: "Layer 2: AI-assisted subsystem article generator"
 description: >
   Build fw docs article {subsystem}: assembles context from fabric cards, source code, CLAUDE.md, episodic memory, then generates deep-dive article using proven 4-section template (analogy, concept, rationale, try-it). Can output prompt file or call LLM directly. See docs/reports/T-362-auto-doc-generation.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [documentation, fabric, cli]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T22:03:34Z
-last_update: 2026-03-08T23:06:46Z
-date_finished: null
+last_update: 2026-03-08T23:48:29Z
+date_finished: 2026-03-08T23:14:59Z
 ---
 
 # T-366: Layer 2: AI-assisted subsystem article generator
@@ -67,3 +67,6 @@ test -f docs/generated/articles/healing-prompt.md
 
 ### 2026-03-08T23:06:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T23:14:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

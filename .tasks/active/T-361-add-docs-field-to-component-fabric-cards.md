@@ -4,16 +4,16 @@ name: "Add docs field to Component Fabric cards + Watchtower rendering"
 description: >
   From T-339 GO: (1) Add optional docs field to ~28 component cards mapping 7 deep-dive articles, (2) Add Documentation section to fabric_detail.html template, (3) Fix dep['target'] safety in traverse.sh. Optional stretch: /fabric/docs reverse-lookup page. See docs/reports/T-339-doc-fabric-linking.md for mapping and research.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/fabric/lib/traverse.sh, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-03-08T21:38:56Z
-last_update: 2026-03-08T21:38:56Z
-date_finished: null
+last_update: 2026-03-08T21:46:03Z
+date_finished: 2026-03-08T21:46:03Z
 ---
 
 # T-361: Add docs field to Component Fabric cards + Watchtower rendering
@@ -65,3 +65,6 @@ curl -sf http://localhost:3000/fabric/component/agents-healing-healing | grep -q
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-361-add-docs-field-to-component-fabric-cards.md
 - **Context:** Initial task creation
+
+### 2026-03-08T21:46:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Layer 1: Component reference doc generator"
 description: >
   Build fw docs generate [component-id|--all]: generates markdown reference page per component from card data, source headers, CLAUDE.md sections, episodic memory, learnings. Output to docs/generated/components/*.md. Mechanical extraction, no AI. See docs/reports/T-362-auto-doc-generation.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [documentation, fabric, cli]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T22:03:27Z
-last_update: 2026-03-08T22:10:28Z
-date_finished: null
+last_update: 2026-03-08T22:17:24Z
+date_finished: 2026-03-08T22:17:24Z
 ---
 
 # T-364: Layer 1: Component reference doc generator
@@ -70,3 +70,6 @@ python3 -c "import glob; docs=glob.glob('docs/generated/components/*.md'); asser
 
 ### 2026-03-08T22:10:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:17:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

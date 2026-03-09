@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-372: Investigate blind task-completion suggestion pattern + mitigate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T06:05:57Z
+# ============================================================================
+
+task_id: T-372
+task_name: "Investigate blind task-completion suggestion pattern + mitigate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T05:59:39Z
+completed: 2026-03-09T06:05:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T07:05:49+01:00
+last_commit: 2026-03-09T07:05:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Mitigate blind task-completion suggestion anti-pattern
+
+# Key outcomes
+outcomes:
+  - "Root cause analysis documented (research artifact)"
+  - "CLAUDE.md blind-completion anti-pattern rule added (A1+A2)"
+  - "Handover surfaces unchecked Human ACs (B1)"
+  - "C1 query tool verified working (`fw task verify`)"
+  - "Gap G-017 registered"
+  - "Learning L-084 captured"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/handover/handover.sh"
+  - "CLAUDE.md"
+  - ".context/project/gaps.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-372-blind-completion-investigation.md"
+  - ".tasks/active/T-372-investigate-blind-task-completion-sugges.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T07:05:49"
+    action: "T-372: Mitigate blind task-completion suggestion anti-pattern"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, meta]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 6
+  lines_added: 211
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-372-investigate-blind-task-completion-sugges.md
+generated_by: context-agent-hybrid

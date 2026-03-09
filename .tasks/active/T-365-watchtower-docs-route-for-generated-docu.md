@@ -4,16 +4,16 @@ name: "Watchtower /docs route for generated documentation"
 description: >
   Add /docs route to Watchtower rendering generated component docs grouped by subsystem. Uses existing markdown2 rendering. Index page + individual component doc pages. See docs/reports/T-362-auto-doc-generation.md
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [documentation, watchtower, web]
-components: []
+components: [web/app.py]
 related_tasks: []
 created: 2026-03-08T22:03:31Z
-last_update: 2026-03-08T22:17:35Z
-date_finished: null
+last_update: 2026-03-08T22:21:47Z
+date_finished: 2026-03-08T22:21:47Z
 ---
 
 # T-365: Watchtower /docs route for generated documentation
@@ -63,3 +63,6 @@ grep -q "docs_bp" web/app.py
 
 ### 2026-03-08T22:17:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:21:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

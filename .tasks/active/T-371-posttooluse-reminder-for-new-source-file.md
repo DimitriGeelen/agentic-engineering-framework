@@ -4,7 +4,7 @@ name: "PostToolUse reminder for new source files without fabric cards"
 description: >
   Add advisory check (not blocking) that when a NEW file is created matching watch-patterns.yaml globs, emits: NOTE: New source file created. Consider: fw fabric register <path>. Closes feedback loop so agents know registration is expected. See R-5 in fabric silent-degradation analysis.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [fabric, hooks]
 components: []
 related_tasks: []
 created: 2026-03-08T22:28:11Z
-last_update: 2026-03-08T22:35:58Z
-date_finished: null
+last_update: 2026-03-08T22:57:09Z
+date_finished: 2026-03-08T22:57:09Z
 ---
 
 # T-371: PostToolUse reminder for new source files without fabric cards
@@ -71,3 +71,6 @@ grep -q "additionalContext" agents/context/check-fabric-new-file.sh
 
 ### 2026-03-08T22:35:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:57:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

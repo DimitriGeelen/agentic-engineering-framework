@@ -4,7 +4,7 @@ name: "Layer 0: Fix broken purpose fields in component cards"
 description: >
   Prerequisite for doc generation. Build fw docs heal command: reads each card, if purpose is broken/placeholder, extract first comment block from source file and update card. ~60% of 127 cards need fixing. See docs/reports/T-362-auto-doc-generation.md
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [documentation, fabric]
 components: []
 related_tasks: []
 created: 2026-03-08T22:03:24Z
-last_update: 2026-03-08T22:07:57Z
-date_finished: null
+last_update: 2026-03-08T22:10:18Z
+date_finished: 2026-03-08T22:10:18Z
 ---
 
 # T-363: Layer 0: Fix broken purpose fields in component cards
@@ -53,3 +53,6 @@ python3 -c "import yaml, glob; cards=[yaml.safe_load(open(f)) for f in glob.glob
 
 ### 2026-03-08T22:07:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:10:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

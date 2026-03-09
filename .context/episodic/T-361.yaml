@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-361: Add docs field to Component Fabric cards + Watchtower rendering
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T21:46:05Z
+# ============================================================================
+
+task_id: T-361
+task_name: "Add docs field to Component Fabric cards + Watchtower rendering"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T21:38:56Z
+completed: 2026-03-08T21:46:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-08T22:45:54+01:00
+last_commit: 2026-03-08T22:45:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add docs field to 24 fabric cards + Watchtower rendering + traverse.sh safety fix
+
+# Key outcomes
+outcomes:
+  - "`docs` field added to 24 component cards mapping 7 deep-dive articles"
+  - "`fabric_detail.html` renders Documentation section when `docs` field present"
+  - "`traverse.sh` line 105 `dep['target']` replaced with safe `.get()`"
+  - "All modified YAML cards parse correctly (127/127)"
+  - "Watchtower component detail page loads with Documentation section for cards with docs"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add docs field to 24 fabric cards + Watchtower rendering + traverse.sh safety fix"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/traverse.sh"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-lib-decision.yaml"
+  - ".fabric/components/agents-context-lib-episodic.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-lib-pattern.yaml"
+  - ".fabric/components/agents-context-lib-status.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-fabric-lib-drift.yaml"
+  - ".fabric/components/agents-fabric-lib-query.yaml"
+  - ".fabric/components/agents-fabric-lib-register.yaml"
+  - ".fabric/components/agents-fabric-lib-traverse.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-healing-lib-diagnose.yaml"
+  - ".fabric/components/agents-healing-lib-patterns.yaml"
+  - ".fabric/components/agents-healing-lib-resolve.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/budget-gate.yaml"
+  - ".fabric/components/checkpoint.yaml"
+  - ".tasks/active/T-361-add-docs-field-to-component-fabric-cards.md"
+  - "web/templates/fabric_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T22:45:54"
+    action: "T-361: Add docs field to 24 fabric cards + Watchtower rendering + traverse.sh safety fix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 27
+  lines_added: 214
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-361-add-docs-field-to-component-fabric-cards.md
+generated_by: context-agent-hybrid

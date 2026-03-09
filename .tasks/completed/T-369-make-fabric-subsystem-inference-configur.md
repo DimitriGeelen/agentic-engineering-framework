@@ -4,16 +4,16 @@ name: "Make fabric subsystem inference configurable"
 description: >
   Add .fabric/subsystem-rules.yaml support so non-framework projects can define type/subsystem inference rules. register.sh checks this file BEFORE the hardcoded case statement, falls through to existing patterns if no rules file. See R-3 in fabric silent-degradation analysis.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [fabric, portability]
-components: []
+components: [agents/fabric/lib/register.sh]
 related_tasks: []
 created: 2026-03-08T22:27:49Z
-last_update: 2026-03-08T22:34:14Z
-date_finished: null
+last_update: 2026-03-08T22:57:07Z
+date_finished: 2026-03-08T22:57:07Z
 ---
 
 # T-369: Make fabric subsystem inference configurable
@@ -55,3 +55,6 @@ bash -n agents/fabric/lib/register.sh
 
 ### 2026-03-08T22:34:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-08T22:57:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

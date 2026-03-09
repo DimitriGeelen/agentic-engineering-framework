@@ -1,0 +1,208 @@
+# ============================================================================
+# EPISODIC MEMORY - T-364: Layer 1: Component reference doc generator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T22:17:25Z
+# ============================================================================
+
+task_id: T-364
+task_name: "Layer 1: Component reference doc generator"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T22:03:27Z
+completed: 2026-03-08T22:17:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T23:17:13+01:00
+last_commit: 2026-03-08T23:17:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Build component reference doc generator — 127 docs from fabric cards
+
+# Key outcomes
+outcomes:
+  - "`agents/docgen/generate_component.py` generates markdown from card data"
+  - "`agents/docgen/generate-component.sh` wraps Python with --all and single-card modes"
+  - "`fw docs --all` generates 127 reference docs in docs/generated/components/"
+  - "`fw docs <card>` generates a single doc"
+  - "Generated docs include: purpose, source header, CLAUDE.md excerpt, deps, used-by, related tasks/learnings"
+  - "Code fence balance handled (no broken markdown from CLAUDE.md extraction)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/docgen/generate_component.py"
+  - "agents/docgen/generate-component.sh"
+  - "bin/fw"
+  - "docs/generated/components/add-learning.md"
+  - "docs/generated/components/agents-audit-plugin-audit.md"
+  - "docs/generated/components/agents-audit-self-audit.md"
+  - "docs/generated/components/agents-context-block-plan-mode.md"
+  - "docs/generated/components/agents-context-bus-handler.md"
+  - "docs/generated/components/agents-context-check-active-task.md"
+  - "docs/generated/components/agents-context-check-dispatch.md"
+  - "docs/generated/components/agents-context-check-tier0.md"
+  - "docs/generated/components/agents-context-error-watchdog.md"
+  - "docs/generated/components/agents-context-lib-decision.md"
+  - "docs/generated/components/agents-context-lib-episodic.md"
+  - "docs/generated/components/agents-context-lib-focus.md"
+  - "docs/generated/components/agents-context-lib-init.md"
+  - "docs/generated/components/agents-context-lib-pattern.md"
+  - "docs/generated/components/agents-context-lib-status.md"
+  - "docs/generated/components/agents-context-post-compact-resume.md"
+  - "docs/generated/components/agents-context-pre-compact.md"
+  - "docs/generated/components/agents-dispatch-preamble.md"
+  - "docs/generated/components/agents-fabric-fabric.md"
+  - "docs/generated/components/agents-fabric-lib-drift.md"
+  - "docs/generated/components/agents-fabric-lib-query.md"
+  - "docs/generated/components/agents-fabric-lib-register.md"
+  - "docs/generated/components/agents-fabric-lib-summary.md"
+  - "docs/generated/components/agents-fabric-lib-traverse.md"
+  - "docs/generated/components/agents-fabric-lib-ui.md"
+  - "docs/generated/components/agents-git-git.md"
+  - "docs/generated/components/agents-git-lib-bypass.md"
+  - "docs/generated/components/agents-git-lib-commit.md"
+  - "docs/generated/components/agents-git-lib-common.md"
+  - "docs/generated/components/agents-git-lib-hooks.md"
+  - "docs/generated/components/agents-git-lib-log.md"
+  - "docs/generated/components/agents-git-lib-status.md"
+  - "docs/generated/components/agents-handover-handover.md"
+  - "docs/generated/components/agents-healing-healing.md"
+  - "docs/generated/components/agents-healing-lib-diagnose.md"
+  - "docs/generated/components/agents-healing-lib-patterns.md"
+  - "docs/generated/components/agents-healing-lib-resolve.md"
+  - "docs/generated/components/agents-healing-lib-suggest.md"
+  - "docs/generated/components/agents-mcp-mcp-reaper.md"
+  - "docs/generated/components/agents-observe-observe.md"
+  - "docs/generated/components/agents-onboarding-test-test-onboarding.md"
+  - "docs/generated/components/agents-resume-resume.md"
+  - "docs/generated/components/agents-task-create-create-task.md"
+  - "docs/generated/components/agents-task-create-update-task.md"
+  - "docs/generated/components/audit-yaml-validator.md"
+  - "docs/generated/components/bin-claude-fw.md"
+  - "docs/generated/components/bin-fw.md"
+  - "docs/generated/components/bin-watchtower.md"
+  - "docs/generated/components/budget-gate-counter.md"
+  - "docs/generated/components/budget-gate.md"
+  - "docs/generated/components/budget-status.md"
+  - "docs/generated/components/checkpoint.md"
+  - "docs/generated/components/context-dispatcher.md"
+  - "docs/generated/components/context-project-assumptions.md"
+  - "docs/generated/components/context-project-controls.md"
+  - "docs/generated/components/context-project-decisions.md"
+  - "docs/generated/components/context-project-directives.md"
+  - "docs/generated/components/context-project-gaps.md"
+  - "docs/generated/components/context-project-issues.md"
+  - "docs/generated/components/context-project-metrics-history.md"
+  - "docs/generated/components/context-project-practices.md"
+  - "docs/generated/components/context-project-risks.md"
+  - "docs/generated/components/hook-config.md"
+  - "docs/generated/components/learnings-data.md"
+  - "docs/generated/components/learnings-route.md"
+  - "docs/generated/components/learnings-template.md"
+  - "docs/generated/components/lib-ask.md"
+  - "docs/generated/components/lib-assumption.md"
+  - "docs/generated/components/lib-bus.md"
+  - "docs/generated/components/lib-first-run.md"
+  - "docs/generated/components/lib-harvest.md"
+  - "docs/generated/components/lib-inception.md"
+  - "docs/generated/components/lib-init.md"
+  - "docs/generated/components/lib-preflight.md"
+  - "docs/generated/components/lib-promote.md"
+  - "docs/generated/components/lib-setup.md"
+  - "docs/generated/components/lib-upgrade.md"
+  - "docs/generated/components/lib-validate-init.md"
+  - "docs/generated/components/patterns-data.md"
+  - "docs/generated/components/web-app.md"
+  - "docs/generated/components/web-blueprints-cockpit.md"
+  - "docs/generated/components/web-blueprints-core.md"
+  - "docs/generated/components/web-blueprints-discoveries.md"
+  - "docs/generated/components/web-blueprints-enforcement.md"
+  - "docs/generated/components/web-blueprints-fabric.md"
+  - "docs/generated/components/web-blueprints-inception.md"
+  - "docs/generated/components/web-blueprints-__init__.md"
+  - "docs/generated/components/web-blueprints-metrics.md"
+  - "docs/generated/components/web-blueprints-quality.md"
+  - "docs/generated/components/web-blueprints-risks.md"
+  - "docs/generated/components/web-blueprints-session.md"
+  - "docs/generated/components/web-blueprints-tasks.md"
+  - "docs/generated/components/web-blueprints-timeline.md"
+  - "docs/generated/components/web-embeddings.md"
+  - "docs/generated/components/web-search.md"
+  - "docs/generated/components/web-shared.md"
+  - "docs/generated/components/web-templates-assumptions.md"
+  - "docs/generated/components/web-templates-base.md"
+  - "docs/generated/components/web-templates-cockpit.md"
+  - "docs/generated/components/web-templates-decisions.md"
+  - "docs/generated/components/web-templates-directives.md"
+  - "docs/generated/components/web-templates-discoveries.md"
+  - "docs/generated/components/web-templates-enforcement.md"
+  - "docs/generated/components/web-templates-_error.md"
+  - "docs/generated/components/web-templates-fabric_detail.md"
+  - "docs/generated/components/web-templates-fabric_graph.md"
+  - "docs/generated/components/web-templates-fabric.md"
+  - "docs/generated/components/web-templates-feedback_analytics.md"
+  - "docs/generated/components/web-templates-gaps.md"
+  - "docs/generated/components/web-templates-graduation.md"
+  - "docs/generated/components/web-templates-inception_detail.md"
+  - "docs/generated/components/web-templates-inception.md"
+  - "docs/generated/components/web-templates-index.md"
+  - "docs/generated/components/web-templates-metrics.md"
+  - "docs/generated/components/web-templates-patterns.md"
+  - "docs/generated/components/web-templates-project_doc.md"
+  - "docs/generated/components/web-templates-project.md"
+  - "docs/generated/components/web-templates-_quality_audit_fragment.md"
+  - "docs/generated/components/web-templates-quality.md"
+  - "docs/generated/components/web-templates-risks.md"
+  - "docs/generated/components/web-templates-search.md"
+  - "docs/generated/components/web-templates-_session_strip.md"
+  - "docs/generated/components/web-templates-task_detail.md"
+  - "docs/generated/components/web-templates-tasks.md"
+  - "docs/generated/components/web-templates-timeline.md"
+  - "docs/generated/components/web-templates-_timeline_task.md"
+  - "docs/generated/components/web-templates-_wrapper.md"
+  - ".tasks/active/T-364-layer-1-component-reference-doc-generato.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T23:17:13"
+    action: "T-364: Build component reference doc generator — 127 docs from fabric cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [documentation, fabric, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 131
+  lines_added: 4240
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-364-layer-1-component-reference-doc-generato.md
+generated_by: context-agent-hybrid

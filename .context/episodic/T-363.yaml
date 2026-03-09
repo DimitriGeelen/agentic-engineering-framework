@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-363: Layer 0: Fix broken purpose fields in component cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T22:10:19Z
+# ============================================================================
+
+task_id: T-363
+task_name: "Layer 0: Fix broken purpose fields in component cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T22:03:24Z
+completed: 2026-03-08T22:10:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T23:10:09+01:00
+last_commit: 2026-03-08T23:10:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix 6 broken/thin purpose fields in component cards
+
+# Key outcomes
+outcomes:
+  - "All 127 component cards have non-trivial purpose fields (>10 chars, no placeholders)"
+  - "All modified cards parse as valid YAML"
+  - "Fixed cards: plugin-audit, bus-handler, mcp-reaper, claude-fw, fw, task_detail"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 6 broken/thin purpose fields in component cards"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-audit-plugin-audit.yaml"
+  - ".fabric/components/agents-context-bus-handler.yaml"
+  - ".fabric/components/agents-mcp-mcp-reaper.yaml"
+  - ".fabric/components/bin-claude-fw.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/web-templates-task_detail.yaml"
+  - ".tasks/active/T-363-layer-0-fix-broken-purpose-fields-in-com.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T23:10:09"
+    action: "T-363: Fix 6 broken/thin purpose fields in component cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [documentation, fabric]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 7
+  lines_added: 29
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-363-layer-0-fix-broken-purpose-fields-in-com.md
+generated_by: context-agent-hybrid

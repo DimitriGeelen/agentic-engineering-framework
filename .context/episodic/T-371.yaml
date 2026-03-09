@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-371: PostToolUse reminder for new source files without fabric cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-08T22:57:11Z
+# ============================================================================
+
+task_id: T-371
+task_name: "PostToolUse reminder for new source files without fabric cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T22:28:11Z
+completed: 2026-03-08T22:57:09Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-08T23:38:08+01:00
+last_commit: 2026-03-08T23:38:08+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  PostToolUse fabric registration reminder for new source files
+
+# Key outcomes
+outcomes:
+  - "Hook script created at agents/context/check-fabric-new-file.sh"
+  - "Script checks Write tool output against watch-patterns.yaml"
+  - "Skips framework internals (.context/, .tasks/, .fabric/, .claude/)"
+  - "Skips files that already have a fabric card"
+  - "Advisory only (exit 0 always)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-fabric-new-file.sh"
+  - ".tasks/active/T-371-posttooluse-reminder-for-new-source-file.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T23:38:08"
+    action: "T-371: PostToolUse fabric registration reminder for new source files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28
+  commits: 1
+  files_changed: 2
+  lines_added: 169
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-371-posttooluse-reminder-for-new-source-file.md
+generated_by: context-agent-hybrid
