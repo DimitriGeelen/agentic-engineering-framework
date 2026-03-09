@@ -536,3 +536,55 @@ gaps:
     created: 2026-03-09
     last_reviewed: 2026-03-09
     related_task: T-372
+
+  - id: G-018
+    title: "Handover template generates unfillable [TODO]s — auto-compaction creates skeleton rot"
+    description: >
+      The handover template (handover.sh) generated 4 [TODO] lines per active task,
+      regardless of status. With 20+ work-completed tasks awaiting human review, each
+      handover had 91+ [TODO]s. Auto-compaction (pre-compact.sh) generates handovers
+      mechanically without filling them. Over 273 sessions, this accumulated 5,982
+      unfilled [TODO]s across 98 handover files. The D8 audit check only scanned
+      LATEST.md — archive rot went completely undetected. The handover quality rule
+      (CLAUDE.md §Handover Timing Rule) says "fill in ALL [TODO] sections immediately"
+      but auto-compaction cannot comply. This is a structural failure: the template
+      generates obligations that the auto-path cannot fulfill.
+    spec_reference: "CLAUDE.md §Context Budget Management — Handover Timing Rule"
+    severity: high
+    evidence_collected: >
+      T-393 investigation: 273 handover files, 98 with [TODO]s, 5,982 total unfilled
+      placeholders. Worst file had 163 [TODO]s. Rot started 2026-02-14 (session
+      S-2026-0214-1022). D8 audit flagged LATEST.md 3 times in trend analysis but
+      never checked archive. Auto-compaction pathway (pre-compact.sh → handover.sh)
+      generates handovers without agent context to fill them. The 18 work-completed
+      tasks (awaiting human review) each contributed 4 unfillable [TODO] lines per
+      handover — 72 of the 91 [TODO]s were structurally impossible to fill.
+    root_cause_analysis: >
+      Three compounding failures:
+      1. Template design: Generated [TODO] blocks for ALL tasks including work-completed
+         (those have nothing to report — they're just waiting for human review)
+      2. Auto-path gap: pre-compact.sh calls handover.sh mechanically, with no agent
+         context to fill the template. The timing rule assumes an agent is filling it.
+      3. Audit blind spot: D8 only checked LATEST.md, missing archive accumulation.
+         Even LATEST.md failures were noted in trends but never escalated to a gap.
+    escalation_level: >
+      Level C (improve tooling) + Level D (change ways of working):
+      C: Template fix (skip work-completed), audit fix (D8b archive check)
+      D: Learning L-086 codified. Auto-generated handovers should be structurally
+         complete without requiring agent fill — "fill later" is proven unreliable.
+    resolution: >
+      T-393 implemented three fixes:
+      1. Template: work-completed tasks now render as summary list (0 [TODO]s instead of 72)
+      2. Audit: D8b checks last 10 archive handovers for [TODO] rot
+      3. Cleanup: 98 stale handovers cleaned, summaries reconstructed from git history
+      New handovers generate ~31 [TODO]s (only for active tasks + global sections).
+    remaining_risk: >
+      Auto-compaction handovers still have global [TODO]s (Where We Are, Decisions,
+      etc.) that cannot be filled without agent context. These are acceptable — they're
+      high-level sections, not per-task noise. The pre-compact hook could potentially
+      fill some from git log data (like the reconstruction script did for cleanup).
+    status: closed
+    created: 2026-03-09
+    last_reviewed: 2026-03-09
+    closed_date: 2026-03-09
+    related_task: T-393
