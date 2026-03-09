@@ -391,6 +391,52 @@ if [ "$inception_count" -gt 0 ]; then
     } >> "$HANDOVER_FILE"
 fi
 
+# Step 2.1: Surface partial-complete tasks (T-372 — blind completion anti-pattern)
+# Tasks that are work-completed but have unchecked Human ACs
+PARTIAL_COMPLETE_SECTION=$(python3 << 'PCEOF'
+import glob, re, os
+
+tasks_dir = os.environ.get("TASKS_DIR", ".tasks")
+partial = []
+for f in sorted(glob.glob(os.path.join(tasks_dir, "active", "*.md"))):
+    with open(f) as fh:
+        content = fh.read()
+    if "status: work-completed" not in content:
+        continue
+    # Find ### Human section
+    human_match = re.search(r'### Human\n(.*?)(?=\n### |\n## |\Z)', content, re.DOTALL)
+    if not human_match:
+        continue
+    human_section = human_match.group(1)
+    unchecked = len(re.findall(r'^\s*-\s*\[ \]', human_section, re.M))
+    if unchecked == 0:
+        continue
+    tid = re.search(r'^id:\s*(\S+)', content, re.M)
+    tname = re.search(r'^name:\s*"?(.+?)"?\s*$', content, re.M)
+    if tid:
+        # Extract first unchecked AC text (truncated)
+        first_ac = re.search(r'^\s*-\s*\[ \]\s*(.+)', human_section, re.M)
+        ac_preview = first_ac.group(1)[:60] if first_ac else "?"
+        partial.append((tid.group(1), tname.group(1) if tname else "?", unchecked, ac_preview))
+
+if partial:
+    print("## Human Review Pending")
+    print()
+    print(f"**{len(partial)} task(s) with unchecked Human ACs** — these need human review before closing.")
+    print()
+    for tid, tname, count, preview in partial:
+        print(f"- **{tid}**: {tname} ({count} unchecked)")
+        print(f"  - e.g.: {preview}")
+    print()
+    print("Review each task's `### Human` section, check the boxes, then: `fw task update T-XXX --status work-completed`")
+    print()
+PCEOF
+)
+
+if [ -n "$PARTIAL_COMPLETE_SECTION" ]; then
+    echo "$PARTIAL_COMPLETE_SECTION" >> "$HANDOVER_FILE"
+fi
+
 # Add observation inbox status if any pending
 if [ "$PENDING_OBS" -gt 0 ]; then
     {

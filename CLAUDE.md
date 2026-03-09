@@ -577,11 +577,22 @@ When the human says "proceed as you see fit", "go ahead", "do what you think is 
 **NOT delegated (requires explicit human approval per action):**
 - Completing human-owned tasks (`owner: human`)
 - Using `--force` to bypass any gate (sovereignty, AC, verification)
+- **Suggesting** `--force` or batch-completion of human-owned tasks without first listing each task's unchecked Human ACs
 - Changing task ownership away from human
 - Destructive actions (Tier 0)
 - Any action the sovereignty gate or structural enforcement blocks
 
 **The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
+
+### Blind Completion Anti-Pattern (T-372)
+When a task has `### Human` acceptance criteria or `owner: human`:
+- **NEVER suggest `--force` to bypass AC or sovereignty gates.** The gate exists because review is needed.
+- **NEVER propose batch-completing multiple human-owned tasks.** Each task's Human ACs require individual review.
+- **BEFORE proposing completion**, read the task's Human AC section and verify each box is checked. If any are unchecked, the task is incomplete by design — propose *review*, not *bypass*.
+- **Proposing "just use --force"** to a human is suggesting they skip their own verification role. This undermines the sovereignty model.
+- **Use `fw task verify T-XXX`** to check Human AC status before suggesting any completion action.
+
+**The test:** "Am I suggesting the human skip a review gate, or helping them complete one?" If skipping, stop.
 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
