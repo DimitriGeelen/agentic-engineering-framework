@@ -73,6 +73,9 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Full audit — all sections (daily at 8am)
 0 8 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --cron 2>/dev/null
 
+# Regenerate component reference docs (daily at 8:15am — T-387)
+15 8 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" docs --all 2>/dev/null
+
 # Retention: prune cron audit files older than 7 days (daily at 9am)
 0 9 * * * root find "$CONTEXT_DIR/audits/cron" -name "*.yaml" -mtime +7 -delete 2>/dev/null
 CRONEOF
@@ -87,6 +90,7 @@ CRONEOF
             echo "  Every 6h:    observations, gaps (structural)"
             echo "  Daily 7am:   oe-daily (OE — deep control checks)"
             echo "  Daily 8am:   full audit (all sections)"
+            echo "  Daily 8:15:  regenerate component docs (T-387)"
             echo "  Monday 9am:  oe-weekly (OE — behavioral patterns)"
             echo "  Daily 9am:   retention cleanup (>7 days)"
             echo ""
