@@ -1,0 +1,18 @@
+<form action="{{ url_for('discovery.search_view') }}" method="get" role="search"
+      hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+      id="search-form">
+    <fieldset role="group">
+        <input type="search" name="q" id="search-input" value="{{ query | default('') }}"
+               placeholder="Search or ask a question..."
+               aria-label="Search or ask" minlength="2" required autofocus>
+        <select name="mode" aria-label="Search mode" style="max-width: 10rem;">
+            <option value="hybrid" {{ 'selected' if mode|default('hybrid') == 'hybrid' }}>Hybrid</option>
+            <option value="keyword" {{ 'selected' if mode|default('hybrid') == 'keyword' }}>Keyword</option>
+            <option value="semantic" {{ 'selected' if mode|default('hybrid') == 'semantic' }}>Semantic</option>
+        </select>
+        <button type="submit">Search</button>
+    </fieldset>
+    <small style="color: var(--pico-muted-color); margin-top: -0.75rem; display: block;">
+        Tip: Questions (who, what, why, how, &ldquo;?&rdquo;) trigger an AI answer. Keywords trigger search.
+    </small>
+</form>
