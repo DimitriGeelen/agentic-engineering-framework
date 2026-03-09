@@ -3,9 +3,17 @@
 var _askAbort = null;
 var _lastQuestion = '';
 var _lastAnswer = '';
+var _lastInferredTitle = '';
 var _lastSources = [];
 var _lastModel = '';
 var _conversationHistory = [];
+
+/* Extract <!-- Q: ... --> inferred title from LLM response (T-389) */
+function _extractInferredTitle(text) {
+    var match = text.match(/<!--\s*Q:\s*(.+?)\s*-->/);
+    if (match) return { title: match[1].trim(), clean: text.replace(match[0], '').trimEnd() };
+    return { title: '', clean: text };
+}
 
 /* ── Recent Searches (localStorage) ────────────────────── */
 var _RECENT_KEY = 'wt-recent-searches';
@@ -183,9 +191,13 @@ function askQuestion(query) {
             else if (data.type === 'done') {
                 _askAbort = null;
                 if (_renderTimer) clearTimeout(_renderTimer);
-                textDiv.innerHTML = renderAnswer(fullText);
+                /* Extract inferred title and strip from displayed text (T-389) */
+                var extracted = _extractInferredTitle(fullText);
+                _lastInferredTitle = extracted.title;
+                var displayText = extracted.clean;
+                textDiv.innerHTML = renderAnswer(displayText);
                 addCopyButtons(textDiv);
-                _lastAnswer = fullText;
+                _lastAnswer = displayText;
                 _lastQuestion = query;
                 _conversationHistory.push({role: 'user', content: query});
                 _conversationHistory.push({role: 'assistant', content: fullText});
@@ -293,7 +305,7 @@ function saveAnswer() {
     fetch('/search/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources })
+        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources, inferred_title: _lastInferredTitle })
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.saved) { btn.textContent = 'Saved'; status.textContent = data.path; status.style.color = 'var(--pico-ins-color)'; }
         else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.style.color = '#c62828'; }
