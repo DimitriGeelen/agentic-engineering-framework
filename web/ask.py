@@ -1,41 +1,29 @@
 """LLM-assisted Q&A for Watchtower search.
 
 Retrieves context via rag_retrieve() (T-255), formats as numbered Markdown,
-streams answers via ollama with SSE. Includes model fallback logic (T-258).
+streams answers via LLM provider with SSE. Includes model fallback logic (T-258).
 
 T-256: Ask endpoint — /search/ask with ollama SSE streaming.
 T-258: Model management — pre-load and fallback logic.
 T-262: Replaced model with Qwen3-14B + thinking mode toggle.
+T-377: Refactored to use LLM provider abstraction (Ollama + OpenRouter).
 """
 
 import json
 import logging
 import re
 
-import ollama
-
 from web.config import Config
+from web.llm import get_manager
 
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Model management (T-258, T-262, T-273: config-driven)
+# Model management (T-258, T-262, T-273: config-driven, T-377: provider-aware)
 # ---------------------------------------------------------------------------
 
 PRIMARY_MODEL = Config.PRIMARY_MODEL
 FALLBACK_MODEL = Config.FALLBACK_MODEL
-
-_available_models = None
-
-
-def _list_models() -> list[str]:
-    """Get list of locally available ollama model names."""
-    try:
-        resp = ollama.list()
-        return [m.model for m in resp.models]
-    except Exception as e:
-        log.warning("Failed to list ollama models: %s", e)
-        return []
 
 
 def get_model() -> str:
@@ -43,24 +31,22 @@ def get_model() -> str:
 
     Returns model name string, or raises RuntimeError if no models available.
     """
-    global _available_models
-    if _available_models is None:
-        _available_models = _list_models()
+    manager = get_manager()
+    provider = manager.active
+    models = provider.list_models()
+    model_ids = [m.id for m in models]
 
-    if PRIMARY_MODEL in _available_models:
+    if PRIMARY_MODEL in model_ids:
         return PRIMARY_MODEL
-    if FALLBACK_MODEL in _available_models:
+    if FALLBACK_MODEL in model_ids:
         log.info("Primary model unavailable, using fallback: %s", FALLBACK_MODEL)
         return FALLBACK_MODEL
 
-    # Refresh cache and try once more
-    _available_models = _list_models()
-    if PRIMARY_MODEL in _available_models:
+    # For OpenRouter, model names are like "anthropic/claude-3-haiku" — accept primary as-is
+    if manager.active_name == "openrouter":
         return PRIMARY_MODEL
-    if FALLBACK_MODEL in _available_models:
-        return FALLBACK_MODEL
 
-    raise RuntimeError("No suitable LLM model available in ollama")
+    raise RuntimeError(f"No suitable LLM model available ({manager.active_name})")
 
 
 # ---------------------------------------------------------------------------
@@ -164,6 +150,8 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         return
 
+    manager = get_manager()
+    provider = manager.active
     use_thinking = should_think(query) if model == PRIMARY_MODEL else False
     context = format_rag_context(chunks)
     user_message = f"{context}\n\n## Question\n\n{query}"
@@ -182,41 +170,22 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
 
     messages.append({"role": "user", "content": user_message})
 
-    # Send model info with thinking status
-    yield f"data: {json.dumps({'type': 'model', 'model': model, 'thinking': use_thinking})}\n\n"
+    # Send model info with thinking status and provider
+    yield f"data: {json.dumps({'type': 'model', 'model': model, 'thinking': use_thinking, 'provider': manager.active_name})}\n\n"
 
-    try:
-        response = ollama.chat(
-            model=model,
-            messages=messages,
-            stream=True,
-            think=use_thinking,
-        )
-
-        in_thinking = use_thinking
-        for chunk in response:
-            msg = chunk.get("message", {})
-            # Thinking tokens come via the 'thinking' field (Qwen3/Ollama)
-            thinking_token = msg.get("thinking", "")
-            if thinking_token:
-                yield f"data: {json.dumps({'type': 'thinking', 'content': thinking_token})}\n\n"
-                continue
-
-            # Answer tokens
-            token = msg.get("content", "")
-            if token:
-                if in_thinking:
-                    # First answer token after thinking phase
-                    in_thinking = False
-                    yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
-                yield f"data: {json.dumps({'type': 'token', 'content': token})}\n\n"
-            if chunk.get("done"):
-                break
-
-    except Exception as e:
-        log.error("Ollama streaming error: %s", e)
-        yield f"data: {json.dumps({'type': 'error', 'message': f'LLM error: {e}' })}\n\n"
-        return
+    # Stream via the active provider (T-377)
+    for chunk in provider.chat_stream(model, messages, thinking=use_thinking):
+        if chunk.type == "token":
+            yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+        elif chunk.type == "thinking":
+            yield f"data: {json.dumps({'type': 'thinking', 'content': chunk.content})}\n\n"
+        elif chunk.type == "thinking_done":
+            yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
+        elif chunk.type == "error":
+            yield f"data: {json.dumps({'type': 'error', 'message': chunk.content})}\n\n"
+            return
+        elif chunk.type == "done":
+            break
 
     # Send source metadata for the citation panel
     sources = []
