@@ -4,7 +4,7 @@ name: "Fernet encrypted API key storage"
 description: >
   Create web/secrets_store.py with PBKDF2 key derivation from /etc/machine-id, Fernet encrypt/decrypt, CRUD API (get/set/delete/list). Store at .context/secrets/api-keys.enc. Env vars take precedence. Parent: T-375.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [security, keys]
 components: []
 related_tasks: []
 created: 2026-03-09T09:41:40Z
-last_update: 2026-03-09T09:51:13Z
-date_finished: null
+last_update: 2026-03-09T09:53:12Z
+date_finished: 2026-03-09T09:53:12Z
 ---
 
 # T-378: Fernet encrypted API key storage
@@ -56,3 +56,6 @@ grep -q 'secrets' .gitignore
 
 ### 2026-03-09T09:51:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-09T09:53:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

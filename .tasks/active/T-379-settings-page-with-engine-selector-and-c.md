@@ -4,16 +4,16 @@ name: "Settings page with engine selector and config persistence"
 description: >
   Create web/blueprints/settings.py with routes for settings page. YAML persistence at .context/settings.yaml (gitignored). Engine selector (Ollama/OpenRouter), model picker, API key management UI. Gear icon in nav. Depends on T-377 (LLM provider) and T-378 (key storage). Parent: T-375.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ui, settings]
-components: []
+components: [web/app.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-09T09:41:42Z
-last_update: 2026-03-09T09:53:22Z
-date_finished: null
+last_update: 2026-03-09T09:57:39Z
+date_finished: 2026-03-09T09:57:39Z
 ---
 
 # T-379: Settings page with engine selector and config persistence
@@ -66,3 +66,6 @@ python3 -c "from web.blueprints.settings import bp; print('OK')"
 
 ### 2026-03-09T09:53:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-09T09:57:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

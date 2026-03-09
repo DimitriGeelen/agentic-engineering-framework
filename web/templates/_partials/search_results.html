@@ -63,14 +63,49 @@
 {% endif %}
 
 {% elif not query %}
-<article style="text-align: center; padding: 2rem;">
-    <h3 style="color: var(--pico-muted-color);">Explore your project knowledge</h3>
-    <p style="color: var(--pico-muted-color);">Search for tasks, learnings, patterns, decisions, or ask a question.</p>
-    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
-        <a href="?q=healing+loop&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">healing loop</a>
-        <a href="?q=how+does+the+audit+system+work%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">How does the audit system work?</a>
-        <a href="?q=context+budget&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">context budget</a>
-        <a href="?q=what+are+the+four+directives%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">What are the four directives?</a>
-    </div>
-</article>
+<!-- Empty state: two-column with suggestions + saved answers -->
+<div class="search-empty-grid">
+    <!-- Left: Quick suggestions -->
+    <article class="search-card">
+        <header style="padding-bottom:0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <strong>Try a search</strong>
+        </header>
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.75rem;">
+            <a href="?q=healing+loop&mode=hybrid" class="outline search-pill" role="button">healing loop</a>
+            <a href="?q=context+budget&mode=hybrid" class="outline search-pill" role="button">context budget</a>
+            <a href="?q=fabric+drift&mode=hybrid" class="outline search-pill" role="button">fabric drift</a>
+            <a href="?q=task+lifecycle&mode=hybrid" class="outline search-pill" role="button">task lifecycle</a>
+        </div>
+        <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--pico-muted-border-color);">
+            <strong style="font-size:0.85rem;">Ask a question</strong>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                <a href="?q=how+does+the+audit+system+work%3F&mode=hybrid" class="outline search-pill" role="button">How does the audit system work?</a>
+                <a href="?q=what+are+the+four+directives%3F&mode=hybrid" class="outline search-pill" role="button">What are the four directives?</a>
+                <a href="?q=how+does+the+healing+loop+recover+from+failures%3F&mode=hybrid" class="outline search-pill" role="button">How does healing recover from failures?</a>
+                <a href="?q=explain+the+component+fabric&mode=hybrid" class="outline search-pill" role="button">Explain the component fabric</a>
+            </div>
+        </div>
+    </article>
+
+    <!-- Right: Saved answers -->
+    {% if saved_answers %}
+    <article class="search-card">
+        <header style="padding-bottom:0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <strong>Saved Answers</strong>
+            <small style="color:var(--pico-muted-color); margin-left: 0.5rem;">{{ saved_answers|length }}</small>
+        </header>
+        <div style="margin-top: 0.5rem;">
+            {% for qa in saved_answers %}
+            <a href="?q={{ qa.title | urlencode }}&mode=hybrid" class="saved-answer-link"
+               hx-get="{{ url_for('discovery.search_view', q=qa.title, mode='hybrid') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--pico-primary);fill:none;stroke-width:2;flex-shrink:0;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>{{ qa.title }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </article>
+    {% endif %}
+</div>
 {% endif %}
