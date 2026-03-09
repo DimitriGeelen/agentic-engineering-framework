@@ -1,17 +1,69 @@
-"""REST API blueprint — JSON endpoints for search and Q&A (T-382).
+"""REST API blueprint — JSON endpoints for search and Q&A (T-382, T-384).
 
 Endpoints:
-    POST /api/v1/ask     — RAG-assisted Q&A (non-streaming JSON)
-    GET  /api/v1/search  — Search results as JSON
-    GET  /api/v1/health  — API health check
+    GET  /api/v1          — API index with endpoint documentation
+    POST /api/v1/ask      — RAG-assisted Q&A (non-streaming JSON)
+    POST /api/v1/ask/stream — RAG-assisted Q&A (SSE streaming)
+    GET  /api/v1/search   — Search results as JSON
+    GET  /api/v1/health   — API health check
 """
 
 import json
 import time
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
+
+
+@bp.route("/")
+def index():
+    """Self-documenting API index."""
+    base = request.host_url.rstrip("/") + "/api/v1"
+    return jsonify({
+        "name": "Watchtower API",
+        "version": "v1",
+        "endpoints": {
+            "ask": {
+                "url": f"{base}/ask",
+                "methods": ["GET", "POST"],
+                "description": "RAG-assisted Q&A (complete JSON response)",
+                "params": {
+                    "q": "Query string (GET) or 'query' in JSON body (POST)",
+                    "history": "Conversation history as [{role, content}] (POST only)",
+                    "limit": "Max RAG chunks to retrieve (default: 10, max: 20)",
+                },
+                "example": f"curl '{base}/ask?q=What+are+the+four+directives?'",
+            },
+            "ask_stream": {
+                "url": f"{base}/ask/stream",
+                "methods": ["GET", "POST"],
+                "description": "RAG-assisted Q&A (Server-Sent Events stream)",
+                "params": {
+                    "q": "Query string (GET) or 'query' in JSON body (POST)",
+                    "history": "Conversation history (POST only)",
+                },
+                "events": ["model", "thinking", "thinking_done", "token", "sources", "done", "error"],
+                "example": f"curl -N '{base}/ask/stream?q=How+does+healing+work?'",
+            },
+            "search": {
+                "url": f"{base}/search",
+                "methods": ["GET"],
+                "description": "Search project knowledge base",
+                "params": {
+                    "q": "Search query (min 2 chars)",
+                    "mode": "Search mode: keyword, semantic, hybrid (default: hybrid)",
+                    "limit": "Max results (default: 20, max: 50)",
+                },
+                "example": f"curl '{base}/search?q=healing+loop&mode=keyword&limit=5'",
+            },
+            "health": {
+                "url": f"{base}/health",
+                "methods": ["GET"],
+                "description": "API and provider health status",
+            },
+        },
+    })
 
 
 @bp.route("/ask", methods=["GET", "POST"])
@@ -125,6 +177,41 @@ def ask():
         "thinking_time_ms": thinking_ms,
         "total_time_ms": total_ms,
     })
+
+
+@bp.route("/ask/stream", methods=["GET", "POST"])
+def ask_stream():
+    """RAG-assisted Q&A with Server-Sent Events streaming.
+
+    Same parameters as /ask but returns SSE stream instead of JSON.
+    Events: model, thinking, thinking_done, token, sources, done, error.
+    """
+    from web.ask import stream_answer
+    from web.embeddings import rag_retrieve
+
+    history = []
+    if request.method == "POST":
+        data = request.get_json(silent=True) or {}
+        query = (data.get("query") or data.get("q") or "").strip()
+        history = data.get("history") or []
+    else:
+        query = request.args.get("q", "").strip()
+
+    if not query or len(query) < 2:
+        def error_stream():
+            yield 'data: {"type": "error", "message": "Query too short"}\n\n'
+        return Response(error_stream(), mimetype="text/event-stream")
+
+    chunks = rag_retrieve(query, limit=10)
+
+    return Response(
+        stream_answer(query, chunks, history=history),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @bp.route("/search")
