@@ -1,137 +1,158 @@
 <div class="page-header">
     <h1>{{ page_title }}</h1>
-    <p>Full-text search across tasks, decisions, learnings, patterns, and documentation.</p>
+    <p>Search and ask questions across tasks, decisions, learnings, patterns, and documentation.</p>
 </div>
 
-<form action="{{ url_for('discovery.search_view') }}" method="get" role="search" hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+<!-- Unified Search Input -->
+<form action="{{ url_for('discovery.search_view') }}" method="get" role="search"
+      hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+      id="search-form">
     <fieldset role="group">
-        <input type="search" name="q" value="{{ query | default('') }}" placeholder="Search framework content..." aria-label="Search" minlength="2" required>
+        <input type="search" name="q" id="search-input" value="{{ query | default('') }}"
+               placeholder="Search or ask a question..."
+               aria-label="Search or ask" minlength="2" required autofocus>
         <select name="mode" aria-label="Search mode" style="max-width: 10rem;">
-            <option value="keyword" {{ 'selected' if mode|default('keyword') == 'keyword' }}>Keyword (BM25)</option>
-            <option value="semantic" {{ 'selected' if mode|default('keyword') == 'semantic' }}>Semantic</option>
-            <option value="hybrid" {{ 'selected' if mode|default('keyword') == 'hybrid' }}>Hybrid</option>
+            <option value="hybrid" {{ 'selected' if mode|default('hybrid') == 'hybrid' }}>Hybrid</option>
+            <option value="keyword" {{ 'selected' if mode|default('hybrid') == 'keyword' }}>Keyword</option>
+            <option value="semantic" {{ 'selected' if mode|default('hybrid') == 'semantic' }}>Semantic</option>
         </select>
         <button type="submit">Search</button>
     </fieldset>
+    <small style="color: var(--pico-muted-color); margin-top: -0.75rem; display: block;">
+        Tip: Questions (who, what, why, how, &ldquo;?&rdquo;) trigger an AI answer. Keywords trigger search.
+    </small>
 </form>
 
-<!-- Ask Q&A Section (T-257, T-268: multi-turn) -->
-<details id="ask-section" style="margin-bottom: 1.5rem;">
-    <summary><strong>Ask a Question</strong> — get an AI-assisted answer from project knowledge</summary>
-    <article style="margin-top: 0.5rem; padding: 1rem;">
-        <!-- Conversation header: shows turn count + new conversation button -->
-        <div id="conv-header" style="display: none; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-            <small id="conv-turn-count" style="color: var(--pico-muted-color);"></small>
-            <span style="flex: 1;"></span>
-            <button onclick="newConversation()" class="outline secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">New Conversation</button>
-        </div>
+<!-- AI Answer Section (elevated, not hidden) -->
+<article id="ask-answer-card" style="display: none; margin-bottom: 1.5rem; border-left: 3px solid var(--pico-primary);">
+    <header style="display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);">
+        <strong style="color: var(--pico-primary);">AI Answer</strong>
+        <small id="ask-model" style="color: var(--pico-muted-color);"></small>
+        <span style="flex:1"></span>
+        <!-- Conversation controls -->
+        <small id="conv-turn-count" style="color: var(--pico-muted-color); display: none;"></small>
+        <button onclick="newConversation()" class="outline secondary" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; display: none;" id="conv-new-btn">New</button>
+    </header>
 
-        <!-- Previous conversation turns (T-268) -->
-        <div id="conv-thread" style="display: none; margin-bottom: 1rem; max-height: 400px; overflow-y: auto; border-left: 3px solid var(--pico-muted-border-color); padding-left: 0.75rem;"></div>
+    <!-- Previous turns thread -->
+    <div id="conv-thread" style="display: none; max-height: 300px; overflow-y: auto; border-left: 2px solid var(--pico-muted-border-color); padding-left: 0.75rem; margin: 0.75rem 0;"></div>
 
-        <div style="display: flex; gap: 0.5rem; align-items: end;">
-            <input type="text" id="ask-input" placeholder="Ask about the framework, tasks, patterns..." style="margin-bottom: 0; flex: 1;" aria-label="Question">
-            <button id="ask-btn" onclick="askQuestion()" style="margin-bottom: 0; white-space: nowrap;">Ask</button>
-        </div>
-        <small id="ask-model" style="color: var(--pico-muted-color); display: none; margin-top: 0.25rem;"></small>
+    <!-- Current answer -->
+    <div id="ask-status" style="color: var(--pico-muted-color); font-size: 0.85rem; margin: 0.5rem 0;">
+        <span aria-busy="true">Retrieving context &amp; generating answer...</span>
+    </div>
+    <div id="ask-text" style="line-height: 1.7; overflow-wrap: break-word;"></div>
 
-        <div id="ask-answer" style="display: none; margin-top: 1rem;">
-            <div id="ask-status" style="color: var(--pico-muted-color); font-size: 0.85rem; margin-bottom: 0.5rem;">
-                <span aria-busy="true">Thinking...</span>
-            </div>
-            <div id="ask-text" style="line-height: 1.7; overflow-wrap: break-word;"></div>
-        </div>
+    <!-- Sources -->
+    <details id="ask-sources" style="display: none; margin-top: 0.75rem;">
+        <summary><strong>Sources</strong> (<span id="ask-source-count">0</span>)</summary>
+        <div id="ask-source-list" style="font-size: 0.85rem;"></div>
+    </details>
 
-        <details id="ask-sources" style="display: none; margin-top: 1rem;">
-            <summary><strong>Sources</strong> (<span id="ask-source-count">0</span>)</summary>
-            <div id="ask-source-list" style="font-size: 0.85rem;"></div>
-        </details>
+    <!-- Actions: save, feedback, follow-up -->
+    <div id="ask-actions-row" style="display: none; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <button id="ask-save-btn" onclick="saveAnswer()" class="outline secondary" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">Save</button>
+        <button id="fb-up" onclick="sendFeedback(1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Good answer">&#x1F44D;</button>
+        <button id="fb-down" onclick="sendFeedback(-1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Bad answer">&#x1F44E;</button>
+        <small id="fb-status" style="color: var(--pico-muted-color);"></small>
+        <span style="flex: 1;"></span>
+        <small id="ask-save-status" style="color: var(--pico-muted-color);"></small>
+    </div>
 
-        <div id="ask-actions-row" style="display: none; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-            <button id="ask-save-btn" onclick="saveAnswer()" class="outline secondary" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">Save Answer</button>
-            <span style="color: var(--pico-muted-border-color);">|</span>
-            <button id="fb-up" onclick="sendFeedback(1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Good answer">&#x1F44D;</button>
-            <button id="fb-down" onclick="sendFeedback(-1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Bad answer">&#x1F44E;</button>
-            <small id="fb-status" style="color: var(--pico-muted-color);"></small>
-            <span style="flex: 1;"></span>
-            <small id="ask-save-status" style="color: var(--pico-muted-color);"></small>
-        </div>
+    <!-- Follow-up input -->
+    <div id="followup-row" style="display: none; margin-top: 0.75rem;">
+        <fieldset role="group" style="margin:0">
+            <input type="text" id="followup-input" placeholder="Ask a follow-up..." style="margin:0" aria-label="Follow-up question">
+            <button id="followup-btn" onclick="askFollowup()" style="margin:0;white-space:nowrap">Ask</button>
+        </fieldset>
+    </div>
 
-        <div id="ask-error" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #c6282822; border-radius: var(--pico-border-radius); color: #c62828; font-size: 0.85rem;"></div>
-    </article>
-</details>
+    <div id="ask-error" style="display: none; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #c6282822; border-radius: var(--pico-border-radius); color: #c62828; font-size: 0.85rem;"></div>
+</article>
 
 {% if query %}
+<!-- Results summary -->
 <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
-    {% set total = results.values() | map('length') | sum %}
+    {% set total = results.values() | map('length') | sum if results else 0 %}
     {% if results %}
     Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong>
-    ({{ mode | default('keyword') }})
-    across {{ results.keys() | list | length }} categor{{ 'ies' if results.keys() | list | length != 1 else 'y' }}.
+    ({{ mode | default('hybrid') }})
     {% if stats %}
-    <span style="margin-left: 0.5rem; opacity: 0.6;">({{ stats.num_docs }} docs indexed{% if vec_stats %}, {{ vec_stats.num_chunks }} chunks embedded{% endif %})</span>
+    <span style="opacity: 0.6;">&mdash; {{ stats.num_docs }} docs indexed{% if vec_stats %}, {{ vec_stats.num_chunks }} chunks{% endif %}</span>
     {% endif %}
     {% else %}
-    No results found for <strong>{{ query }}</strong>.
+    No results for <strong>{{ query }}</strong>.
     {% endif %}
 </p>
-{% endif %}
 
 {% if results %}
-{% for category, items in results.items() %}
-<details open>
-    <summary><strong>{{ category }}</strong> ({{ items|length }})</summary>
-    {% for item in items %}
-    {% set path = item.path | default('') %}
-    {% set link = '' %}
-    {% if path.startswith('.tasks/') and '/T-' in path %}
-    {% set link = '/tasks/' + path.split('/T-')[1].split('-')[0] | string %}
-    {% set link = '/tasks/T-' + path.split('/T-')[1].split('-')[0] %}
-    {% elif path.startswith('.fabric/components/') %}
-    {% set link = '/fabric/component/' + path.split('/')[-1].replace('.yaml', '') %}
-    {% elif path.startswith('.context/episodic/') and path.endswith('.yaml') %}
-    {% set link = '/tasks/' + path.split('/')[-1].replace('.yaml', '') %}
-    {% elif path == '.context/project/learnings.yaml' or path == 'learnings.yaml' %}
-    {% set link = '/learnings' %}
-    {% elif path == '.context/project/patterns.yaml' or path == 'patterns.yaml' %}
-    {% set link = '/patterns' %}
-    {% elif path == '.context/project/decisions.yaml' or path == 'decisions.yaml' %}
-    {% set link = '/decisions' %}
-    {% elif path.endswith('.md') and not path.startswith('.') %}
-    {% set link = '/project/' + path.replace('.md', '').replace('/', '--') %}
-    {% endif %}
-    <article style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
-                {% if link %}
-                <a href="{{ link }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none;">
-                {% endif %}
-                {% if item.task_id %}
-                <span style="color: var(--pico-primary); margin-right: 0.25rem;">{{ item.task_id }}</span>
-                {% endif %}
-                {{ item.title }}
-                {% if link %}
-                </a>
-                {% endif %}
-            </p>
-            <small style="color: var(--pico-muted-color); white-space: nowrap; margin-left: 1rem;">{{ item.score }}</small>
-        </div>
-        <p style="margin: 0.25rem 0 0; font-size: 0.8rem; color: var(--pico-muted-color);"><code>{{ item.path }}</code></p>
-        {% if item.snippet %}
-        <div style="margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5; color: var(--pico-color); overflow-wrap: break-word;">{{ item.snippet | safe }}</div>
-        {% endif %}
-    </article>
+<!-- Category pills -->
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;" id="category-pills">
+    <button class="outline pill-active" onclick="filterCategory(this, '')" style="font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 999px;">All ({{ total }})</button>
+    {% for category, items in results.items() %}
+    <button class="outline" onclick="filterCategory(this, '{{ category | e }}')" style="font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 999px;">{{ category }} ({{ items|length }})</button>
     {% endfor %}
-</details>
+</div>
+
+<!-- Search results (flat list, not accordions) -->
+<div id="search-results">
+{% for category, items in results.items() %}
+{% for item in items %}
+{% set link = item.path | path_to_link %}
+<article class="search-result" data-category="{{ category }}" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
+            {% if link %}
+            <a href="{{ link }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none;">
+            {% endif %}
+            {% if item.task_id %}
+            <span style="color: var(--pico-primary); margin-right: 0.25rem;">{{ item.task_id }}</span>
+            {% endif %}
+            {{ item.title }}
+            {% if link %}
+            </a>
+            {% endif %}
+        </p>
+        <!-- Relevance bar -->
+        <div style="display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; margin-left: 1rem;" title="Relevance: {{ item.score }}">
+            {% set score_pct = (item.score * 100) | int if item.score <= 1 else ([item.score, 100] | min) | int %}
+            {% set filled = (score_pct / 20) | round(0, 'ceil') | int %}
+            {% for i in range(5) %}
+            <span style="display:inline-block;width:6px;height:12px;border-radius:2px;background:{% if i < filled %}var(--pico-primary){% else %}var(--pico-muted-border-color){% endif %}"></span>
+            {% endfor %}
+            <small style="color:var(--pico-muted-color);font-size:0.7rem;margin-left:0.15rem;">
+                {% if score_pct >= 80 %}Exact{% elif score_pct >= 60 %}High{% elif score_pct >= 40 %}Good{% elif score_pct >= 20 %}Fair{% else %}Low{% endif %}
+            </small>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem;">
+        <small style="color: var(--pico-muted-color);"><code>{{ item.path }}</code></small>
+        <small style="background: var(--pico-primary-focus); padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.7rem;">{{ category }}</small>
+    </div>
+    {% if item.snippet %}
+    <div style="margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5; color: var(--pico-color); overflow-wrap: break-word;">{{ item.snippet | safe }}</div>
+    {% endif %}
+</article>
 {% endfor %}
-{% elif query %}
-<div class="coming-soon">
-    <h3>No Results</h3>
-    <p>No matches found for <strong>{{ query }}</strong>. Try a different search term or switch to semantic mode.</p>
+{% endfor %}
 </div>
 {% endif %}
 
-<!-- T-266: Styles for Q&A rendering, T-268: Conversation thread -->
+{% elif not query %}
+<!-- Empty state with suggestions -->
+<article style="text-align: center; padding: 2rem;">
+    <h3 style="color: var(--pico-muted-color);">Explore your project knowledge</h3>
+    <p style="color: var(--pico-muted-color);">Search for tasks, learnings, patterns, decisions, or ask a question.</p>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+        <a href="?q=healing+loop&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">healing loop</a>
+        <a href="?q=how+does+the+audit+system+work%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">How does the audit system work?</a>
+        <a href="?q=context+budget&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">context budget</a>
+        <a href="?q=what+are+the+four+directives%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">What are the four directives?</a>
+    </div>
+</article>
+{% endif %}
+
+<!-- Styles -->
 <style>
 #ask-text pre { position: relative; }
 #ask-text pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
@@ -142,13 +163,13 @@ sup.citation { color: var(--pico-primary); font-weight: 600; cursor: default; }
 #ask-text p { margin-bottom: 0.75rem; }
 #ask-text ul, #ask-text ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
 #ask-text h1, #ask-text h2, #ask-text h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
-/* T-268: Conversation thread styling */
 #conv-thread::-webkit-scrollbar { width: 4px; }
 #conv-thread::-webkit-scrollbar-thumb { background: var(--pico-muted-border-color); border-radius: 2px; }
+.pill-active { background: var(--pico-primary) !important; color: #fff !important; border-color: var(--pico-primary) !important; }
 </style>
 
 <script>
-/* Ask Q&A (T-257, T-268: multi-turn) — fetch+ReadableStream SSE */
+/* ── State ─────────────────────────────────────────────── */
 var _askAbort = null;
 var _lastQuestion = '';
 var _lastAnswer = '';
@@ -161,122 +182,39 @@ function _getCsrfToken() {
     return meta ? meta.getAttribute('content') : '';
 }
 
-function saveAnswer() {
-    var btn = document.getElementById('ask-save-btn');
-    var status = document.getElementById('ask-save-status');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-    status.textContent = '';
-
-    fetch('/search/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.saved) {
-            btn.textContent = 'Saved';
-            status.textContent = data.path;
-            status.style.color = 'var(--pico-ins-color)';
-        } else {
-            btn.disabled = false;
-            btn.textContent = 'Save Answer';
-            status.textContent = data.error || 'Save failed';
-            status.style.color = '#c62828';
-        }
-    })
-    .catch(function() {
-        btn.disabled = false;
-        btn.textContent = 'Save Answer';
-        status.textContent = 'Network error';
-        status.style.color = '#c62828';
-    });
+/* ── Intent Detection ──────────────────────────────────── */
+function isQuestion(text) {
+    if (/\?\s*$/.test(text)) return true;
+    return /^(who|what|why|when|where|how|is|are|can|does|do|should|will|would|could|explain|describe|tell me|list)\b/i.test(text.trim());
 }
 
-function sendFeedback(rating) {
-    var upBtn = document.getElementById('fb-up');
-    var downBtn = document.getElementById('fb-down');
-    var fbStatus = document.getElementById('fb-status');
-    upBtn.disabled = true;
-    downBtn.disabled = true;
+/* ── Unified Submit ────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('search-form');
+    var input = document.getElementById('search-input');
 
-    fetch('/search/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({
-            query: _lastQuestion,
-            answer_preview: _lastAnswer.substring(0, 500),
-            model: _lastModel,
-            rating: rating
-        })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.saved) {
-            fbStatus.textContent = rating === 1 ? 'Thanks!' : 'Noted, thanks!';
-            fbStatus.style.color = 'var(--pico-muted-color)';
-            if (rating === 1) { upBtn.style.opacity = '1'; downBtn.style.opacity = '0.3'; }
-            else { downBtn.style.opacity = '1'; upBtn.style.opacity = '0.3'; }
-        } else {
-            fbStatus.textContent = data.error || 'Failed';
-            upBtn.disabled = false;
-            downBtn.disabled = false;
-        }
-    })
-    .catch(function() {
-        fbStatus.textContent = 'Network error';
-        upBtn.disabled = false;
-        downBtn.disabled = false;
-    });
-}
-
-/* T-268: New conversation — clear history and thread */
-function newConversation() {
-    _conversationHistory = [];
-    document.getElementById('conv-thread').innerHTML = '';
-    document.getElementById('conv-thread').style.display = 'none';
-    document.getElementById('conv-header').style.display = 'none';
-    document.getElementById('ask-answer').style.display = 'none';
-    document.getElementById('ask-sources').style.display = 'none';
-    document.getElementById('ask-actions-row').style.display = 'none';
-    document.getElementById('ask-error').style.display = 'none';
-    document.getElementById('ask-input').value = '';
-    document.getElementById('ask-input').focus();
-}
-
-/* T-268: Add completed turn to the conversation thread */
-function _addTurnToThread(question, answerHtml) {
-    var thread = document.getElementById('conv-thread');
-    var turn = document.createElement('div');
-    turn.style.cssText = 'margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--pico-muted-border-color);';
-    turn.innerHTML =
-        '<div style="font-weight: 600; font-size: 0.85rem; color: var(--pico-primary); margin-bottom: 0.25rem;">' + escHtml(question) + '</div>' +
-        '<div style="font-size: 0.85rem; line-height: 1.5; max-height: 150px; overflow-y: auto;">' + answerHtml + '</div>';
-    thread.appendChild(turn);
-    thread.style.display = 'block';
-    thread.scrollTop = thread.scrollHeight;
-}
-
-/* T-268: Update conversation header */
-function _updateConvHeader() {
-    var turns = _conversationHistory.length / 2;
-    var header = document.getElementById('conv-header');
-    if (turns > 0) {
-        document.getElementById('conv-turn-count').textContent = turns + ' turn' + (turns !== 1 ? 's' : '');
-        header.style.display = 'flex';
-    } else {
-        header.style.display = 'none';
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var q = input.value.trim();
+            if (q.length >= 2 && isQuestion(q)) {
+                e.preventDefault();
+                if (window.htmx) htmx.trigger(form, 'htmx:abort');
+                askQuestion(q);
+            }
+            /* else: normal form submission for search */
+        });
     }
-}
 
-function askQuestion() {
-    var input = document.getElementById('ask-input');
-    var query = input.value.trim();
-    if (!query || query.length < 2) return;
+    /* Auto-trigger Q&A if query in URL looks like a question */
+    var urlQuery = '{{ query | default("") | e }}';
+    if (urlQuery && isQuestion(urlQuery)) {
+        askQuestion(urlQuery);
+    }
+});
 
-    var btn = document.getElementById('ask-btn');
-    var answerDiv = document.getElementById('ask-answer');
+/* ── Ask Q&A ───────────────────────────────────────────── */
+function askQuestion(query) {
+    var card = document.getElementById('ask-answer-card');
     var textDiv = document.getElementById('ask-text');
     var statusDiv = document.getElementById('ask-status');
     var modelDiv = document.getElementById('ask-model');
@@ -285,31 +223,26 @@ function askQuestion() {
     var sourceCount = document.getElementById('ask-source-count');
     var errorDiv = document.getElementById('ask-error');
 
-    /* T-268: Archive previous turn to thread before starting new one */
+    /* Archive previous turn */
     if (_lastQuestion && _lastAnswer) {
         _addTurnToThread(_lastQuestion, renderAnswer(_lastAnswer));
     }
 
-    /* Reset UI */
-    btn.disabled = true;
-    btn.textContent = 'Thinking...';
-    btn.setAttribute('aria-busy', 'true');
+    /* Show card */
+    card.style.display = 'block';
     textDiv.innerHTML = '';
-    answerDiv.style.display = 'block';
     statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '<span aria-busy="true">Retrieving context & generating answer...</span>';
-    modelDiv.style.display = 'none';
+    statusDiv.innerHTML = '<span aria-busy="true">Retrieving context &amp; generating answer...</span>';
+    modelDiv.textContent = '';
     sourcesEl.style.display = 'none';
     sourceList.innerHTML = '';
     errorDiv.style.display = 'none';
     document.getElementById('ask-actions-row').style.display = 'none';
+    document.getElementById('followup-row').style.display = 'none';
     _lastSources = [];
-    input.value = '';
 
-    /* Abort previous request if any */
     if (_askAbort) { _askAbort.abort(); _askAbort = null; }
 
-    /* T-268: POST with conversation history via fetch+ReadableStream */
     var abortCtrl = new AbortController();
     _askAbort = abortCtrl;
 
@@ -320,19 +253,11 @@ function askQuestion() {
 
     fetch('/search/ask', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': _getCsrfToken()
-        },
-        body: JSON.stringify({
-            query: query,
-            history: _conversationHistory
-        }),
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
+        body: JSON.stringify({ query: query, history: _conversationHistory }),
         signal: abortCtrl.signal
     }).then(function(response) {
-        if (!response.ok) {
-            throw new Error('Server error: ' + response.status);
-        }
+        if (!response.ok) throw new Error('Server error: ' + response.status);
         var reader = response.body.getReader();
         var decoder = new TextDecoder();
         var buffer = '';
@@ -343,38 +268,26 @@ function askQuestion() {
             parts.forEach(function(part) {
                 var match = part.match(/^data:\s*(.+)$/m);
                 if (!match) return;
-                var data;
-                try { data = JSON.parse(match[1]); } catch(e) { return; }
-                handleEvent(data);
+                try { handleEvent(JSON.parse(match[1])); } catch(e) {}
             });
         }
 
         function handleEvent(data) {
             if (data.type === 'model') {
                 _lastModel = data.model;
-                var label = 'Model: ' + data.model;
-                if (data.thinking) label += ' (thinking mode)';
+                var label = data.model;
+                if (data.provider && data.provider !== 'ollama') label = data.provider + '/' + data.model;
+                if (data.thinking) label += ' (thinking)';
                 modelDiv.textContent = label;
-                modelDiv.style.display = 'block';
-                if (data.thinking) {
-                    isThinking = true;
-                    thinkingStart = Date.now();
-                    statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>';
-                }
+                if (data.thinking) { isThinking = true; thinkingStart = Date.now(); statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>'; }
             }
             else if (data.type === 'thinking') {
                 var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
                 statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
             }
-            else if (data.type === 'thinking_done') {
-                isThinking = false;
-                statusDiv.style.display = 'none';
-            }
+            else if (data.type === 'thinking_done') { isThinking = false; statusDiv.style.display = 'none'; }
             else if (data.type === 'token') {
-                if (!gotFirstToken) {
-                    gotFirstToken = true;
-                    statusDiv.style.display = 'none';
-                }
+                if (!gotFirstToken) { gotFirstToken = true; statusDiv.style.display = 'none'; }
                 fullText += data.content;
                 renderAnswerDebounced(fullText, textDiv);
             }
@@ -389,59 +302,49 @@ function askQuestion() {
                     el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
                     el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
                         (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
-                        escHtml(src.title) +
-                        (link ? '</a>' : '') +
+                        escHtml(src.title) + (link ? '</a>' : '') +
                         ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
                         '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
                     sourceList.appendChild(el);
                 });
                 sourcesEl.style.display = 'block';
                 sourcesEl.setAttribute('open', '');
-                htmx.process(sourceList);
+                if (typeof htmx !== 'undefined') htmx.process(sourceList);
             }
             else if (data.type === 'done') {
                 _askAbort = null;
                 if (_renderTimer) clearTimeout(_renderTimer);
                 textDiv.innerHTML = renderAnswer(fullText);
                 addCopyButtons(textDiv);
-                btn.disabled = false;
-                btn.textContent = 'Ask';
-                btn.removeAttribute('aria-busy');
-                /* Update conversation state (T-268) */
                 _lastAnswer = fullText;
                 _lastQuestion = query;
                 _conversationHistory.push({role: 'user', content: query});
                 _conversationHistory.push({role: 'assistant', content: fullText});
                 _updateConvHeader();
-                /* Show action buttons (T-265, T-267) */
                 document.getElementById('ask-actions-row').style.display = 'flex';
                 document.getElementById('ask-save-btn').disabled = false;
-                document.getElementById('ask-save-btn').textContent = 'Save Answer';
+                document.getElementById('ask-save-btn').textContent = 'Save';
                 document.getElementById('ask-save-status').textContent = '';
                 document.getElementById('fb-up').disabled = false;
                 document.getElementById('fb-down').disabled = false;
                 document.getElementById('fb-up').style.opacity = '1';
                 document.getElementById('fb-down').style.opacity = '1';
                 document.getElementById('fb-status').textContent = '';
-                input.focus();
+                /* Show follow-up input */
+                document.getElementById('followup-row').style.display = 'block';
+                document.getElementById('followup-input').focus();
             }
             else if (data.type === 'error') {
                 _askAbort = null;
                 errorDiv.textContent = data.message;
                 errorDiv.style.display = 'block';
                 statusDiv.style.display = 'none';
-                btn.disabled = false;
-                btn.textContent = 'Ask';
-                btn.removeAttribute('aria-busy');
             }
         }
 
         function read() {
             reader.read().then(function(result) {
-                if (result.done) {
-                    processBuffer();
-                    return;
-                }
+                if (result.done) { processBuffer(); return; }
                 buffer += decoder.decode(result.value, { stream: true });
                 processBuffer();
                 read();
@@ -450,34 +353,111 @@ function askQuestion() {
                     errorDiv.textContent = 'Stream interrupted';
                     errorDiv.style.display = 'block';
                     statusDiv.style.display = 'none';
-                    btn.disabled = false;
-                    btn.textContent = 'Ask';
-                    btn.removeAttribute('aria-busy');
                 }
             });
         }
-
         read();
     }).catch(function(err) {
         if (err.name === 'AbortError') return;
-        errorDiv.textContent = 'Connection to LLM failed. Is ollama running?';
+        errorDiv.textContent = 'Cannot connect to LLM. Is the provider running?';
         errorDiv.style.display = 'block';
         statusDiv.style.display = 'none';
-        btn.disabled = false;
-        btn.textContent = 'Ask';
-        btn.removeAttribute('aria-busy');
     });
 }
 
-/* Allow Enter key to submit */
+function askFollowup() {
+    var input = document.getElementById('followup-input');
+    var q = input.value.trim();
+    if (q.length < 2) return;
+    input.value = '';
+    askQuestion(q);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    var el = document.getElementById('ask-input');
-    if (el) el.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') { e.preventDefault(); askQuestion(); }
-    });
+    var el = document.getElementById('followup-input');
+    if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); askFollowup(); } });
 });
 
-/* Markdown rendering via marked.js + highlight.js + DOMPurify (T-266) */
+/* ── Conversation Thread ───────────────────────────────── */
+function newConversation() {
+    _conversationHistory = [];
+    document.getElementById('conv-thread').innerHTML = '';
+    document.getElementById('conv-thread').style.display = 'none';
+    document.getElementById('conv-turn-count').style.display = 'none';
+    document.getElementById('conv-new-btn').style.display = 'none';
+    document.getElementById('ask-answer-card').style.display = 'none';
+    document.getElementById('ask-sources').style.display = 'none';
+    document.getElementById('ask-actions-row').style.display = 'none';
+    document.getElementById('followup-row').style.display = 'none';
+    document.getElementById('ask-error').style.display = 'none';
+    document.getElementById('search-input').focus();
+    _lastQuestion = '';
+    _lastAnswer = '';
+}
+
+function _addTurnToThread(question, answerHtml) {
+    var thread = document.getElementById('conv-thread');
+    var turn = document.createElement('div');
+    turn.style.cssText = 'margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--pico-muted-border-color);';
+    turn.innerHTML = '<div style="font-weight:600;font-size:0.85rem;color:var(--pico-primary);margin-bottom:0.25rem;">' + escHtml(question) + '</div>' +
+        '<div style="font-size:0.85rem;line-height:1.5;max-height:150px;overflow-y:auto;">' + answerHtml + '</div>';
+    thread.appendChild(turn);
+    thread.style.display = 'block';
+    thread.scrollTop = thread.scrollHeight;
+}
+
+function _updateConvHeader() {
+    var turns = _conversationHistory.length / 2;
+    if (turns > 0) {
+        document.getElementById('conv-turn-count').textContent = turns + ' turn' + (turns !== 1 ? 's' : '');
+        document.getElementById('conv-turn-count').style.display = 'inline';
+        document.getElementById('conv-new-btn').style.display = 'inline-block';
+    }
+}
+
+/* ── Save / Feedback ───────────────────────────────────── */
+function saveAnswer() {
+    var btn = document.getElementById('ask-save-btn');
+    var status = document.getElementById('ask-save-status');
+    btn.disabled = true; btn.textContent = 'Saving...'; status.textContent = '';
+    fetch('/search/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
+        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.saved) { btn.textContent = 'Saved'; status.textContent = data.path; status.style.color = 'var(--pico-ins-color)'; }
+        else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.style.color = '#c62828'; }
+    }).catch(function() { btn.disabled = false; btn.textContent = 'Save'; status.textContent = 'Network error'; status.style.color = '#c62828'; });
+}
+
+function sendFeedback(rating) {
+    var upBtn = document.getElementById('fb-up');
+    var downBtn = document.getElementById('fb-down');
+    var fbStatus = document.getElementById('fb-status');
+    upBtn.disabled = true; downBtn.disabled = true;
+    fetch('/search/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
+        body: JSON.stringify({ query: _lastQuestion, answer_preview: _lastAnswer.substring(0, 500), model: _lastModel, rating: rating })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.saved) {
+            fbStatus.textContent = rating === 1 ? 'Thanks!' : 'Noted!';
+            if (rating === 1) { upBtn.style.opacity = '1'; downBtn.style.opacity = '0.3'; }
+            else { downBtn.style.opacity = '1'; upBtn.style.opacity = '0.3'; }
+        } else { fbStatus.textContent = data.error || 'Failed'; upBtn.disabled = false; downBtn.disabled = false; }
+    }).catch(function() { fbStatus.textContent = 'Error'; upBtn.disabled = false; downBtn.disabled = false; });
+}
+
+/* ── Category Filtering ────────────────────────────────── */
+function filterCategory(btn, category) {
+    document.querySelectorAll('#category-pills button').forEach(function(b) { b.classList.remove('pill-active'); });
+    btn.classList.add('pill-active');
+    document.querySelectorAll('.search-result').forEach(function(el) {
+        el.style.display = (!category || el.dataset.category === category) ? '' : 'none';
+    });
+}
+
+/* ── Markdown Rendering ────────────────────────────────── */
 var _renderTimer = null;
 var _markedReady = false;
 
@@ -485,82 +465,49 @@ var _markedReady = false;
     if (typeof marked === 'undefined') return;
     marked.setOptions({
         highlight: function(code, lang) {
-            if (lang && hljs.getLanguage(lang)) {
-                return hljs.highlight(code, { language: lang }).value;
-            }
-            return hljs.highlightAuto(code).value;
+            if (lang && typeof hljs !== 'undefined' && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
+            return typeof hljs !== 'undefined' ? hljs.highlightAuto(code).value : code;
         },
-        breaks: true,
-        gfm: true
+        breaks: true, gfm: true
     });
     _markedReady = true;
 })();
 
 function renderAnswer(text) {
-    if (!_markedReady) {
-        /* Fallback if marked not loaded */
-        return '<p>' + escHtml(text) + '</p>';
-    }
+    if (!_markedReady) return '<p>' + escHtml(text) + '</p>';
     var raw = marked.parse(text);
-    /* Sanitize HTML to prevent XSS */
     var html = typeof DOMPurify !== 'undefined' ? DOMPurify.sanitize(raw) : raw;
-    /* Highlight citation references */
-    html = html.replace(/\[(\d+)\]/g, '<sup class="citation">[$1]</sup>');
-    return html;
+    return html.replace(/\[(\d+)\]/g, '<sup class="citation">[$1]</sup>');
 }
 
 function renderAnswerDebounced(text, target) {
-    /* Debounce rendering to ~100ms to prevent flicker during fast streaming */
     if (_renderTimer) clearTimeout(_renderTimer);
-    _renderTimer = setTimeout(function() {
-        target.innerHTML = renderAnswer(text);
-        addCopyButtons(target);
-    }, 100);
+    _renderTimer = setTimeout(function() { target.innerHTML = renderAnswer(text); addCopyButtons(target); }, 100);
 }
 
 function addCopyButtons(container) {
-    /* Add copy button to each code block (T-266) */
     container.querySelectorAll('pre code').forEach(function(block) {
         if (block.parentNode.querySelector('.copy-btn')) return;
         var btn = document.createElement('button');
-        btn.className = 'copy-btn';
-        btn.textContent = 'Copy';
-        btn.onclick = function() {
-            navigator.clipboard.writeText(block.textContent).then(function() {
-                btn.textContent = 'Copied!';
-                setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
-            });
-        };
+        btn.className = 'copy-btn'; btn.textContent = 'Copy';
+        btn.onclick = function() { navigator.clipboard.writeText(block.textContent).then(function() { btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy'; }, 1500); }); };
         block.parentNode.style.position = 'relative';
         block.parentNode.appendChild(btn);
     });
 }
 
-/* Path to Watchtower URL (mirrors Jinja2 logic from T-253) */
+/* ── Utilities ─────────────────────────────────────────── */
 function pathToLink(path) {
     if (!path) return '';
-    if (path.indexOf('.tasks/') === 0 && path.indexOf('/T-') !== -1) {
-        var m = path.match(/\/T-(\d+)/);
-        return m ? '/tasks/T-' + m[1] : '';
-    }
-    if (path.indexOf('.fabric/components/') === 0) {
-        return '/fabric/component/' + path.split('/').pop().replace('.yaml', '');
-    }
-    if (path.indexOf('.context/episodic/') === 0 && path.endsWith('.yaml')) {
-        return '/tasks/' + path.split('/').pop().replace('.yaml', '');
-    }
+    if (path.indexOf('.tasks/') === 0 && path.indexOf('/T-') !== -1) { var m = path.match(/\/T-(\d+)/); return m ? '/tasks/T-' + m[1] : ''; }
+    if (path.indexOf('.fabric/components/') === 0) return '/fabric/component/' + path.split('/').pop().replace('.yaml', '');
+    if (path.indexOf('.context/episodic/') === 0 && path.endsWith('.yaml')) return '/tasks/' + path.split('/').pop().replace('.yaml', '');
     if (path === '.context/project/learnings.yaml') return '/learnings';
     if (path === '.context/project/patterns.yaml') return '/patterns';
     if (path === '.context/project/decisions.yaml') return '/decisions';
-    if (path.endsWith('.md') && path.charAt(0) !== '.') {
-        return '/project/' + path.replace('.md', '').replace(/\//g, '--');
-    }
+    if (path.endsWith('.md') && path.charAt(0) !== '.') return '/project/' + path.replace('.md', '').replace(/\//g, '--');
     return '';
 }
 
-function escHtml(s) {
-    var d = document.createElement('div');
-    d.appendChild(document.createTextNode(s));
-    return d.innerHTML;
-}
+function escHtml(s) { var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
 </script>
