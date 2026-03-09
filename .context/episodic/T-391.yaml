@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-391: Search page layout redesign with simplified mode UX
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T12:45:42Z
+# ============================================================================
+
+task_id: T-391
+task_name: "Search page layout redesign with simplified mode UX"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T11:36:04Z
+completed: 2026-03-09T12:45:41Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Search bar full-width (Pico fieldset group with flex override)"
+  - "Mode dropdown replaced with segmented pill buttons (All/Keyword/Semantic)"
+  - "Hidden select synced with pill clicks for form submission"
+  - "Pill active state persists on page reload (server-rendered from mode param)"
+  - "Gear icon circular with hover state"
+  - "Hint text on same row as pills"
+  - "Search with mode=keyword works correctly (URL reflects selected mode)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-391-search-page-layout-redesign-with-simplif.md
+generated_by: context-agent-hybrid
