@@ -136,7 +136,7 @@ def search_view():
     from web.search import search as bm25_search, index_stats
 
     query = request.args.get("q", "").strip()
-    mode = request.args.get("mode", "keyword")
+    mode = request.args.get("mode", "hybrid")
     results = {}
     stats = None
     vec_stats = None
