@@ -1,0 +1,76 @@
+{% if query %}
+<p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+    {% set total = results.values() | map('length') | sum if results else 0 %}
+    {% if results %}
+    Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong>
+    ({{ mode | default('hybrid') }})
+    {% if stats %}
+    <span style="opacity: 0.6;">&mdash; {{ stats.num_docs }} docs indexed{% if vec_stats %}, {{ vec_stats.num_chunks }} chunks{% endif %}</span>
+    {% endif %}
+    {% else %}
+    No results for <strong>{{ query }}</strong>.
+    {% endif %}
+</p>
+
+{% if results %}
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;" id="category-pills">
+    <button class="outline pill-active" onclick="filterCategory(this, '')" style="font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 999px;">All ({{ total }})</button>
+    {% for category, items in results.items() %}
+    <button class="outline" onclick="filterCategory(this, '{{ category | e }}')" style="font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 999px;">{{ category }} ({{ items|length }})</button>
+    {% endfor %}
+</div>
+
+<div id="search-results">
+{% for category, items in results.items() %}
+{% for item in items %}
+{% set link = item.path | path_to_link %}
+<article class="search-result" data-category="{{ category }}" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
+            {% if link %}
+            <a href="{{ link }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none;">
+            {% endif %}
+            {% if item.task_id %}
+            <span style="color: var(--pico-primary); margin-right: 0.25rem;">{{ item.task_id }}</span>
+            {% endif %}
+            {{ item.title }}
+            {% if link %}
+            </a>
+            {% endif %}
+        </p>
+        <div style="display: flex; align-items: center; gap: 0.35rem; white-space: nowrap; margin-left: 1rem;" title="Relevance: {{ item.score }}">
+            {% set score_pct = (item.score * 100) | int if item.score <= 1 else ([item.score, 100] | min) | int %}
+            {% set filled = (score_pct / 20) | round(0, 'ceil') | int %}
+            {% for i in range(5) %}
+            <span style="display:inline-block;width:6px;height:12px;border-radius:2px;background:{% if i < filled %}var(--pico-primary){% else %}var(--pico-muted-border-color){% endif %}"></span>
+            {% endfor %}
+            <small style="color:var(--pico-muted-color);font-size:0.7rem;margin-left:0.15rem;">
+                {% if score_pct >= 80 %}Exact{% elif score_pct >= 60 %}High{% elif score_pct >= 40 %}Good{% elif score_pct >= 20 %}Fair{% else %}Low{% endif %}
+            </small>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem;">
+        <small style="color: var(--pico-muted-color);"><code>{{ item.path }}</code></small>
+        <small style="background: var(--pico-primary-focus); padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.7rem;">{{ category }}</small>
+    </div>
+    {% if item.snippet %}
+    <div style="margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.5; color: var(--pico-color); overflow-wrap: break-word;">{{ item.snippet | safe }}</div>
+    {% endif %}
+</article>
+{% endfor %}
+{% endfor %}
+</div>
+{% endif %}
+
+{% elif not query %}
+<article style="text-align: center; padding: 2rem;">
+    <h3 style="color: var(--pico-muted-color);">Explore your project knowledge</h3>
+    <p style="color: var(--pico-muted-color);">Search for tasks, learnings, patterns, decisions, or ask a question.</p>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+        <a href="?q=healing+loop&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">healing loop</a>
+        <a href="?q=how+does+the+audit+system+work%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">How does the audit system work?</a>
+        <a href="?q=context+budget&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">context budget</a>
+        <a href="?q=what+are+the+four+directives%3F&mode=hybrid" class="outline" role="button" style="font-size: 0.85rem; padding: 0.3rem 0.75rem;">What are the four directives?</a>
+    </div>
+</article>
+{% endif %}
