@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-382: API endpoint for search Q&A (non-streaming JSON)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T10:42:48Z
+# ============================================================================
+
+task_id: T-382
+task_name: "API endpoint for search Q&A (non-streaming JSON)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T10:36:44Z
+completed: 2026-03-09T10:42:47Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "web/blueprints/api.py created with /api/v1/ask, /api/v1/search, /api/v1/health"
+  - "Blueprint registered in app.py"
+  - "CSRF exempted for /api/ routes"
+  - "/api/v1/health returns 200 with provider info"
+  - "/api/v1/search returns JSON results"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [api, search]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-382-api-endpoint-for-search-qa-non-streaming.md
+generated_by: context-agent-hybrid
