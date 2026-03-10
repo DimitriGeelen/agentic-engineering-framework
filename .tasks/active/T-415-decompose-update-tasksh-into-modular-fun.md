@@ -4,16 +4,16 @@ name: "Decompose update-task.sh into modular functions (S13)"
 description: >
   Break 500-line monolithic update-task.sh into testable functions: check_acceptance_criteria(), run_verification_commands(), check_human_sovereignty(), generate_episodic(). Currently mixes validation, AC checking, sovereignty gate, verification, and episodic generation. Directive score: S13=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: [refactoring, shell, reliability, usability]
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:15Z
-last_update: 2026-03-10T22:46:37Z
-date_finished: null
+last_update: 2026-03-10T22:47:30Z
+date_finished: 2026-03-10T22:47:30Z
 ---
 
 # T-415: Decompose update-task.sh into modular functions (S13)
@@ -79,3 +79,6 @@ fw task update T-411 --status started-work 2>&1 | grep -q 'sovereignty\|human' |
 
 ### 2026-03-10T22:46:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T22:47:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-414: Extract lib/errors.sh — consistent die/warn/error functions (S8)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T22:42:34Z
+# ============================================================================
+
+task_id: T-414
+task_name: "Extract lib/errors.sh — consistent die/warn/error functions (S8)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:14Z
+completed: 2026-03-10T22:42:32Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T23:42:19+01:00
+last_commit: 2026-03-10T23:42:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Extract lib/errors.sh — consistent die/warn/error/info with TTY detection
+
+# Key outcomes
+outcomes:
+  - "lib/errors.sh created with die(), warn(), error(), info() functions"
+  - "die() and block() use exit (intentional — they terminate); error/warn/info use echo (continue)"
+  - "Consistent color output with TTY detection (NO_COLOR support)"
+  - "5 agent scripts converted: create-task.sh, update-task.sh, handover.sh, healing.sh, context.sh"
+  - "Exit codes standardized: 0=success, 1=error, 2=blocking error (hook convention)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Extract lib/errors.sh — consistent die/warn/error/info with TTY detection"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/context.sh"
+  - "agents/handover/handover.sh"
+  - "agents/healing/healing.sh"
+  - "agents/task-create/create-task.sh"
+  - "agents/task-create/update-task.sh"
+  - ".fabric/components/lib-errors.yaml"
+  - "lib/errors.sh"
+  - "lib/paths.sh"
+  - ".tasks/active/T-414-extract-liberrorssh--consistent-diewarne.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T23:42:19"
+    action: "T-414: Extract lib/errors.sh — consistent die/warn/error/info with TTY detection"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 99 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, shell, reliability, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 99
+  commits: 1
+  files_changed: 9
+  lines_added: 128
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-414-extract-liberrorssh--consistent-diewarne.md
+generated_by: context-agent-hybrid

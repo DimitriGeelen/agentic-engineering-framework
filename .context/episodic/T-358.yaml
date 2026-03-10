@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-358: Inception: Human AC prerequisite gap — deployment steps missing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T20:35:15Z
+# ============================================================================
+
+task_id: T-358
+task_name: "Inception: Human AC prerequisite gap — deployment steps missing"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-08T18:42:46Z
+completed: 2026-03-10T20:35:14Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-03-08T19:51:31+01:00
+last_commit: 2026-03-09T07:55:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Capture human AC prerequisite gap — ACs must be self-contained runbooks. Research Human AC prerequisite gap — inception exploration. GO — add prerequisite awareness to Human AC format requirements
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (3/5 tasks missing prerequisites)"
+  - "Assumptions tested (T-325 covers format not prerequisites)"
+  - "Go/No-Go decision made (GO — see Decision section)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - "docs/reports/T-358-human-ac-prerequisite-gap.md"
+  - ".tasks/active/T-358-inception-human-ac-prerequisite-gap--dep.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-08T19:51:31"
+    action: "T-358: Capture human AC prerequisite gap — ACs must be self-contained runbooks"
+  - time: "2026-03-09T07:54:38"
+    action: "T-358: Research Human AC prerequisite gap — inception exploration"
+  - time: "2026-03-09T07:55:16"
+    action: "T-358: GO — add prerequisite awareness to Human AC format requirements"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2992 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, quality]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2992
+  commits: 3
+  files_changed: 3
+  lines_added: 185
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-358-inception-human-ac-prerequisite-gap--dep.md
+generated_by: context-agent-hybrid

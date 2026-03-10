@@ -15,7 +15,7 @@ tags: [refactoring, quality, audit, governance]
 components: [web/blueprints/discovery.py, web/static/js/chat.js, agents/task-create/update-task.sh, web/templates/base.html]
 related_tasks: [T-404, T-406, T-409, T-412, T-413, T-414, T-415, T-416, T-417, T-418, T-419, T-420, T-421, T-422, T-423, T-424, T-425, T-426, T-427, T-428, T-429, T-430, T-431, T-432]
 created: 2026-03-10T20:54:13Z
-last_update: 2026-03-10T21:15:00Z
+last_update: 2026-03-10T22:47:30Z
 date_finished: null
 ---
 
@@ -147,3 +147,6 @@ grep -q "Dialogue Log" docs/reports/T-411-refactoring-directive-scoring.md
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Human approved all three tiers: DO findings as horizon:now, MAYBE as horizon:next, SKIP in horizon:later inception. 64 findings, 5 layers, 4 directives. D2 Reliability dominates.
+
+### 2026-03-10T22:46:37Z — status-update [task-update-agent]
+- **Change:** horizon: now → now
