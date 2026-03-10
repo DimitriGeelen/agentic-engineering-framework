@@ -1,5 +1,5 @@
-# Audit Results - 2026-03-10-2358
-timestamp: 2026-03-10T22:58:00Z
+# Audit Results - 2026-03-11-0022
+timestamp: 2026-03-10T23:22:50Z
 summary:
   pass: 135
   warn: 5
@@ -17,22 +17,19 @@ findings:
     check: "Task template exists"
   - level: PASS
     check: "All 9 project YAML files parse correctly"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 141 registered, 0 unregistered"
+    check: "Fabric: 142 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 141/141 cards enriched (0 without edges)"
+    check: "Fabric edges: 142/142 cards enriched (0 without edges)"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (141 cards)"
+    check: "Fabric drift: All watched source files registered (142 cards)"
   - level: PASS
     check: "All 60 active tasks are valid"
   - level: WARN
     check: "Task T-437 has short description (4 chars)"
     mitigation: "Expand description in T-437-test-enum.md"
   - level: PASS
-    check: "Git traceability: 98% (1264/1281 commits reference tasks)"
+    check: "Git traceability: 98% (1266/1283 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -55,7 +52,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 410 episodic summaries have quality content"
+    check: "All 411 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -80,13 +77,13 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-415)"
+    check: "CTL-001: Focus file has active task (T-417)"
   - level: PASS
-    check: "CTL-003: Budget status file absent (no active session)"
+    check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 0 (last commit: 79 seconds ago)"
+    check: "CTL-004: Tool counter at 12 (last commit: 6 minutes ago)"
   - level: PASS
-    check: "CTL-018: Budget status absent (no active session — expected)"
+    check: "CTL-018: Budget status valid JSON (level: warn)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -96,7 +93,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (299 handovers, 104 compactions)"
+    check: "CTL-006: Handover coverage for compactions (300 handovers, 104 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -258,13 +255,15 @@ findings:
   - level: PASS
     check: "CTL-025: T-415 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-416 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-025: T-437 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/410)"
+    check: "D1: Episodic quality — 0% [TODO] (3/411)"
   - level: PASS
-    check: "D2: Human review queue — 35 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 36 task(s) awaiting human action (normal)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - level: PASS
@@ -277,10 +276,11 @@ findings:
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: PASS
     check: "D5: Task lifecycle — no anomalies"
+  - level: WARN
+    check: "D3: Commit velocity — WARN drop today=2 avg=54 ratio=0.0x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=59 avg=48 ratio=1.2x)"
-  - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 59_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 61_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=17.7 earlier=5.6)"
   - level: PASS
