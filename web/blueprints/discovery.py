@@ -196,11 +196,13 @@ def search_view():
         from web.search_utils import aggregate_tags
         tag_cloud = aggregate_tags(limit=24)
 
+    is_chat = request.args.get("mode") == "ask"
     return render_page(
         "search.html",
         page_title="Search",
         query=query,
         mode=mode,
+        is_chat=is_chat,
         results=results,
         stats=stats,
         vec_stats=vec_stats,
@@ -211,19 +213,25 @@ def search_view():
 
 @bp.route("/search/ask", methods=["GET", "POST"])
 def search_ask():
-    """SSE streaming endpoint for LLM-assisted Q&A (T-256, T-268).
+    """SSE streaming endpoint for LLM-assisted Q&A (T-256, T-268, T-409).
 
     GET:  /search/ask?q=... (single-shot, backward compatible)
-    POST: /search/ask with JSON {query, history} (multi-turn conversation)
+    POST: /search/ask with JSON {query, history, scope, model}
+
+    T-409: Added scope (filter RAG context) and model (override default) params.
     """
     from web.ask import stream_answer
     from web.embeddings import rag_retrieve
 
     history = []
+    scope = "all"
+    model_override = None
     if request.method == "POST":
         data = request.get_json(silent=True) or {}
         query = (data.get("query") or data.get("q") or "").strip()
         history = data.get("history") or []
+        scope = data.get("scope", "all")
+        model_override = data.get("model") or None
     else:
         query = request.args.get("q", "").strip()
 
@@ -234,8 +242,19 @@ def search_ask():
 
     chunks = rag_retrieve(query, limit=10)
 
+    # T-409: Filter RAG chunks by scope
+    if scope and scope != "all":
+        scope_filters = {
+            "tasks": ["Active Tasks", "Completed Tasks"],
+            "docs": ["Research Reports", "Specifications", "Agent Docs"],
+            "episodic": ["Episodic Memory"],
+        }
+        allowed = scope_filters.get(scope, [])
+        if allowed:
+            chunks = [c for c in chunks if c.get("category") in allowed]
+
     return Response(
-        stream_answer(query, chunks, history=history),
+        stream_answer(query, chunks, history=history, model_override=model_override),
         mimetype="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -296,6 +315,125 @@ def search_save():
     filepath.write_text(content)
     rel_path = str(filepath.relative_to(PROJECT_ROOT))
     return json.dumps({"saved": True, "path": rel_path}), 200
+
+
+@bp.route("/search/save-conversation", methods=["POST"])
+def save_conversation():
+    """Save a chat conversation as a curated artifact (T-409).
+
+    Saves the final answer as the primary content, with full conversation
+    thread as collapsible context. Stored in .context/qa/conversations/.
+    """
+    data = request.get_json(silent=True) or {}
+    history = data.get("history") or []
+    final_answer = (data.get("final_answer") or "").strip()
+    final_question = (data.get("final_question") or "").strip()
+    loaded_from = data.get("loaded_from")  # ID if continuing a saved conversation
+
+    if not final_answer or not history:
+        return json.dumps({"error": "No conversation to save"}), 400
+
+    conv_dir = PROJECT_ROOT / ".context" / "qa" / "conversations"
+    conv_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate title from first question or final question
+    first_question = ""
+    for msg in history:
+        if msg.get("role") == "user":
+            first_question = msg["content"]
+            break
+    title = final_question or first_question or "Untitled conversation"
+    slug = re_mod.sub(r"[^a-z0-9]+", "-", title.lower())[:60].strip("-")
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    conv_id = f"{date_str}-{slug}"
+    filepath = conv_dir / f"{conv_id}.json"
+
+    # Avoid overwriting
+    counter = 1
+    while filepath.exists() and not loaded_from:
+        counter += 1
+        conv_id = f"{date_str}-{slug}-{counter}"
+        filepath = conv_dir / f"{conv_id}.json"
+
+    # If continuing a saved conversation, overwrite the original
+    if loaded_from:
+        orig = conv_dir / f"{loaded_from}.json"
+        if orig.exists():
+            filepath = orig
+            conv_id = loaded_from
+
+    # Save as JSON (structured for reload)
+    conv_data = {
+        "id": conv_id,
+        "title": title[:120],
+        "date": date_str,
+        "turns": len(history) // 2,
+        "final_question": final_question,
+        "final_answer": final_answer,
+        "history": history,
+    }
+    filepath.write_text(json.dumps(conv_data, indent=2))
+
+    # Also save a human-readable Markdown version
+    md_path = conv_dir / f"{conv_id}.md"
+    md_lines = [
+        f"# {title}\n",
+        f"**Date:** {date_str}  ",
+        f"**Turns:** {len(history) // 2}\n",
+        "## Final Answer\n",
+        f"{final_answer}\n",
+        "## Conversation Thread\n",
+    ]
+    for msg in history:
+        role = msg.get("role", "unknown")
+        content = msg.get("content", "")
+        if role == "user":
+            md_lines.append(f"**You:** {content}\n")
+        else:
+            md_lines.append(f"**AI:** {content}\n")
+    md_path.write_text("\n".join(md_lines))
+
+    rel_path = str(filepath.relative_to(PROJECT_ROOT))
+    return json.dumps({"saved": True, "path": rel_path, "id": conv_id}), 200
+
+
+@bp.route("/search/conversations")
+def list_conversations():
+    """List saved conversations for the chat sidebar (T-409)."""
+    conv_dir = PROJECT_ROOT / ".context" / "qa" / "conversations"
+    conversations = []
+    if conv_dir.exists():
+        for f in sorted(conv_dir.glob("*.json"), reverse=True)[:20]:
+            try:
+                data = json.loads(f.read_text())
+                conversations.append({
+                    "id": data.get("id", f.stem),
+                    "title": data.get("title", f.stem),
+                    "date": data.get("date", ""),
+                    "turns": data.get("turns", 0),
+                })
+            except Exception:
+                continue
+    return json.dumps({"conversations": conversations}), 200
+
+
+@bp.route("/search/load-conversation")
+def load_conversation():
+    """Load a saved conversation for continuation (T-409)."""
+    conv_id = request.args.get("id", "").strip()
+    if not conv_id:
+        return json.dumps({"error": "No conversation ID"}), 400
+
+    conv_dir = PROJECT_ROOT / ".context" / "qa" / "conversations"
+    filepath = conv_dir / f"{conv_id}.json"
+    if not filepath.exists():
+        return json.dumps({"error": "Conversation not found"}), 404
+
+    try:
+        data = json.loads(filepath.read_text())
+        return json.dumps(data), 200
+    except Exception as e:
+        return json.dumps({"error": str(e)}), 500
 
 
 @bp.route("/search/feedback", methods=["POST"])

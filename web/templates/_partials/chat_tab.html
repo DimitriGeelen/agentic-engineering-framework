@@ -1,0 +1,95 @@
+<!-- Ask AI chat tab (T-409) — conversational RAG with streaming -->
+<div id="chat-container" style="display: none;">
+
+    <!-- Chat controls bar -->
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+        <!-- Model/provider selector -->
+        <select id="chat-provider" style="width: auto; margin: 0; padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                onchange="chatSwitchProvider(this.value)">
+        </select>
+        <select id="chat-model" style="width: auto; margin: 0; padding: 0.25rem 0.5rem; font-size: 0.8rem; max-width: 200px;">
+        </select>
+
+        <span style="flex: 1;"></span>
+
+        <!-- Context scope (optional) -->
+        <details id="chat-scope-details" style="margin: 0;">
+            <summary style="font-size: 0.78rem; color: var(--pico-muted-color); cursor: pointer;">
+                Scope: <span id="chat-scope-label">All</span>
+            </summary>
+            <div style="position: absolute; right: 0; z-index: 10; background: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); padding: 0.5rem; min-width: 180px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <input type="radio" name="chat-scope" value="all" checked onchange="chatSetScope(this.value)"> All knowledge
+                </label>
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <input type="radio" name="chat-scope" value="tasks" onchange="chatSetScope(this.value)"> Tasks only
+                </label>
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                    <input type="radio" name="chat-scope" value="docs" onchange="chatSetScope(this.value)"> Docs &amp; reports
+                </label>
+                <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.35rem;">
+                    <input type="radio" name="chat-scope" value="episodic" onchange="chatSetScope(this.value)"> Episodic memory
+                </label>
+            </div>
+        </details>
+
+        <!-- New conversation -->
+        <button id="chat-new-btn" class="outline secondary" onclick="chatNew()"
+                style="font-size: 0.75rem; padding: 0.2rem 0.6rem; margin: 0; display: none;">
+            New Chat
+        </button>
+    </div>
+
+    <!-- Saved conversations (collapsible) -->
+    <details id="chat-saved-section" style="margin-bottom: 0.75rem;">
+        <summary style="font-size: 0.82rem; cursor: pointer;">
+            <strong>Saved Conversations</strong>
+            <small id="chat-saved-count" style="color: var(--pico-muted-color);"></small>
+        </summary>
+        <div id="chat-saved-list" style="margin-top: 0.5rem; max-height: 200px; overflow-y: auto;">
+            <small style="color: var(--pico-muted-color);">Loading...</small>
+        </div>
+    </details>
+
+    <!-- Message thread -->
+    <div id="chat-thread" style="min-height: 200px; max-height: 60vh; overflow-y: auto; padding: 0.5rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); margin-bottom: 0.75rem; background: var(--pico-background-color);">
+        <!-- Welcome message -->
+        <div id="chat-welcome" style="text-align: center; padding: 2rem 1rem; color: var(--pico-muted-color);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">&#x1F4AC;</div>
+            <p style="margin-bottom: 0.5rem;"><strong>Ask anything about the project</strong></p>
+            <p style="font-size: 0.85rem;">I'll search the knowledge base and give you an informed answer. Ask follow-ups to dig deeper.</p>
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
+                <button class="outline" onclick="chatAsk('How does the audit system work?')" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">How does the audit system work?</button>
+                <button class="outline" onclick="chatAsk('What are the four directives?')" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">What are the four directives?</button>
+                <button class="outline" onclick="chatAsk('Explain the component fabric')" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">Explain the component fabric</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status / streaming indicator -->
+    <div id="chat-status" style="display: none; font-size: 0.85rem; color: var(--pico-muted-color); margin-bottom: 0.5rem;">
+        <span aria-busy="true">Thinking...</span>
+    </div>
+
+    <!-- Error display -->
+    <div id="chat-error" style="display: none; padding: 0.5rem 0.75rem; background: #c6282822; border-radius: var(--pico-border-radius); color: #c62828; font-size: 0.85rem; margin-bottom: 0.5rem;"></div>
+
+    <!-- Input bar -->
+    <form id="chat-form" onsubmit="event.preventDefault(); chatSubmit();">
+        <fieldset role="group" style="margin-bottom: 0;">
+            <input type="text" id="chat-input" placeholder="Ask a question or continue the conversation..."
+                   aria-label="Chat message" autocomplete="off" minlength="2" required>
+            <button type="submit" id="chat-send-btn">Send</button>
+        </fieldset>
+    </form>
+
+    <!-- Action bar (appears after first response) -->
+    <div id="chat-actions" style="display: none; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <button id="chat-save-btn" onclick="chatSave()" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">
+            Save Conversation
+        </button>
+        <small id="chat-save-status" style="color: var(--pico-muted-color);"></small>
+        <span style="flex: 1;"></span>
+        <small id="chat-turn-count" style="color: var(--pico-muted-color);"></small>
+    </div>
+</div>
