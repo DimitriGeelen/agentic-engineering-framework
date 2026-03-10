@@ -4,16 +4,16 @@ name: "Extract JS StreamFetcher utility — deduplicate askQuestion/chatAsk (J2)
 description: >
   Extract shared StreamFetcher from search-qa.js:askQuestion (155 lines) and chat.js:chatAsk (169 lines) — 70% code overlap. Both implement identical SSE parsing, abort control, event handling. A protocol change fixed in one but not the other creates silent behavioral divergence. Directive score: J2=8. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: [refactoring, javascript, watchtower, reliability]
-components: [web/static/js/chat.js, web/static/js/search-qa.js]
+components: [web/static/js/chat.js]
 related_tasks: [T-409, T-411]
 created: 2026-03-10T21:03:18Z
-last_update: 2026-03-10T23:29:01Z
-date_finished: null
+last_update: 2026-03-10T23:34:07Z
+date_finished: 2026-03-10T23:34:07Z
 ---
 
 # T-418: Extract JS StreamFetcher utility — deduplicate askQuestion/chatAsk (J2)
@@ -74,3 +74,6 @@ grep -q 'streamSSE' web/static/js/chat.js web/static/js/search-qa.js
 
 ### 2026-03-10T23:29:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T23:34:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

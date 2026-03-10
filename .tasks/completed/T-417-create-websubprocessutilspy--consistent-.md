@@ -4,16 +4,16 @@ name: "Create web/subprocess_utils.py — consistent git/fw command execution (P
 description: >
   Create web/subprocess_utils.py with run_git_command() and run_fw_command() helpers. Currently 3 separate subprocess implementations with inconsistent timeouts (none vs 10s), error checking, and encoding. Directive score: P7=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, python, watchtower, reliability]
-components: [web/subprocess_utils.py, web/blueprints/core.py, web/blueprints/quality.py, web/blueprints/session.py]
+components: [web/blueprints/core.py, web/blueprints/metrics.py, web/blueprints/quality.py, web/blueprints/session.py, web/blueprints/tasks.py, web/subprocess_utils.py]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:17Z
-last_update: 2026-03-10T23:17:27Z
-date_finished: null
+last_update: 2026-03-10T23:28:47Z
+date_finished: 2026-03-10T23:28:47Z
 ---
 
 # T-417: Create web/subprocess_utils.py — consistent git/fw command execution (P7)
@@ -62,3 +62,6 @@ python3 -c "from web.subprocess_utils import run_git_command; print(run_git_comm
 
 ### 2026-03-10T23:17:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T23:28:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

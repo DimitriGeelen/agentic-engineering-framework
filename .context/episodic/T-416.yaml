@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-416: Create web/context_loader.py — centralized YAML and context file loading (P1+P3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T23:17:16Z
+# ============================================================================
+
+task_id: T-416
+task_name: "Create web/context_loader.py — centralized YAML and context file loading (P1+P3)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:16Z
+completed: 2026-03-10T23:17:15Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-11T00:17:05+01:00
+last_commit: 2026-03-11T00:17:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create web/context_loader.py — centralized YAML context loading
+
+# Key outcomes
+outcomes:
+  - "web/context_loader.py created with load_learnings(), load_patterns(), load_decisions(), load_concerns()"
+  - "All blueprint YAML loading replaced with context_loader calls"
+  - "Fallback logic (gaps.yaml→concerns.yaml) centralized in one place"
+  - "Error handling consistent (uses shared.py load_yaml internally)"
+  - "All Watchtower pages still render correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-context_loader.yaml"
+  - ".tasks/active/T-416-create-webcontextloaderpy--centralized-y.md"
+  - "web/blueprints/core.py"
+  - "web/blueprints/discovery.py"
+  - "web/blueprints/metrics.py"
+  - "web/blueprints/risks.py"
+  - "web/context_loader.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T00:17:05"
+    action: "T-416: Create web/context_loader.py — centralized YAML context loading"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 133 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 133
+  commits: 1
+  files_changed: 7
+  lines_added: 159
+  lines_removed: 194
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-416-create-webcontextloaderpy--centralized-y.md
+generated_by: context-agent-hybrid

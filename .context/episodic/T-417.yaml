@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-417: Create web/subprocess_utils.py — consistent git/fw command execution (P7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T23:28:48Z
+# ============================================================================
+
+task_id: T-417
+task_name: "Create web/subprocess_utils.py — consistent git/fw command execution (P7)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:17Z
+completed: 2026-03-10T23:28:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-11T00:28:34+01:00
+last_commit: 2026-03-11T00:28:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create web/subprocess_utils.py — consistent subprocess execution
+
+# Key outcomes
+outcomes:
+  - "web/subprocess_utils.py created with run_git_command(args, timeout=10) and run_fw_command(args, timeout=30)"
+  - "All blueprint subprocess.run calls replaced with utility functions"
+  - "Consistent timeout, encoding (utf-8, errors=replace), and error handling"
+  - "At least 3 call sites converted"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-subprocess_utils.yaml"
+  - ".tasks/active/T-417-create-websubprocessutilspy--consistent-.md"
+  - "web/blueprints/core.py"
+  - "web/blueprints/metrics.py"
+  - "web/blueprints/quality.py"
+  - "web/blueprints/session.py"
+  - "web/blueprints/tasks.py"
+  - "web/subprocess_utils.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T00:28:34"
+    action: "T-417: Create web/subprocess_utils.py — consistent subprocess execution"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 145 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 145
+  commits: 1
+  files_changed: 8
+  lines_added: 182
+  lines_removed: 237
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-417-create-websubprocessutilspy--consistent-.md
+generated_by: context-agent-hybrid
