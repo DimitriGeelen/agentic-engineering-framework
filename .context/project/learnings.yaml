@@ -703,4 +703,67 @@ learnings:
   date: 2026-03-09
   context: Added via context agent
   application: TBD
+- id: L-087
+  learning: "YAML generators must validate both structure (indentation, nesting) and uniqueness constraints (IDs) before writing. Parsing errors in downstream tools expose generator-layer bugs."
+  source: P-001
+  task: T-206
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-088
+  learning: "YAML string processing must strip existing quotes before re-quoting to prevent recursive escaping. Defensive parsing at the data layer catches format errors from the generator layer."
+  source: P-001
+  task: T-165
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-089
+  learning: "Hook path generation must resolve placeholders to absolute paths at initialization time. Generated configs must be immediately valid without post-processing."
+  source: P-001
+  task: T-352
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-090
+  learning: "Hook generators must be exhaustive and match the authoritative hook list. Each hook's PROJECT_ROOT requirement must be individually assessed rather than assumed globally."
+  source: P-001
+  task: T-313
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-091
+  learning: "Enforcement gates must detect command-line bypasses (--no-verify) and protect critical config files from casual modification. Tier 0 patterns should match destructive operations exhaustively."
+  source: P-001
+  task: T-229
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-092
+  learning: "Acceptance criteria gates must distinguish template scaffolding from real criteria via placeholder detection. Both Agent/Human AC split mode and legacy mode must be supported."
+  source: P-001
+  task: T-216
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-093
+  learning: "References to latest artifacts (handovers, reports) should use symlinks not copies, so audit checks see current state and avoid stale metadata."
+  source: P-001
+  task: T-260
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-094
+  learning: "Generic provider initialization must produce valid absolute hook paths for both framework and unknown provider fallback cases. PROJECT_ROOT must point to the project directory, not the framework."
+  source: P-001
+  task: T-146
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-095
+  learning: "Installation scripts must reference the actual default branch. URL hardcoding in documentation bypasses version control and becomes stale — use parameterized defaults."
+  source: P-001
+  task: T-350
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
 candidates: []
