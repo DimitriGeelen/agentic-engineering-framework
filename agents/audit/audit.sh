@@ -1402,7 +1402,7 @@ fi
 
 # C-003 OE: Check checkpoint hook is wired and firing
 CHECKPOINT_LOG="$CONTEXT_DIR/working/.inception-checkpoint-log"
-if grep -q "inception-research-counter\|INCEPTION_RESEARCH_INTERVAL\|C-003" "$PROJECT_ROOT/agents/context/checkpoint.sh" 2>/dev/null; then
+if grep -q "inception-research-counter\|INCEPTION_RESEARCH_INTERVAL\|C-003" "$FRAMEWORK_ROOT/agents/context/checkpoint.sh" 2>/dev/null; then
     pass "C-003: Research checkpoint logic present in checkpoint.sh"
 else
     warn "C-003: Research checkpoint logic missing from checkpoint.sh" \
