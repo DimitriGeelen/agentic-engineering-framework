@@ -14,6 +14,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 # Colors
 RED='\033[0;31m'

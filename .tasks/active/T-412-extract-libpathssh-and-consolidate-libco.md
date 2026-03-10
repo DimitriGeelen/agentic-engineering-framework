@@ -4,7 +4,7 @@ name: "Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)"
 description: >
   Extract duplicated path resolution (SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT) into lib/paths.sh — currently copy-pasted in 25+ files. Consolidate _sed_i compat fallback (5 files) into guaranteed lib/compat.sh sourcing. Directive score: S1=10 (highest), S5=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, shell, reliability, portability]
 components: [lib/paths.sh, lib/compat.sh]
 related_tasks: [T-406, T-411]
 created: 2026-03-10T21:03:12Z
-last_update: 2026-03-10T21:03:12Z
+last_update: 2026-03-10T22:19:22Z
 date_finished: null
 ---
 
@@ -34,11 +34,11 @@ Files: update-task.sh:25-28, resume.sh:16-18, context/lib/*.sh.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] lib/paths.sh created with resolve_paths() function setting SCRIPT_DIR, FRAMEWORK_ROOT, PROJECT_ROOT
-- [ ] All agents/* scripts source lib/paths.sh instead of inline path resolution
-- [ ] lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)
-- [ ] All existing tests/verification commands still pass after change
-- [ ] fw doctor passes
+- [x] lib/paths.sh created with resolve_paths() function setting SCRIPT_DIR, FRAMEWORK_ROOT, PROJECT_ROOT
+- [x] All agents/* scripts source lib/paths.sh instead of inline path resolution
+- [x] lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)
+- [x] All existing tests/verification commands still pass after change
+- [x] fw doctor passes
 
 ### Human
 - [ ] [RUBBER-STAMP] Spot-check 3 agent scripts use lib/paths.sh
@@ -73,3 +73,6 @@ fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-412-extract-libpathssh-and-consolidate-libco.md
 - **Context:** Initial task creation
+
+### 2026-03-10T22:19:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -18,7 +18,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 GENERATOR="$SCRIPT_DIR/generate_article.py"
 
 GREEN='\033[0;32m'

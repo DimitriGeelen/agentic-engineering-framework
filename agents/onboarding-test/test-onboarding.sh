@@ -18,6 +18,7 @@ set -uo pipefail
 # --- Path Resolution (no fw dependency) ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 # --- Arguments ---
 TARGET_DIR=""

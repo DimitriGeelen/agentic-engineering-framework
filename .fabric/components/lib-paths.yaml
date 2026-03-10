@@ -1,0 +1,47 @@
+id: lib/paths.sh
+name: paths
+type: script
+subsystem: framework-core
+location: lib/paths.sh
+tags: [shell, paths, portability, core]
+
+purpose: "Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers."
+
+depends_on:
+  - target: lib/compat.sh
+    type: calls
+
+depended_by:
+  - target: agents/audit/audit.sh
+    type: calls
+  - target: agents/context/context.sh
+    type: calls
+  - target: agents/handover/handover.sh
+    type: calls
+  - target: agents/git/git.sh
+    type: calls
+  - target: agents/task-create/create-task.sh
+    type: calls
+  - target: agents/task-create/update-task.sh
+    type: calls
+  - target: agents/healing/healing.sh
+    type: calls
+  - target: agents/fabric/fabric.sh
+    type: calls
+  - target: agents/resume/resume.sh
+    type: calls
+  - target: agents/context/checkpoint.sh
+    type: calls
+  - target: agents/context/budget-gate.sh
+    type: calls
+  - target: agents/context/check-active-task.sh
+    type: calls
+  - target: agents/context/check-tier0.sh
+    type: calls
+  - target: lib/ask.sh
+    type: calls
+  - target: bin/watchtower.sh
+    type: calls
+
+last_verified: 2026-03-10
+created_by: T-412
