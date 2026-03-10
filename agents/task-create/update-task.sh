@@ -24,8 +24,8 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-VALID_STATUSES="captured started-work issues work-completed"
-VALID_HORIZONS="now next later"
+# Source enumerations (single source of truth)
+source "$FRAMEWORK_ROOT/lib/enums.sh"
 
 # Check for help before positional args
 case "${1:-}" in
@@ -42,8 +42,6 @@ NEW_HORIZON=""
 NEW_TYPE=""
 REASON=""
 FORCE=false
-
-VALID_TYPES="build test refactor specification design decommission inception"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -114,7 +112,7 @@ CHANGES=()
 # Update status
 if [ -n "$NEW_STATUS" ]; then
     # Validate status
-    if ! echo "$VALID_STATUSES" | grep -qw "$NEW_STATUS"; then
+    if ! is_valid_status "$NEW_STATUS"; then
         echo -e "${RED}ERROR: Invalid status '$NEW_STATUS'${NC}" >&2
         echo "Valid: $VALID_STATUSES" >&2
         exit 1
@@ -153,26 +151,15 @@ if [ -n "$NEW_STATUS" ]; then
             echo -e "${YELLOW}Status already '$NEW_STATUS' — no change${NC}"
         fi
     else
-        # Validate transition (4-status lifecycle: captured → started-work ↔ issues → work-completed)
-        VALID_TRANSITION=false
-        case "$OLD_STATUS:$NEW_STATUS" in
-            captured:started-work)       VALID_TRANSITION=true ;;
-            started-work:captured)       VALID_TRANSITION=true ;;  # Park: defer premature start
-            started-work:issues)         VALID_TRANSITION=true ;;
-            started-work:work-completed) VALID_TRANSITION=true ;;
-            issues:started-work)         VALID_TRANSITION=true ;;
-            issues:work-completed)       VALID_TRANSITION=true ;;
-            # Legacy compat: refined/blocked → started-work (for old tasks)
-            refined:started-work)        VALID_TRANSITION=true ;;
-            blocked:started-work)        VALID_TRANSITION=true ;;
-        esac
-
-        if [ "$VALID_TRANSITION" = "false" ]; then
+        # Validate transition using centralized state machine (lib/enums.sh)
+        if ! is_valid_transition "$OLD_STATUS" "$NEW_STATUS"; then
             echo -e "${RED}ERROR: Invalid transition '$OLD_STATUS' → '$NEW_STATUS'${NC}" >&2
             echo "Valid transitions:" >&2
-            echo "  captured → started-work" >&2
-            echo "  started-work → captured | issues | work-completed" >&2
-            echo "  issues → started-work | work-completed" >&2
+            for from_status in $VALID_STATUSES; do
+                local targets
+                targets="$(valid_transitions_for "$from_status")"
+                [[ -n "$targets" ]] && echo "  $from_status → ${targets// / | }" >&2
+            done
             exit 1
         fi
 
@@ -407,7 +394,7 @@ fi
 
 # Update workflow type
 if [ -n "$NEW_TYPE" ]; then
-    if ! echo "$VALID_TYPES" | grep -qw "$NEW_TYPE"; then
+    if ! is_valid_type "$NEW_TYPE"; then
         echo -e "${RED}ERROR: Invalid workflow type '$NEW_TYPE'${NC}" >&2
         echo "Valid types: $VALID_TYPES" >&2
         exit 1
@@ -420,7 +407,7 @@ fi
 
 # Update horizon
 if [ -n "$NEW_HORIZON" ]; then
-    if ! echo "$VALID_HORIZONS" | grep -qw "$NEW_HORIZON"; then
+    if ! is_valid_horizon "$NEW_HORIZON"; then
         echo -e "${RED}ERROR: Invalid horizon '$NEW_HORIZON'${NC}" >&2
         echo "Valid horizons: $VALID_HORIZONS" >&2
         exit 1
