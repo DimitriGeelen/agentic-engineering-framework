@@ -4,7 +4,7 @@ name: "Framework hardening: fix orphaned fabric cards, register concerns.yaml"
 description: >
   T-397 consolidated gaps+risks into concerns.yaml but left 3 orphaned fabric cards (gaps.yaml, issues.yaml, risks.yaml) and 1 unregistered component (concerns.yaml). Fix fabric drift and update edges.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-10T09:44:29Z
-last_update: 2026-03-10T12:39:33Z
-date_finished: null
+last_update: 2026-03-10T12:43:43Z
+date_finished: 2026-03-10T12:43:43Z
 ---
 
 # T-401: Framework hardening: fix orphaned fabric cards, register concerns.yaml
@@ -55,3 +55,6 @@ None — straightforward cleanup.
 
 ### 2026-03-10T12:39:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T12:43:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
