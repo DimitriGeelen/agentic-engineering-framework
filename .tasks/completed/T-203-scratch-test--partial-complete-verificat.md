@@ -5,7 +5,7 @@ description: >
   Temporary task to verify P-010 AC split and partial-complete behavior. Delete after testing.
 
 status: work-completed
-workflow_type: build
+workflow_type: test
 owner: human
 horizon: now
 tags: []

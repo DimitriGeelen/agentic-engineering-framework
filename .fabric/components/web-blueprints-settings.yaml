@@ -4,17 +4,10 @@ type: route
 subsystem: watchtower
 location: web/blueprints/settings.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/shared.py
+  type: imports
+depended_by: []
 last_verified: 2026-03-09
 created_by: unknown
