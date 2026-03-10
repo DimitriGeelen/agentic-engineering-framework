@@ -12,7 +12,7 @@ tags: [watchtower, search, llm, rag]
 components: []
 related_tasks: []
 created: 2026-03-10T17:57:50Z
-last_update: 2026-03-10T17:57:50Z
+last_update: 2026-03-10T18:07:38Z
 date_finished: null
 ---
 
@@ -20,40 +20,42 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Add a dedicated "Ask AI" chat tab to the search page. Conversational RAG with streaming,
+multi-turn history, save/resume conversations, model/provider selector, and optional context scoping.
+User requested chat-style interactive dialogue (like Claude/ChatGPT) separate from keyword/semantic search.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] "Ask AI" tab appears in search mode pills and switches to chat UI
+- [x] Chat UI renders: message thread, input bar, model/provider selector, scope filter
+- [x] Streaming SSE endpoint accepts scope and model_override params
+- [x] Save conversation endpoint stores JSON + Markdown to .context/qa/conversations/
+- [x] Load conversation endpoint returns saved state for continuation
+- [x] List conversations endpoint returns saved conversations for sidebar
+- [ ] CSRF fix: JSON POST endpoints exempt from CSRF check (committed but untested)
+- [ ] Chat streaming works end-to-end (user message → RAG → LLM → streamed response)
+- [ ] Save and reload a conversation (round-trip)
+- [ ] Register new fabric cards for chat.js and chat_tab.html
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Chat UI looks and feels like a natural conversation interface
+  **Steps:**
+  1. Open http://localhost:3000/search
+  2. Click "Ask AI" tab
+  3. Ask "How does the audit system work?" and wait for response
+  4. Ask a follow-up question
+  5. Click "Save Conversation" and verify it appears in saved list
+  6. Click "Continue" on saved conversation to reload
+  **Expected:** Smooth streaming, readable messages, save/load works
+  **If not:** Note which step failed
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q "chat-container" web/templates/_partials/chat_tab.html
+grep -q "chatAsk" web/static/js/chat.js
+grep -q "save-conversation" web/blueprints/discovery.py
+grep -q "model_override" web/ask.py
 
 ## Decisions
 
