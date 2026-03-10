@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-399: Task board: owner/horizon filters, tag filter, search within board
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T10:43:39Z
+# ============================================================================
+
+task_id: T-399
+task_name: "Task board: owner/horizon filters, tag filter, search within board"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:43:58Z
+completed: 2026-03-10T10:43:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-10T11:41:05+01:00
+last_commit: 2026-03-10T11:41:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Task board filters — owner, horizon, tag, search with htmx
+
+# Key outcomes
+outcomes:
+  - "Owner filter dropdown with htmx live filtering"
+  - "Horizon filter dropdown (now/next/later)"
+  - "Tag filter dropdown (populated from task tags)"
+  - "Text search input filtering by ID, name, description, tags"
+  - "\"Clear filters\" link appears when any filter is active"
+  - "Filters work in both board and list views"
+  - "All filter dropdowns include each other in hx-include for composability"
+  - "Backend `tasks.py` handles owner, horizon, q parameters"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-399-task-board-ownerhorizon-filters-tag-filt.md"
+  - "web/blueprints/tasks.py"
+  - "web/templates/tasks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T11:41:05"
+    action: "T-399: Task board filters — owner, horizon, tag, search with htmx"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 1
+  files_changed: 3
+  lines_added: 142
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-399-task-board-ownerhorizon-filters-tag-filt.md
+generated_by: context-agent-hybrid
