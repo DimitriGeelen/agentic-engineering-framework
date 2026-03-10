@@ -1,12 +1,12 @@
 ---
 id: T-435
-name: "Document Claude Code settings and recommend optimizations for framework success"
+name: "Inception: Claude Code settings documentation and optimization for framework success"
 description: >
   Review all Claude Code settings (.claude/settings.json, .claude/settings.local.json, global settings) that the framework depends on. Document what each setting does, why it's configured that way, and the framework consequence if changed. Make recommendations for improving agent success rate. Output: settings documentation for README/docs, plus any recommended changes.
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [governance, documentation, claude-code, onboarding]
 components: []
