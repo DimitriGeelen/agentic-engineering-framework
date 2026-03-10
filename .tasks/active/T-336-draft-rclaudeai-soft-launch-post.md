@@ -31,7 +31,14 @@ Soft launch post for r/ClaudeAI per T-334 launch sequence. Draft at `docs/articl
 
 ### Human
 - [x] Post reviewed for tone/voice
-- [ ] Posted to r/ClaudeAI
+- [ ] [RUBBER-STAMP] Posted to r/ClaudeAI
+  **Steps:**
+  1. Open `docs/articles/reddit-claudeai-post.md` and copy the title and body
+  2. Go to https://www.reddit.com/r/ClaudeAI/submit and paste
+  3. Add the "Project" flair if available
+  4. Submit the post
+  **Expected:** Post appears on r/ClaudeAI/new
+  **If not:** Check subreddit rules for posting restrictions or karma requirements
 
 ## Verification
 

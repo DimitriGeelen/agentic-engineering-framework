@@ -33,8 +33,22 @@ Rewrite `.onedev-buildspec.yml` from stale Swarm/Docker pipeline to LXC model. D
 - [x] Dev not in pipeline (handled by systemd timer, T-283)
 
 ### Human
-- [ ] Add OneDev server SSH key to LXC authorized_keys (see buildspec header)
-- [ ] Trigger a test run from OneDev to verify pipeline executes
+- [ ] [RUBBER-STAMP] Add OneDev server SSH key to LXC authorized_keys
+  **Steps:**
+  1. SSH into OneDev server and copy its public key: `cat ~/.ssh/id_rsa.pub`
+  2. SSH into LXC 170: `ssh root@192.168.10.170`
+  3. Append the key to `~/.ssh/authorized_keys`
+  4. Test from OneDev server: `ssh root@192.168.10.170 echo ok`
+  **Expected:** `ok` printed without password prompt
+  **If not:** Check `sshd_config` for `PubkeyAuthentication yes` and restart sshd
+
+- [ ] [REVIEW] Trigger a test run from OneDev to verify pipeline executes
+  **Steps:**
+  1. Open OneDev web UI, navigate to agentic-engineering-framework project
+  2. Create a test tag (`v0.x.x-test`) or push a trivial commit with a `v*` tag
+  3. Watch the build log for SSH deploy steps to LXC 170
+  **Expected:** Build completes green, deploy connects to LXC, restarts watchtower
+  **If not:** Check build log for SSH errors; verify the key from step 1 was added
 
 ## Verification
 

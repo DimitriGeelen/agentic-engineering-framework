@@ -46,7 +46,14 @@ Series:
 
 ### Human
 - [x] Posts reviewed for tone/voice
-- [ ] Posts published to target platforms
+- [ ] [RUBBER-STAMP] Posts published to target platforms
+  **Steps:**
+  1. List the 7 deep-dive posts: `ls docs/articles/deep-dives/*.md`
+  2. For each post, copy the body and publish to the platform noted in its posting notes (LinkedIn, Reddit, Dev.to, etc.)
+  3. Space posts 2-3 days apart for reach
+  4. Track which have been published (check off in a local note)
+  **Expected:** All 7 posts live on their target platforms
+  **If not:** Publish remaining posts; check platform-specific formatting requirements
 
 ## Verification
 

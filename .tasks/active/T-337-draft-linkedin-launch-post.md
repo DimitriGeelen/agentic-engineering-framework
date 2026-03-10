@@ -31,7 +31,15 @@ LinkedIn post for launch sequence. Draft at `docs/articles/linkedin-post.md`.
 
 ### Human
 - [x] Post reviewed for tone/voice
-- [ ] Posted to LinkedIn
+- [ ] [RUBBER-STAMP] Posted to LinkedIn
+  **Steps:**
+  1. Open `docs/articles/linkedin-post.md` and copy the body text
+  2. Go to https://www.linkedin.com and click "Start a post"
+  3. Paste the content; add the recommended image if noted in the file
+  4. Add hashtags from the posting notes section
+  5. Publish
+  **Expected:** Post appears on your LinkedIn feed
+  **If not:** Check for content length limits or image format issues
 
 ## Verification
 
