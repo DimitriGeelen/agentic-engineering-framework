@@ -51,7 +51,7 @@ Key shared logic: SSE event parsing, abort control, token rendering, source disp
 
 ## Verification
 
-grep -q 'StreamFetcher\|streamFetch\|createStream' web/static/js/chat.js web/static/js/search-qa.js
+grep -q 'streamSSE' web/static/js/chat.js web/static/js/search-qa.js
 # Both files should reference the shared utility, not duplicate SSE parsing
 
 ## Decisions
