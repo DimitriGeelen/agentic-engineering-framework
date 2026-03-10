@@ -17,14 +17,78 @@ function chatLoadProviders() {
             (data.providers || []).forEach(function(p) {
                 var opt = document.createElement('option');
                 opt.value = p.name;
-                opt.textContent = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+                var dot = p.available ? '\u2022 ' : '\u2022 ';  /* bullet prefix */
+                opt.textContent = dot + p.name.charAt(0).toUpperCase() + p.name.slice(1);
+                opt.style.color = p.available ? '' : 'var(--pico-del-color)';
                 if (!p.available) { opt.disabled = true; opt.textContent += ' (offline)'; }
                 if (p.active) opt.selected = true;
                 sel.appendChild(opt);
             });
+            /* T-410: Update health dot next to selector */
+            _chatUpdateHealthDot(data.providers || []);
             chatLoadModels();
         })
-        .catch(function() {});
+        .catch(function() {
+            _chatUpdateHealthDot([]);
+        });
+}
+
+/* T-410: Health indicator dot */
+function _chatUpdateHealthDot(providers) {
+    var dot = document.getElementById('chat-health-dot');
+    if (!dot) return;
+    var active = providers.find(function(p) { return p.active; });
+    if (!active) {
+        dot.style.color = 'var(--pico-del-color)';
+        dot.title = 'No active provider';
+        dot.textContent = '\u25cf';  /* filled circle */
+        return;
+    }
+    if (active.available) {
+        dot.style.color = '#2e7d32';
+        dot.title = active.name + ': connected';
+        dot.textContent = '\u25cf';
+    } else {
+        dot.style.color = 'var(--pico-del-color)';
+        dot.title = active.name + ': offline';
+        dot.textContent = '\u25cf';
+    }
+}
+
+/* T-410: Test provider connection with latency */
+function chatTestProvider() {
+    var btn = document.getElementById('chat-test-btn');
+    var result = document.getElementById('chat-test-result');
+    if (!btn || !result) return;
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    result.textContent = '';
+
+    var start = performance.now();
+    fetch('/api/v1/health')
+        .then(function(r) {
+            var latency = Math.round(performance.now() - start);
+            return r.json().then(function(data) {
+                var active = (data.providers || []).find(function(p) { return p.active; });
+                if (active && active.available) {
+                    result.style.color = '#2e7d32';
+                    result.textContent = latency + 'ms';
+                } else {
+                    result.style.color = 'var(--pico-del-color)';
+                    result.textContent = 'offline';
+                }
+                _chatUpdateHealthDot(data.providers || []);
+                btn.disabled = false;
+                btn.textContent = 'Test';
+            });
+        })
+        .catch(function() {
+            result.style.color = 'var(--pico-del-color)';
+            result.textContent = 'error';
+            btn.disabled = false;
+            btn.textContent = 'Test';
+        });
 }
 
 function chatLoadModels() {
