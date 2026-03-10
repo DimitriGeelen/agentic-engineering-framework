@@ -1,9 +1,9 @@
-# Audit Results - 2026-03-10-1429
-timestamp: 2026-03-10T13:29:57Z
+# Audit Results - 2026-03-10-1438
+timestamp: 2026-03-10T13:38:09Z
 summary:
-  pass: 118
-  warn: 9
-  fail: 1
+  pass: 122
+  warn: 4
+  fail: 0
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -15,12 +15,8 @@ findings:
     check: "Tasks/templates directory exists"
   - level: PASS
     check: "Task template exists"
-  - level: FAIL
-    check: "YAML parse error: metrics-history.yaml"
-    mitigation: "Fix the YAML syntax in .context/project/metrics-history.yaml"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
+  - level: PASS
+    check: "All 9 project YAML files parse correctly"
   - level: PASS
     check: "Fabric: 136 registered, 0 unregistered"
   - level: WARN
@@ -30,14 +26,12 @@ findings:
     check: "Fabric drift: All watched source files registered (136 cards)"
   - level: PASS
     check: "All 31 active tasks are valid"
-  - level: WARN
-    check: "Task T-395 has short description (47 chars)"
-    mitigation: "Expand description in T-395-fix-search-page-htmx-swap-not-rendering-.md"
   - level: PASS
-    check: "Git traceability: 98% (1226/1243 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "Git traceability: 98% (1227/1244 commits reference tasks)"
+  - level: PASS
+    check: "Working directory clean"
   - level: PASS
     check: "All commit task refs resolve to actual tasks"
   - level: PASS
@@ -54,7 +48,7 @@ findings:
     check: "All practice origins resolve to actual tasks"
   - level: WARN
     check: "Bugfix-learning coverage: 39% (23/58)"
-    mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX "description""
+    mitigation: 'See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX "description"'
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
@@ -83,11 +77,11 @@ findings:
     check: "CTL-001: Focus file empty but 3 commit(s) in last 30min"
     mitigation: "Check .claude/settings.json hook configuration for check-active-task"
   - level: PASS
-    check: "CTL-003: Budget status file absent (no active session)"
+    check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 0 (last commit: 3 minutes ago)"
+    check: "CTL-004: Tool counter at 2 (last commit: 2 minutes ago)"
   - level: PASS
-    check: "CTL-018: Budget status absent (no active session — expected)"
+    check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -163,9 +157,11 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-307 has decision (3 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-325 has decision (6 commits)"
+    check: "CTL-009: Inception T-325 has decision (7 commits)"
   - level: PASS
     check: "CTL-009: Inception T-339 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-356 has decision (3 commits)"
   - level: PASS
     check: "CTL-009: Inception T-362 has decision (3 commits)"
   - level: PASS
@@ -174,18 +170,12 @@ findings:
     check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
   - level: PASS
     check: "CTL-011: pre-push hook installed and executable"
-  - level: WARN
-    check: "CTL-012: Completed task T-325 has unchecked AC"
-    mitigation: "Review task completion — AC gate may have been bypassed"
-  - level: WARN
-    check: "CTL-012: Completed task T-356 has unchecked AC"
-    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: PASS
+    check: "CTL-012: All 371 completed tasks have checked ACs"
+  - level: PASS
+    check: "CTL-013: T-325 verification re-run: 1/1 pass"
   - level: PASS
     check: "CTL-013: T-402 verification re-run: 3/3 pass"
-  - level: PASS
-    check: "CTL-013: T-401 verification re-run: 5/5 pass"
-  - level: PASS
-    check: "CTL-013: T-394 verification re-run: 3/3 pass"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -260,9 +250,9 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=21 avg=48 ratio=0.4x)"
+    check: "D3: Commit velocity — normal (PASS today=22 avg=48 ratio=0.5x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 49_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 50_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=16.0 earlier=5.6)"
   - level: PASS
