@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-400: Mobile responsiveness: nav collapse, table scroll, form stacking
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T10:37:39Z
+# ============================================================================
+
+task_id: T-400
+task_name: "Mobile responsiveness: nav collapse, table scroll, form stacking"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:44:22Z
+completed: 2026-03-10T10:37:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T11:37:32+01:00
+last_commit: 2026-03-10T11:37:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Mobile responsiveness — nav collapse, table scroll, form stacking
+
+# Key outcomes
+outcomes:
+  - "Hamburger button appears at <768px, hidden at desktop"
+  - "Nav items toggle open/close on hamburger click"
+  - "Nav items auto-close on link click (mobile)"
+  - "Tables wrapped in `.table-responsive` for horizontal scroll"
+  - "3-col grids collapse to 1-col at <768px (risks stats, fabric overview)"
+  - "`.grid` and `.form-row` stack to 1-col at <576px (settings form)"
+  - "Ambient strip trims less important items on phone"
+  - "Dashboard renders at 375px width without horizontal overflow"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-400-mobile-responsiveness-nav-collapse-table.md"
+  - "web/templates/base.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T11:37:32"
+    action: "T-400: Mobile responsiveness — nav collapse, table scroll, form stacking"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 53 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 53
+  commits: 1
+  files_changed: 2
+  lines_added: 162
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-400-mobile-responsiveness-nav-collapse-table.md
+generated_by: context-agent-hybrid

@@ -4,16 +4,16 @@ name: "Mobile responsiveness: nav collapse, table scroll, form stacking"
 description: >
   Fix mobile breakpoints below 576px. P1: nav doesn't collapse on mobile. P2: 3-col form layout doesn't stack. P3: tables overflow viewport. Pico CSS handles tablets (768px) but phone (<576px) breaks nav, forms, and tables.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:22Z
-last_update: 2026-03-10T10:32:48Z
-date_finished: null
+last_update: 2026-03-10T10:37:37Z
+date_finished: 2026-03-10T10:37:37Z
 ---
 
 # T-400: Mobile responsiveness: nav collapse, table scroll, form stacking
@@ -73,3 +73,6 @@ None — standard responsive patterns applied.
 
 ### 2026-03-10T10:32:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T10:37:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
