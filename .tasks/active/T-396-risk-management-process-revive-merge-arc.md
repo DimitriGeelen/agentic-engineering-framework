@@ -56,7 +56,7 @@ Research artifact: `docs/reports/T-396-risk-management-disposition.md`
 - [x] Problem statement validated with component fabric analysis
 - [x] 5 independent perspectives gathered
 - [x] Options presented with trade-offs
-- [ ] Go/No-Go decision recorded
+- [x] Go/No-Go decision recorded
 
 ### Human
 - [ ] [REVIEW] Choose disposition option (A/B/C/D)

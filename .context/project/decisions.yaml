@@ -364,3 +364,10 @@ decisions:
     date: 2026-03-08
     task: T-325
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-047
+    decision: "Option D — merge gaps.yaml + risks.yaml into concerns.yaml with type field"
+    scope: project
+    date: 2026-03-10
+    task: T-397
+    rationale: "Auto-captured from task file on completion"
