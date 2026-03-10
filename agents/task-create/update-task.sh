@@ -79,9 +79,8 @@ done
 
 # Validate task ID
 if [ -z "$TASK_ID" ]; then
-    echo -e "${RED}ERROR: Task ID required${NC}" >&2
-    echo "Usage: fw task update T-XXX --status <status>" >&2
-    exit 1
+    error "Task ID required"
+    die "Usage: fw task update T-XXX --status <status>"
 fi
 
 # Find task file
@@ -113,9 +112,8 @@ CHANGES=()
 if [ -n "$NEW_STATUS" ]; then
     # Validate status
     if ! is_valid_status "$NEW_STATUS"; then
-        echo -e "${RED}ERROR: Invalid status '$NEW_STATUS'${NC}" >&2
-        echo "Valid: $VALID_STATUSES" >&2
-        exit 1
+        error "Invalid status '$NEW_STATUS'"
+        die "Valid: $VALID_STATUSES"
     fi
 
     if [ "$OLD_STATUS" = "$NEW_STATUS" ]; then

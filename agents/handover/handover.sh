@@ -650,7 +650,7 @@ if [ "$AUTO_COMMIT" = true ]; then
         # Commit via git agent
         PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
     else
-        echo -e "${RED}Git agent not found. Manual commit required.${NC}"
+        error "Git agent not found. Manual commit required."
         echo "Run: git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
     fi
 else

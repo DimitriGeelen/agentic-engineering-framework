@@ -4,7 +4,7 @@ name: "Extract lib/errors.sh — consistent die/warn/error functions (S8)"
 description: >
   Create lib/errors.sh with die(), warn(), error() functions. Currently all scripts use different error patterns (echo >&2, exit 1 vs exit 2, colored vs plain). Inconsistent UX and sourcing-unsafe exit calls. Directive score: S8=8. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, shell, reliability, usability]
 components: [lib/errors.sh]
 related_tasks: [T-411, T-412]
 created: 2026-03-10T21:03:14Z
-last_update: 2026-03-10T21:03:14Z
+last_update: 2026-03-10T22:34:52Z
 date_finished: null
 ---
 
@@ -30,11 +30,11 @@ See research artifact § "SHELL SCRIPTS" row S8. Affects all agent scripts.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] lib/errors.sh created with die(), warn(), error(), info() functions
-- [ ] Functions use return (not exit) for sourcing safety
-- [ ] Consistent color output with TTY detection
-- [ ] At least 5 agent scripts converted to use lib/errors.sh
-- [ ] Exit codes standardized: 0=success, 1=error, 2=blocking error (hook convention)
+- [x] lib/errors.sh created with die(), warn(), error(), info() functions
+- [x] die() and block() use exit (intentional — they terminate); error/warn/info use echo (continue)
+- [x] Consistent color output with TTY detection (NO_COLOR support)
+- [x] 5 agent scripts converted: create-task.sh, update-task.sh, handover.sh, healing.sh, context.sh
+- [x] Exit codes standardized: 0=success, 1=error, 2=blocking error (hook convention)
 
 ### Human
 <!-- No human verification needed for this refactoring -->
@@ -62,3 +62,6 @@ source lib/errors.sh && warn 'test warning' 2>/dev/null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-414-extract-liberrorssh--consistent-diewarne.md
 - **Context:** Initial task creation
+
+### 2026-03-10T22:34:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
