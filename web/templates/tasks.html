@@ -430,6 +430,45 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     </div>
 </div>
 
+{# ── Shared filter bar (board + list) ──────────────────── #}
+<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; font-size: 0.8rem;">
+    <input type="text" name="q" value="{{ search_query }}" placeholder="Search tasks..."
+           style="flex: 1; min-width: 10rem; max-width: 20rem; padding: 0.3rem 0.6rem; font-size: 0.8rem; margin: 0;"
+           hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-trigger="keyup changed delay:300ms"
+           hx-include="[name='owner'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+    <select name="owner" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+            hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='q'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+        <option value="">All Owners</option>
+        {% for o in owners %}
+        <option value="{{ o }}" {% if owner_filter == o %}selected{% endif %}>{{ o }}</option>
+        {% endfor %}
+    </select>
+    <select name="horizon" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+            hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='q'],[name='owner'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+        <option value="">All Horizons</option>
+        {% for h in ['now','next','later'] %}
+        <option value="{{ h }}" {% if horizon_filter == h %}selected{% endif %}>{{ h }}</option>
+        {% endfor %}
+    </select>
+    {% if all_tags %}
+    <select name="tag" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+            hx-get="/tasks" hx-target="#content" hx-push-url="true"
+            hx-include="[name='q'],[name='owner'],[name='horizon'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+        <option value="">All Tags</option>
+        {% for tg in all_tags %}
+        <option value="{{ tg }}" {% if tag_filter == tg %}selected{% endif %}>{{ tg }}</option>
+        {% endfor %}
+    </select>
+    {% endif %}
+    <input type="hidden" name="view" value="{{ view }}">
+    {% if search_query or owner_filter or horizon_filter or tag_filter %}
+    <a href="/tasks?view={{ view }}" hx-get="/tasks?view={{ view }}" hx-target="#content" hx-push-url="true"
+       style="font-size: 0.75rem; color: var(--pico-muted-color); text-decoration: none; cursor: pointer;">&times; Clear filters</a>
+    {% endif %}
+</div>
+
 {% if view == 'board' %}
 <!-- ════════════════════════════════════════════════════════
      KANBAN BOARD VIEW
@@ -639,35 +678,35 @@ document.addEventListener('htmx:afterRequest', function(event) {
      LIST VIEW
      ════════════════════════════════════════════════════════ -->
 
-<!-- Filters -->
+<!-- List-specific filters (status, type, component, sort) -->
+{% set all_filters = "[name='q'],[name='owner'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']" %}
 <div class="grid" style="margin-bottom: 1rem;">
     <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='type'],[name='component'],[name='sort'],[name='view']">
+            hx-include="{{ all_filters }}">
         <option value="">All Statuses</option>
         {% for s in ['captured','started-work','issues','work-completed'] %}
         <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
     <select name="type" hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='status'],[name='component'],[name='sort'],[name='view']">
+            hx-include="{{ all_filters }}">
         <option value="">All Types</option>
         {% for t in types %}
         <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
         {% endfor %}
     </select>
     <select name="component" hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='status'],[name='type'],[name='sort'],[name='view']">
+            hx-include="{{ all_filters }}">
         <option value="">All Components</option>
         {% for c in components %}
         <option value="{{ c }}" {% if component_filter == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
     <select name="sort" hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='status'],[name='type'],[name='component'],[name='view']">
+            hx-include="{{ all_filters }}">
         <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Sort by ID</option>
         <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
     </select>
-    <input type="hidden" name="view" value="list">
 </div>
 
 <!-- Task table -->

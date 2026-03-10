@@ -165,6 +165,9 @@ def tasks():
     type_filter = request.args.get("type", "")
     component_filter = request.args.get("component", "")
     tag_filter = request.args.get("tag", "")
+    owner_filter = request.args.get("owner", "")
+    horizon_filter = request.args.get("horizon", "")
+    search_query = request.args.get("q", "").strip()
     sort_by = request.args.get("sort", "id")
 
     if status_filter:
@@ -175,6 +178,22 @@ def tasks():
         all_tasks = [t for t in all_tasks if component_filter in t.get("_tags", [])]
     if tag_filter:
         all_tasks = [t for t in all_tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get("_tags", [])]]
+    if owner_filter:
+        all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
+    if horizon_filter:
+        all_tasks = [t for t in all_tasks if t.get("horizon") == horizon_filter]
+    if search_query:
+        q_lower = search_query.lower()
+        all_tasks = [t for t in all_tasks if q_lower in t.get("id", "").lower()
+                     or q_lower in t.get("name", "").lower()
+                     or q_lower in t.get("description", "").lower()
+                     or q_lower in " ".join(str(tg) for tg in t.get("_tags", [])).lower()]
+
+    # Collect unique values for filter dropdowns (before sorting)
+    owners = sorted(set(t.get("owner", "") for t in all_tasks if t.get("owner")))
+    all_tags = sorted(set(
+        tg for t in all_tasks for tg in t.get("_tags", []) if tg
+    ))
 
     if sort_by == "name":
         all_tasks.sort(key=lambda t: t.get("name", ""))
@@ -200,10 +219,15 @@ def tasks():
         statuses=statuses,
         types=types,
         components=components,
+        owners=owners,
+        all_tags=all_tags,
         status_filter=status_filter,
         type_filter=type_filter,
         component_filter=component_filter,
         tag_filter=tag_filter,
+        owner_filter=owner_filter,
+        horizon_filter=horizon_filter,
+        search_query=search_query,
         sort_by=sort_by,
         view=view,
     )
