@@ -1,0 +1,19 @@
+id: web/templates/_partials/chat_tab.html
+name: chat_tab
+type: fragment
+subsystem: watchtower
+location: web/templates/_partials/chat_tab.html
+tags: [chat, rag, ui]
+
+purpose: "Ask AI chat tab HTML partial — message thread, input bar, model/provider selector, scope filter, saved conversations sidebar"
+
+depends_on:
+  - target: web/static/js/chat.js
+    type: renders
+  - target: web/templates/search.html
+    type: renders
+
+depended_by: []
+
+last_verified: 2026-03-10
+created_by: T-409

@@ -12,7 +12,7 @@ tags: [watchtower, search, llm, rag]
 components: []
 related_tasks: []
 created: 2026-03-10T17:57:50Z
-last_update: 2026-03-10T18:08:11Z
+last_update: 2026-03-10T19:03:23Z
 date_finished: null
 ---
 
@@ -33,10 +33,10 @@ User requested chat-style interactive dialogue (like Claude/ChatGPT) separate fr
 - [x] Save conversation endpoint stores JSON + Markdown to .context/qa/conversations/
 - [x] Load conversation endpoint returns saved state for continuation
 - [x] List conversations endpoint returns saved conversations for sidebar
-- [ ] CSRF fix: JSON POST endpoints exempt from CSRF check (committed but untested)
-- [ ] Chat streaming works end-to-end (user message → RAG → LLM → streamed response)
-- [ ] Save and reload a conversation (round-trip)
-- [ ] Register new fabric cards for chat.js and chat_tab.html
+- [x] CSRF fix: JSON POST endpoints exempt from CSRF check (verified — no 403)
+- [x] Chat streaming works end-to-end (user message → RAG → LLM → streamed response)
+- [x] Save and reload a conversation (round-trip)
+- [x] Register new fabric cards for chat.js and chat_tab.html
 
 ### Human
 - [ ] [REVIEW] Chat UI looks and feels like a natural conversation interface
