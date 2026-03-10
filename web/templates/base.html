@@ -283,6 +283,14 @@
 
     <!-- Main Content -->
     <main class="container" id="content">
+        {% if yaml_errors %}
+        <div style="background: var(--pico-del-color, #c62828); color: #fff; padding: 0.5rem 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem;">
+            <strong>YAML parse error{{ 's' if yaml_errors|length > 1 }}:</strong>
+            {% for err in yaml_errors %}
+            <div>{{ err }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

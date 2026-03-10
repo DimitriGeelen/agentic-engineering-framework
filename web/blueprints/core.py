@@ -8,22 +8,10 @@ import markdown2
 import yaml
 from flask import Blueprint, abort
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml as _load_yaml
 from web.blueprints.cockpit import load_scan, get_cockpit_context
 
 bp = Blueprint("core", __name__)
-
-
-def _load_yaml(path):
-    """Safely load a YAML file, return empty dict on failure."""
-    if not path.exists():
-        return {}
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
 
 
 def _get_attention_items():

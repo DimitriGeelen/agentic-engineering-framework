@@ -1,12 +1,16 @@
 """Shared helpers for the web UI blueprints."""
 
+import logging
 import os
 import re as re_mod
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+import yaml
 from flask import render_template, request
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Path resolution
@@ -123,6 +127,44 @@ def build_ambient():
     return ambient
 
 
+# ---------------------------------------------------------------------------
+# YAML loading with visible errors (T-403: R-018, R-024)
+# ---------------------------------------------------------------------------
+
+# Collects parse errors per-request so templates can surface them.
+_yaml_errors: list[str] = []
+
+
+def load_yaml(path, *, label: str = ""):
+    """Load a YAML file. Log and collect errors instead of silently returning {}."""
+    path = Path(path)
+    if not path.exists():
+        return {}
+    try:
+        with open(path) as f:
+            data = yaml.safe_load(f)
+        return data if isinstance(data, (dict, list)) else {}
+    except yaml.YAMLError as exc:
+        desc = label or path.name
+        msg = f"YAML parse error in {desc} ({path}): {exc}"
+        logger.warning(msg)
+        _yaml_errors.append(f"{desc}: {exc}")
+        return {}
+    except Exception as exc:
+        desc = label or path.name
+        msg = f"Error reading {desc} ({path}): {exc}"
+        logger.warning(msg)
+        _yaml_errors.append(f"{desc}: {exc}")
+        return {}
+
+
+def get_yaml_errors() -> list[str]:
+    """Return and clear collected YAML errors for the current request."""
+    errors = list(_yaml_errors)
+    _yaml_errors.clear()
+    return errors
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 
@@ -136,6 +178,7 @@ def render_page(template_name, **context):
     context.setdefault("active_endpoint", request.endpoint)
     context.setdefault("project_root", str(PROJECT_ROOT))
     context.setdefault("ambient", build_ambient())
+    context.setdefault("yaml_errors", get_yaml_errors())
 
     if request.headers.get("HX-Request"):
         return render_template(template_name, **context)
