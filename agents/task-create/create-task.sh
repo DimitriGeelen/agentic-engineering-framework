@@ -15,9 +15,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Valid workflow types
-VALID_TYPES="specification design build test refactor decommission inception"
-VALID_HORIZONS="now next later"
+# Source enumerations (single source of truth)
+source "$FRAMEWORK_ROOT/lib/enums.sh"
 
 # Parse arguments
 NAME=""
@@ -86,14 +85,14 @@ if [ -z "$NAME" ] || [ -z "$DESCRIPTION" ] || [ -z "$WORKFLOW_TYPE" ] || [ -z "$
 fi
 
 # Validate workflow type
-if ! echo "$VALID_TYPES" | grep -qw "$WORKFLOW_TYPE"; then
+if ! is_valid_type "$WORKFLOW_TYPE"; then
     echo -e "${RED}ERROR: Invalid workflow type '$WORKFLOW_TYPE'${NC}"
     echo "Valid types: $VALID_TYPES"
     exit 1
 fi
 
 # Validate horizon
-if ! echo "$VALID_HORIZONS" | grep -qw "$HORIZON"; then
+if ! is_valid_horizon "$HORIZON"; then
     echo -e "${RED}ERROR: Invalid horizon '$HORIZON'${NC}"
     echo "Valid horizons: $VALID_HORIZONS"
     exit 1

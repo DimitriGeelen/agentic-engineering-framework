@@ -4,7 +4,7 @@ name: "Extract lib/enums.sh — validation lists and status/type/horizon checks 
 description: >
   Create lib/enums.sh with VALID_STATUSES, VALID_TYPES, VALID_HORIZONS and is_valid_*() functions. Currently hardcoded in 6+ files with silent divergence risk. Directive score: S3=7, S10=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, shell, reliability]
 components: [lib/enums.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:13Z
-last_update: 2026-03-10T21:03:13Z
+last_update: 2026-03-10T22:32:33Z
 date_finished: null
 ---
 
@@ -33,10 +33,10 @@ Same data, different representation. No single source of truth.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] lib/enums.sh created with VALID_STATUSES, VALID_TYPES, VALID_HORIZONS arrays
-- [ ] is_valid_status(), is_valid_type(), is_valid_horizon() validation functions
-- [ ] create-task.sh and update-task.sh source lib/enums.sh instead of inline lists
-- [ ] Adding a new type requires changing only lib/enums.sh
+- [x] lib/enums.sh created with VALID_STATUSES, VALID_TYPES, VALID_HORIZONS arrays
+- [x] is_valid_status(), is_valid_type(), is_valid_horizon() validation functions
+- [x] create-task.sh and update-task.sh source lib/enums.sh instead of inline lists
+- [x] Adding a new type requires changing only lib/enums.sh
 
 ### Human
 <!-- No human verification needed for this refactoring -->
@@ -66,3 +66,12 @@ source lib/enums.sh && ! is_valid_status nonexistent
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-413-extract-libenumssh--validation-lists-and.md
 - **Context:** Initial task creation
+
+### 2026-03-10T22:28:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-10T22:32:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+
+### 2026-03-10T22:32:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
