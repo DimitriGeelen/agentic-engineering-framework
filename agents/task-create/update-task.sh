@@ -27,6 +27,194 @@ NC='\033[0m'
 # Source enumerations (single source of truth)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
+# === Extracted gate functions (T-415) ===
+# Each function accesses outer-scope variables: TASK_FILE, TASK_ID, FORCE, colors
+
+# Human Sovereignty Gate (R-033/T-198)
+# Block agent from completing human-owned tasks without human interaction.
+check_human_sovereignty() {
+    local current_owner
+    current_owner=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
+    if [ "$current_owner" = "human" ]; then
+        if [ "$FORCE" = true ]; then
+            echo -e "${YELLOW}WARNING: Completing human-owned task (--force bypass)${NC}"
+        else
+            echo -e "${RED}ERROR: Cannot complete human-owned task — sovereignty gate (R-033)${NC}" >&2
+            echo "Task $TASK_ID has owner: human. Only the human can complete it." >&2
+            echo "Options:" >&2
+            echo "  1. Human completes: fw task update $TASK_ID --status work-completed --force" >&2
+            echo "  2. Reassign first: fw task update $TASK_ID --owner agent --force" >&2
+            exit 1
+        fi
+    fi
+}
+
+# Acceptance Criteria Gate (P-010)
+# T-193: Supports ### Agent / ### Human AC split.
+# Sets PARTIAL_COMPLETE=true if human ACs remain unchecked.
+check_acceptance_criteria() {
+    local ac_section has_agent_header has_human_header
+    local agent_acs ac_total ac_checked ac_unchecked ac_label
+    local human_acs placeholder_acs placeholder_count
+
+    ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+    [ -z "$ac_section" ] && return 0
+
+    has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
+    has_human_header=$(echo "$ac_section" | grep -c '^### Human' || true)
+
+    if [ "$has_agent_header" -gt 0 ]; then
+        agent_acs=$(echo "$ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
+        ac_total=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+        ac_checked=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[x\]' || true)
+        ac_unchecked=$((ac_total - ac_checked))
+        ac_label="agent AC"
+
+        HUMAN_AC_TOTAL=0
+        HUMAN_AC_CHECKED=0
+        if [ "$has_human_header" -gt 0 ]; then
+            human_acs=$(echo "$ac_section" | awk '/^### Human/{f=1; next} /^### /{f=0} f')
+            HUMAN_AC_TOTAL=$(echo "$human_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+            HUMAN_AC_CHECKED=$(echo "$human_acs" | grep -cE '^\s*-\s*\[x\]' || true)
+        fi
+    else
+        ac_total=$(echo "$ac_section" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+        ac_checked=$(echo "$ac_section" | grep -cE '^\s*-\s*\[x\]' || true)
+        ac_unchecked=$((ac_total - ac_checked))
+        ac_label="acceptance criteria"
+        HUMAN_AC_TOTAL=0
+        HUMAN_AC_CHECKED=0
+    fi
+
+    # Gate: unchecked ACs block completion
+    if [ "$ac_total" -gt 0 ] && [ "$ac_unchecked" -gt 0 ]; then
+        if [ "$FORCE" = true ]; then
+            echo -e "${YELLOW}WARNING: $ac_unchecked/$ac_total $ac_label unchecked (--force bypass)${NC}"
+        else
+            echo -e "${RED}ERROR: Cannot complete — $ac_unchecked/$ac_total $ac_label unchecked:${NC}" >&2
+            if [ "$has_agent_header" -gt 0 ]; then
+                echo "$agent_acs" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+            else
+                echo "$ac_section" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+            fi
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Check the criteria in the task file, then retry" >&2
+            echo "  2. Use --force to bypass (logged)" >&2
+            exit 1
+        fi
+    elif [ "$ac_total" -gt 0 ]; then
+        # Placeholder detection: reject skeleton/template ACs
+        placeholder_acs=""
+        if [ "$has_agent_header" -gt 0 ]; then
+            placeholder_acs=$(echo "$agent_acs" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
+            [ -z "$placeholder_acs" ] && placeholder_acs=$(echo "$agent_acs" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
+        else
+            placeholder_acs=$(echo "$ac_section" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
+            [ -z "$placeholder_acs" ] && placeholder_acs=$(echo "$ac_section" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
+        fi
+
+        if [ -n "$placeholder_acs" ]; then
+            if [ "$FORCE" = true ]; then
+                echo -e "${YELLOW}WARNING: Skeleton/placeholder ACs detected (--force bypass)${NC}"
+            else
+                placeholder_count=$(echo "$placeholder_acs" | wc -l)
+                echo -e "${RED}ERROR: Cannot complete — $placeholder_count $ac_label are skeleton placeholders:${NC}" >&2
+                echo "$placeholder_acs" | sed 's/^/  /' >&2
+                echo "" >&2
+                echo "Replace placeholder text with real, specific acceptance criteria." >&2
+                echo "Options:" >&2
+                echo "  1. Edit the task file with real ACs, then retry" >&2
+                echo "  2. Use --force to bypass (logged)" >&2
+                exit 1
+            fi
+        else
+            echo -e "${GREEN}Acceptance criteria: $ac_checked/$ac_total checked ✓${NC}"
+        fi
+    fi
+
+    # Report human AC status if split mode (T-193)
+    if [ "$has_agent_header" -gt 0 ] && [ "$HUMAN_AC_TOTAL" -gt 0 ]; then
+        local human_ac_unchecked=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
+        if [ "$human_ac_unchecked" -gt 0 ]; then
+            echo -e "${YELLOW}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked (not blocking)${NC}"
+            PARTIAL_COMPLETE=true
+        else
+            echo -e "${GREEN}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked ✓${NC}"
+        fi
+    fi
+}
+
+# Verification Gate (P-011)
+# Runs shell commands from ## Verification section before allowing work-completed.
+run_verification_commands() {
+    local verify_section verify_cmds verify_total verify_pass verify_fail verify_failures
+    local cmd display_cmd exit_code
+
+    verify_section=$(sed -n '/^## Verification/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+    verify_section=$(echo "$verify_section" | tail -n +2)
+    # Strip HTML comment blocks
+    verify_section=$(echo "$verify_section" | python3 -c "
+import sys, re
+text = sys.stdin.read()
+text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+print(text)
+" 2>/dev/null || echo "$verify_section")
+    verify_cmds=$(echo "$verify_section" | grep -vE '^\s*$|^\s*#|^\s*```' || true)
+
+    [ -z "$verify_cmds" ] && return 0
+
+    verify_total=$(echo "$verify_cmds" | wc -l)
+    verify_pass=0
+    verify_fail=0
+    verify_failures=""
+
+    echo ""
+    echo -e "${CYAN}=== Verification Gate (P-011) ===${NC}"
+    echo "Running $verify_total verification command(s)..."
+    echo ""
+
+    while IFS= read -r cmd; do
+        cmd=$(echo "$cmd" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+        [ -z "$cmd" ] && continue
+
+        display_cmd="$cmd"
+        if [ ${#display_cmd} -gt 80 ]; then
+            display_cmd="${display_cmd:0:77}..."
+        fi
+
+        if eval "$cmd" > /tmp/verify-$$.out 2>&1; then
+            echo -e "  ${GREEN}PASS${NC}: $display_cmd"
+            verify_pass=$((verify_pass + 1))
+        else
+            exit_code=$?
+            echo -e "  ${RED}FAIL${NC}: $display_cmd (exit $exit_code)"
+            head -5 /tmp/verify-$$.out 2>/dev/null | sed 's/^/    /'
+            verify_fail=$((verify_fail + 1))
+            verify_failures="${verify_failures}\n  - $display_cmd (exit $exit_code)"
+        fi
+        rm -f /tmp/verify-$$.out
+    done <<< "$verify_cmds"
+
+    echo ""
+    if [ "$verify_fail" -gt 0 ]; then
+        if [ "$FORCE" = true ]; then
+            echo -e "${YELLOW}WARNING: $verify_fail/$verify_total verification(s) failed (--force bypass)${NC}"
+        else
+            echo -e "${RED}ERROR: Cannot complete — $verify_fail/$verify_total verification(s) failed:${NC}" >&2
+            echo -e "$verify_failures" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Fix the issues and retry" >&2
+            echo "  2. Update ## Verification commands if they are wrong" >&2
+            echo "  3. Use --force to bypass (logged)" >&2
+            exit 1
+        fi
+    else
+        echo -e "${GREEN}Verification: $verify_pass/$verify_total passed ✓${NC}"
+    fi
+}
+
 # Check for help before positional args
 case "${1:-}" in
     -h|--help) set -- "--help" ;; # normalize
@@ -154,7 +342,6 @@ if [ -n "$NEW_STATUS" ]; then
             echo -e "${RED}ERROR: Invalid transition '$OLD_STATUS' → '$NEW_STATUS'${NC}" >&2
             echo "Valid transitions:" >&2
             for from_status in $VALID_STATUSES; do
-                local targets
                 targets="$(valid_transitions_for "$from_status")"
                 [[ -n "$targets" ]] && echo "  $from_status → ${targets// / | }" >&2
             done
@@ -174,195 +361,19 @@ if [ -n "$NEW_STATUS" ]; then
         fi
 
         # === Human Sovereignty Gate (R-033/T-198) ===
-        # Block agent from completing human-owned tasks without human interaction.
         if [ "$NEW_STATUS" = "work-completed" ]; then
-            CURRENT_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
-            if [ "$CURRENT_OWNER" = "human" ]; then
-                if [ "$FORCE" = true ]; then
-                    echo -e "${YELLOW}WARNING: Completing human-owned task (--force bypass)${NC}"
-                else
-                    echo -e "${RED}ERROR: Cannot complete human-owned task — sovereignty gate (R-033)${NC}" >&2
-                    echo "Task $TASK_ID has owner: human. Only the human can complete it." >&2
-                    echo "Options:" >&2
-                    echo "  1. Human completes: fw task update $TASK_ID --status work-completed --force" >&2
-                    echo "  2. Reassign first: fw task update $TASK_ID --owner agent --force" >&2
-                    exit 1
-                fi
-            fi
+            check_human_sovereignty
         fi
 
         # === Acceptance Criteria Gate (P-010) ===
-        # T-193: Supports ### Agent / ### Human AC split.
-        # When split headers present: gate only on Agent ACs, report Human ACs informatively.
-        # When no headers: backward compatible (gate on all ACs).
         PARTIAL_COMPLETE=false
         if [ "$NEW_STATUS" = "work-completed" ]; then
-            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-            if [ -n "$AC_SECTION" ]; then
-                # Detect agent/human AC split
-                HAS_AGENT_HEADER=$(echo "$AC_SECTION" | grep -c '^### Agent' || true)
-                HAS_HUMAN_HEADER=$(echo "$AC_SECTION" | grep -c '^### Human' || true)
-
-                if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
-                    # Split mode: gate only on ### Agent ACs
-                    AGENT_ACS=$(echo "$AC_SECTION" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
-                    AC_TOTAL=$(echo "$AGENT_ACS" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-                    AC_CHECKED=$(echo "$AGENT_ACS" | grep -cE '^\s*-\s*\[x\]' || true)
-                    AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
-                    AC_LABEL="agent AC"
-
-                    # Count human ACs (informational, not blocking)
-                    HUMAN_AC_TOTAL=0
-                    HUMAN_AC_CHECKED=0
-                    if [ "$HAS_HUMAN_HEADER" -gt 0 ]; then
-                        HUMAN_ACS=$(echo "$AC_SECTION" | awk '/^### Human/{f=1; next} /^### /{f=0} f')
-                        HUMAN_AC_TOTAL=$(echo "$HUMAN_ACS" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-                        HUMAN_AC_CHECKED=$(echo "$HUMAN_ACS" | grep -cE '^\s*-\s*\[x\]' || true)
-                    fi
-                else
-                    # Legacy mode: all ACs (backward compatible)
-                    AC_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-                    AC_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
-                    AC_UNCHECKED=$((AC_TOTAL - AC_CHECKED))
-                    AC_LABEL="acceptance criteria"
-                    HUMAN_AC_TOTAL=0
-                    HUMAN_AC_CHECKED=0
-                fi
-
-                if [ "$AC_TOTAL" -gt 0 ] && [ "$AC_UNCHECKED" -gt 0 ]; then
-                    if [ "$FORCE" = true ]; then
-                        echo -e "${YELLOW}WARNING: $AC_UNCHECKED/$AC_TOTAL $AC_LABEL unchecked (--force bypass)${NC}"
-                    else
-                        echo -e "${RED}ERROR: Cannot complete — $AC_UNCHECKED/$AC_TOTAL $AC_LABEL unchecked:${NC}" >&2
-                        if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
-                            echo "$AGENT_ACS" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
-                        else
-                            echo "$AC_SECTION" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
-                        fi
-                        echo "" >&2
-                        echo "Options:" >&2
-                        echo "  1. Check the criteria in the task file, then retry" >&2
-                        echo "  2. Use --force to bypass (logged)" >&2
-                        exit 1
-                    fi
-                elif [ "$AC_TOTAL" -gt 0 ]; then
-                    # P-010 placeholder detection: reject skeleton/template ACs
-                    PLACEHOLDER_ACS=""
-                    if [ "$HAS_AGENT_HEADER" -gt 0 ]; then
-                        PLACEHOLDER_ACS=$(echo "$AGENT_ACS" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
-                        if [ -z "$PLACEHOLDER_ACS" ]; then
-                            PLACEHOLDER_ACS=$(echo "$AGENT_ACS" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
-                        fi
-                    else
-                        PLACEHOLDER_ACS=$(echo "$AC_SECTION" | grep -iE '^\s*-\s*\[x\]\s*\[(First|Second|Third|Fourth|Fifth) criterion\]' || true)
-                        if [ -z "$PLACEHOLDER_ACS" ]; then
-                            PLACEHOLDER_ACS=$(echo "$AC_SECTION" | grep -iE '^\s*-\s*\[x\]\s*\[Criterion [0-9]+\]' || true)
-                        fi
-                    fi
-
-                    if [ -n "$PLACEHOLDER_ACS" ]; then
-                        if [ "$FORCE" = true ]; then
-                            echo -e "${YELLOW}WARNING: Skeleton/placeholder ACs detected (--force bypass)${NC}"
-                        else
-                            PLACEHOLDER_COUNT=$(echo "$PLACEHOLDER_ACS" | wc -l)
-                            echo -e "${RED}ERROR: Cannot complete — $PLACEHOLDER_COUNT $AC_LABEL are skeleton placeholders:${NC}" >&2
-                            echo "$PLACEHOLDER_ACS" | sed 's/^/  /' >&2
-                            echo "" >&2
-                            echo "Replace placeholder text with real, specific acceptance criteria." >&2
-                            echo "Options:" >&2
-                            echo "  1. Edit the task file with real ACs, then retry" >&2
-                            echo "  2. Use --force to bypass (logged)" >&2
-                            exit 1
-                        fi
-                    else
-                        echo -e "${GREEN}Acceptance criteria: $AC_CHECKED/$AC_TOTAL checked ✓${NC}"
-                    fi
-                fi
-
-                # Report human AC status if split mode (T-193)
-                if [ "$HAS_AGENT_HEADER" -gt 0 ] && [ "$HUMAN_AC_TOTAL" -gt 0 ]; then
-                    HUMAN_AC_UNCHECKED=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
-                    if [ "$HUMAN_AC_UNCHECKED" -gt 0 ]; then
-                        echo -e "${YELLOW}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked (not blocking)${NC}"
-                        PARTIAL_COMPLETE=true
-                    else
-                        echo -e "${GREEN}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked ✓${NC}"
-                    fi
-                fi
-            fi
+            check_acceptance_criteria
         fi
 
         # === Verification Gate (P-011) ===
-        # Runs shell commands from ## Verification section before allowing work-completed.
-        # Each non-comment, non-empty line is executed. If any exits non-zero, completion is blocked.
-        # Backward compatible: tasks without ## Verification pass through.
         if [ "$NEW_STATUS" = "work-completed" ]; then
-            VERIFY_SECTION=$(sed -n '/^## Verification/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-            # Strip the heading line itself
-            VERIFY_SECTION=$(echo "$VERIFY_SECTION" | tail -n +2)
-            # Strip HTML comment blocks (<!-- ... -->) then skip empty/comment lines
-            VERIFY_SECTION=$(echo "$VERIFY_SECTION" | python3 -c "
-import sys, re
-text = sys.stdin.read()
-text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
-print(text)
-" 2>/dev/null || echo "$VERIFY_SECTION")
-            VERIFY_CMDS=$(echo "$VERIFY_SECTION" | grep -vE '^\s*$|^\s*#|^\s*```' || true)
-
-            if [ -n "$VERIFY_CMDS" ]; then
-                VERIFY_TOTAL=$(echo "$VERIFY_CMDS" | wc -l)
-                VERIFY_PASS=0
-                VERIFY_FAIL=0
-                VERIFY_FAILURES=""
-
-                echo ""
-                echo -e "${CYAN}=== Verification Gate (P-011) ===${NC}"
-                echo "Running $VERIFY_TOTAL verification command(s)..."
-                echo ""
-
-                while IFS= read -r cmd; do
-                    # Trim whitespace
-                    cmd=$(echo "$cmd" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
-                    [ -z "$cmd" ] && continue
-
-                    # Display command (truncated for readability)
-                    DISPLAY_CMD="$cmd"
-                    if [ ${#DISPLAY_CMD} -gt 80 ]; then
-                        DISPLAY_CMD="${DISPLAY_CMD:0:77}..."
-                    fi
-
-                    if eval "$cmd" > /tmp/verify-$$.out 2>&1; then
-                        echo -e "  ${GREEN}PASS${NC}: $DISPLAY_CMD"
-                        VERIFY_PASS=$((VERIFY_PASS + 1))
-                    else
-                        EXIT_CODE=$?
-                        echo -e "  ${RED}FAIL${NC}: $DISPLAY_CMD (exit $EXIT_CODE)"
-                        # Show first 5 lines of output for context
-                        head -5 /tmp/verify-$$.out 2>/dev/null | sed 's/^/    /'
-                        VERIFY_FAIL=$((VERIFY_FAIL + 1))
-                        VERIFY_FAILURES="${VERIFY_FAILURES}\n  - $DISPLAY_CMD (exit $EXIT_CODE)"
-                    fi
-                    rm -f /tmp/verify-$$.out
-                done <<< "$VERIFY_CMDS"
-
-                echo ""
-                if [ "$VERIFY_FAIL" -gt 0 ]; then
-                    if [ "$FORCE" = true ]; then
-                        echo -e "${YELLOW}WARNING: $VERIFY_FAIL/$VERIFY_TOTAL verification(s) failed (--force bypass)${NC}"
-                    else
-                        echo -e "${RED}ERROR: Cannot complete — $VERIFY_FAIL/$VERIFY_TOTAL verification(s) failed:${NC}" >&2
-                        echo -e "$VERIFY_FAILURES" >&2
-                        echo "" >&2
-                        echo "Options:" >&2
-                        echo "  1. Fix the issues and retry" >&2
-                        echo "  2. Update ## Verification commands if they are wrong" >&2
-                        echo "  3. Use --force to bypass (logged)" >&2
-                        exit 1
-                    fi
-                else
-                    echo -e "${GREEN}Verification: $VERIFY_PASS/$VERIFY_TOTAL passed ✓${NC}"
-                fi
-            fi
+            run_verification_commands
         fi
 
         _sed_i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
