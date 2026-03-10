@@ -371,3 +371,10 @@ decisions:
     date: 2026-03-10
     task: T-397
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-048
+    decision: "Option 3 — Async index build + honest 'warming up' SSE message + no BM25 fallback"
+    scope: project
+    date: 2026-03-10
+    task: T-409
+    rationale: "Auto-captured from task file on completion"
