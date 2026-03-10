@@ -120,49 +120,26 @@ function askQuestion(query) {
 
     if (_askAbort) { _askAbort.abort(); _askAbort = null; }
 
-    var abortCtrl = new AbortController();
-    _askAbort = abortCtrl;
-
     var fullText = '';
     var gotFirstToken = false;
-    var isThinking = false;
     var thinkingStart = 0;
 
-    fetch('/search/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({ query: query, history: _conversationHistory }),
-        signal: abortCtrl.signal
-    }).then(function(response) {
-        if (!response.ok) throw new Error('Server error: ' + response.status);
-        var reader = response.body.getReader();
-        var decoder = new TextDecoder();
-        var buffer = '';
-
-        function processBuffer() {
-            var parts = buffer.split('\n\n');
-            buffer = parts.pop();
-            parts.forEach(function(part) {
-                var match = part.match(/^data:\s*(.+)$/m);
-                if (!match) return;
-                try { handleEvent(JSON.parse(match[1])); } catch(e) {}
-            });
-        }
-
-        function handleEvent(data) {
+    _askAbort = streamSSE('/search/ask',
+        { query: query, history: _conversationHistory },
+        function(data) {
             if (data.type === 'model') {
                 _lastModel = data.model;
                 var label = data.model;
                 if (data.provider && data.provider !== 'ollama') label = data.provider + '/' + data.model;
                 if (data.thinking) label += ' (thinking)';
                 modelDiv.textContent = label;
-                if (data.thinking) { isThinking = true; thinkingStart = Date.now(); statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>'; }
+                if (data.thinking) { thinkingStart = Date.now(); statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>'; }
             }
             else if (data.type === 'thinking') {
                 var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
                 statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
             }
-            else if (data.type === 'thinking_done') { isThinking = false; statusDiv.style.display = 'none'; }
+            else if (data.type === 'thinking_done') { statusDiv.style.display = 'none'; }
             else if (data.type === 'token') {
                 if (!gotFirstToken) { gotFirstToken = true; statusDiv.style.display = 'none'; }
                 fullText += data.content;
@@ -191,7 +168,6 @@ function askQuestion(query) {
             else if (data.type === 'done') {
                 _askAbort = null;
                 if (_renderTimer) clearTimeout(_renderTimer);
-                /* Extract inferred title and strip from displayed text (T-389) */
                 var extracted = _extractInferredTitle(fullText);
                 _lastInferredTitle = extracted.title;
                 var displayText = extracted.clean;
@@ -211,7 +187,6 @@ function askQuestion(query) {
                 document.getElementById('fb-up').style.opacity = '1';
                 document.getElementById('fb-down').style.opacity = '1';
                 document.getElementById('fb-status').textContent = '';
-                /* Show follow-up input */
                 document.getElementById('followup-row').style.display = 'block';
                 document.getElementById('followup-input').focus();
             }
@@ -221,29 +196,13 @@ function askQuestion(query) {
                 errorDiv.style.display = 'block';
                 statusDiv.style.display = 'none';
             }
+        },
+        function(msg) {
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+            statusDiv.style.display = 'none';
         }
-
-        function read() {
-            reader.read().then(function(result) {
-                if (result.done) { processBuffer(); return; }
-                buffer += decoder.decode(result.value, { stream: true });
-                processBuffer();
-                read();
-            }).catch(function(err) {
-                if (err.name !== 'AbortError') {
-                    errorDiv.textContent = 'Stream interrupted';
-                    errorDiv.style.display = 'block';
-                    statusDiv.style.display = 'none';
-                }
-            });
-        }
-        read();
-    }).catch(function(err) {
-        if (err.name === 'AbortError') return;
-        errorDiv.textContent = 'Cannot connect to LLM. Is the provider running?';
-        errorDiv.style.display = 'block';
-        statusDiv.style.display = 'none';
-    });
+    );
 }
 
 /* ── Follow-up ─────────────────────────────────────────── */

@@ -27,3 +27,60 @@ function escHtml(s) {
     d.appendChild(document.createTextNode(s));
     return d.innerHTML;
 }
+
+/* ── SSE Stream Fetcher (T-418) ──────────────────────── */
+
+/**
+ * Fetch an SSE endpoint and dispatch parsed events.
+ *
+ * @param {string} url       Endpoint URL
+ * @param {Object} body      JSON body to POST
+ * @param {Function} onEvent Called with parsed {type, ...} for each SSE event
+ * @param {Function} onError Called with error message string on stream/fetch error
+ * @returns {AbortController} Call .abort() to cancel the stream
+ */
+function streamSSE(url, body, onEvent, onError) {
+    var abortCtrl = new AbortController();
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
+        body: JSON.stringify(body),
+        signal: abortCtrl.signal
+    }).then(function(response) {
+        if (!response.ok) throw new Error('Server error: ' + response.status);
+        var reader = response.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+
+        function processBuffer() {
+            var parts = buffer.split('\n\n');
+            buffer = parts.pop();
+            parts.forEach(function(part) {
+                var match = part.match(/^data:\s*(.+)$/m);
+                if (!match) return;
+                try { onEvent(JSON.parse(match[1])); } catch(e) {}
+            });
+        }
+
+        function read() {
+            reader.read().then(function(result) {
+                if (result.done) { processBuffer(); return; }
+                buffer += decoder.decode(result.value, { stream: true });
+                processBuffer();
+                read();
+            }).catch(function(err) {
+                if (err.name !== 'AbortError' && onError) {
+                    onError('Stream interrupted');
+                }
+            });
+        }
+        read();
+    }).catch(function(err) {
+        if (err.name !== 'AbortError' && onError) {
+            onError('Cannot connect to LLM. Is the provider running?');
+        }
+    });
+
+    return abortCtrl;
+}
