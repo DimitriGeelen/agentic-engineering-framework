@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, javascript, watchtower, reliability]
-components: []
-related_tasks: []
+components: [web/static/js/chat.js, web/static/js/search-qa.js]
+related_tasks: [T-409, T-411]
 created: 2026-03-10T21:03:18Z
 last_update: 2026-03-10T21:03:18Z
 date_finished: null
@@ -20,40 +20,39 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding J2 (score 8) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**J2 — Duplicated stream handling (askQuestion/chatAsk — 70% overlap):**
+search-qa.js:93-247 (askQuestion, 155 lines) and chat.js:160-329 (chatAsk, 169 lines) share
+nearly identical SSE parsing (processBuffer/handleEvent), abort controller, and rendering logic.
+A protocol change fixed in one but not the other creates silent behavioral divergence.
+See research artifact § "JAVASCRIPT" row J2.
+
+Key shared logic: SSE event parsing, abort control, token rendering, source display, error handling.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Shared StreamFetcher utility extracted (function or class)
+- [ ] askQuestion() and chatAsk() both use the shared utility
+- [ ] SSE parsing logic exists in exactly one place
+- [ ] Both Q&A and chat streaming still work end-to-end
+- [ ] Abort (cancel) works in both modes
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Chat and Q&A streaming both work after refactor
+  **Steps:**
+  1. Open http://localhost:3000/search
+  2. In Q&A mode, ask 'What is the audit system?'
+  3. Switch to Ask AI tab, ask the same question
+  4. Verify both stream responses correctly
+  **Expected:** Both modes show streaming text with sources
+  **If not:** Note which mode broke and check browser console
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q 'StreamFetcher\|streamFetch\|createStream' web/static/js/chat.js web/static/js/search-qa.js
+# Both files should reference the shared utility, not duplicate SSE parsing
 
 ## Decisions
 

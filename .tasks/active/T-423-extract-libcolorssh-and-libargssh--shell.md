@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, shell]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:04Z
 last_update: 2026-03-10T21:04:04Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Shell utility consolidation (S2+S4). See `docs/reports/T-411-refactoring-directive-scoring.md` § SHELL rows S2 (color vars, 19 files, score 5), S4 (arg parsing, 8 files, score 6). Bundle: both are shell infrastructure libs that support other refactoring tasks.
 
 ## Acceptance Criteria
 

@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, css, watchtower, usability]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:06Z
 last_update: 2026-03-10T21:04:06Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+CSS utility classes (J1+H1). See `docs/reports/T-411-refactoring-directive-scoring.md` § JS row J1 (score 5) and TEMPLATES row H1 (score 5). 218 inline style attributes across 30+ templates. Largest visual impact but lowest directive score — pure usability play.
 
 ## Acceptance Criteria
 

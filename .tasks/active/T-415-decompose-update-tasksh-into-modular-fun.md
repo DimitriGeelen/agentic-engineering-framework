@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, shell, reliability, usability]
-components: []
-related_tasks: []
+components: [agents/task-create/update-task.sh]
+related_tasks: [T-411]
 created: 2026-03-10T21:03:15Z
 last_update: 2026-03-10T21:03:15Z
 date_finished: null
@@ -20,40 +20,38 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding S13 (score 7) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**S13 — Long monolithic functions (update-task.sh ~500 lines):**
+update-task.sh mixes validation, AC checking, human sovereignty gate, verification gate,
+episodic generation, and file movement in one monolithic script.
+See research artifact § "SHELL SCRIPTS" row S13.
+Hardest refactoring task in this batch — requires careful decomposition without breaking gates.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] update-task.sh decomposed into callable functions (not just inline code)
+- [ ] check_acceptance_criteria() extracted and independently testable
+- [ ] run_verification_commands() extracted
+- [ ] check_human_sovereignty() extracted
+- [ ] generate_episodic() extracted (or clearly delineated)
+- [ ] All existing fw task update commands still work (regression test)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Task completion flow still works end-to-end
+  **Steps:**
+  1. Create a test task: `fw work-on 'Test decomposition' --type build`
+  2. Add an AC and check it
+  3. Run `fw task update T-XXX --status work-completed`
+  4. Verify task moves to completed/ and episodic is generated
+  **Expected:** Task completes successfully, episodic in .context/episodic/
+  **If not:** Note which step failed and check agents/task-create/update-task.sh
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bash -n agents/task-create/update-task.sh
+fw task update T-411 --status started-work 2>&1 | grep -q 'sovereignty\|human' || true
 
 ## Decisions
 

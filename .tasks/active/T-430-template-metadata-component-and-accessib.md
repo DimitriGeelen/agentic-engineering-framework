@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, html, watchtower, usability, accessibility]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:11Z
 last_update: 2026-03-10T21:04:11Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Template metadata + accessibility (H7+H11). See `docs/reports/T-411-refactoring-directive-scoring.md` § TEMPLATES rows H7 (metadata table, score 5), H11 (accessibility, score 5). H11 addresses 15 elements missing keyboard support and aria labels.
 
 ## Acceptance Criteria
 

@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, python, watchtower, usability]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:09Z
 last_update: 2026-03-10T21:04:09Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Python error consistency (P11). See `docs/reports/T-411-refactoring-directive-scoring.md` § PYTHON row P11 (score 5). Define error classes with message, severity, suggested_action. Builds on T-417 (subprocess_utils) for consistent error patterns.
 
 ## Acceptance Criteria
 

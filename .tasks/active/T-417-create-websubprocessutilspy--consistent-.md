@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, python, watchtower, reliability]
-components: []
-related_tasks: []
+components: [web/subprocess_utils.py, web/blueprints/core.py, web/blueprints/quality.py, web/blueprints/session.py]
+related_tasks: [T-411]
 created: 2026-03-10T21:03:17Z
 last_update: 2026-03-10T21:03:17Z
 date_finished: null
@@ -20,40 +20,27 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding P7 (score 7) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**P7 — Subprocess error handling inconsistency:**
+Three separate subprocess implementations: core.py (no timeout), quality.py (timeout=10, detailed),
+session.py (timeout=10, different error style). See research artifact § "PYTHON BACKEND" row P7.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] web/subprocess_utils.py created with run_git_command(args, timeout=10) and run_fw_command(args, timeout=30)
+- [ ] All blueprint subprocess.run calls replaced with utility functions
+- [ ] Consistent timeout, encoding (utf-8, errors=replace), and error handling
+- [ ] At least 3 call sites converted
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- No human verification needed for this refactoring -->
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f web/subprocess_utils.py
+python3 -c "from web.subprocess_utils import run_git_command; print(run_git_command(['log', '--oneline', '-1']))"
 
 ## Decisions
 

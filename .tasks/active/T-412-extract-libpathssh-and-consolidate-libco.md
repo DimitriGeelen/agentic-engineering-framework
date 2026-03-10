@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, shell, reliability, portability]
-components: []
-related_tasks: []
+components: [lib/paths.sh, lib/compat.sh]
+related_tasks: [T-406, T-411]
 created: 2026-03-10T21:03:12Z
 last_update: 2026-03-10T21:03:12Z
 date_finished: null
@@ -20,40 +20,41 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding S1 (score 10/12) + S5 (score 7/12) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**S1 — Path resolution duplication (25+ files):**
+Every shell script duplicates 3-4 lines of SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT resolution.
+See research artifact § "SHELL SCRIPTS" row S1. Files affected: all `agents/*/` scripts, `lib/*.sh`, `bin/fw`.
+The T-406 shared-tooling fix already exposed this as a portability risk.
+
+**S5 — _sed_i compat duplication (5 files):**
+Scripts define inline _sed_i fallback when lib/compat.sh fails. See research artifact § S5.
+Files: update-task.sh:25-28, resume.sh:16-18, context/lib/*.sh.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/paths.sh created with resolve_paths() function setting SCRIPT_DIR, FRAMEWORK_ROOT, PROJECT_ROOT
+- [ ] All agents/* scripts source lib/paths.sh instead of inline path resolution
+- [ ] lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)
+- [ ] All existing tests/verification commands still pass after change
+- [ ] fw doctor passes
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Spot-check 3 agent scripts use lib/paths.sh
+  **Steps:**
+  1. Run `head -10 agents/audit/audit.sh agents/git/git.sh agents/healing/healing.sh`
+  2. Verify each sources lib/paths.sh instead of inline SCRIPT_DIR/FRAMEWORK_ROOT
+  **Expected:** Each script starts with `source "$FRAMEWORK_ROOT/lib/paths.sh"`
+  **If not:** Note which script still has inline path resolution
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f lib/paths.sh
+bash -n lib/paths.sh
+source lib/paths.sh && test -n "$FRAMEWORK_ROOT"
+! grep -r 'SCRIPT_DIR=.*dirname.*BASH_SOURCE' agents/ --include='*.sh' -l | grep -v lib/paths.sh | grep -q .
+fw doctor
 
 ## Decisions
 

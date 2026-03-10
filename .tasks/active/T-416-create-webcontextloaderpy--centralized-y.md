@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, python, watchtower, reliability]
-components: []
-related_tasks: []
+components: [web/context_loader.py, web/blueprints/discovery.py, web/blueprints/core.py, web/blueprints/quality.py]
+related_tasks: [T-404, T-397, T-411]
 created: 2026-03-10T21:03:16Z
 last_update: 2026-03-10T21:03:16Z
 date_finished: null
@@ -20,40 +20,42 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding P1 (score 8) + P3 (score 8) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**P1 — Duplicated YAML loading (6+ occurrences):**
+discovery.py has 6+ identical try/except YAML loading blocks despite shared.py:138-158
+providing load_yaml(). See research artifact § "PYTHON BACKEND" rows P1, P3.
+
+**P3 — Context file loading repetition (10+):**
+Each context file (learnings, patterns, decisions, concerns) loaded independently with
+separate path resolution and fallback logic in core.py (4 loads), discovery.py (5 loads),
+quality.py (2 loads). Includes the gaps.yaml→concerns.yaml fallback (T-397 migration).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] web/context_loader.py created with load_learnings(), load_patterns(), load_decisions(), load_concerns()
+- [ ] All blueprint YAML loading replaced with context_loader calls
+- [ ] Fallback logic (gaps.yaml→concerns.yaml) centralized in one place
+- [ ] Error handling consistent (uses shared.py load_yaml internally)
+- [ ] All Watchtower pages still render correctly
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Watchtower pages load without errors
+  **Steps:**
+  1. Start Flask: `python3 -m web.app`
+  2. Open http://localhost:3000/
+  3. Click through: Dashboard, Learnings, Patterns, Decisions, Risks
+  4. Check browser console for errors
+  **Expected:** All pages render, no 500 errors
+  **If not:** Note which page fails and check Flask logs
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f web/context_loader.py
+python3 -c "from web.context_loader import load_learnings; print(type(load_learnings()))"
+! grep -r 'yaml.safe_load' web/blueprints/discovery.py | grep -v 'import' | grep -q .
+curl -sf http://localhost:3000/learnings > /dev/null || echo 'Flask not running — manual check needed'
 
 ## Decisions
 
