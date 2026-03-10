@@ -1,0 +1,29 @@
+id: web/subprocess_utils.py
+name: subprocess_utils
+type: script
+subsystem: watchtower
+location: web/subprocess_utils.py
+tags: [python, subprocess, git, watchtower, reliability]
+
+purpose: "Consistent subprocess execution for git and fw commands. Provides run_git_command() and run_fw_command() with standardized timeouts, encoding, and error handling."
+
+depends_on:
+  - target: web/shared.py
+    type: calls
+  - target: bin/fw
+    type: calls
+
+depended_by:
+  - target: web/blueprints/session.py
+    type: calls
+  - target: web/blueprints/core.py
+    type: calls
+  - target: web/blueprints/quality.py
+    type: calls
+  - target: web/blueprints/tasks.py
+    type: calls
+  - target: web/blueprints/metrics.py
+    type: calls
+
+last_verified: 2026-03-11
+created_by: T-417
