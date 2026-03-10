@@ -4,7 +4,7 @@ name: "Bugfix-learning coverage: mine episodic history to close 25%→40% gap"
 description: >
   Bugfix-learning coverage at 25% (14/56), target 40%. 48 bugfix tasks produced zero learnings. Mine episodic summaries for completed bugfix tasks, extract patterns, add learnings via fw fix-learned. Also consider structural trigger in update-task.sh for bugfix completions (G-016).
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-10T09:44:36Z
-last_update: 2026-03-10T12:48:14Z
-date_finished: null
+last_update: 2026-03-10T12:51:27Z
+date_finished: 2026-03-10T12:51:27Z
 ---
 
 # T-402: Bugfix-learning coverage: mine episodic history to close 25%→40% gap
@@ -52,3 +52,6 @@ None — straightforward mining of existing episodic history.
 
 ### 2026-03-10T12:48:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T12:51:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
