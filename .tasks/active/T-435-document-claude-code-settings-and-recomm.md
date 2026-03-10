@@ -12,7 +12,7 @@ tags: [governance, documentation, claude-code, onboarding]
 components: []
 related_tasks: []
 created: 2026-03-10T21:17:44Z
-last_update: 2026-03-10T22:16:01Z
+last_update: 2026-03-10T22:16:29Z
 date_finished: null
 ---
 

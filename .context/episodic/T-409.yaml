@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-409: Ask AI chat tab: conversational RAG with save/resume and model selector
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T19:04:29Z
+# ============================================================================
+
+task_id: T-409
+task_name: "Ask AI chat tab: conversational RAG with save/resume and model selector"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T17:57:50Z
+completed: 2026-03-10T19:04:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-10T19:07:36+01:00
+last_commit: 2026-03-10T20:04:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Ask AI chat tab — UI, streaming, save/resume conversations (WIP). Update task ACs with progress — 6/10 agent ACs done. Fix chat RAG — batched embeddings, SSE progress events, index readiness check. Complete agent ACs — fabric cards, all 10/10 verified
+
+# Key outcomes
+outcomes:
+  - "\"Ask AI\" tab appears in search mode pills and switches to chat UI"
+  - "Chat UI renders: message thread, input bar, model/provider selector, scope filter"
+  - "Streaming SSE endpoint accepts scope and model_override params"
+  - "Save conversation endpoint stores JSON + Markdown to .context/qa/conversations/"
+  - "Load conversation endpoint returns saved state for continuation"
+  - "List conversations endpoint returns saved conversations for sidebar"
+  - "CSRF fix: JSON POST endpoints exempt from CSRF check (verified — no 403)"
+  - "Chat streaming works end-to-end (user message → RAG → LLM → streamed response)"
+  - "Save and reload a conversation (round-trip)"
+  - "Register new fabric cards for chat.js and chat_tab.html"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix chat RAG — batched embeddings, SSE progress events, index readiness check"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option 3 — Async index build + honest \"warming up\" SSE message + no BM25 fallback"
+    rationale: "This is conversational RAG with natural language inference, not document search."
+    alternatives_rejected: [""]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-static-js-chat.yaml"
+  - ".fabric/components/web-templates-_partials-chat_tab.yaml"
+  - ".tasks/active/T-409-ask-ai-chat-tab-conversational-rag-with-.md"
+  - "web/app.py"
+  - "web/ask.py"
+  - "web/blueprints/discovery.py"
+  - "web/embeddings.py"
+  - "web/static/js/chat.js"
+  - "web/templates/_partials/chat_tab.html"
+  - "web/templates/_partials/search_input.html"
+  - "web/templates/search.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T19:07:36"
+    action: "T-409: Ask AI chat tab — UI, streaming, save/resume conversations (WIP)"
+  - time: "2026-03-10T19:08:11"
+    action: "T-409: Update task ACs with progress — 6/10 agent ACs done"
+  - time: "2026-03-10T20:03:23"
+    action: "T-409: Fix chat RAG — batched embeddings, SSE progress events, index readiness check"
+  - time: "2026-03-10T20:04:20"
+    action: "T-409: Complete agent ACs — fabric cards, all 10/10 verified"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, search, llm, rag]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 66
+  commits: 4
+  files_changed: 11
+  lines_added: 1047
+  lines_removed: 86
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-409-ask-ai-chat-tab-conversational-rag-with-.md
+generated_by: context-agent-hybrid

@@ -4,16 +4,16 @@ name: "Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)"
 description: >
   Extract duplicated path resolution (SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT) into lib/paths.sh — currently copy-pasted in 25+ files. Consolidate _sed_i compat fallback (5 files) into guaranteed lib/compat.sh sourcing. Directive score: S1=10 (highest), S5=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: [refactoring, shell, reliability, portability]
-components: [lib/paths.sh, lib/compat.sh]
+components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, C-007, agents/context/bus-handler.sh, agents/context/check-active-task.sh, C-008, agents/context/check-tier0.sh, C-001, agents/context/post-compact-resume.sh, agents/context/pre-compact.sh, agents/docgen/generate-article.sh, agents/docgen/generate-component.sh, agents/fabric/fabric.sh, agents/git/git.sh, agents/handover/handover.sh, agents/healing/healing.sh, agents/observe/observe.sh, agents/onboarding-test/test-onboarding.sh, agents/resume/resume.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, bin/watchtower.sh, lib/ask.sh, lib/paths.sh]
 related_tasks: [T-406, T-411]
 created: 2026-03-10T21:03:12Z
-last_update: 2026-03-10T22:27:20Z
-date_finished: null
+last_update: 2026-03-10T22:28:17Z
+date_finished: 2026-03-10T22:28:17Z
 ---
 
 # T-412: Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)
@@ -77,3 +77,6 @@ fw doctor
 
 ### 2026-03-10T22:19:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T22:28:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

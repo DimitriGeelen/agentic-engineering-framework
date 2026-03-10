@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-412: Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T22:28:19Z
+# ============================================================================
+
+task_id: T-412
+task_name: "Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:12Z
+completed: 2026-03-10T22:28:17Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T23:27:19+01:00
+last_commit: 2026-03-10T23:28:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Extract lib/paths.sh — centralized path resolution for 24 scripts. Fix verification command — check PROJECT_ROOT, not SCRIPT_DIR
+
+# Key outcomes
+outcomes:
+  - "lib/paths.sh created with resolve_paths() function setting SCRIPT_DIR, FRAMEWORK_ROOT, PROJECT_ROOT"
+  - "All agents/* scripts source lib/paths.sh instead of inline path resolution"
+  - "lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)"
+  - "All existing tests/verification commands still pass after change"
+  - "fw doctor passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification command — check PROJECT_ROOT, not SCRIPT_DIR"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/audit/plugin-audit.sh"
+  - "agents/audit/self-audit.sh"
+  - "agents/context/budget-gate.sh"
+  - "agents/context/bus-handler.sh"
+  - "agents/context/check-active-task.sh"
+  - "agents/context/checkpoint.sh"
+  - "agents/context/check-tier0.sh"
+  - "agents/context/context.sh"
+  - "agents/context/post-compact-resume.sh"
+  - "agents/context/pre-compact.sh"
+  - "agents/docgen/generate-article.sh"
+  - "agents/docgen/generate-component.sh"
+  - "agents/fabric/fabric.sh"
+  - "agents/git/git.sh"
+  - "agents/handover/handover.sh"
+  - "agents/healing/healing.sh"
+  - "agents/observe/observe.sh"
+  - "agents/onboarding-test/test-onboarding.sh"
+  - "agents/resume/resume.sh"
+  - "agents/task-create/create-task.sh"
+  - "agents/task-create/update-task.sh"
+  - "bin/watchtower.sh"
+  - ".fabric/components/lib-paths.yaml"
+  - "lib/ask.sh"
+  - "lib/paths.sh"
+  - ".tasks/active/T-412-extract-libpathssh-and-consolidate-libco.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T23:27:19"
+    action: "T-412: Extract lib/paths.sh — centralized path resolution for 24 scripts"
+  - time: "2026-03-10T23:28:17"
+    action: "T-412: Fix verification command — check PROJECT_ROOT, not SCRIPT_DIR"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 85 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, shell, reliability, portability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 85
+  commits: 2
+  files_changed: 27
+  lines_added: 136
+  lines_removed: 108
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-412-extract-libpathssh-and-consolidate-libco.md
+generated_by: context-agent-hybrid

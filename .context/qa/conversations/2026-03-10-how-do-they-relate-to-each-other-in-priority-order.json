@@ -1,0 +1,26 @@
+{
+  "id": "2026-03-10-how-do-they-relate-to-each-other-in-priority-order",
+  "title": "How do they relate to each other in priority order?",
+  "date": "2026-03-10",
+  "turns": 2,
+  "final_question": "How do they relate to each other in priority order?",
+  "final_answer": "The sources do not explicitly list the \"four directives\" by name or priority order. While source [6] mentions that \"design directives\" are constitutional principles of the Agentic Engineering Framework and must guide architectural decisions, it does not enumerate them directly. Other sources focus on tasks, specifications, and research reports but do not mention specific directives beyond this [6].\n\nFor clarity, the framework's documentation may require consulting files like `005-DesignDirectives.md` [6] or `fw decisions` [7], which are noted as critical for understanding the project's governance but are not included in the provided sources.",
+  "history": [
+    {
+      "role": "user",
+      "content": "What are the four directives?"
+    },
+    {
+      "role": "assistant",
+      "content": "The four directives are:\n\n1. **D1: Antifragility** \u2014 \"System strengthens under stress\"\n2. **D2: Reliability**\n3. **D3: Usability**\n4. **D4: Portability**\n\nThese directives are constitutional principles that guide the Agentic Engineering Framework [1][7]."
+    },
+    {
+      "role": "user",
+      "content": "How do they relate to each other in priority order?"
+    },
+    {
+      "role": "assistant",
+      "content": "The sources do not explicitly list the \"four directives\" by name or priority order. While source [6] mentions that \"design directives\" are constitutional principles of the Agentic Engineering Framework and must guide architectural decisions, it does not enumerate them directly. Other sources focus on tasks, specifications, and research reports but do not mention specific directives beyond this [6].\n\nFor clarity, the framework's documentation may require consulting files like `005-DesignDirectives.md` [6] or `fw decisions` [7], which are noted as critical for understanding the project's governance but are not included in the provided sources."
+    }
+  ]
+}
