@@ -1,0 +1,32 @@
+# Audit Results - 2026-03-09-1930
+timestamp: 2026-03-09T18:30:01Z
+sections: "structure,compliance,quality"
+summary:
+  pass: 9
+  warn: 2
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 11 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 138 registered, 0 unregistered"
+  - level: WARN
+    check: "Fabric: 21/138 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (138 cards)"
+  - level: PASS
+    check: "All 25 active tasks are valid"
+  - level: WARN
+    check: "Task T-395 has short description (47 chars)"
+    mitigation: "Expand description in T-395-fix-search-page-htmx-swap-not-rendering-.md"

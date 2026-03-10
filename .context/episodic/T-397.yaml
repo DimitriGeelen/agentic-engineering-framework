@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-397: Consolidate risks+gaps into unified concerns register (Option D)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T06:59:35Z
+# ============================================================================
+
+task_id: T-397
+task_name: "Consolidate risks+gaps into unified concerns register (Option D)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T20:07:48Z
+completed: 2026-03-10T06:59:34Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-09T21:17:05+01:00
+last_commit: 2026-03-10T07:58:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Consolidate risks+gaps into unified concerns register (Option D). Add clear/reset button to search results for tag filter
+
+# Key outcomes
+outcomes:
+  - "concerns.yaml created with merged gaps + risks (type field)"
+  - "risks.yaml and issues.yaml archived to docs/archive/"
+  - "All code references updated (audit, handover, discovery, init, CLAUDE.md)"
+  - "/risks page renders unified concerns view with heatmap"
+  - "fw audit passes (concerns register checks work)"
+  - "Backward-compatible fallback (concerns.yaml → gaps.yaml)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Option D — merge gaps.yaml + risks.yaml into concerns.yaml with type field"
+    rationale: "Scored 8.2/10 on weighted matrix (4 directives + practical criteria)"
+    alternatives_rejected: ["A (archive, 7.9), B (slim, 5.4), C (full integration, 6.5)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/handover/handover.sh"
+  - "CLAUDE.md"
+  - ".context/project/concerns.yaml"
+  - ".context/project/controls.yaml"
+  - "docs/archive/issues-archived.yaml"
+  - "docs/archive/risks-archived.yaml"
+  - "docs/reports/T-396-risk-management-disposition.md"
+  - "lib/init.sh"
+  - ".tasks/active/T-396-risk-management-process-revive-merge-arc.md"
+  - ".tasks/active/T-397-consolidate-risksgaps-into-unified-conce.md"
+  - "web/blueprints/discovery.py"
+  - "web/blueprints/risks.py"
+  - "web/templates/_partials/search_results.html"
+  - "web/templates/risks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T21:17:05"
+    action: "T-397: Consolidate risks+gaps into unified concerns register (Option D)"
+  - time: "2026-03-10T07:58:51"
+    action: "T-397: Add clear/reset button to search results for tag filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 651 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 651
+  commits: 2
+  files_changed: 15
+  lines_added: 621
+  lines_removed: 607
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-397-consolidate-risksgaps-into-unified-conce.md
+generated_by: context-agent-hybrid

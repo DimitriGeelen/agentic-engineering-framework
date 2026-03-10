@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/core.py, web/blueprints/metrics.py, web/blueprints/risks.py, web/shared.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:44Z
-last_update: 2026-03-10T12:55:58Z
+last_update: 2026-03-10T12:56:05Z
 date_finished: 2026-03-10T12:55:58Z
 ---
 

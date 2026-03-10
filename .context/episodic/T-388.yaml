@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-388: Search page UX overhaul: unified search modes, tag cloud, settings integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-09T19:07:35Z
+# ============================================================================
+
+task_id: T-388
+task_name: "Search page UX overhaul: unified search modes, tag cloud, settings integration"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-09T11:30:18Z
+completed: 2026-03-09T19:07:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-09T12:37:02+01:00
+last_commit: 2026-03-09T12:37:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Search UX overhaul inception — GO decision, 4 build tasks created
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with component fabric analysis"
+  - "All 6 problems confirmed with evidence"
+  - "Exploration plan reviewed"
+  - "Go/No-Go decision made — GO (2026-03-09)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-388-search-ux-overhaul-research.md"
+  - ".tasks/active/T-388-search-page-ux-overhaul-unified-search-m.md"
+  - ".tasks/active/T-389-save-inferred-question-title-instead-of-.md"
+  - ".tasks/active/T-390-settings-page-ollama-hostport-config-and.md"
+  - ".tasks/active/T-391-search-page-layout-redesign-with-simplif.md"
+  - ".tasks/active/T-392-tag-cloud-for-topic-based-document-brows.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-09T12:37:02"
+    action: "T-388: Search UX overhaul inception — GO decision, 4 build tasks created"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 457 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 457
+  commits: 1
+  files_changed: 6
+  lines_added: 558
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-388-search-page-ux-overhaul-unified-search-m.md
+generated_by: context-agent-hybrid
