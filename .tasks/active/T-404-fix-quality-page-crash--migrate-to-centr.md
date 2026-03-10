@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, bugfix]
 components: []
 related_tasks: [T-403]
 created: 2026-03-10T13:42:00Z
-last_update: 2026-03-10T13:44:33Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T13:44:33Z
 ---
 
@@ -69,3 +69,6 @@ grep -q "load_yaml" web/blueprints/quality.py
 
 ### 2026-03-10T13:44:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

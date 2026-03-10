@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [C-004, agents/handover/handover.sh, lib/init.sh, C-003, web/blueprints/risks.py, web/templates/risks.html]
 related_tasks: []
 created: 2026-03-09T20:07:48Z
-last_update: 2026-03-10T07:30:41Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T06:59:34Z
 ---
 
@@ -64,3 +64,6 @@ grep -q "concerns.yaml" agents/handover/handover.sh
 
 ### 2026-03-10T06:59:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

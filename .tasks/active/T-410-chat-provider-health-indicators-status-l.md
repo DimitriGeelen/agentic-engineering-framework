@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, chat, llm, ux]
 components: [web/static/js/chat.js, web/templates/_partials/chat_tab.html]
 related_tasks: []
 created: 2026-03-10T19:53:03Z
-last_update: 2026-03-10T19:56:14Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T19:56:14Z
 ---
 
@@ -66,3 +66,6 @@ grep -q "chatTestProvider" web/static/js/chat.js
 
 ### 2026-03-10T19:56:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

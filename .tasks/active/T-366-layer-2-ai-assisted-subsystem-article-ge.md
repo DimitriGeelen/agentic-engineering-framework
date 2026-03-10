@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [documentation, fabric, cli]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T22:03:34Z
-last_update: 2026-03-08T23:48:29Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-08T23:14:59Z
 ---
 
@@ -70,3 +70,6 @@ test -f docs/generated/articles/healing-prompt.md
 
 ### 2026-03-08T23:14:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [documentation, fabric, cli]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T22:03:27Z
-last_update: 2026-03-08T22:17:24Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-08T22:17:24Z
 ---
 
@@ -73,3 +73,6 @@ python3 -c "import glob; docs=glob.glob('docs/generated/components/*.md'); asser
 
 ### 2026-03-08T22:17:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

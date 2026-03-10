@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [agents/fabric/lib/traverse.sh, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-03-08T21:38:56Z
-last_update: 2026-03-08T21:46:03Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-08T21:46:03Z
 ---
 
@@ -68,3 +68,6 @@ curl -sf http://localhost:3000/fabric/component/agents-healing-healing | grep -q
 
 ### 2026-03-08T21:46:03Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

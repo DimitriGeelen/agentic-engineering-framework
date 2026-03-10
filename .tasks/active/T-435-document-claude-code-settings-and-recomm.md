@@ -4,10 +4,10 @@ name: "Inception: Claude Code settings documentation and optimization for framew
 description: >
   Review all Claude Code settings (.claude/settings.json, .claude/settings.local.json, global settings) that the framework depends on. Document what each setting does, why it's configured that way, and the framework consequence if changed. Make recommendations for improving agent success rate. Output: settings documentation for README/docs, plus any recommended changes.
 
-status: started-work
-workflow_type: build
+status: captured
+workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: [governance, documentation, claude-code, onboarding]
 components: []
 related_tasks: []

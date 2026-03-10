@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [launch, visibility, content]
 components: []
 related_tasks: [T-334, T-336, T-337, T-329]
 created: 2026-03-08T08:09:33Z
-last_update: 2026-03-08T08:20:53Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-08T08:20:53Z
 ---
 
@@ -80,3 +80,6 @@ test "$(ls docs/articles/deep-dives/*.md 2>/dev/null | wc -l)" -ge 7
 
 ### 2026-03-08T08:20:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

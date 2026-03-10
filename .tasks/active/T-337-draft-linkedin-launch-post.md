@@ -8,12 +8,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [launch, visibility]
 components: []
 related_tasks: [T-329, T-334, T-336]
 created: 2026-03-06T23:26:45Z
-last_update: 2026-03-06T23:28:21Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-06T23:28:21Z
 ---
 
@@ -66,3 +66,6 @@ grep -qi "linkedin" docs/articles/linkedin-post.md
 
 ### 2026-03-06T23:28:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, ux]
 components: []
 related_tasks: []
 created: 2026-03-10T13:45:24Z
-last_update: 2026-03-10T13:47:16Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T13:47:16Z
 ---
 
@@ -71,3 +71,6 @@ grep -q "docs-overflow" web/templates/project.html
 
 ### 2026-03-10T13:47:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
