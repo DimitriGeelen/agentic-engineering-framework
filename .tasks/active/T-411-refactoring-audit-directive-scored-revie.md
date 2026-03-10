@@ -13,7 +13,7 @@ owner: human
 horizon: now
 tags: [refactoring, quality, audit, governance]
 components: [web/blueprints/discovery.py, web/static/js/chat.js, agents/task-create/update-task.sh, web/templates/base.html]
-related_tasks: [T-404, T-406, T-409]
+related_tasks: [T-404, T-406, T-409, T-412, T-413, T-414, T-415, T-416, T-417, T-418, T-419, T-420, T-421, T-422, T-423, T-424, T-425, T-426, T-427, T-428, T-429, T-430, T-431, T-432]
 created: 2026-03-10T20:54:13Z
 last_update: 2026-03-10T21:15:00Z
 date_finished: null
@@ -74,8 +74,8 @@ Research artifact: `docs/reports/T-411-refactoring-directive-scoring.md`
 - [x] DO/MAYBE/SKIP verdicts assigned with rationale
 - [x] Phased refactoring plan proposed with effort estimates
 - [x] Research artifact written to docs/reports/
-- [ ] Go/No-Go decision recorded
-- [ ] Build tasks created for approved phases (with research references)
+- [x] Go/No-Go decision recorded
+- [x] Build tasks created for approved phases (with research references)
 
 ### Human
 - [ ] [REVIEW] Review directive scoring and phase plan
@@ -106,7 +106,16 @@ grep -q "Dialogue Log" docs/reports/T-411-refactoring-directive-scoring.md
 
 ## Decisions
 
-<!-- Pending human Go/No-Go -->
+### 2026-03-10 — Phase approval and task creation strategy
+- **Chose:** Three-tier task creation — DO as now, MAYBE as next, SKIP in later inception
+- **Why:** Human directed all tiers get tasks. Preserves all findings while focusing effort on highest directive-scoring work first. Each tier gets appropriate horizon for scheduling.
+- **Rejected:** Single-phase (too much WIP), DO-only (loses MAYBE findings), big-bang refactor (too risky)
+
+**Decision**: GO
+
+**Rationale**: Human approved all three tiers: DO findings as horizon:now build tasks, MAYBE as horizon:next, SKIP in horizon:later inception for re-evaluation. 64 findings, 5 layers, 4 directives. D2 Reliability dominates.
+
+**Date**: 2026-03-10T21:01:34Z
 
 ## Updates
 
@@ -123,3 +132,18 @@ grep -q "Dialogue Log" docs/reports/T-411-refactoring-directive-scoring.md
 - **Action:** Consolidated findings, scored all 64 against four directives
 - **Output:** `docs/reports/T-411-refactoring-directive-scoring.md`
 - **Context:** 15 DO (≥7), 22 MAYBE (5-6), 27 SKIP (≤4). D2 Reliability dominates.
+
+### 2026-03-10T21:20:00Z — go-decision-and-task-creation [agent]
+- **Action:** Recorded GO decision, created 21 build tasks from findings
+- **Output:** T-412 through T-432 (11 DO horizon:now, 9 MAYBE horizon:next, 1 SKIP inception horizon:later)
+- **Context:** Human approved three-tier approach. All tasks reference research artifact. Governance verified (15/15 checks pass).
+
+### 2026-03-10T21:01:26Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Human approved all three tiers: DO findings as horizon:now build tasks, MAYBE findings as horizon:next build tasks, SKIP findings captured in horizon:later inception for re-evaluation. 64 findings across 5 layers, scored against 4 directives. D2 Reliability dominates.
+
+### 2026-03-10T21:01:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Human approved all three tiers: DO findings as horizon:now, MAYBE as horizon:next, SKIP in horizon:later inception. 64 findings, 5 layers, 4 directives. D2 Reliability dominates.
