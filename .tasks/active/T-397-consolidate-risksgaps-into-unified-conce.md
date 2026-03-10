@@ -4,67 +4,56 @@ name: "Consolidate risks+gaps into unified concerns register (Option D)"
 description: >
   Merge risks.yaml + gaps.yaml into concerns.yaml with type: gap|risk. Delete issues.yaml. Update controls.yaml backlinks. Update audit, handover, CLAUDE.md references. Update web routes and templates. Parent: T-396.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-004, agents/handover/handover.sh, lib/init.sh, C-003, web/blueprints/risks.py, web/templates/risks.html]
 related_tasks: []
 created: 2026-03-09T20:07:48Z
-last_update: 2026-03-09T20:07:48Z
-date_finished: null
+last_update: 2026-03-10T06:59:34Z
+date_finished: 2026-03-10T06:59:34Z
 ---
 
 # T-397: Consolidate risks+gaps into unified concerns register (Option D)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Parent: T-396. Research: docs/reports/T-396-risk-management-disposition.md
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] concerns.yaml created with merged gaps + risks (type field)
+- [x] risks.yaml and issues.yaml archived to docs/archive/
+- [x] All code references updated (audit, handover, discovery, init, CLAUDE.md)
+- [x] /risks page renders unified concerns view with heatmap
+- [x] fw audit passes (concerns register checks work)
+- [x] Backward-compatible fallback (concerns.yaml → gaps.yaml)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] /risks page looks correct in browser
+  **Steps:**
+  1. Open http://localhost:3000/risks
+  2. Check watching concerns show gaps (blue) and risks (orange)
+  3. Check heatmap renders risk entries
+  **Expected:** Unified view with type badges, heatmap has data points
+  **If not:** Note which section is broken
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+curl -sf http://localhost:3000/risks | grep -q "Concerns"
+grep -q "concerns.yaml" agents/audit/audit.sh
+grep -q "concerns.yaml" agents/handover/handover.sh
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-09 — Consolidation approach
+- **Chose:** Option D — merge gaps.yaml + risks.yaml into concerns.yaml with type field
+- **Why:** Scored 8.2/10 on weighted matrix (4 directives + practical criteria)
+- **Rejected:** A (archive, 7.9), B (slim, 5.4), C (full integration, 6.5)
 
 ## Updates
 
@@ -72,3 +61,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-397-consolidate-risksgaps-into-unified-conce.md
 - **Context:** Initial task creation
+
+### 2026-03-10T06:59:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
