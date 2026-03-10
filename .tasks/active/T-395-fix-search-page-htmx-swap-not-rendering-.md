@@ -2,7 +2,7 @@
 id: T-395
 name: "Fix search page htmx swap not rendering results"
 description: >
-  Fix search page htmx swap not rendering results
+  Fix search page htmx swap not rendering results. The hx-swap target was mismatched causing search results to silently fail to appear in the DOM.
 
 status: work-completed
 workflow_type: build

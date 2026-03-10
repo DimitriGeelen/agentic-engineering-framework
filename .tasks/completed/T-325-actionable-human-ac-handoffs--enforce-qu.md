@@ -80,9 +80,9 @@ Two gaps:
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
