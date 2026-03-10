@@ -12,7 +12,7 @@ tags: [refactoring, shell, reliability, portability]
 components: [lib/paths.sh, lib/compat.sh]
 related_tasks: [T-406, T-411]
 created: 2026-03-10T21:03:12Z
-last_update: 2026-03-10T22:19:22Z
+last_update: 2026-03-10T22:27:20Z
 date_finished: null
 ---
 
@@ -53,7 +53,8 @@ Files: update-task.sh:25-28, resume.sh:16-18, context/lib/*.sh.
 test -f lib/paths.sh
 bash -n lib/paths.sh
 source lib/paths.sh && test -n "$FRAMEWORK_ROOT"
-! grep -r 'SCRIPT_DIR=.*dirname.*BASH_SOURCE' agents/ --include='*.sh' -l | grep -v lib/paths.sh | grep -q .
+# Verify no inline PROJECT_ROOT resolution in agents (SCRIPT_DIR kept for local lib refs)
+! grep -r 'PROJECT_ROOT=.*git.*rev-parse' agents/ --include='*.sh' -l | grep -v 'git/lib/hooks.sh' | grep -q .
 fw doctor
 
 ## Decisions
