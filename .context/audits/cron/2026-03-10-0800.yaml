@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-09-2133
-timestamp: 2026-03-09T20:33:40Z
+# Audit Results - 2026-03-10-0800
+timestamp: 2026-03-10T07:00:01Z
 summary:
-  pass: 114
-  warn: 9
+  pass: 112
+  warn: 12
   fail: 0
 findings:
   - level: PASS
@@ -21,7 +21,7 @@ findings:
     check: "Fabric: 3 orphaned card(s) (file deleted but card remains)"
     mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 138 registered, 1 unregistered (coverage growing)"
+    check: "Fabric: 138 registered, 0 unregistered"
   - level: WARN
     check: "Fabric: 21/138 cards have no edges"
     mitigation: "Run: fw fabric enrich"
@@ -34,7 +34,7 @@ findings:
     check: "Task T-395 has short description (47 chars)"
     mitigation: "Expand description in T-395-fix-search-page-htmx-swap-not-rendering-.md"
   - level: PASS
-    check: "Git traceability: 98% (1205/1222 commits reference tasks)"
+    check: "Git traceability: 98% (1206/1223 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -58,7 +58,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 390 episodic summaries have quality content"
+    check: "All 391 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -84,13 +84,13 @@ findings:
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 6 (last commit: 15 minutes ago)"
+    check: "CTL-004: Tool counter at 10 (last commit: 2 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 4 cron audit file(s) in last hour"
+    check: "CTL-020: 5 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
@@ -179,12 +179,15 @@ findings:
   - level: WARN
     check: "CTL-012: Completed task T-356 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
-  - level: PASS
-    check: "CTL-013: T-394 verification re-run: 3/3 pass"
-  - level: PASS
-    check: "CTL-013: T-393 verification re-run: 3/3 pass"
-  - level: PASS
-    check: "CTL-013: T-387 verification re-run: 3/3 pass"
+  - level: WARN
+    check: "CTL-013: T-394 verification re-run: 3 command(s) failing"
+    mitigation: "Review T-394 — environment may have changed"
+  - level: WARN
+    check: "CTL-013: T-393 verification re-run: 3 command(s) failing"
+    mitigation: "Review T-393 — environment may have changed"
+  - level: WARN
+    check: "CTL-013: T-387 verification re-run: 3 command(s) failing"
+    mitigation: "Review T-387 — environment may have changed"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -230,11 +233,13 @@ findings:
   - level: PASS
     check: "CTL-025: T-395 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-397 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/390)"
+    check: "D1: Episodic quality — 0% [TODO] (3/391)"
   - level: PASS
-    check: "D2: Human review queue — 21 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 22 task(s) awaiting human action (normal)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - level: PASS
@@ -249,9 +254,9 @@ findings:
     check: "D5: Task lifecycle — 1 anomaly(s): T-203(0min,human)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=73 avg=38 ratio=1.9x)"
+    check: "D3: Commit velocity — insufficient data"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 90_commits_24h)"
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=15.3 earlier=5.6)"
   - level: PASS
