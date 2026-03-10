@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-402: Bugfix-learning coverage: mine episodic history to close 25%→40% gap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T12:51:29Z
+# ============================================================================
+
+task_id: T-402
+task_name: "Bugfix-learning coverage: mine episodic history to close 25%→40% gap"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:44:36Z
+completed: 2026-03-10T12:51:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T13:51:23+01:00
+last_commit: 2026-03-10T13:51:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Mine 9 bugfix learnings, coverage 25%→41%
+
+# Key outcomes
+outcomes:
+  - "Mined episodic history for completed bugfix tasks without learnings"
+  - "Added 9 new learnings from highest-value categories (hook/config, enforcement, YAML, portability)"
+  - "Bugfix-learning coverage >= 40%"
+  - "learnings.yaml parses cleanly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Mine 9 bugfix learnings, coverage 25%→41%"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-402-bugfix-learning-coverage-mine-episodic-h.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T13:51:23"
+    action: "T-402: Mine 9 bugfix learnings, coverage 25%→41%"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 186 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 186
+  commits: 1
+  files_changed: 2
+  lines_added: 80
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-402-bugfix-learning-coverage-mine-episodic-h.md
+generated_by: context-agent-hybrid
