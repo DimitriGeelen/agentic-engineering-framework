@@ -4,7 +4,7 @@ name: "Bugfix-learning coverage: mine episodic history to close 25%→40% gap"
 description: >
   Bugfix-learning coverage at 25% (14/56), target 40%. 48 bugfix tasks produced zero learnings. Mine episodic summaries for completed bugfix tasks, extract patterns, add learnings via fw fix-learned. Also consider structural trigger in update-task.sh for bugfix completions (G-016).
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-10T09:44:36Z
-last_update: 2026-03-10T09:44:36Z
+last_update: 2026-03-10T12:48:14Z
 date_finished: null
 ---
 
@@ -20,51 +20,28 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bugfix-learning coverage was 25% (14/56). Mined episodic summaries for 9 high-value completed bugfix tasks (hook wiring, enforcement gates, YAML processing, config generation) and added learnings via `fw context add-learning`. Coverage now 41% (26/63).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Mined episodic history for completed bugfix tasks without learnings
+- [x] Added 9 new learnings from highest-value categories (hook/config, enforcement, YAML, portability)
+- [x] Bugfix-learning coverage >= 40%
+- [x] learnings.yaml parses cleanly
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# learnings.yaml parses
+python3 -c "import yaml; yaml.safe_load(open('.context/project/learnings.yaml'))"
+# Coverage >= 40%
+python3 -c "import yaml,glob,os; data=yaml.safe_load(open('.context/project/learnings.yaml')); ls=data.get('learnings',[]); ts=set(l.get('task','') for l in ls if l.get('task')); bc=len(glob.glob('.tasks/completed/T-*fix*.md')+glob.glob('.tasks/completed/T-*bug*.md')); wl=sum(1 for f in glob.glob('.tasks/completed/T-*fix*.md')+glob.glob('.tasks/completed/T-*bug*.md') if os.path.basename(f).split('-')[0]+'-'+os.path.basename(f).split('-')[1] in ts); assert wl/bc>=0.40, f'{wl}/{bc}={100*wl/bc:.0f}%'"
+# At least 90 learnings total
+python3 -c "import yaml; data=yaml.safe_load(open('.context/project/learnings.yaml')); assert len(data.get('learnings',[]))>=90"
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+None — straightforward mining of existing episodic history.
 
 ## Updates
 
@@ -72,3 +49,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-402-bugfix-learning-coverage-mine-episodic-h.md
 - **Context:** Initial task creation
+
+### 2026-03-10T12:48:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
