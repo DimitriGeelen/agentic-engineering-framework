@@ -210,16 +210,9 @@ def parse_task(path):
 
 
 def load_yaml(path):
-    """Safely load a YAML file. Returns empty dict on missing/invalid."""
-    path = Path(path)
-    if not path.exists():
-        return {}
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
+    """Safely load a YAML file. Logs warnings on parse errors (T-403)."""
+    from web.shared import load_yaml as _shared_load_yaml
+    return _shared_load_yaml(path)
 
 
 # ---------------------------------------------------------------------------

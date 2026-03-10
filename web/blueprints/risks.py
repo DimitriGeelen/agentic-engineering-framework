@@ -1,29 +1,17 @@
 """Risks blueprint — unified concerns register (T-397, formerly T-194 three-register model)."""
 
-import yaml
 from flask import Blueprint
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, load_yaml
 
 bp = Blueprint("risks", __name__)
-
-
-def _load_yaml(filename):
-    path = PROJECT_ROOT / ".context" / "project" / filename
-    if not path.exists():
-        return {}
-    try:
-        with open(path) as f:
-            return yaml.safe_load(f) or {}
-    except yaml.YAMLError:
-        return {}
 
 
 @bp.route("/risks")
 def risk_register():
     """Unified concerns register — gaps + risks in one view (T-397)."""
-    concerns_data = _load_yaml("concerns.yaml")
-    controls_data = _load_yaml("controls.yaml")
+    concerns_data = load_yaml(PROJECT_ROOT / ".context" / "project" / "concerns.yaml")
+    controls_data = load_yaml(PROJECT_ROOT / ".context" / "project" / "controls.yaml")
 
     all_concerns = concerns_data.get("concerns", [])
     controls = controls_data.get("controls", [])

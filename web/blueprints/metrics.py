@@ -7,21 +7,9 @@ from datetime import datetime, timezone
 import yaml
 from flask import Blueprint
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
 
 bp = Blueprint("metrics", __name__)
-
-
-def _load_yaml(path):
-    """Safely load a YAML file, return empty dict on failure."""
-    if not path.exists():
-        return {}
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
 
 
 def _task_counts():
