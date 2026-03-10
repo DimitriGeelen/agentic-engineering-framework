@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-398: Dashboard health summary: concerns, quality scores, focus task, stale warnings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T10:32:30Z
+# ============================================================================
+
+task_id: T-398
+task_name: "Dashboard health summary: concerns, quality scores, focus task, stale warnings"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:43:06Z
+completed: 2026-03-10T10:32:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-10T10:45:18+01:00
+last_commit: 2026-03-10T11:11:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create enhancement tasks T-398 through T-403 from deep-dive analysis. Dashboard health summary — focus task, concerns register, stale warnings
+
+# Key outcomes
+outcomes:
+  - "Focus task bar shows current task ID + name with link to task detail"
+  - "Concerns summary displays total watching, gaps, risks, high counts"
+  - "`_get_attention_items()` reads concerns.yaml (with gaps.yaml fallback)"
+  - "Both cockpit.html and index.html updated with new sections"
+  - "Dashboard renders without errors (`curl -sf http://localhost:3000/`)"
+  - "Concerns numbers match actual concerns.yaml data (11 watching, 7 gaps, 4 risks, 2 high)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-388-search-page-ux-overhaul-unified-search-m.md"
+  - ".tasks/active/T-395-fix-search-page-htmx-swap-not-rendering-.md"
+  - ".tasks/active/T-397-consolidate-risksgaps-into-unified-conce.md"
+  - "web/blueprints/core.py"
+  - "web/templates/cockpit.html"
+  - "web/templates/index.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T10:45:18"
+    action: "T-398: Create enhancement tasks T-398 through T-403 from deep-dive analysis"
+  - time: "2026-03-10T11:11:34"
+    action: "T-398: Dashboard health summary — focus task, concerns register, stale warnings"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 49 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 2
+  files_changed: 13
+  lines_added: 256
+  lines_removed: 67
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-398-dashboard-health-summary-concerns-qualit.md
+generated_by: context-agent-hybrid
