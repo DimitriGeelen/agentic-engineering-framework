@@ -50,14 +50,17 @@ def _get_attention_items():
                     else:
                         items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
 
-    # Gaps near trigger
-    gaps_data = _load_yaml(PROJECT_ROOT / ".context" / "project" / "gaps.yaml")
-    for g in gaps_data.get("gaps", []):
-        if g.get("status") == "watching" and g.get("severity") in ("high", "medium"):
+    # Concerns near trigger (T-398: migrated from gaps.yaml to concerns.yaml)
+    concerns_path = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
+    if not concerns_path.exists():
+        concerns_path = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
+    concerns_data = _load_yaml(concerns_path)
+    for c in concerns_data.get("concerns", concerns_data.get("gaps", [])):
+        if c.get("status") == "watching" and c.get("severity") in ("high", "medium"):
             items.append({
                 "type": "gap",
-                "id": g.get("id", ""),
-                "message": g.get("title", "")[:50],
+                "id": c.get("id", ""),
+                "message": c.get("title", "")[:50],
             })
 
     return items
@@ -176,6 +179,86 @@ def _get_inception_checklist():
     return checklist
 
 
+def _get_concerns_summary():
+    """Summarize concerns register for dashboard (T-398)."""
+    concerns_path = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
+    if not concerns_path.exists():
+        concerns_path = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
+    data = _load_yaml(concerns_path)
+    all_concerns = data.get("concerns", data.get("gaps", []))
+    watching = [c for c in all_concerns if c.get("status") == "watching"]
+    gaps = [c for c in watching if c.get("type", "gap") == "gap"]
+    risks = [c for c in watching if c.get("type") == "risk"]
+    high = [c for c in watching if c.get("severity") in ("high",) or c.get("ranking") in ("high", "urgent")]
+    return {
+        "total_watching": len(watching),
+        "gaps": len(gaps),
+        "risks": len(risks),
+        "high": len(high),
+    }
+
+
+def _get_focus_task():
+    """Get current focus task for dashboard (T-398)."""
+    focus_path = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
+    if not focus_path.exists():
+        return None
+    data = _load_yaml(focus_path)
+    task_id = data.get("current_task")
+    if not task_id:
+        return None
+    # Find task file for name
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    if active_dir.exists():
+        for f in active_dir.glob(f"{task_id}-*.md"):
+            content = f.read_text(errors="replace")
+            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
+            if fm_match:
+                try:
+                    fm = yaml.safe_load(fm_match.group(1))
+                    return {"id": task_id, "name": fm.get("name", "")[:50]}
+                except yaml.YAMLError:
+                    pass
+    return {"id": task_id, "name": ""}
+
+
+def _get_stale_tasks():
+    """Count stale tasks: active with issues or >7d without update (T-398)."""
+    import datetime
+    stale = []
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    if not active_dir.exists():
+        return stale
+    now = datetime.datetime.now(datetime.timezone.utc)
+    for f in active_dir.glob("T-*.md"):
+        content = f.read_text(errors="replace")
+        fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
+        if not fm_match:
+            continue
+        try:
+            fm = yaml.safe_load(fm_match.group(1))
+        except yaml.YAMLError:
+            continue
+        if not isinstance(fm, dict):
+            continue
+        status = fm.get("status", "")
+        if status == "issues":
+            stale.append({"id": fm.get("id", ""), "reason": "has issues"})
+        elif status in ("started-work", "captured"):
+            last = fm.get("last_update") or fm.get("created")
+            if last:
+                if isinstance(last, str):
+                    try:
+                        last = datetime.datetime.fromisoformat(last.replace("Z", "+00:00"))
+                    except ValueError:
+                        continue
+                if hasattr(last, "tzinfo") and last.tzinfo is None:
+                    last = last.replace(tzinfo=datetime.timezone.utc)
+                if (now - last).days > 7:
+                    stale.append({"id": fm.get("id", ""), "reason": f"no update in {(now - last).days}d"})
+    return stale
+
+
 def _get_pattern_summary():
     """Count patterns by type for the dashboard."""
     pf = _load_yaml(PROJECT_ROOT / ".context" / "project" / "patterns.yaml")
@@ -210,16 +293,13 @@ def index():
     if scan_data:
         ctx = get_cockpit_context(scan_data)
         ctx["recent_activity"] = _get_recent_activity()
+        ctx["concerns_summary"] = _get_concerns_summary()
+        ctx["focus_task"] = _get_focus_task()
+        ctx["stale_tasks"] = _get_stale_tasks()
         return render_page("cockpit.html", page_title="Watchtower", **ctx)
 
     # Fallback: existing dashboard (no scan data)
-    gaps_file = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
-    gap_count = 0
-    if gaps_file.exists():
-        with open(gaps_file) as f:
-            data = yaml.safe_load(f)
-        if data:
-            gap_count = len([g for g in data.get("gaps", []) if g.get("status") == "watching"])
+    concerns_summary = _get_concerns_summary()
 
     handovers_dir = PROJECT_ROOT / ".context" / "handovers"
     last_session = "None"
@@ -235,7 +315,10 @@ def index():
         page_title="Watchtower",
         active_count=active_count,
         completed_count=completed_count,
-        gap_count=gap_count,
+        gap_count=concerns_summary["total_watching"],
+        concerns_summary=concerns_summary,
+        focus_task=_get_focus_task(),
+        stale_tasks=_get_stale_tasks(),
         last_session=last_session,
         is_inception=False,
         audit_status=audit_status,

@@ -55,6 +55,19 @@
     </div>
 </div>
 
+{# --- Focus Task (T-398) ------------------------------------ #}
+{% if focus_task %}
+<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; border-left: 3px solid var(--pico-primary);">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Focus</span>
+        <a href="/tasks/{{ focus_task.id }}"
+           hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           style="font-weight: 700; color: var(--pico-primary); text-decoration: none;">{{ focus_task.id }}</a>
+        <span style="font-size: 0.9rem;">{{ focus_task.name }}</span>
+    </div>
+</article>
+{% endif %}
+
 {% if scan_status == 'partial' %}
 <article style="border-left:4px solid #f9a825; padding:0.5rem 1rem; margin-bottom:1rem;">
     <small>Scan partially completed — some data sources were unavailable.</small>
@@ -205,7 +218,7 @@
 </div>
 {% endif %}
 
-{# --- System Health + Scan Summary -------------------------- #}
+{# --- System Health + Concerns (T-398) ---------------------- #}
 <div class="wt-columns">
     <article>
         <h4 class="wt-section-title">System Health</h4>
@@ -216,13 +229,42 @@
                 <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('patterns', 0) }}</span>P,
                 <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('decisions', 0) }}</span>D
             </li>
-            <li>Gaps: <span class="wt-pulse-value">{{ health.get('gaps_watching', 0) }}</span> watching</li>
             {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
             <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
             {% endif %}
         </ul>
+        {% if concerns_summary %}
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--pico-muted-border-color);">
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700;">{{ concerns_summary.total_watching }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Concerns</div>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Gaps</div>
+            </div>
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Risks</div>
+            </div>
+            {% if concerns_summary.high > 0 %}
+            <div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">High</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if stale_tasks %}
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #e65100;">
+            {{ stale_tasks | length }} stale task{{ 's' if stale_tasks | length != 1 }}:
+            {% for t in stale_tasks[:3] %}{{ t.id }}{% if not loop.last %}, {% endif %}{% endfor %}
+        </div>
+        {% endif %}
         <p style="margin-top:0.5rem;">
             <a href="/metrics" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">Full metrics &rarr;</a>
+            &nbsp;
+            <a href="/risks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">Concerns &rarr;</a>
         </p>
     </article>
 
