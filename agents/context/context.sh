@@ -112,8 +112,7 @@ case "${1:-}" in
         exit 1
         ;;
     *)
-        echo -e "${RED}Unknown command: $1${NC}"
-        echo "Run '$0 --help' for usage"
-        exit 1
+        error "Unknown command: $1"
+        die "Run '$0 --help' for usage"
         ;;
 esac

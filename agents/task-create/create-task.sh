@@ -9,14 +9,15 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 TEMPLATE="$TASKS_DIR/templates/default.md"
 
-# Colors for output
+# Source enumerations (single source of truth)
+# Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
+source "$FRAMEWORK_ROOT/lib/enums.sh"
+
+# Colors for output (legacy — gradually migrating to lib/errors.sh functions)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Source enumerations (single source of truth)
-source "$FRAMEWORK_ROOT/lib/enums.sh"
+NC='\033[0m'
 
 # Parse arguments
 NAME=""
@@ -80,22 +81,19 @@ fi
 
 # Validate required fields
 if [ -z "$NAME" ] || [ -z "$DESCRIPTION" ] || [ -z "$WORKFLOW_TYPE" ] || [ -z "$OWNER" ]; then
-    echo -e "${RED}ERROR: Missing required fields${NC}"
-    exit 1
+    die "Missing required fields"
 fi
 
 # Validate workflow type
 if ! is_valid_type "$WORKFLOW_TYPE"; then
-    echo -e "${RED}ERROR: Invalid workflow type '$WORKFLOW_TYPE'${NC}"
-    echo "Valid types: $VALID_TYPES"
-    exit 1
+    error "Invalid workflow type '$WORKFLOW_TYPE'"
+    die "Valid types: $VALID_TYPES"
 fi
 
 # Validate horizon
 if ! is_valid_horizon "$HORIZON"; then
-    echo -e "${RED}ERROR: Invalid horizon '$HORIZON'${NC}"
-    echo "Valid horizons: $VALID_HORIZONS"
-    exit 1
+    error "Invalid horizon '$HORIZON'"
+    die "Valid horizons: $VALID_HORIZONS"
 fi
 
 # Generate next task ID

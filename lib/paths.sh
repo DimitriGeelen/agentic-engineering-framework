@@ -50,3 +50,6 @@ source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
         tmp=$(mktemp "${file}.XXXXXX") && sed "$expr" "$file" > "$tmp" && mv "$tmp" "$file"
     }
 }
+
+# Source error output helpers (die, warn, error, info, success, block)
+source "$FRAMEWORK_ROOT/lib/errors.sh" 2>/dev/null || true
