@@ -10,6 +10,9 @@
     {% else %}
     No results for <strong>{{ query }}</strong>.
     {% endif %}
+    &nbsp;<a href="{{ url_for('discovery.search_view') }}" hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       style="font-size: 0.8rem; text-decoration: none; color: var(--pico-muted-color); cursor: pointer;"
+       title="Clear search and return to browse view">&times; Clear</a>
 </p>
 
 {% if results %}
