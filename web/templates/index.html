@@ -296,66 +296,125 @@
     </article>
 </div>
 
+{# --- Focus Task (T-398) ------------------------------------ #}
+{% if focus_task %}
+<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; border-left: 3px solid var(--pico-primary);">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Focus</span>
+        <a href="{{ url_for('tasks.task_detail', task_id=focus_task.id) }}"
+           hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           style="font-weight: 700; color: var(--pico-primary); text-decoration: none;">{{ focus_task.id }}</a>
+        <span style="font-size: 0.9rem;">{{ focus_task.name }}</span>
+    </div>
+</article>
+{% endif %}
+
 {# --- Project Pulse ----------------------------------------- #}
 <article>
     <h4 class="wt-section-title">Project Pulse</h4>
     <ul class="wt-pulse">
         <li>
-            Tasks:
-            <span class="wt-pulse-value">{{ active_count }}</span> active,
-            <span class="wt-pulse-value">{{ completed_count }}</span> done
+            <a href="{{ url_for('tasks.task_list') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;">
+                Tasks:
+                <span class="wt-pulse-value">{{ active_count }}</span> active,
+                <span class="wt-pulse-value">{{ completed_count }}</span> done
+            </a>
         </li>
         <li>
-            Gaps:
-            <span class="wt-pulse-value">{{ gap_count }}</span> watching
-        </li>
-        <li>
-            Knowledge:
-            <span class="wt-pulse-value">{{ knowledge_counts.learnings }}</span>L,
-            <span class="wt-pulse-value">{{ knowledge_counts.practices }}</span>P,
-            <span class="wt-pulse-value">{{ knowledge_counts.decisions }}</span>D
-        </li>
-        <li>
-            Traceability:
-            <span class="wt-pulse-value">{{ traceability }}%</span>
-        </li>
-    </ul>
-</article>
-
-{# --- System Health ----------------------------------------- #}
-<article>
-    <h4 class="wt-section-title">System Health</h4>
-    <ul class="wt-pulse">
-        <li>
-            Traceability:
-            <span class="wt-pulse-value" style="color: {% if traceability >= 90 %}#2e7d32{% elif traceability >= 70 %}#f9a825{% else %}#c62828{% endif %}">{{ traceability }}%</span>
+            <a href="{{ url_for('risks.risk_register') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;">
+                Concerns:
+                <span class="wt-pulse-value">{{ concerns_summary.total_watching }}</span> watching
+                {% if concerns_summary.high > 0 %}
+                (<span class="wt-pulse-value" style="color: #c62828;">{{ concerns_summary.high }}</span> high)
+                {% endif %}
+            </a>
         </li>
         <li>
             Knowledge:
             <a href="{{ url_for('discovery.learnings') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                <span class="wt-pulse-value">{{ knowledge_counts.learnings }}</span>L
-            </a>,
+                <span class="wt-pulse-value">{{ knowledge_counts.learnings }}</span>L</a>,
             <a href="{{ url_for('discovery.patterns') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                <span class="wt-pulse-value">{{ pattern_summary.failure + pattern_summary.success + pattern_summary.antifragile + pattern_summary.workflow }}</span>P
-            </a>,
+                <span class="wt-pulse-value">{{ pattern_summary.failure + pattern_summary.success + pattern_summary.antifragile + pattern_summary.workflow }}</span>P</a>,
             <a href="{{ url_for('discovery.decisions') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                <span class="wt-pulse-value">{{ knowledge_counts.decisions }}</span>D
-            </a>
+                <span class="wt-pulse-value">{{ knowledge_counts.decisions }}</span>D</a>
         </li>
         <li>
-            Patterns:
-            {% if pattern_summary.failure > 0 %}
-            <span class="wt-pulse-value" style="color: #c62828;">{{ pattern_summary.failure }}</span> failure,
-            {% endif %}
-            <span class="wt-pulse-value" style="color: #2e7d32;">{{ pattern_summary.success }}</span> success,
-            <span class="wt-pulse-value" style="color: #6a1b9a;">{{ pattern_summary.antifragile }}</span> antifragile
-        </li>
-        <li>
-            <a href="{{ url_for('metrics.project_metrics') }}"
-               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
-               style="font-size: 0.85rem;">Full metrics &rarr;</a>
+            Traceability:
+            <span class="wt-pulse-value" style="color: {% if traceability >= 90 %}#2e7d32{% elif traceability >= 70 %}#f9a825{% else %}#c62828{% endif %}">{{ traceability }}%</span>
         </li>
     </ul>
 </article>
+
+{# --- System Health (T-398) --------------------------------- #}
+<div class="wt-columns">
+    <article>
+        <h4 class="wt-section-title">Concerns Register</h4>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.9rem;">
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700;">{{ concerns_summary.total_watching }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Watching</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Gaps</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Risks</div>
+            </div>
+            {% if concerns_summary.high > 0 %}
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">High severity</div>
+            </div>
+            {% endif %}
+        </div>
+        <div style="margin-top: 0.75rem;">
+            <a href="{{ url_for('risks.risk_register') }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="font-size: 0.8rem;">View concerns &rarr;</a>
+        </div>
+    </article>
+
+    <article>
+        <h4 class="wt-section-title">Patterns</h4>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.9rem;">
+            {% if pattern_summary.failure > 0 %}
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">{{ pattern_summary.failure }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Failure</div>
+            </div>
+            {% endif %}
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #2e7d32;">{{ pattern_summary.success }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Success</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #6a1b9a;">{{ pattern_summary.antifragile }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Antifragile</div>
+            </div>
+            {% if pattern_summary.workflow > 0 %}
+            <div>
+                <div style="font-size: 1.5rem; font-weight: 700;">{{ pattern_summary.workflow }}</div>
+                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Workflow</div>
+            </div>
+            {% endif %}
+        </div>
+        {% if stale_tasks %}
+        <div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--pico-muted-border-color);">
+            <span style="font-size: 0.8rem; color: #e65100; font-weight: 600;">{{ stale_tasks | length }} stale task{{ 's' if stale_tasks | length != 1 }}</span>
+            <span style="font-size: 0.75rem; color: var(--pico-muted-color);">
+                {% for t in stale_tasks[:3] %}{{ t.id }} ({{ t.reason }}){% if not loop.last %}, {% endif %}{% endfor %}
+                {% if stale_tasks | length > 3 %}...{% endif %}
+            </span>
+        </div>
+        {% endif %}
+        <div style="margin-top: 0.75rem;">
+            <a href="{{ url_for('metrics.project_metrics') }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="font-size: 0.8rem;">Full metrics &rarr;</a>
+        </div>
+    </article>
+</div>
 
 {% endif %}
