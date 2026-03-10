@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-408: Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203 lifecycle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T17:07:24Z
+# ============================================================================
+
+task_id: T-408
+task_name: "Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203 lifecycle"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T16:59:57Z
+completed: 2026-03-10T17:07:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-10T18:07:18+01:00
+last_commit: 2026-03-10T18:07:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remediate audit warnings — learnings, T-203 reclassify, fabric enrichment
+
+# Key outcomes
+outcomes:
+  - "Bugfix-learning coverage >= 40% (added L-096 for T-407, L-097 for T-406)"
+  - "T-203 reclassified from build to test (correct workflow_type for scratch test)"
+  - "Fabric cards enriched with dependency edges (sub-agent dispatched)"
+  - "All changes committed (clears uncommitted warning)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".fabric/components/agents-context-check-fabric-new-file.yaml"
+  - ".fabric/components/agents-docgen-generate-article.yaml"
+  - ".fabric/components/agents-docgen-generate-component.yaml"
+  - ".fabric/components/context-project-assumptions.yaml"
+  - ".fabric/components/context-project-controls.yaml"
+  - ".fabric/components/context-project-decisions.yaml"
+  - ".fabric/components/context-project-directives.yaml"
+  - ".fabric/components/context-project-metrics-history.yaml"
+  - ".fabric/components/context-project-practices.yaml"
+  - ".fabric/components/lib-compat.yaml"
+  - ".fabric/components/web-blueprints-api.yaml"
+  - ".fabric/components/web-blueprints-docs.yaml"
+  - ".fabric/components/web-blueprints-settings.yaml"
+  - ".fabric/components/web-search_utils.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-templates-docs_detail.yaml"
+  - ".fabric/components/web-templates-docs_index.yaml"
+  - ".fabric/components/web-templates-feedback_analytics.yaml"
+  - ".fabric/components/web-templates-settings.yaml"
+  - ".tasks/active/T-408-remediate-audit-warnings-fabric-edges-un.md"
+  - ".tasks/completed/T-203-scratch-test--partial-complete-verificat.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T18:07:18"
+    action: "T-408: Remediate audit warnings — learnings, T-203 reclassify, fabric enrichment"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, housekeeping]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 22
+  lines_added: 195
+  lines_removed: 157
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-408-remediate-audit-warnings-fabric-edges-un.md
+generated_by: context-agent-hybrid
