@@ -127,6 +127,19 @@
         .ambient-strip .audit-warn { color: #e8a317; font-weight: 600; }
         .ambient-strip .audit-fail { color: #c62828; font-weight: 600; }
 
+        /* ── Mobile nav toggle ───────────────────────────────── */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            padding: 0.4rem;
+            cursor: pointer;
+            color: var(--pico-color);
+            margin: 0;
+            line-height: 1;
+        }
+        .nav-toggle svg { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2.5; fill: none; }
+
         /* ── Content and footer ──────────────────────────────── */
         main { min-height: 60vh; }
         .page-header { margin-bottom: 2rem; }
@@ -143,6 +156,43 @@
             color: var(--pico-muted-color); font-size: 0.875rem;
             border-top: 1px solid var(--pico-muted-border-color); margin-top: 2rem;
         }
+
+        /* ── Table scroll on mobile ─────────────────────────── */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ── Mobile breakpoint (<768px) ─────────────────────── */
+        @media (max-width: 768px) {
+            /* Nav: show hamburger, stack items vertically */
+            .nav-toggle { display: block; }
+            nav.site-nav > ul { flex-wrap: wrap; }
+            nav.site-nav .nav-items { display: none; width: 100%; }
+            nav.site-nav .nav-items.open { display: contents; }
+            nav.site-nav .spacer { display: none; }
+            nav.site-nav details.dropdown { width: 100%; }
+            nav.site-nav details.dropdown > summary { padding: 0.5rem 0.75rem; }
+            nav.site-nav .nav-docs,
+            nav.site-nav .nav-search { width: auto; }
+
+            /* Ambient strip: smaller, wrappable */
+            .ambient-strip { font-size: 0.7rem; gap: 0.4rem; padding: 0.2rem 0.75rem; }
+
+            /* 3-col grids → 1-col */
+            [style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Phone breakpoint (<576px) ──────────────────────── */
+        @media (max-width: 576px) {
+            /* Form rows stack */
+            .form-row, .grid { grid-template-columns: 1fr !important; }
+
+            /* Page header tighter */
+            .page-header { margin-bottom: 1rem; }
+            .page-header h1 { font-size: 1.3rem; }
+
+            /* Ambient strip: hide less important items */
+            .ambient-strip .sep:nth-child(n+4),
+            .ambient-strip > span:nth-child(n+5):not(:last-child) { display: none; }
+        }
     </style>
 </head>
 <body hx-boost="true" hx-target="#content" hx-swap="innerHTML">
@@ -155,6 +205,13 @@
                    hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">Watchtower</a>
             </li>
 
+            <li>
+                <button class="nav-toggle" onclick="document.querySelector('.nav-items').classList.toggle('open')" aria-label="Toggle navigation">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+            </li>
+
+            <span class="nav-items">
             {% for group_name, items in nav_groups %}
             <li>
                 {%- set ns = namespace(active=false) -%}
@@ -196,6 +253,7 @@
                     </svg>
                 </a>
             </li>
+            </span>
 
         </ul>
     </nav>
@@ -339,6 +397,35 @@
             document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
                 if (!d.contains(event.target)) d.removeAttribute('open');
             });
+        });
+
+        // Close mobile nav after clicking a link
+        document.querySelectorAll('.nav-items a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                var navItems = document.querySelector('.nav-items');
+                if (navItems) navItems.classList.remove('open');
+            });
+        });
+
+        // Wrap bare tables in .table-responsive for horizontal scroll
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('#content table:not(.table-responsive table)').forEach(function(table) {
+                if (!table.parentElement.classList.contains('table-responsive')) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'table-responsive';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                }
+            });
+        });
+        // Initial wrap on page load
+        document.querySelectorAll('#content table').forEach(function(table) {
+            if (!table.parentElement.classList.contains('table-responsive')) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'table-responsive';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
         });
 
         // Highlight.js: initial highlight + re-highlight after htmx swaps
