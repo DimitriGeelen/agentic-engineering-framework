@@ -38,32 +38,37 @@
     <button hx-post="/api/audit/run"
             hx-target="#audit-results"
             hx-swap="innerHTML"
-            hx-indicator="#audit-spinner"
+            hx-disabled-elt="this"
+            hx-on::before-request="this.setAttribute('aria-busy', 'true')"
+            hx-on::after-request="this.removeAttribute('aria-busy')"
             class="outline">
         Run Audit
-        <span id="audit-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
     </button>
     <button hx-post="/api/tests/run"
             hx-target="#test-results"
             hx-swap="innerHTML"
-            hx-indicator="#test-spinner"
+            hx-disabled-elt="this"
+            hx-on::before-request="this.setAttribute('aria-busy', 'true')"
+            hx-on::after-request="this.removeAttribute('aria-busy')"
             class="outline">
         Run Tests
-        <span id="test-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
     </button>
-    <button hx-post="/api/audit/run"
+    <button id="full-check-btn"
+            hx-post="/api/audit/run"
             hx-target="#audit-results"
             hx-swap="innerHTML"
-            hx-indicator="#full-spinner"
-            hx-on::after-request="htmx.trigger('#full-check-tests', 'click')"
+            hx-disabled-elt="this"
+            hx-on::before-request="this.setAttribute('aria-busy', 'true')"
+            hx-on::after-request="this.removeAttribute('aria-busy'); htmx.trigger('#full-check-tests', 'click')"
             class="contrast">
         Full Check
-        <span id="full-spinner" class="htmx-indicator" aria-busy="true" style="display: none;"></span>
     </button>
     <button id="full-check-tests"
             hx-post="/api/tests/run"
             hx-target="#test-results"
             hx-swap="innerHTML"
+            hx-on::before-request="document.getElementById('full-check-btn').setAttribute('aria-busy', 'true')"
+            hx-on::after-request="document.getElementById('full-check-btn').removeAttribute('aria-busy')"
             style="display: none;">
     </button>
 </div>
