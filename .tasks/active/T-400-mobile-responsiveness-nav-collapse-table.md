@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:22Z
-last_update: 2026-03-10T10:37:44Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T10:37:37Z
 ---
 
@@ -76,3 +76,6 @@ None — standard responsive patterns applied.
 
 ### 2026-03-10T10:37:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [ui, search]
 components: [C-003, web/templates/search.html]
 related_tasks: []
 created: 2026-03-09T09:41:43Z
-last_update: 2026-03-09T10:06:25Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-09T10:06:25Z
 ---
 
@@ -74,3 +74,6 @@ curl -sf "http://localhost:3000/search?q=healing&mode=hybrid" | grep -q "search-
 
 ### 2026-03-09T10:06:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

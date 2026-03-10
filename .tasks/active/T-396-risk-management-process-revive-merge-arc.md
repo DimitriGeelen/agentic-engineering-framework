@@ -4,16 +4,16 @@ name: "Risk management process: revive, merge, archive, or slim"
 description: >
   Inception: Risk management process: revive, merge, archive, or slim
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-09T19:17:44Z
-last_update: 2026-03-09T19:17:44Z
-date_finished: null
+last_update: 2026-03-10T22:04:17Z
+date_finished: 2026-03-10T20:34:13Z
 ---
 
 # T-396: Risk management process: revive, merge, archive, or slim
@@ -108,3 +108,12 @@ Research artifact: `docs/reports/T-396-risk-management-disposition.md`
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Option D: Consolidate risks+gaps into unified concerns register. Scored 8.2/10 across directives. Eliminates 'which register?' cognitive tax, inherits all gap infrastructure, preserves forward-looking capacity via type:risk entries. Delete issues.yaml (duplicates episodic+patterns). ~3 hours.
+
+### 2026-03-10T20:34:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+
+### 2026-03-10T22:04:17Z — status-update [task-update-agent]
+- **Change:** horizon: next → next

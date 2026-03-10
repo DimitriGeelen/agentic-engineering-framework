@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [fabric, hooks]
 components: []
 related_tasks: []
 created: 2026-03-08T22:28:11Z
-last_update: 2026-03-08T22:57:09Z
+last_update: 2026-03-10T22:04:13Z
 date_finished: 2026-03-08T22:57:09Z
 ---
 
@@ -74,3 +74,6 @@ grep -q "additionalContext" agents/context/check-fabric-new-file.sh
 
 ### 2026-03-08T22:57:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

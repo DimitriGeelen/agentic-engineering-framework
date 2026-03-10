@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-09T11:30:18Z
-last_update: 2026-03-09T19:07:34Z
+last_update: 2026-03-10T22:04:17Z
 date_finished: 2026-03-09T19:07:34Z
 ---
 
@@ -123,3 +123,6 @@ Research artifact: `docs/reports/T-388-search-ux-overhaul-research.md`
 
 ### 2026-03-09T19:07:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:17Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

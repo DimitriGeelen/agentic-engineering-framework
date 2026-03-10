@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/settings.py, web/templates/settings.html]
 related_tasks: []
 created: 2026-03-09T11:35:43Z
-last_update: 2026-03-09T11:47:35Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-09T11:47:35Z
 ---
 
@@ -73,3 +73,6 @@ curl -sf 'http://localhost:3000/settings/models?format=datalist' | grep -q 'opti
 
 ### 2026-03-09T11:47:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

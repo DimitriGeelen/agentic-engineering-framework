@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/core.py, web/templates/cockpit.html, web/templates/index.html]
 related_tasks: []
 created: 2026-03-10T09:43:06Z
-last_update: 2026-03-10T10:32:42Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T10:32:28Z
 ---
 
@@ -66,3 +66,6 @@ None — straightforward enhancement with no meaningful alternatives.
 
 ### 2026-03-10T10:32:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

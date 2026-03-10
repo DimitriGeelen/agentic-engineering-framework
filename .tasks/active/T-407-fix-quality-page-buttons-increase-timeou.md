@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, ux, bugfix]
 components: []
 related_tasks: []
 created: 2026-03-10T14:10:26Z
-last_update: 2026-03-10T14:14:26Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T14:14:26Z
 ---
 
@@ -69,3 +69,6 @@ grep -q "timeout=300" web/blueprints/quality.py
 
 ### 2026-03-10T14:14:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/core.py, web/blueprints/metrics.py, web/blueprints/risks.py, web/shared.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:44Z
-last_update: 2026-03-10T12:56:05Z
+last_update: 2026-03-10T22:04:14Z
 date_finished: 2026-03-10T12:55:58Z
 ---
 
@@ -72,3 +72,6 @@ None — straightforward consolidation of 4 duplicate functions into shared modu
 
 ### 2026-03-10T12:55:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

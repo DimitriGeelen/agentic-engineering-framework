@@ -4,16 +4,16 @@ name: "Ask AI chat tab: conversational RAG with save/resume and model selector"
 description: >
   Ask AI chat tab: conversational RAG with save/resume and model selector
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: now
+owner: human
+horizon: next
 tags: [watchtower, search, llm, rag]
-components: []
+components: [web/app.py, C-003, web/embeddings.py, web/static/js/chat.js, web/templates/_partials/chat_tab.html, web/templates/search.html]
 related_tasks: []
 created: 2026-03-10T17:57:50Z
-last_update: 2026-03-10T19:03:23Z
-date_finished: null
+last_update: 2026-03-10T22:04:14Z
+date_finished: 2026-03-10T19:04:27Z
 ---
 
 # T-409: Ask AI chat tab: conversational RAG with save/resume and model selector
@@ -90,3 +90,9 @@ grep -q "model_override" web/ask.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-409-ask-ai-chat-tab-conversational-rag-with-.md
 - **Context:** Initial task creation
+
+### 2026-03-10T19:04:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-03-10T22:04:14Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -19,7 +19,7 @@ tags: [governance, context-budget, autonomy, session-management]
 components: [agents/context/checkpoint.sh, agents/context/budget-gate.sh, agents/context/pre-compact.sh, agents/context/post-compact-resume.sh, .claude/settings.json]
 related_tasks: [T-139, T-145, T-148, T-179]
 created: 2026-03-10T21:45:04Z
-last_update: 2026-03-10T21:46:32Z
+last_update: 2026-03-10T21:46:47Z
 date_finished: null
 ---
 
