@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, python, watchtower, reliability]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:13Z
 last_update: 2026-03-10T21:04:13Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Architecture cleanup (A2+A3+A7+A8+A9+A11). See `docs/reports/T-411-refactoring-directive-scoring.md` § ARCHITECTURE rows A2-A11 (scores 5-6). Six medium-priority findings bundled. Largest: A8 splits discovery.py (711 lines) into domain-specific blueprints.
 
 ## Acceptance Criteria
 

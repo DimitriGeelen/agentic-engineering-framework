@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, html, watchtower, usability]
-components: []
-related_tasks: []
+components: [web/templates/_partials/badge.html, web/templates/gaps.html, web/templates/risks.html, web/templates/assumptions.html]
+related_tasks: [T-411]
 created: 2026-03-10T21:03:21Z
 last_update: 2026-03-10T21:03:21Z
 date_finished: null
@@ -20,40 +20,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding H2 (score 7) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**H2 — Reusable status badge component:**
+Status badges with inline styles replicated in 4+ templates: gaps.html:15-35, risks.html:26-35,
+decisions.html:23-27, assumptions.html:173-179. Each has its own mark element with hardcoded
+background-color, color, padding, border-radius, font-size.
+See research artifact § "HTML TEMPLATES" row H2.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] _partials/badge.html Jinja macro created
+- [ ] Macro accepts status/severity and outputs consistent badge
+- [ ] At least 4 templates converted to use the macro
+- [ ] Badge colors consistent across all pages
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Badges look consistent across pages
+  **Steps:**
+  1. Open http://localhost:3000/risks
+  2. Open http://localhost:3000/assumptions
+  3. Compare badge styling (colors, sizing, padding)
+  **Expected:** Badges look identical in style across pages
+  **If not:** Note which page has different badge styling
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f web/templates/_partials/badge.html
+grep -q 'badge' web/templates/gaps.html
+grep -q 'import.*badge' web/templates/risks.html || grep -q 'badge' web/templates/risks.html
 
 ## Decisions
 

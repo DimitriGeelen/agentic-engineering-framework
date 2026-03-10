@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, javascript, watchtower]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:07Z
 last_update: 2026-03-10T21:04:07Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+JS function decomposition (J6). See `docs/reports/T-411-refactoring-directive-scoring.md` § JS row J6 (score 5). chatAsk (169 lines) and askQuestion (155 lines). Depends on T-418 (StreamFetcher) — coordinate to avoid conflicts.
 
 ## Acceptance Criteria
 

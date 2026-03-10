@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, shell, reliability, usability]
-components: []
-related_tasks: []
+components: [lib/errors.sh]
+related_tasks: [T-411, T-412]
 created: 2026-03-10T21:03:14Z
 last_update: 2026-03-10T21:03:14Z
 date_finished: null
@@ -20,40 +20,30 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding S8 (score 8) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**S8 — Error handling inconsistency (all files):**
+Scripts use different error patterns: `echo >&2 && exit 1`, `echo -e "$RED..." >&2 && exit 1`,
+`exit 2` for severity, `return 1` (subshell-safe) vs `exit 1` (not safe in functions).
+See research artifact § "SHELL SCRIPTS" row S8. Affects all agent scripts.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/errors.sh created with die(), warn(), error(), info() functions
+- [ ] Functions use return (not exit) for sourcing safety
+- [ ] Consistent color output with TTY detection
+- [ ] At least 5 agent scripts converted to use lib/errors.sh
+- [ ] Exit codes standardized: 0=success, 1=error, 2=blocking error (hook convention)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- No human verification needed for this refactoring -->
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f lib/errors.sh
+bash -n lib/errors.sh
+source lib/errors.sh && warn 'test warning' 2>/dev/null
 
 ## Decisions
 

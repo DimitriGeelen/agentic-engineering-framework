@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, shell, reliability]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:05Z
 last_update: 2026-03-10T21:04:05Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Shell task/YAML helpers (S6+S7). See `docs/reports/T-411-refactoring-directive-scoring.md` § SHELL rows S6 (task lookup, 4 files, score 6), S7 (YAML extraction, 10 files, score 6). Depends on T-412 (lib/paths.sh) for consistent sourcing pattern.
 
 ## Acceptance Criteria
 

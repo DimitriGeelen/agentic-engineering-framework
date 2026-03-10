@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, html, watchtower, usability]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:10Z
 last_update: 2026-03-10T21:04:10Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Template cleanup (H3+H4+H10). See `docs/reports/T-411-refactoring-directive-scoring.md` § TEMPLATES rows H3 (onclick→events, score 5), H4 (form macro, score 6), H10 (conditional cleanup, score 5). Three template improvements bundled for efficiency.
 
 ## Acceptance Criteria
 

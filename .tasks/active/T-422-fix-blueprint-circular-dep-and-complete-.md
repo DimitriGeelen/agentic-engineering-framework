@@ -9,8 +9,8 @@ workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, python, watchtower, reliability]
-components: []
-related_tasks: []
+components: [web/blueprints/core.py, web/blueprints/cockpit.py, web/shared.py, web/blueprints/discovery.py]
+related_tasks: [T-397, T-411]
 created: 2026-03-10T21:03:22Z
 last_update: 2026-03-10T21:03:22Z
 date_finished: null
@@ -20,40 +20,35 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Refactoring finding A5 (score 7) + A6 (score 7) from `docs/reports/T-411-refactoring-directive-scoring.md`.
+
+**A5 — Blueprint circular dependency (core→cockpit):**
+core.py:12 imports load_scan from cockpit.py. If cockpit later imports from core, silent circular
+dependency. load_scan is a utility, not cockpit-specific.
+See research artifact § "ARCHITECTURE" row A5.
+
+**A6 — Incomplete migration (gaps.yaml fallback):**
+T-397 migrated to concerns.yaml but core.py:42-44 and discovery.py still have fallback:
+`if not concerns_path.exists(): concerns_path = gaps.yaml`. Old files may still exist.
+See research artifact § "ARCHITECTURE" row A6.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] load_scan() moved from cockpit.py to shared.py
+- [ ] Both cockpit.py and core.py import from shared.py (no cross-blueprint import)
+- [ ] gaps.yaml fallback removed from core.py and discovery.py
+- [ ] Audit rule added: fail if gaps.yaml or risks.yaml exist in .context/project/
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+<!-- No human verification needed for this refactoring -->
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+! grep -q 'from web.blueprints.cockpit' web/blueprints/core.py
+! grep -q 'gaps.yaml' web/blueprints/core.py
+! grep -q 'gaps.yaml' web/blueprints/discovery.py
+python3 -c "from web.blueprints.core import core_bp; print('OK')"
 
 ## Decisions
 

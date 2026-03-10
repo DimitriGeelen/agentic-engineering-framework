@@ -10,7 +10,7 @@ owner: agent
 horizon: next
 tags: [refactoring, python, watchtower]
 components: []
-related_tasks: []
+related_tasks: [T-411]
 created: 2026-03-10T21:04:08Z
 last_update: 2026-03-10T21:04:08Z
 date_finished: null
@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Python utility consolidation (P4+P8+P9). See `docs/reports/T-411-refactoring-directive-scoring.md` § PYTHON rows P4 (task parser, score 6), P8 (search routing, score 5), P9 (SSE dedup, score 5). Three independent improvements that reduce discovery.py complexity.
 
 ## Acceptance Criteria
 
