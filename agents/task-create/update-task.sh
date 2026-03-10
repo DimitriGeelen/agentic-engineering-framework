@@ -15,17 +15,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Resolve PROJECT_ROOT from git toplevel — framework/ is typically a subdirectory,
-# not the project root. Fall back to FRAMEWORK_ROOT for standalone installs.
-PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")}"
-TASKS_DIR="$PROJECT_ROOT/.tasks"
-CONTEXT_DIR="$PROJECT_ROOT/.context"
-
-# Source portable compat helpers (sed_i)
-source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
-    # Inline fallback if compat.sh not found
-    _sed_i() { local tmp; tmp=$(mktemp "${2}.XXXXXX") && sed "$1" "$2" > "$tmp" && mv "$tmp" "$2"; }
-}
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 # Colors
 RED='\033[0;31m'

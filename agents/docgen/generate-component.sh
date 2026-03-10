@@ -14,7 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 COMPONENTS_DIR="$FRAMEWORK_ROOT/.fabric/components"
 OUTPUT_DIR="$FRAMEWORK_ROOT/docs/generated/components"

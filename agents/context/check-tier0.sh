@@ -23,9 +23,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-# Resolve PROJECT_ROOT from git toplevel — framework/ is typically a subdirectory,
-# not the project root. Fall back to FRAMEWORK_ROOT for standalone installs.
-PROJECT_ROOT="${PROJECT_ROOT:-$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$FRAMEWORK_ROOT")}"
+source "$FRAMEWORK_ROOT/lib/paths.sh"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
 
 # Read stdin JSON from Claude Code
