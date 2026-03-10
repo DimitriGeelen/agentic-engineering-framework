@@ -8,9 +8,9 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
-import yaml
 from flask import Blueprint, Response, request
 
+from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices
 from web.shared import PROJECT_ROOT, render_page
 
 log = logging.getLogger(__name__)
@@ -62,27 +62,19 @@ def decisions():
                         }
                     )
 
-    dec_file = PROJECT_ROOT / ".context" / "project" / "decisions.yaml"
-    if dec_file.exists():
-        try:
-            with open(dec_file) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            for d in data.get("decisions", []):
-                all_decisions.append(
-                    {
-                        "id": d.get("id", ""),
-                        "type": "operational",
-                        "date": str(d.get("date", "")),
-                        "decision": d.get("decision", "")[:120],
-                        "directives_served": ", ".join(d.get("directives_served", [])),
-                        "rationale": d.get("rationale", ""),
-                        "task": d.get("task", ""),
-                        "alternatives": d.get("alternatives_rejected", []),
-                    }
-                )
+    for d in load_decisions():
+        all_decisions.append(
+            {
+                "id": d.get("id", ""),
+                "type": "operational",
+                "date": str(d.get("date", "")),
+                "decision": d.get("decision", "")[:120],
+                "directives_served": ", ".join(d.get("directives_served", [])),
+                "rationale": d.get("rationale", ""),
+                "task": d.get("task", ""),
+                "alternatives": d.get("alternatives_rejected", []),
+            }
+        )
 
     has_rationale = any(d.get("rationale") for d in all_decisions)
     return render_page(
@@ -95,40 +87,16 @@ def decisions():
 
 @bp.route("/learnings")
 def learnings():
-    learnings_list = []
-    lf = PROJECT_ROOT / ".context" / "project" / "learnings.yaml"
-    if lf.exists():
-        try:
-            with open(lf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            learnings_list = data.get("learnings", [])
+    learnings_list = load_learnings()
 
-    patterns_grouped = {"failure": [], "success": [], "workflow": []}
-    pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
-    if pf.exists():
-        try:
-            with open(pf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            patterns_grouped["failure"] = data.get("failure_patterns", [])
-            patterns_grouped["success"] = data.get("success_patterns", [])
-            patterns_grouped["workflow"] = data.get("workflow_patterns", [])
+    pdata = load_patterns()
+    patterns_grouped = {
+        "failure": pdata.get("failure_patterns", []),
+        "success": pdata.get("success_patterns", []),
+        "workflow": pdata.get("workflow_patterns", []),
+    }
 
-    practices_list = []
-    prf = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
-    if prf.exists():
-        try:
-            with open(prf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            practices_list = data.get("practices", [])
+    practices_list = load_practices()
 
     return render_page(
         "learnings.html",
@@ -141,19 +109,7 @@ def learnings():
 
 @bp.route("/gaps")
 def gaps():
-    gaps_list = []
-    # T-397: Unified concerns register (was gaps.yaml)
-    gf = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
-    if not gf.exists():
-        gf = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
-    if gf.exists():
-        try:
-            with open(gf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            gaps_list = data.get("concerns", data.get("gaps", []))
+    gaps_list = load_concerns()
 
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
 
@@ -543,26 +499,19 @@ def feedback_analytics():
 @bp.route("/patterns")
 def patterns():
     all_patterns = []
-    pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
-    if pf.exists():
-        try:
-            with open(pf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            for p in data.get("failure_patterns", []):
-                p["_type"] = "failure"
-                all_patterns.append(p)
-            for p in data.get("success_patterns", []):
-                p["_type"] = "success"
-                all_patterns.append(p)
-            for p in data.get("antifragile_patterns", []):
-                p["_type"] = "antifragile"
-                all_patterns.append(p)
-            for p in data.get("workflow_patterns", []):
-                p["_type"] = "workflow"
-                all_patterns.append(p)
+    pdata = load_patterns()
+    for p in pdata.get("failure_patterns", []):
+        p["_type"] = "failure"
+        all_patterns.append(p)
+    for p in pdata.get("success_patterns", []):
+        p["_type"] = "success"
+        all_patterns.append(p)
+    for p in pdata.get("antifragile_patterns", []):
+        p["_type"] = "antifragile"
+        all_patterns.append(p)
+    for p in pdata.get("workflow_patterns", []):
+        p["_type"] = "workflow"
+        all_patterns.append(p)
 
     type_filter = request.args.get("type", "").strip().lower()
     if type_filter and type_filter in ("failure", "success", "antifragile", "workflow"):
@@ -632,28 +581,10 @@ def _count_applications(learning_id):
 @bp.route("/graduation")
 def graduation():
     # Load learnings
-    learnings_list = []
-    lf = PROJECT_ROOT / ".context" / "project" / "learnings.yaml"
-    if lf.exists():
-        try:
-            with open(lf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            learnings_list = data.get("learnings", [])
+    learnings_list = load_learnings()
 
     # Load practices
-    practices_list = []
-    prf = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
-    if prf.exists():
-        try:
-            with open(prf) as f:
-                data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            data = None
-        if isinstance(data, dict):
-            practices_list = data.get("practices", [])
+    practices_list = load_practices()
 
     # Build promoted set
     promoted_ids = set()

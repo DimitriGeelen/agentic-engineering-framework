@@ -8,6 +8,7 @@ import markdown2
 import yaml
 from flask import Blueprint, abort
 
+from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml as _load_yaml
 from web.blueprints.cockpit import load_scan, get_cockpit_context
 
@@ -39,11 +40,7 @@ def _get_attention_items():
                         items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
 
     # Concerns near trigger (T-398: migrated from gaps.yaml to concerns.yaml)
-    concerns_path = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
-    if not concerns_path.exists():
-        concerns_path = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
-    concerns_data = _load_yaml(concerns_path)
-    for c in concerns_data.get("concerns", concerns_data.get("gaps", [])):
+    for c in load_concerns():
         if c.get("status") == "watching" and c.get("severity") in ("high", "medium"):
             items.append({
                 "type": "gap",
@@ -83,18 +80,12 @@ def _get_recent_activity():
 
 def _get_knowledge_counts():
     """Count learnings, practices, and decisions."""
-    counts = {"learnings": 0, "practices": 0, "decisions": 0}
-
-    lf = _load_yaml(PROJECT_ROOT / ".context" / "project" / "learnings.yaml")
-    counts["learnings"] = len(lf.get("learnings", []))
-
-    pf = _load_yaml(PROJECT_ROOT / ".context" / "project" / "practices.yaml")
-    counts["practices"] = len(pf.get("practices", []))
-
-    df = _load_yaml(PROJECT_ROOT / ".context" / "project" / "decisions.yaml")
-    counts["decisions"] = len(df.get("decisions", []))
-
-    return counts
+    from web.context_loader import load_learnings
+    return {
+        "learnings": len(load_learnings()),
+        "practices": len(load_practices()),
+        "decisions": len(load_decisions()),
+    }
 
 
 def _get_traceability():
@@ -169,11 +160,7 @@ def _get_inception_checklist():
 
 def _get_concerns_summary():
     """Summarize concerns register for dashboard (T-398)."""
-    concerns_path = PROJECT_ROOT / ".context" / "project" / "concerns.yaml"
-    if not concerns_path.exists():
-        concerns_path = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
-    data = _load_yaml(concerns_path)
-    all_concerns = data.get("concerns", data.get("gaps", []))
+    all_concerns = load_concerns()
     watching = [c for c in all_concerns if c.get("status") == "watching"]
     gaps = [c for c in watching if c.get("type", "gap") == "gap"]
     risks = [c for c in watching if c.get("type") == "risk"]
@@ -249,12 +236,12 @@ def _get_stale_tasks():
 
 def _get_pattern_summary():
     """Count patterns by type for the dashboard."""
-    pf = _load_yaml(PROJECT_ROOT / ".context" / "project" / "patterns.yaml")
+    pdata = load_patterns()
     return {
-        "failure": len(pf.get("failure_patterns", [])),
-        "success": len(pf.get("success_patterns", [])),
-        "antifragile": len(pf.get("antifragile_patterns", [])),
-        "workflow": len(pf.get("workflow_patterns", [])),
+        "failure": len(pdata.get("failure_patterns", [])),
+        "success": len(pdata.get("success_patterns", [])),
+        "antifragile": len(pdata.get("antifragile_patterns", [])),
+        "workflow": len(pdata.get("workflow_patterns", [])),
     }
 
 
@@ -431,37 +418,10 @@ def project_doc(doc):
 
 @bp.route("/directives")
 def directives():
-    directives_file = PROJECT_ROOT / ".context" / "project" / "directives.yaml"
-    directives_data = []
-    if directives_file.exists():
-        with open(directives_file) as f:
-            data = yaml.safe_load(f)
-        if data:
-            directives_data = data.get("directives", [])
-
-    practices_file = PROJECT_ROOT / ".context" / "project" / "practices.yaml"
-    practices = []
-    if practices_file.exists():
-        with open(practices_file) as f:
-            data = yaml.safe_load(f)
-        if data:
-            practices = data.get("practices", [])
-
-    decisions_file = PROJECT_ROOT / ".context" / "project" / "decisions.yaml"
-    decisions_list = []
-    if decisions_file.exists():
-        with open(decisions_file) as f:
-            data = yaml.safe_load(f)
-        if data:
-            decisions_list = data.get("decisions", [])
-
-    gaps_file = PROJECT_ROOT / ".context" / "project" / "gaps.yaml"
-    gaps_list = []
-    if gaps_file.exists():
-        with open(gaps_file) as f:
-            data = yaml.safe_load(f)
-        if data:
-            gaps_list = data.get("gaps", [])
+    directives_data = load_directives()
+    practices = load_practices()
+    decisions_list = load_decisions()
+    gaps_list = load_concerns()
 
     for d in directives_data:
         did = d["id"]

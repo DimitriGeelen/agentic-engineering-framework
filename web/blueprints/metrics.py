@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import yaml
 from flask import Blueprint
 
+from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
 from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
 
 bp = Blueprint("metrics", __name__)
@@ -73,26 +74,20 @@ def _quality_scores():
 
 def _knowledge_counts():
     """Count learnings, patterns, decisions, practices."""
-    project_dir = PROJECT_ROOT / ".context" / "project"
-
-    lf = _load_yaml(project_dir / "learnings.yaml")
-    learnings = len(lf.get("learnings", []))
-
-    pf = _load_yaml(project_dir / "patterns.yaml")
+    pdata = load_patterns()
     patterns = (
-        len(pf.get("failure_patterns", []))
-        + len(pf.get("success_patterns", []))
-        + len(pf.get("antifragile_patterns", []))
-        + len(pf.get("workflow_patterns", []))
+        len(pdata.get("failure_patterns", []))
+        + len(pdata.get("success_patterns", []))
+        + len(pdata.get("antifragile_patterns", []))
+        + len(pdata.get("workflow_patterns", []))
     )
 
-    df = _load_yaml(project_dir / "decisions.yaml")
-    decisions = len(df.get("decisions", []))
-
-    pr = _load_yaml(project_dir / "practices.yaml")
-    practices = len(pr.get("practices", []))
-
-    return {"learnings": learnings, "patterns": patterns, "decisions": decisions, "practices": practices}
+    return {
+        "learnings": len(load_learnings()),
+        "patterns": patterns,
+        "decisions": len(load_decisions()),
+        "practices": len(load_practices()),
+    }
 
 
 def _recent_commits():
