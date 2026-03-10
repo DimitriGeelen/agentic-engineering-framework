@@ -31,7 +31,13 @@ GitHub Action for running `fw audit` in CI/CD pipelines. Ref: `docs/reports/T-32
 - [x] README documents the action usage
 
 ### Human
-- [ ] Action works when tested in a real GitHub Actions workflow
+- [ ] [REVIEW] Action works when tested in a real GitHub Actions workflow
+  **Steps:**
+  1. In a GitHub repo that uses the framework, add `.github/workflows/audit.yml` using the example at `.github/workflows/example-audit.yml`
+  2. Push a commit or trigger the workflow manually via Actions tab
+  3. Check the workflow run log in GitHub Actions
+  **Expected:** Workflow completes green; `fw audit` output visible in logs with PASS/WARN/FAIL counts
+  **If not:** Check the action log for installation errors or missing dependencies
 
 ## Verification
 
