@@ -4,16 +4,16 @@ name: "YAML validation: fail visibly on parse errors instead of silent skip (R-0
 description: >
   Two watching risks: R-018 (invalid YAML disappears without error) and R-024 (UI silently drops data on parse errors). Add schema validation to watchtower data loading. Show error state in UI instead of empty sections. Same root cause — all _load_yaml() functions return {} on error.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/core.py, web/blueprints/metrics.py, web/blueprints/risks.py, web/shared.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:44Z
-last_update: 2026-03-10T12:51:44Z
-date_finished: null
+last_update: 2026-03-10T12:55:58Z
+date_finished: 2026-03-10T12:55:58Z
 ---
 
 # T-403: YAML validation: fail visibly on parse errors instead of silent skip (R-018, R-024)
@@ -69,3 +69,6 @@ None — straightforward consolidation of 4 duplicate functions into shared modu
 
 ### 2026-03-10T12:51:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-10T12:55:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

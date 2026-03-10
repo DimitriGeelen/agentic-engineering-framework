@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-403: YAML validation: fail visibly on parse errors instead of silent skip (R-018, R-024)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T12:56:01Z
+# ============================================================================
+
+task_id: T-403
+task_name: "YAML validation: fail visibly on parse errors instead of silent skip (R-018, R-024)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:44:44Z
+completed: 2026-03-10T12:55:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T13:55:51+01:00
+last_commit: 2026-03-10T13:55:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  YAML validation — centralize load_yaml, log errors, show UI banner
+
+# Key outcomes
+outcomes:
+  - "Centralized `load_yaml()` in `web/shared.py` with logging on parse errors"
+  - "`core.py` uses shared `load_yaml` (local `_load_yaml` removed)"
+  - "`metrics.py` uses shared `load_yaml` (local `_load_yaml` removed)"
+  - "`risks.py` uses shared `load_yaml` (local `_load_yaml` removed)"
+  - "`scanner.py` delegates to shared `load_yaml`"
+  - "YAML parse errors logged via `logging.warning()`"
+  - "Error banner in `base.html` shows parse errors to user"
+  - "Clean data shows no error banner"
+  - "Corrupted YAML shows red error banner with file/line/error details"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "YAML validation — centralize load_yaml, log errors, show UI banner"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-403-yaml-validation-fail-visibly-on-parse-er.md"
+  - "web/blueprints/core.py"
+  - "web/blueprints/metrics.py"
+  - "web/blueprints/risks.py"
+  - "web/shared.py"
+  - "web/templates/base.html"
+  - "web/watchtower/scanner.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T13:55:51"
+    action: "T-403: YAML validation — centralize load_yaml, log errors, show UI banner"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 191
+  commits: 1
+  files_changed: 7
+  lines_added: 91
+  lines_removed: 86
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-403-yaml-validation-fail-visibly-on-parse-er.md
+generated_by: context-agent-hybrid
