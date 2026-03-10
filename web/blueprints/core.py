@@ -379,7 +379,7 @@ def project():
             m = re_mod.search(r"T-(\d+)", f.stem)
             return int(m.group(1)) if m else 0
         episodics = sorted(episodic_dir.glob("T-*.yaml"), key=_task_num, reverse=True)
-        for f in episodics[:25]:
+        for f in episodics:
             name = f.stem
             try:
                 header = f.read_text(encoding="utf-8")[:800]
