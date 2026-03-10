@@ -4,8 +4,14 @@
 </div>
 
 {% include '_partials/search_input.html' %}
-{% include '_partials/ask_answer_card.html' %}
+
+<!-- Search results area (hidden when Ask AI tab is active) -->
+<div id="search-results-area">
 {% include '_partials/search_results.html' %}
+</div>
+
+<!-- Ask AI chat tab (T-409) -->
+{% include '_partials/chat_tab.html' %}
 
 <style>
 /* ── Search hero ──────────────────────────────────────── */
@@ -166,21 +172,24 @@
     color: var(--pico-primary);
 }
 
-/* ── Q&A card styles ──────────────────────────────────── */
-#ask-text pre { position: relative; }
-#ask-text pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
+/* ── Chat styles (T-409) ─────────────────────────────── */
+.chat-msg pre { position: relative; }
+.chat-msg pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
+.chat-ai-content { line-height: 1.7; }
+.chat-ai-content p { margin-bottom: 0.75rem; }
+.chat-ai-content ul, .chat-ai-content ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
+.chat-ai-content h1, .chat-ai-content h2, .chat-ai-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
+#chat-thread::-webkit-scrollbar { width: 4px; }
+#chat-thread::-webkit-scrollbar-thumb { background: var(--pico-muted-border-color); border-radius: 2px; }
+
+/* ── Legacy Q&A card styles (kept for backward compat) ── */
 .copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; padding: 0.15rem 0.5rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6; background: var(--pico-muted-border-color); border: none; border-radius: 3px; color: var(--pico-color); }
 .copy-btn:hover { opacity: 1; }
 sup.citation { color: var(--pico-primary); font-weight: 600; cursor: default; }
-#ask-text { line-height: 1.7; }
-#ask-text p { margin-bottom: 0.75rem; }
-#ask-text ul, #ask-text ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
-#ask-text h1, #ask-text h2, #ask-text h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
-#conv-thread::-webkit-scrollbar { width: 4px; }
-#conv-thread::-webkit-scrollbar-thumb { background: var(--pico-muted-border-color); border-radius: 2px; }
 .pill-active { background: var(--pico-primary) !important; color: #fff !important; border-color: var(--pico-primary) !important; }
 </style>
 
 <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 <script src="{{ url_for('static', filename='js/markdown-render.js') }}"></script>
 <script src="{{ url_for('static', filename='js/search-qa.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>

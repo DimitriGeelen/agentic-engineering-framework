@@ -129,7 +129,8 @@ def format_rag_context(chunks: list[dict]) -> str:
 # Streaming Q&A
 # ---------------------------------------------------------------------------
 
-def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = None):
+def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = None,
+                   model_override: str | None = None):
     """Generator yielding SSE events for a RAG-assisted answer.
 
     Args:
@@ -137,6 +138,7 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
         chunks: RAG-retrieved context chunks.
         history: Optional conversation history as list of {role, content} dicts.
                  Last 6 turns (3 exchanges) are used to stay within context window.
+        model_override: Optional model name to use instead of the default (T-409).
 
     Yields:
         SSE-formatted strings: "data: {...}\\n\\n"
@@ -148,7 +150,7 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
                 {type: "error", message: "..."} on failure
     """
     try:
-        model = get_model()
+        model = model_override if model_override else get_model()
     except RuntimeError as e:
         yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         return

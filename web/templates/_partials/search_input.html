@@ -2,11 +2,11 @@
     <form action="{{ url_for('discovery.search_view') }}" method="get" role="search"
           hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
           id="search-form">
-        <!-- Search bar (Pico fieldset group for proper layout) -->
-        <fieldset role="group" style="margin-bottom: 0;">
+        <!-- Search bar (Pico fieldset group for proper layout) — hidden in Ask AI mode -->
+        <fieldset role="group" style="margin-bottom: 0;" id="search-bar">
             <input type="search" name="q" id="search-input" value="{{ query | default('') }}"
-                   placeholder="Search your knowledge base or ask a question..."
-                   aria-label="Search or ask" minlength="2" required autofocus
+                   placeholder="Search your knowledge base..."
+                   aria-label="Search" minlength="2" required autofocus
                    autocomplete="off">
             <button type="submit">Search</button>
         </fieldset>
@@ -14,9 +14,10 @@
         <!-- Mode pills + settings gear + hint -->
         <div class="search-controls">
             <div class="search-mode-pills" role="radiogroup" aria-label="Search mode">
-                <button type="button" class="mode-pill{% if mode|default('hybrid') == 'hybrid' %} active{% endif %}" data-mode="hybrid">All</button>
+                <button type="button" class="mode-pill{% if mode|default('hybrid') == 'hybrid' and not is_chat %} active{% endif %}" data-mode="hybrid">All</button>
                 <button type="button" class="mode-pill{% if mode|default('hybrid') == 'keyword' %} active{% endif %}" data-mode="keyword">Keyword</button>
                 <button type="button" class="mode-pill{% if mode|default('hybrid') == 'semantic' %} active{% endif %}" data-mode="semantic">Semantic</button>
+                <button type="button" class="mode-pill{% if is_chat %} active{% endif %}" data-mode="ask" style="background: {% if is_chat %}var(--pico-primary){% else %}none{% endif %}; color: {% if is_chat %}#fff{% else %}var(--pico-muted-color){% endif %};">Ask AI</button>
             </div>
             <select name="mode" id="search-mode-select" aria-hidden="true" style="display:none;">
                 <option value="hybrid" {{ 'selected' if mode|default('hybrid') == 'hybrid' }}>Hybrid</option>
@@ -30,7 +31,7 @@
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </a>
-            <small class="search-hint">Questions trigger AI answers &middot; Keywords trigger search</small>
+            <small class="search-hint" id="search-hint-text">Keyword and semantic search across project knowledge</small>
         </div>
     </form>
 
@@ -45,14 +46,55 @@
 </div>
 
 <script>
-/* Mode pill click → update hidden select + active state */
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.mode-pill').forEach(function(pill) {
-        pill.addEventListener('click', function() {
-            document.querySelectorAll('.mode-pill').forEach(function(p) { p.classList.remove('active'); });
-            pill.classList.add('active');
-            document.getElementById('search-mode-select').value = pill.dataset.mode;
+/* Mode pill click → update hidden select + active state + tab switching (T-409) */
+(function() {
+    function initModePills() {
+        document.querySelectorAll('.mode-pill').forEach(function(pill) {
+            pill.addEventListener('click', function() {
+                var mode = pill.dataset.mode;
+                document.querySelectorAll('.mode-pill').forEach(function(p) { p.classList.remove('active'); });
+                pill.classList.add('active');
+
+                var searchBar = document.getElementById('search-bar');
+                var searchResults = document.getElementById('search-results-area');
+                var chatContainer = document.getElementById('chat-container');
+                var hintText = document.getElementById('search-hint-text');
+
+                if (mode === 'ask') {
+                    /* Switch to Ask AI tab */
+                    if (searchBar) searchBar.style.display = 'none';
+                    if (searchResults) searchResults.style.display = 'none';
+                    if (chatContainer) { chatContainer.style.display = 'block'; chatActivate(); }
+                    if (hintText) hintText.textContent = 'Interactive AI conversation with RAG context';
+                    /* Hide recent searches */
+                    var recent = document.getElementById('recent-searches');
+                    if (recent) recent.style.display = 'none';
+                } else {
+                    /* Switch to search mode */
+                    if (searchBar) searchBar.style.display = '';
+                    if (searchResults) searchResults.style.display = '';
+                    if (chatContainer && typeof chatDeactivate === 'function') chatDeactivate();
+                    if (hintText) hintText.textContent = 'Keyword and semantic search across project knowledge';
+                    document.getElementById('search-mode-select').value = mode;
+                }
+            });
         });
-    });
-});
+    }
+
+    /* Run on DOMContentLoaded and after htmx swaps */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initModePills);
+    } else {
+        initModePills();
+    }
+
+    /* Auto-activate Ask AI tab if URL has mode=ask */
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'ask') {
+        setTimeout(function() {
+            var askPill = document.querySelector('[data-mode="ask"]');
+            if (askPill) askPill.click();
+        }, 100);
+    }
+})();
 </script>
