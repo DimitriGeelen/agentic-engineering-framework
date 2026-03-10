@@ -1,12 +1,11 @@
 """Quality Gate blueprint — audit results, traceability, episodic completeness, tests."""
 
-import os
 import re as re_mod
-import subprocess
 
 from flask import Blueprint, render_template, request
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml
+from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("quality", __name__)
 
@@ -50,26 +49,17 @@ def _compute_traceability():
     Scans the last 200 commits (subject line) for the T-\\d+ pattern.
     Returns an int 0..100.
     """
-    try:
-        result = subprocess.run(
-            ["git", "log", "--oneline", "-200", "--format=%s"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-            cwd=str(PROJECT_ROOT),
-        )
-        if result.returncode != 0 or not result.stdout.strip():
-            return 0
-
-        lines = [line for line in result.stdout.strip().split("\n") if line.strip()]
-        if not lines:
-            return 0
-
-        total = len(lines)
-        traced = sum(1 for line in lines if re_mod.search(r"T-\d+", line))
-        return int(round(traced / total * 100))
-    except Exception:
+    output, ok = run_git_command(["log", "--oneline", "-200", "--format=%s"])
+    if not ok or not output:
         return 0
+
+    lines = [line for line in output.split("\n") if line.strip()]
+    if not lines:
+        return 0
+
+    total = len(lines)
+    traced = sum(1 for line in lines if re_mod.search(r"T-\d+", line))
+    return int(round(traced / total * 100))
 
 
 def _compute_episodic():
@@ -128,20 +118,9 @@ def quality_gate():
 @bp.route("/api/audit/run", methods=["POST"])
 def run_audit():
     """Execute fw audit and return updated audit section as htmx fragment."""
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "audit"],
-            capture_output=True,
-            text=True,
-            timeout=180,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-    except subprocess.TimeoutExpired:
+    stdout, stderr, ok = run_fw_command(["audit"], timeout=180)
+    if stderr and "timed out" in stderr.lower():
         return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit timed out</strong> after 180 seconds.</p></article>'
-    except Exception as exc:
-        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit error:</strong> {}</p></article>'.format(
-            str(exc)
-        )
 
     # Reload the latest audit results (fw audit writes a new YAML file)
     audit_timestamp, summary, findings = _load_latest_audit()
@@ -153,24 +132,12 @@ def run_audit():
 @bp.route("/api/tests/run", methods=["POST"])
 def run_tests():
     """Execute fw test and return results as htmx fragment."""
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "test"],
-            capture_output=True,
-            text=True,
-            timeout=300,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-    except subprocess.TimeoutExpired:
+    stdout, stderr, ok = run_fw_command(["test"], timeout=300)
+    if stderr and "timed out" in stderr.lower():
         return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Tests timed out</strong> after 300 seconds.</p></article>'
-    except Exception as exc:
-        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Test error:</strong> {}</p></article>'.format(
-            str(exc)
-        )
 
-    output = result.stdout or ""
-    stderr = result.stderr or ""
-    passed = result.returncode == 0
+    output = stdout or ""
+    passed = ok
 
     # Try to extract pass/fail counts from pytest output
     pass_count = 0

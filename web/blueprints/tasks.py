@@ -1,14 +1,13 @@
 """Tasks blueprint — task list, detail, status API."""
 
-import os
 import re as re_mod
-import subprocess
 from datetime import datetime, timezone
 
 import yaml
 from flask import Blueprint, abort, request
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("tasks", __name__)
 
@@ -307,38 +306,28 @@ def create_task():
     if horizon not in ("now", "next", "later"):
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
-    try:
-        cmd = [
-            str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "create",
-            "--name", name,
-            "--type", workflow_type,
-            "--owner", owner,
-            "--horizon", horizon,
-        ]
-        if description:
-            cmd.extend(["--description", description])
-        if tags:
-            cmd.extend(["--tags", tags])
+    cmd = [
+        "task", "create",
+        "--name", name,
+        "--type", workflow_type,
+        "--owner", owner,
+        "--horizon", horizon,
+    ]
+    if description:
+        cmd.extend(["--description", description])
+    if tags:
+        cmd.extend(["--tags", tags])
 
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=30,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+    stdout, stderr, ok = run_fw_command(cmd)
+    if ok:
+        id_match = re_mod.search(r"(T-\d{3})", stdout)
+        task_id = id_match.group(1) if id_match else "new task"
+        return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
+    else:
+        return (
+            f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>',
+            500,
         )
-        if result.returncode == 0:
-            # Extract task ID from output if possible
-            id_match = re_mod.search(r"(T-\d{3})", result.stdout)
-            task_id = id_match.group(1) if id_match else "new task"
-            return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
-        else:
-            return (
-                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
-                500,
-            )
-    except Exception as e:
-        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
 
 
 @bp.route("/api/task/<task_id>/horizon", methods=["POST"])
@@ -350,23 +339,10 @@ def update_task_horizon(task_id):
     if horizon not in ("now", "next", "later"):
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--horizon", horizon],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        if result.returncode == 0:
-            return f'<p style="color: var(--pico-ins-color);">Horizon set to {horizon}</p>'
-        else:
-            return (
-                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
-                500,
-            )
-    except Exception as e:
-        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+    stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--horizon", horizon])
+    if ok:
+        return f'<p style="color: var(--pico-ins-color);">Horizon set to {horizon}</p>'
+    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
 
 @bp.route("/api/task/<task_id>/owner", methods=["POST"])
@@ -378,23 +354,10 @@ def update_task_owner(task_id):
     if owner not in ("human", "claude-code"):
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--owner", owner],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        if result.returncode == 0:
-            return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
-        else:
-            return (
-                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
-                500,
-            )
-    except Exception as e:
-        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+    stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])
+    if ok:
+        return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
+    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
 
 @bp.route("/api/task/<task_id>/type", methods=["POST"])
@@ -407,23 +370,10 @@ def update_task_type(task_id):
     if wtype not in allowed:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--type", wtype],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        if result.returncode == 0:
-            return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
-        else:
-            return (
-                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
-                500,
-            )
-    except Exception as e:
-        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+    stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])
+    if ok:
+        return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
+    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
 
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
@@ -436,23 +386,10 @@ def update_task_status(task_id):
     if status not in allowed:
         return '<p style="color: var(--pico-del-color);">Invalid status value</p>', 400
 
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw"), "task", "update", task_id, "--status", status],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        if result.returncode == 0:
-            return f'<p style="color: var(--pico-ins-color);">Status updated to {status}</p>'
-        else:
-            return (
-                f'<p style="color: var(--pico-del-color);">Error: {result.stderr[:200]}</p>',
-                500,
-            )
-    except Exception as e:
-        return f'<p style="color: var(--pico-del-color);">Error: {str(e)[:200]}</p>', 500
+    stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--status", status])
+    if ok:
+        return f'<p style="color: var(--pico-ins-color);">Status updated to {status}</p>'
+    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
 
 # ---------------------------------------------------------------------------

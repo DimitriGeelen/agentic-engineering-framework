@@ -1,13 +1,12 @@
 """Session blueprint — session cockpit, git state, quick actions."""
 
-import os
 import re as re_mod
-import subprocess
 
 import yaml
 from flask import Blueprint, request, render_template
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page
+from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("session", __name__)
 
@@ -17,35 +16,8 @@ bp = Blueprint("session", __name__)
 # ---------------------------------------------------------------------------
 
 
-def _git(args, timeout=10):
-    """Run a git command against PROJECT_ROOT and return (stdout, ok)."""
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(PROJECT_ROOT)] + args,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        return result.stdout.strip(), result.returncode == 0
-    except Exception:
-        return "", False
-
-
-def _fw(args, timeout=30):
-    """Run a fw CLI command and return (stdout, stderr, ok)."""
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw")] + args,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        return result.stdout.strip(), result.stderr.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "", "Command timed out", False
-    except Exception as exc:
-        return "", str(exc), False
+_git = run_git_command
+_fw = run_fw_command
 
 
 def _get_session_id():

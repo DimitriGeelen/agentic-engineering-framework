@@ -9,6 +9,7 @@ from flask import Blueprint
 
 from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
 from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
+from web.subprocess_utils import run_git_command
 
 bp = Blueprint("metrics", __name__)
 
@@ -24,22 +25,15 @@ def _task_counts():
 
 def _traceability():
     """Percentage of recent commits referencing T-XXX."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "--oneline", "-200", "--format=%s"],
-            capture_output=True, text=True, timeout=10,
-            cwd=str(PROJECT_ROOT),
-        )
-        if result.returncode != 0 or not result.stdout.strip():
-            return 0
-        lines = [l for l in result.stdout.strip().split("\n") if l.strip()]
-        if not lines:
-            return 0
-        total = len(lines)
-        traced = sum(1 for l in lines if re_mod.search(r"T-\d+", l))
-        return int(round(traced / total * 100))
-    except Exception:
+    output, ok = run_git_command(["log", "--oneline", "-200", "--format=%s"])
+    if not ok or not output:
         return 0
+    lines = [l for l in output.split("\n") if l.strip()]
+    if not lines:
+        return 0
+    total = len(lines)
+    traced = sum(1 for l in lines if re_mod.search(r"T-\d+", l))
+    return int(round(traced / total * 100))
 
 
 def _quality_scores():
@@ -92,26 +86,19 @@ def _knowledge_counts():
 
 def _recent_commits():
     """Get last 10 commits as (hash, message, has_task_ref) tuples."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "--oneline", "-10"],
-            capture_output=True, text=True, timeout=10,
-            cwd=str(PROJECT_ROOT),
-        )
-        if result.returncode != 0 or not result.stdout.strip():
-            return []
-        commits = []
-        for line in result.stdout.strip().split("\n"):
-            if not line.strip():
-                continue
-            parts = line.split(" ", 1)
-            h = parts[0]
-            msg = parts[1] if len(parts) > 1 else ""
-            has_ref = bool(re_mod.search(r"T-\d+", msg))
-            commits.append({"hash": h, "message": msg, "traced": has_ref})
-        return commits
-    except Exception:
+    output, ok = run_git_command(["log", "--oneline", "-10"])
+    if not ok or not output:
         return []
+    commits = []
+    for line in output.split("\n"):
+        if not line.strip():
+            continue
+        parts = line.split(" ", 1)
+        h = parts[0]
+        msg = parts[1] if len(parts) > 1 else ""
+        has_ref = bool(re_mod.search(r"T-\d+", msg))
+        commits.append({"hash": h, "message": msg, "traced": has_ref})
+    return commits
 
 
 def _stale_tasks():

@@ -1,15 +1,14 @@
 """Core blueprint — dashboard, project docs, directives."""
 
-import os
 import re as re_mod
-import subprocess
 
 import markdown2
 import yaml
 from flask import Blueprint, abort
 
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml as _load_yaml
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
+from web.subprocess_utils import run_git_command
 from web.blueprints.cockpit import load_scan, get_cockpit_context
 
 bp = Blueprint("core", __name__)
@@ -90,18 +89,12 @@ def _get_knowledge_counts():
 
 def _get_traceability():
     """Get git traceability percentage."""
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(PROJECT_ROOT), "log", "--oneline", "--all"],
-            capture_output=True, text=True, timeout=10,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            lines = result.stdout.strip().split("\n")
-            total = len(lines)
-            traced = sum(1 for l in lines if re_mod.search(r"T-\d{3}", l))
-            return int(traced * 100 / total) if total > 0 else 0
-    except Exception:
-        pass
+    output, ok = run_git_command(["log", "--oneline", "--all"])
+    if ok and output:
+        lines = output.split("\n")
+        total = len(lines)
+        traced = sum(1 for l in lines if re_mod.search(r"T-\d{3}", l))
+        return int(traced * 100 / total) if total > 0 else 0
     return 0
 
 
