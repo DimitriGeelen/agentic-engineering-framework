@@ -2,6 +2,7 @@
 
 from flask import Blueprint
 
+from web.context_loader import load_concerns
 from web.shared import PROJECT_ROOT, render_page, load_yaml
 
 bp = Blueprint("risks", __name__)
@@ -10,10 +11,8 @@ bp = Blueprint("risks", __name__)
 @bp.route("/risks")
 def risk_register():
     """Unified concerns register — gaps + risks in one view (T-397)."""
-    concerns_data = load_yaml(PROJECT_ROOT / ".context" / "project" / "concerns.yaml")
+    all_concerns = load_concerns()
     controls_data = load_yaml(PROJECT_ROOT / ".context" / "project" / "controls.yaml")
-
-    all_concerns = concerns_data.get("concerns", [])
     controls = controls_data.get("controls", [])
 
     # Split by type

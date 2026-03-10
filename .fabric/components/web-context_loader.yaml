@@ -1,0 +1,25 @@
+id: web/context_loader.py
+name: context_loader
+type: script
+subsystem: watchtower
+location: web/context_loader.py
+tags: [python, yaml, context, watchtower, loading]
+
+purpose: "Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection."
+
+depends_on:
+  - target: web/shared.py
+    type: calls
+
+depended_by:
+  - target: web/blueprints/discovery.py
+    type: calls
+  - target: web/blueprints/core.py
+    type: calls
+  - target: web/blueprints/metrics.py
+    type: calls
+  - target: web/blueprints/risks.py
+    type: calls
+
+last_verified: 2026-03-11
+created_by: T-416
