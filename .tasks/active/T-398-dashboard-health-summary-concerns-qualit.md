@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/core.py, web/templates/cockpit.html, web/templates/index.html]
 related_tasks: []
 created: 2026-03-10T09:43:06Z
-last_update: 2026-03-10T10:32:28Z
+last_update: 2026-03-10T10:32:42Z
 date_finished: 2026-03-10T10:32:28Z
 ---
 

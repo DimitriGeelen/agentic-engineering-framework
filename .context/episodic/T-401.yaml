@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-401: Framework hardening: fix orphaned fabric cards, register concerns.yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T12:44:44Z
+# ============================================================================
+
+task_id: T-401
+task_name: "Framework hardening: fix orphaned fabric cards, register concerns.yaml"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T09:44:29Z
+completed: 2026-03-10T12:43:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-10T13:43:38+01:00
+last_commit: 2026-03-10T13:43:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix orphaned fabric cards, register concerns.yaml
+
+# Key outcomes
+outcomes:
+  - "Orphaned card `context-project-gaps.yaml` deleted"
+  - "Orphaned card `context-project-issues.yaml` deleted"
+  - "Orphaned card `context-project-risks.yaml` deleted"
+  - "New card `context-project-concerns.yaml` registered with correct subsystem, purpose, and edges"
+  - "`fw fabric drift` reports 0 unregistered, 0 orphaned, 0 stale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix orphaned fabric cards, register concerns.yaml"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/context-project-concerns.yaml"
+  - ".fabric/components/context-project-gaps.yaml"
+  - ".fabric/components/context-project-issues.yaml"
+  - ".fabric/components/context-project-risks.yaml"
+  - ".tasks/active/T-401-framework-hardening-fix-orphaned-fabric-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T13:43:38"
+    action: "T-401: Fix orphaned fabric cards, register concerns.yaml"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 179 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 179
+  commits: 1
+  files_changed: 5
+  lines_added: 78
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-401-framework-hardening-fix-orphaned-fabric-.md
+generated_by: context-agent-hybrid
