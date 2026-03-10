@@ -1,17 +1,41 @@
 """Discovery blueprint — decisions, learnings, gaps, search, graduation."""
 
 import json
+import logging
 import os
 import re as re_mod
 import subprocess
 from datetime import datetime
+from pathlib import Path
 
 import yaml
 from flask import Blueprint, Response, request
 
 from web.shared import PROJECT_ROOT, render_page
 
+log = logging.getLogger(__name__)
 bp = Blueprint("discovery", __name__)
+
+
+_index_build_thread = None
+
+
+def _trigger_async_index_build():
+    """Start background thread to build embedding index for next request."""
+    import threading
+    global _index_build_thread
+    if _index_build_thread and _index_build_thread.is_alive():
+        return  # Already building
+    def _build():
+        try:
+            from web.embeddings import build_index
+            log.info("Background index build started")
+            build_index()
+            log.info("Background index build completed")
+        except Exception as e:
+            log.warning("Background index build failed: %s", e)
+    _index_build_thread = threading.Thread(target=_build, daemon=True)
+    _index_build_thread.start()
 
 
 @bp.route("/decisions")
@@ -240,21 +264,67 @@ def search_ask():
             yield 'data: {"type": "error", "message": "Query too short"}\n\n'
         return Response(error_stream(), mimetype="text/event-stream")
 
-    chunks = rag_retrieve(query, limit=10)
+    # T-409: Stream progress events during RAG retrieval + LLM generation.
+    # RAG retrieval is done INSIDE the generator so we can send SSE status
+    # events while the user waits (not before Response creation).
+    def _chat_stream():
+        from web.ask import stream_answer
+        from web.embeddings import rag_retrieve, _db, _db_built_at, DB_PATH, STALE_SECONDS
+        import sqlite3
+        import time
 
-    # T-409: Filter RAG chunks by scope
-    if scope and scope != "all":
-        scope_filters = {
-            "tasks": ["Active Tasks", "Completed Tasks"],
-            "docs": ["Research Reports", "Specifications", "Agent Docs"],
-            "episodic": ["Episodic Memory"],
-        }
-        allowed = scope_filters.get(scope, [])
-        if allowed:
-            chunks = [c for c in chunks if c.get("category") in allowed]
+        # Phase 1: Check embedding index readiness
+        # The index is ready if: in-memory DB has docs, OR on-disk DB has docs
+        index_ready = False
+        if _db is not None and (time.time() - _db_built_at) < STALE_SECONDS:
+            index_ready = True
+        elif DB_PATH.exists() and DB_PATH.stat().st_size > 4096:
+            try:
+                tmp = sqlite3.connect(str(DB_PATH))
+                count = tmp.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+                tmp.close()
+                index_ready = count > 0
+            except Exception:
+                pass
+
+        if not index_ready:
+            yield f'data: {json.dumps({"type": "status", "phase": "index", "message": "Knowledge index is not built yet. Starting background build — please try again in ~60 seconds."})}\n\n'
+            _trigger_async_index_build()
+            yield f'data: {json.dumps({"type": "error", "message": "The embedding index is empty. A background build has been started — please try again in about 60 seconds."})}\n\n'
+            return
+
+        # Phase 2: RAG retrieval
+        yield f'data: {json.dumps({"type": "status", "phase": "retrieval", "message": "Searching knowledge base..."})}\n\n'
+
+        try:
+            chunks = rag_retrieve(query, limit=10)
+        except Exception as e:
+            log.warning("RAG retrieve failed: %s", e)
+            yield f'data: {json.dumps({"type": "error", "message": "Failed to retrieve context: " + str(e)[:100] + ". Try again in a moment."})}\n\n'
+            return
+
+        # Phase 3: Filter by scope
+        if scope and scope != "all":
+            scope_filters = {
+                "tasks": ["Active Tasks", "Completed Tasks"],
+                "docs": ["Research Reports", "Specifications", "Agent Docs"],
+                "episodic": ["Episodic Memory"],
+            }
+            allowed = scope_filters.get(scope, [])
+            if allowed:
+                chunks = [c for c in chunks if c.get("category") in allowed]
+
+        if not chunks:
+            yield f'data: {json.dumps({"type": "error", "message": "No relevant context found for your question. Try broadening the scope or rephrasing."})}\n\n'
+            return
+
+        yield f'data: {json.dumps({"type": "status", "phase": "generating", "message": "Found " + str(len(chunks)) + " relevant sources — generating answer..."})}\n\n'
+
+        # Phase 4: Stream LLM answer
+        yield from stream_answer(query, chunks, history=history, model_override=model_override)
 
     return Response(
-        stream_answer(query, chunks, history=history, model_override=model_override),
+        _chat_stream(),
         mimetype="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

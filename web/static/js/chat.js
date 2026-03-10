@@ -151,7 +151,12 @@ function chatAsk(query) {
         }
 
         function handleEvent(data) {
-            if (data.type === 'model') {
+            if (data.type === 'status') {
+                /* T-409: Progress events during RAG retrieval phases */
+                status.style.display = 'block';
+                status.innerHTML = '<span aria-busy="true">' + escHtml(data.message) + '</span>';
+            }
+            else if (data.type === 'model') {
                 if (data.thinking) {
                     thinkingStart = Date.now();
                     status.innerHTML = '<span aria-busy="true">Thinking...</span>';

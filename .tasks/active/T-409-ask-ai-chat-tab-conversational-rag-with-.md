@@ -12,7 +12,7 @@ tags: [watchtower, search, llm, rag]
 components: []
 related_tasks: []
 created: 2026-03-10T17:57:50Z
-last_update: 2026-03-10T18:07:38Z
+last_update: 2026-03-10T18:08:11Z
 date_finished: null
 ---
 
@@ -59,14 +59,30 @@ grep -q "model_override" web/ask.py
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-10 — Stale embedding index handling for chat RAG
+
+- **Chose:** Option 3 — Async index build + honest "warming up" SSE message + no BM25 fallback
+- **Why:** This is conversational RAG with natural language inference, not document search.
+  The LLM reasons over the context chunks to produce multi-turn inferential answers.
+  BM25-only context is structurally different from semantic+BM25 hybrid context:
+  - BM25 matches keywords literally; misses conceptually related content
+  - For inference questions ("why", "how does X affect Y"), the LLM needs semantically
+    adjacent chunks, not just keyword-matched files
+  - Multi-turn conversations compound context quality issues — slightly wrong context
+    in turn 1 builds a wrong mental model that cascades through subsequent turns
+  - No answer is better than a subtly wrong conversational foundation
+- **Rejected:**
+  - **Option 1 (BM25 fallback):** Silently degrades context quality without user awareness.
+    For document search this would be acceptable (90%+ same results). For conversational
+    inference it produces misleading chains the user builds on. Rejected by human review.
+  - **Option 2 (blocking pre-build):** App startup takes 30-60s. Single-threaded Flask
+    freezes for all users during build. Ties availability to Ollama availability.
+  - **Option 4 (fix timeout only):** First request still hangs 30-60s. Flask blocks all
+    other requests during build. Feels broken even though it "works."
+- **Implementation:** RAG retrieval moved inside SSE generator. New `status` event type
+  sends phase-by-phase progress ("Building knowledge index...", "Searching knowledge base...",
+  "Found N sources — generating answer..."). On embed failure: returns honest error +
+  triggers background thread to build index for next attempt.
 
 ## Updates
 

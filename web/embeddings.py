@@ -267,8 +267,14 @@ def build_index() -> dict:
         _db_built_at = time.time()
         return {"num_docs": 0, "num_chunks": 0, "build_time_ms": 0}
 
-    # Batch embed all chunks
-    embeddings = _embed(all_chunks)
+    # Batch embed all chunks (in groups to avoid Ollama timeout)
+    BATCH_SIZE = 64
+    embeddings = []
+    for i in range(0, len(all_chunks), BATCH_SIZE):
+        batch = all_chunks[i:i + BATCH_SIZE]
+        log.info("Embedding batch %d/%d (%d chunks)", i // BATCH_SIZE + 1,
+                 (len(all_chunks) + BATCH_SIZE - 1) // BATCH_SIZE, len(batch))
+        embeddings.extend(_embed(batch))
 
     # Insert into database
     for idx, (meta, emb) in enumerate(zip(all_metadata, embeddings)):
