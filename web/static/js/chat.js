@@ -176,47 +176,19 @@ function chatAsk(query) {
     if (sendBtn) { sendBtn.disabled = true; sendBtn.setAttribute('aria-busy', 'true'); }
 
     if (_chatAbort) { _chatAbort.abort(); _chatAbort = null; }
-    var abortCtrl = new AbortController();
-    _chatAbort = abortCtrl;
 
     var fullText = '';
     var aiMsg = null;
     var gotFirstToken = false;
     var thinkingStart = 0;
 
-    /* Get selected model */
     var modelSel = document.getElementById('chat-model');
     var selectedModel = modelSel ? modelSel.value : '';
 
-    fetch('/search/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({
-            query: query,
-            history: _chatHistory,
-            scope: _chatScope,
-            model: selectedModel
-        }),
-        signal: abortCtrl.signal
-    }).then(function(response) {
-        if (!response.ok) throw new Error('Server error: ' + response.status);
-        var reader = response.body.getReader();
-        var decoder = new TextDecoder();
-        var buffer = '';
-
-        function processBuffer() {
-            var parts = buffer.split('\n\n');
-            buffer = parts.pop();
-            parts.forEach(function(part) {
-                var match = part.match(/^data:\s*(.+)$/m);
-                if (!match) return;
-                try { handleEvent(JSON.parse(match[1])); } catch(e) {}
-            });
-        }
-
-        function handleEvent(data) {
+    _chatAbort = streamSSE('/search/ask',
+        { query: query, history: _chatHistory, scope: _chatScope, model: selectedModel },
+        function(data) {
             if (data.type === 'status') {
-                /* T-409: Progress events during RAG retrieval phases */
                 status.style.display = 'block';
                 status.innerHTML = '<span aria-busy="true">' + escHtml(data.message) + '</span>';
             }
@@ -240,7 +212,6 @@ function chatAsk(query) {
                     aiMsg = _chatAddMessage('assistant', '', true);
                 }
                 fullText += data.content;
-                /* Debounced render */
                 if (aiMsg) {
                     var contentDiv = aiMsg.querySelector('.chat-ai-content');
                     if (contentDiv) {
@@ -251,7 +222,6 @@ function chatAsk(query) {
                 }
             }
             else if (data.type === 'sources') {
-                /* Add sources as collapsible under the AI message */
                 if (aiMsg && data.sources && data.sources.length > 0) {
                     var sourcesHtml = '<details style="margin-top:0.5rem;font-size:0.82rem;"><summary style="cursor:pointer;color:var(--pico-muted-color);">Sources (' + data.sources.length + ')</summary><div style="margin-top:0.25rem;">';
                     data.sources.forEach(function(src) {
@@ -269,11 +239,8 @@ function chatAsk(query) {
             }
             else if (data.type === 'done') {
                 _chatAbort = null;
-                /* Strip inferred title comment */
                 var extracted = _extractInferredTitle(fullText);
                 var displayText = extracted.clean;
-
-                /* Final render */
                 if (aiMsg) {
                     var contentDiv = aiMsg.querySelector('.chat-ai-content');
                     if (contentDiv) {
@@ -281,15 +248,9 @@ function chatAsk(query) {
                         addCopyButtons(aiMsg);
                     }
                 }
-
-                /* Update history */
                 _chatHistory.push({ role: 'user', content: query });
                 _chatHistory.push({ role: 'assistant', content: displayText });
-
-                /* Show actions */
                 _chatUpdateActions();
-
-                /* Re-enable input */
                 if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
                 var chatInput = document.getElementById('chat-input');
                 if (chatInput) chatInput.focus();
@@ -301,31 +262,14 @@ function chatAsk(query) {
                 status.style.display = 'none';
                 if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
             }
+        },
+        function(msg) {
+            error.textContent = msg;
+            error.style.display = 'block';
+            status.style.display = 'none';
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
         }
-
-        function read() {
-            reader.read().then(function(result) {
-                if (result.done) { processBuffer(); return; }
-                buffer += decoder.decode(result.value, { stream: true });
-                processBuffer();
-                read();
-            }).catch(function(err) {
-                if (err.name !== 'AbortError') {
-                    error.textContent = 'Stream interrupted';
-                    error.style.display = 'block';
-                    status.style.display = 'none';
-                    if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
-                }
-            });
-        }
-        read();
-    }).catch(function(err) {
-        if (err.name === 'AbortError') return;
-        error.textContent = 'Cannot connect to LLM. Is the provider running?';
-        error.style.display = 'block';
-        status.style.display = 'none';
-        if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
-    });
+    );
 }
 
 /* ── Submit ──────────────────────────────────────────── */

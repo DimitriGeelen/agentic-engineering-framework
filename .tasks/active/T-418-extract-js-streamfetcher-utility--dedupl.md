@@ -4,7 +4,7 @@ name: "Extract JS StreamFetcher utility — deduplicate askQuestion/chatAsk (J2)
 description: >
   Extract shared StreamFetcher from search-qa.js:askQuestion (155 lines) and chat.js:chatAsk (169 lines) — 70% code overlap. Both implement identical SSE parsing, abort control, event handling. A protocol change fixed in one but not the other creates silent behavioral divergence. Directive score: J2=8. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, javascript, watchtower, reliability]
 components: [web/static/js/chat.js, web/static/js/search-qa.js]
 related_tasks: [T-409, T-411]
 created: 2026-03-10T21:03:18Z
-last_update: 2026-03-10T21:03:18Z
+last_update: 2026-03-10T23:29:01Z
 date_finished: null
 ---
 
@@ -33,11 +33,11 @@ Key shared logic: SSE event parsing, abort control, token rendering, source disp
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Shared StreamFetcher utility extracted (function or class)
-- [ ] askQuestion() and chatAsk() both use the shared utility
-- [ ] SSE parsing logic exists in exactly one place
-- [ ] Both Q&A and chat streaming still work end-to-end
-- [ ] Abort (cancel) works in both modes
+- [x] Shared StreamFetcher utility extracted (function or class)
+- [x] askQuestion() and chatAsk() both use the shared utility
+- [x] SSE parsing logic exists in exactly one place
+- [x] Both Q&A and chat streaming still work end-to-end
+- [x] Abort (cancel) works in both modes
 
 ### Human
 - [ ] [REVIEW] Chat and Q&A streaming both work after refactor
@@ -71,3 +71,6 @@ grep -q 'StreamFetcher\|streamFetch\|createStream' web/static/js/chat.js web/sta
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-418-extract-js-streamfetcher-utility--dedupl.md
 - **Context:** Initial task creation
+
+### 2026-03-10T23:29:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
