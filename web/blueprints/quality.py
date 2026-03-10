@@ -133,11 +133,11 @@ def run_audit():
             [str(FRAMEWORK_ROOT / "bin" / "fw"), "audit"],
             capture_output=True,
             text=True,
-            timeout=60,
+            timeout=180,
             env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
         )
     except subprocess.TimeoutExpired:
-        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit timed out</strong> after 60 seconds.</p></article>'
+        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit timed out</strong> after 180 seconds.</p></article>'
     except Exception as exc:
         return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit error:</strong> {}</p></article>'.format(
             str(exc)
@@ -158,11 +158,11 @@ def run_tests():
             [str(FRAMEWORK_ROOT / "bin" / "fw"), "test"],
             capture_output=True,
             text=True,
-            timeout=120,
+            timeout=300,
             env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
         )
     except subprocess.TimeoutExpired:
-        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Tests timed out</strong> after 120 seconds.</p></article>'
+        return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Tests timed out</strong> after 300 seconds.</p></article>'
     except Exception as exc:
         return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Test error:</strong> {}</p></article>'.format(
             str(exc)
