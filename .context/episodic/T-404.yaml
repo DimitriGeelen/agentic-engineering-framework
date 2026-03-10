@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-404: Fix quality page crash + migrate to centralized load_yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-10T13:44:34Z
+# ============================================================================
+
+task_id: T-404
+task_name: "Fix quality page crash + migrate to centralized load_yaml"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T13:42:00Z
+completed: 2026-03-10T13:44:33Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Fix unescaped quotes in `.context/audits/2026-03-10.yaml`"
+  - "Fix audit.sh YAML writer to escape inner double quotes in check/mitigation strings"
+  - "Migrate quality.py from raw `yaml.safe_load` to shared `load_yaml`"
+  - "Quality page loads without error (`curl -sf http://localhost:3000/quality`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, bugfix]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-404-fix-quality-page-crash--migrate-to-centr.md
+generated_by: context-agent-hybrid

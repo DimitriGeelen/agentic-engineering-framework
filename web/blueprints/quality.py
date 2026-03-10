@@ -4,10 +4,9 @@ import os
 import re as re_mod
 import subprocess
 
-import yaml
 from flask import Blueprint, render_template, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml
 
 bp = Blueprint("quality", __name__)
 
@@ -25,8 +24,7 @@ def _load_latest_audit():
     if not audit_files:
         return None, {}, []
 
-    with open(audit_files[0]) as f:
-        data = yaml.safe_load(f)
+    data = load_yaml(audit_files[0], label="audit report")
 
     if not data:
         return None, {}, []

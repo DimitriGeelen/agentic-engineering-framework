@@ -2779,9 +2779,9 @@ fi
         check=$(echo "$finding" | cut -d'|' -f2)
         mitigation=$(echo "$finding" | cut -d'|' -f3)
         echo "  - level: $level"
-        echo "    check: \"$check\""
+        echo "    check: \"${check//\"/\\\"}\""
         if [ -n "$mitigation" ]; then
-            echo "    mitigation: \"$mitigation\""
+            echo "    mitigation: \"${mitigation//\"/\\\"}\""
         fi
     done
 } > "$AUDIT_FILE"
@@ -2812,10 +2812,10 @@ if should_run_section "discovery" || should_run_section "discovery-trends"; then
             esac
             DISC_FINDINGS="${DISC_FINDINGS}  - id: $disc_id
     level: $level
-    check: \"$check\"
+    check: \"${check//\"/\\\"}\"
 "
             if [ -n "$mitigation" ]; then
-                DISC_FINDINGS="${DISC_FINDINGS}    mitigation: \"$mitigation\"
+                DISC_FINDINGS="${DISC_FINDINGS}    mitigation: \"${mitigation//\"/\\\"}\"
 "
             fi
         fi
