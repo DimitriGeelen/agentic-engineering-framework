@@ -766,4 +766,18 @@ learnings:
   date: 2026-03-10
   context: Added via context agent
   application: TBD
+- id: L-096
+  learning: "Quality page buttons appeared non-functional because subprocess timeout (60s) was shorter than actual audit runtime (~102s). Always measure actual command runtime before setting subprocess timeouts, and add visible loading feedback (aria-busy + hx-disabled-elt) so users know the action is in progress."
+  source: P-001
+  task: T-407
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
+- id: L-097
+  learning: "In shared-tooling mode (brew install), agent scripts live at FRAMEWORK_ROOT not PROJECT_ROOT. When referencing agents/ in audit checks, always use FRAMEWORK_ROOT to ensure the check works in both embedded and shared-tooling modes."
+  source: P-001
+  task: T-406
+  date: 2026-03-10
+  context: Added via context agent
+  application: TBD
 candidates: []
