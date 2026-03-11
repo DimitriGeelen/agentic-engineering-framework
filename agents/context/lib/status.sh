@@ -5,7 +5,7 @@
 do_status() {
     ensure_context_dirs
 
-    echo -e "${BLUE}=== CONTEXT FABRIC STATUS ===${NC}"
+    echo -e "${CYAN}=== CONTEXT FABRIC STATUS ===${NC}"
     echo ""
 
     # Working Memory
@@ -81,5 +81,5 @@ do_status() {
     [ -f "$CONTEXT_DIR/bypass-log.yaml" ] && echo "Bypass log: exists"
 
     echo ""
-    echo -e "${BLUE}=== END STATUS ===${NC}"
+    echo -e "${CYAN}=== END STATUS ===${NC}"
 }

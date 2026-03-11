@@ -79,10 +79,10 @@ do_diagnose() {
     fi
 
     # Check task status
-    local status=$(grep "^status:" "$task_file" | cut -d: -f2 | tr -d ' ')
-    local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
+    local status=$(get_yaml_field "$task_file" "status")
+    local task_name=$(get_yaml_field "$task_file" "name")
 
-    echo -e "${BLUE}=== HEALING LOOP DIAGNOSIS ===${NC}"
+    echo -e "${CYAN}=== HEALING LOOP DIAGNOSIS ===${NC}"
     echo "Task: $task_id - $task_name"
     echo "Status: $status"
     echo ""
@@ -195,7 +195,7 @@ do_diagnose() {
     echo "   - Create new practice from this lesson"
     echo ""
 
-    echo -e "${BLUE}=== NEXT STEPS ===${NC}"
+    echo -e "${CYAN}=== NEXT STEPS ===${NC}"
     echo "1. Apply fix based on suggestions above"
     echo "2. Update task status back to 'started-work'"
     echo "3. Run: healing.sh resolve $task_id --mitigation 'What you did'"

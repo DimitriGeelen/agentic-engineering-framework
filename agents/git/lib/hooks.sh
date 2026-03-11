@@ -85,7 +85,7 @@ PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 # --- Inception Gate (T-126) ---
 # Block commits on inception tasks after exploration threshold unless decision recorded
 if [ -n "$TASK_REF" ]; then
-    TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${TASK_REF}-*.md" -type f 2>/dev/null | head -1)
+    TASK_FILE=$(find_task_file "$TASK_REF" active)
     if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE"; then
         # Check if a decision has been recorded by fw inception decide
         HAS_DECISION=false

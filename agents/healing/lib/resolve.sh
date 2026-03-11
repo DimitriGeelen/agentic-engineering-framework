@@ -42,10 +42,10 @@ do_resolve() {
         exit 1
     fi
 
-    local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
-    local status=$(grep "^status:" "$task_file" | cut -d: -f2 | tr -d ' ')
+    local task_name=$(get_yaml_field "$task_file" "name")
+    local status=$(get_yaml_field "$task_file" "status")
 
-    echo -e "${BLUE}=== RESOLUTION RECORDING ===${NC}"
+    echo -e "${CYAN}=== RESOLUTION RECORDING ===${NC}"
     echo "Task: $task_id - $task_name"
     echo ""
 

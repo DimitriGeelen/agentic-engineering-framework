@@ -53,3 +53,9 @@ source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
 
 # Source error output helpers (die, warn, error, info, success, block)
 source "$FRAMEWORK_ROOT/lib/errors.sh" 2>/dev/null || true
+
+# Source task lookup helpers (find_task_file, task_exists, get_task_name)
+source "$FRAMEWORK_ROOT/lib/tasks.sh" 2>/dev/null || true
+
+# Source YAML field extraction (get_yaml_field)
+source "$FRAMEWORK_ROOT/lib/yaml.sh" 2>/dev/null || true

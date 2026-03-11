@@ -3,9 +3,7 @@
 
 # Colors provided by lib/colors.sh (via paths.sh chain in git.sh)
 
-# Paths
-TASKS_DIR="$PROJECT_ROOT/.tasks"
-CONTEXT_DIR="$PROJECT_ROOT/.context"
+# Task/YAML helpers provided by lib/tasks.sh and lib/yaml.sh (via paths.sh chain in git.sh)
 BYPASS_LOG="$CONTEXT_DIR/bypass-log.yaml"
 
 # Task reference pattern
@@ -26,34 +24,14 @@ extract_task_id() {
     echo "$message" | grep -oE "$TASK_PATTERN" | head -1
 }
 
-# Check if task exists
-task_exists() {
-    local task_id="$1"
-    local task_file
-    task_file=$(find "$TASKS_DIR" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
-    [ -n "$task_file" ]
-}
-
-# Get task name from ID
-get_task_name() {
-    local task_id="$1"
-    local task_file
-    task_file=$(find "$TASKS_DIR" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
-    if [ -n "$task_file" ]; then
-        grep "^name:" "$task_file" | head -1 | cut -d: -f2- | sed 's/^ *//'
-    fi
-}
-
 # Update task's last_update timestamp (only for active tasks)
 update_task_timestamp() {
     local task_id="$1"
     local task_file
-    # Only update active tasks, not completed ones
-    task_file=$(find "$TASKS_DIR/active" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+    task_file=$(find_task_file "$task_id" active)
     if [ -n "$task_file" ]; then
         local timestamp
         timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-        # Update last_update in frontmatter
         _sed_i "s/^last_update:.*$/last_update: $timestamp/" "$task_file"
     fi
 }
