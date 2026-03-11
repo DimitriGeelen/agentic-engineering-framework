@@ -31,6 +31,7 @@ function chatLoadProviders() {
             chatLoadModels();
         })
         .catch(function() {
+            handleFetchError('load providers');
             _chatUpdateHealthDot([]);
         });
 }
@@ -87,7 +88,7 @@ function chatTestProvider() {
         })
         .catch(function() {
             result.style.color = 'var(--pico-del-color)';
-            result.textContent = 'error';
+            result.textContent = handleFetchError('test connection');
             btn.disabled = false;
             btn.textContent = 'Test';
         });
@@ -100,7 +101,7 @@ function chatLoadModels() {
             var sel = document.getElementById('chat-model');
             if (sel) sel.innerHTML = html;
         })
-        .catch(function() {});
+        .catch(function() { handleFetchError('load models'); });
 }
 
 function chatSwitchProvider(name) {
@@ -109,7 +110,7 @@ function chatSwitchProvider(name) {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': _getCsrfToken() },
         body: 'provider=' + encodeURIComponent(name)
     }).then(function() { chatLoadModels(); })
-      .catch(function() {});
+      .catch(function() { handleFetchError('switch provider'); });
 }
 
 /* ── Scope ───────────────────────────────────────────── */
@@ -364,7 +365,7 @@ function chatSave() {
       .catch(function() {
           btn.disabled = false;
           btn.textContent = 'Save Conversation';
-          status.textContent = 'Network error';
+          status.textContent = handleFetchError('save conversation');
           status.style.color = '#c62828';
       });
 }
@@ -399,7 +400,7 @@ function chatLoadSaved() {
         })
         .catch(function() {
             var list = document.getElementById('chat-saved-list');
-            if (list) list.innerHTML = '<small style="color:var(--pico-muted-color);">Could not load conversations.</small>';
+            if (list) list.innerHTML = '<small style="color:var(--pico-muted-color);">' + escHtml(handleFetchError('load conversations')) + '</small>';
         });
 }
 
@@ -443,7 +444,7 @@ function chatLoadConversation(convId) {
             _chatUpdateActions();
             document.getElementById('chat-input').focus();
         })
-        .catch(function() {});
+        .catch(function() { handleFetchError('load conversation'); });
 }
 
 /* ── Tab Switching ───────────────────────────────────── */

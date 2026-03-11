@@ -28,6 +28,19 @@ function escHtml(s) {
     return d.innerHTML;
 }
 
+/* ── Fetch Error Handling (T-420) ─────────────────────── */
+
+/**
+ * Log and return a consistent error message for failed fetch calls.
+ * @param {string} action  What was attempted (e.g., "save answer")
+ * @returns {string} User-facing error message
+ */
+function handleFetchError(action) {
+    var msg = 'Could not ' + action + '. Check connection and retry.';
+    console.warn('[fetch]', msg);
+    return msg;
+}
+
 /* ── SSE Stream Fetcher (T-418) ──────────────────────── */
 
 /**

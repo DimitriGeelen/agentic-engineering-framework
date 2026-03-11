@@ -270,7 +270,7 @@ function saveAnswer() {
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.saved) { btn.textContent = 'Saved'; status.textContent = data.path; status.style.color = 'var(--pico-ins-color)'; }
         else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.style.color = '#c62828'; }
-    }).catch(function() { btn.disabled = false; btn.textContent = 'Save'; status.textContent = 'Network error'; status.style.color = '#c62828'; });
+    }).catch(function() { btn.disabled = false; btn.textContent = 'Save'; status.textContent = handleFetchError('save answer'); status.style.color = '#c62828'; });
 }
 
 function sendFeedback(rating) {
@@ -288,7 +288,7 @@ function sendFeedback(rating) {
             if (rating === 1) { upBtn.style.opacity = '1'; downBtn.style.opacity = '0.3'; }
             else { downBtn.style.opacity = '1'; upBtn.style.opacity = '0.3'; }
         } else { fbStatus.textContent = data.error || 'Failed'; upBtn.disabled = false; downBtn.disabled = false; }
-    }).catch(function() { fbStatus.textContent = 'Error'; upBtn.disabled = false; downBtn.disabled = false; });
+    }).catch(function() { fbStatus.textContent = handleFetchError('send feedback'); upBtn.disabled = false; downBtn.disabled = false; });
 }
 
 /* ── Category Filtering ────────────────────────────────── */
