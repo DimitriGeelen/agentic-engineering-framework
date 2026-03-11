@@ -4,7 +4,7 @@ name: "Housekeeping: enrich fabric card, commit, push"
 description: >
   Housekeeping: enrich fabric card, commit, push
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-11T23:13:44Z
-last_update: 2026-03-11T23:13:44Z
-date_finished: null
+last_update: 2026-03-11T23:40:08Z
+date_finished: 2026-03-11T23:40:08Z
 ---
 
 # T-441: Housekeeping: enrich fabric card, commit, push
@@ -25,24 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Enriched fabric cards with purpose, subsystem, tags
+- [x] Audit ran (148 pass, 5 warn, 0 fail)
+- [x] Committed and pushed to both remotes
 
 ## Verification
 
@@ -72,3 +57,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-441-housekeeping-enrich-fabric-card-commit-p.md
 - **Context:** Initial task creation
+
+### 2026-03-11T23:40:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

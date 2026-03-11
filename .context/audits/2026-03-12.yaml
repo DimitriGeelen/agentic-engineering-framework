@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-12-0010
-timestamp: 2026-03-11T23:10:41Z
+# Audit Results - 2026-03-12-0025
+timestamp: 2026-03-11T23:25:54Z
 summary:
-  pass: 148
-  warn: 5
+  pass: 146
+  warn: 8
   fail: 0
 findings:
   - level: PASS
@@ -20,19 +20,22 @@ findings:
   - level: PASS
     check: "Fabric: 151 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 144/151 cards enriched (7 without edges)"
+    check: "Fabric edges: 147/151 cards enriched (4 without edges)"
   - level: PASS
     check: "Fabric drift: All watched source files registered (151 cards)"
   - level: PASS
-    check: "All 57 active tasks are valid"
+    check: "All 58 active tasks are valid"
   - level: WARN
     check: "Task T-316 is 8 days old with only 0 updates"
     mitigation: "Add progress updates to T-316-spike-layered-claudemd-framework-base--p.md"
   - level: WARN
     check: "Task T-437 has short description (4 chars)"
     mitigation: "Expand description in T-437-test-enum.md"
+  - level: WARN
+    check: "Task T-441 has short description (46 chars)"
+    mitigation: "Expand description in T-441-housekeeping-enrich-fabric-card-commit-p.md"
   - level: PASS
-    check: "Git traceability: 98% (1302/1319 commits reference tasks)"
+    check: "Git traceability: 98% (1305/1322 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -81,13 +84,13 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-440)"
+    check: "CTL-001: Focus file has active task (T-441)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 2 (last commit: 15 minutes ago)"
+    check: "CTL-004: Tool counter at 0 (last commit: 45 seconds ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: warn)"
+    check: "CTL-018: Budget status valid JSON (level: urgent)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -97,7 +100,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (311 handovers, 110 compactions)"
+    check: "CTL-006: Handover coverage for compactions (312 handovers, 110 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -182,8 +185,9 @@ findings:
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
     check: "CTL-012: All 382 completed tasks have checked ACs"
-  - level: PASS
-    check: "CTL-013: T-439 verification re-run: 4/4 pass"
+  - level: WARN
+    check: "CTL-013: T-439 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-439 — environment may have changed"
   - level: PASS
     check: "CTL-013: T-438 verification re-run: 2/2 pass"
   - level: PASS
@@ -304,10 +308,11 @@ findings:
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: PASS
     check: "D5: Task lifecycle — no anomalies"
+  - level: WARN
+    check: "D3: Commit velocity — WARN drop today=3 avg=47 ratio=0.1x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=0 avg=47 ratio=0.0x)"
-  - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 37_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 39_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=9.7 earlier=9.6)"
   - level: PASS
