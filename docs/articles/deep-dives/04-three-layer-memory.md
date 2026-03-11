@@ -1,5 +1,10 @@
 # Deep Dive #4: Three-Layer Memory
 
+## Publication
+
+- **LinkedIn:** Published 2026-03-10
+- **URL:** https://www.linkedin.com/posts/dimitrigeelen_claudecode-aiagents-aimemory-activity-7437039389249110016-KOfU
+
 ## Title
 
 Governing AI Agents: Three-Layer Memory — giving agents institutional knowledge

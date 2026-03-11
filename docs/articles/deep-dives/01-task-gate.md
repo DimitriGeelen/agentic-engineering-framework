@@ -1,5 +1,10 @@
 # Deep Dive #1: The Task Gate
 
+## Publication
+
+- **LinkedIn:** Published 2026-03-11
+- **URL:** https://www.linkedin.com/posts/dimitrigeelen_claudecode-aiagents-devtools-activity-7437430766051115010-ACMq
+
 ## Title
 
 Governing AI Agents: The Task Gate — how one rule creates full traceability

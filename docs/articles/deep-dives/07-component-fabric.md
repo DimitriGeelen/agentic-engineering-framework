@@ -1,5 +1,10 @@
 # Deep Dive #7: Component Fabric
 
+## Publication
+
+- **LinkedIn:** Published 2026-03-09
+- **URL:** https://www.linkedin.com/posts/dimitrigeelen_agenticengineering-componentfabric-codetopology-activity-7436687214798876672-3k1S
+
 ## Title
 
 Governing AI Agents: The Component Fabric — structural awareness for AI agents
