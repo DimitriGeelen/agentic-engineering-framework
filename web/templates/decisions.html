@@ -1,3 +1,4 @@
+{% from '_partials/badge.html' import badge %}
 <div class="page-header">
     <h1>{{ page_title }}</h1>
     <p>{{ decisions|length }} architectural and operational decisions with rationale and traceability.</p>
@@ -19,13 +20,7 @@
         {% for d in decisions %}
         <tr>
             <td><code>{{ d.id }}</code></td>
-            <td>
-                {% if d.type == 'architectural' %}
-                <mark style="background-color: var(--pico-primary-background); color: var(--pico-primary-inverse); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem;">arch</mark>
-                {% else %}
-                <mark style="background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem;">ops</mark>
-                {% endif %}
-            </td>
+            <td>{{ badge('arch' if d.type == 'architectural' else 'ops') }}</td>
             <td>{{ d.decision }}</td>
             <td><small>{{ d.directives_served }}</small></td>
             <td>{% if d.task %}<code>{{ d.task }}</code>{% endif %}</td>
