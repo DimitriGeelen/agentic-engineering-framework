@@ -1,0 +1,21 @@
+{# Reusable badge macro (T-421) — consistent status/severity badges across all pages #}
+
+{% macro badge(text, color=none) %}
+{%- set _colors = {
+    'high': '#c0392b', 'urgent': '#c0392b', 'invalidated': '#c62828',
+    'medium': '#f39c12', 'untested': '#f9a825',
+    'low': '#27ae60', 'validated': '#2e7d32',
+    'build': '#2980b9', 'gap': '#3498db', 'active': '#1565c0',
+    'simplify': '#8e44ad',
+    'closed': '#95a5a6', 'watching': '#6c757d', 'partial': '#f39c12',
+    'risk': '#e67e22',
+    'arch': 'var(--pico-primary-background)',
+    'ops': 'var(--pico-secondary-background)'
+} -%}
+{%- set _dark_text = ['medium', 'untested', 'partial'] -%}
+{%- set _pico_inverse = {'arch': 'var(--pico-primary-inverse)', 'ops': 'var(--pico-secondary-inverse)'} -%}
+{%- set key = text|lower -%}
+{%- set bg = color or _colors.get(key, '') -%}
+{%- set fg = _pico_inverse.get(key, '#333' if key in _dark_text else 'white') -%}
+<mark style="background-color:{{ bg or 'var(--pico-mark-background-color)' }};color:{{ fg }};padding:0.1rem 0.5rem;border-radius:4px;font-size:0.75rem;font-weight:600;white-space:nowrap;">{{ text|upper }}</mark>
+{%- endmacro %}

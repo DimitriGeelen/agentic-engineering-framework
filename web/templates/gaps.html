@@ -1,3 +1,4 @@
+{% from '_partials/badge.html' import badge %}
 <div class="page-header">
     <h1>{{ page_title }}</h1>
     <p>{{ gaps|length }} specification-reality gaps with decision triggers and evidence tracking.</p>
@@ -12,27 +13,9 @@
                 <code>{{ g.id }}</code> &mdash; {{ g.title }}
             </span>
             <span>
-                {% if g.severity == 'high' %}
-                <mark style="background-color: #c0392b; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">HIGH</mark>
-                {% elif g.severity == 'medium' %}
-                <mark style="background-color: #f39c12; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">MEDIUM</mark>
-                {% elif g.severity == 'low' %}
-                <mark style="background-color: #27ae60; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">LOW</mark>
-                {% else %}
-                <mark style="padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{{ g.severity | default('unknown') | upper }}</mark>
-                {% endif %}
-
-                {% if g.status == 'watching' %}
-                <mark style="background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">WATCHING</mark>
-                {% elif g.status == 'decided-build' %}
-                <mark style="background-color: #2980b9; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">BUILD</mark>
-                {% elif g.status == 'decided-simplify' %}
-                <mark style="background-color: #8e44ad; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">SIMPLIFY</mark>
-                {% elif g.status == 'closed' %}
-                <mark style="background-color: #95a5a6; color: white; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">CLOSED</mark>
-                {% else %}
-                <mark style="padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">{{ g.status | default('unknown') | upper }}</mark>
-                {% endif %}
+                {{ badge(g.severity | default('unknown')) }}
+                {% set _status_map = {'watching': 'watching', 'decided-build': 'build', 'decided-simplify': 'simplify', 'closed': 'closed'} %}
+                {{ badge(_status_map.get(g.status, g.status | default('unknown'))) }}
             </span>
         </div>
     </header>

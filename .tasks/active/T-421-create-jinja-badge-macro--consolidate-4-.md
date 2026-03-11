@@ -4,7 +4,7 @@ name: "Create Jinja badge macro — consolidate 4+ badge implementations (H2)"
 description: >
   Create _partials/badge.html Jinja macro to replace 4+ separate badge implementations across gaps.html, risks.html, decisions.html, assumptions.html. Each duplicates color scheme, padding, border-radius. Same mark element with inline styles repeated with slightly inconsistent values. Directive score: H2=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, html, watchtower, usability]
 components: [web/templates/_partials/badge.html, web/templates/gaps.html, web/templates/risks.html, web/templates/assumptions.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:21Z
-last_update: 2026-03-10T21:03:21Z
+last_update: 2026-03-11T07:49:37Z
 date_finished: null
 ---
 
@@ -31,10 +31,10 @@ See research artifact § "HTML TEMPLATES" row H2.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] _partials/badge.html Jinja macro created
-- [ ] Macro accepts status/severity and outputs consistent badge
-- [ ] At least 4 templates converted to use the macro
-- [ ] Badge colors consistent across all pages
+- [x] _partials/badge.html Jinja macro created
+- [x] Macro accepts status/severity and outputs consistent badge
+- [x] At least 4 templates converted to use the macro
+- [x] Badge colors consistent across all pages
 
 ### Human
 - [ ] [RUBBER-STAMP] Badges look consistent across pages
@@ -68,3 +68,6 @@ grep -q 'import.*badge' web/templates/risks.html || grep -q 'badge' web/template
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-421-create-jinja-badge-macro--consolidate-4-.md
 - **Context:** Initial task creation
+
+### 2026-03-11T07:49:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

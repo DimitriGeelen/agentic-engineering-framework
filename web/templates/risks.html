@@ -1,3 +1,4 @@
+{% from '_partials/badge.html' import badge %}
 <style>
     .risk-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
     @media (max-width: 768px) { .risk-stats { grid-template-columns: repeat(2, 1fr); } }
@@ -23,15 +24,7 @@
     .heatmap .cell-low { background-color: rgba(39, 174, 96, 0.1); }
     .heatmap .cell-count { font-weight: 700; font-size: 1.1rem; }
 
-    .badge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
-    .badge-urgent { background-color: #c0392b; color: white; }
-    .badge-high { background-color: #e67e22; color: white; }
-    .badge-medium { background-color: #f1c40f; color: #2d3436; }
-    .badge-low { background-color: #27ae60; color: white; }
-    .badge-closed { background-color: #95a5a6; color: white; }
-    .badge-watching { background-color: var(--pico-secondary-background); color: var(--pico-secondary-inverse); }
-    .badge-gap { background-color: #3498db; color: white; }
-    .badge-risk { background-color: #e67e22; color: white; }
+    /* badge styles replaced by badge macro (T-421) */
 
     .risk-table { font-size: 0.85rem; }
     .risk-table td, .risk-table th { padding: 0.4rem 0.6rem; }
@@ -52,10 +45,10 @@
     <summary style="font-weight: 600;">About this page</summary>
     <div style="font-size: 0.875rem; padding-top: 0.5rem;">
         <p><strong>Types:</strong>
-            <span class="badge badge-gap">GAP</span> = spec-reality divergence (present tense),
-            <span class="badge badge-risk">RISK</span> = forward-looking concern (future tense).</p>
+            {{ badge('gap') }} = spec-reality divergence (present tense),
+            {{ badge('risk') }} = forward-looking concern (future tense).</p>
         <p><strong>Risk scoring:</strong> Likelihood (1-5) &times; Impact (1-5) = Score (1-25).<br>
-        Ranking: <span class="badge badge-low">LOW</span> 1-4, <span class="badge badge-medium">MEDIUM</span> 5-9, <span class="badge badge-high">HIGH</span> 10-16, <span class="badge badge-urgent">URGENT</span> 17-25.</p>
+        Ranking: {{ badge('low') }} 1-4, {{ badge('medium') }} 5-9, {{ badge('high') }} 10-16, {{ badge('urgent') }} 17-25.</p>
         <p><strong>Data source:</strong> <code>.context/project/concerns.yaml</code></p>
     </div>
 </details>
@@ -87,10 +80,8 @@
     <header style="display: flex; justify-content: space-between; align-items: center;">
         <span><code>{{ c.id }}</code> &mdash; {{ c.title }}</span>
         <span>
-            {% if c.type == 'risk' %}<span class="badge badge-risk">RISK</span>{% else %}<span class="badge badge-gap">GAP</span>{% endif %}
-            {% if c.severity == 'high' %}<span class="badge badge-high">HIGH</span>
-            {% elif c.severity == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
-            {% else %}<span class="badge badge-low">LOW</span>{% endif %}
+            {{ badge(c.type | default('gap')) }}
+            {{ badge(c.severity | default('low')) }}
         </span>
     </header>
     <p>{{ c.description }}</p>
@@ -185,16 +176,13 @@
             <td>{{ c.name }}</td>
             <td><small>{{ c.type | replace('_', ' ') }}</small></td>
             <td style="text-align: center;">
-                {% if c.blocking %}<span class="badge badge-high">GATE</span>
-                {% else %}<span class="badge badge-watching">WARN</span>
+                {% if c.blocking %}{{ badge('gate', '#e67e22') }}
+                {% else %}{{ badge('warn', '#6c757d') }}
                 {% endif %}
             </td>
             <td><small>{{ c.mitigates | join(', ') if c.mitigates else 'None' }}</small></td>
             <td>
-                {% if c.status == 'active' %}<span class="badge badge-low">ACTIVE</span>
-                {% elif c.status == 'partial' %}<span class="badge badge-medium">PARTIAL</span>
-                {% else %}<span class="badge badge-closed">{{ c.status | upper }}</span>
-                {% endif %}
+                {{ badge(c.status | default('active')) }}
             </td>
         </tr>
     {% endfor %}
@@ -221,13 +209,9 @@
         {% for c in closed %}
             <tr>
                 <td><code>{{ c.id }}</code></td>
-                <td>{% if c.type == 'risk' %}<span class="badge badge-risk">RISK</span>{% else %}<span class="badge badge-gap">GAP</span>{% endif %}</td>
+                <td>{{ badge(c.type | default('gap')) }}</td>
                 <td>{{ c.title }}</td>
-                <td>
-                    {% if c.severity == 'high' %}<span class="badge badge-high">HIGH</span>
-                    {% elif c.severity == 'medium' %}<span class="badge badge-medium">MEDIUM</span>
-                    {% else %}<span class="badge badge-low">LOW</span>{% endif %}
-                </td>
+                <td>{{ badge(c.severity | default('low')) }}</td>
                 <td><small style="color: var(--pico-muted-color);">{{ c.resolution | default('See task') | truncate(100) }}</small></td>
             </tr>
         {% endfor %}

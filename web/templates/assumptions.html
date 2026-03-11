@@ -1,3 +1,4 @@
+{% from '_partials/badge.html' import badge %}
 <style>
     .assumption-summary {
         display: grid;
@@ -42,17 +43,7 @@
         color: var(--pico-primary-inverse);
         border-color: var(--pico-primary-background);
     }
-    .status-badge {
-        display: inline-block;
-        padding: 0.1rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    .status-validated { background-color: #2e7d32; color: white; }
-    .status-invalidated { background-color: #c62828; color: white; }
-    .status-untested { background-color: #f9a825; color: #333; }
+    /* status-badge styles replaced by badge macro (T-421) */
     .action-btn {
         padding: 0.2rem 0.5rem;
         font-size: 0.7rem;
@@ -170,13 +161,7 @@
                 {% endif %}
             </td>
             <td>
-                {% if a.status == 'validated' %}
-                <span class="status-badge status-validated">Validated</span>
-                {% elif a.status == 'invalidated' %}
-                <span class="status-badge status-invalidated">Invalidated</span>
-                {% else %}
-                <span class="status-badge status-untested">Untested</span>
-                {% endif %}
+                {{ badge(a.status | default('untested')) }}
             </td>
             <td>
                 {% if a.linked_task %}
