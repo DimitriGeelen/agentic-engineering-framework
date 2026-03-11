@@ -152,7 +152,8 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
     try:
         model = model_override if model_override else get_model()
     except RuntimeError as e:
-        yield sse_event("error", message=str(e))
+        log.warning("Model selection failed: %s", e)
+        yield sse_event("error", message="No AI model available. Check that your LLM provider is running.")
         return
 
     manager = get_manager()

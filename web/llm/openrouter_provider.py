@@ -77,7 +77,7 @@ class OpenRouterProvider(LLMProvider):
 
         except Exception as e:
             log.error("OpenRouter streaming error: %s", e)
-            yield StreamChunk(type="error", content=f"OpenRouter error: {e}")
+            yield StreamChunk(type="error", content="AI service unavailable. Check your OpenRouter API key and connection.")
 
         yield StreamChunk(type="done")
 

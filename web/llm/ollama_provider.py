@@ -61,7 +61,7 @@ class OllamaProvider(LLMProvider):
 
         except Exception as e:
             log.error("Ollama streaming error: %s", e)
-            yield StreamChunk(type="error", content=f"Ollama error: {e}")
+            yield StreamChunk(type="error", content="AI service unavailable. Check that Ollama is running.")
 
         yield StreamChunk(type="done")
 
