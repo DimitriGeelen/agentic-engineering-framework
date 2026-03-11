@@ -47,16 +47,17 @@ These tasks highlight a recurring theme: **without mechanical enforcement, gover
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Start working — the framework scaffolds everything
 fw work-on "Refactor authentication module" --type refactor
 
 # Check framework health
 fw doctor
-```
 
-The system enforces task creation and logs every change to `.tasks/active/`.
+# See tasks, audit, and metrics in the dashboard
+fw serve  # http://localhost:3000
+```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 

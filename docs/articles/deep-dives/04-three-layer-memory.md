@@ -93,16 +93,20 @@ Short-term context, accumulated knowledge, and historical reference have differe
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # See current memory state
 fw context status
 
-# Record a decision
-fw context add-decision "Use YAML for configs" --task T-042 --rationale "Human readable"
+# Start working — memory builds automatically
+fw work-on "Set up project" --type build
 
-# Record a learning
-fw context add-learning "Always set connection pool limits" --task T-042
+# Record a decision or learning
+fw context add-decision "Use YAML for configs" --task T-001 --rationale "Human readable"
+fw context add-learning "Always set connection pool limits" --task T-001
+
+# Browse all learnings and patterns in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

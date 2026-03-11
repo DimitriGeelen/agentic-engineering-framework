@@ -99,16 +99,17 @@ The healing loop is not only reactive. When a practice repeats across 3+ tasks, 
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # View known failure patterns
 fw healing patterns
 
-# Diagnose a task with issues
-fw healing diagnose T-042
+# When a task hits issues, diagnose and resolve
+fw healing diagnose T-001
+fw healing resolve T-001 --mitigation "Added YAML validation step"
 
-# Record a resolution
-fw healing resolve T-042 --mitigation "Added YAML validation step"
+# Browse failure patterns in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

@@ -54,7 +54,7 @@ These changes were driven by quantified findings: teams using the Handover Agent
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Work on something
 fw work-on "Refactor authentication module" --type refactor
@@ -64,6 +64,9 @@ fw handover --commit
 
 # Next session picks up where you left off
 cat .context/handovers/LATEST.md
+
+# Browse handover timeline in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

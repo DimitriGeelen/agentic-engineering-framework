@@ -62,11 +62,14 @@ This means catastrophic context loss costs at most 15 minutes of work. Without i
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
-# Check current context budget
-./agents/context/checkpoint.sh status
 # The budget gate runs automatically on every tool call
+# Check current status anytime:
+fw doctor
+
+# See budget and metrics in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

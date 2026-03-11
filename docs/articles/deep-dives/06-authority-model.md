@@ -71,12 +71,15 @@ AI agents need the same structure. Broad delegation within clear boundaries is n
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # See the authority model in action
 fw work-on "Test authority boundaries" --type build
 # Agent can work freely on safe operations
-# Destructive commands will be intercepted
+# Destructive commands are intercepted by Tier 0
+
+# View enforcement status in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

@@ -67,8 +67,13 @@ A human developer has years of muscle memory around dangerous commands. They hes
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
-# Destructive commands through Claude Code will now be intercepted
+cd my-project && fw init --provider claude
+
+# Destructive commands are now intercepted automatically
+# Try: git reset --hard → blocked until fw tier0 approve
+
+# See enforcement status in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

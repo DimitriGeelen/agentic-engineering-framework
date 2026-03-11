@@ -55,11 +55,14 @@ Across 312 completed tasks, the framework achieved 96% commit traceability — e
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
-fw work-on "My first governed task" --type build
-```
+cd my-project && fw init --provider claude
 
-The gate activates immediately. The agent cannot touch a file without a task.
+# The gate activates immediately — the agent cannot touch a file without a task
+fw work-on "My first governed task" --type build
+
+# Start the dashboard to see your tasks
+fw serve  # http://localhost:3000
+```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 

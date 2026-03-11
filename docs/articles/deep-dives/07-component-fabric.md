@@ -104,15 +104,18 @@ AI agents do not have tacit knowledge. Every session, they see the codebase fres
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Register key files
-fw fabric register lib/auth.ts
-fw fabric register api/routes/login.ts
+fw fabric register src/auth.ts
+fw fabric register src/api/routes.ts
 
 # Check dependencies before making changes
-fw fabric deps lib/auth.ts
+fw fabric deps src/auth.ts
 fw fabric blast-radius HEAD
+
+# Explore the interactive dependency graph in the dashboard
+fw serve  # http://localhost:3000/fabric
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

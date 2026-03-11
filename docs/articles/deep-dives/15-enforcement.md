@@ -51,7 +51,7 @@ Quantified findings showed that **73% of risky actions** (e.g., unreviewed delet
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Enforcement activates immediately — try editing without a task
 # The task gate blocks it. Create a task first:
@@ -59,6 +59,9 @@ fw work-on "Refactor auth module" --type refactor
 
 # Destructive commands are intercepted by Tier 0
 # Try: git reset --hard → blocked until fw tier0 approve
+
+# See enforcement status in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 `fw init` configures all hooks automatically. No manual setup required.
