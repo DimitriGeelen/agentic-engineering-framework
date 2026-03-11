@@ -1,0 +1,34 @@
+# Audit Results - 2026-03-11-2330
+timestamp: 2026-03-11T22:30:01Z
+sections: "structure,compliance,quality"
+summary:
+  pass: 10
+  warn: 2
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 9 project YAML files parse correctly"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
+  - level: PASS
+    check: "Fabric: 147 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 143/147 cards enriched (4 without edges)"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (147 cards)"
+  - level: PASS
+    check: "All 57 active tasks are valid"
+  - level: WARN
+    check: "Task T-437 has short description (4 chars)"
+    mitigation: "Expand description in T-437-test-enum.md"

@@ -1,0 +1,19 @@
+id: web/static/js/utils.js
+name: utils
+type: script
+subsystem: watchtower
+location: web/static/js/utils.js
+tags: [js, utilities]
+
+purpose: "Shared JS utilities — StreamFetcher for SSE streaming, showToast for notifications, CSRF helpers"
+
+depends_on: []
+
+depended_by:
+  - target: web/static/js/chat.js
+    type: calls
+  - target: web/static/js/search.js
+    type: calls
+
+last_verified: 2026-03-11
+created_by: unknown

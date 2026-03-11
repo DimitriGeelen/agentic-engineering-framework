@@ -4,16 +4,16 @@ name: "Template metadata component and accessibility improvements (H7+H11)"
 description: >
   H7: Extract metadata table component for task/fabric/inception detail pages. H11: Add aria-label to icon buttons, aria-hidden to decorative SVGs, keyboard handlers for custom buttons. 15 role=button elements lack keyboard support. Directive scores: H7=5, H11=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, html, watchtower, usability, accessibility]
-components: [web/templates/_partials/ask_answer_card.html, web/templates/_partials/chat_tab.html, web/templates/_partials/search_input.html, web/templates/task_detail.html]
+components: [web/templates/_partials/chat_tab.html, web/templates/task_detail.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:11Z
-last_update: 2026-03-11T22:28:08Z
-date_finished: null
+last_update: 2026-03-11T22:28:39Z
+date_finished: 2026-03-11T22:28:39Z
 ---
 
 # T-430: Template metadata component and accessibility improvements (H7+H11)
@@ -79,3 +79,6 @@ curl -sf http://localhost:3000/inception > /dev/null
 
 ### 2026-03-11T22:23:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T22:28:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

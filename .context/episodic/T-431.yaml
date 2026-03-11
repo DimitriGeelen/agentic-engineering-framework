@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-431: Architecture cleanup — blueprint imports, metrics retention, audit helpers (A2+A3+A7+A8+A9+A11)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T22:45:06Z
+# ============================================================================
+
+task_id: T-431
+task_name: "Architecture cleanup — blueprint imports, metrics retention, audit helpers (A2+A3+A7+A8+A9+A11)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:13Z
+completed: 2026-03-11T22:45:02Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T23:44:24+01:00
+last_commit: 2026-03-11T23:44:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Architecture cleanup — centralized blueprints, shared audit helper, subprocess migration, metrics downsampling. Fix verification — use Python assertion for grep negation
+
+# Key outcomes
+outcomes:
+  - "A3: Metrics-history downsampling — keep full resolution 7 days, daily for 8-30 days"
+  - "A9: cockpit.py migrated from local _fw() to subprocess_utils.run_fw_command()"
+  - "A9: inception.py migrated from raw subprocess.run to subprocess_utils.run_fw_command()"
+  - "A7: Shared audit loading helper extracted (used by core.py, quality.py, shared.py build_ambient)"
+  - "A2: Blueprint registration centralized in __init__.py"
+  - "A8/A11: Documented skip decisions"
+  - "All affected pages load correctly after changes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — use Python assertion for grep negation"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Skip — discovery.py is 648 lines (was 711 at scoring), manageable for a single blueprint"
+    rationale: "Splitting into 3 files of ~200 lines creates 3x the import overhead and routing fragmentation for marginal benefit. Estimated 6h effort, score 5."
+    alternatives_rejected: ["Split into knowledge/patterns/qa blueprints — lateral move at current size"]
+    chose: "Skip — this is an operational concern (run drift regularly), not a code refactor"
+    rationale: "Cron already exists for audits. Drift is a manual check (`fw fabric drift`). No code change needed."
+    alternatives_rejected: ["Adding drift to cron — already available as a manual command"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-431-architecture-cleanup--blueprint-imports-.md"
+  - "web/app.py"
+  - "web/blueprints/cockpit.py"
+  - "web/blueprints/core.py"
+  - "web/blueprints/inception.py"
+  - "web/blueprints/__init__.py"
+  - "web/blueprints/quality.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T23:44:24"
+    action: "T-431: Architecture cleanup — centralized blueprints, shared audit helper, subprocess migration, metrics downsampling"
+  - time: "2026-03-11T23:44:55"
+    action: "T-431: Fix verification — use Python assertion for grep negation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1540 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1540
+  commits: 2
+  files_changed: 9
+  lines_added: 149
+  lines_removed: 171
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-431-architecture-cleanup--blueprint-imports-.md
+generated_by: context-agent-hybrid

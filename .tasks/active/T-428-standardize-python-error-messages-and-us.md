@@ -4,16 +4,16 @@ name: "Standardize Python error messages and user feedback (P11)"
 description: >
   Error messages vary from detailed actionable text to one-liners without context. Define error classes (IndexNotReadyError, ModelUnavailableError) with message, severity, suggested_action. Use consistently across all endpoints. Directive score: P11=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, python, watchtower, usability]
-components: [web/blueprints/api.py, web/blueprints/discovery.py, web/ask.py, web/llm/ollama_provider.py, web/llm/openrouter_provider.py]
+components: [web/blueprints/api.py, C-003]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:09Z
-last_update: 2026-03-11T22:07:21Z
-date_finished: null
+last_update: 2026-03-11T22:11:52Z
+date_finished: 2026-03-11T22:11:52Z
 ---
 
 # T-428: Standardize Python error messages and user feedback (P11)
@@ -82,3 +82,6 @@ curl -sf http://localhost:3000/search > /dev/null
 
 ### 2026-03-11T22:07:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T22:11:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

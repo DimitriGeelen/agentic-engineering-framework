@@ -4,16 +4,16 @@ name: "Template cleanup — shared form macro, onclick migration, conditional si
 description: >
   H3: Convert 24 inline onclick handlers to data-attributes + delegated listeners. H4: Extract inline_select_form macro for 5+ duplicated form patterns. H10: Move status/severity conditionals from templates to Python view functions. Directive scores: H3=5, H4=6, H10=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, html, watchtower, usability]
-components: [web/templates/_partials/inline_select.html, web/templates/task_detail.html, web/templates/tasks.html, web/templates/cockpit.html, web/templates/base.html, web/templates/project.html, web/templates/inception_detail.html]
+components: [web/templates/base.html, web/templates/cockpit.html, web/templates/inception_detail.html, web/templates/project.html, web/templates/task_detail.html, web/templates/tasks.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:10Z
-last_update: 2026-03-11T22:19:52Z
-date_finished: null
+last_update: 2026-03-11T22:20:27Z
+date_finished: 2026-03-11T22:20:27Z
 ---
 
 # T-429: Template cleanup — shared form macro, onclick migration, conditional simplification (H3+H4+H10)
@@ -85,3 +85,6 @@ curl -sf http://localhost:3000/inception > /dev/null
 
 ### 2026-03-11T22:14:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T22:20:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

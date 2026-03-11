@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-440: Validate Component Fabric endpoints after refactoring updates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T22:57:49Z
+# ============================================================================
+
+task_id: T-440
+task_name: "Validate Component Fabric endpoints after refactoring updates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-11T22:09:10Z
+completed: 2026-03-11T22:56:36Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-11T23:56:29+01:00
+last_commit: 2026-03-11T23:56:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Validate Component Fabric — fix 4 stale edges, register 3 missing components
+
+# Key outcomes
+outcomes:
+  - "Fabric drift reports 0 unregistered, 0 orphaned, 0 stale edges"
+  - "Fixed 4 stale edges (2 docgen directory refs, 2 missing JS card targets)"
+  - "Registered missing components (markdown-render.js, generate_article.py, generate_component.py)"
+  - "Enriched docgen cards with purpose, subsystem, tags"
+  - "All fabric web endpoints respond 200 (/fabric, /fabric/graph, component details)"
+  - "All recently-modified component locations match actual file paths"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Validate Component Fabric — fix 4 stale edges, register 3 missing components"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-docgen-generate-article.yaml"
+  - ".fabric/components/agents-docgen-generate_article.yaml"
+  - ".fabric/components/agents-docgen-generate-component.yaml"
+  - ".fabric/components/agents-docgen-generate_component.yaml"
+  - ".fabric/components/web-static-js-markdown-render.yaml"
+  - ".tasks/active/T-440-validate-component-fabric-endpoints-afte.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T23:56:29"
+    action: "T-440: Validate Component Fabric — fix 4 stale edges, register 3 missing components"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, validation, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 47
+  commits: 1
+  files_changed: 6
+  lines_added: 145
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-440-validate-component-fabric-endpoints-afte.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-429: Template cleanup — shared form macro, onclick migration, conditional simplification (H3+H4+H10)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T22:20:31Z
+# ============================================================================
+
+task_id: T-429
+task_name: "Template cleanup — shared form macro, onclick migration, conditional simplification (H3+H4+H10)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:10Z
+completed: 2026-03-11T22:20:27Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T23:19:51+01:00
+last_commit: 2026-03-11T23:20:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Template cleanup — inline_select macro, extracted JS helpers, simplified conditionals. Fix verification — checkbox onchange is not an inline select
+
+# Key outcomes
+outcomes:
+  - "H4: inline_select macro in _partials/inline_select.html replaces 12 duplicated form patterns"
+  - "H4: task_detail.html uses macro for status/owner/horizon/type (4 instances)"
+  - "H4: tasks.html kanban cards use macro (4 instances)"
+  - "H4: tasks.html list view uses macro (4 instances)"
+  - "H3: Inline JS snippets extracted to named functions (wtShowAll, wtDismissCard, wtToggleNav)"
+  - "H3: cockpit.html, project.html, base.html cleaned up"
+  - "H10: inception_detail.html assumption status conditional simplified to single-line template"
+  - "All affected pages load (dashboard, tasks, task detail, inception, enforcement)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — checkbox onchange is not an inline select"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-429-template-cleanup--shared-form-macro-oncl.md"
+  - "web/templates/base.html"
+  - "web/templates/cockpit.html"
+  - "web/templates/inception_detail.html"
+  - "web/templates/_partials/inline_select.html"
+  - "web/templates/project.html"
+  - "web/templates/task_detail.html"
+  - "web/templates/tasks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T23:19:51"
+    action: "T-429: Template cleanup — inline_select macro, extracted JS helpers, simplified conditionals"
+  - time: "2026-03-11T23:20:23"
+    action: "T-429: Fix verification — checkbox onchange is not an inline select"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1516 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, html, watchtower, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1516
+  commits: 2
+  files_changed: 8
+  lines_added: 86
+  lines_removed: 166
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-429-template-cleanup--shared-form-macro-oncl.md
+generated_by: context-agent-hybrid
