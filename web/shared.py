@@ -104,25 +104,15 @@ def build_ambient():
                 except (ValueError, TypeError):
                     pass
 
-    # Audit status — from latest audit file
-    audits_dir = PROJECT_ROOT / ".context" / "audits"
-    if audits_dir.exists():
-        audit_files = sorted(audits_dir.glob("*.yaml"), reverse=True)
-        if audit_files:
-            try:
-                import yaml
-                with open(audit_files[0]) as f:
-                    data = yaml.safe_load(f)
-                if data and "summary" in data:
-                    s = data["summary"]
-                    if s.get("fail", 0) > 0:
-                        ambient["audit_status"] = "FAIL"
-                    elif s.get("warn", 0) > 0:
-                        ambient["audit_status"] = "WARN"
-                    else:
-                        ambient["audit_status"] = "PASS"
-            except Exception:
-                pass
+    # Audit status — via shared helper
+    _, summary, _ = load_latest_audit()
+    if summary:
+        if summary.get("fail", 0) > 0:
+            ambient["audit_status"] = "FAIL"
+        elif summary.get("warn", 0) > 0:
+            ambient["audit_status"] = "WARN"
+        else:
+            ambient["audit_status"] = "PASS"
 
     return ambient
 
@@ -206,6 +196,28 @@ def sse_event(event_type, **kwargs):
     import json
     payload = {"type": event_type, **kwargs}
     return f"data: {json.dumps(payload)}\n\n"
+
+
+def load_latest_audit():
+    """Load the most recent audit YAML file.
+
+    Returns (timestamp, summary_dict, findings_list).
+    Returns (None, {}, []) if no audit data found.
+    Used by core.py (dashboard status) and quality.py (full audit view).
+    """
+    audit_dir = PROJECT_ROOT / ".context" / "audits"
+    if not audit_dir.exists():
+        return None, {}, []
+    audit_files = sorted(audit_dir.glob("*.yaml"), reverse=True)
+    if not audit_files:
+        return None, {}, []
+    data = load_yaml(audit_files[0], label="audit report")
+    if not data:
+        return None, {}, []
+    timestamp = data.get("timestamp", "Unknown")
+    summary = data.get("summary", {})
+    findings = data.get("findings", [])
+    return timestamp, summary, findings
 
 
 def render_page(template_name, **context):

@@ -4,34 +4,13 @@ import re as re_mod
 
 from flask import Blueprint, render_template, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml, load_latest_audit
 from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("quality", __name__)
 
 
-def _load_latest_audit():
-    """Find and parse the latest audit YAML file.
-
-    Returns (timestamp, summary, findings) or (None, {}, []).
-    """
-    audit_dir = PROJECT_ROOT / ".context" / "audits"
-    if not audit_dir.exists():
-        return None, {}, []
-
-    audit_files = sorted(audit_dir.glob("*.yaml"), reverse=True)
-    if not audit_files:
-        return None, {}, []
-
-    data = load_yaml(audit_files[0], label="audit report")
-
-    if not data:
-        return None, {}, []
-
-    timestamp = data.get("timestamp", "Unknown")
-    summary = data.get("summary", {})
-    findings = data.get("findings", [])
-    return timestamp, summary, findings
+# _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 
 
 def _compute_audit_status(summary):
@@ -96,7 +75,7 @@ def _render_audit_fragment(findings, summary, audit_status, audit_timestamp):
 @bp.route("/quality")
 def quality_gate():
     """Main quality gate page."""
-    audit_timestamp, summary, findings = _load_latest_audit()
+    audit_timestamp, summary, findings = load_latest_audit()
     audit_status = _compute_audit_status(summary)
     traceability = _compute_traceability()
     episodic_complete, episodic_total = _compute_episodic()
@@ -123,7 +102,7 @@ def run_audit():
         return '<article style="border-left: 4px solid var(--pico-del-color);"><p><strong>Audit timed out</strong> after 180 seconds.</p></article>'
 
     # Reload the latest audit results (fw audit writes a new YAML file)
-    audit_timestamp, summary, findings = _load_latest_audit()
+    audit_timestamp, summary, findings = load_latest_audit()
     audit_status = _compute_audit_status(summary)
 
     return _render_audit_fragment(findings, summary, audit_status, audit_timestamp)
