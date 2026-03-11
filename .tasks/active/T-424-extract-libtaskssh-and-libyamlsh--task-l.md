@@ -4,16 +4,16 @@ name: "Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6
 description: >
   S6: Task file lookup duplicated in 4+ files — extract find_task_file(). S7: YAML field extraction with grep/sed in 10+ files — extract get_yaml_field() using Python yaml.safe_load. Directive scores: S6=6, S7=6. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, shell, reliability]
 components: []
 related_tasks: [T-411]
 created: 2026-03-10T21:04:05Z
-last_update: 2026-03-10T21:04:05Z
-date_finished: null
+last_update: 2026-03-11T10:16:49Z
+date_finished: 2026-03-11T10:16:49Z
 ---
 
 # T-424: Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6+S7)
@@ -25,46 +25,38 @@ Shell task/YAML helpers (S6+S7). See `docs/reports/T-411-refactoring-directive-s
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/tasks.sh created with find_task_file(), task_exists(), get_task_name()
+- [x] lib/yaml.sh created with get_yaml_field()
+- [x] Both sourced via lib/paths.sh chain
+- [x] 7 find task file sites updated to use find_task_file()
+- [x] 6 YAML extraction sites updated to use get_yaml_field()
+- [x] Dead BLUE color references replaced with CYAN across 6 files
+- [x] fw doctor, resume, git status, healing, context status all pass
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Spot-check that healing and context agents work
+  **Steps:**
+  1. Run `fw healing suggest`
+  2. Run `fw context status`
+  3. Run `fw resume quick`
+  **Expected:** All produce output without errors
+  **If not:** Check that lib/tasks.sh and lib/yaml.sh are sourced by lib/paths.sh
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bash -n lib/tasks.sh
+bash -n lib/yaml.sh
+grep -q "tasks.sh" lib/paths.sh
+grep -q "yaml.sh" lib/paths.sh
+# find_task_file works
+bash -c 'source lib/paths.sh && find_task_file T-424 | grep -q T-424'
+# get_yaml_field works
+bash -c 'source lib/paths.sh && f=$(find_task_file T-424) && get_yaml_field "$f" "status" | grep -q work'
+# No remaining $BLUE references
+! grep -rq '${BLUE}' agents/ lib/
+fw doctor 2>&1 | grep -q "All checks passed"
 
 ## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
 
 ## Updates
 
@@ -72,3 +64,9 @@ Shell task/YAML helpers (S6+S7). See `docs/reports/T-411-refactoring-directive-s
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-424-extract-libtaskssh-and-libyamlsh--task-l.md
 - **Context:** Initial task creation
+
+### 2026-03-11T10:11:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-11T10:16:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

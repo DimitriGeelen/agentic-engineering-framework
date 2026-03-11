@@ -3,7 +3,7 @@
 # Show known failure patterns and mitigations
 
 do_patterns() {
-    echo -e "${BLUE}=== KNOWN FAILURE PATTERNS ===${NC}"
+    echo -e "${CYAN}=== KNOWN FAILURE PATTERNS ===${NC}"
     echo ""
 
     if [ ! -f "$PATTERNS_FILE" ]; then
@@ -76,7 +76,7 @@ do_patterns() {
         pattern_count=$((pattern_count + 1))
     fi
 
-    echo -e "${BLUE}Total failure patterns: $pattern_count${NC}"
+    echo -e "${CYAN}Total failure patterns: $pattern_count${NC}"
     echo ""
     echo "To add a new pattern: healing.sh resolve T-XXX --mitigation 'fix description'"
 }

@@ -191,7 +191,7 @@ do_inception_decide() {
 
     # Find task file
     local task_file
-    task_file=$(find "$PROJECT_ROOT/.tasks/active" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+    task_file=$(find_task_file "$task_id" active)
     if [ -z "$task_file" ]; then
         echo -e "${RED}Task $task_id not found in active tasks${NC}"
         exit 1

@@ -19,9 +19,9 @@ do_focus() {
                 echo "Current focus: $current"
 
                 # Show task name if we can find it
-                local task_file=$(find "$PROJECT_ROOT/.tasks" -name "${current}-*.md" -type f 2>/dev/null | head -1)
+                local task_file=$(find_task_file "$current")
                 if [ -n "$task_file" ]; then
-                    local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
+                    local task_name=$(get_task_name "$task_file")
                     echo "Task: $task_name"
                 fi
             fi
@@ -32,7 +32,7 @@ do_focus() {
         local task_id="$1"
 
         # Validate task exists
-        local task_file=$(find "$PROJECT_ROOT/.tasks" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
+        local task_file=$(find_task_file "$task_id")
         if [ -z "$task_file" ]; then
             echo -e "${RED}Task not found: $task_id${NC}"
             exit 1
@@ -90,7 +90,7 @@ EOF
                 2>/dev/null) || true
             if [ -n "$briefing" ]; then
                 echo ""
-                echo -e "${BLUE}=== Task Briefing ===${NC}"
+                echo -e "${CYAN}=== Task Briefing ===${NC}"
                 echo "$briefing"
             fi
         fi

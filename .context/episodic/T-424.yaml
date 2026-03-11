@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-424: Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6+S7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T10:16:52Z
+# ============================================================================
+
+task_id: T-424
+task_name: "Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6+S7)"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-10T21:04:05Z
+completed: 2026-03-11T10:16:49Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "lib/tasks.sh created with find_task_file(), task_exists(), get_task_name()"
+  - "lib/yaml.sh created with get_yaml_field()"
+  - "Both sourced via lib/paths.sh chain"
+  - "7 find task file sites updated to use find_task_file()"
+  - "6 YAML extraction sites updated to use get_yaml_field()"
+  - "Dead BLUE color references replaced with CYAN across 6 files"
+  - "fw doctor, resume, git status, healing, context status all pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 792 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, shell, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 792
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-424-extract-libtaskssh-and-libyamlsh--task-l.md
+generated_by: context-agent-hybrid

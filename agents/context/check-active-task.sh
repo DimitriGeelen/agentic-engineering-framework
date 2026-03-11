@@ -100,7 +100,7 @@ if [ -z "$CURRENT_TASK" ]; then
 fi
 
 # Verify task is actually active (not completed/archived) — G-013
-ACTIVE_FILE=$(find "$PROJECT_ROOT/.tasks/active" -name "${CURRENT_TASK}-*.md" -type f 2>/dev/null | head -1)
+ACTIVE_FILE=$(find_task_file "$CURRENT_TASK" active)
 if [ -z "$ACTIVE_FILE" ]; then
     echo "" >&2
     echo "BLOCKED: Task $CURRENT_TASK is not active (may be completed or missing)." >&2

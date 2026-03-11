@@ -36,10 +36,10 @@ get_active_tasks() {
     shopt -s nullglob
     for f in "$TASKS_DIR/active"/*.md; do
         [ -f "$f" ] || continue
-        task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_name=$(grep "^name:" "$f" | head -1 | cut -d: -f2- | sed 's/^ *//')
-        task_status=$(grep "^status:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
-        task_owner=$(grep "^owner:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
+        task_id=$(get_yaml_field "$f" "id")
+        task_name=$(get_yaml_field "$f" "name")
+        task_status=$(get_yaml_field "$f" "status")
+        task_owner=$(get_yaml_field "$f" "owner")
         if [ -n "$task_id" ]; then
             count=$((count + 1))
             # T-373: Separate human-owned work-completed tasks from agent-actionable

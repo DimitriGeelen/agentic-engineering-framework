@@ -68,11 +68,8 @@ do_generate_episodic() {
         exit 1
     fi
 
-    # Find task file (check completed first, then active)
-    local task_file=$(find "$PROJECT_ROOT/.tasks/completed" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
-    if [ -z "$task_file" ]; then
-        task_file=$(find "$PROJECT_ROOT/.tasks/active" -name "${task_id}-*.md" -type f 2>/dev/null | head -1)
-    fi
+    # Find task file (searches active then completed via lib/tasks.sh)
+    local task_file=$(find_task_file "$task_id")
 
     if [ -z "$task_file" ]; then
         echo -e "${RED}Task not found: $task_id${NC}"
