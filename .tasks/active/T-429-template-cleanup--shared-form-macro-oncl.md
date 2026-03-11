@@ -12,7 +12,7 @@ tags: [refactoring, html, watchtower, usability]
 components: [web/templates/_partials/inline_select.html, web/templates/task_detail.html, web/templates/tasks.html, web/templates/cockpit.html, web/templates/base.html, web/templates/project.html, web/templates/inception_detail.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:10Z
-last_update: 2026-03-11T22:14:26Z
+last_update: 2026-03-11T22:19:52Z
 date_finished: null
 ---
 
@@ -51,8 +51,8 @@ test -f web/templates/_partials/inline_select.html
 # Macro is imported in tasks.html and task_detail.html
 grep -q "from '_partials/inline_select.html' import inline_select" web/templates/tasks.html
 grep -q "from '_partials/inline_select.html' import inline_select" web/templates/task_detail.html
-# No more raw inline select forms in task_detail.html (should be 0 — all use macro)
-! grep -q 'onchange="this.form.requestSubmit()"' web/templates/task_detail.html
+# No more raw inline select forms in task_detail.html (checkbox toggle is OK)
+! grep -q '<select.*onchange="this.form.requestSubmit()"' web/templates/task_detail.html
 # Extracted JS functions exist
 grep -q "function wtShowAll" web/templates/base.html
 grep -q "function wtDismissCard" web/templates/base.html
