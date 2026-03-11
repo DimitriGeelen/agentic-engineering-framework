@@ -5,7 +5,7 @@ import re as re_mod
 import yaml
 from flask import Blueprint, abort, render_template
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
 
 bp = Blueprint("timeline", __name__)
 
@@ -18,15 +18,8 @@ def _load_task_names():
         if not d.exists():
             continue
         for f in d.glob("T-*.md"):
-            content = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if not fm_match:
-                continue
-            try:
-                fm = yaml.safe_load(fm_match.group(1))
-            except yaml.YAMLError:
-                continue
-            if not isinstance(fm, dict):
+            fm, _ = parse_frontmatter(f.read_text())
+            if not fm:
                 continue
             tid = fm.get("id", "")
             name = fm.get("name", "")
@@ -92,10 +85,9 @@ def timeline():
     if handovers_dir.exists():
         for f in sorted(handovers_dir.glob("S-*.md"), reverse=True):
             content = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if not fm_match:
+            fm, _ = parse_frontmatter(content)
+            if not fm:
                 continue
-            fm = yaml.safe_load(fm_match.group(1))
 
             where_match = re_mod.search(
                 r"## Where We Are\n\n(.*?)(?=\n## |\Z)", content, re_mod.DOTALL

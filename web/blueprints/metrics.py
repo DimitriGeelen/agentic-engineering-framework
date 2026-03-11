@@ -8,7 +8,7 @@ import yaml
 from flask import Blueprint
 
 from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, parse_frontmatter
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("metrics", __name__)
@@ -48,16 +48,11 @@ def _quality_scores():
         for f in d.glob("T-*.md"):
             total += 1
             content = f.read_text(errors="replace")
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    continue
-                if isinstance(fm, dict):
-                    desc = fm.get("description", "")
-                    if isinstance(desc, str) and len(desc.strip()) >= 50:
-                        desc_ok += 1
+            fm, _ = parse_frontmatter(content)
+            if fm:
+                desc = fm.get("description", "")
+                if isinstance(desc, str) and len(desc.strip()) >= 50:
+                    desc_ok += 1
             if re_mod.search(r"(?i)(acceptance.criteria|## AC|## Acceptance)", content):
                 ac_ok += 1
 
@@ -111,14 +106,8 @@ def _stale_tasks():
     now = datetime.now(timezone.utc)
     for f in active_dir.glob("T-*.md"):
         content = f.read_text(errors="replace")
-        fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-        if not fm_match:
-            continue
-        try:
-            fm = yaml.safe_load(fm_match.group(1))
-        except yaml.YAMLError:
-            continue
-        if not isinstance(fm, dict):
+        fm, _ = parse_frontmatter(content)
+        if not fm:
             continue
 
         tid = fm.get("id", f.stem[:5])

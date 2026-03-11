@@ -180,6 +180,34 @@ def load_scan() -> dict | None:
     return None
 
 
+def parse_frontmatter(content):
+    """Parse YAML frontmatter from a markdown file.
+
+    Returns (frontmatter_dict, body_text). Returns ({}, content) if no
+    frontmatter found or parsing fails.
+    """
+    fm_match = re_mod.match(r"^---\s*\n(.*?)\n---\n?(.*)", content, re_mod.DOTALL)
+    if not fm_match:
+        return {}, content
+    try:
+        fm = yaml.safe_load(fm_match.group(1))
+    except yaml.YAMLError:
+        return {}, content
+    if not isinstance(fm, dict):
+        return {}, content
+    return fm, fm_match.group(2)
+
+
+def sse_event(event_type, **kwargs):
+    """Format a Server-Sent Event string.
+
+    Returns 'data: {"type": "<event_type>", ...}\\n\\n'
+    """
+    import json
+    payload = {"type": event_type, **kwargs}
+    return f"data: {json.dumps(payload)}\n\n"
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 

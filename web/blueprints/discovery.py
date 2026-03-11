@@ -11,7 +11,7 @@ from pathlib import Path
 from flask import Blueprint, Response, request
 
 from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, sse_event
 
 log = logging.getLogger(__name__)
 bp = Blueprint("discovery", __name__)
@@ -114,10 +114,46 @@ def gaps():
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
 
 
-@bp.route("/search")
-def search_view():
+def _execute_search(query, mode):
+    """Run search with mode selection and vector fallback. Returns (results, stats, vec_stats)."""
     from web.search import search as bm25_search, index_stats
 
+    results = {}
+    vec_stats = None
+
+    # Check vector index readiness for semantic/hybrid modes
+    vec_ready = False
+    if mode in ("semantic", "hybrid"):
+        try:
+            from web.embeddings import is_index_ready
+            vec_ready = is_index_ready()
+        except Exception:
+            pass
+
+    # Try vector search, fall back to BM25
+    if mode in ("semantic", "hybrid") and vec_ready:
+        try:
+            if mode == "semantic":
+                from web.embeddings import search as vec_search, index_stats as vec_index_stats
+                search_results = vec_search(query)
+            else:
+                from web.embeddings import hybrid_search, index_stats as vec_index_stats
+                search_results = hybrid_search(query)
+            for item in search_results.get("results", []):
+                cat = item.get("category", "Other")
+                results.setdefault(cat, []).append(item)
+            vec_stats = vec_index_stats()
+        except Exception as e:
+            log.warning("Vector search failed, falling back to keyword: %s", e)
+            results = bm25_search(query).get("categories", {})
+    else:
+        results = bm25_search(query).get("categories", {})
+
+    return results, index_stats(), vec_stats
+
+
+@bp.route("/search")
+def search_view():
     query = request.args.get("q", "").strip()
     mode = request.args.get("mode", "hybrid")
     results = {}
@@ -125,38 +161,7 @@ def search_view():
     vec_stats = None
 
     if query and len(query) >= 2:
-        vec_ready = False
-        if mode in ("semantic", "hybrid"):
-            # T-395: check if vector index is ready before attempting (avoids multi-minute hang)
-            try:
-                from web.embeddings import is_index_ready
-                vec_ready = is_index_ready()
-            except Exception:
-                pass
-
-        if mode in ("semantic", "hybrid") and vec_ready:
-            try:
-                if mode == "semantic":
-                    from web.embeddings import search as vec_search, index_stats as vec_index_stats
-                    search_results = vec_search(query)
-                else:
-                    from web.embeddings import hybrid_search, index_stats as vec_index_stats
-                    search_results = hybrid_search(query)
-                for item in search_results.get("results", []):
-                    cat = item.get("category", "Other")
-                    if cat not in results:
-                        results[cat] = []
-                    results[cat].append(item)
-                vec_stats = vec_index_stats()
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).warning("Vector search failed, falling back to keyword: %s", e)
-                search_results = bm25_search(query)
-                results = search_results.get("categories", {})
-        else:
-            search_results = bm25_search(query)
-            results = search_results.get("categories", {})
-        stats = index_stats()
+        results, stats, vec_stats = _execute_search(query, mode)
 
     # Load saved Q&A answers for the sidebar (T-385)
     saved_answers = []
@@ -217,7 +222,7 @@ def search_ask():
 
     if not query or len(query) < 2:
         def error_stream():
-            yield 'data: {"type": "error", "message": "Query too short"}\n\n'
+            yield sse_event("error", message="Query too short")
         return Response(error_stream(), mimetype="text/event-stream")
 
     # T-409: Stream progress events during RAG retrieval + LLM generation.
@@ -244,19 +249,19 @@ def search_ask():
                 pass
 
         if not index_ready:
-            yield f'data: {json.dumps({"type": "status", "phase": "index", "message": "Knowledge index is not built yet. Starting background build — please try again in ~60 seconds."})}\n\n'
+            yield sse_event("status", phase="index", message="Knowledge index is not built yet. Starting background build — please try again in ~60 seconds.")
             _trigger_async_index_build()
-            yield f'data: {json.dumps({"type": "error", "message": "The embedding index is empty. A background build has been started — please try again in about 60 seconds."})}\n\n'
+            yield sse_event("error", message="The embedding index is empty. A background build has been started — please try again in about 60 seconds.")
             return
 
         # Phase 2: RAG retrieval
-        yield f'data: {json.dumps({"type": "status", "phase": "retrieval", "message": "Searching knowledge base..."})}\n\n'
+        yield sse_event("status", phase="retrieval", message="Searching knowledge base...")
 
         try:
             chunks = rag_retrieve(query, limit=10)
         except Exception as e:
             log.warning("RAG retrieve failed: %s", e)
-            yield f'data: {json.dumps({"type": "error", "message": "Failed to retrieve context: " + str(e)[:100] + ". Try again in a moment."})}\n\n'
+            yield sse_event("error", message=f"Failed to retrieve context: {str(e)[:100]}. Try again in a moment.")
             return
 
         # Phase 3: Filter by scope
@@ -271,10 +276,10 @@ def search_ask():
                 chunks = [c for c in chunks if c.get("category") in allowed]
 
         if not chunks:
-            yield f'data: {json.dumps({"type": "error", "message": "No relevant context found for your question. Try broadening the scope or rephrasing."})}\n\n'
+            yield sse_event("error", message="No relevant context found for your question. Try broadening the scope or rephrasing.")
             return
 
-        yield f'data: {json.dumps({"type": "status", "phase": "generating", "message": "Found " + str(len(chunks)) + " relevant sources — generating answer..."})}\n\n'
+        yield sse_event("status", phase="generating", message=f"Found {len(chunks)} relevant sources — generating answer...")
 
         # Phase 4: Stream LLM answer
         yield from stream_answer(query, chunks, history=history, model_override=model_override)
