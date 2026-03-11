@@ -47,7 +47,7 @@ Architecture cleanup (A2+A3+A7+A8+A9+A11). See `docs/reports/T-411-refactoring-d
 # Blueprint imports work
 python3 -c "from web.blueprints import register_blueprints; print('OK')"
 # Subprocess utils used (no local _fw in cockpit)
-grep -c 'def _fw' web/blueprints/cockpit.py | grep -q '^0$'
+python3 -c "assert 'def _fw' not in open('web/blueprints/cockpit.py').read(); print('OK')"
 # Shared audit helper exists
 grep -q 'def load_latest_audit' web/shared.py
 # Pages load (cockpit is rendered on / via core.py, not a standalone route)
