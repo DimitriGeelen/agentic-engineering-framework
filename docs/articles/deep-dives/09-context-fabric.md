@@ -1,4 +1,4 @@
-# Deep Dive #10: Context Fabric  
+# Deep Dive #9: Context Fabric  
 
 ## Title  
 
@@ -20,7 +20,7 @@ The Context Fabric operates through a series of **PreToolUse** and **PostToolUse
 
 - **`check-active-task.sh`** blocks file edits unless a task is explicitly declared via `fw work-on`. This prevents untraceable changes.  
 - **`error-watchdog.sh`** injects investigation prompts when Bash commands fail, ensuring errors are not ignored.  
-- **`block-plan-mode.sh`** disables the agent’s built-in planning tool, forcing the use of structured plan files in `.docs/plans/`.  
+- **`block-plan-mode.sh`** disables the agent’s built-in planning tool, forcing the use of structured plan files in `docs/plans/`.  
 
 Here’s a snippet from `block-plan-mode.sh`:  
 
@@ -41,25 +41,23 @@ The need for this fabric emerged from repeated failures in unstructured workflow
 
 These findings forced a shift from reactive logging to proactive enforcement. The Context Fabric is the result — a system that does not rely on agents to be diligent, but on infrastructure to be rigorous.  
 
-### Try it  
+### Try it
 
-To install the Context Fabric, run:  
+```bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-```bash  
-git clone https://github.com/yourorg/agentic-engineering.git  
-cd agentic-engineering/context-fabric  
-fw init  
-```  
+# See current context state
+fw context status
 
-Example usage:  
+# Set focus and start working — the Context Fabric tracks everything
+fw work-on "Refactor auth module" --type refactor
 
-```bash  
-fw work-on "Refactor auth module" --type security  
-fw plan /plan/auth-refactor.yaml  
-fw audit --section 5  
-```  
+# Run an audit to verify compliance
+fw audit
+```
 
-This creates a task, links it to a structured plan, and triggers an audit check for compliance.  
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 

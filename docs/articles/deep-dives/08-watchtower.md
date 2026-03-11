@@ -1,4 +1,4 @@
-# Deep Dive #9: Watchtower  
+# Deep Dive #8: Watchtower  
 
 ## Title  
 
@@ -51,7 +51,7 @@ Quantified findings from task closure rates showed a 72% reduction in unresolved
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
 cd your-project && fw init
-python3 -m web.app  # Start Watchtower on localhost:3000
+fw serve  # Start Watchtower on localhost:3000
 ```
 
 Watchtower renders all framework state — tasks, learnings, patterns, concerns, audit results — from the same YAML files the CLI reads. No database, no sync.

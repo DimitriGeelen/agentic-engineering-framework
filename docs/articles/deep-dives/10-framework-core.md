@@ -1,4 +1,4 @@
-# Deep Dive #11: Framework Core  
+# Deep Dive #10: Framework Core  
 
 ## Title  
 
@@ -43,22 +43,22 @@ The need for structural enforcement emerged from repeated failures in behavioral
 
 These tasks highlight a recurring theme: **without mechanical enforcement, governance becomes performative.** Behavioral prompts are bypassed under time pressure, but structural rules — like requiring a task ID before file edits — are inescapable.  
 
-### Try it  
+### Try it
 
-Install the framework with:  
+```bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-```bash  
-brew install agentic-fw  
-```  
+# Start working — the framework scaffolds everything
+fw work-on "Refactor authentication module" --type refactor
 
-Initialize a new project:  
+# Check framework health
+fw doctor
+```
 
-```bash  
-fw init  
-fw work-on "Refactor authentication module" --type refactor  
-```  
+The system enforces task creation and logs every change to `.tasks/active/`.
 
-The system will scaffold a project, enforce task creation, and log every change to `.tasks/active/`.  
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 

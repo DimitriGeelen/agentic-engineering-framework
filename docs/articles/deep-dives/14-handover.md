@@ -1,4 +1,4 @@
-# Deep Dive #19: Handover  
+# Deep Dive #14: Handover  
 
 ## Title  
 
@@ -16,7 +16,7 @@ I built the Handover Agent as a mandatory mechanical operation: **every session 
 
 ### How it works  
 
-The Handover Agent is implemented as a script (`handover.sh`) in the Agentic Engineering Framework. It triggers at session termination, generating a structured document in `.handovers/` that captures the agent’s state, unresolved tasks, and contextual notes.  
+The Handover Agent is implemented as a script (`handover.sh`) in the Agentic Engineering Framework. It triggers at session termination, generating a structured document in `.context/handovers/` that captures the agent’s state, unresolved tasks, and contextual notes.  
 
 Example from source headers:  
 ```bash  
@@ -50,24 +50,23 @@ The necessity for structural enforcement emerged from two key task histories:
 
 These changes were driven by quantified findings: teams using the Handover Agent saw a 41% reduction in task restarts and a 27% improvement in cross-agent collaboration. The rationale was clear — consistency in handover mechanics prevents context erosion.  
 
-### Try it  
+### Try it
 
-Install via:  
-```bash  
-git clone https://github.com/yourorg/agentic-engineering.git  
-cd agents/handover  
-chmod +x handover.sh  
-```  
+```bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-Usage example:  
-```bash  
-# Start a session  
-claude "refactor authentication module"  
+# Work on something
+fw work-on "Refactor authentication module" --type refactor
 
-# At session end, handover is auto-generated  
-# Output:  
-# Handover document saved to .handovers/S-9876.yaml  
-```  
+# At session end, generate and commit the handover
+fw handover --commit
+
+# Next session picks up where you left off
+cat .context/handovers/LATEST.md
+```
+
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 

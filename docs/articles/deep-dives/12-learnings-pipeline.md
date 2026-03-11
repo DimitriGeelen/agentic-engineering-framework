@@ -1,4 +1,4 @@
-# Deep Dive #14: Learnings Pipeline  
+# Deep Dive #12: Learnings Pipeline  
 
 ## Title  
 
@@ -38,23 +38,25 @@ Task T-345 revealed a critical gap: without enforced checkpoints, agents would s
 
 Quantified outcomes from T-346 and T-347 showed that structured learnings reduced redundant task creation by 41% over 6 months. The pipeline’s value became clear: it transformed episodic memory into a strategic asset.  
 
-### Try it  
+### Try it
 
-Install the framework:  
 ```bash
-git clone https://github.com/yourorg/agentic-engineering.git
-cd agentic-engineering
-./setup.sh
-```  
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-Usage example:  
-```bash
-fw work-on "Add bugfix learning checkpoint" --type learn
-# Task T-XXX created. Run:
-add-learning --summary "Bugfix checkpoints reduce verification steps" --task T-XXX
-```  
+# Record a learning from a task
+fw context add-learning "Bugfix checkpoints reduce verification steps" --task T-042
 
-The entry will appear in `.context/project/learnings.yaml` and be visible via the `/learnings` web route.  
+# View all learnings
+fw serve  # Browse to http://localhost:3000/learnings
+
+# Check graduation candidates
+fw promote suggest
+```
+
+The entry will appear in `.context/project/learnings.yaml` and be visible via the `/learnings` web route.
+
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 

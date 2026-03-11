@@ -1,4 +1,4 @@
-# Deep Dive #17: Audit  
+# Deep Dive #13: Audit  
 
 ## Title  
 
@@ -59,31 +59,27 @@ Quantified findings drove the design:
 
 The rationale was clear: behavioral prompts fail under execution pressure. Mechanical checks — like the audit subsystem — are the only way to enforce compliance at scale.  
 
-### Try it  
-
-To install and run the audit subsystem:  
+### Try it
 
 ```bash
-# Clone the framework
-git clone https://github.com/yourorg/agentic-engineering.git
-cd agentic-engineering
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
 # Run a full audit
-./agents/audit/audit.sh
-```  
+fw audit
+```
 
-Example output:  
+Example output:
 
-```bash
-[SUCCESS] All YAML files parse correctly ✅
-[WARNING] 2 plugins are TASK-SILENT — review for governance compliance
-[FAIL] Missing task ID in commit message: "Refactor imports" ❌
-```  
+```
+[PASS] All YAML files parse correctly
+[WARN] 2 plugins are TASK-SILENT — review for governance compliance
+[FAIL] Missing task ID in commit message: "Refactor imports"
+```
 
-Exit codes:  
-- `0` = pass  
-- `1` = warnings  
-- `2` = failures  
+Exit codes: `0` = pass, `1` = warnings, `2` = failures. The audit runs automatically every 30 minutes via cron and on every `git push`.
+
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 
