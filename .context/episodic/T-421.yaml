@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-421: Create Jinja badge macro — consolidate 4+ badge implementations (H2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T07:55:44Z
+# ============================================================================
+
+task_id: T-421
+task_name: "Create Jinja badge macro — consolidate 4+ badge implementations (H2)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:21Z
+completed: 2026-03-11T07:55:42Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T08:55:34+01:00
+last_commit: 2026-03-11T08:55:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create Jinja badge macro — consolidate badges across 4 templates
+
+# Key outcomes
+outcomes:
+  - "_partials/badge.html Jinja macro created"
+  - "Macro accepts status/severity and outputs consistent badge"
+  - "At least 4 templates converted to use the macro"
+  - "Badge colors consistent across all pages"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-421-create-jinja-badge-macro--consolidate-4-.md"
+  - "web/templates/assumptions.html"
+  - "web/templates/decisions.html"
+  - "web/templates/gaps.html"
+  - "web/templates/_partials/badge.html"
+  - "web/templates/risks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T08:55:34"
+    action: "T-421: Create Jinja badge macro — consolidate badges across 4 templates"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 652 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, html, watchtower, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 652
+  commits: 1
+  files_changed: 6
+  lines_added: 51
+  lines_removed: 80
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-421-create-jinja-badge-macro--consolidate-4-.md
+generated_by: context-agent-hybrid

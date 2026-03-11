@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-420: Standardize JS error handling patterns (J4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T07:49:31Z
+# ============================================================================
+
+task_id: T-420
+task_name: "Standardize JS error handling patterns (J4)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:20Z
+completed: 2026-03-11T07:49:30Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T08:49:25+01:00
+last_commit: 2026-03-11T08:49:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Standardize JS error handling — handleFetchError() replaces 9 inconsistent catch blocks
+
+# Key outcomes
+outcomes:
+  - "fetchWithError() or equivalent helper created"
+  - "All fetch calls use consistent error handling"
+  - "Error messages follow consistent pattern (what failed + what to do)"
+  - "No silent fetch failures remain"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Standardize JS error handling — handleFetchError() replaces 9 inconsistent catch blocks"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-420-standardize-js-error-handling-patterns-j.md"
+  - "web/static/js/chat.js"
+  - "web/static/js/search-qa.js"
+  - "web/static/js/utils.js"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T08:49:25"
+    action: "T-420: Standardize JS error handling — handleFetchError() replaces 9 inconsistent catch blocks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 646 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, javascript, watchtower, reliability, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 646
+  commits: 1
+  files_changed: 4
+  lines_added: 31
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-420-standardize-js-error-handling-patterns-j.md
+generated_by: context-agent-hybrid

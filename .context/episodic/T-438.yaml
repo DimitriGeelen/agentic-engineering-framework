@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-438: Fix deep-dive article links, remove duplicates, standardize URLs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T08:58:14Z
+# ============================================================================
+
+task_id: T-438
+task_name: "Fix deep-dive article links, remove duplicates, standardize URLs"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-11T08:45:20Z
+completed: 2026-03-11T08:58:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-11T09:46:32+01:00
+last_commit: 2026-03-11T09:57:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove 5 duplicate deep-dive articles, fix Watchtower article URLs. Update task with remaining work — budget gate hit mid-fix. Fix Try it sections, renumber articles 01-15
+
+# Key outcomes
+outcomes:
+  - "5 duplicate articles removed"
+  - "All fictional/placeholder URLs replaced with real GitHub URL"
+  - "Wrong file paths fixed (`.docs/plans/`, `.handovers/`)"
+  - "Fictional commands replaced with real `fw` commands"
+  - "Articles renumbered to fill gaps"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix Try it sections, renumber articles 01-15"
+    source: git-mined
+  - description: "Update task with remaining work — budget gate hit mid-fix"
+    source: git-mined
+  - description: "Remove 5 duplicate deep-dive articles, fix Watchtower article URLs"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/deep-dives/08-healing.md"
+  - "docs/articles/deep-dives/08-watchtower.md"
+  - "docs/articles/deep-dives/09-context-fabric.md"
+  - "docs/articles/deep-dives/09-watchtower.md"
+  - "docs/articles/deep-dives/10-framework-core.md"
+  - "docs/articles/deep-dives/11-git-traceability.md"
+  - "docs/articles/deep-dives/12-learnings-pipeline.md"
+  - "docs/articles/deep-dives/13-audit.md"
+  - "docs/articles/deep-dives/13-component-fabric.md"
+  - "docs/articles/deep-dives/14-handover.md"
+  - "docs/articles/deep-dives/15-enforcement.md"
+  - "docs/articles/deep-dives/15-watchtower-web-ui.md"
+  - "docs/articles/deep-dives/16-budget-management.md"
+  - "docs/articles/deep-dives/18-task-management.md"
+  - ".tasks/active/T-438-fix-deep-dive-article-links-remove-dupli.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T09:46:32"
+    action: "T-438: Remove 5 duplicate deep-dive articles, fix Watchtower article URLs"
+  - time: "2026-03-11T09:47:19"
+    action: "T-438: Update task with remaining work — budget gate hit mid-fix"
+  - time: "2026-03-11T09:57:37"
+    action: "T-438: Fix Try it sections, renumber articles 01-15"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [docs, articles]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 15
+  lines_added: 207
+  lines_removed: 531
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-438-fix-deep-dive-article-links-remove-dupli.md
+generated_by: context-agent-hybrid
