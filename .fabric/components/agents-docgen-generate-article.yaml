@@ -1,13 +1,13 @@
 id: agents/docgen/generate-article.sh
 name: generate-article
 type: script
-subsystem: unknown
+subsystem: watchtower
 location: agents/docgen/generate-article.sh
-tags: []
-purpose: 'TODO: describe what this component does'
+tags: [docs, docgen]
+purpose: "Generates AI-assisted subsystem articles from component fabric cards"
 depends_on:
-- target: .fabric/components/
-  type: reads
+- target: agents/docgen/generate_article.py
+  type: calls
 depended_by: []
-last_verified: 2026-03-09
-created_by: unknown
+last_verified: 2026-03-11
+created_by: T-366
