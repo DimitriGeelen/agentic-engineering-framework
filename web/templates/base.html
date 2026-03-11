@@ -248,7 +248,7 @@
             </li>
 
             <li>
-                <button class="nav-toggle" onclick="document.querySelector('.nav-items').classList.toggle('open')" aria-label="Toggle navigation">
+                <button class="nav-toggle" onclick="wtToggleNav()" aria-label="Toggle navigation">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 </button>
             </li>
@@ -367,6 +367,15 @@
     </style>
 
     <script>
+        /* ── UI helpers (T-429/H3) ───────────────────────────── */
+        function wtShowAll(el) {
+            var section = el.closest('.wt-section') || el.parentElement;
+            section.querySelectorAll('.wt-card-hidden, .docs-overflow').forEach(function(e) { e.style.display = 'block'; });
+            el.style.display = 'none';
+        }
+        function wtDismissCard(el) { var card = el.closest('.wt-card'); if (card) card.style.display = 'none'; }
+        function wtToggleNav() { document.querySelector('.nav-items').classList.toggle('open'); }
+
         /* ── Toast notification helper ────────────────────────── */
         function showToast(msg, type) {
             type = type || 'info';

@@ -233,13 +233,7 @@
             {% endif %}
         </div>
         <div>
-            {% if a.status == 'validated' %}
-            <span class="assumption-status status-validated">Validated</span>
-            {% elif a.status == 'invalidated' %}
-            <span class="assumption-status status-invalidated">Invalidated</span>
-            {% else %}
-            <span class="assumption-status status-untested">Untested</span>
-            {% endif %}
+            <span class="assumption-status status-{{ a.status|default('untested') }}">{{ a.status|default('untested')|capitalize }}</span>
         </div>
     </div>
     {% endfor %}

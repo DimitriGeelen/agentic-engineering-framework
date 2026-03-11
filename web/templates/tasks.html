@@ -1,3 +1,4 @@
+{% from '_partials/inline_select.html' import inline_select %}
 <style>
 /* ── Full-width override for tasks page ────────────────── */
 main.container:has(.kanban-board),
@@ -485,50 +486,14 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-card-header">
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
                hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-            <form hx-post="/api/task/{{ task.id }}/status" class="inline-reset"
-                  hx-target="closest .kanban-card" hx-swap="none">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <select name="status" class="inline-kanban-status-select"
-                        onchange="this.form.requestSubmit()">
-                    {% for s in ['captured','started-work','issues','work-completed'] %}
-                    <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
-                    {% endfor %}
-                </select>
-            </form>
+            {{ inline_select(task.id, 'status', ['captured','started-work','issues','work-completed'], task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
               onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
         <div class="kanban-card-meta">
-            <form hx-post="/api/task/{{ task.id }}/type" class="inline-reset"
-                  hx-target="closest .kanban-card" hx-swap="none">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <select name="type" class="inline-type-select"
-                        onchange="this.form.requestSubmit()">
-                    {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
-                    <option value="{{ t }}" {% if task.workflow_type == t %}selected{% endif %}>{{ t }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-            <form hx-post="/api/task/{{ task.id }}/horizon" class="inline-reset"
-                  hx-target="closest .kanban-card" hx-swap="none">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <select name="horizon" class="inline-horizon-select horizon-select"
-                        onchange="this.form.requestSubmit()">
-                    {% for h in ['now','next','later'] %}
-                    <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-            <form hx-post="/api/task/{{ task.id }}/owner" class="inline-reset"
-                  hx-target="closest .kanban-card" hx-swap="none">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                <select name="owner" class="inline-owner-select"
-                        onchange="this.form.requestSubmit()">
-                    {% for o in ['human','claude-code'] %}
-                    <option value="{{ o }}" {% if task.owner == o %}selected{% endif %}>{{ o }}</option>
-                    {% endfor %}
-                </select>
-            </form>
+            {{ inline_select(task.id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'horizon', ['now','next','later'], task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'owner', ['human','claude-code'], task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
     </article>
     {% endmacro %}
@@ -731,63 +696,19 @@ document.addEventListener('htmx:afterRequest', function(event) {
                       onclick="startKanbanNameEdit(this, '{{ task.id }}')"
                       title="Click to edit">{{ task.name }}</span></td>
             <td>
-                <form hx-post="/api/task/{{ task.id }}/status"
-                      hx-target="next .status-update-result"
-                      hx-swap="innerHTML"
-                      class="inline-flex-center gap-xs">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="status" class="inline-status-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for s in ['captured','started-work','issues','work-completed'] %}
-                        <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
+                {{ inline_select(task.id, 'status', ['captured','started-work','issues','work-completed'], task.status, hx_target='next .status-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="status-update-result"></span>
             </td>
             <td>
-                <form hx-post="/api/task/{{ task.id }}/horizon"
-                      hx-target="next .horizon-update-result"
-                      hx-swap="innerHTML"
-                      class="inline-flex-center gap-xs">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="horizon" class="inline-status-select horizon-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for h in ['now','next','later'] %}
-                        <option value="{{ h }}" {% if task.horizon == h %}selected{% endif %}>{{ h }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
+                {{ inline_select(task.id, 'horizon', ['now','next','later'], task.horizon, select_class='inline-status-select horizon-select', hx_target='next .horizon-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="horizon-update-result"></span>
             </td>
             <td>
-                <form hx-post="/api/task/{{ task.id }}/type"
-                      hx-target="next .type-update-result"
-                      hx-swap="innerHTML"
-                      class="inline-flex-center gap-xs">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="type" class="inline-status-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
-                        <option value="{{ t }}" {% if task.workflow_type == t %}selected{% endif %}>{{ t }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
+                {{ inline_select(task.id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, hx_target='next .type-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="type-update-result"></span>
             </td>
             <td>
-                <form hx-post="/api/task/{{ task.id }}/owner"
-                      hx-target="next .owner-update-result"
-                      hx-swap="innerHTML"
-                      class="inline-flex-center gap-xs">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-                    <select name="owner" class="inline-status-select"
-                            onchange="this.form.requestSubmit()">
-                        {% for o in ['human','claude-code'] %}
-                        <option value="{{ o }}" {% if task.owner == o %}selected{% endif %}>{{ o }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
+                {{ inline_select(task.id, 'owner', ['human','claude-code'], task.owner, hx_target='next .owner-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="owner-update-result"></span>
             </td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>

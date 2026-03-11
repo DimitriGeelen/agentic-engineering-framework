@@ -80,7 +80,7 @@
     <h4 class="wt-section-title">
         Needs Your Decision ({{ needs_decision_total }})
         {% if needs_decision_total > 3 %}
-        <a href="#" class="wt-show-all" onclick="this.parentElement.parentElement.querySelectorAll('.wt-card-hidden').forEach(e=>e.style.display='block');this.style.display='none';return false;">Show all</a>
+        <a href="#" class="wt-show-all" onclick="wtShowAll(this);return false;">Show all</a>
         {% endif %}
     </h4>
     {% for item in scan.get('needs_decision', []) %}
@@ -140,7 +140,7 @@
     <h4 class="wt-section-title">
         Framework Recommends ({{ framework_recommends_total }})
         {% if framework_recommends_total > 3 %}
-        <a href="#" class="wt-show-all" onclick="this.parentElement.parentElement.querySelectorAll('.wt-card-hidden').forEach(e=>e.style.display='block');this.style.display='none';return false;">Show all</a>
+        <a href="#" class="wt-show-all" onclick="wtShowAll(this);return false;">Show all</a>
         {% endif %}
     </h4>
     {% for item in scan.get('framework_recommends', []) %}
@@ -158,7 +158,7 @@
                 Apply
             </button>
             <button class="outline secondary"
-                    onclick="this.closest('.wt-card').style.display='none'">
+                    onclick="wtDismissCard(this)">
                 Ignore
             </button>
         </div>
