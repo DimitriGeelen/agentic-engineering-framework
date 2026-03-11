@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-441: Housekeeping: enrich fabric card, commit, push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T23:40:09Z
+# ============================================================================
+
+task_id: T-441
+task_name: "Housekeeping: enrich fabric card, commit, push"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-11T23:13:44Z
+completed: 2026-03-11T23:40:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-12T00:15:12+01:00
+last_commit: 2026-03-12T00:15:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Housekeeping — audit (148/5/0), episodic summaries, enriched fabric cards, cron rotation
+
+# Key outcomes
+outcomes:
+  - "Enriched fabric cards with purpose, subsystem, tags"
+  - "Audit ran (148 pass, 5 warn, 0 fail)"
+  - "Committed and pushed to both remotes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-11.yaml"
+  - ".context/audits/2026-03-12.yaml"
+  - ".context/audits/cron/2026-03-03-2245.yaml"
+  - ".context/audits/cron/2026-03-03-2315.yaml"
+  - ".context/audits/cron/2026-03-03-2330.yaml"
+  - ".context/audits/cron/2026-03-03-2345.yaml"
+  - ".context/audits/cron/2026-03-11-2245.yaml"
+  - ".context/audits/cron/2026-03-11-2300.yaml"
+  - ".context/audits/cron/2026-03-11-2315.yaml"
+  - ".context/audits/cron/2026-03-11-2330.yaml"
+  - ".context/audits/cron/2026-03-11-2345.yaml"
+  - ".context/audits/cron/2026-03-12-0000.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-427.yaml"
+  - ".context/episodic/T-428.yaml"
+  - ".context/episodic/T-429.yaml"
+  - ".context/episodic/T-430.yaml"
+  - ".context/episodic/T-431.yaml"
+  - ".context/episodic/T-440.yaml"
+  - ".context/handovers/S-2026-0311-2300.md"
+  - ".context/project/decisions.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".fabric/components/agents-docgen-generate_article.yaml"
+  - ".fabric/components/agents-docgen-generate_component.yaml"
+  - ".fabric/components/web-static-js-utils.yaml"
+  - ".tasks/active/T-427-python-utility-consolidation--task-parse.md"
+  - ".tasks/active/T-428-standardize-python-error-messages-and-us.md"
+  - ".tasks/active/T-429-template-cleanup--shared-form-macro-oncl.md"
+  - ".tasks/active/T-430-template-metadata-component-and-accessib.md"
+  - ".tasks/active/T-431-architecture-cleanup--blueprint-imports-.md"
+  - ".tasks/active/T-440-validate-component-fabric-endpoints-afte.md"
+  - ".tasks/active/T-441-housekeeping-enrich-fabric-card-commit-p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T00:15:12"
+    action: "T-441: Housekeeping — audit (148/5/0), episodic summaries, enriched fabric cards, cron rotation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 1
+  files_changed: 40
+  lines_added: 1924
+  lines_removed: 187
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-441-housekeeping-enrich-fabric-card-commit-p.md
+generated_by: context-agent-hybrid
