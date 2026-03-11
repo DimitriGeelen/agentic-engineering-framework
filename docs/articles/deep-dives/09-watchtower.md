@@ -46,29 +46,17 @@ Watchtower’s design was shaped by iterative failures. For example:
 
 Quantified findings from task closure rates showed a 72% reduction in unresolved issues after Watchtower’s structural validation rules were enforced. The system’s episodic memory also tracks user feedback (T-267) and multi-turn Q&A (T-268), ensuring governance adapts to real-world workflows.  
 
-### Try it  
+### Try it
 
-To install Watchtower:  
+```bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
+python3 -m web.app  # Start Watchtower on localhost:3000
+```
 
-```bash  
-git clone https://github.com/watchtower/ai-governance.git  
-cd ai-governance  
-pip install -r requirements.txt  
-```  
+Watchtower renders all framework state — tasks, learnings, patterns, concerns, audit results — from the same YAML files the CLI reads. No database, no sync.
 
-Start the UI with:  
-
-```bash  
-python app.py  
-```  
-
-Example usage:  
-
-```bash  
-fw work-on "Add docs field to Component Fabric cards"  
-# Task T-361 is created, linked to /tasks/T-361.yaml  
-# Acceptance criteria: docs field in 24 fabric cards, traverse.sh safety fix  
-```  
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 
