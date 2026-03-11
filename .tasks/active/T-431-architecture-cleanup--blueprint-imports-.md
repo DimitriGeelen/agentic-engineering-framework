@@ -4,16 +4,16 @@ name: "Architecture cleanup — blueprint imports, metrics retention, audit help
 description: >
   A2: Standardize blueprint imports via __init__.py. A3: Implement metrics-history.yaml retention (currently 1684 lines, growing unbounded). A7: Extract audit_utils.py (load_latest_audit used in 3 blueprints). A8: Split discovery.py (711 lines) into knowledge/patterns/qa. A9: Standardize subprocess timeouts. A11: Ensure fabric drift runs regularly. Directive scores: A2=6, A3=6, A7=5, A8=5, A9=5, A11=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, python, watchtower, reliability]
-components: []
+components: [C-004, web/app.py, web/blueprints/cockpit.py, web/blueprints/core.py, web/blueprints/inception.py, web/blueprints/__init__.py, web/blueprints/quality.py, web/shared.py]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:13Z
-last_update: 2026-03-11T22:34:55Z
-date_finished: null
+last_update: 2026-03-11T22:45:02Z
+date_finished: 2026-03-11T22:45:02Z
 ---
 
 # T-431: Architecture cleanup — blueprint imports, metrics retention, audit helpers (A2+A3+A7+A8+A9+A11)
@@ -77,3 +77,6 @@ curl -sf http://localhost:3000/tasks > /dev/null
 
 ### 2026-03-11T22:34:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T22:45:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

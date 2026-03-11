@@ -4,16 +4,16 @@ name: "Python utility consolidation — task parser, search routing, SSE formatt
 description: >
   P4: Task frontmatter parsing duplicated 4x — extract parse_task_markdown(). P8: search routing 70+ lines/4 levels — extract select_search_mode(). P9: SSE duplication between discovery.py and ask.py — create web/sse.py utility. Directive scores: P4=6, P8=5, P9=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, python, watchtower]
-components: []
+components: [web/blueprints/core.py, C-003, web/blueprints/inception.py, web/blueprints/metrics.py, web/blueprints/tasks.py, web/blueprints/timeline.py, web/shared.py]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:08Z
-last_update: 2026-03-11T21:49:28Z
-date_finished: null
+last_update: 2026-03-11T21:56:33Z
+date_finished: 2026-03-11T21:56:33Z
 ---
 
 # T-427: Python utility consolidation — task parser, search routing, SSE formatter (P4+P8+P9)
@@ -77,3 +77,6 @@ curl -sf http://localhost:3000/tasks > /dev/null
 
 ### 2026-03-11T21:49:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T21:56:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

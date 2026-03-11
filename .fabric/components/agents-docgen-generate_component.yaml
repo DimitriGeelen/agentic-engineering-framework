@@ -1,20 +1,17 @@
 id: agents/docgen/generate_component.py
 name: generate_component
 type: script
-subsystem: unknown
+subsystem: watchtower
 location: agents/docgen/generate_component.py
-tags: []
+tags: [docs, docgen]
 
-purpose: "TODO: describe what this component does"
+purpose: "Python implementation for component reference documentation generation from fabric cards"
 
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+depends_on: []
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: agents/docgen/generate-component.sh
+    type: calls
 
-last_verified: 2026-03-11
-created_by: unknown
+last_verified: 2026-03-12
+created_by: T-364

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-427: Python utility consolidation — task parser, search routing, SSE formatter (P4+P8+P9)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T21:56:38Z
+# ============================================================================
+
+task_id: T-427
+task_name: "Python utility consolidation — task parser, search routing, SSE formatter (P4+P8+P9)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:08Z
+completed: 2026-03-11T21:56:33Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T22:56:26+01:00
+last_commit: 2026-03-11T22:56:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Extract parse_frontmatter, sse_event, _execute_search — Python utility consolidation
+
+# Key outcomes
+outcomes:
+  - "P4: parse_frontmatter() in web/shared.py replaces 11+ inline regex/yaml patterns"
+  - "P8: _execute_search() extracted — search_view() reduced from 74 to ~10 lines of search logic"
+  - "P9: sse_event() in web/shared.py replaces f-string SSE formatting in ask.py and discovery.py"
+  - "All Python imports succeed"
+  - "All web pages load (dashboard, search, tasks, timeline)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-427-python-utility-consolidation--task-parse.md"
+  - "web/ask.py"
+  - "web/blueprints/core.py"
+  - "web/blueprints/discovery.py"
+  - "web/blueprints/inception.py"
+  - "web/blueprints/metrics.py"
+  - "web/blueprints/tasks.py"
+  - "web/blueprints/timeline.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T22:56:26"
+    action: "T-427: Extract parse_frontmatter, sse_event, _execute_search — Python utility consolidation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1492 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1492
+  commits: 1
+  files_changed: 9
+  lines_added: 172
+  lines_removed: 206
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-427-python-utility-consolidation--task-parse.md
+generated_by: context-agent-hybrid

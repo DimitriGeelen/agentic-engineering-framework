@@ -413,3 +413,17 @@ decisions:
     date: 2026-03-11
     task: T-423
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-054
+    decision: "Skip — discovery.py is 648 lines (was 711 at scoring), manageable for a single blueprint"
+    scope: project
+    date: 2026-03-11
+    task: T-431
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-055
+    decision: "Skip — this is an operational concern (run drift regularly), not a code refactor"
+    scope: project
+    date: 2026-03-11
+    task: T-431
+    rationale: "Auto-captured from task file on completion"

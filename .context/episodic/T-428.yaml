@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-428: Standardize Python error messages and user feedback (P11)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T22:11:55Z
+# ============================================================================
+
+task_id: T-428
+task_name: "Standardize Python error messages and user feedback (P11)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:09Z
+completed: 2026-03-11T22:11:52Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T23:11:47+01:00
+last_commit: 2026-03-11T23:11:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Standardize Python error messages — consistent query validation, sanitized exceptions, user-friendly provider errors
+
+# Key outcomes
+outcomes:
+  - "All \"query too short\" messages include \"(min 2 characters)\" — consistent across api.py and discovery.py"
+  - "No raw `str(e)` exposed to users in api.py, discovery.py, or ask.py"
+  - "Provider error messages (ollama, openrouter) sanitized to user-friendly text"
+  - "api.py streaming endpoint uses sse_event() instead of raw f-string"
+  - "All Python imports succeed"
+  - "All web pages load (dashboard, search, tasks)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Standardize Python error messages — consistent query validation, sanitized exceptions, user-friendly provider errors"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-428-standardize-python-error-messages-and-us.md"
+  - "web/ask.py"
+  - "web/blueprints/api.py"
+  - "web/blueprints/discovery.py"
+  - "web/llm/ollama_provider.py"
+  - "web/llm/openrouter_provider.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T23:11:47"
+    action: "T-428: Standardize Python error messages — consistent query validation, sanitized exceptions, user-friendly provider errors"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1507 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1507
+  commits: 1
+  files_changed: 6
+  lines_added: 52
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-428-standardize-python-error-messages-and-us.md
+generated_by: context-agent-hybrid

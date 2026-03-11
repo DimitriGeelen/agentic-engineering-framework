@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-11-2247
-timestamp: 2026-03-11T21:47:36Z
+# Audit Results - 2026-03-12-0010
+timestamp: 2026-03-11T23:10:41Z
 summary:
-  pass: 142
-  warn: 4
+  pass: 148
+  warn: 5
   fail: 0
 findings:
   - level: PASS
@@ -18,18 +18,21 @@ findings:
   - level: PASS
     check: "All 9 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 147 registered, 0 unregistered"
+    check: "Fabric: 151 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 143/147 cards enriched (4 without edges)"
+    check: "Fabric edges: 144/151 cards enriched (7 without edges)"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (147 cards)"
+    check: "Fabric drift: All watched source files registered (151 cards)"
   - level: PASS
-    check: "All 56 active tasks are valid"
+    check: "All 57 active tasks are valid"
+  - level: WARN
+    check: "Task T-316 is 8 days old with only 0 updates"
+    mitigation: "Add progress updates to T-316-spike-layered-claudemd-framework-base--p.md"
   - level: WARN
     check: "Task T-437 has short description (4 chars)"
     mitigation: "Expand description in T-437-test-enum.md"
   - level: PASS
-    check: "Git traceability: 98% (1291/1308 commits reference tasks)"
+    check: "Git traceability: 98% (1302/1319 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -53,7 +56,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 423 episodic summaries have quality content"
+    check: "All 429 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -78,13 +81,13 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-426)"
+    check: "CTL-001: Focus file has active task (T-440)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 2 (last commit: 5 minutes ago)"
+    check: "CTL-004: Tool counter at 2 (last commit: 15 minutes ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: ok)"
+    check: "CTL-018: Budget status valid JSON (level: warn)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -94,7 +97,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (308 handovers, 108 compactions)"
+    check: "CTL-006: Handover coverage for compactions (311 handovers, 110 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -270,13 +273,25 @@ findings:
   - level: PASS
     check: "CTL-025: T-426 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-427 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-428 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-429 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-430 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-431 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-025: T-437 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-440 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/423)"
+    check: "D1: Episodic quality — 0% [TODO] (3/429)"
   - level: PASS
-    check: "D2: Human review queue — 42 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 48 task(s) awaiting human action (normal)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - level: PASS
@@ -290,9 +305,9 @@ findings:
   - level: PASS
     check: "D5: Task lifecycle — no anomalies"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=27 avg=54 ratio=0.5x)"
+    check: "D3: Commit velocity — normal (PASS today=0 avg=47 ratio=0.0x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 38_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 37_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=9.7 earlier=9.6)"
   - level: PASS

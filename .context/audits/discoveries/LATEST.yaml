@@ -1,11 +1,11 @@
-timestamp: 2026-03-11T09:24:54Z
+timestamp: 2026-03-11T23:10:41Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/418)"
+    check: "D1: Episodic quality — 0% [TODO] (3/429)"
   - id: D2
     level: PASS
-    check: "D2: Human review queue — 38 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 48 task(s) awaiting human action (normal)"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -23,13 +23,13 @@ findings:
     check: "D5: Task lifecycle — no anomalies"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=19 avg=54 ratio=0.4x)"
+    check: "D3: Commit velocity — normal (PASS today=0 avg=47 ratio=0.0x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 76_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 37_commits_24h)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=9.3 earlier=9.6)"
+    check: "D6: Completion velocity — normal (PASS recent=9.7 earlier=9.6)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"

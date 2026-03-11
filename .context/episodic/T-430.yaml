@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-430: Template metadata component and accessibility improvements (H7+H11)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T22:28:46Z
+# ============================================================================
+
+task_id: T-430
+task_name: "Template metadata component and accessibility improvements (H7+H11)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:11Z
+completed: 2026-03-11T22:28:39Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T23:28:07+01:00
+last_commit: 2026-03-11T23:28:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Accessibility improvements — aria-labels, keyboard support, screen reader fixes. Fix verification — remove stale HTML comment marker
+
+# Key outcomes
+outcomes:
+  - "H11: Emoji buttons (fb-up, fb-down) have aria-label for screen readers"
+  - "H11: Decorative chat emoji has aria-hidden=\"true\""
+  - "H11: Health dot has aria-label=\"Provider status\""
+  - "H11: Test button has aria-label=\"Test provider connection\""
+  - "H11: Search gear icon has aria-label=\"LLM Settings\""
+  - "H11: Clear recent searches button has aria-label"
+  - "H11: Editable name/description have role=\"button\" tabindex=\"0\" for keyboard access"
+  - "H11: Editable elements have onkeydown Enter handler"
+  - "H10: inception_detail assumption status simplified (from T-429, carried over)"
+  - "All affected pages load correctly after changes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — remove stale HTML comment marker"
+    source: git-mined
+  - description: "Accessibility improvements — aria-labels, keyboard support, screen reader fixes"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-430-template-metadata-component-and-accessib.md"
+  - "web/templates/_partials/ask_answer_card.html"
+  - "web/templates/_partials/chat_tab.html"
+  - "web/templates/_partials/search_input.html"
+  - "web/templates/task_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T23:28:07"
+    action: "T-430: Accessibility improvements — aria-labels, keyboard support, screen reader fixes"
+  - time: "2026-03-11T23:28:34"
+    action: "T-430: Fix verification — remove stale HTML comment marker"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1524 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, html, watchtower, usability, accessibility]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1524
+  commits: 2
+  files_changed: 5
+  lines_added: 48
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-430-template-metadata-component-and-accessib.md
+generated_by: context-agent-hybrid
