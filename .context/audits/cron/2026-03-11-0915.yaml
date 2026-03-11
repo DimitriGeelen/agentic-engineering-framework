@@ -1,0 +1,29 @@
+# Audit Results - 2026-03-11-0915
+timestamp: 2026-03-11T08:15:01Z
+sections: "oe-fast,oe-research"
+summary:
+  pass: 6
+  warn: 3
+  fail: 0
+findings:
+  - level: WARN
+    check: "C-001: Inception T-435 has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-435"
+  - level: PASS
+    check: "C-001: All 2 active inceptions have research artifacts"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: WARN
+    check: "CTL-001: Focus file empty but 4 commit(s) in last 30min"
+    mitigation: "Check .claude/settings.json hook configuration for check-active-task"
+  - level: WARN
+    check: "CTL-003: Budget status file stale (14min old)"
+    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
+  - level: PASS
+    check: "CTL-004: Tool counter at 4 (last commit: 14 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: urgent)"

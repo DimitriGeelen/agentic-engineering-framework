@@ -4,16 +4,16 @@ name: "Decompose long JS functions — chatAsk (169 lines), askQuestion (155 lin
 description: >
   Break chatAsk and askQuestion into initializeChat(), streamFetch(), handleStreamEvent(), renderResponse(), finalizeChat(). Currently each function handles UI state, fetching, streaming, parsing, rendering, and history in one block. Directive score: J6=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md. Note: may overlap with T-418 (StreamFetcher) — coordinate.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: next
 tags: [refactoring, javascript, watchtower]
-components: []
+components: [web/static/js/chat.js]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:07Z
-last_update: 2026-03-11T15:26:09Z
-date_finished: null
+last_update: 2026-03-11T15:30:20Z
+date_finished: 2026-03-11T15:30:20Z
 ---
 
 # T-426: Decompose long JS functions — chatAsk (169 lines), askQuestion (155 lines) (J6)
@@ -76,3 +76,6 @@ node -c web/static/js/search-qa.js
 
 ### 2026-03-11T15:26:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T15:30:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

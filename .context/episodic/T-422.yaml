@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-422: Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T08:01:58Z
+# ============================================================================
+
+task_id: T-422
+task_name: "Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A6)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:03:22Z
+completed: 2026-03-11T08:01:51Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-11T09:01:18+01:00
+last_commit: 2026-03-11T09:01:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Move load_scan to shared.py, eliminate cross-blueprint import, add stale file audit rule
+
+# Key outcomes
+outcomes:
+  - "load_scan() moved from cockpit.py to shared.py"
+  - "Both cockpit.py and core.py import from shared.py (no cross-blueprint import)"
+  - "gaps.yaml fallback removed from core.py and discovery.py"
+  - "Audit rule added: fail if gaps.yaml or risks.yaml exist in .context/project/"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".tasks/active/T-422-fix-blueprint-circular-dep-and-complete-.md"
+  - "web/blueprints/cockpit.py"
+  - "web/blueprints/core.py"
+  - "web/shared.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-11T09:01:18"
+    action: "T-422: Move load_scan to shared.py, eliminate cross-blueprint import, add stale file audit rule"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 658 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, python, watchtower, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 658
+  commits: 1
+  files_changed: 5
+  lines_added: 38
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-422-fix-blueprint-circular-dep-and-complete-.md
+generated_by: context-agent-hybrid
