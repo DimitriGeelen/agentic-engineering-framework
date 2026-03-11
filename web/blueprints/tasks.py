@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import yaml
 from flask import Blueprint, abort, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("tasks", __name__)
@@ -110,30 +110,16 @@ def tasks():
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     if active_dir.exists():
         for f in sorted(active_dir.glob("T-*.md")):
-            file_text = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", file_text, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    continue
-                if not isinstance(fm, dict):
-                    continue
+            fm, _ = parse_frontmatter(f.read_text())
+            if fm:
                 fm["_location"] = "active"
                 all_tasks.append(fm)
 
     completed_dir = PROJECT_ROOT / ".tasks" / "completed"
     if completed_dir.exists():
         for f in sorted(completed_dir.glob("T-*.md")):
-            file_text = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", file_text, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    continue
-                if not isinstance(fm, dict):
-                    continue
+            fm, _ = parse_frontmatter(f.read_text())
+            if fm:
                 fm["_location"] = "completed"
                 all_tasks.append(fm)
 
@@ -243,15 +229,9 @@ def task_detail(task_id):
         task_dir = PROJECT_ROOT / ".tasks" / location
         if task_dir.exists():
             for f in task_dir.glob(f"{task_id}-*.md"):
-                file_content = f.read_text()
-                fm_match = re_mod.match(r"^---\n(.*?)\n---\n(.*)", file_content, re_mod.DOTALL)
-                if fm_match:
-                    try:
-                        task_data = yaml.safe_load(fm_match.group(1))
-                    except yaml.YAMLError:
-                        task_data = None
-                    if isinstance(task_data, dict):
-                        task_content = fm_match.group(2)
+                task_data, task_content = parse_frontmatter(f.read_text())
+                if not task_data:
+                    task_data = None
                 break
 
     if not task_data:

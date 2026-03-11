@@ -9,12 +9,12 @@ T-262: Replaced model with Qwen3-14B + thinking mode toggle.
 T-377: Refactored to use LLM provider abstraction (Ollama + OpenRouter).
 """
 
-import json
 import logging
 import re
 
 from web.config import Config
 from web.llm import get_manager
+from web.shared import sse_event
 
 log = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
     try:
         model = model_override if model_override else get_model()
     except RuntimeError as e:
-        yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+        yield sse_event("error", message=str(e))
         return
 
     manager = get_manager()
@@ -176,18 +176,18 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
     messages.append({"role": "user", "content": user_message})
 
     # Send model info with thinking status and provider
-    yield f"data: {json.dumps({'type': 'model', 'model': model, 'thinking': use_thinking, 'provider': manager.active_name})}\n\n"
+    yield sse_event("model", model=model, thinking=use_thinking, provider=manager.active_name)
 
     # Stream via the active provider (T-377)
     for chunk in provider.chat_stream(model, messages, thinking=use_thinking):
         if chunk.type == "token":
-            yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+            yield sse_event("token", content=chunk.content)
         elif chunk.type == "thinking":
-            yield f"data: {json.dumps({'type': 'thinking', 'content': chunk.content})}\n\n"
+            yield sse_event("thinking", content=chunk.content)
         elif chunk.type == "thinking_done":
-            yield f"data: {json.dumps({'type': 'thinking_done'})}\n\n"
+            yield sse_event("thinking_done")
         elif chunk.type == "error":
-            yield f"data: {json.dumps({'type': 'error', 'message': chunk.content})}\n\n"
+            yield sse_event("error", message=chunk.content)
             return
         elif chunk.type == "done":
             break
@@ -203,5 +203,5 @@ def stream_answer(query: str, chunks: list[dict], history: list[dict] | None = N
             "score": c.get("score", 0),
             "task_id": c.get("task_id", ""),
         })
-    yield f"data: {json.dumps({'type': 'sources', 'sources': sources})}\n\n"
-    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+    yield sse_event("sources", sources=sources)
+    yield sse_event("done")

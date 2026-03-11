@@ -8,7 +8,7 @@ import yaml
 from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
 
 
 def _md(text):
@@ -34,18 +34,11 @@ def _load_all_tasks():
         if not task_dir.exists():
             continue
         for f in sorted(task_dir.glob("T-*.md")):
-            file_text = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---\n(.*)", file_text, re_mod.DOTALL)
-            if not fm_match:
-                continue
-            try:
-                fm = yaml.safe_load(fm_match.group(1))
-            except yaml.YAMLError:
-                continue
-            if not isinstance(fm, dict):
+            fm, body = parse_frontmatter(f.read_text())
+            if not fm:
                 continue
             fm["_location"] = location
-            fm["_body"] = fm_match.group(2)
+            fm["_body"] = body
             tasks.append(fm)
     return tasks
 
@@ -159,16 +152,11 @@ def inception_detail(task_id):
         if not task_dir.exists():
             continue
         for f in task_dir.glob(f"{task_id}-*.md"):
-            file_content = f.read_text()
-            fm_match = re_mod.match(r"^---\n(.*?)\n---\n(.*)", file_content, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    task_data = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    task_data = None
-                if isinstance(task_data, dict):
-                    task_body = fm_match.group(2)
-                    task_data["_location"] = location
+            task_data, task_body = parse_frontmatter(f.read_text())
+            if task_data:
+                task_data["_location"] = location
+            else:
+                task_data = None
             break
 
     if not task_data or task_data.get("workflow_type") != "inception":

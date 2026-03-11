@@ -3,11 +3,10 @@
 import re as re_mod
 
 import markdown2
-import yaml
 from flask import Blueprint, abort
 
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan, parse_frontmatter
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("core", __name__)
@@ -22,20 +21,15 @@ def _get_attention_items():
     if active_dir.exists():
         for f in active_dir.glob("T-*.md"):
             content = f.read_text(errors="replace")
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    continue
-                if isinstance(fm, dict):
-                    tid = fm.get("id", f.stem[:5])
-                    status = fm.get("status", "")
-                    name = fm.get("name", "")[:40]
-                    if status == "issues":
-                        items.append({"type": "task", "id": tid, "message": f"{name} — has issues"})
-                    else:
-                        items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
+            fm, _ = parse_frontmatter(content)
+            if fm:
+                tid = fm.get("id", f.stem[:5])
+                status = fm.get("status", "")
+                name = fm.get("name", "")[:40]
+                if status == "issues":
+                    items.append({"type": "task", "id": tid, "message": f"{name} — has issues"})
+                else:
+                    items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
 
     # Concerns near trigger (T-398: migrated from gaps.yaml to concerns.yaml)
     for c in load_concerns():
@@ -56,23 +50,18 @@ def _get_recent_activity():
     if handovers_dir.exists():
         for f in sorted(handovers_dir.glob("S-*.md"), reverse=True)[:3]:
             content = f.read_text(errors="replace")
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                except yaml.YAMLError:
-                    continue
-                if isinstance(fm, dict):
-                    sid = fm.get("session_id", f.stem)
-                    touched = fm.get("tasks_touched", [])
-                    completed = fm.get("tasks_completed", [])
-                    parts = []
-                    if completed:
-                        parts.append(f"{len(completed)} completed")
-                    if touched:
-                        parts.append(f"{len(touched)} touched")
-                    detail = ", ".join(parts) if parts else "session recorded"
-                    activity.append({"label": sid, "detail": detail})
+            fm, _ = parse_frontmatter(content)
+            if fm:
+                sid = fm.get("session_id", f.stem)
+                touched = fm.get("tasks_touched", [])
+                completed = fm.get("tasks_completed", [])
+                parts = []
+                if completed:
+                    parts.append(f"{len(completed)} completed")
+                if touched:
+                    parts.append(f"{len(touched)} touched")
+                detail = ", ".join(parts) if parts else "session recorded"
+                activity.append({"label": sid, "detail": detail})
     return activity
 
 
@@ -179,13 +168,9 @@ def _get_focus_task():
     if active_dir.exists():
         for f in active_dir.glob(f"{task_id}-*.md"):
             content = f.read_text(errors="replace")
-            fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-            if fm_match:
-                try:
-                    fm = yaml.safe_load(fm_match.group(1))
-                    return {"id": task_id, "name": fm.get("name", "")[:50]}
-                except yaml.YAMLError:
-                    pass
+            fm, _ = parse_frontmatter(content)
+            if fm:
+                return {"id": task_id, "name": fm.get("name", "")[:50]}
     return {"id": task_id, "name": ""}
 
 
@@ -199,14 +184,8 @@ def _get_stale_tasks():
     now = datetime.datetime.now(datetime.timezone.utc)
     for f in active_dir.glob("T-*.md"):
         content = f.read_text(errors="replace")
-        fm_match = re_mod.match(r"^---\n(.*?)\n---", content, re_mod.DOTALL)
-        if not fm_match:
-            continue
-        try:
-            fm = yaml.safe_load(fm_match.group(1))
-        except yaml.YAMLError:
-            continue
-        if not isinstance(fm, dict):
+        fm, _ = parse_frontmatter(content)
+        if not fm:
             continue
         status = fm.get("status", "")
         if status == "issues":
