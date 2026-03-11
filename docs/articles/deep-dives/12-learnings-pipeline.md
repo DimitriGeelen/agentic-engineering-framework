@@ -42,16 +42,19 @@ Quantified outcomes from T-346 and T-347 showed that structured learnings reduce
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
+
+# Start working — learnings accumulate as you go
+fw work-on "Fix validation bug" --type build
 
 # Record a learning from a task
-fw context add-learning "Bugfix checkpoints reduce verification steps" --task T-042
-
-# View all learnings
-fw serve  # Browse to http://localhost:3000/learnings
+fw context add-learning "Bugfix checkpoints reduce verification steps" --task T-001
 
 # Check graduation candidates
 fw promote suggest
+
+# Browse all learnings and patterns in the dashboard
+fw serve  # http://localhost:3000/learnings
 ```
 
 The entry will appear in `.context/project/learnings.yaml` and be visible via the `/learnings` web route.

@@ -63,7 +63,7 @@ The rationale was clear: behavioral prompts fail under execution pressure. Mecha
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Run a full audit
 fw audit
@@ -78,6 +78,11 @@ Example output:
 ```
 
 Exit codes: `0` = pass, `1` = warnings, `2` = failures. The audit runs automatically every 30 minutes via cron and on every `git push`.
+
+```bash
+# See audit results and trends in the dashboard
+fw serve  # http://localhost:3000
+```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 

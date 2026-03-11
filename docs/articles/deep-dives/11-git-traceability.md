@@ -45,7 +45,7 @@ The decision to use Git hooks rather than agent-level prompts was driven by task
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # Install git hooks — traceability activates immediately
 fw git install-hooks
@@ -55,6 +55,9 @@ fw work-on "Refactor authentication module" --type refactor
 
 # Commits now require a task reference
 fw git commit -m "T-001: Refactor auth module"
+
+# View traceability metrics in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)

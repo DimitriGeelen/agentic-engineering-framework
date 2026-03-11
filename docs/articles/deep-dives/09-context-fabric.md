@@ -45,7 +45,7 @@ These findings forced a shift from reactive logging to proactive enforcement. Th
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-cd your-project && fw init
+cd my-project && fw init --provider claude
 
 # See current context state
 fw context status
@@ -55,6 +55,9 @@ fw work-on "Refactor auth module" --type refactor
 
 # Run an audit to verify compliance
 fw audit
+
+# Browse context state in the dashboard
+fw serve  # http://localhost:3000
 ```
 
 GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
