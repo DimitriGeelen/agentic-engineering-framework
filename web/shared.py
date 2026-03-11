@@ -165,6 +165,21 @@ def get_yaml_errors() -> list[str]:
     return errors
 
 
+def load_scan() -> dict | None:
+    """Load the latest scan from .context/scans/LATEST.yaml."""
+    latest = PROJECT_ROOT / ".context" / "scans" / "LATEST.yaml"
+    if not latest.exists():
+        return None
+    try:
+        with open(latest) as f:
+            data = yaml.safe_load(f)
+        if isinstance(data, dict) and data.get("schema_version"):
+            return data
+    except Exception:
+        pass
+    return None
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 

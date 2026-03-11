@@ -7,9 +7,8 @@ import yaml
 from flask import Blueprint, abort
 
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan
 from web.subprocess_utils import run_git_command
-from web.blueprints.cockpit import load_scan, get_cockpit_context
 
 bp = Blueprint("core", __name__)
 
@@ -259,6 +258,7 @@ def index():
     # Try cockpit view (Phase 4 — scan-driven dashboard)
     scan_data = load_scan()
     if scan_data:
+        from web.blueprints.cockpit import get_cockpit_context
         ctx = get_cockpit_context(scan_data)
         ctx["recent_activity"] = _get_recent_activity()
         ctx["concerns_summary"] = _get_concerns_summary()

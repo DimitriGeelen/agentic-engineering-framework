@@ -20,24 +20,10 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request, render_template
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_scan
 
 bp = Blueprint("cockpit", __name__)
 
-
-def load_scan() -> dict | None:
-    """Load the latest scan from .context/scans/LATEST.yaml."""
-    latest = PROJECT_ROOT / ".context" / "scans" / "LATEST.yaml"
-    if not latest.exists():
-        return None
-    try:
-        with open(latest) as f:
-            data = yaml.safe_load(f)
-        if isinstance(data, dict) and data.get("schema_version"):
-            return data
-    except Exception:
-        pass
-    return None
 
 
 def get_scan_age(scan_data: dict) -> str:
