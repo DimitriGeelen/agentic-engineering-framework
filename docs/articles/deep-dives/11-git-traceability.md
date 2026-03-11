@@ -1,4 +1,4 @@
-# Deep Dive #12: Git Traceability  
+# Deep Dive #11: Git Traceability  
 
 ## Title  
 
@@ -41,22 +41,23 @@ Quantified findings from task T-348 showed that 32% of pre-implementation commit
 
 The decision to use Git hooks rather than agent-level prompts was driven by task T-236, which demonstrated that agents could ignore soft constraints under execution pressure. By embedding enforcement in the version control system itself, the rule becomes unskippable.  
 
-### Try it  
-
-Install the git-traceability agent with:  
+### Try it
 
 ```bash
-fw install git-traceability
-```
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-Then, create a task before making changes:  
+# Install git hooks — traceability activates immediately
+fw git install-hooks
 
-```bash
+# Create a task before making changes
 fw work-on "Refactor authentication module" --type refactor
-# Task T-456 created. Git operations now require T-456 in commit messages.
+
+# Commits now require a task reference
+fw git commit -m "T-001: Refactor auth module"
 ```
 
-Run `git commit -m "Update auth logic (T-456)"` to link changes to the task.  
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 

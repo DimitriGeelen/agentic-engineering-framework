@@ -1,4 +1,4 @@
-# Deep Dive #20: Enforcement  
+# Deep Dive #15: Enforcement  
 
 ## Title  
 
@@ -47,22 +47,23 @@ Structural enforcement was not an abstract idea — it was a response to failure
 
 Quantified findings showed that **73% of risky actions** (e.g., unreviewed deletions, unauthorized API calls) were blocked by enforcement rules in early testing. Without these gates, 89% of tasks would have proceeded without proper validation.  
 
-### Try it  
+### Try it
 
-To install enforcement rules:  
+```bash
+curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+cd your-project && fw init
 
-1. Configure hooks in `.claude/settings.json`:  
-   ```json
-   {
-     "pre_tool_use": ["check-active-task.sh", "check-tier0.sh"],
-     "post_tool_use": ["post-edit-reminder.sh"]
-   }
-   ```  
-2. Use the `fw` CLI to create tasks:  
-   ```bash
-   $ fw work-on "Refactor auth module" --type security
-   # Task T-456 created. Edits are now allowed.
-   ```  
+# Enforcement activates immediately — try editing without a task
+# The task gate blocks it. Create a task first:
+fw work-on "Refactor auth module" --type refactor
+
+# Destructive commands are intercepted by Tier 0
+# Try: git reset --hard → blocked until fw tier0 approve
+```
+
+`fw init` configures all hooks automatically. No manual setup required.
+
+GitHub: [github.com/DimitriGeelen/agentic-engineering-framework](https://github.com/DimitriGeelen/agentic-engineering-framework)
 
 ### Platform Notes  
 
