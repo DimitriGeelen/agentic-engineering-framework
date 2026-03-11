@@ -59,7 +59,7 @@
             {% endfor %}
         </ul>
         {% if docs|length > limit %}
-        <a href="#" class="docs-show-all" onclick="event.preventDefault(); this.parentElement.querySelectorAll('.docs-overflow').forEach(el => el.style.display = ''); this.style.display = 'none';"
+        <a href="#" class="docs-show-all" onclick="wtShowAll(this);return false;"
            style="display:inline-block; margin-top:0.5rem; font-size:0.85rem;">
             Show all {{ docs|length }} items &rarr;
         </a>
