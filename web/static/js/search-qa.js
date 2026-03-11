@@ -1,12 +1,14 @@
 /* ── Search Q&A ───────────────────────────────────────── */
 
-var _askAbort = null;
-var _lastQuestion = '';
-var _lastAnswer = '';
-var _lastInferredTitle = '';
-var _lastSources = [];
-var _lastModel = '';
-var _conversationHistory = [];
+var qaState = {
+    abort: null,
+    lastQuestion: '',
+    lastAnswer: '',
+    lastInferredTitle: '',
+    lastSources: [],
+    lastModel: '',
+    history: []
+};
 
 /* Extract <!-- Q: ... --> inferred title from LLM response (T-389) */
 function _extractInferredTitle(text) {
@@ -101,8 +103,8 @@ function askQuestion(query) {
     var errorDiv = document.getElementById('ask-error');
 
     /* Archive previous turn */
-    if (_lastQuestion && _lastAnswer) {
-        _addTurnToThread(_lastQuestion, renderAnswer(_lastAnswer));
+    if (qaState.lastQuestion && qaState.lastAnswer) {
+        _addTurnToThread(qaState.lastQuestion, renderAnswer(qaState.lastAnswer));
     }
 
     /* Show card */
@@ -116,19 +118,19 @@ function askQuestion(query) {
     errorDiv.style.display = 'none';
     document.getElementById('ask-actions-row').style.display = 'none';
     document.getElementById('followup-row').style.display = 'none';
-    _lastSources = [];
+    qaState.lastSources = [];
 
-    if (_askAbort) { _askAbort.abort(); _askAbort = null; }
+    if (qaState.abort) { qaState.abort.abort(); qaState.abort = null; }
 
     var fullText = '';
     var gotFirstToken = false;
     var thinkingStart = 0;
 
-    _askAbort = streamSSE('/search/ask',
-        { query: query, history: _conversationHistory },
+    qaState.abort = streamSSE('/search/ask',
+        { query: query, history: qaState.history },
         function(data) {
             if (data.type === 'model') {
-                _lastModel = data.model;
+                qaState.lastModel = data.model;
                 var label = data.model;
                 if (data.provider && data.provider !== 'ollama') label = data.provider + '/' + data.model;
                 if (data.thinking) label += ' (thinking)';
@@ -147,7 +149,7 @@ function askQuestion(query) {
             }
             else if (data.type === 'sources') {
                 var sources = data.sources || [];
-                _lastSources = sources;
+                qaState.lastSources = sources;
                 sourceCount.textContent = sources.length;
                 sourceList.innerHTML = '';
                 sources.forEach(function(src) {
@@ -166,17 +168,17 @@ function askQuestion(query) {
                 if (typeof htmx !== 'undefined') htmx.process(sourceList);
             }
             else if (data.type === 'done') {
-                _askAbort = null;
+                qaState.abort = null;
                 if (_renderTimer) clearTimeout(_renderTimer);
                 var extracted = _extractInferredTitle(fullText);
-                _lastInferredTitle = extracted.title;
+                qaState.lastInferredTitle = extracted.title;
                 var displayText = extracted.clean;
                 textDiv.innerHTML = renderAnswer(displayText);
                 addCopyButtons(textDiv);
-                _lastAnswer = displayText;
-                _lastQuestion = query;
-                _conversationHistory.push({role: 'user', content: query});
-                _conversationHistory.push({role: 'assistant', content: fullText});
+                qaState.lastAnswer = displayText;
+                qaState.lastQuestion = query;
+                qaState.history.push({role: 'user', content: query});
+                qaState.history.push({role: 'assistant', content: fullText});
                 _updateConvHeader();
                 document.getElementById('ask-actions-row').style.display = 'flex';
                 document.getElementById('ask-save-btn').disabled = false;
@@ -191,7 +193,7 @@ function askQuestion(query) {
                 document.getElementById('followup-input').focus();
             }
             else if (data.type === 'error') {
-                _askAbort = null;
+                qaState.abort = null;
                 errorDiv.textContent = data.message;
                 errorDiv.style.display = 'block';
                 statusDiv.style.display = 'none';
@@ -221,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ── Conversation Thread ───────────────────────────────── */
 function newConversation() {
-    _conversationHistory = [];
+    qaState.history = [];
     document.getElementById('conv-thread').innerHTML = '';
     document.getElementById('conv-thread').style.display = 'none';
     document.getElementById('conv-turn-count').style.display = 'none';
@@ -232,8 +234,8 @@ function newConversation() {
     document.getElementById('followup-row').style.display = 'none';
     document.getElementById('ask-error').style.display = 'none';
     document.getElementById('search-input').focus();
-    _lastQuestion = '';
-    _lastAnswer = '';
+    qaState.lastQuestion = '';
+    qaState.lastAnswer = '';
 }
 
 function _addTurnToThread(question, answerHtml) {
@@ -248,7 +250,7 @@ function _addTurnToThread(question, answerHtml) {
 }
 
 function _updateConvHeader() {
-    var turns = _conversationHistory.length / 2;
+    var turns = qaState.history.length / 2;
     if (turns > 0) {
         document.getElementById('conv-turn-count').textContent = turns + ' turn' + (turns !== 1 ? 's' : '');
         document.getElementById('conv-turn-count').style.display = 'inline';
@@ -264,7 +266,7 @@ function saveAnswer() {
     fetch('/search/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({ question: _lastQuestion, answer: _lastAnswer, sources: _lastSources, inferred_title: _lastInferredTitle })
+        body: JSON.stringify({ question: qaState.lastQuestion, answer: qaState.lastAnswer, sources: qaState.lastSources, inferred_title: qaState.lastInferredTitle })
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.saved) { btn.textContent = 'Saved'; status.textContent = data.path; status.style.color = 'var(--pico-ins-color)'; }
         else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.style.color = '#c62828'; }
@@ -279,7 +281,7 @@ function sendFeedback(rating) {
     fetch('/search/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
-        body: JSON.stringify({ query: _lastQuestion, answer_preview: _lastAnswer.substring(0, 500), model: _lastModel, rating: rating })
+        body: JSON.stringify({ query: qaState.lastQuestion, answer_preview: qaState.lastAnswer.substring(0, 500), model: qaState.lastModel, rating: rating })
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.saved) {
             fbStatus.textContent = rating === 1 ? 'Thanks!' : 'Noted!';
