@@ -77,8 +77,9 @@
 <div class="page-header">
     <h1 id="task-title">
         {{ task.id }}:
-        <span class="editable-name"
+        <span class="editable-name" role="button" tabindex="0"
               onclick="startNameEdit(this, '{{ task_id }}')"
+              onkeydown="if(event.key==='Enter')startNameEdit(this,'{{ task_id }}')"
               title="Click to edit">{{ task.name }}</span>
     </h1>
 </div>
@@ -115,7 +116,10 @@
 <details open>
     <summary><strong>Description</strong></summary>
     <div id="desc-display">
-        <p class="editable-desc" onclick="startDescEdit('{{ task_id }}')" title="Click to edit">{{ task.description }}</p>
+        <p class="editable-desc" role="button" tabindex="0"
+           onclick="startDescEdit('{{ task_id }}')"
+           onkeydown="if(event.key==='Enter')startDescEdit('{{ task_id }}')"
+           title="Click to edit">{{ task.description }}</p>
     </div>
     <div id="desc-edit" style="display:none;">
         <form hx-post="/api/task/{{ task_id }}/description" hx-target="#desc-result" hx-swap="innerHTML">

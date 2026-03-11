@@ -24,7 +24,7 @@
                 <option value="keyword" {{ 'selected' if mode|default('hybrid') == 'keyword' }}>Keyword</option>
                 <option value="semantic" {{ 'selected' if mode|default('hybrid') == 'semantic' }}>Semantic</option>
             </select>
-            <a href="{{ url_for('settings.settings_page') }}" class="search-settings-btn" title="LLM Settings"
+            <a href="{{ url_for('settings.settings_page') }}" class="search-settings-btn" title="LLM Settings" aria-label="LLM Settings"
                hx-get="{{ url_for('settings.settings_page') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -39,7 +39,7 @@
     <div id="recent-searches" style="display:none; margin-top: 0.5rem;">
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
             <small style="color: var(--pico-muted-color); font-weight: 600; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em;">Recent</small>
-            <button onclick="clearRecentSearches()" style="background:none; border:none; color:var(--pico-muted-color); font-size:0.65rem; cursor:pointer; padding:0; text-decoration:underline;">clear</button>
+            <button onclick="clearRecentSearches()" style="background:none; border:none; color:var(--pico-muted-color); font-size:0.65rem; cursor:pointer; padding:0; text-decoration:underline;" aria-label="Clear recent searches">clear</button>
         </div>
         <div id="recent-searches-list" style="display: flex; gap: 0.35rem; flex-wrap: wrap;"></div>
     </div>
