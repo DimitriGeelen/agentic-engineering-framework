@@ -4,16 +4,16 @@ name: "Standardize JS error handling patterns (J4)"
 description: >
   Create fetchWithError() helper for consistent error handling across all fetch calls. Currently inconsistent: some use .catch() with no logging, some chain .then().catch() with minimal feedback, some fail silently. Error messages vary: 'Cannot connect to LLM' vs 'Network error' vs bare 'error'. Directive score: J4=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, javascript, watchtower, reliability, usability]
-components: [web/static/js/chat.js, web/static/js/search-qa.js]
+components: [web/static/js/chat.js]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:20Z
-last_update: 2026-03-11T07:46:52Z
-date_finished: null
+last_update: 2026-03-11T07:49:30Z
+date_finished: 2026-03-11T07:49:30Z
 ---
 
 # T-420: Standardize JS error handling patterns (J4)
@@ -63,3 +63,6 @@ grep -q 'fetchWithError\|handleFetchError' web/static/js/chat.js web/static/js/s
 
 ### 2026-03-11T07:46:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T07:49:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

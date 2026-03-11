@@ -29,15 +29,10 @@ if [ "${1:-}" = "--quiet" ]; then
     QUIET=true
 fi
 
-# --- Colors ---
-if [ "$QUIET" = true ] || [ ! -t 1 ]; then
-    RED="" GREEN="" YELLOW="" CYAN="" NC=""
-else
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    CYAN='\033[0;36m'
-    NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
+# Override to no-color in quiet mode
+if [ "$QUIET" = true ]; then
+    RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
 fi
 
 # --- Counters ---

@@ -7,12 +7,7 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
 
 _resolve_commit_task() {
     # If task already set by --task flag, keep it

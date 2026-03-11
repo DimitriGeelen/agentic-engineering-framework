@@ -399,3 +399,17 @@ decisions:
     date: 2026-03-10
     task: unknown
     rationale: "Not specified"
+
+  - id: D-052
+    decision: "Test"
+    scope: project
+    date: 2026-03-11
+    task: unknown
+    rationale: "Not specified"
+
+  - id: D-053
+    decision: "Do not create lib/args.sh"
+    scope: project
+    date: 2026-03-11
+    task: T-423
+    rationale: "Auto-captured from task file on completion"

@@ -23,46 +23,48 @@
 [[ -n "${_FW_ERRORS_LOADED:-}" ]] && return 0
 _FW_ERRORS_LOADED=1
 
-# --- Color setup (TTY-aware) ---
-if [[ -t 2 ]] && [[ -z "${NO_COLOR:-}" ]]; then
-    _ERR_RED='\033[0;31m'
-    _ERR_GREEN='\033[0;32m'
-    _ERR_YELLOW='\033[1;33m'
-    _ERR_CYAN='\033[0;36m'
-    _ERR_BOLD='\033[1m'
-    _ERR_NC='\033[0m'
-else
-    _ERR_RED='' _ERR_GREEN='' _ERR_YELLOW='' _ERR_CYAN='' _ERR_BOLD='' _ERR_NC=''
-fi
+# --- Color setup (via shared lib/colors.sh) ---
+# Resolve framework root for sourcing (errors.sh may be sourced before paths.sh)
+_ERRORS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$_ERRORS_DIR/colors.sh" 2>/dev/null || {
+    # Inline fallback if colors.sh is missing
+    if [[ ( -t 1 || -t 2 ) && -z "${NO_COLOR:-}" ]]; then
+        RED='\033[0;31m' GREEN='\033[0;32m' YELLOW='\033[1;33m'
+        CYAN='\033[0;36m' BOLD='\033[1m' NC='\033[0m'
+    else
+        RED='' GREEN='' YELLOW='' CYAN='' BOLD='' NC=''
+    fi
+}
+unset _ERRORS_DIR
 
 # --- Output functions ---
 
 die() {
     local msg="$1"
     local code="${2:-1}"
-    echo -e "${_ERR_RED}ERROR: ${msg}${_ERR_NC}" >&2
+    echo -e "${RED}ERROR: ${msg}${NC}" >&2
     exit "$code"
 }
 
 error() {
-    echo -e "${_ERR_RED}ERROR: ${1}${_ERR_NC}" >&2
+    echo -e "${RED}ERROR: ${1}${NC}" >&2
 }
 
 warn() {
-    echo -e "${_ERR_YELLOW}WARNING: ${1}${_ERR_NC}" >&2
+    echo -e "${YELLOW}WARNING: ${1}${NC}" >&2
 }
 
 info() {
-    echo -e "${_ERR_CYAN}${1}${_ERR_NC}"
+    echo -e "${CYAN}${1}${NC}"
 }
 
 success() {
-    echo -e "${_ERR_GREEN}${1}${_ERR_NC}"
+    echo -e "${GREEN}${1}${NC}"
 }
 
 block() {
     # For PreToolUse hooks — exit 2 tells Claude Code to block the action
     local msg="$1"
-    echo -e "${_ERR_RED}BLOCKED: ${msg}${_ERR_NC}" >&2
+    echo -e "${RED}BLOCKED: ${msg}${NC}" >&2
     exit 2
 }

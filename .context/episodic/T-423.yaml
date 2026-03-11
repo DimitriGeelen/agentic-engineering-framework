@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-423: Extract lib/colors.sh and lib/args.sh — shell utility consolidation (S2+S4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T10:11:06Z
+# ============================================================================
+
+task_id: T-423
+task_name: "Extract lib/colors.sh and lib/args.sh — shell utility consolidation (S2+S4)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:04:04Z
+completed: 2026-03-11T10:11:03Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "lib/colors.sh created with TTY-aware, NO_COLOR-respecting color variables"
+  - "lib/errors.sh updated to source colors.sh instead of defining _ERR_* prefix vars"
+  - "14 files with inline color definitions updated to use shared colors via paths.sh chain"
+  - "fw doctor, fw audit, fw git status, fw fabric all pass after refactor"
+  - "S4 (args.sh) assessed — determined to be over-engineering, documented"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Do not create lib/args.sh"
+    rationale: "Arg parsing is script-specific (each script has different flags). A generic parse_args() function would be more complex than the duplicated patterns it replaces. 18 files have arg loops but each is unique. No reusable abstraction exists without over-engineering."
+    alternatives_rejected: ["Generic args.sh with parse_args(), shift_value(), require_arg() — adds complexity for marginal deduplication"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 786 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, shell]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 786
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-423-extract-libcolorssh-and-libargssh--shell.md
+generated_by: context-agent-hybrid

@@ -4,16 +4,16 @@ name: "Create Jinja badge macro — consolidate 4+ badge implementations (H2)"
 description: >
   Create _partials/badge.html Jinja macro to replace 4+ separate badge implementations across gaps.html, risks.html, decisions.html, assumptions.html. Each duplicates color scheme, padding, border-radius. Same mark element with inline styles repeated with slightly inconsistent values. Directive score: H2=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: [refactoring, html, watchtower, usability]
-components: [web/templates/_partials/badge.html, web/templates/gaps.html, web/templates/risks.html, web/templates/assumptions.html]
+components: [web/templates/assumptions.html, web/templates/decisions.html, web/templates/gaps.html, web/templates/_partials/badge.html, web/templates/risks.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:21Z
-last_update: 2026-03-11T07:49:37Z
-date_finished: null
+last_update: 2026-03-11T07:55:42Z
+date_finished: 2026-03-11T07:55:42Z
 ---
 
 # T-421: Create Jinja badge macro — consolidate 4+ badge implementations (H2)
@@ -71,3 +71,6 @@ grep -q 'import.*badge' web/templates/risks.html || grep -q 'badge' web/template
 
 ### 2026-03-11T07:49:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T07:55:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
