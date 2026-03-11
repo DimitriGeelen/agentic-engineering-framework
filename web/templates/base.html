@@ -193,6 +193,48 @@
             .ambient-strip .sep:nth-child(n+4),
             .ambient-strip > span:nth-child(n+5):not(:last-child) { display: none; }
         }
+
+        /* ── Utility classes ──────────────────────────────── */
+        /* Text */
+        .text-muted { color: var(--pico-muted-color); }
+        .text-success { color: #2e7d32; }
+        .text-danger { color: #c62828; }
+        .text-warning { color: #e8a317; }
+        .italic { font-style: italic; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+
+        /* Font sizes */
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.85rem; }
+        .text-base { font-size: 0.875rem; }
+        .text-lg { font-size: 1.1rem; }
+        .text-xl { font-size: 1.5rem; }
+
+        /* Layout */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; align-items: center; }
+        .inline-flex-center { margin: 0; padding: 0; display: inline-flex; align-items: center; }
+        .inline-reset { margin: 0; padding: 0; display: inline; }
+        .hidden { display: none; }
+        .flex-1 { flex: 1; }
+
+        /* Spacing */
+        .gap-xs { gap: 0.25rem; }
+        .gap-sm { gap: 0.35rem; }
+        .gap-md { gap: 0.5rem; }
+        .gap-lg { gap: 0.75rem; }
+        .m-0 { margin: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 1.5rem; }
+        .mt-3 { margin-top: 2rem; }
+        .p-1 { padding: 1rem; }
+
+        /* Components */
+        .btn-sm { width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0; }
     </style>
 </head>
 <body hx-boost="true" hx-target="#content" hx-swap="innerHTML">

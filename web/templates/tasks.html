@@ -436,7 +436,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
            style="flex: 1; min-width: 10rem; max-width: 20rem; padding: 0.3rem 0.6rem; font-size: 0.8rem; margin: 0;"
            hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-trigger="keyup changed delay:300ms"
            hx-include="[name='owner'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
-    <select name="owner" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+    <select name="owner" class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Owners</option>
@@ -444,7 +444,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <option value="{{ o }}" {% if owner_filter == o %}selected{% endif %}>{{ o }}</option>
         {% endfor %}
     </select>
-    <select name="horizon" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+    <select name="horizon" class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='owner'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Horizons</option>
@@ -453,7 +453,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {% endfor %}
     </select>
     {% if all_tags %}
-    <select name="tag" style="width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0;"
+    <select name="tag" class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='owner'],[name='horizon'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Tags</option>
@@ -485,7 +485,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-card-header">
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
                hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-            <form hx-post="/api/task/{{ task.id }}/status" style="margin:0;padding:0;display:inline;"
+            <form hx-post="/api/task/{{ task.id }}/status" class="inline-reset"
                   hx-target="closest .kanban-card" hx-swap="none">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="status" class="inline-kanban-status-select"
@@ -499,7 +499,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
               onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
         <div class="kanban-card-meta">
-            <form hx-post="/api/task/{{ task.id }}/type" style="margin:0;padding:0;display:inline;"
+            <form hx-post="/api/task/{{ task.id }}/type" class="inline-reset"
                   hx-target="closest .kanban-card" hx-swap="none">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="type" class="inline-type-select"
@@ -509,7 +509,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                     {% endfor %}
                 </select>
             </form>
-            <form hx-post="/api/task/{{ task.id }}/horizon" style="margin:0;padding:0;display:inline;"
+            <form hx-post="/api/task/{{ task.id }}/horizon" class="inline-reset"
                   hx-target="closest .kanban-card" hx-swap="none">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="horizon" class="inline-horizon-select horizon-select"
@@ -519,7 +519,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                     {% endfor %}
                 </select>
             </form>
-            <form hx-post="/api/task/{{ task.id }}/owner" style="margin:0;padding:0;display:inline;"
+            <form hx-post="/api/task/{{ task.id }}/owner" class="inline-reset"
                   hx-target="closest .kanban-card" hx-swap="none">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="owner" class="inline-owner-select"
@@ -734,7 +734,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <form hx-post="/api/task/{{ task.id }}/status"
                       hx-target="next .status-update-result"
                       hx-swap="innerHTML"
-                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                      class="inline-flex-center gap-xs">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <select name="status" class="inline-status-select"
                             onchange="this.form.requestSubmit()">
@@ -749,7 +749,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <form hx-post="/api/task/{{ task.id }}/horizon"
                       hx-target="next .horizon-update-result"
                       hx-swap="innerHTML"
-                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                      class="inline-flex-center gap-xs">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <select name="horizon" class="inline-status-select horizon-select"
                             onchange="this.form.requestSubmit()">
@@ -764,7 +764,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <form hx-post="/api/task/{{ task.id }}/type"
                       hx-target="next .type-update-result"
                       hx-swap="innerHTML"
-                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                      class="inline-flex-center gap-xs">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <select name="type" class="inline-status-select"
                             onchange="this.form.requestSubmit()">
@@ -779,7 +779,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <form hx-post="/api/task/{{ task.id }}/owner"
                       hx-target="next .owner-update-result"
                       hx-swap="innerHTML"
-                      style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.25rem;">
+                      class="inline-flex-center gap-xs">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                     <select name="owner" class="inline-status-select"
                             onchange="this.form.requestSubmit()">

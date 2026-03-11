@@ -77,14 +77,14 @@
     .findings-table tr:last-child td { border-bottom: none; }
 </style>
 
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="page-header flex-between">
     <div>
         <h1>{{ page_title }}</h1>
         <p>Discovery layer findings from automated audit jobs (D1-D8).</p>
     </div>
     <div style="display: flex; gap: 0.5rem; align-items: center;">
-        <small style="color: var(--pico-muted-color);">{{ timestamp }}</small>
-        <a role="button" class="outline" style="font-size: 0.85rem;"
+        <small class="text-muted">{{ timestamp }}</small>
+        <a role="button" class="outline text-sm"
            hx-get="/discoveries" hx-target="#content" hx-swap="innerHTML">Refresh</a>
     </div>
 </div>

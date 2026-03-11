@@ -29,16 +29,16 @@
     <button id="btn-reset" class="outline secondary" style="margin-bottom: 0; padding: 0.4rem 0.8rem; font-size: 0.85rem;">Reset view</button>
 
     <label style="margin-bottom: 0; font-size: 0.85rem;">
-        <input type="checkbox" id="chk-labels" checked style="margin-bottom: 0;"> Labels
+        <input type="checkbox" id="chk-labels" checked class="mb-0"> Labels
     </label>
     <label style="margin-bottom: 0; font-size: 0.85rem;">
-        <input type="checkbox" id="chk-groups" checked style="margin-bottom: 0;"> Subsystem groups
+        <input type="checkbox" id="chk-groups" checked class="mb-0"> Subsystem groups
     </label>
 </div>
 
 <!-- Legend -->
 <details style="margin-bottom: 1rem;">
-    <summary style="font-size: 0.85rem;">Legend</summary>
+    <summary class="text-sm">Legend</summary>
     <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0.5rem 0; font-size: 0.8rem;">
         <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#a0aec0;vertical-align:middle;"></span> script</span>
         <span><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#63b3ed;vertical-align:middle;"></span> route</span>
@@ -62,7 +62,7 @@
 <!-- Info panel (shown on node click) -->
 <div id="info-panel" style="display: none; margin-top: 1rem;">
     <article style="padding: 0.75rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="flex-between">
             <strong id="info-name"></strong>
             <button id="info-close" class="outline secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; margin: 0;">Close</button>
         </div>
@@ -70,7 +70,7 @@
             <span id="info-type" style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px;"></span>
             <span id="info-subsystem" style="font-size: 0.8rem; color: var(--pico-muted-color); margin-left: 0.5rem;"></span>
         </p>
-        <p style="margin: 0.25rem 0;"><code id="info-location" style="font-size: 0.75rem;"></code></p>
+        <p style="margin: 0.25rem 0;"><code id="info-location" class="text-xs"></code></p>
         <p id="info-degree" style="margin: 0.25rem 0; font-size: 0.8rem; color: var(--pico-muted-color);"></p>
         <p style="margin: 0.5rem 0 0;">
             <a id="info-link" href="#" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View component details &rarr;</a>

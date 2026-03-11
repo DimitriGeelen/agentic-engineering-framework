@@ -176,7 +176,7 @@
             <td>
                 {{ l.learning }}
                 {% if l.context %}
-                <br><small style="color: var(--pico-muted-color);">{{ l.context }}</small>
+                <br><small class="text-muted">{{ l.context }}</small>
                 {% endif %}
             </td>
             <td>
@@ -201,11 +201,11 @@
 </table>
 
 {% if not pipeline %}
-<p style="color: var(--pico-muted-color); font-style: italic;">No learnings match the current filter.</p>
+<p class="text-muted italic">No learnings match the current filter.</p>
 {% endif %}
 
 <!-- Promotion instructions -->
-<details style="margin-top: 1.5rem;">
+<details class="mt-2">
     <summary><strong>How to promote a learning</strong></summary>
     <div style="padding: 0.5rem 0;">
         <p>Graduation criteria from <code>015-Practices.md</code>:</p>

@@ -6,13 +6,13 @@
 </div>
 
 {% if not component %}
-<p style="color: var(--pico-muted-color);">Component not found.</p>
+<p class="text-muted">Component not found.</p>
 {% else %}
 
 <!-- Overview card -->
 <article>
     <header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="flex-between">
             <span>
                 <strong>{{ component.name }}</strong>
                 <span style="font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;
@@ -27,7 +27,7 @@
                     {{ component.type }}
                 </span>
             </span>
-            <small style="color: var(--pico-muted-color);">{{ component.subsystem }}</small>
+            <small class="text-muted">{{ component.subsystem }}</small>
         </div>
     </header>
 
@@ -63,7 +63,7 @@
     </ul>
     {% endif %}
 
-    <footer style="font-size: 0.8rem; color: var(--pico-muted-color);">
+    <footer class="text-sm text-muted">
         Last verified: {{ component.last_verified | default('?') }}
         {% if component.created_by %} | Created by: <code>{{ component.created_by }}</code>{% endif %}
     </footer>
@@ -81,7 +81,7 @@
     {% if source_code %}
     <pre style="margin: 0; max-height: 70vh; overflow: auto;"><code class="language-{{ source_lang }}">{{ source_code }}</code></pre>
     {% else %}
-    <p style="color: var(--pico-muted-color); font-style: italic;">Source file not found at <code>{{ component.location }}</code></p>
+    <p class="text-muted italic">Source file not found at <code>{{ component.location }}</code></p>
     {% endif %}
 </details>
 {% endif %}
@@ -104,7 +104,7 @@
             {% if dep is mapping %}
             {% set resolved_name = id_to_name.get(dep.target, '') if id_to_name is defined else '' %}
             <tr>
-                <td><span style="font-size: 0.8rem;">{{ dep.type | default('uses') }}</span></td>
+                <td><span class="text-sm">{{ dep.type | default('uses') }}</span></td>
                 <td>
                     {% if resolved_name %}
                     <a href="/fabric/component/{{ resolved_name }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ resolved_name }}</a>
@@ -115,7 +115,7 @@
                     <code>{{ dep.target }}</code>
                     {% endif %}
                 </td>
-                <td><code style="font-size: 0.75rem;">{{ dep.location | default('') }}</code></td>
+                <td><code class="text-xs">{{ dep.location | default('') }}</code></td>
                 <td><small>{{ dep.contract | default('') }}</small></td>
             </tr>
             {% endif %}
@@ -140,14 +140,14 @@
         <tbody>
             {% for dep in reverse_deps %}
             <tr>
-                <td><span style="font-size: 0.8rem;">{{ dep.type }}</span></td>
+                <td><span class="text-sm">{{ dep.type }}</span></td>
                 <td>
                     <a href="/fabric/component/{{ dep.name }}"
                        hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                         {{ dep.name }}
                     </a>
                 </td>
-                <td><code style="font-size: 0.75rem;">{{ dep.location | default('') }}</code></td>
+                <td><code class="text-xs">{{ dep.location | default('') }}</code></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -162,7 +162,7 @@
     {% for el in component.interactive_elements %}
     <article style="padding: 0.75rem; margin-bottom: 0.5rem;">
         <strong>[{{ el.data_component }}]</strong> action={{ el.data_action }}
-        <br><code style="font-size: 0.75rem;">{{ el.htmx }}</code>
+        <br><code class="text-xs">{{ el.htmx }}</code>
         <br><small>Endpoint: <code>{{ el.api_endpoint }}</code></small>
         <br><small>Effect: {{ el.backend_effect }}</small>
     </article>
@@ -179,7 +179,7 @@
     <ul>
         {% for w in component.writers %}
         <li><code>{{ w.target if w is mapping else w }}</code>
-            {% if w is mapping and w.location %} at <code style="font-size: 0.75rem;">{{ w.location }}</code>{% endif %}
+            {% if w is mapping and w.location %} at <code class="text-xs">{{ w.location }}</code>{% endif %}
         </li>
         {% endfor %}
     </ul>
@@ -189,7 +189,7 @@
     <ul>
         {% for r in component.readers %}
         <li><code>{{ r.target if r is mapping else r }}</code>
-            {% if r is mapping and r.location %} at <code style="font-size: 0.75rem;">{{ r.location }}</code>{% endif %}
+            {% if r is mapping and r.location %} at <code class="text-xs">{{ r.location }}</code>{% endif %}
         </li>
         {% endfor %}
     </ul>

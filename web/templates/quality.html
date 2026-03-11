@@ -7,7 +7,7 @@
 {% if audit_status == "PASS" %}
 <article style="text-align: center; border-left: 6px solid var(--pico-ins-color);">
     <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: var(--pico-ins-color);">PASS</p>
-    <p style="margin: 0;">
+    <p class="m-0">
         {{ audit_summary.get("pass", 0) }} passed &middot;
         {{ audit_summary.get("warn", 0) }} warnings &middot;
         {{ audit_summary.get("fail", 0) }} failures
@@ -16,7 +16,7 @@
 {% elif audit_status == "WARN" %}
 <article style="text-align: center; border-left: 6px solid #e8a317;">
     <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: #e8a317;">WARN</p>
-    <p style="margin: 0;">
+    <p class="m-0">
         {{ audit_summary.get("pass", 0) }} passed &middot;
         {{ audit_summary.get("warn", 0) }} warnings &middot;
         {{ audit_summary.get("fail", 0) }} failures
@@ -25,7 +25,7 @@
 {% else %}
 <article style="text-align: center; border-left: 6px solid var(--pico-del-color);">
     <p style="font-size: 2.5rem; font-weight: bold; margin: 0; color: var(--pico-del-color);">FAIL</p>
-    <p style="margin: 0;">
+    <p class="m-0">
         {{ audit_summary.get("pass", 0) }} passed &middot;
         {{ audit_summary.get("warn", 0) }} warnings &middot;
         {{ audit_summary.get("fail", 0) }} failures
@@ -69,7 +69,7 @@
             hx-swap="innerHTML"
             hx-on::before-request="document.getElementById('full-check-btn').setAttribute('aria-busy', 'true')"
             hx-on::after-request="document.getElementById('full-check-btn').removeAttribute('aria-busy')"
-            style="display: none;">
+            class="hidden">
     </button>
 </div>
 
@@ -84,7 +84,7 @@
             {% else %}style="--pico-progress-color: var(--pico-del-color);"
             {% endif %}
         ></progress>
-        <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+        <p class="text-muted text-base">
             Percentage of recent commits referencing a task (T-XXX)
         </p>
     </article>
@@ -101,7 +101,7 @@
         {% else %}
         <progress value="0" max="100"></progress>
         {% endif %}
-        <p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+        <p class="text-muted text-base">
             Episodic summaries generated for completed tasks
         </p>
     </article>
@@ -114,7 +114,7 @@
     {% include "_quality_audit_fragment.html" %}
     {% else %}
     <article style="border-left: 4px solid var(--pico-muted-border-color);">
-        <p style="color: var(--pico-muted-color); font-style: italic;">
+        <p class="text-muted italic">
             No audit data available. Click <strong>Run Audit</strong> to perform a compliance check.
         </p>
     </article>
@@ -128,7 +128,7 @@
     {{ test_results }}
     {% else %}
     <article style="border-left: 4px solid var(--pico-muted-border-color);">
-        <p style="color: var(--pico-muted-color); font-style: italic;">
+        <p class="text-muted italic">
             No test results yet. Click <strong>Run Tests</strong> to execute the test suite.
         </p>
     </article>

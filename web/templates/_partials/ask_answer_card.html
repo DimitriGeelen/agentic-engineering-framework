@@ -1,7 +1,7 @@
 <article id="ask-answer-card" style="display: none; margin-bottom: 1.5rem; border-left: 3px solid var(--pico-primary);">
     <header style="display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--pico-muted-border-color);">
         <strong style="color: var(--pico-primary);">AI Answer</strong>
-        <small id="ask-model" style="color: var(--pico-muted-color);"></small>
+        <small id="ask-model" class="text-muted"></small>
         <span style="flex:1"></span>
         <small id="conv-turn-count" style="color: var(--pico-muted-color); display: none;"></small>
         <button onclick="newConversation()" class="outline secondary" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; display: none;" id="conv-new-btn">New</button>
@@ -16,16 +16,16 @@
 
     <details id="ask-sources" style="display: none; margin-top: 0.75rem;">
         <summary><strong>Sources</strong> (<span id="ask-source-count">0</span>)</summary>
-        <div id="ask-source-list" style="font-size: 0.85rem;"></div>
+        <div id="ask-source-list" class="text-sm"></div>
     </details>
 
     <div id="ask-actions-row" style="display: none; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <button id="ask-save-btn" onclick="saveAnswer()" class="outline secondary" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">Save</button>
         <button id="fb-up" onclick="sendFeedback(1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Good answer">&#x1F44D;</button>
         <button id="fb-down" onclick="sendFeedback(-1)" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.5rem; border-color: transparent;" title="Bad answer">&#x1F44E;</button>
-        <small id="fb-status" style="color: var(--pico-muted-color);"></small>
-        <span style="flex: 1;"></span>
-        <small id="ask-save-status" style="color: var(--pico-muted-color);"></small>
+        <small id="fb-status" class="text-muted"></small>
+        <span class="flex-1"></span>
+        <small id="ask-save-status" class="text-muted"></small>
     </div>
 
     <div id="followup-row" style="display: none; margin-top: 0.75rem;">

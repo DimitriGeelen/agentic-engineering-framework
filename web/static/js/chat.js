@@ -48,7 +48,7 @@ function _chatUpdateHealthDot(providers) {
         return;
     }
     if (active.available) {
-        dot.style.color = '#2e7d32';
+        dot.classList.add('text-success');
         dot.title = active.name + ': connected';
         dot.textContent = '\u25cf';
     } else {
@@ -75,7 +75,7 @@ function chatTestProvider() {
             return r.json().then(function(data) {
                 var active = (data.providers || []).find(function(p) { return p.active; });
                 if (active && active.available) {
-                    result.style.color = '#2e7d32';
+                    result.classList.add('text-success');
                     result.textContent = latency + 'ms';
                 } else {
                     result.style.color = 'var(--pico-del-color)';
@@ -359,14 +359,14 @@ function chatSave() {
               btn.disabled = false;
               btn.textContent = 'Save Conversation';
               status.textContent = data.error || 'Failed';
-              status.style.color = '#c62828';
+              status.classList.add('text-danger');
           }
       })
       .catch(function() {
           btn.disabled = false;
           btn.textContent = 'Save Conversation';
           status.textContent = handleFetchError('save conversation');
-          status.style.color = '#c62828';
+          status.classList.add('text-danger');
       });
 }
 

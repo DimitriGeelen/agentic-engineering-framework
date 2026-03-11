@@ -4,21 +4,21 @@
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-    <article style="text-align: center; padding: 1rem;">
+    <article class="text-center p-1">
         <h2 style="margin: 0; font-size: 2rem;">{{ analytics.total }}</h2>
-        <small style="color: var(--pico-muted-color);">Total Ratings</small>
+        <small class="text-muted">Total Ratings</small>
     </article>
-    <article style="text-align: center; padding: 1rem;">
+    <article class="text-center p-1">
         <h2 style="margin: 0; font-size: 2rem; color: #2e7d32;">{{ analytics.positive }}</h2>
-        <small style="color: var(--pico-muted-color);">Positive</small>
+        <small class="text-muted">Positive</small>
     </article>
-    <article style="text-align: center; padding: 1rem;">
+    <article class="text-center p-1">
         <h2 style="margin: 0; font-size: 2rem; color: #c62828;">{{ analytics.negative }}</h2>
-        <small style="color: var(--pico-muted-color);">Negative</small>
+        <small class="text-muted">Negative</small>
     </article>
-    <article style="text-align: center; padding: 1rem;">
+    <article class="text-center p-1">
         <h2 style="margin: 0; font-size: 2rem;">{{ (analytics.ratio * 100) | round(0) }}%</h2>
-        <small style="color: var(--pico-muted-color);">Positive Rate</small>
+        <small class="text-muted">Positive Rate</small>
     </article>
 </div>
 

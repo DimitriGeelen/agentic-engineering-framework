@@ -1,5 +1,5 @@
 {% if query %}
-<p style="color: var(--pico-muted-color); font-size: 0.875rem;">
+<p class="text-muted text-base">
     {% set total = results.values() | map('length') | sum if results else 0 %}
     {% if results %}
     Found <strong>{{ total }}</strong> result{{ 's' if total != 1 else '' }} for <strong>{{ query }}</strong>
@@ -28,7 +28,7 @@
 {% for item in items %}
 {% set link = item.path | path_to_link %}
 <article class="search-result" data-category="{{ category }}" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="flex-between">
         <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">
             {% if link %}
             <a href="{{ link }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none;">
@@ -53,7 +53,7 @@
         </div>
     </div>
     <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.15rem;">
-        <small style="color: var(--pico-muted-color);"><code>{{ item.path }}</code></small>
+        <small class="text-muted"><code>{{ item.path }}</code></small>
         <small style="background: var(--pico-primary-focus); padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.7rem;">{{ category }}</small>
     </div>
     {% if item.snippet %}
@@ -72,8 +72,8 @@
 {% if tag_cloud %}
 <div class="tag-cloud-section">
     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-        <strong style="font-size: 0.85rem;">Browse by topic</strong>
-        <small style="color: var(--pico-muted-color);">{{ tag_cloud|length }} topics from {{ tag_cloud|map(attribute='count')|sum }} tagged items</small>
+        <strong class="text-sm">Browse by topic</strong>
+        <small class="text-muted">{{ tag_cloud|length }} topics from {{ tag_cloud|map(attribute='count')|sum }} tagged items</small>
     </div>
     <div class="tag-cloud">
         {% for item in tag_cloud %}
@@ -100,7 +100,7 @@
             <a href="?q=task+lifecycle&mode=hybrid" class="outline search-pill" role="button">task lifecycle</a>
         </div>
         <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--pico-muted-border-color);">
-            <strong style="font-size:0.85rem;">Ask a question</strong>
+            <strong class="text-sm">Ask a question</strong>
             <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem;">
                 <a href="?q=how+does+the+audit+system+work%3F&mode=hybrid" class="outline search-pill" role="button">How does the audit system work?</a>
                 <a href="?q=what+are+the+four+directives%3F&mode=hybrid" class="outline search-pill" role="button">What are the four directives?</a>

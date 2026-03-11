@@ -3,7 +3,7 @@
           hx-get="{{ url_for('discovery.search_view') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
           id="search-form">
         <!-- Search bar (Pico fieldset group for proper layout) — hidden in Ask AI mode -->
-        <fieldset role="group" style="margin-bottom: 0;" id="search-bar">
+        <fieldset role="group" class="mb-0" id="search-bar">
             <input type="search" name="q" id="search-input" value="{{ query | default('') }}"
                    placeholder="Search your knowledge base..."
                    aria-label="Search" minlength="2" required autofocus

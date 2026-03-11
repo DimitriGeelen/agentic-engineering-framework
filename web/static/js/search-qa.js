@@ -269,8 +269,8 @@ function saveAnswer() {
         body: JSON.stringify({ question: qaState.lastQuestion, answer: qaState.lastAnswer, sources: qaState.lastSources, inferred_title: qaState.lastInferredTitle })
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.saved) { btn.textContent = 'Saved'; status.textContent = data.path; status.style.color = 'var(--pico-ins-color)'; }
-        else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.style.color = '#c62828'; }
-    }).catch(function() { btn.disabled = false; btn.textContent = 'Save'; status.textContent = handleFetchError('save answer'); status.style.color = '#c62828'; });
+        else { btn.disabled = false; btn.textContent = 'Save'; status.textContent = data.error || 'Failed'; status.classList.add('text-danger'); }
+    }).catch(function() { btn.disabled = false; btn.textContent = 'Save'; status.textContent = handleFetchError('save answer'); status.classList.add('text-danger'); });
 }
 
 function sendFeedback(rating) {
