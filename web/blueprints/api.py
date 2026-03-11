@@ -13,6 +13,8 @@ import time
 
 from flask import Blueprint, Response, jsonify, request
 
+from web.shared import sse_event
+
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
 
@@ -113,8 +115,8 @@ def ask():
     # Model selection
     try:
         model = get_model()
-    except RuntimeError as e:
-        return jsonify({"error": str(e)}), 503
+    except RuntimeError:
+        return jsonify({"error": "No AI model available. Check that your LLM provider is running."}), 503
 
     manager = get_manager()
     provider = manager.active
@@ -149,7 +151,7 @@ def ask():
                 thinking_ms = int((time.time() - thinking_start) * 1000)
                 thinking_start = None
         elif chunk.type == "error":
-            return jsonify({"error": chunk.content}), 500
+            return jsonify({"error": "AI service unavailable. Please try again."}), 500
         elif chunk.type == "done":
             break
 
@@ -199,7 +201,7 @@ def ask_stream():
 
     if not query or len(query) < 2:
         def error_stream():
-            yield 'data: {"type": "error", "message": "Query too short"}\n\n'
+            yield sse_event("error", message="Query too short (min 2 characters)")
         return Response(error_stream(), mimetype="text/event-stream")
 
     chunks = rag_retrieve(query, limit=10)
@@ -239,6 +241,7 @@ def search():
         return jsonify({"error": "Query too short (min 2 characters)"}), 400
 
     results = []
+
     stats = index_stats()
 
     if mode == "semantic":

@@ -222,7 +222,7 @@ def search_ask():
 
     if not query or len(query) < 2:
         def error_stream():
-            yield sse_event("error", message="Query too short")
+            yield sse_event("error", message="Query too short (min 2 characters)")
         return Response(error_stream(), mimetype="text/event-stream")
 
     # T-409: Stream progress events during RAG retrieval + LLM generation.
@@ -261,7 +261,7 @@ def search_ask():
             chunks = rag_retrieve(query, limit=10)
         except Exception as e:
             log.warning("RAG retrieve failed: %s", e)
-            yield sse_event("error", message=f"Failed to retrieve context: {str(e)[:100]}. Try again in a moment.")
+            yield sse_event("error", message="Failed to search the knowledge base. Try again in a moment.")
             return
 
         # Phase 3: Filter by scope
@@ -464,7 +464,8 @@ def load_conversation():
         data = json.loads(filepath.read_text())
         return json.dumps(data), 200
     except Exception as e:
-        return json.dumps({"error": str(e)}), 500
+        log.warning("Failed to load conversation %s: %s", conv_id, e)
+        return json.dumps({"error": "Failed to load conversation. The file may be corrupted."}), 500
 
 
 @bp.route("/search/feedback", methods=["POST"])
