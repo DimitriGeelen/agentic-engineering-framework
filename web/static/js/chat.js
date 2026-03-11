@@ -1,9 +1,11 @@
 /* ── Ask AI Chat (T-409) ──────────────────────────────── */
 
-var _chatHistory = [];
-var _chatAbort = null;
-var _chatScope = 'all';
-var _chatLoadedConvId = null;  /* ID of loaded saved conversation */
+var chatState = {
+    history: [],
+    abort: null,
+    scope: 'all',
+    loadedConvId: null
+};
 
 /* ── Providers & Models ──────────────────────────────── */
 
@@ -113,7 +115,7 @@ function chatSwitchProvider(name) {
 /* ── Scope ───────────────────────────────────────────── */
 
 function chatSetScope(scope) {
-    _chatScope = scope;
+    chatState.scope = scope;
     var label = document.getElementById('chat-scope-label');
     var labels = { all: 'All', tasks: 'Tasks', docs: 'Docs', episodic: 'Episodic' };
     if (label) label.textContent = labels[scope] || 'All';
@@ -175,7 +177,7 @@ function chatAsk(query) {
     var sendBtn = document.getElementById('chat-send-btn');
     if (sendBtn) { sendBtn.disabled = true; sendBtn.setAttribute('aria-busy', 'true'); }
 
-    if (_chatAbort) { _chatAbort.abort(); _chatAbort = null; }
+    if (chatState.abort) { chatState.abort.abort(); chatState.abort = null; }
 
     var fullText = '';
     var aiMsg = null;
@@ -185,8 +187,8 @@ function chatAsk(query) {
     var modelSel = document.getElementById('chat-model');
     var selectedModel = modelSel ? modelSel.value : '';
 
-    _chatAbort = streamSSE('/search/ask',
-        { query: query, history: _chatHistory, scope: _chatScope, model: selectedModel },
+    chatState.abort = streamSSE('/search/ask',
+        { query: query, history: chatState.history, scope: chatState.scope, model: selectedModel },
         function(data) {
             if (data.type === 'status') {
                 status.style.display = 'block';
@@ -238,7 +240,7 @@ function chatAsk(query) {
                 }
             }
             else if (data.type === 'done') {
-                _chatAbort = null;
+                chatState.abort = null;
                 var extracted = _extractInferredTitle(fullText);
                 var displayText = extracted.clean;
                 if (aiMsg) {
@@ -248,15 +250,15 @@ function chatAsk(query) {
                         addCopyButtons(aiMsg);
                     }
                 }
-                _chatHistory.push({ role: 'user', content: query });
-                _chatHistory.push({ role: 'assistant', content: displayText });
+                chatState.history.push({ role: 'user', content: query });
+                chatState.history.push({ role: 'assistant', content: displayText });
                 _chatUpdateActions();
                 if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
                 var chatInput = document.getElementById('chat-input');
                 if (chatInput) chatInput.focus();
             }
             else if (data.type === 'error') {
-                _chatAbort = null;
+                chatState.abort = null;
                 error.textContent = data.message;
                 error.style.display = 'block';
                 status.style.display = 'none';
@@ -284,8 +286,8 @@ function chatSubmit() {
 /* ── New Conversation ────────────────────────────────── */
 
 function chatNew() {
-    _chatHistory = [];
-    _chatLoadedConvId = null;
+    chatState.history = [];
+    chatState.loadedConvId = null;
     var thread = document.getElementById('chat-thread');
     thread.innerHTML = '';
     var welcome = document.getElementById('chat-welcome');
@@ -299,7 +301,7 @@ function chatNew() {
 /* ── Actions ─────────────────────────────────────────── */
 
 function _chatUpdateActions() {
-    var turns = _chatHistory.length / 2;
+    var turns = chatState.history.length / 2;
     var actions = document.getElementById('chat-actions');
     var turnCount = document.getElementById('chat-turn-count');
     var newBtn = document.getElementById('chat-new-btn');
@@ -325,12 +327,12 @@ function chatSave() {
     /* Get the last AI response as the "final artifact" */
     var lastAnswer = '';
     var lastQuestion = '';
-    for (var i = _chatHistory.length - 1; i >= 0; i--) {
-        if (_chatHistory[i].role === 'assistant' && !lastAnswer) {
-            lastAnswer = _chatHistory[i].content;
+    for (var i = chatState.history.length - 1; i >= 0; i--) {
+        if (chatState.history[i].role === 'assistant' && !lastAnswer) {
+            lastAnswer = chatState.history[i].content;
         }
-        if (_chatHistory[i].role === 'user' && !lastQuestion) {
-            lastQuestion = _chatHistory[i].content;
+        if (chatState.history[i].role === 'user' && !lastQuestion) {
+            lastQuestion = chatState.history[i].content;
         }
         if (lastAnswer && lastQuestion) break;
     }
@@ -339,10 +341,10 @@ function chatSave() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': _getCsrfToken() },
         body: JSON.stringify({
-            history: _chatHistory,
+            history: chatState.history,
             final_answer: lastAnswer,
             final_question: lastQuestion,
-            loaded_from: _chatLoadedConvId
+            loaded_from: chatState.loadedConvId
         })
     }).then(function(r) { return r.json(); })
       .then(function(data) {
@@ -350,7 +352,7 @@ function chatSave() {
               btn.textContent = 'Saved';
               status.textContent = data.path;
               status.style.color = 'var(--pico-ins-color)';
-              _chatLoadedConvId = data.id;
+              chatState.loadedConvId = data.id;
               chatLoadSaved();  /* Refresh sidebar */
           } else {
               btn.disabled = false;
@@ -409,7 +411,7 @@ function chatLoadConversation(convId) {
 
             /* Reset */
             chatNew();
-            _chatLoadedConvId = convId;
+            chatState.loadedConvId = convId;
 
             /* Inject the saved artifact as context */
             var thread = document.getElementById('chat-thread');
@@ -429,10 +431,10 @@ function chatLoadConversation(convId) {
             }
 
             /* Set history so LLM has context for continuation */
-            _chatHistory = data.history || [];
-            if (_chatHistory.length === 0 && data.final_answer) {
+            chatState.history = data.history || [];
+            if (chatState.history.length === 0 && data.final_answer) {
                 /* Reconstruct minimal history */
-                _chatHistory = [
+                chatState.history = [
                     { role: 'user', content: data.final_question || data.title },
                     { role: 'assistant', content: data.final_answer }
                 ];

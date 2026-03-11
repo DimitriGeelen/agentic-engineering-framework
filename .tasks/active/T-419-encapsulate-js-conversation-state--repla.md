@@ -4,7 +4,7 @@ name: "Encapsulate JS conversation state — replace 11 global variables (J3)"
 description: >
   Create ConversationState class to replace 11 unencapsulated globals across chat.js (4: _chatHistory, _chatAbort, _chatScope, _chatLoadedConvId) and search-qa.js (7: _askAbort, _lastQuestion, _lastAnswer, etc). Global state makes test isolation impossible and enables hard-to-reproduce state leakage. Directive score: J3=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [refactoring, javascript, watchtower, reliability]
 components: [web/static/js/chat.js, web/static/js/search-qa.js]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:19Z
-last_update: 2026-03-10T21:03:19Z
+last_update: 2026-03-11T07:44:16Z
 date_finished: null
 ---
 
@@ -31,10 +31,10 @@ See research artifact § "JAVASCRIPT" row J3.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] ConversationState object/class encapsulates chat state
-- [ ] QAState object/class encapsulates Q&A state
-- [ ] No module-level mutable globals remain (except state instances)
-- [ ] State reset works correctly on 'New Chat' and new Q&A sessions
+- [x] ConversationState object/class encapsulates chat state
+- [x] QAState object/class encapsulates Q&A state
+- [x] No module-level mutable globals remain (except state instances)
+- [x] State reset works correctly on 'New Chat' and new Q&A sessions
 
 ### Human
 <!-- No human verification needed for this refactoring -->
@@ -61,3 +61,6 @@ See research artifact § "JAVASCRIPT" row J3.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-419-encapsulate-js-conversation-state--repla.md
 - **Context:** Initial task creation
+
+### 2026-03-11T07:44:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
