@@ -1109,6 +1109,7 @@ case "$cmd" in
         exec "$AGENTS_DIR/resume/resume.sh" "$@"
         ;;
     inception)
+        source "$FW_LIB_DIR/tasks.sh"
         source "$FW_LIB_DIR/inception.sh"
         do_inception "$@"
         ;;
