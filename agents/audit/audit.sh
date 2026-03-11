@@ -1087,6 +1087,14 @@ echo "=== CONCERNS REGISTER CHECKS ==="
 GAPS_FILE="$CONTEXT_DIR/project/concerns.yaml"
 [ -f "$GAPS_FILE" ] || GAPS_FILE="$CONTEXT_DIR/project/gaps.yaml"
 
+# T-422: Warn if stale pre-migration files exist
+if [ -f "$CONTEXT_DIR/project/gaps.yaml" ] && [ -f "$CONTEXT_DIR/project/concerns.yaml" ]; then
+    warn "Stale gaps.yaml exists alongside concerns.yaml — remove gaps.yaml (T-397 migration)"
+fi
+if [ -f "$CONTEXT_DIR/project/risks.yaml" ]; then
+    warn "Stale risks.yaml exists — risks are in concerns.yaml (T-397 migration)"
+fi
+
 if [ -f "$GAPS_FILE" ]; then
     watching_count=$(grep -c 'status: watching' "$GAPS_FILE" 2>/dev/null) || watching_count=0
     triggered_gaps=0
