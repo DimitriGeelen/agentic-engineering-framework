@@ -160,118 +160,105 @@ function _chatAddMessage(role, content, isStreaming) {
 
 /* ── Streaming ───────────────────────────────────────── */
 
-function chatAsk(query) {
+function _chatPrepareAsk(query) {
     var input = document.getElementById('chat-input');
     if (input) input.value = '';
-
-    /* Show user message */
     _chatAddMessage('user', query);
 
-    /* Show status */
     var status = document.getElementById('chat-status');
     var error = document.getElementById('chat-error');
     status.style.display = 'block';
     status.innerHTML = '<span aria-busy="true">Retrieving context &amp; generating answer...</span>';
     error.style.display = 'none';
 
-    /* Disable input during generation */
     var sendBtn = document.getElementById('chat-send-btn');
     if (sendBtn) { sendBtn.disabled = true; sendBtn.setAttribute('aria-busy', 'true'); }
 
     if (chatState.abort) { chatState.abort.abort(); chatState.abort = null; }
 
-    var fullText = '';
-    var aiMsg = null;
-    var gotFirstToken = false;
-    var thinkingStart = 0;
-
     var modelSel = document.getElementById('chat-model');
-    var selectedModel = modelSel ? modelSel.value : '';
+    return { status: status, error: error, sendBtn: sendBtn, model: modelSel ? modelSel.value : '' };
+}
+
+function _chatRenderToken(data, ctx) {
+    if (!ctx.gotFirstToken) {
+        ctx.gotFirstToken = true;
+        ctx.refs.status.style.display = 'none';
+        ctx.aiMsg = _chatAddMessage('assistant', '', true);
+    }
+    ctx.fullText += data.content;
+    if (ctx.aiMsg) {
+        var contentDiv = ctx.aiMsg.querySelector('.chat-ai-content');
+        if (contentDiv) {
+            contentDiv.innerHTML = renderAnswer(ctx.fullText);
+            var thread = document.getElementById('chat-thread');
+            thread.scrollTop = thread.scrollHeight;
+        }
+    }
+}
+
+function _chatRenderSources(data, aiMsg) {
+    if (!aiMsg || !data.sources || data.sources.length === 0) return;
+    var html = '<details style="margin-top:0.5rem;font-size:0.82rem;"><summary style="cursor:pointer;color:var(--pico-muted-color);">Sources (' + data.sources.length + ')</summary><div style="margin-top:0.25rem;">';
+    data.sources.forEach(function(src) {
+        var link = pathToLink(src.path);
+        html += '<div style="padding:0.2rem 0;border-bottom:1px solid var(--pico-muted-border-color);">';
+        html += '<strong>[' + src.num + ']</strong> ';
+        if (link) html += '<a href="' + link + '">';
+        html += escHtml(src.title || src.path);
+        if (link) html += '</a>';
+        html += ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small></div>';
+    });
+    html += '</div></details>';
+    aiMsg.insertAdjacentHTML('beforeend', html);
+}
+
+function _chatFinishAsk(query, ctx) {
+    chatState.abort = null;
+    var extracted = _extractInferredTitle(ctx.fullText);
+    var displayText = extracted.clean;
+    if (ctx.aiMsg) {
+        var contentDiv = ctx.aiMsg.querySelector('.chat-ai-content');
+        if (contentDiv) { contentDiv.innerHTML = renderAnswer(displayText); addCopyButtons(ctx.aiMsg); }
+    }
+    chatState.history.push({ role: 'user', content: query });
+    chatState.history.push({ role: 'assistant', content: displayText });
+    _chatUpdateActions();
+    _chatResetInput(ctx.refs.sendBtn);
+}
+
+function _chatResetInput(sendBtn) {
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
+    var input = document.getElementById('chat-input');
+    if (input) input.focus();
+}
+
+function _chatShowError(msg, refs) {
+    chatState.abort = null;
+    refs.error.textContent = msg;
+    refs.error.style.display = 'block';
+    refs.status.style.display = 'none';
+    _chatResetInput(refs.sendBtn);
+}
+
+function chatAsk(query) {
+    var refs = _chatPrepareAsk(query);
+    var thinking = createThinkingTracker(refs.status);
+    var ctx = { fullText: '', aiMsg: null, gotFirstToken: false, refs: refs };
 
     chatState.abort = streamSSE('/search/ask',
-        { query: query, history: chatState.history, scope: chatState.scope, model: selectedModel },
+        { query: query, history: chatState.history, scope: chatState.scope, model: refs.model },
         function(data) {
-            if (data.type === 'status') {
-                status.style.display = 'block';
-                status.innerHTML = '<span aria-busy="true">' + escHtml(data.message) + '</span>';
-            }
-            else if (data.type === 'model') {
-                if (data.thinking) {
-                    thinkingStart = Date.now();
-                    status.innerHTML = '<span aria-busy="true">Thinking...</span>';
-                }
-            }
-            else if (data.type === 'thinking') {
-                var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
-                status.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
-            }
-            else if (data.type === 'thinking_done') {
-                status.innerHTML = '<span aria-busy="true">Writing answer...</span>';
-            }
-            else if (data.type === 'token') {
-                if (!gotFirstToken) {
-                    gotFirstToken = true;
-                    status.style.display = 'none';
-                    aiMsg = _chatAddMessage('assistant', '', true);
-                }
-                fullText += data.content;
-                if (aiMsg) {
-                    var contentDiv = aiMsg.querySelector('.chat-ai-content');
-                    if (contentDiv) {
-                        contentDiv.innerHTML = renderAnswer(fullText);
-                        var thread = document.getElementById('chat-thread');
-                        thread.scrollTop = thread.scrollHeight;
-                    }
-                }
-            }
-            else if (data.type === 'sources') {
-                if (aiMsg && data.sources && data.sources.length > 0) {
-                    var sourcesHtml = '<details style="margin-top:0.5rem;font-size:0.82rem;"><summary style="cursor:pointer;color:var(--pico-muted-color);">Sources (' + data.sources.length + ')</summary><div style="margin-top:0.25rem;">';
-                    data.sources.forEach(function(src) {
-                        var link = pathToLink(src.path);
-                        sourcesHtml += '<div style="padding:0.2rem 0;border-bottom:1px solid var(--pico-muted-border-color);">';
-                        sourcesHtml += '<strong>[' + src.num + ']</strong> ';
-                        if (link) sourcesHtml += '<a href="' + link + '">';
-                        sourcesHtml += escHtml(src.title || src.path);
-                        if (link) sourcesHtml += '</a>';
-                        sourcesHtml += ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small></div>';
-                    });
-                    sourcesHtml += '</div></details>';
-                    aiMsg.insertAdjacentHTML('beforeend', sourcesHtml);
-                }
-            }
-            else if (data.type === 'done') {
-                chatState.abort = null;
-                var extracted = _extractInferredTitle(fullText);
-                var displayText = extracted.clean;
-                if (aiMsg) {
-                    var contentDiv = aiMsg.querySelector('.chat-ai-content');
-                    if (contentDiv) {
-                        contentDiv.innerHTML = renderAnswer(displayText);
-                        addCopyButtons(aiMsg);
-                    }
-                }
-                chatState.history.push({ role: 'user', content: query });
-                chatState.history.push({ role: 'assistant', content: displayText });
-                _chatUpdateActions();
-                if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
-                var chatInput = document.getElementById('chat-input');
-                if (chatInput) chatInput.focus();
-            }
-            else if (data.type === 'error') {
-                chatState.abort = null;
-                error.textContent = data.message;
-                error.style.display = 'block';
-                status.style.display = 'none';
-                if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
-            }
+            if (data.type === 'status') { refs.status.style.display = 'block'; refs.status.innerHTML = '<span aria-busy="true">' + escHtml(data.message) + '</span>'; }
+            else if (data.type === 'model') { thinking.onModel(data); }
+            else if (data.type === 'thinking') { thinking.onThinking(); }
+            else if (data.type === 'thinking_done') { thinking.onThinkingDone(); }
+            else if (data.type === 'token') { _chatRenderToken(data, ctx); }
+            else if (data.type === 'sources') { _chatRenderSources(data, ctx.aiMsg); }
+            else if (data.type === 'done') { _chatFinishAsk(query, ctx); }
+            else if (data.type === 'error') { _chatShowError(data.message, refs); }
         },
-        function(msg) {
-            error.textContent = msg;
-            error.style.display = 'block';
-            status.style.display = 'none';
-            if (sendBtn) { sendBtn.disabled = false; sendBtn.removeAttribute('aria-busy'); }
-        }
+        function(msg) { _chatShowError(msg, refs); }
     );
 }
 

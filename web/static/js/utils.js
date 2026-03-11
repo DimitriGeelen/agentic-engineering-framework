@@ -41,6 +41,34 @@ function handleFetchError(action) {
     return msg;
 }
 
+/* ── Thinking Timer (T-426) ───────────────────────────── */
+
+/**
+ * Create a thinking timer that shows elapsed seconds in a status element.
+ * Shared between chat and Q&A streaming.
+ *
+ * @param {HTMLElement} statusEl  Element to show thinking status
+ * @returns {Object} {onModel, onThinking, onThinkingDone}
+ */
+function createThinkingTracker(statusEl) {
+    var start = 0;
+    return {
+        onModel: function(data) {
+            if (data.thinking) {
+                start = Date.now();
+                statusEl.innerHTML = '<span aria-busy="true">Thinking...</span>';
+            }
+        },
+        onThinking: function() {
+            var elapsed = ((Date.now() - start) / 1000).toFixed(0);
+            statusEl.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
+        },
+        onThinkingDone: function() {
+            statusEl.innerHTML = '<span aria-busy="true">Writing answer...</span>';
+        }
+    };
+}
+
 /* ── SSE Stream Fetcher (T-418) ──────────────────────── */
 
 /**

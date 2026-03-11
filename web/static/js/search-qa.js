@@ -92,118 +92,123 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* ── Ask Q&A ───────────────────────────────────────────── */
-function askQuestion(query) {
-    var card = document.getElementById('ask-answer-card');
-    var textDiv = document.getElementById('ask-text');
-    var statusDiv = document.getElementById('ask-status');
-    var modelDiv = document.getElementById('ask-model');
-    var sourcesEl = document.getElementById('ask-sources');
-    var sourceList = document.getElementById('ask-source-list');
-    var sourceCount = document.getElementById('ask-source-count');
-    var errorDiv = document.getElementById('ask-error');
 
+function _qaPrepareAsk(query) {
     /* Archive previous turn */
     if (qaState.lastQuestion && qaState.lastAnswer) {
         _addTurnToThread(qaState.lastQuestion, renderAnswer(qaState.lastAnswer));
     }
 
-    /* Show card */
-    card.style.display = 'block';
-    textDiv.innerHTML = '';
-    statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '<span aria-busy="true">Retrieving context &amp; generating answer...</span>';
-    modelDiv.textContent = '';
-    sourcesEl.style.display = 'none';
-    sourceList.innerHTML = '';
-    errorDiv.style.display = 'none';
+    var refs = {
+        card: document.getElementById('ask-answer-card'),
+        textDiv: document.getElementById('ask-text'),
+        statusDiv: document.getElementById('ask-status'),
+        modelDiv: document.getElementById('ask-model'),
+        sourcesEl: document.getElementById('ask-sources'),
+        sourceList: document.getElementById('ask-source-list'),
+        sourceCount: document.getElementById('ask-source-count'),
+        errorDiv: document.getElementById('ask-error')
+    };
+
+    refs.card.style.display = 'block';
+    refs.textDiv.innerHTML = '';
+    refs.statusDiv.style.display = 'block';
+    refs.statusDiv.innerHTML = '<span aria-busy="true">Retrieving context &amp; generating answer...</span>';
+    refs.modelDiv.textContent = '';
+    refs.sourcesEl.style.display = 'none';
+    refs.sourceList.innerHTML = '';
+    refs.errorDiv.style.display = 'none';
     document.getElementById('ask-actions-row').style.display = 'none';
     document.getElementById('followup-row').style.display = 'none';
     qaState.lastSources = [];
 
     if (qaState.abort) { qaState.abort.abort(); qaState.abort = null; }
+    return refs;
+}
 
-    var fullText = '';
-    var gotFirstToken = false;
-    var thinkingStart = 0;
+function _qaHandleModel(data, refs) {
+    qaState.lastModel = data.model;
+    var label = data.model;
+    if (data.provider && data.provider !== 'ollama') label = data.provider + '/' + data.model;
+    if (data.thinking) label += ' (thinking)';
+    refs.modelDiv.textContent = label;
+}
+
+function _qaRenderSources(data, refs) {
+    var sources = data.sources || [];
+    qaState.lastSources = sources;
+    refs.sourceCount.textContent = sources.length;
+    refs.sourceList.innerHTML = '';
+    sources.forEach(function(src) {
+        var link = pathToLink(src.path);
+        var el = document.createElement('div');
+        el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
+        el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
+            (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
+            escHtml(src.title) + (link ? '</a>' : '') +
+            ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
+            '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
+        refs.sourceList.appendChild(el);
+    });
+    refs.sourcesEl.style.display = 'block';
+    refs.sourcesEl.setAttribute('open', '');
+    if (typeof htmx !== 'undefined') htmx.process(refs.sourceList);
+}
+
+function _qaFinishAsk(query, ctx) {
+    qaState.abort = null;
+    if (_renderTimer) clearTimeout(_renderTimer);
+    var extracted = _extractInferredTitle(ctx.fullText);
+    qaState.lastInferredTitle = extracted.title;
+    var displayText = extracted.clean;
+    ctx.refs.textDiv.innerHTML = renderAnswer(displayText);
+    addCopyButtons(ctx.refs.textDiv);
+    qaState.lastAnswer = displayText;
+    qaState.lastQuestion = query;
+    qaState.history.push({ role: 'user', content: query });
+    qaState.history.push({ role: 'assistant', content: ctx.fullText });
+    _updateConvHeader();
+    document.getElementById('ask-actions-row').style.display = 'flex';
+    document.getElementById('ask-save-btn').disabled = false;
+    document.getElementById('ask-save-btn').textContent = 'Save';
+    document.getElementById('ask-save-status').textContent = '';
+    document.getElementById('fb-up').disabled = false;
+    document.getElementById('fb-down').disabled = false;
+    document.getElementById('fb-up').style.opacity = '1';
+    document.getElementById('fb-down').style.opacity = '1';
+    document.getElementById('fb-status').textContent = '';
+    document.getElementById('followup-row').style.display = 'block';
+    document.getElementById('followup-input').focus();
+}
+
+function _qaShowError(msg, refs) {
+    qaState.abort = null;
+    refs.errorDiv.textContent = msg;
+    refs.errorDiv.style.display = 'block';
+    refs.statusDiv.style.display = 'none';
+}
+
+function askQuestion(query) {
+    var refs = _qaPrepareAsk(query);
+    var thinking = createThinkingTracker(refs.statusDiv);
+    var ctx = { fullText: '', gotFirstToken: false, refs: refs };
 
     qaState.abort = streamSSE('/search/ask',
         { query: query, history: qaState.history },
         function(data) {
-            if (data.type === 'model') {
-                qaState.lastModel = data.model;
-                var label = data.model;
-                if (data.provider && data.provider !== 'ollama') label = data.provider + '/' + data.model;
-                if (data.thinking) label += ' (thinking)';
-                modelDiv.textContent = label;
-                if (data.thinking) { thinkingStart = Date.now(); statusDiv.innerHTML = '<span aria-busy="true">Thinking...</span>'; }
-            }
-            else if (data.type === 'thinking') {
-                var elapsed = ((Date.now() - thinkingStart) / 1000).toFixed(0);
-                statusDiv.innerHTML = '<span aria-busy="true">Thinking... (' + elapsed + 's)</span>';
-            }
-            else if (data.type === 'thinking_done') { statusDiv.style.display = 'none'; }
+            if (data.type === 'model') { _qaHandleModel(data, refs); thinking.onModel(data); }
+            else if (data.type === 'thinking') { thinking.onThinking(); }
+            else if (data.type === 'thinking_done') { refs.statusDiv.style.display = 'none'; }
             else if (data.type === 'token') {
-                if (!gotFirstToken) { gotFirstToken = true; statusDiv.style.display = 'none'; }
-                fullText += data.content;
-                renderAnswerDebounced(fullText, textDiv);
+                if (!ctx.gotFirstToken) { ctx.gotFirstToken = true; refs.statusDiv.style.display = 'none'; }
+                ctx.fullText += data.content;
+                renderAnswerDebounced(ctx.fullText, refs.textDiv);
             }
-            else if (data.type === 'sources') {
-                var sources = data.sources || [];
-                qaState.lastSources = sources;
-                sourceCount.textContent = sources.length;
-                sourceList.innerHTML = '';
-                sources.forEach(function(src) {
-                    var link = pathToLink(src.path);
-                    var el = document.createElement('div');
-                    el.style.cssText = 'padding: 0.4rem 0; border-bottom: 1px solid var(--pico-muted-border-color);';
-                    el.innerHTML = '<strong>[' + src.num + ']</strong> ' +
-                        (link ? '<a href="' + link + '" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">' : '') +
-                        escHtml(src.title) + (link ? '</a>' : '') +
-                        ' <small style="color:var(--pico-muted-color)">(' + escHtml(src.category) + ')</small>' +
-                        '<br><code style="font-size:0.75rem">' + escHtml(src.path) + '</code>';
-                    sourceList.appendChild(el);
-                });
-                sourcesEl.style.display = 'block';
-                sourcesEl.setAttribute('open', '');
-                if (typeof htmx !== 'undefined') htmx.process(sourceList);
-            }
-            else if (data.type === 'done') {
-                qaState.abort = null;
-                if (_renderTimer) clearTimeout(_renderTimer);
-                var extracted = _extractInferredTitle(fullText);
-                qaState.lastInferredTitle = extracted.title;
-                var displayText = extracted.clean;
-                textDiv.innerHTML = renderAnswer(displayText);
-                addCopyButtons(textDiv);
-                qaState.lastAnswer = displayText;
-                qaState.lastQuestion = query;
-                qaState.history.push({role: 'user', content: query});
-                qaState.history.push({role: 'assistant', content: fullText});
-                _updateConvHeader();
-                document.getElementById('ask-actions-row').style.display = 'flex';
-                document.getElementById('ask-save-btn').disabled = false;
-                document.getElementById('ask-save-btn').textContent = 'Save';
-                document.getElementById('ask-save-status').textContent = '';
-                document.getElementById('fb-up').disabled = false;
-                document.getElementById('fb-down').disabled = false;
-                document.getElementById('fb-up').style.opacity = '1';
-                document.getElementById('fb-down').style.opacity = '1';
-                document.getElementById('fb-status').textContent = '';
-                document.getElementById('followup-row').style.display = 'block';
-                document.getElementById('followup-input').focus();
-            }
-            else if (data.type === 'error') {
-                qaState.abort = null;
-                errorDiv.textContent = data.message;
-                errorDiv.style.display = 'block';
-                statusDiv.style.display = 'none';
-            }
+            else if (data.type === 'sources') { _qaRenderSources(data, refs); }
+            else if (data.type === 'done') { _qaFinishAsk(query, ctx); }
+            else if (data.type === 'error') { _qaShowError(data.message, refs); }
         },
-        function(msg) {
-            errorDiv.textContent = msg;
-            errorDiv.style.display = 'block';
-            statusDiv.style.display = 'none';
-        }
+        function(msg) { _qaShowError(msg, refs); }
     );
 }
 
