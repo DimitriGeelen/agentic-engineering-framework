@@ -1,7 +1,6 @@
 """Inception blueprint — inception task tracking and assumption registry."""
 
 import re as re_mod
-import subprocess
 
 import markdown2
 import yaml
@@ -9,6 +8,7 @@ from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+from web.subprocess_utils import run_fw_command
 
 
 def _md(text):
@@ -20,8 +20,6 @@ def _md(text):
     text = re_mod.sub(r"([^\n])\n(\d+\. )", r"\1\n\n\2", text)
     html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
     return Markup(html)
-
-FW_BIN = str(PROJECT_ROOT / "bin" / "fw")
 
 bp = Blueprint("inception", __name__)
 
@@ -206,12 +204,7 @@ def add_assumption(task_id):
     statement = request.form.get("statement", "").strip()
     if not statement:
         abort(400)
-    subprocess.run(
-        [FW_BIN, "assumption", "add", statement, "--task", task_id],
-        cwd=str(PROJECT_ROOT),
-        capture_output=True,
-        timeout=10,
-    )
+    run_fw_command(["assumption", "add", statement, "--task", task_id], timeout=10)
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 
@@ -223,12 +216,7 @@ def resolve_assumption(assumption_id):
     evidence = request.form.get("evidence", "").strip()
     if action not in ("validate", "invalidate") or not evidence:
         abort(400)
-    subprocess.run(
-        [FW_BIN, "assumption", action, assumption_id, "--evidence", evidence],
-        cwd=str(PROJECT_ROOT),
-        capture_output=True,
-        timeout=10,
-    )
+    run_fw_command(["assumption", action, assumption_id, "--evidence", evidence], timeout=10)
     # Redirect back to referrer or assumptions list
     referrer = request.form.get("redirect", "")
     if referrer:
@@ -244,12 +232,7 @@ def record_decision(task_id):
     rationale = request.form.get("rationale", "").strip()
     if decision not in ("go", "no-go", "defer") or not rationale:
         abort(400)
-    subprocess.run(
-        [FW_BIN, "inception", "decide", task_id, decision, "--rationale", rationale],
-        cwd=str(PROJECT_ROOT),
-        capture_output=True,
-        timeout=10,
-    )
+    run_fw_command(["inception", "decide", task_id, decision, "--rationale", rationale], timeout=10)
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 

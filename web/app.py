@@ -98,42 +98,11 @@ def create_app() -> Flask:
     app.jinja_env.filters["path_to_link"] = path_to_link
 
     # -------------------------------------------------------------------
-    # Register blueprints
+    # Register blueprints (centralized in __init__.py — T-431/A2)
     # -------------------------------------------------------------------
 
-    from web.blueprints.core import bp as core_bp
-    from web.blueprints.tasks import bp as tasks_bp
-    from web.blueprints.timeline import bp as timeline_bp
-    from web.blueprints.discovery import bp as discovery_bp
-    from web.blueprints.quality import bp as quality_bp
-    from web.blueprints.session import bp as session_bp
-    from web.blueprints.metrics import bp as metrics_bp
-    from web.blueprints.cockpit import bp as cockpit_bp
-    from web.blueprints.inception import bp as inception_bp
-    from web.blueprints.enforcement import bp as enforcement_bp
-    from web.blueprints.risks import bp as risks_bp
-    from web.blueprints.fabric import bp as fabric_bp
-    from web.blueprints.discoveries import bp as discoveries_bp
-    from web.blueprints.docs import bp as docs_bp
-    from web.blueprints.settings import bp as settings_bp
-    from web.blueprints.api import bp as api_bp
-
-    app.register_blueprint(core_bp)
-    app.register_blueprint(tasks_bp)
-    app.register_blueprint(timeline_bp)
-    app.register_blueprint(discovery_bp)
-    app.register_blueprint(quality_bp)
-    app.register_blueprint(session_bp)
-    app.register_blueprint(metrics_bp)
-    app.register_blueprint(cockpit_bp)
-    app.register_blueprint(inception_bp)
-    app.register_blueprint(enforcement_bp)
-    app.register_blueprint(risks_bp)
-    app.register_blueprint(fabric_bp)
-    app.register_blueprint(discoveries_bp)
-    app.register_blueprint(docs_bp)
-    app.register_blueprint(settings_bp)
-    app.register_blueprint(api_bp)
+    from web.blueprints import register_blueprints
+    register_blueprints(app)
 
     # -------------------------------------------------------------------
     # Health endpoint

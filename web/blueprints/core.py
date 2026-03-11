@@ -6,7 +6,7 @@ import markdown2
 from flask import Blueprint, abort
 
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan, parse_frontmatter
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan, parse_frontmatter, load_latest_audit
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("core", __name__)
@@ -87,19 +87,16 @@ def _get_traceability():
 
 
 def _get_audit_status():
-    """Get latest audit status."""
-    audits_dir = PROJECT_ROOT / ".context" / "audits"
-    if not audits_dir.exists():
+    """Get latest audit status via shared helper."""
+    _, summary, _ = load_latest_audit()
+    if not summary:
         return "UNKNOWN", 0, 0, 0
-    audit_files = sorted(audits_dir.glob("*.yaml"), reverse=True)
-    if not audit_files:
-        return "UNKNOWN", 0, 0, 0
-    data = _load_yaml(audit_files[0])
-    s = data.get("summary", {})
-    p, w, f = s.get("pass", 0), s.get("warn", 0), s.get("fail", 0)
+    p = summary.get("pass", 0)
+    w = summary.get("warn", 0)
+    f = summary.get("fail", 0)
     if f > 0:
         return "FAIL", p, w, f
-    elif w > 0:
+    if w > 0:
         return "WARN", p, w, f
     return "PASS", p, w, f
 

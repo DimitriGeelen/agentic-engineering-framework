@@ -11,16 +11,15 @@ Renders the Watchtower cockpit when scan data exists, with:
 All control actions shell out to existing fw CLI commands.
 """
 
-import os
 import re as re_mod
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 from flask import Blueprint, request, render_template
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_scan
+from web.shared import PROJECT_ROOT, render_page, load_scan
+from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("cockpit", __name__)
 
@@ -128,21 +127,6 @@ def get_cockpit_context(scan_data: dict) -> dict:
 # Control action endpoints
 # ---------------------------------------------------------------------------
 
-def _fw(args, timeout=30):
-    """Run a fw CLI command and return (stdout, stderr, ok)."""
-    try:
-        result = subprocess.run(
-            [str(FRAMEWORK_ROOT / "bin" / "fw")] + args,
-            capture_output=True, text=True, timeout=timeout,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
-        )
-        return result.stdout.strip(), result.stderr.strip(), result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return "", "Command timed out", False
-    except Exception as exc:
-        return "", str(exc), False
-
-
 def _escape(text):
     """Escape HTML."""
     return (text.replace("&", "&amp;").replace("<", "&lt;")
@@ -152,7 +136,7 @@ def _escape(text):
 @bp.route("/api/scan/refresh", methods=["POST"])
 def scan_refresh():
     """Trigger a fresh scan and return updated cockpit content."""
-    stdout, stderr, ok = _fw(["scan", "--quiet"])
+    stdout, stderr, ok = run_fw_command(["scan", "--quiet"])
     if ok:
         scan_data = load_scan()
         if scan_data:
@@ -180,10 +164,10 @@ def scan_approve(rec_id):
     action = rec.get("suggested_action", {})
     if isinstance(action, dict) and "command" in action:
         cmd_parts = action["command"].split() + (action.get("args", "").split() if action.get("args") else [])
-        stdout, stderr, ok = _fw(cmd_parts)
+        stdout, stderr, ok = run_fw_command(cmd_parts)
         if ok:
             rec_type = rec.get("type", "unknown")
-            _fw(["context", "add-decision",
+            run_fw_command(["context", "add-decision",
                  f"Approved: {rec.get('summary', rec_id)}",
                  "--rationale", "Scan recommendation approved",
                  "--source", "scan",
@@ -212,7 +196,7 @@ def scan_defer(rec_id):
         return f'<p style="color:var(--pico-del-color)">Not found: {_escape(rec_id)}.</p>', 404
 
     rec_type = rec.get("type", "unknown")
-    _fw(["context", "add-decision",
+    run_fw_command(["context", "add-decision",
          f"Deferred: {rec.get('summary', rec_id)}",
          "--rationale", reason,
          "--source", "scan",
@@ -239,7 +223,7 @@ def scan_apply(rec_id):
     action = rec.get("recommended_action", {})
     if isinstance(action, dict) and "command" in action:
         cmd_parts = action["command"].split() + (action.get("args", "").split() if action.get("args") else [])
-        stdout, stderr, ok = _fw(cmd_parts)
+        stdout, stderr, ok = run_fw_command(cmd_parts)
         if ok:
             return f'<p style="color:var(--pico-ins-color)">Applied: {_escape(rec.get("summary", rec_id)[:100])}</p>'
         return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
@@ -252,7 +236,7 @@ def scan_focus(task_id):
     """Set focus to a task from the work queue."""
     if not re_mod.match(r"^T-\d{3}$", task_id):
         return '<p style="color:var(--pico-del-color)">Invalid task ID.</p>', 400
-    stdout, stderr, ok = _fw(["context", "focus", task_id])
+    stdout, stderr, ok = run_fw_command(["context", "focus", task_id])
     if ok:
         return f'<p style="color:var(--pico-ins-color)">Focus set to {_escape(task_id)}</p>'
     return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
