@@ -12,7 +12,7 @@ tags: [refactoring, html, watchtower, usability, accessibility]
 components: [web/templates/_partials/ask_answer_card.html, web/templates/_partials/chat_tab.html, web/templates/_partials/search_input.html, web/templates/task_detail.html]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:11Z
-last_update: 2026-03-11T22:23:31Z
+last_update: 2026-03-11T22:28:08Z
 date_finished: null
 ---
 
@@ -58,7 +58,6 @@ curl -sf http://localhost:3000/ > /dev/null
 curl -sf http://localhost:3000/search > /dev/null
 curl -sf http://localhost:3000/tasks/T-428 > /dev/null
 curl -sf http://localhost:3000/inception > /dev/null
--->
 
 ## Decisions
 
