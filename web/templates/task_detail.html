@@ -87,7 +87,7 @@
     <tbody>
         <tr><th>Status</th><td>
             <form hx-post="/api/task/{{ task_id }}/status" hx-target="#status-result" hx-swap="innerHTML"
-                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                  class="inline-flex-center gap-md">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="status" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for s in status_options %}
@@ -99,7 +99,7 @@
         </td></tr>
         <tr><th>Owner</th><td>
             <form hx-post="/api/task/{{ task_id }}/owner" hx-target="#owner-result" hx-swap="innerHTML"
-                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                  class="inline-flex-center gap-md">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="owner" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for o in ['human','claude-code'] %}
@@ -111,7 +111,7 @@
         </td></tr>
         <tr><th>Horizon</th><td>
             <form hx-post="/api/task/{{ task_id }}/horizon" hx-target="#horizon-result" hx-swap="innerHTML"
-                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                  class="inline-flex-center gap-md">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="horizon" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for h in ['now','next','later'] %}
@@ -123,7 +123,7 @@
         </td></tr>
         <tr><th>Workflow Type</th><td>
             <form hx-post="/api/task/{{ task_id }}/type" hx-target="#type-result" hx-swap="innerHTML"
-                  style="margin:0;padding:0;display:inline-flex;align-items:center;gap:0.5rem;">
+                  class="inline-flex-center gap-md">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <select name="type" class="inline-status-select" onchange="this.form.requestSubmit()">
                     {% for t in ['build','test','refactor','specification','design','decommission','inception'] %}
@@ -170,7 +170,7 @@
         {% for line_idx, checked, text in ac_items %}
         <li>
             <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input" hx-swap="outerHTML"
-                  style="margin:0;padding:0;display:inline;">
+                  class="inline-reset">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="line" value="{{ line_idx }}">
                 <input type="checkbox" {% if checked %}checked{% endif %}

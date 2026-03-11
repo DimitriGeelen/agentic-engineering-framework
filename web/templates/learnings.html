@@ -24,7 +24,7 @@
                 <td>
                     {{ l.learning }}
                     {% if l.context %}
-                    <br><small style="color: var(--pico-muted-color);">{{ l.context }}</small>
+                    <br><small class="text-muted">{{ l.context }}</small>
                     {% endif %}
                 </td>
                 <td><small>{{ l.source | default('') }}</small></td>
@@ -35,12 +35,12 @@
         </tbody>
     </table>
     {% else %}
-    <p style="color: var(--pico-muted-color); font-style: italic;">No learnings recorded yet.</p>
+    <p class="text-muted italic">No learnings recorded yet.</p>
     {% endif %}
 </details>
 
 <!-- Patterns link (moved to dedicated page) -->
-<p style="margin-top: 1.5rem;">
+<p class="mt-2">
     <a href="/patterns" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
         View all {{ patterns.failure|length + patterns.success|length + patterns.workflow|length }} patterns &rarr;
     </a>
@@ -63,7 +63,7 @@
         {% if p.anti_pattern %}
         <p style="color: #c0392b; font-size: 0.875rem;"><strong>Anti-pattern:</strong> {{ p.anti_pattern }}</p>
         {% endif %}
-        <p style="color: var(--pico-muted-color); font-size: 0.8rem;">
+        <p class="text-muted text-sm">
             Derived from: <code>{{ p.derived_from if p.derived_from is string else p.derived_from | join(', ') }}</code>
             {% if p.origin_task %} | Origin: <code>{{ p.origin_task }}</code>{% endif %}
             {% if p.origin_date %} | {{ p.origin_date }}{% endif %}
@@ -71,6 +71,6 @@
     </article>
     {% endfor %}
     {% else %}
-    <p style="color: var(--pico-muted-color); font-style: italic;">No practices recorded yet.</p>
+    <p class="text-muted italic">No practices recorded yet.</p>
     {% endif %}
 </details>

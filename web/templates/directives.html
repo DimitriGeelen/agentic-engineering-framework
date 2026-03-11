@@ -16,7 +16,7 @@
     <p>{{ d.statement }}</p>
 
     {% if d.last_reviewed %}
-    <p style="color: var(--pico-muted-color); font-size: 0.875rem;">Last reviewed: {{ d.last_reviewed }}</p>
+    <p class="text-muted text-base">Last reviewed: {{ d.last_reviewed }}</p>
     {% endif %}
 
     {% if d.practices %}
@@ -92,7 +92,7 @@
     {% endif %}
 
     {% if not d.practices and not d.decisions and not d.gaps %}
-    <p style="color: var(--pico-muted-color); font-style: italic;">No linked practices, decisions, or gaps.</p>
+    <p class="text-muted italic">No linked practices, decisions, or gaps.</p>
     {% endif %}
 </article>
 {% endfor %}

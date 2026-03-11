@@ -237,20 +237,20 @@
         <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--pico-muted-border-color);">
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700;">{{ concerns_summary.total_watching }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Concerns</div>
+                <div class="text-muted text-xs">Concerns</div>
             </div>
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Gaps</div>
+                <div class="text-muted text-xs">Gaps</div>
             </div>
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">Risks</div>
+                <div class="text-muted text-xs">Risks</div>
             </div>
             {% if concerns_summary.high > 0 %}
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.75rem;">High</div>
+                <div class="text-muted text-xs">High</div>
             </div>
             {% endif %}
         </div>
@@ -262,9 +262,9 @@
         </div>
         {% endif %}
         <p style="margin-top:0.5rem;">
-            <a href="/metrics" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">Full metrics &rarr;</a>
+            <a href="/metrics" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" class="text-sm">Full metrics &rarr;</a>
             &nbsp;
-            <a href="/risks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="font-size:0.85rem;">Concerns &rarr;</a>
+            <a href="/risks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" class="text-sm">Concerns &rarr;</a>
         </p>
     </article>
 
@@ -275,7 +275,7 @@
         <h5 style="color:#c62828; font-size:0.85rem; margin-top:0.75rem;">Risks</h5>
         {% for risk in risks %}
         <div class="wt-card wt-card-red" style="padding:0.5rem 0.75rem;">
-            <div style="font-size:0.85rem;">{{ risk.summary }}</div>
+            <div class="text-sm">{{ risk.summary }}</div>
         </div>
         {% endfor %}
         {% endif %}

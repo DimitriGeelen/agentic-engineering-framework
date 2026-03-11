@@ -8,7 +8,7 @@
 {% for g in gaps %}
 <article>
     <header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="flex-between">
             <span>
                 <code>{{ g.id }}</code> &mdash; {{ g.title }}
             </span>
@@ -23,13 +23,13 @@
     <p>{{ g.description }}</p>
 
     {% if g.spec_reference %}
-    <p style="font-size: 0.875rem;"><strong>Spec:</strong> <code>{{ g.spec_reference }}</code></p>
+    <p class="text-base"><strong>Spec:</strong> <code>{{ g.spec_reference }}</code></p>
     {% endif %}
 
     {% if g.why_not_now %}
     <details>
         <summary>Why not now?</summary>
-        <p style="color: var(--pico-muted-color);">{{ g.why_not_now }}</p>
+        <p class="text-muted">{{ g.why_not_now }}</p>
     </details>
     {% endif %}
 
@@ -38,7 +38,7 @@
         <summary>Decision trigger</summary>
         <p>{{ g.decision_trigger }}</p>
         {% if g.trigger_check %}
-        <p style="font-size: 0.8rem; color: var(--pico-muted-color);">
+        <p class="text-sm text-muted">
             Check type: <code>{{ g.trigger_check.type }}</code>
             {% if g.trigger_check.hint %} &mdash; {{ g.trigger_check.hint }}{% endif %}
             {% if g.trigger_check.check %}<br>Command: <code>{{ g.trigger_check.check }}</code>{% endif %}
@@ -63,7 +63,7 @@
     {% if g.alternative_outcome %}
     <details>
         <summary>Alternative outcome</summary>
-        <p style="color: var(--pico-muted-color);">{{ g.alternative_outcome }}</p>
+        <p class="text-muted">{{ g.alternative_outcome }}</p>
     </details>
     {% endif %}
 

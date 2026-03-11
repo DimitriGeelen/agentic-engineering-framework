@@ -1,5 +1,5 @@
 <!-- Ask AI chat tab (T-409) — conversational RAG with streaming -->
-<div id="chat-container" style="display: none;">
+<div id="chat-container" class="hidden">
 
     <!-- Chat controls bar -->
     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
@@ -14,10 +14,10 @@
                 style="font-size: 0.7rem; padding: 0.15rem 0.5rem; margin: 0; white-space: nowrap;">Test</button>
         <small id="chat-test-result" style="font-size: 0.75rem; min-width: 3rem;"></small>
 
-        <span style="flex: 1;"></span>
+        <span class="flex-1"></span>
 
         <!-- Context scope (optional) -->
-        <details id="chat-scope-details" style="margin: 0;">
+        <details id="chat-scope-details" class="m-0">
             <summary style="font-size: 0.78rem; color: var(--pico-muted-color); cursor: pointer;">
                 Scope: <span id="chat-scope-label">All</span>
             </summary>
@@ -48,10 +48,10 @@
     <details id="chat-saved-section" style="margin-bottom: 0.75rem;">
         <summary style="font-size: 0.82rem; cursor: pointer;">
             <strong>Saved Conversations</strong>
-            <small id="chat-saved-count" style="color: var(--pico-muted-color);"></small>
+            <small id="chat-saved-count" class="text-muted"></small>
         </summary>
         <div id="chat-saved-list" style="margin-top: 0.5rem; max-height: 200px; overflow-y: auto;">
-            <small style="color: var(--pico-muted-color);">Loading...</small>
+            <small class="text-muted">Loading...</small>
         </div>
     </details>
 
@@ -61,7 +61,7 @@
         <div id="chat-welcome" style="text-align: center; padding: 2rem 1rem; color: var(--pico-muted-color);">
             <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">&#x1F4AC;</div>
             <p style="margin-bottom: 0.5rem;"><strong>Ask anything about the project</strong></p>
-            <p style="font-size: 0.85rem;">I'll search the knowledge base and give you an informed answer. Ask follow-ups to dig deeper.</p>
+            <p class="text-sm">I'll search the knowledge base and give you an informed answer. Ask follow-ups to dig deeper.</p>
             <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem;">
                 <button class="outline" onclick="chatAsk('How does the audit system work?')" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">How does the audit system work?</button>
                 <button class="outline" onclick="chatAsk('What are the four directives?')" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">What are the four directives?</button>
@@ -80,7 +80,7 @@
 
     <!-- Input bar -->
     <form id="chat-form" onsubmit="event.preventDefault(); chatSubmit();">
-        <fieldset role="group" style="margin-bottom: 0;">
+        <fieldset role="group" class="mb-0">
             <input type="text" id="chat-input" placeholder="Ask a question or continue the conversation..."
                    aria-label="Chat message" autocomplete="off" minlength="2" required>
             <button type="submit" id="chat-send-btn">Send</button>
@@ -92,8 +92,8 @@
         <button id="chat-save-btn" onclick="chatSave()" class="outline" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">
             Save Conversation
         </button>
-        <small id="chat-save-status" style="color: var(--pico-muted-color);"></small>
-        <span style="flex: 1;"></span>
-        <small id="chat-turn-count" style="color: var(--pico-muted-color);"></small>
+        <small id="chat-save-status" class="text-muted"></small>
+        <span class="flex-1"></span>
+        <small id="chat-turn-count" class="text-muted"></small>
     </div>
 </div>

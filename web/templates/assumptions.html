@@ -107,7 +107,7 @@
         <div class="stat-label">Untested</div>
     </div>
     <div class="assumption-stat">
-        <div class="stat-value" style="color: #c62828;">{{ summary.invalidated }}</div>
+        <div class="stat-value text-danger">{{ summary.invalidated }}</div>
         <div class="stat-label">Invalidated</div>
     </div>
 </div>
@@ -151,7 +151,7 @@
                 {{ a.statement }}
                 {% if a.evidence %}
                 <details style="margin-top: 0.25rem;">
-                    <summary style="font-size: 0.75rem;">{{ a.evidence | length }} evidence record{% if a.evidence | length != 1 %}s{% endif %}</summary>
+                    <summary class="text-xs">{{ a.evidence | length }} evidence record{% if a.evidence | length != 1 %}s{% endif %}</summary>
                     {% for e in a.evidence %}
                     <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin: 0.25rem 0;">
                         {{ e.outcome }} <small>({{ e.date }})</small>

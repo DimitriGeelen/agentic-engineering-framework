@@ -210,7 +210,7 @@
     <header>Assumptions ({{ linked_assumptions | length }})</header>
     {% for a in linked_assumptions %}
     <div class="assumption-card" id="assumption-{{ a.id }}">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <code>{{ a.id }}</code> &mdash; {{ a.statement }}
             {% if a.evidence %}
             <div style="font-size: 0.8rem; color: var(--pico-muted-color); margin-top: 0.25rem;">
@@ -302,14 +302,14 @@
         </div>
         <textarea name="rationale" placeholder="Rationale for this decision..." required
                   style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;"></textarea>
-        <button type="submit" style="font-size: 0.85rem;">Record Decision</button>
+        <button type="submit" class="text-sm">Record Decision</button>
     </form>
 </article>
 {% endif %}
 
 <!-- Updates Log -->
 {% if sections.updates %}
-<details style="margin-top: 1.5rem;">
+<details class="mt-2">
     <summary>Update Log</summary>
     <div class="section-content" style="font-size: 0.85rem; margin-top: 0.75rem;">{{ sections.updates }}</div>
 </details>
@@ -332,7 +332,7 @@
         </ul>
         {% endif %}
         {% if episodic.tags %}
-        <p style="color: var(--pico-muted-color);">
+        <p class="text-muted">
             Tags: {% for tag in episodic.tags %}<code>{{ tag }}</code> {% endfor %}
         </p>
         {% endif %}

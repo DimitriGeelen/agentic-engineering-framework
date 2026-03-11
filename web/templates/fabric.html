@@ -83,7 +83,7 @@
 
     {% if filter_subsystem or filter_type or search %}
     <a href="/fabric" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
-       style="font-size: 0.875rem;">Clear filters</a>
+       class="text-base">Clear filters</a>
     {% endif %}
 </div>
 
@@ -126,7 +126,7 @@
                 </span>
             </td>
             <td><small>{{ c.subsystem }}</small></td>
-            <td><code style="font-size: 0.75rem;">{{ c.location }}</code></td>
+            <td><code class="text-xs">{{ c.location }}</code></td>
             <td>{{ c.depends_on | default([]) | length }}</td>
         </tr>
         {% endfor %}

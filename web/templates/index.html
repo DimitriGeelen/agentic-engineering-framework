@@ -229,7 +229,7 @@
                     {% endif %}
                 {% elif not item.done and item.action_label %}
                 <span class="wt-checklist-action">
-                    <code style="font-size: 0.8rem;">{{ item.action_label }}</code>
+                    <code class="text-sm">{{ item.action_label }}</code>
                 </span>
                 {% endif %}
             </li>
@@ -325,7 +325,7 @@
                 Concerns:
                 <span class="wt-pulse-value">{{ concerns_summary.total_watching }}</span> watching
                 {% if concerns_summary.high > 0 %}
-                (<span class="wt-pulse-value" style="color: #c62828;">{{ concerns_summary.high }}</span> high)
+                (<span class="wt-pulse-value text-danger">{{ concerns_summary.high }}</span> high)
                 {% endif %}
             </a>
         </li>
@@ -351,28 +351,28 @@
         <h4 class="wt-section-title">Concerns Register</h4>
         <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.9rem;">
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700;">{{ concerns_summary.total_watching }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Watching</div>
+                <div class="text-xl font-bold">{{ concerns_summary.total_watching }}</div>
+                <div class="text-muted text-sm">Watching</div>
             </div>
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Gaps</div>
+                <div class="text-muted text-sm">Gaps</div>
             </div>
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Risks</div>
+                <div class="text-muted text-sm">Risks</div>
             </div>
             {% if concerns_summary.high > 0 %}
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">High severity</div>
+                <div class="text-muted text-sm">High severity</div>
             </div>
             {% endif %}
         </div>
         <div style="margin-top: 0.75rem;">
             <a href="{{ url_for('risks.risk_register') }}"
                hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
-               style="font-size: 0.8rem;">View concerns &rarr;</a>
+               class="text-sm">View concerns &rarr;</a>
         </div>
     </article>
 
@@ -382,21 +382,21 @@
             {% if pattern_summary.failure > 0 %}
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #c62828;">{{ pattern_summary.failure }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Failure</div>
+                <div class="text-muted text-sm">Failure</div>
             </div>
             {% endif %}
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #2e7d32;">{{ pattern_summary.success }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Success</div>
+                <div class="text-muted text-sm">Success</div>
             </div>
             <div>
                 <div style="font-size: 1.5rem; font-weight: 700; color: #6a1b9a;">{{ pattern_summary.antifragile }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Antifragile</div>
+                <div class="text-muted text-sm">Antifragile</div>
             </div>
             {% if pattern_summary.workflow > 0 %}
             <div>
-                <div style="font-size: 1.5rem; font-weight: 700;">{{ pattern_summary.workflow }}</div>
-                <div style="color: var(--pico-muted-color); font-size: 0.8rem;">Workflow</div>
+                <div class="text-xl font-bold">{{ pattern_summary.workflow }}</div>
+                <div class="text-muted text-sm">Workflow</div>
             </div>
             {% endif %}
         </div>
@@ -412,7 +412,7 @@
         <div style="margin-top: 0.75rem;">
             <a href="{{ url_for('metrics.project_metrics') }}"
                hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
-               style="font-size: 0.8rem;">Full metrics &rarr;</a>
+               class="text-sm">Full metrics &rarr;</a>
         </div>
     </article>
 </div>

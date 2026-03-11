@@ -83,12 +83,12 @@
     }
 </style>
 
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+<div class="page-header flex-between">
     <div>
         <h1>{{ page_title }}</h1>
         <p>Project health at a glance.</p>
     </div>
-    <a role="button" class="outline" style="font-size: 0.85rem;"
+    <a role="button" class="outline text-sm"
        hx-get="/metrics" hx-target="#content" hx-swap="innerHTML">Refresh</a>
 </div>
 
@@ -140,7 +140,7 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p style="color: var(--pico-muted-color); font-style: italic;">No commits found.</p>
+        <p class="text-muted italic">No commits found.</p>
         {% endif %}
     </article>
 
@@ -158,7 +158,7 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p style="color: var(--pico-muted-color); font-style: italic;">All tasks healthy.</p>
+        <p class="text-muted italic">All tasks healthy.</p>
         {% endif %}
     </article>
 </div>

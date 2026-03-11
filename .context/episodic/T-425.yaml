@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-425: Create CSS utility classes — replace 218 inline styles across templates and JS (J1+H1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T10:29:53Z
+# ============================================================================
+
+task_id: T-425
+task_name: "Create CSS utility classes — replace 218 inline styles across templates and JS (J1+H1)"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-10T21:04:06Z
+completed: 2026-03-11T10:29:50Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Utility classes added to base.html (text, font-size, layout, spacing, components)"
+  - "139 inline styles replaced with utility classes across 25+ templates"
+  - "JS hardcoded colors (#2e7d32, #c62828) replaced with classList.add() using text-success/text-danger"
+  - "No double-class attributes in templates"
+  - "All pages load without errors"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 805 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, css, watchtower, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 805
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-425-create-css-utility-classes--replace-218-.md
+generated_by: context-agent-hybrid
