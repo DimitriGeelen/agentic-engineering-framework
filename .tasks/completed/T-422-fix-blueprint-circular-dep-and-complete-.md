@@ -4,16 +4,16 @@ name: "Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A
 description: >
   A5: Move load_scan() from cockpit.py to shared.py — core.py imports from cockpit creating circular dep risk. A6: Remove gaps.yaml fallback in core.py:42-44 and discovery.py — T-397 migrated to concerns.yaml but fallback code remains. Add audit rule to fail if old gaps.yaml/risks.yaml exist. Directive score: A5=7, A6=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, python, watchtower, reliability]
-components: [web/blueprints/core.py, web/blueprints/cockpit.py, web/shared.py, web/blueprints/discovery.py]
+components: [C-004, web/blueprints/cockpit.py, web/blueprints/core.py, web/shared.py]
 related_tasks: [T-397, T-411]
 created: 2026-03-10T21:03:22Z
-last_update: 2026-03-11T07:55:50Z
-date_finished: null
+last_update: 2026-03-11T08:01:51Z
+date_finished: 2026-03-11T08:01:51Z
 ---
 
 # T-422: Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A6)
@@ -70,3 +70,6 @@ python3 -c "from web.blueprints.core import bp; print('OK')"
 
 ### 2026-03-11T07:55:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T08:01:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -8,13 +8,7 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 HANDOVER_DIR="$CONTEXT_DIR/handovers"
 WORKING_DIR="$CONTEXT_DIR/working"
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
 
 show_help() {
     echo "Resume Agent - Post-compaction recovery"

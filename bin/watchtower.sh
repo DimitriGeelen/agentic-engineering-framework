@@ -20,12 +20,7 @@ PID_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.pid"
 LOG_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT="${FW_PORT:-3000}"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BOLD='\033[1m'
-NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
 
 # ---------------------------------------------------------------------------
 # Helpers

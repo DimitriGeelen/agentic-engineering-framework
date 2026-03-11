@@ -4,16 +4,16 @@ name: "Encapsulate JS conversation state — replace 11 global variables (J3)"
 description: >
   Create ConversationState class to replace 11 unencapsulated globals across chat.js (4: _chatHistory, _chatAbort, _chatScope, _chatLoadedConvId) and search-qa.js (7: _askAbort, _lastQuestion, _lastAnswer, etc). Global state makes test isolation impossible and enables hard-to-reproduce state leakage. Directive score: J3=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: [refactoring, javascript, watchtower, reliability]
-components: [web/static/js/chat.js, web/static/js/search-qa.js]
+components: [web/static/js/chat.js]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:19Z
-last_update: 2026-03-11T07:44:16Z
-date_finished: null
+last_update: 2026-03-11T07:46:42Z
+date_finished: 2026-03-11T07:46:42Z
 ---
 
 # T-419: Encapsulate JS conversation state — replace 11 global variables (J3)
@@ -64,3 +64,6 @@ See research artifact § "JAVASCRIPT" row J3.
 
 ### 2026-03-11T07:44:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-11T07:46:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

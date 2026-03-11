@@ -21,13 +21,7 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 PATTERNS_FILE="$CONTEXT_DIR/project/patterns.yaml"
 LIB_DIR="$SCRIPT_DIR/lib"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
 
 # Show usage
 show_usage() {

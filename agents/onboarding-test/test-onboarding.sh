@@ -49,17 +49,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# --- Colors ---
-if [ "$QUIET" = true ] || [ ! -t 1 ]; then
+# Colors provided by lib/colors.sh (via paths.sh chain)
+# Override to no-color in quiet mode
+if [ "$QUIET" = true ]; then
     RED="" GREEN="" YELLOW="" CYAN="" NC="" DIM="" BOLD=""
-else
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    CYAN='\033[0;36m'
-    NC='\033[0m'
-    DIM='\033[2m'
-    BOLD='\033[1m'
 fi
 
 # --- Counters ---

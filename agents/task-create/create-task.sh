@@ -13,11 +13,7 @@ TEMPLATE="$TASKS_DIR/templates/default.md"
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
-# Colors for output (legacy — gradually migrating to lib/errors.sh functions)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Colors provided by lib/colors.sh (via paths.sh chain)
 
 # Parse arguments
 NAME=""
