@@ -1,0 +1,17 @@
+id: web/static/js/markdown-render.js
+name: markdown-render
+type: script
+subsystem: watchtower
+location: web/static/js/markdown-render.js
+tags: []
+
+purpose: "Markdown rendering utility — converts markdown text to safe HTML using marked.js and DOMPurify"
+
+depends_on: []
+
+depended_by:
+  - target: web/static/js/chat.js
+    type: calls
+
+last_verified: 2026-03-11
+created_by: unknown
