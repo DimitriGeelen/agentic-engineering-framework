@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-470: Deep-dive article 17: Why Bash, YAML and Files — the anti-enterprise stack
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T20:36:30Z
+# ============================================================================
+
+task_id: T-470
+task_name: "Deep-dive article 17: Why Bash, YAML and Files — the anti-enterprise stack"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T20:34:15Z
+completed: 2026-03-12T20:36:29Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Article file exists at docs/articles/deep-dives/17-why-bash-yaml-files.md"
+  - "References real decision IDs (D-002, D-005, D-012, D-013, D-040, AD-004, AD-008, P-006)"
+  - "README tracker updated with article 17"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-470-deep-dive-article-17-why-bash-yaml-and-f.md
+generated_by: context-agent-hybrid

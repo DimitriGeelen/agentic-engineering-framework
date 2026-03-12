@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-447: Cron registry page in Watchtower (read-only, Option A)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T06:21:03Z
+# ============================================================================
+
+task_id: T-447
+task_name: "Cron registry page in Watchtower (read-only, Option A)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T06:13:28Z
+completed: 2026-03-12T06:21:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-12T07:20:51+01:00
+last_commit: 2026-03-12T07:20:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Cron registry page — 10 jobs, schedule, last run, next run, nav entry
+
+# Key outcomes
+outcomes:
+  - "Blueprint `web/blueprints/cron.py` created"
+  - "Template `web/templates/cron.html` created"
+  - "Parses `/etc/cron.d/agentic-*` files for job metadata"
+  - "Shows: job name, schedule, last run time, last result (pass/warn/fail)"
+  - "Calculates and shows next run time from cron expression"
+  - "Nav entry added (Govern > Cron in shared.py NAV_GROUPS)"
+  - "Page loads at `/cron` (200 OK, 10 jobs rendered)"
+  - "Blueprint registered in `web/blueprints/__init__.py`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-blueprints-cron.yaml"
+  - ".fabric/components/web-templates-cron.yaml"
+  - ".tasks/active/T-447-cron-registry-page-in-watchtower-read-on.md"
+  - "web/blueprints/cron.py"
+  - "web/blueprints/__init__.py"
+  - "web/shared.py"
+  - "web/templates/cron.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T07:20:51"
+    action: "T-447: Cron registry page — 10 jobs, schedule, last run, next run, nav entry"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, cron, observability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 7
+  lines_added: 471
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-447-cron-registry-page-in-watchtower-read-on.md
+generated_by: context-agent-hybrid

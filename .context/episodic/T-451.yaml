@@ -1,0 +1,68 @@
+# ============================================================================
+# EPISODIC MEMORY - T-451: Upstream contribution pipeline: safe issue/PR creation from field installations to framework repo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T11:03:39Z
+# ============================================================================
+
+task_id: T-451
+task_name: "Upstream contribution pipeline: safe issue/PR creation from field installations to framework repo"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T09:36:54Z
+completed: 2026-03-12T11:03:38Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (real friction in multi-project usage)"
+  - "Research completed (distribution model, git safety, gh CLI, isolation strategies)"
+  - "Safety model designed (issue-only default, structural isolation for PRs)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 86 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 86
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-451-upstream-contribution-pipeline-safe-issu.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-442: Cron job: pull OneDev PRs and convert to tasks (local-only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T13:00:13Z
+# ============================================================================
+
+task_id: T-442
+task_name: "Cron job: pull OneDev PRs and convert to tasks (local-only)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-11T23:45:59Z
+completed: 2026-03-12T13:00:12Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-12T00:56:45+01:00
+last_commit: 2026-03-12T00:56:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception GO — OneDev PR-to-task cron + fix find_task_file in inception.sh
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Inception GO — OneDev PR-to-task cron + fix find_task_file in inception.sh"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "GO — build the cron job"
+    rationale: "All 3 spikes passed. API accessible without auth, task creation works non-interactively, local-only via .gitignore"
+    alternatives_rejected: ["No-go (all technical risks resolved)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "docs/reports/T-442-onedev-pr-to-task-cron.md"
+  - ".tasks/active/T-442-cron-job-pull-onedev-prs-and-convert-to-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T00:56:45"
+    action: "T-442: Inception GO — OneDev PR-to-task cron + fix find_task_file in inception.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 794 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 794
+  commits: 1
+  files_changed: 3
+  lines_added: 194
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-442-cron-job-pull-onedev-prs-and-convert-to-.md
+generated_by: context-agent-hybrid
