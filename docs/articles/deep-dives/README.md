@@ -17,5 +17,7 @@
 | 13 | Audit | — | — | — |
 | 14 | Handover | — | — | — |
 | 15 | Enforcement | — | — | — |
+| 16 | Honest Machines | — | — | — |
+| 17 | Why Bash, YAML and Files | — | — | — |
 
-**3 of 15 published** (LinkedIn). Publication order: Component Fabric, Three-Layer Memory, Task Gate.
+**3 of 17 published** (LinkedIn). Publication order: Component Fabric, Three-Layer Memory, Task Gate.
