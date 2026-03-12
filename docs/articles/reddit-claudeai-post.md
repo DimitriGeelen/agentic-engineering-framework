@@ -58,7 +58,7 @@ $ git push --force
 ══════════════════════════════════════════════════════════
 ```
 
-I used the framework to build the framework — 312 tasks completed, 96% commit traceability. Every architectural decision is recorded with rationale.
+I used the framework to build the framework — 441 tasks completed, 98% commit traceability. Every architectural decision is recorded with rationale.
 
 It's open source (Apache 2.0) and works with Claude Code out of the box. Also supports Cursor and any CLI agent, though Claude Code gets the deepest enforcement via hooks.
 
