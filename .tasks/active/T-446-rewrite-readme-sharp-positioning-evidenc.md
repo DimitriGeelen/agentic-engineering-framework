@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-12T00:36:10Z
-last_update: 2026-03-12T00:36:10Z
+last_update: 2026-03-12T00:39:22Z
 date_finished: null
 ---
 
@@ -31,8 +31,8 @@ Inception T-445 GO. See `docs/reports/T-445-readme-overhaul.md` for research (po
 - [x] Honest enforcement gradient (Claude Code tested, others untested)
 - [x] Architecture/complexity moved into collapsibles
 - [x] Voice matches author tone (no hype, no emojis, cross-domain analogies, specific evidence)
-- [x] README ≤ 400 lines (328)
-- [x] All existing screenshot references preserved
+- [x] README ≤ 400 lines (316)
+- [x] Screenshots reduced from 8 to 3 (dashboard, task board, dependency graph)
 
 ### Human
 - [ ] [REVIEW] Positioning reads as "governance layer" not "assistant runtime"
@@ -48,10 +48,12 @@ Inception T-445 GO. See `docs/reports/T-445-readme-overhaul.md` for research (po
 test -f README.md
 # Under 400 lines
 python3 -c "lines=len(open('README.md').readlines()); assert lines <= 400, f'Too long: {lines}'; print(f'OK: {lines} lines')"
-# Screenshot references still valid
+# 3 key screenshots present
 grep -q "watchtower-dashboard.png" README.md
 grep -q "watchtower-tasks-board.png" README.md
 grep -q "watchtower-fabric-graph.png" README.md
+# No more than 3 screenshots total
+python3 -c "import re; t=open('README.md').read(); count=len(re.findall(r'!\[', t)); assert count <= 3, f'{count} screenshots'; print(f'OK: {count} screenshots')"
 # No hype words
 python3 -c "t=open('README.md').read().lower(); bad=[w for w in ['revolutionary','game-changing','cutting-edge','ai-powered'] if w in t]; assert not bad, f'Hype words found: {bad}'; print('OK: no hype')"
 # No exclamation marks (outside code blocks)
