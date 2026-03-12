@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-443: Build OneDev PR-to-task cron job (local-only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-11T23:59:54Z
+# ============================================================================
+
+task_id: T-443
+task_name: "Build OneDev PR-to-task cron job (local-only)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-11T23:56:54Z
+completed: 2026-03-11T23:59:52Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Script `deploy/onedev-pr-sync.sh` polls OneDev API for open PRs"
+  - "Creates framework tasks (horizon: next, owner: human, tags: onedev,pr)"
+  - "Tracks seen PRs in `.context/working/.onedev-pr-seen` — idempotent"
+  - "Script and seen file listed in `.gitignore` (local-only)"
+  - "Cron job installed at `/etc/cron.d/agentic-onedev-sync` (every 15 min)"
+  - "Dry-run mode (`--dry-run`) works"
+  - "Fixed `find_task_file` regression in `fw inception decide` (bin/fw missing `source tasks.sh`)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Script in deploy/ + .gitignore, separate cron file"
+    rationale: "Nothing propagates to GitHub; clean separation from framework core"
+    alternatives_rejected: ["fw subcommand (would be in git), adding to existing cron file (mixes concerns)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-443-build-onedev-pr-to-task-cron-job-local-o.md
+generated_by: context-agent-hybrid
