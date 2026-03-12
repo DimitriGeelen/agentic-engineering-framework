@@ -427,3 +427,10 @@ decisions:
     date: 2026-03-11
     task: T-431
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-056
+    decision: "Script in deploy/ + .gitignore, separate cron file"
+    scope: project
+    date: 2026-03-11
+    task: T-443
+    rationale: "Auto-captured from task file on completion"

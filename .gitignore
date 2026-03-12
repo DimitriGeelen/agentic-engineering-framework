@@ -7,6 +7,10 @@ __pycache__/
 .context/secrets/
 .context/settings.yaml
 
+# Local-only deployment scripts (installation-specific, not for GitHub)
+deploy/onedev-pr-sync.sh
+.context/working/.onedev-pr-seen
+
 # Temporary screenshots (Playwright MCP output)
 *.png
 # But track documentation screenshots
