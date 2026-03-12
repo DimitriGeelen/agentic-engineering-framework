@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-468: Inception: Tool call telemetry — scope capture store + Watchtower reporting
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T20:50:18Z
+# ============================================================================
+
+task_id: T-468
+task_name: "Inception: Tool call telemetry — scope capture store + Watchtower reporting"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T18:36:18Z
+completed: 2026-03-12T20:50:17Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-03-12T20:31:41+01:00
+last_commit: 2026-03-12T20:31:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-468, T-469: Inception research complete — GO decisions pending commit
+
+# Key outcomes
+outcomes:
+  - "Scope assessment completed (copy vs build)"
+  - "Build tasks decomposed (4 tasks)"
+  - "GO decision recorded"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-468-pr-tool-call-telemetry--capture-store--r.md"
+  - ".tasks/active/T-469-inception-structural-remediation-for-pic.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T20:31:41"
+    action: "T-468, T-469: Inception research complete — GO decisions pending commit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 133 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 133
+  commits: 1
+  files_changed: 2
+  lines_added: 37
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-468-pr-tool-call-telemetry--capture-store--r.md
+generated_by: context-agent-hybrid

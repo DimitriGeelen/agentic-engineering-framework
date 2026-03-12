@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-411: Refactoring audit: directive-scored review of codebase
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T13:00:12Z
+# ============================================================================
+
+task_id: T-411
+task_name: "Refactoring audit: directive-scored review of codebase"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T20:54:13Z
+completed: 2026-03-12T13:00:11Z
+duration_days: 2
+updates_count: 8
+first_commit: 2026-03-10T22:00:45+01:00
+last_commit: 2026-03-10T22:26:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Refactoring audit — directive scoring + inception governance. Create 21 refactoring tasks from directive-scored audit. Enrich all 20 refactoring tasks with context, ACs, verification, components
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with evidence from 5 agent reports"
+  - "64 findings scored against all 4 directives (D1–D4)"
+  - "DO/MAYBE/SKIP verdicts assigned with rationale"
+  - "Phased refactoring plan proposed with effort estimates"
+  - "Research artifact written to docs/reports/"
+  - "Go/No-Go decision recorded"
+  - "Build tasks created for approved phases (with research references)"
+  - "[REVIEW] Review directive scoring and phase plan"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Three-tier task creation — DO as now, MAYBE as next, SKIP in later inception"
+    rationale: "Human directed all tiers get tasks. Preserves all findings while focusing effort on highest directive-scoring work first. Each tier gets appropriate horizon for scheduling."
+    alternatives_rejected: ["Single-phase (too much WIP), DO-only (loses MAYBE findings), big-bang refactor (too risky)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-411-refactoring-directive-scoring.md"
+  - ".tasks/active/T-410-chat-provider-health-indicators-status-l.md"
+  - ".tasks/active/T-411-refactoring-audit-directive-scored-revie.md"
+  - ".tasks/active/T-412-extract-libpathssh-and-consolidate-libco.md"
+  - ".tasks/active/T-413-extract-libenumssh--validation-lists-and.md"
+  - ".tasks/active/T-414-extract-liberrorssh--consistent-diewarne.md"
+  - ".tasks/active/T-415-decompose-update-tasksh-into-modular-fun.md"
+  - ".tasks/active/T-416-create-webcontextloaderpy--centralized-y.md"
+  - ".tasks/active/T-417-create-websubprocessutilspy--consistent-.md"
+  - ".tasks/active/T-418-extract-js-streamfetcher-utility--dedupl.md"
+  - ".tasks/active/T-419-encapsulate-js-conversation-state--repla.md"
+  - ".tasks/active/T-420-standardize-js-error-handling-patterns-j.md"
+  - ".tasks/active/T-421-create-jinja-badge-macro--consolidate-4-.md"
+  - ".tasks/active/T-422-fix-blueprint-circular-dep-and-complete-.md"
+  - ".tasks/active/T-423-extract-libcolorssh-and-libargssh--shell.md"
+  - ".tasks/active/T-424-extract-libtaskssh-and-libyamlsh--task-l.md"
+  - ".tasks/active/T-425-create-css-utility-classes--replace-218-.md"
+  - ".tasks/active/T-426-decompose-long-js-functions--chatask-169.md"
+  - ".tasks/active/T-427-python-utility-consolidation--task-parse.md"
+  - ".tasks/active/T-428-standardize-python-error-messages-and-us.md"
+  - ".tasks/active/T-429-template-cleanup--shared-form-macro-oncl.md"
+  - ".tasks/active/T-430-template-metadata-component-and-accessib.md"
+  - ".tasks/active/T-431-architecture-cleanup--blueprint-imports-.md"
+  - ".tasks/active/T-432-re-evaluate-skip-refactoring-findings-27.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T22:00:45"
+    action: "T-411: Refactoring audit — directive scoring + inception governance"
+  - time: "2026-03-10T22:05:24"
+    action: "T-411: Create 21 refactoring tasks from directive-scored audit"
+  - time: "2026-03-10T22:26:32"
+    action: "T-411: Enrich all 20 refactoring tasks with context, ACs, verification, components"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2405 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [refactoring, quality, audit, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2405
+  commits: 3
+  files_changed: 24
+  lines_added: 2248
+  lines_removed: 324
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-411-refactoring-audit-directive-scored-revie.md
+generated_by: context-agent-hybrid

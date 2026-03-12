@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-454: Build fw upstream report — safe issue creation from field installations
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T12:09:20Z
+# ============================================================================
+
+task_id: T-454
+task_name: "Build fw upstream report — safe issue creation from field installations"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T11:03:50Z
+completed: 2026-03-12T12:09:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-12T12:10:36+01:00
+last_commit: 2026-03-12T13:05:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upstream report — safe issue creation from field installations. Fix verification SIGPIPE in upstream config check. Add upstream report hint to Watchtower footer
+
+# Key outcomes
+outcomes:
+  - "`lib/upstream.sh` implements `report`, `config`, `status`, `list` subcommands"
+  - "`bin/fw` routes `upstream` to `lib/upstream.sh`"
+  - "`fw upstream help` shows usage"
+  - "`fw upstream config` auto-detects repo from git remotes (origin or first github.com remote)"
+  - "`fw upstream config --repo OWNER/REPO` persists to `.framework.yaml`"
+  - "`fw upstream report --dry-run` shows what would be created without creating"
+  - "`fw upstream report` includes confirmation prompt before creating"
+  - "`--attach-doctor` includes `fw doctor` output in issue body"
+  - "`--attach-patch REF` includes git diff in issue body"
+  - "Sent-file tracking prevents duplicate submissions"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification SIGPIPE in upstream config check"
+    source: git-mined
+  - description: "fw upstream report — safe issue creation from field installations"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "docs/reports/T-451-upstream-contribution-research.md"
+  - ".fabric/components/lib-upstream.yaml"
+  - "lib/init.sh"
+  - "lib/upstream.sh"
+  - ".tasks/active/T-454-build-fw-upstream-report--safe-issue-cre.md"
+  - "web/templates/base.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T12:10:36"
+    action: "T-454: fw upstream report — safe issue creation from field installations"
+  - time: "2026-03-12T12:11:04"
+    action: "T-454: Fix verification SIGPIPE in upstream config check"
+  - time: "2026-03-12T13:05:49"
+    action: "T-454: Add upstream report hint to Watchtower footer"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 65
+  commits: 3
+  files_changed: 7
+  lines_added: 1101
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-454-build-fw-upstream-report--safe-issue-cre.md
+generated_by: context-agent-hybrid
