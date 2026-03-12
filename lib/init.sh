@@ -354,6 +354,16 @@ CYAML
         fi
     fi
 
+    # --- Activate governance: initialize session context (T-002) ---
+    echo ""
+    echo -e "Activating governance..."
+    local context_init_script="$FRAMEWORK_ROOT/agents/context/context.sh"
+    if [ -x "$context_init_script" ]; then
+        PROJECT_ROOT="$target_dir" "$context_init_script" init 2>/dev/null && \
+            echo -e "  ${GREEN}✓${NC}  Session initialized (governance active)" || \
+            echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
+    fi
+
     # --- Done ---
     echo ""
     echo -e "${GREEN}Done!${NC} Choose your path:"
