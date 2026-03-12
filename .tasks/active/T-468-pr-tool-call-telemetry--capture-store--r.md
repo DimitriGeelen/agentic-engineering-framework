@@ -27,9 +27,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Scope assessment completed (copy vs build)
+- [x] Build tasks decomposed (4 tasks)
+- [x] GO decision recorded
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -59,14 +59,11 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: Capture layer is copy-ready (4 files, 2 path fixes). Build decomposes into 4 tasks: copy+CLI, PreCompact hook, handover integration, Watchtower page. Total ~4-5h.
+
+**Date**: 2026-03-12T19:30:32Z
 
 ## Updates
 
@@ -78,3 +75,8 @@ date_finished: null
 ### 2026-03-12T18:40:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
 - **Reason:** Jumped to building without inception. Need to scope: source files exist in termlink (copy), but Watchtower page + CLI routing + hook registration + handover integration = new build work requiring inception.
+
+### 2026-03-12T19:30:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Capture layer is copy-ready (4 files, 2 path fixes). Build decomposes into 4 tasks: copy+CLI, PreCompact hook, handover integration, Watchtower page. Total ~4-5h.
