@@ -20,6 +20,10 @@ setup() {
     ensure_context_dirs() { mkdir -p "$CONTEXT_DIR/working"; }
     export -f ensure_context_dirs
 
+    # Source dependencies for find_task_file, get_task_name, _sed_i
+    export TASKS_DIR="$PROJECT_ROOT/.tasks"
+    source "$FRAMEWORK_ROOT/lib/compat.sh"
+    source "$FRAMEWORK_ROOT/lib/tasks.sh"
     source "$FRAMEWORK_ROOT/agents/context/lib/focus.sh"
 }
 

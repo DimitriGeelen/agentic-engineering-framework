@@ -9,6 +9,12 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" "$PROJECT_ROOT/.context"
+    export TASKS_DIR="$PROJECT_ROOT/.tasks"
+    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    RED='' GREEN='' YELLOW='' CYAN='' BLUE='' NC=''
+    # Source dependencies that git.sh normally provides
+    source "$FRAMEWORK_ROOT/lib/compat.sh"
+    source "$FRAMEWORK_ROOT/lib/tasks.sh"
     source "$FRAMEWORK_ROOT/agents/git/lib/common.sh"
 }
 
@@ -69,11 +75,12 @@ name: "Fix login bug"
 status: started-work
 ---
 EOF
+    # lib/tasks.sh get_task_name strips surrounding quotes
     result=$(get_task_name "T-042")
-    [ "$result" = '"Fix login bug"' ]
+    [ "$result" = 'Fix login bug' ]
 }
 
 @test "get_task_name: returns empty for nonexistent task" {
-    result=$(get_task_name "T-999")
-    [ -z "$result" ]
+    run get_task_name "T-999"
+    [ -z "$output" ]
 }

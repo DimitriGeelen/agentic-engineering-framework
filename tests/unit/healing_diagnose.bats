@@ -186,62 +186,6 @@ _classify() {
     [ "$result" = "external" ]
 }
 
-# --- score_pattern: matching words ---
-
-@test "score_pattern: counts matching words from pattern" {
-    result=$(score_pattern "database connection timeout" "" "database connection timeout occurred")
-    [ "$result" -ge 2 ]
-}
-
-@test "score_pattern: returns zero for no matching words" {
-    result=$(score_pattern "database connection timeout" "" "something completely different here")
-    [ "$result" -eq 0 ]
-}
-
-@test "score_pattern: skips short words under 3 chars in pattern" {
-    # 'an' and 'is' are < 3 chars, should be skipped
-    result=$(score_pattern "an is" "" "an is fine")
-    [ "$result" -eq 0 ]
-}
-
-@test "score_pattern: includes words of exactly 3 chars in pattern" {
-    # 'bad' is exactly 3 chars (not < 3), should be counted
-    result=$(score_pattern "bad" "" "bad thing happened")
-    [ "$result" -eq 1 ]
-}
-
-@test "score_pattern: adds score from mitigation when present" {
-    result=$(score_pattern "timeout" "retry logic" "timeout needs retry logic")
-    # 'timeout' from pattern (7 chars >= 3, matches) = 1
-    # 'retry' from mitigation (5 chars >= 4, matches) = 1
-    # 'logic' from mitigation (5 chars >= 4, matches) = 1
-    [ "$result" -eq 3 ]
-}
-
-@test "score_pattern: skips short words under 4 chars in mitigation" {
-    # 'add' is 3 chars, < 4, should be skipped from mitigation
-    result=$(score_pattern "" "add" "add something here")
-    [ "$result" -eq 0 ]
-}
-
-@test "score_pattern: includes mitigation words of exactly 4 chars" {
-    # 'wait' is exactly 4 chars (not < 4), should be counted
-    result=$(score_pattern "" "wait" "wait for response")
-    [ "$result" -eq 1 ]
-}
-
-@test "score_pattern: returns zero for empty inputs" {
-    result=$(score_pattern "" "" "some description here")
-    [ "$result" -eq 0 ]
-}
-
-@test "score_pattern: returns zero when description is empty" {
-    result=$(score_pattern "timeout error" "retry logic" "")
-    [ "$result" -eq 0 ]
-}
-
-@test "score_pattern: counts each matching word once" {
-    # pattern has 'timeout' and 'server', both appear in description
-    result=$(score_pattern "timeout server" "" "timeout on server side")
-    [ "$result" -eq 2 ]
-}
+# --- score_pattern ---
+# NOTE: score_pattern was removed from diagnose.sh in a prior refactoring.
+# These tests were removed in T-474 to match current code state.
