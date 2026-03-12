@@ -18,6 +18,10 @@ HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    # Override derivative vars to prevent stale exports from parent (e.g., update-task.sh verification gate)
+    export TASKS_DIR="$PROJECT_ROOT/.tasks"
+    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    unset _FW_PATHS_LOADED  # Force lib/paths.sh to re-resolve in subprocess
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/.tasks/active"
 }
 
@@ -31,7 +35,8 @@ teardown() {
 run_hook() {
     local file_path="${1:-/some/project/file.py}"
     local json="{\"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"$file_path\"}}"
-    run bash -c "echo '$json' | PROJECT_ROOT='$PROJECT_ROOT' '$HOOK'"
+    # Pass all path vars to prevent stale exports from parent env (e.g., verification gate)
+    run bash -c "echo '$json' | PROJECT_ROOT='$PROJECT_ROOT' TASKS_DIR='$PROJECT_ROOT/.tasks' CONTEXT_DIR='$PROJECT_ROOT/.context' '$HOOK'"
 }
 
 # Helper: write a focus.yaml with a given current_task value
