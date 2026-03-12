@@ -158,9 +158,11 @@ do_start() {
     mkdir -p "$(dirname "$PID_FILE")"
 
     # Start Watchtower
-    log_info "Starting Watchtower on port $port..."
+    # Pass PROJECT_ROOT so Flask serves the correct project's data (T-467)
+    export PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    log_info "Starting Watchtower on port $port (project: $PROJECT_ROOT)..."
     cd "$FRAMEWORK_ROOT"
-    python3 -m web.app --port "$port" $debug_flag > "$LOG_FILE" 2>&1 &
+    PROJECT_ROOT="$PROJECT_ROOT" python3 -m web.app --port "$port" $debug_flag > "$LOG_FILE" 2>&1 &
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"
 
