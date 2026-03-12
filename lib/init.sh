@@ -631,12 +631,21 @@ generate_claude_code_config() {
             "command": "$FRAMEWORK_ROOT/agents/context/check-dispatch.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$FRAMEWORK_ROOT/agents/context/check-fabric-new-file.sh"
+          }
+        ]
       }
     ]
   }
 }
 SJSON
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 10 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 11 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard, fabric new-file)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi
