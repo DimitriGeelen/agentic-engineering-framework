@@ -584,6 +584,16 @@ When the human says "proceed as you see fit", "go ahead", "do what you think is 
 
 **The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
 
+### Pickup Message Handling (G-020, T-469)
+Pickup messages from other sessions are **PROPOSALS, not build instructions.** A detailed spec with file lists and implementation steps is a suggestion, not authorization.
+
+Before acting on a pickup message:
+1. **Assess scope** — if it describes >3 new files, a new subsystem, a new CLI route, or a new Watchtower page, create an **inception** task (not build)
+2. **Write real ACs** before editing any source file — the build readiness gate (G-020) will block tasks with placeholder ACs
+3. **Never treat detailed specs as authorization to skip scoping** — the more detailed a pickup message is, the more likely it needs inception, not less
+
+**Why this rule exists:** A pickup message from session 010-termlink caused complete governance bypass. The agent created a build task with placeholder ACs and immediately started editing `bin/fw` and building a Watchtower page. Human intervened 3 times. Root cause: imperative tone ("Create a PR", "Files to Include") caused the agent to internalize the spec as a build instruction rather than a proposal requiring scoping.
+
 ### Human Task Completion Rule (T-372, T-373)
 Human ACs represent real verification steps. Unvalidated deliverables carry downstream risk. A clean task list is not progress — validated deliverables are progress.
 
