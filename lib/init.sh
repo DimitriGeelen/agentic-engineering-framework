@@ -364,25 +364,78 @@ CYAML
             echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
     fi
 
+    # --- Auto-create onboarding tasks (T-003) ---
+    local create_task="$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
+    local has_existing_tasks=false
+    local has_code=false
+    local project_name
+    project_name=$(basename "$target_dir")
+
+    # Skip if tasks already exist (idempotent on --force re-init)
+    if [ -d "$target_dir/.tasks/active" ] && [ "$(ls "$target_dir/.tasks/active"/*.md 2>/dev/null | wc -l)" -gt 0 ]; then
+        has_existing_tasks=true
+    fi
+
+    # Detect if project has existing code
+    for manifest in package.json requirements.txt pyproject.toml go.mod Cargo.toml pom.xml setup.py; do
+        if [ -f "$target_dir/$manifest" ]; then
+            has_code=true
+            break
+        fi
+    done
+    # Also check for src/ or lib/ directories with files
+    if [ "$has_code" = false ]; then
+        if [ -d "$target_dir/src" ] || [ -d "$target_dir/lib" ] || [ -d "$target_dir/app" ]; then
+            has_code=true
+        fi
+    fi
+
+    if [ "$has_existing_tasks" = false ] && [ -x "$create_task" ]; then
+        echo ""
+        echo -e "${BOLD}Creating onboarding tasks...${NC}"
+
+        if [ "$has_code" = true ]; then
+            # Existing project — create onboarding tasks
+            echo -e "  Detected existing project with code."
+            PROJECT_ROOT="$target_dir" "$create_task" \
+                --name "Ingest project structure and understand codebase" \
+                --type build --owner agent --start \
+                --description "Scan project files, read README, understand tech stack, architecture, and key entry points for ${project_name}." \
+                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
+
+            PROJECT_ROOT="$target_dir" "$create_task" \
+                --name "Register key components in fabric" \
+                --type build --owner agent \
+                --description "Use fw fabric register to map key source files and their dependencies for ${project_name}." \
+                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
+
+            PROJECT_ROOT="$target_dir" "$create_task" \
+                --name "Create initial project handover" \
+                --type build --owner agent \
+                --description "Document current project state, tech stack, and key decisions in first handover for ${project_name}." \
+                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
+
+            echo -e "  ${GREEN}✓${NC}  3 onboarding tasks created. First task has focus."
+        else
+            # New project — create inception task
+            echo -e "  Detected new project (no existing code)."
+            PROJECT_ROOT="$target_dir" "$create_task" \
+                --name "Define project goals and architecture" \
+                --type inception --owner human --start \
+                --description "Inception: Define problem statement, goals, constraints, and initial architecture for ${project_name}." \
+                --tags "inception" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
+
+            echo -e "  ${GREEN}✓${NC}  Inception task created. Define your goals, then: fw inception decide T-001 go"
+        fi
+    fi
+
     # --- Done ---
     echo ""
-    echo -e "${GREEN}Done!${NC} Choose your path:"
+    echo -e "${GREEN}Done!${NC} All commands: ${BOLD}fw help${NC}"
     echo ""
-    echo -e "  ${BOLD}1. Think first${NC} — explore before building:"
-    echo -e "     fw inception start \"Define goals and architecture\""
-    echo ""
-    echo -e "  ${BOLD}2. Build now${NC} — you know what to build:"
-    echo -e "     fw work-on \"your first task\" --type build"
-    echo ""
-    echo -e "  ${BOLD}3. Existing project${NC} — map your files so the framework knows what depends on what:"
-    echo -e "     fw fabric register src/main.ts   # register key files"
-    echo -e "     fw fabric drift                   # find unregistered files"
-    echo ""
-    echo -e "  ${BOLD}4. Dashboard${NC} — live view of tasks, audit, and metrics:"
-    echo -e "     fw serve                          # http://localhost:3000"
-    echo -e "     fw serve --port 5000              # custom port"
-    echo ""
-    echo -e "All commands: ${BOLD}fw help${NC}"
+    echo -e "  ${BOLD}Dashboard${NC}: fw serve"
+    echo -e "  ${BOLD}Start work${NC}: fw work-on \"task name\" --type build"
+    echo -e "  ${BOLD}Explore first${NC}: fw inception start \"problem to explore\""
 }
 
 # --- Provider Config Generators ---
