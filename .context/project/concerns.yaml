@@ -560,6 +560,24 @@ concerns:
     last_reviewed: 2026-03-09
     related_task: T-191
 
+  - id: G-020
+    type: gap
+    title: "Pickup messages bypass governance — no scope/complexity gate before build"
+    description: >
+      A pickup message from another agent session caused complete governance bypass:
+      agent created a build task and immediately started editing framework source files
+      (bin/fw), building Watchtower pages, and creating feature branches — without
+      inception, without scoping, without ACs. Human intervened 3 times. Root cause:
+      task gate validates task EXISTS but not whether the task's scope justifies the
+      action. Having a task is not authorization to build a new subsystem.
+    severity: high
+    status: watching
+    evidence: ["T-468 bypass incident 2026-03-12"]
+    controls: ["Task gate (Tier 1) — insufficient: checks existence, not scope"]
+    created: 2026-03-12
+    last_reviewed: 2026-03-12
+    related_task: T-469
+
   - id: R-036
     type: risk
     title: "Multi-agent coordination untested"
