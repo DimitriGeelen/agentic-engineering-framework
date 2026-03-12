@@ -1,0 +1,80 @@
+<h1>Scheduled Jobs</h1>
+
+<p class="muted">
+    {{ total }} job{{ 's' if total != 1 else '' }} across {{ jobs|map(attribute='source_file')|unique|list|length }} cron file{{ 's' if jobs|map(attribute='source_file')|unique|list|length != 1 else '' }}{% if local_count %} &middot; {{ local_count }} local-only{% endif %}
+</p>
+
+<table role="grid">
+    <thead>
+        <tr>
+            <th>Job</th>
+            <th>Schedule</th>
+            <th>Last Run</th>
+            <th>Result</th>
+            <th>Next</th>
+            <th>Source</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr>
+            <td>
+                <strong>{{ job.name }}</strong>
+                {% if job.is_local %}
+                    <br><small class="muted" style="color: var(--pico-del-color);">local-only</small>
+                {% endif %}
+            </td>
+            <td>
+                <code>{{ job.schedule_human }}</code>
+                <br><small class="muted">{{ job.schedule }}</small>
+            </td>
+            <td>
+                {% if job.has_output %}
+                    {{ job.last_run }}
+                {% else %}
+                    <span class="muted">no data</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.has_output %}
+                    <span style="color: var(--pico-ins-color);">{{ job.last_pass }} pass</span>
+                    {% if job.last_warn %}
+                        &middot; <span style="color: var(--pico-mark-background-color);">{{ job.last_warn }} warn</span>
+                    {% endif %}
+                    {% if job.last_fail %}
+                        &middot; <span style="color: var(--pico-del-color);">{{ job.last_fail }} fail</span>
+                    {% endif %}
+                {% else %}
+                    <span class="muted">&mdash;</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.next_run %}
+                    {{ job.next_run }}
+                {% else %}
+                    <span class="muted">&mdash;</span>
+                {% endif %}
+            </td>
+            <td>
+                <small>{{ job.source_file }}</small>
+                {% if job.origin %}
+                    <br><small class="muted">{{ job.origin }}</small>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not jobs %}
+<p class="muted">No framework cron jobs found in {{ "/etc/cron.d/agentic-*" }}.</p>
+{% endif %}
+
+<details>
+    <summary>How this works</summary>
+    <p>
+        This page reads <code>/etc/cron.d/agentic-*</code> files and parses their schedules.
+        Last run data comes from audit output in <code>.context/audits/cron/</code>.
+        To manage jobs, use the CLI: <code>fw audit schedule install</code>.
+    </p>
+</details>
