@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-455: Fix fw init — isolation, onboarding modes, knowledge separation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-12T17:00:24Z
+# ============================================================================
+
+task_id: T-455
+task_name: "Fix fw init — isolation, onboarding modes, knowledge separation"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T16:03:33Z
+completed: 2026-03-12T17:00:23Z
+duration_days: 0
+updates_count: 8
+first_commit: 2026-03-12T17:08:50+01:00
+last_commit: 2026-03-12T17:37:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — 5 spikes on init isolation, knowledge separation, onboarding. Complete inception research — 5 spikes, 4 decisions pending human
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Research spikes completed (5/5)"
+  - "4 design decisions answered by human"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/fw-agent-t455-spike1-init-audit.md"
+  - "docs/reports/fw-agent-t455-spike2-knowledge-taxonomy.md"
+  - "docs/reports/fw-agent-t455-spike3-onboarding-tasks.md"
+  - "docs/reports/fw-agent-t455-spike4-post-init-validation.md"
+  - "docs/reports/T-455-fw-init-isolation-research.md"
+  - ".tasks/active/T-455-fix-fw-init--isolation-onboarding-modes-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T17:08:50"
+    action: "T-455: Inception research — 5 spikes on init isolation, knowledge separation, onboarding"
+  - time: "2026-03-12T17:37:12"
+    action: "T-455: Complete inception research — 5 spikes, 4 decisions pending human"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 56 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 56
+  commits: 2
+  files_changed: 6
+  lines_added: 1806
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-455-fix-fw-init--isolation-onboarding-modes-.md
+generated_by: context-agent-hybrid
