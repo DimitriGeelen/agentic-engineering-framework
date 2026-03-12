@@ -166,6 +166,37 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
     fi
 fi
 
+# --- Build readiness gate (G-020, T-471) ---
+# Build/refactor/test tasks must have real ACs before modifying source files.
+# Placeholder ACs ([First criterion]) indicate the task was created from template
+# but never scoped. This prevents building without acceptance criteria.
+# Inception tasks have their own gate above; skip them here.
+if [ -n "$ACTIVE_FILE" ]; then
+    WORKFLOW_TYPE=$(grep "^workflow_type:" "$ACTIVE_FILE" 2>/dev/null | head -1 | sed 's/workflow_type:[[:space:]]*//')
+    case "$WORKFLOW_TYPE" in
+        build|refactor|test|decommission)
+            AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## [^A]/p' "$ACTIVE_FILE" 2>/dev/null | sed '$d')
+            HAS_PLACEHOLDER=$(echo "$AC_SECTION" | grep -ciE '\[(First|Second|Third|Fourth|Fifth) criterion\]' 2>/dev/null || true)
+            REAL_AC_COUNT=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' 2>/dev/null || true)
+            if [ "${HAS_PLACEHOLDER:-0}" -gt 0 ] || [ "${REAL_AC_COUNT:-0}" -eq 0 ]; then
+                echo "" >&2
+                echo "BLOCKED: Task $CURRENT_TASK is a $WORKFLOW_TYPE task with placeholder/missing ACs." >&2
+                echo "" >&2
+                echo "Build tasks require real acceptance criteria before editing source files." >&2
+                echo "This prevents unscoped building. (G-020: Scope-Aware Task Gate)" >&2
+                echo "" >&2
+                echo "To unblock:" >&2
+                echo "  1. Edit the task file: replace [First criterion] with real ACs" >&2
+                echo "  2. Or change to inception: fw task update $CURRENT_TASK --type inception" >&2
+                echo "" >&2
+                echo "Attempting to modify: $FILE_PATH" >&2
+                echo "Policy: G-020 (Pickup message governance bypass prevention)" >&2
+                exit 2
+            fi
+            ;;
+    esac
+fi
+
 # --- Fabric awareness advisory (T-244) ---
 # If the file is a registered fabric component with dependents, show a note.
 # Advisory only — never blocks. Runs only for non-exempt paths.

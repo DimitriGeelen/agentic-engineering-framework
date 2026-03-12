@@ -571,9 +571,9 @@ concerns:
       task gate validates task EXISTS but not whether the task's scope justifies the
       action. Having a task is not authorization to build a new subsystem.
     severity: high
-    status: watching
-    evidence: ["T-468 bypass incident 2026-03-12"]
-    controls: ["Task gate (Tier 1) — insufficient: checks existence, not scope"]
+    status: mitigated
+    evidence: ["T-468 bypass incident 2026-03-12", "T-471 structural fix 2026-03-12"]
+    controls: ["Build readiness gate in check-active-task.sh (blocks placeholder ACs)", "CLAUDE.md pickup message handling rule"]
     created: 2026-03-12
     last_reviewed: 2026-03-12
     related_task: T-469
