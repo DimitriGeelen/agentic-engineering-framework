@@ -68,8 +68,14 @@ if [ ! -d "$PROJECT_ROOT/.context/working" ]; then
     exit 0
 fi
 
-# If no focus file exists, allow but warn (context not initialized)
+# If no focus file exists: block if project is initialized, allow if bootstrap (T-002)
 if [ ! -f "$FOCUS_FILE" ]; then
+    if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+        # Project is initialized but governance not active — block
+        echo "BLOCKED: Project initialized but session not active. Run 'fw context init' first." >&2
+        exit 2
+    fi
+    # True bootstrap — no .framework.yaml yet, allow
     echo "Note: Context not initialized. Run 'fw context init' for task tracking." >&2
     exit 0
 fi
