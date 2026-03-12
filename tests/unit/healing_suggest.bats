@@ -12,6 +12,8 @@ setup() {
     mkdir -p "$TASKS_DIR/active" "$PROJECT_ROOT/.context"
     # Disable colors for predictable output matching
     RED='' GREEN='' YELLOW='' CYAN='' BLUE='' NC=''
+    # Source dependency for get_yaml_field
+    source "$FRAMEWORK_ROOT/lib/yaml.sh"
     source "$FRAMEWORK_ROOT/agents/healing/lib/suggest.sh"
 }
 

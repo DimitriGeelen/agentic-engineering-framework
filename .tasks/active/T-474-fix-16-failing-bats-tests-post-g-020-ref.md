@@ -20,40 +20,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Continuation of T-473 (GO). 22 tests failing across 4 test files due to: G-020 refactoring (check-active-task.sh), missing function sources (focus.sh, suggest.sh), removed function (score_pattern).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] All bats tests pass: `bats tests/integration/ tests/unit/` exits 0 (151/151)
+- [x] check_active_task.bats: B-005 settings.json test updated, task file fixtures added for G-013/G-020
+- [x] context_focus.bats: lib/tasks.sh + lib/compat.sh sourced for find_task_file/get_task_name/_sed_i
+- [x] healing_diagnose.bats: removed 10 score_pattern tests (function no longer exists)
+- [x] healing_suggest.bats: lib/yaml.sh sourced for get_yaml_field
+- [x] git_common.bats: lib/tasks.sh sourced, quote-stripping assertion fixed
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bats tests/integration/ tests/unit/
 
 ## Decisions
 

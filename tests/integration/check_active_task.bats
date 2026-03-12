@@ -61,7 +61,9 @@ EOF
 
 @test "exempt path: .claude/ files are always allowed" {
     rm -f "$PROJECT_ROOT/.context/working/focus.yaml"
-    run_hook "$PROJECT_ROOT/.claude/settings.json"
+    # Note: .claude/settings.json is B-005 protected (blocked before exempt check)
+    # Use a different .claude/ path to test the exempt path logic
+    run_hook "$PROJECT_ROOT/.claude/projects/config.json"
     [ "$status" -eq 0 ]
 }
 
@@ -144,12 +146,15 @@ EOF
 
 @test "valid task: allows execution with exit 0" {
     write_focus "T-042"
+    # G-013: gate validates task file exists in .tasks/active/
+    create_test_task "$PROJECT_ROOT" "T-042" "fix-login"
     run_hook "/some/project/file.py"
     [ "$status" -eq 0 ]
 }
 
 @test "valid task: no BLOCKED message in output" {
     write_focus "T-042"
+    create_test_task "$PROJECT_ROOT" "T-042" "fix-login"
     run_hook "/some/project/file.py"
     [ "$status" -eq 0 ]
     [[ "$output" != *"BLOCKED"* ]]
@@ -226,7 +231,7 @@ TASK
 
 @test "build task: allows without any inception NOTE" {
     write_focus "T-042"
-    # Create a build-type task (not inception)
+    # Create a build-type task with real ACs (G-020 requires non-placeholder ACs)
     cat > "$PROJECT_ROOT/.tasks/active/T-042-fix-login.md" <<'TASK'
 ---
 id: T-042
@@ -248,6 +253,14 @@ date_finished: null
 ## Context
 
 Bug in login flow.
+
+## Acceptance Criteria
+
+- [ ] Login form validates credentials correctly
+
+## Verification
+
+echo "ok"
 TASK
     run_hook "/some/project/file.py"
     [ "$status" -eq 0 ]
@@ -259,6 +272,7 @@ TASK
 
 @test "malformed JSON input: with valid focus allows gracefully" {
     write_focus "T-042"
+    create_test_task "$PROJECT_ROOT" "T-042" "fix-login"
     run bash -c "echo 'not valid json' | PROJECT_ROOT='$PROJECT_ROOT' '$HOOK'"
     [ "$status" -eq 0 ]
 }
