@@ -13,7 +13,7 @@ _PROJECT_DIR = PROJECT_ROOT / ".context" / "project"
 def load_learnings() -> list:
     """Load learnings list from learnings.yaml."""
     data = load_yaml(_PROJECT_DIR / "learnings.yaml", label="learnings")
-    return data.get("learnings") or []
+    return data.get("learnings", [])
 
 
 def load_patterns() -> dict:
@@ -28,13 +28,13 @@ def load_patterns() -> dict:
 def load_decisions() -> list:
     """Load decisions list from decisions.yaml."""
     data = load_yaml(_PROJECT_DIR / "decisions.yaml", label="decisions")
-    return data.get("decisions") or []
+    return data.get("decisions", [])
 
 
 def load_practices() -> list:
     """Load practices list from practices.yaml."""
     data = load_yaml(_PROJECT_DIR / "practices.yaml", label="practices")
-    return data.get("practices") or []
+    return data.get("practices", [])
 
 
 def load_concerns() -> list:
@@ -43,10 +43,10 @@ def load_concerns() -> list:
     if not path.exists():
         path = _PROJECT_DIR / "gaps.yaml"
     data = load_yaml(path, label="concerns")
-    return data.get("concerns") or data.get("gaps") or []
+    return data.get("concerns", data.get("gaps", []))
 
 
 def load_directives() -> list:
     """Load directives list from directives.yaml."""
     data = load_yaml(_PROJECT_DIR / "directives.yaml", label="directives")
-    return data.get("directives") or []
+    return data.get("directives", [])
