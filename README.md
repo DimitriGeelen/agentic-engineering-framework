@@ -159,11 +159,7 @@ fw serve                     # http://localhost:3000
 <details>
 <summary><b>Task Management</b> — every change traces to a task with acceptance criteria, verification gates, and decisions</summary>
 
-One command to start: `fw work-on "Fix the bug" --type build`. Tasks are Markdown with YAML frontmatter — rich artifacts, not just titles and statuses.
-
-![Task Detail](docs/screenshots/watchtower-task-detail.png)
-
-Kanban board tracks tasks across Captured, In Progress, Issues, and Completed:
+One command to start: `fw work-on "Fix the bug" --type build`. Tasks are Markdown with YAML frontmatter — rich artifacts with acceptance criteria, verification gates, and decision records. Kanban board tracks tasks across Captured, In Progress, Issues, and Completed.
 
 ![Task Board](docs/screenshots/watchtower-tasks-board.png)
 </details>
@@ -181,19 +177,15 @@ Includes semantic search via `fw recall` — find past decisions and patterns by
 <details>
 <summary><b>Component Topology</b> — a structural map of your project: what depends on what, and what breaks if you change it</summary>
 
-Interactive dependency graph with subsystem filtering:
-
-![Dependency Graph](docs/screenshots/watchtower-fabric-graph.png)
-
-![Subsystem Dependencies](docs/screenshots/watchtower-fabric-graph-subsystem.png)
-
 ```bash
 fw fabric deps agents/git/git.sh        # What depends on this file?
 fw fabric blast-radius HEAD              # What does this commit affect downstream?
 fw fabric drift                          # Find unregistered or orphaned components
 ```
 
-![Component Fabric](docs/screenshots/watchtower-fabric.png)
+Interactive dependency graph with subsystem filtering, component search, and impact analysis:
+
+![Dependency Graph](docs/screenshots/watchtower-fabric-graph.png)
 </details>
 
 <details>
@@ -210,15 +202,11 @@ Error escalation: A (do not repeat) → B (improve technique) → C (improve too
 <details>
 <summary><b>Continuous Audit</b> — 90+ governance checks run every 30 minutes, on every push, and on demand</summary>
 
-![Discovery Scanner](docs/screenshots/watchtower-discovery.png)
-
 Checks cover task quality, git traceability, structural integrity, and control effectiveness. Cron, pre-push hook, or `fw audit` on demand.
 </details>
 
 <details>
 <summary><b>Session Handover</b> — structured context documents bridge sessions automatically</summary>
-
-![Timeline](docs/screenshots/watchtower-timeline.png)
 
 Every session ends with a handover that captures work in progress, suggested next actions, and open questions. The next session picks up where the last one stopped.
 </details>
