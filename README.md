@@ -89,7 +89,7 @@ fw serve                 # http://localhost:3000 — task board, audit, metrics
 
 Five commands. Your repo now has task-traced commits, enforcement gates, continuous audit, and a dashboard showing project state.
 
-![Watchtower Dashboard](docs/screenshots/watchtower-dashboard.png)
+<img src="docs/screenshots/watchtower-dashboard.png" width="700" alt="Watchtower Dashboard">
 
 ## How Enforcement Works
 
@@ -161,7 +161,9 @@ fw serve                     # http://localhost:3000
 
 One command to start: `fw work-on "Fix the bug" --type build`. Tasks are Markdown with YAML frontmatter — rich artifacts with acceptance criteria, verification gates, and decision records. Kanban board tracks tasks across Captured, In Progress, Issues, and Completed.
 
-![Task Board](docs/screenshots/watchtower-tasks-board.png)
+<img src="docs/screenshots/watchtower-task-detail.png" width="600" alt="Task Detail">
+
+<img src="docs/screenshots/watchtower-tasks-board.png" width="600" alt="Task Board">
 </details>
 
 <details>
@@ -185,7 +187,9 @@ fw fabric drift                          # Find unregistered or orphaned compone
 
 Interactive dependency graph with subsystem filtering, component search, and impact analysis:
 
-![Dependency Graph](docs/screenshots/watchtower-fabric-graph.png)
+<img src="docs/screenshots/watchtower-fabric-graph.png" width="600" alt="Dependency Graph">
+
+<img src="docs/screenshots/watchtower-fabric.png" width="600" alt="Component Overview">
 </details>
 
 <details>
@@ -203,12 +207,16 @@ Error escalation: A (do not repeat) → B (improve technique) → C (improve too
 <summary><b>Continuous Audit</b> — 90+ governance checks run every 30 minutes, on every push, and on demand</summary>
 
 Checks cover task quality, git traceability, structural integrity, and control effectiveness. Cron, pre-push hook, or `fw audit` on demand.
+
+<img src="docs/screenshots/watchtower-discovery.png" width="600" alt="Discovery Scanner">
 </details>
 
 <details>
 <summary><b>Session Handover</b> — structured context documents bridge sessions automatically</summary>
 
 Every session ends with a handover that captures work in progress, suggested next actions, and open questions. The next session picks up where the last one stopped.
+
+<img src="docs/screenshots/watchtower-timeline.png" width="600" alt="Session Timeline">
 </details>
 
 ## Key Commands
