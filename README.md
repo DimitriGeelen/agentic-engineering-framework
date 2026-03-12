@@ -89,8 +89,6 @@ fw serve                 # http://localhost:3000 — task board, audit, metrics
 
 Five commands. Your repo now has task-traced commits, enforcement gates, continuous audit, and a dashboard showing project state.
 
-<img src="docs/screenshots/watchtower-dashboard.png" width="700" alt="Watchtower Dashboard">
-
 ## How Enforcement Works
 
 ```
