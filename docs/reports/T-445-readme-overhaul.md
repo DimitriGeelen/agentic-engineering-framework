@@ -295,6 +295,39 @@ and a dashboard. Every session from here forward is governed.
 
 ---
 
+## Voice Guide (for README rewrite)
+
+Derived from: 3 deep-dive articles, blog.dimitrigeelen.com, LinkedIn posts, current README.
+
+### DO
+- **Cross-domain analogies from institutional governance.** Shell transition management, clinical governance, financial audit. Never pop culture, never sports metaphors.
+- **"The domain changed. The principle did not."** — The signature thesis. Use sparingly but it should echo.
+- **Short declarative sentences for emphasis.** "The mechanism varies. The principle does not." Staccato after explanation.
+- **Specific evidence.** "445 tasks, 312 completed, 96% commit traceability." Never round numbers. Never "it works well."
+- **First person without ego.** "I built," "I recognised." Claims authorship, not genius.
+- **Honest about limitations.** "The framework is alpha." "Only tested with Claude Code." "There are rough edges." This builds credibility.
+- **Active voice.** "The framework intercepts." Not "the action is intercepted by."
+- **Negation-then-assertion.** "Not as a convention. Not as a prompt instruction. As a mechanical gate."
+- **Self-aware irony.** (Human request) — The author is uncertain whether this is "AI slop or something really useful" but finds it genuinely useful and fun. This honesty is a strength. Work in subtle self-awareness: the project governs itself using its own rules, and that's either brilliant or absurd depending on your perspective.
+
+### DO NOT
+- No "AI-powered", "revolutionary", "game-changing", "cutting-edge"
+- No exclamation marks. Not one.
+- No emojis
+- No "we" (there is one person, not a team)
+- No "simple", "easy", "just" (do not minimize complexity)
+- No "best practices" (the whole point is this replaces best practices with structure)
+- No rhetorical questions ("Ever wondered why...?")
+- No filler transitions ("Let's dive in", "Without further ado", "Here's where it gets interesting")
+- No teaching tone ("you'll love this", "you'll find that")
+- No hedging ("might", "perhaps", "could potentially")
+- No social proof from celebrities or trends ("as Sam Altman said")
+
+### Tone summary
+A senior governance professional explaining a new application of established principles to peers. Confident but not promotional. Precise but not pedantic. The emotional register is calm authority — never excitement, never urgency, never hype. Except for one thing: a dry self-awareness that building a governance framework for AI agents using AI agents is either the most recursive proof-of-concept imaginable or the world's most elaborate yak-shave.
+
+---
+
 ## Dialogue Log
 
 ### 2026-03-12 — Human provides two critical reviews
