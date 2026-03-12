@@ -261,6 +261,7 @@ show_help() {
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
+    echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
     echo -e "  ${GREEN}deploy${NC} <cmd>          Ring20 deployment (scaffold, status, routes, ports)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
@@ -1124,6 +1125,10 @@ case "$cmd" in
     bus)
         source "$FW_LIB_DIR/bus.sh"
         do_bus "$@"
+        ;;
+    upstream)
+        source "$FW_LIB_DIR/upstream.sh"
+        do_upstream "$@"
         ;;
     consolidate)
         exec python3 "$AGENTS_DIR/context/consolidate.py" "$@"

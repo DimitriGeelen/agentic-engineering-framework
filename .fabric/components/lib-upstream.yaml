@@ -1,0 +1,21 @@
+id: lib/upstream.sh
+name: upstream
+type: script
+subsystem: framework-core
+location: lib/upstream.sh
+tags: [upstream, gh-cli, field-report]
+
+purpose: "Safe issue creation from field installations to framework upstream repo. Resolves upstream repo from .framework.yaml or git remotes. Supports dry-run, confirmation, fw doctor attachment, patch attachment, and sent-file tracking."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+  - target: lib/init.sh
+    type: reads
+
+depended_by:
+  - target: bin/fw
+    type: calls
+
+last_verified: 2026-03-12
+created_by: unknown
