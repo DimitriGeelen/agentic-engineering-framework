@@ -88,6 +88,17 @@ EOF
     [[ "$output" == *"Context not initialized"* ]]
 }
 
+# --- T-002: Governance activation gap ---
+
+@test "no focus.yaml but .framework.yaml exists: blocks with exit 2" {
+    rm -f "$PROJECT_ROOT/.context/working/focus.yaml"
+    touch "$PROJECT_ROOT/.framework.yaml"
+    run_hook "/some/project/file.py"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"BLOCKED"* ]]
+    [[ "$output" == *"fw context init"* ]]
+}
+
 # --- focus.yaml with current_task: null ---
 
 @test "current_task null: blocks execution with exit 2" {
