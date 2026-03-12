@@ -49,6 +49,7 @@ NAV_GROUPS = [
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),
         ("Metrics",       "metrics.project_metrics",               None),
+        ("Cron",          "cron.cron_registry",                    None),
     ]),
 ]
 
