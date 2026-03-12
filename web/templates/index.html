@@ -314,7 +314,7 @@
     <h4 class="wt-section-title">Project Pulse</h4>
     <ul class="wt-pulse">
         <li>
-            <a href="{{ url_for('tasks.task_list') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;">
+            <a href="{{ url_for('tasks.tasks') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;">
                 Tasks:
                 <span class="wt-pulse-value">{{ active_count }}</span> active,
                 <span class="wt-pulse-value">{{ completed_count }}</span> done
