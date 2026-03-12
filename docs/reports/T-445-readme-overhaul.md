@@ -180,17 +180,24 @@ Evidence: Agent cannot disable its own guardrails — the framework protects its
 
 ## Enforcement Gradient (honest disclosure)
 
-| Capability | Claude Code | Cursor | Copilot / Aider / Others |
-|------------|-------------|--------|--------------------------|
-| Task gate (blocks file edits) | **Structural** — PreToolUse hook | Voluntary — agent must follow rules | Voluntary |
-| Tier 0 (blocks destructive cmds) | **Structural** — PreToolUse hook | Voluntary | Voluntary |
-| Budget management | **Structural** — reads transcript | Manual checkpointing | Manual |
-| Commit traceability | **Git hook** — all agents | **Git hook** — all agents | **Git hook** — all agents |
-| Audit (90+ checks) | **CLI** — all agents | **CLI** — all agents | **CLI** — all agents |
-| Handover / memory | **CLI** — all agents | **CLI** — all agents | **CLI** — all agents |
-| Settings protection | **Structural** — PreToolUse hook | N/A | N/A |
+| Capability | Claude Code (tested) | Cursor / Copilot / Others (untested) |
+|------------|---------------------|--------------------------------------|
+| Task gate (blocks file edits) | **Structural** — PreToolUse hook | Convention — agent follows rules |
+| Tier 0 (blocks destructive cmds) | **Structural** — PreToolUse hook | Convention |
+| Budget management | **Structural** — reads transcript | Manual checkpointing |
+| Commit traceability | **Git hook** — tested | **Git hook** — should work (untested) |
+| Audit (90+ checks) | **CLI** — tested | **CLI** — should work (untested) |
+| Handover / memory | **CLI** — tested | **CLI** — should work (untested) |
+| Settings protection | **Structural** — PreToolUse hook | N/A |
 
 **Honest summary:** Full structural enforcement requires Claude Code's hook system. All other agents get git hooks (commit traceability) + CLI tools (audit, handover, tasks) + voluntary governance rules. This is still far more than most teams have, but it's not the same as "blocks before the action happens."
+
+**CRITICAL HONESTY NOTE (from human, 2026-03-12):**
+The framework has ONLY been tested with Claude Code. `fw init --provider cursor` and `--provider generic` exist and generate config files, but no actual testing has been done with Cursor, Copilot, Aider, or any other agent. The README must not imply tested multi-provider support. Correct framing:
+- "Battle-tested with Claude Code (445+ tasks, 312 completed)"
+- "Designed for any CLI agent — git hooks and CLI tools are agent-agnostic"
+- "Structural enforcement hooks (task gate, Tier 0, budget) require Claude Code's PreToolUse/PostToolUse system"
+- "Community testing with other agents welcome"
 
 ---
 
@@ -297,3 +304,20 @@ and a dashboard. Every session from here forward is governed.
 - Agent reflected: agreed on 6 points, partially agreed on 6, pushed back on 5
 - Human said "yes please" to creating inception task
 - Key insight from human: "You let yourself be mentally compared to OpenClaw but you're actually a governance layer for repos and agents"
+
+### 2026-03-12 — Human reflects on project identity
+- Human: "I'm not sure whether this is AI slop or something really useful, but I'm having loads of fun making it and find it very useful"
+- This is an important signal for positioning. The project is:
+  - Built by one person using the framework to govern itself (self-referential proof)
+  - Genuinely useful to its creator (daily driver, 445+ tasks, 312 completed)
+  - Potentially "AI slop" to outsiders if the README doesn't convey real value
+  - Fun to build (motivation matters for open source sustainability)
+- Positioning implication: the README should own this honesty. "Built by one developer using it daily to govern Claude Code. It works for me. Here's why it might work for you."
+- This is actually a STRONGER pitch than "enterprise governance platform" — it's authentic.
+
+### 2026-03-12 — Human flags untested multi-provider claims
+- Human: "I have only tested on Claude Code recently, haven't tested it anywhere else. It's designed for other frameworks but not tested!"
+- This means the README's "works with any CLI-capable AI agent" is an untested claim
+- `fw init --provider cursor` and `--provider generic` generate config but nobody verified the workflow
+- Decision: README must be honest about this — "battle-tested with Claude Code, designed for others, community testing welcome"
+- Spawned concern: multi-provider testing is a separate task (out of scope for README inception)
