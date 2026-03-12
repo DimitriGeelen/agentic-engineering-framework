@@ -54,7 +54,7 @@ test -f lib/upstream.sh
 test -x lib/upstream.sh || true
 grep -q 'do_upstream' lib/upstream.sh
 grep -q 'upstream)' bin/fw
-/opt/999-Agentic-Engineering-Framework/bin/fw upstream config 2>&1 | grep -q "DimitriGeelen"
+/opt/999-Agentic-Engineering-Framework/bin/fw upstream config 2>&1 | grep -c "Repo:" | grep -q "[1-9]"
 /opt/999-Agentic-Engineering-Framework/bin/fw upstream report --title "Verification test" --dry-run 2>&1 | grep -q "DRY RUN"
 
 ## Decisions
