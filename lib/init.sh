@@ -342,6 +342,60 @@ CYAML
             echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
     fi
 
+    # --- Copy onboarding task templates (T-460) ---
+    local has_existing_tasks=false
+    local has_code=false
+
+    # Skip if tasks already exist (idempotent on --force re-init)
+    if [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
+        has_existing_tasks=true
+    fi
+
+    if [ "$has_existing_tasks" = false ]; then
+        # Detect if project has existing code
+        for manifest in package.json requirements.txt pyproject.toml go.mod Cargo.toml pom.xml setup.py; do
+            if [ -f "$target_dir/$manifest" ]; then
+                has_code=true
+                break
+            fi
+        done
+        if [ "$has_code" = false ]; then
+            for codedir in src lib app; do
+                if [ -d "$target_dir/$codedir" ]; then
+                    has_code=true
+                    break
+                fi
+            done
+        fi
+
+        local seed_dir
+        if [ "$has_code" = true ]; then
+            seed_dir="$FRAMEWORK_ROOT/lib/seeds/tasks/existing-project"
+        else
+            seed_dir="$FRAMEWORK_ROOT/lib/seeds/tasks/greenfield"
+        fi
+
+        if [ -d "$seed_dir" ]; then
+            local task_count=0
+            local init_date
+            init_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            for tmpl in "$seed_dir"/T-*.md; do
+                [ -f "$tmpl" ] || continue
+                local dest="$target_dir/.tasks/active/$(basename "$tmpl")"
+                sed \
+                    -e "s|__PROJECT_NAME__|$project_display|g" \
+                    -e "s|__DATE__|$init_date|g" \
+                    "$tmpl" > "$dest"
+                task_count=$((task_count + 1))
+            done
+            if [ "$task_count" -gt 0 ]; then
+                local mode_label="existing project"
+                [ "$has_code" = false ] && mode_label="greenfield"
+                echo -e "  ${GREEN}✓${NC}  $task_count onboarding tasks ($mode_label mode)"
+            fi
+        fi
+    fi
+
     # --- Done ---
     echo ""
     echo -e "${GREEN}Done!${NC} All commands: ${BOLD}fw help${NC}"
