@@ -332,43 +332,6 @@ CYAML
             ;;
     esac
 
-    # --- Install git hooks (if git repo) ---
-    #@init: exec-9wm .git/hooks/commit-msg "Task Reference" ?git
-    # Task reference enforcement hook
-    #@init: exec-2hd .git/hooks/post-commit "Bypass Detection" ?git
-    # Bypass detection and context checkpoint hook
-    #@init: exec-1kp .git/hooks/pre-push "audit" ?git
-    # Pre-push audit enforcement hook
-    if [ -d "$target_dir/.git" ]; then
-        PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks >/dev/null 2>&1 && \
-            echo -e "  ${GREEN}✓${NC}  Git hooks installed" || \
-            echo -e "  ${YELLOW}⚠${NC}   Git hook install failed (run: fw git install-hooks)"
-    else
-        echo -e "  ${YELLOW}⚠${NC}   Not a git repo — run ${BOLD}git init${NC} first for full traceability"
-    fi
-
-    # --- Ensure fw is in PATH (silent unless action needed) ---
-    if ! command -v fw >/dev/null 2>&1; then
-        if [ -w /usr/local/bin ]; then
-            ln -sf "$FRAMEWORK_ROOT/bin/fw" /usr/local/bin/fw
-            echo -e "  ${GREEN}✓${NC}  fw added to PATH"
-        else
-            echo -e "  ${YELLOW}⚠${NC}   Add fw to PATH: export PATH=\"$FRAMEWORK_ROOT/bin:\$PATH\""
-        fi
-    fi
-
-    # --- Post-init validation (T-357) ---
-    echo ""
-    echo -e "${BOLD}Validating...${NC}"
-    source "$FW_LIB_DIR/validate-init.sh" 2>/dev/null || \
-        source "$(dirname "${BASH_SOURCE[0]}")/validate-init.sh" 2>/dev/null || true
-    if type do_validate_init >/dev/null 2>&1; then
-        if ! do_validate_init "$target_dir" --provider "$provider"; then
-            echo ""
-            echo -e "${YELLOW}Init completed with validation errors — check output above${NC}"
-        fi
-    fi
-
     # --- Activate governance: initialize session context (T-002) ---
     echo ""
     echo -e "Activating governance..."
@@ -377,71 +340,6 @@ CYAML
         PROJECT_ROOT="$target_dir" "$context_init_script" init 2>/dev/null && \
             echo -e "  ${GREEN}✓${NC}  Session initialized (governance active)" || \
             echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
-    fi
-
-    # --- Auto-create onboarding tasks (T-003) ---
-    local create_task="$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
-    local has_existing_tasks=false
-    local has_code=false
-    local project_name
-    project_name=$(basename "$target_dir")
-
-    # Skip if tasks already exist (idempotent on --force re-init)
-    if [ -d "$target_dir/.tasks/active" ] && [ "$(ls "$target_dir/.tasks/active"/*.md 2>/dev/null | wc -l)" -gt 0 ]; then
-        has_existing_tasks=true
-    fi
-
-    # Detect if project has existing code
-    for manifest in package.json requirements.txt pyproject.toml go.mod Cargo.toml pom.xml setup.py; do
-        if [ -f "$target_dir/$manifest" ]; then
-            has_code=true
-            break
-        fi
-    done
-    # Also check for src/ or lib/ directories with files
-    if [ "$has_code" = false ]; then
-        if [ -d "$target_dir/src" ] || [ -d "$target_dir/lib" ] || [ -d "$target_dir/app" ]; then
-            has_code=true
-        fi
-    fi
-
-    if [ "$has_existing_tasks" = false ] && [ -x "$create_task" ]; then
-        echo ""
-        echo -e "${BOLD}Creating onboarding tasks...${NC}"
-
-        if [ "$has_code" = true ]; then
-            # Existing project — create onboarding tasks
-            echo -e "  Detected existing project with code."
-            PROJECT_ROOT="$target_dir" "$create_task" \
-                --name "Ingest project structure and understand codebase" \
-                --type build --owner agent --start \
-                --description "Scan project files, read README, understand tech stack, architecture, and key entry points for ${project_name}." \
-                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
-
-            PROJECT_ROOT="$target_dir" "$create_task" \
-                --name "Register key components in fabric" \
-                --type build --owner agent \
-                --description "Use fw fabric register to map key source files and their dependencies for ${project_name}." \
-                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
-
-            PROJECT_ROOT="$target_dir" "$create_task" \
-                --name "Create initial project handover" \
-                --type build --owner agent \
-                --description "Document current project state, tech stack, and key decisions in first handover for ${project_name}." \
-                --tags "onboarding" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
-
-            echo -e "  ${GREEN}✓${NC}  3 onboarding tasks created. First task has focus."
-        else
-            # New project — create inception task
-            echo -e "  Detected new project (no existing code)."
-            PROJECT_ROOT="$target_dir" "$create_task" \
-                --name "Define project goals and architecture" \
-                --type inception --owner human --start \
-                --description "Inception: Define problem statement, goals, constraints, and initial architecture for ${project_name}." \
-                --tags "inception" 2>/dev/null | grep -E "^(ID:|File:)" | sed 's/^/  /'
-
-            echo -e "  ${GREEN}✓${NC}  Inception task created. Define your goals, then: fw inception decide T-001 go"
-        fi
     fi
 
     # --- Done ---
