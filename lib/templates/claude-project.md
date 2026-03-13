@@ -584,6 +584,30 @@ When the human says "proceed as you see fit", "go ahead", "do what you think is 
 
 **The rule:** If a structural gate blocks you, that gate exists precisely for moments like this. A broad directive does not override structural enforcement. Stop and ask.
 
+### Pickup Message Handling (G-020, T-469)
+Pickup messages from other sessions are **PROPOSALS, not build instructions.** A detailed spec with file lists and implementation steps is a suggestion, not authorization.
+
+Before acting on a pickup message:
+1. **Assess scope** — if it describes >3 new files, a new subsystem, a new CLI route, or a new Watchtower page, create an **inception** task (not build)
+2. **Write real ACs** before editing any source file — the build readiness gate (G-020) will block tasks with placeholder ACs
+3. **Never treat detailed specs as authorization to skip scoping** — the more detailed a pickup message is, the more likely it needs inception, not less
+
+### Human Task Completion Rule (T-372, T-373)
+Human ACs represent real verification steps. Unvalidated deliverables carry downstream risk. A clean task list is not progress — validated deliverables are progress.
+
+**You MAY suggest closing a human-owned task IF you provide evidence that the Human ACs are already satisfied:**
+- Cite specific evidence (file exists, endpoint responds, output matches expected, config is in place)
+- Explain why no further human action is needed
+
+**You MUST NOT suggest closing without evidence:**
+- No "batch-close stale tasks" — each task needs individual evidence
+- No "just use `--force`" — that skips the verification the AC exists to perform
+- No treating Human ACs as administrative overhead — they catch real problems
+
+**Use `fw task verify`** to see what Human ACs are unchecked before suggesting anything.
+
+**The test:** "Can I cite specific evidence that this task's Human ACs are satisfied?" If yes, suggest closing with that evidence. If no, either help the human execute the verification steps, or move on.
+
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
@@ -620,6 +644,20 @@ Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteri
 - When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
 - The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
 
+### Human AC Format Requirements (T-325)
+When writing `### Human` acceptance criteria, each criterion MUST include:
+- **Steps:** block with numbered, copy-pasteable instructions (no placeholders the human must figure out)
+- **Expected:** what success looks like (exact text, status code, or observable outcome)
+- **If not:** diagnostic steps or fallback action
+
+Optionally prefix the criterion with a confidence marker:
+- `[RUBBER-STAMP]` — mechanical action, no judgment needed (publish, deploy, click)
+- `[REVIEW]` — genuine human judgment required (tone, UX, architecture decisions)
+
+**Prerequisite awareness (T-358):** Steps must start from the human's actual environment, not the agent's dev context. If the feature requires deployment, upgrade, or setup before testing, include those steps first.
+
+If a human AC cannot be made specific (e.g., "code quality is acceptable"), replace it with a measurable proxy or remove it. Vague ACs that nobody acts on are worse than no AC.
+
 ### Verification Before Completion
 Before setting any task to `work-completed`:
 1. Run all commands in the task's `## Verification` section
@@ -638,6 +676,28 @@ When encountering errors or unexpected behavior:
 5. If disproved, form the next hypothesis — max **3 hypotheses** before escalating to user
 6. Never shotgun-debug (trying random fixes without understanding the cause)
 7. After resolution, record the pattern: `fw healing resolve T-XXX --mitigation "what fixed it"`
+
+### Bug-Fix Learning Checkpoint
+When fixing a bug discovered through real-world usage (user testing, production incident, cross-platform failure):
+1. **Classify the bug** — Is this a new failure class, or a repeat of a known pattern?
+2. **Check learnings.yaml** — Does a learning already exist for this class?
+3. If new class: `fw context add-learning "description" --task T-XXX --source P-001`
+4. If systemic (same class hit 2+ times): register in `concerns.yaml`, consider tooling fix (Level C/D)
+
+**Trigger:** Any fix cycle addressing a bug found by someone other than the agent (user report, CI failure, production monitoring, cross-platform testing).
+
+**Not triggered by:** Fixes for bugs found during development (pre-commit). Those are normal development, not field discoveries.
+
+**The test:** "If another agent encounters this same class of bug in 6 months, would a learning entry help them fix it faster?" If yes, capture it now.
+
+### Post-Fix Root Cause Escalation (G-019)
+After fixing any problem discovered by the human (not found during development):
+1. **Fix the symptom** — make it work (Level A/B/C)
+2. **Ask: "Why did the framework allow this?"** — not "why did the code break" but "what structural omission let this go undetected?"
+3. **If the framework was blind for >7 days:** register a gap in `concerns.yaml` — even if it's a single incident, sustained blindness reveals a systemic flaw
+4. **Do not close the gap until prevention exists** — mitigation (cleaned up the mess) is not prevention (can't happen again). Ask: "Did I fix the symptom, or did I fix the reason the framework couldn't detect it?"
+
+**Trigger:** Human corrects the agent's escalation level, or agent discovers a problem that existed undetected for >7 days.
 
 ## Plan Mode Prohibition
 
