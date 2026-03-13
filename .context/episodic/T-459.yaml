@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-459: Refactor init.sh to thin bootstrap — remove dynamic task creation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-13T10:00:08Z
+# ============================================================================
+
+task_id: T-459
+task_name: "Refactor init.sh to thin bootstrap — remove dynamic task creation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T17:00:48Z
+completed: 2026-03-13T10:00:07Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "No `create-task.sh` calls in init.sh (dynamic task creation removed)"
+  - "No `install-hooks` call in init.sh (git hook install removed)"
+  - "No PATH/symlink setup in init.sh"
+  - "No `validate-init.sh` call in init.sh (post-init validation removed)"
+  - "Init still creates directory structure, copies seeds, generates provider config, runs context init"
+  - "Init parses cleanly (bash -n check passes)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1019 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [init, refactor, architecture]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1019
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-459-refactor-initsh-to-thin-bootstrap--remov.md
+generated_by: context-agent-hybrid
