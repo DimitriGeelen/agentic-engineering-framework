@@ -293,32 +293,52 @@ plus Claude Code-specific integration notes.
     local settings_file="$target_dir/.claude/settings.json"
     local expected_hooks=10
     if [ -f "$settings_file" ]; then
-        # Count actual hooks vs expected (10 hooks in current framework)
-        local actual_hooks
-        actual_hooks=$(python3 -c "
-import json, sys
-try:
-    data = json.load(open('$settings_file'))
-    print(sum(len(v) for v in data.get('hooks', {}).values()))
-except: print(0)
-" 2>/dev/null || echo "0")
+        # Check hook count AND path isolation (G-021)
+        local hook_status
+        hook_status=$(python3 -c "
+import json
+with open('$settings_file') as f:
+    data = json.load(f)
+total = sum(len(v) for v in data.get('hooks', {}).values())
+# Check for hardcoded paths (path isolation violation)
+stale = 0
+for event, entries in data.get('hooks', {}).items():
+    for entry in entries:
+        for hook in entry.get('hooks', []):
+            cmd = hook.get('command', '')
+            if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
+                stale += 1
+print(f'{total},{stale}')
+" 2>/dev/null || echo "0,0")
+        local actual_hooks stale_hooks
+        actual_hooks=$(echo "$hook_status" | cut -d, -f1)
+        stale_hooks=$(echo "$hook_status" | cut -d, -f2)
 
+        local needs_regen=false
         if [ "$actual_hooks" -lt "$expected_hooks" ]; then
+            needs_regen=true
+        fi
+        if [ "${stale_hooks:-0}" -gt 0 ]; then
+            needs_regen=true
+        fi
+
+        if [ "$needs_regen" = true ]; then
             changes=$((changes + 1))
+            local reason=""
+            [ "$actual_hooks" -lt "$expected_hooks" ] && reason="missing $(($expected_hooks - $actual_hooks)) hooks"
+            [ "${stale_hooks:-0}" -gt 0 ] && { [ -n "$reason" ] && reason="$reason + "; reason="${reason}${stale_hooks} hardcoded paths"; }
             if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  $actual_hooks/$expected_hooks hooks (missing $(($expected_hooks - $actual_hooks)))"
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason → portable 'fw hook' format"
             else
-                # Backup before overwriting
                 cp "$settings_file" "${settings_file}.bak"
-                # Force regeneration (generate_claude_code_config skips if file exists)
                 local save_force="${force:-false}"
                 force=true
                 generate_claude_code_config "$target_dir"
                 force="$save_force"
-                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($actual_hooks → $expected_hooks). Backup: settings.json.bak"
+                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason → portable). Backup: settings.json.bak"
             fi
         else
-            echo -e "  ${GREEN}OK${NC}  $actual_hooks/$expected_hooks hooks present"
+            echo -e "  ${GREEN}OK${NC}  $actual_hooks/$expected_hooks hooks present (portable)"
         fi
     else
         changes=$((changes + 1))
