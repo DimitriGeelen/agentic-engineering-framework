@@ -582,6 +582,18 @@ for event_type, hook_list in hooks.items():
                 if '=' not in p:
                     script_path = p
                     break
+            # Portable 'fw hook' commands — resolve via PATH
+            if script_path == 'fw' and len(parts) >= 2 and parts[1] == 'hook':
+                import shutil
+                if not shutil.which('fw'):
+                    issues.append(f'{event_type}: fw not found in PATH (install framework or add to PATH)')
+                else:
+                    # Map fw hook name to expected script for tracking
+                    hook_name = parts[2] if len(parts) > 2 else 'unknown'
+                    basename = hook_name + '.sh'
+                    if basename in expected:
+                        found.add(basename)
+                continue
             if not os.path.exists(script_path):
                 if '/Cellar/' in script_path:
                     issues.append(f'{event_type}: stale Homebrew Cellar path (run fw init --provider claude --force to fix): {os.path.basename(script_path)}')
