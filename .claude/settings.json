@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/pre-compact.sh"
+            "command": "fw hook pre-compact"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/post-compact-resume.sh"
+            "command": "fw hook post-compact-resume"
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/post-compact-resume.sh"
+            "command": "fw hook post-compact-resume"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/block-plan-mode.sh"
+            "command": "fw hook block-plan-mode"
           }
         ]
       },
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-active-task.sh"
+            "command": "fw hook check-active-task"
           }
         ]
       },
@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh"
+            "command": "fw hook check-tier0"
           }
         ]
       },
@@ -64,7 +64,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/budget-gate.sh"
+            "command": "fw hook budget-gate"
           }
         ]
       }
@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/checkpoint.sh post-tool"
+            "command": "fw hook checkpoint post-tool"
           }
         ]
       },
@@ -84,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/error-watchdog.sh"
+            "command": "fw hook error-watchdog"
           }
         ]
       },
@@ -93,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-dispatch.sh"
+            "command": "fw hook check-dispatch"
           }
         ]
       },
@@ -102,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/999-Agentic-Engineering-Framework/agents/context/check-fabric-new-file.sh"
+            "command": "fw hook check-fabric-new-file"
           }
         ]
       }

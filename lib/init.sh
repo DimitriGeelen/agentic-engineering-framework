@@ -496,7 +496,9 @@ generate_claude_code_config() {
     mkdir -p "$dir/.claude/commands"
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
-        cat > "$dir/.claude/settings.json" << SJSON
+        # Use quoted heredoc to prevent variable expansion — all paths resolved at runtime
+        # via `fw hook` (T-496/G-021: path isolation)
+        cat > "$dir/.claude/settings.json" << 'SJSON'
 {
   "hooks": {
     "PreCompact": [
@@ -505,7 +507,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/pre-compact.sh"
+            "command": "fw hook pre-compact"
           }
         ]
       }
@@ -516,7 +518,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
+            "command": "fw hook post-compact-resume"
           }
         ]
       },
@@ -525,7 +527,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
+            "command": "fw hook post-compact-resume"
           }
         ]
       }
@@ -536,7 +538,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "$FRAMEWORK_ROOT/agents/context/block-plan-mode.sh"
+            "command": "fw hook block-plan-mode"
           }
         ]
       },
@@ -545,7 +547,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/check-active-task.sh"
+            "command": "fw hook check-active-task"
           }
         ]
       },
@@ -554,7 +556,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/check-tier0.sh"
+            "command": "fw hook check-tier0"
           }
         ]
       },
@@ -563,7 +565,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/budget-gate.sh"
+            "command": "fw hook budget-gate"
           }
         ]
       }
@@ -574,7 +576,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "PROJECT_ROOT=$dir $FRAMEWORK_ROOT/agents/context/checkpoint.sh post-tool"
+            "command": "fw hook checkpoint post-tool"
           }
         ]
       },
@@ -583,7 +585,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "$FRAMEWORK_ROOT/agents/context/error-watchdog.sh"
+            "command": "fw hook error-watchdog"
           }
         ]
       },
@@ -592,7 +594,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "$FRAMEWORK_ROOT/agents/context/check-dispatch.sh"
+            "command": "fw hook check-dispatch"
           }
         ]
       },
@@ -601,7 +603,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "$FRAMEWORK_ROOT/agents/context/check-fabric-new-file.sh"
+            "command": "fw hook check-fabric-new-file"
           }
         ]
       }

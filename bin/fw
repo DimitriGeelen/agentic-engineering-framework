@@ -86,7 +86,7 @@ if [ -z "$PROJECT_ROOT" ]; then
     _cmd="${1:-}"
     if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
-       [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ -n "$_cmd" ]; then
+       [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && [ -n "$_cmd" ]; then
 
         # Non-TTY: silently use defaults (cwd + claude)
         if [ ! -t 0 ]; then
@@ -267,6 +267,7 @@ show_help() {
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}update${NC}               Update framework installation to latest version"
+    echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
@@ -402,17 +403,64 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
-    # Check 6: Tier 0 enforcement hook
+    # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
     local settings_file="$PROJECT_ROOT/.claude/settings.json"
-    if [ -f "$settings_file" ] && grep -q "check-tier0.sh" "$settings_file" 2>/dev/null; then
-        if [ -x "$AGENTS_DIR/context/check-tier0.sh" ]; then
-            echo -e "  ${GREEN}OK${NC}  Tier 0 enforcement hook (Bash destructive command guard)"
+    if [ -f "$settings_file" ]; then
+        local hook_validation
+        hook_validation=$(python3 -c "
+import json, os, shutil
+with open('$settings_file') as f:
+    data = json.load(f)
+total = 0
+broken = 0
+stale_paths = 0
+for event, entries in data.get('hooks', {}).items():
+    for entry in entries:
+        for hook in entry.get('hooks', []):
+            cmd = hook.get('command', '')
+            total += 1
+            parts = cmd.split()
+            # Check for portable 'fw hook' format
+            if len(parts) >= 2 and parts[0] == 'fw':
+                if shutil.which('fw'):
+                    continue  # fw hook — portable, OK
+                else:
+                    broken += 1
+                    continue
+            # Old-style: absolute path — check if executable exists
+            exe = None
+            for p in parts:
+                if '=' not in p:
+                    exe = p
+                    break
+            if exe and not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
+                if not shutil.which(exe or ''):
+                    broken += 1
+            # Check for hardcoded absolute paths (path isolation violation)
+            if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
+                stale_paths += 1
+print(f'{total},{broken},{stale_paths}')
+" 2>/dev/null || echo "0,0,0")
+        local hook_total hook_broken hook_stale
+        hook_total=$(echo "$hook_validation" | cut -d, -f1)
+        hook_broken=$(echo "$hook_validation" | cut -d, -f2)
+        hook_stale=$(echo "$hook_validation" | cut -d, -f3)
+        if [ "${hook_broken:-0}" -gt 0 ]; then
+            echo -e "  ${RED}FAIL${NC}  Hook path validation: $hook_broken/$hook_total hooks have broken paths"
+            echo -e "        Run: fw upgrade (regenerates hooks with portable paths)"
+            issues=$((issues + 1))
+        elif [ "${hook_stale:-0}" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Hook path isolation: $hook_stale/$hook_total hooks use hardcoded paths (works here, breaks on clone)"
+            echo -e "        Run: fw upgrade (migrates to portable 'fw hook' format)"
+            warnings=$((warnings + 1))
+        elif [ "${hook_total:-0}" -ge 10 ]; then
+            echo -e "  ${GREEN}OK${NC}  Hook path validation: $hook_total hooks, all portable"
         else
-            echo -e "  ${YELLOW}WARN${NC}  Tier 0 hook configured but check-tier0.sh not executable"
+            echo -e "  ${YELLOW}WARN${NC}  Only $hook_total hooks configured (expected 11+)"
             warnings=$((warnings + 1))
         fi
     else
-        echo -e "  ${YELLOW}WARN${NC}  Tier 0 enforcement not configured (add Bash hook to .claude/settings.json)"
+        echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json found (run: fw init)"
         warnings=$((warnings + 1))
     fi
 
@@ -1964,6 +2012,27 @@ if total_results == 0:
 else:
     print(f'{total_results} result(s) found')
 PYSEARCH
+        ;;
+    hook)
+        # fw hook <name> [args...] — runtime path resolution for Claude Code hooks
+        # Resolves FRAMEWORK_ROOT from symlink, PROJECT_ROOT from cwd.
+        # Replaces hardcoded absolute paths in .claude/settings.json (G-021/T-496).
+        _hook_name="${1:-}"
+        shift 2>/dev/null || true
+        if [ -z "$_hook_name" ]; then
+            echo "Usage: fw hook <name> [args...]" >&2
+            echo "Available hooks: check-active-task, check-tier0, budget-gate, block-plan-mode," >&2
+            echo "  checkpoint, error-watchdog, check-dispatch, check-fabric-new-file," >&2
+            echo "  pre-compact, post-compact-resume" >&2
+            exit 1
+        fi
+        _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
+        if [ ! -x "$_hook_script" ]; then
+            echo "ERROR: Hook script not found or not executable: $_hook_script" >&2
+            exit 2
+        fi
+        export FRAMEWORK_ROOT PROJECT_ROOT
+        exec "$_hook_script" "$@"
         ;;
     doctor)
         do_doctor "$@"
