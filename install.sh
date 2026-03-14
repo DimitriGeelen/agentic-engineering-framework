@@ -78,13 +78,32 @@ check_prereqs() {
 do_install() {
     if [[ -d "$INSTALL_DIR/.git" ]]; then
         info "Existing installation found — updating..."
+
+        # Ensure fileMode is off (macOS HFS+/APFS reports permission diffs as changes)
+        git -C "$INSTALL_DIR" config core.fileMode false
+
+        local old_hash
+        old_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
         git -C "$INSTALL_DIR" fetch origin "$BRANCH" --quiet
+
+        # Framework install dir is not user code — always match origin exactly
         git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
-        git -C "$INSTALL_DIR" pull --quiet
-        info "Updated to latest"
+        git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH" --quiet
+
+        local new_hash
+        new_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+        if [[ "$old_hash" == "$new_hash" ]]; then
+            info "Already up to date (${new_hash})"
+        else
+            info "Updated ${old_hash} → ${new_hash}"
+        fi
     else
         info "Cloning framework to ${INSTALL_DIR}..."
         git clone --branch "$BRANCH" --single-branch --quiet "$REPO_URL" "$INSTALL_DIR"
+        # Disable fileMode for macOS compatibility (HFS+/APFS permission diffs)
+        git -C "$INSTALL_DIR" config core.fileMode false
         info "Cloned successfully"
     fi
 }
