@@ -596,3 +596,44 @@ concerns:
     created: 2026-02-19
     last_reviewed: 2026-03-09
     related_task: G-004
+
+  - id: G-021
+    type: gap
+    title: "Path isolation failure — hardcoded absolute paths in committed files disable all enforcement on clone/move"
+    description: >
+      fw init bakes machine-specific absolute paths into 3 committed files:
+      (1) .claude/settings.json — 12 hook commands with hardcoded FRAMEWORK_ROOT
+      and PROJECT_ROOT, (2) .framework.yaml — framework_path field,
+      (3) CLAUDE.md — __FRAMEWORK_ROOT__ template substitution.
+      When a project is cloned to a different machine, moved, or the framework
+      is reinstalled to a different path, ALL hooks silently fail. Claude Code
+      does not error on missing hook commands — it skips them. This means every
+      enforcement gate (task gate, tier 0, budget gate, plan mode block,
+      error watchdog, dispatch guard, pre-compact handover, post-compact resume)
+      is silently disabled. The framework's entire value proposition — structural
+      enforcement over agent discipline — becomes a facade.
+    spec_reference: "CLAUDE.md §Enforcement Tiers, Constitutional Directive D4 (Portability)"
+    severity: urgent
+    evidence:
+      - "Termlink project (.claude/settings.json) contains /Users/dimidev32/.agentic-framework paths — breaks on any other machine"
+      - "Framework's own settings.json contains /opt/999-Agentic-Engineering-Framework — breaks on clone"
+      - "G-007 was the same class (FRAMEWORK_ROOT vs PROJECT_ROOT in 3 scripts) — fixed symptom, not root cause"
+      - "fw doctor does not validate hook paths exist"
+      - "fw upgrade step [5/8] counts hooks (10/10 present) but does not validate paths — false green"
+      - "fw self-test runs on same machine as init — paths always match — false confidence"
+      - "fw audit does not check for machine-specific paths in committed files"
+    contamination_points:
+      - "lib/init.sh:499-608 — heredoc with variable expansion (not quoted) bakes $dir and $FRAMEWORK_ROOT"
+      - "lib/init.sh:179 — framework_path: $FRAMEWORK_ROOT in .framework.yaml"
+      - "lib/init.sh:440 — sed s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g in CLAUDE.md template"
+    what_is_broken:
+      - "Every consumer project on a different machine has zero enforcement"
+      - "Every clone of any framework-initialized project has zero enforcement"
+      - "fw doctor gives false health (doesn't check hook paths)"
+      - "fw upgrade gives false green (counts hooks, doesn't validate paths)"
+      - "fw self-test gives false confidence (same-machine testing)"
+    related_to: "G-007 (same root cause class, fixed only for 3 budget scripts)"
+    status: watching
+    created: 2026-03-14
+    last_reviewed: 2026-03-14
+    related_task: T-434

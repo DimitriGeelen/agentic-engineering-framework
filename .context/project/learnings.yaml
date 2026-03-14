@@ -801,4 +801,11 @@ learnings:
   date: 2026-03-10
   context: Added via context agent
   application: TBD
+- id: L-101
+  learning: "Never bake absolute paths into committed files. fw init used unquoted heredocs to stamp machine-specific FRAMEWORK_ROOT and PROJECT_ROOT into .claude/settings.json, .framework.yaml, and CLAUDE.md. On any clone or different machine, all 12 enforcement hooks silently fail — Claude Code skips missing hook commands without error. This disables the entire governance layer. G-007 caught 3 scripts with the same bug class but the systematic root cause (init.sh path baking) was never addressed. All path resolution must happen at runtime, never at init time."
+  source: P-001
+  task: T-495
+  date: 2026-03-14
+  context: Added via context agent
+  application: TBD
 candidates: []
