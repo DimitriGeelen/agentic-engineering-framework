@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-491: Build fw self-test command — phases 1-5 with JSON output and CI integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T20:28:53Z
+# ============================================================================
+
+task_id: T-491
+task_name: "Build fw self-test command — phases 1-5 with JSON output and CI integration"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T17:05:01Z
+completed: 2026-03-14T20:28:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T20:48:56+01:00
+last_commit: 2026-03-14T20:48:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw self-test — gate validation + task lifecycle phases (15/15 pass)
+
+# Key outcomes
+outcomes:
+  - "`tests/e2e/gates-test.sh` exists — tests task gate, Tier 0 gate via exit codes"
+  - "`tests/e2e/lifecycle-test.sh` exists — creates/updates/completes task in temp project"
+  - "`fw self-test` orchestrates all phases (onboarding + gates + lifecycle)"
+  - "`fw self-test --json` produces combined JSON with all phase results"
+  - "Each phase script is independently runnable"
+  - "All phases pass on the current framework"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-491-build-fw-self-test-command--phases-1-5-w.md"
+  - "tests/e2e/gates-test.sh"
+  - "tests/e2e/lifecycle-test.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T20:48:56"
+    action: "T-491: fw self-test — gate validation + task lifecycle phases (15/15 pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 203 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, self-test, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 203
+  commits: 1
+  files_changed: 4
+  lines_added: 465
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-491-build-fw-self-test-command--phases-1-5-w.md
+generated_by: context-agent-hybrid

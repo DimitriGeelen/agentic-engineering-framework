@@ -4,16 +4,16 @@ name: "Build fw self-test command — phases 1-5 with JSON output and CI integra
 description: >
   From T-490 GO. Build agents/self-test/self-test.sh with 5 phases: (1) preflight — deps, temp project; (2) gate validation — Tier 0/1/2 via exit codes; (3) task lifecycle — create/update/complete; (4) Watchtower — start on :9877, poll health, run smoke_test.py; (5) cleanup + JSON report. Also fix fw doctor exit code bug (always returns 0). Key constraints: all lifecycle in single chained commands (shell state doesn't persist), sleep 4 for Flask startup, pipe JSON to stdin for hook scripts.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [testing, self-test, ci]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-14T17:05:01Z
-last_update: 2026-03-14T17:05:54Z
-date_finished: null
+last_update: 2026-03-14T20:28:52Z
+date_finished: 2026-03-14T20:28:52Z
 ---
 
 # T-491: Build fw self-test command — phases 1-5 with JSON output and CI integration
@@ -68,3 +68,6 @@ grep -q "phase_pass\|phase_fail" tests/e2e/lifecycle-test.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-491-build-fw-self-test-command--phases-1-5-w.md
 - **Context:** Initial task creation
+
+### 2026-03-14T20:28:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
