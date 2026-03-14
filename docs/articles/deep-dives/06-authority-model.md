@@ -8,7 +8,7 @@ Governing AI Agents: The Authority Model — why initiative is not authority
 
 **Initiative is not authority.**
 
-In every domain I have worked in — IT programme governance, transition management, engineering leadership — the same failure mode appears when intelligent actors are given broad direction without clear constraints. A programme manager tells a workstream lead "handle this however you think is best." A hospital administrator tells a department head to "sort it out." A ship captain delegates watch duty with "you know what to do." In each case the intent is trust. The effect is the removal of structural accountability. The dynamics of complex work are too varied to oversee every possibility — which is precisely why organisations build structures that do not depend on individual judgment holding up under pressure.
+In every domain I have worked in — IT project management, transition management, engineering leadership — the same failure mode appears when intelligent actors are given broad direction without clear constraints. A programme manager tells a workstream lead "handle this however you think is best." A hospital administrator tells a department head to "sort it out." A ship captain delegates watch duty with "you know what to do." In each case the intent is trust. The effect is the removal of structural accountability. The dynamics of complex work are too varied to oversee every possibility — which is precisely why organisations build structures that do not depend on individual judgment holding up under pressure.
 
 The same failure mode has arrived in software engineering, carried by a new class of actor. The agent is mid-task. It asks a question. You reply: "Proceed as you see fit." Forty-five minutes later you discover it force-pushed to main, deleted a feature branch, and restructured the database schema. It was doing what it thought was best. You gave it permission — or at least, you thought you did. But there is a distinction most people miss when working with AI agents, and it is the same distinction that separates effective delegation from dangerous abdication in any organisation: **initiative is not authority.**
 
@@ -49,15 +49,9 @@ This model was forged by a specific incident. Task T-151 was a specification tas
 
 The task existed. The status transitions were logged. From a structural perspective, everything looked correct. But the intent — that a human was supposed to validate the specification — was completely bypassed. The governance was theatre.
 
-That incident triggered a deep review (T-194) where I mapped the entire governance model against ISO 27001's four-level assurance framework. The findings were instructive:
+That incident triggered a deep review (T-194) where we applied ISO 27001's. style thinking. Identify and score the risk, design a preventative control, make the control workable in the daily doing, and have a means to monitor (audit) that it consistently applied. 
 
-- Human sovereignty (Risk R-010, score 16) was the highest-scoring risk in the register
-- It had 4 controls, all warn-only — breadth without depth
-- One related risk (R-033) had no control at all
-
-The authority model was the response. I formalised three tiers — sovereignty, authority, initiative — and mapped every action to a tier. The critical design choice was Decision D-004: Tier 0 violations are FAIL, not WARN. The alternative was rejected because behavioural rules do not hold under pressure. An agent 45 minutes into a task that encounters a warning will acknowledge it and proceed.
-
-Validation across the framework's 312-task history confirmed the pattern: structural gates (FAIL/BLOCK) have near-100% effectiveness. Behavioural rules (WARN + trust the agent) degrade as context fills up or the agent operates autonomously.
+Monitoring confirmed the effectiveness: structural gates (FAIL/BLOCK) have near-100% effectiveness. Behavioural rules (WARN + trust the agent) degrade as context fills up or the agent operates autonomously.
 
 ### The deeper principle
 
