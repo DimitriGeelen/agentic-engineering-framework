@@ -25,11 +25,14 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
-# Token thresholds (200K context window, autoCompact disabled — D-027)
-# 170K critical leaves 30K for handover routine (commit + handover generation)
-TOKEN_WARN=120000      # ~60%
-TOKEN_URGENT=150000    # ~75%
-TOKEN_CRITICAL=170000  # ~85%
+# Context window size — 1M GA for Opus 4.6 / Sonnet 4.6 (2026-03-13, T-478)
+CONTEXT_WINDOW=${CONTEXT_WINDOW:-1000000}
+
+# Token thresholds (autoCompact disabled — D-027)
+# Proportional to window size. Critical leaves ~100K for handover routine.
+TOKEN_WARN=$((CONTEXT_WINDOW * 60 / 100))        # ~60% (600K at 1M)
+TOKEN_URGENT=$((CONTEXT_WINDOW * 80 / 100))      # ~80% (800K at 1M)
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 90 / 100))    # ~90% (900K at 1M)
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=5
@@ -110,11 +113,11 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             exit 0
             ;;
         warn)
-            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / 200000))%). Commit before starting new work." >&2
+            echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
             exit 0
             ;;
         urgent)
-            echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / 200000))%). Do not start new work. Commit and handover." >&2
+            echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
             exit 0
             ;;
         critical)
@@ -126,7 +129,7 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  SESSION WRAPPING UP (~${STATUS_TOKENS} tokens)" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
-            echo "  Context is at ~$((STATUS_TOKENS * 100 / 200000))% of 200K window." >&2
+            echo "  Context is at ~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
             echo "  Task files already have all essential state. Time to wrap up." >&2
             echo "" >&2
             echo "  ALLOWED: git commit, fw handover, reading files," >&2
@@ -177,7 +180,7 @@ if [ -z "${TRANSCRIPT:-}" ]; then
 fi
 
 # Read tokens + write status + determine action — single Python call
-SLOW_RESULT=$(tail -c 2000000 "$TRANSCRIPT" 2>/dev/null | python3 -c "
+SLOW_RESULT=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 -c "
 import sys, json, time
 
 t = 0
@@ -221,11 +224,11 @@ case "$LEVEL" in
         exit 0
         ;;
     warn)
-        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / 200000))%). Commit before starting new work." >&2
+        echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
         exit 0
         ;;
     urgent)
-        echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / 200000))%). Do not start new work. Commit and handover." >&2
+        echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
         exit 0
         ;;
     critical)
@@ -237,7 +240,7 @@ case "$LEVEL" in
         echo "  SESSION WRAPPING UP (${TOKENS} tokens)" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
-        echo "  Context is at ~$((TOKENS * 100 / 200000))% of 200K window." >&2
+        echo "  Context is at ~$((TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
         echo "  Task files already have all essential state. Time to wrap up." >&2
         echo "" >&2
         echo "  ALLOWED: git commit, fw handover, reading files," >&2
