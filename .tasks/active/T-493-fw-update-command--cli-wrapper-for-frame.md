@@ -47,8 +47,8 @@ Extends existing `install.sh` self-update logic into a proper CLI command with r
 grep -q "do_update" lib/update.sh
 grep -q "update)" bin/fw
 ./bin/fw update --help | grep -q "Check for updates"
-test -f tests/e2e/update-test.sh
-bash tests/e2e/update-test.sh
+test -f tests/e2e/upgrade-test.sh
+bash tests/e2e/upgrade-test.sh
 
 ## Decisions
 
