@@ -295,6 +295,198 @@ for event, entries in data.get('hooks', {}).items():
 
     done <<< "$pairs"
 
+    # --- Tier 2: Functional Checks (T-461) ---
+    # Beyond "file exists" → "file works"
+    [ "$quiet" = false ] && echo "" && echo -e "  ${BOLD}Tier 2: Functional checks${NC}"
+
+    # 2a. Installed git hooks pass bash -n (syntax valid)
+    if [ "$is_git" = true ]; then
+        for hook in commit-msg post-commit pre-push; do
+            local hook_path="$target_dir/.git/hooks/$hook"
+            total=$((total + 1))
+            if [ ! -f "$hook_path" ]; then
+                skipped=$((skipped + 1))
+                [ "$quiet" = false ] && echo -e "  ${CYAN}-${NC} func-hook  $hook (not installed)"
+            elif bash -n "$hook_path" 2>/dev/null; then
+                passed=$((passed + 1))
+                [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-hook  $hook passes bash -n"
+            else
+                failed=$((failed + 1))
+                [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} func-hook  $hook has syntax errors"
+            fi
+        done
+    fi
+
+    # 2b. Settings.json hook paths all resolve to existing scripts
+    local settings_file="$target_dir/.claude/settings.json"
+    if [ -f "$settings_file" ] && [ "$has_python" = true ]; then
+        total=$((total + 1))
+        local broken_hooks
+        broken_hooks=$(python3 -c "
+import json, os
+with open('$settings_file') as f:
+    data = json.load(f)
+broken = []
+for event, entries in data.get('hooks', {}).items():
+    for entry in entries:
+        for hook in entry.get('hooks', []):
+            cmd = hook.get('command', '')
+            parts = cmd.split()
+            script = next((p for p in parts if '=' not in p), '')
+            if script and not os.path.exists(script):
+                broken.append(os.path.basename(script))
+print(','.join(broken))
+" 2>/dev/null)
+        if [ -z "$broken_hooks" ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-paths  All hook script paths resolve"
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} func-paths  Missing hook scripts: $broken_hooks"
+        fi
+    fi
+
+    # 2c. CLAUDE.md has key governance sections
+    local claude_md="$target_dir/CLAUDE.md"
+    if [ -f "$claude_md" ]; then
+        total=$((total + 1))
+        local missing_sections=""
+        for section in "Core Principle" "Task System" "Enforcement Tiers" "Session Start Protocol"; do
+            if ! grep -q "$section" "$claude_md" 2>/dev/null; then
+                missing_sections="${missing_sections:+$missing_sections, }$section"
+            fi
+        done
+        if [ -z "$missing_sections" ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-claude  CLAUDE.md has key governance sections"
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} func-claude  Missing sections: $missing_sections"
+        fi
+    fi
+
+    # 2d. Onboarding tasks have valid frontmatter
+    local active_tasks
+    active_tasks=$(ls "$target_dir/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    if [ "$active_tasks" -gt 0 ] && [ "$has_python" = true ]; then
+        total=$((total + 1))
+        local bad_tasks
+        bad_tasks=$(python3 -c "
+import yaml, glob
+bad = []
+for f in glob.glob('$target_dir/.tasks/active/T-*.md'):
+    try:
+        content = open(f).read()
+        parts = content.split('---')
+        if len(parts) < 3:
+            bad.append(f.split('/')[-1])
+            continue
+        data = yaml.safe_load(parts[1])
+        for key in ['id', 'name', 'status']:
+            if key not in data:
+                bad.append(f.split('/')[-1])
+                break
+    except:
+        bad.append(f.split('/')[-1])
+print(','.join(bad))
+" 2>/dev/null)
+        if [ -z "$bad_tasks" ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} func-tasks  $active_tasks onboarding tasks have valid frontmatter"
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} func-tasks  Invalid task files: $bad_tasks"
+        fi
+    fi
+
+    # --- Tier 3: Semantic Checks (T-462) ---
+    # Catch knowledge leakage — framework-specific content in consumer projects
+    # Only runs when target has .framework.yaml (consumer project, not the framework itself)
+    if [ -f "$target_dir/.framework.yaml" ]; then
+        [ "$quiet" = false ] && echo "" && echo -e "  ${BOLD}Tier 3: Semantic checks${NC}"
+
+        # 3a. No __PROJECT_NAME__ literals remaining (template substitution worked)
+        total=$((total + 1))
+        local unsubstituted
+        unsubstituted=$(grep -rl '__PROJECT_NAME__' "$target_dir/.tasks/" "$target_dir/CLAUDE.md" 2>/dev/null | wc -l)
+        if [ "$unsubstituted" -eq 0 ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-subst  No __PROJECT_NAME__ literals remaining"
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} sem-subst  $unsubstituted file(s) still have __PROJECT_NAME__ placeholder"
+        fi
+
+        # 3b. Seeded governance files have no scope: project items
+        if [ "$has_python" = true ]; then
+            for govfile in decisions.yaml patterns.yaml practices.yaml; do
+                local govpath="$target_dir/.context/project/$govfile"
+                [ -f "$govpath" ] || continue
+                total=$((total + 1))
+                local leaked
+                leaked=$(python3 -c "
+import yaml
+with open('$govpath') as f:
+    data = yaml.safe_load(f) or {}
+leaked = []
+for key, items in data.items():
+    if not isinstance(items, list):
+        continue
+    for item in items:
+        if isinstance(item, dict) and item.get('scope') == 'project':
+            leaked.append(item.get('id', 'unknown'))
+print(','.join(leaked))
+" 2>/dev/null)
+                if [ -z "$leaked" ]; then
+                    passed=$((passed + 1))
+                    [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-scope  $govfile has no scope: project items"
+                else
+                    failed=$((failed + 1))
+                    [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} sem-scope  $govfile has leaked project items: $leaked"
+                fi
+            done
+        fi
+
+        # 3c. .framework.yaml provider matches actual config
+        total=$((total + 1))
+        local fw_provider
+        fw_provider=$(grep "^provider:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/provider:[[:space:]]*//')
+        if [ -n "$fw_provider" ]; then
+            local has_config=false
+            case "$fw_provider" in
+                claude|generic)
+                    [ -f "$target_dir/CLAUDE.md" ] && has_config=true
+                    ;;
+                cursor)
+                    [ -f "$target_dir/.cursorrules" ] && has_config=true
+                    ;;
+            esac
+            if [ "$has_config" = true ]; then
+                passed=$((passed + 1))
+                [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-prov   Provider '$fw_provider' matches config files"
+            else
+                failed=$((failed + 1))
+                [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} sem-prov   Provider '$fw_provider' but config file missing"
+            fi
+        else
+            failed=$((failed + 1))
+            [ "$quiet" = false ] && echo -e "  ${RED}✗${NC} sem-prov   No provider in .framework.yaml"
+        fi
+
+        # 3d. Fabric is clean (no framework internals)
+        total=$((total + 1))
+        local fabric_count
+        fabric_count=$(ls "$target_dir/.fabric/components/"*.yaml 2>/dev/null | wc -l)
+        if [ "$fabric_count" -eq 0 ]; then
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-fabric Fabric is clean (0 pre-registered components)"
+        else
+            # Warn, not fail — user may have already registered components
+            passed=$((passed + 1))
+            [ "$quiet" = false ] && echo -e "  ${YELLOW}!${NC} sem-fabric $fabric_count component(s) in fabric (OK if user-registered)"
+        fi
+    fi
+
     # Summary
     if [ "$quiet" = false ]; then
         echo ""
