@@ -298,7 +298,7 @@ $patch_content
     if ! $force; then
         echo -n -e "Create issue on ${BOLD}$repo${NC}? [y/N] "
         read -r confirm
-        if [ "${confirm,,}" != "y" ]; then
+        if [ "$(echo "$confirm" | tr '[:upper:]' '[:lower:]')" != "y" ]; then
             echo -e "${YELLOW}Cancelled.${NC}"
             return 0
         fi

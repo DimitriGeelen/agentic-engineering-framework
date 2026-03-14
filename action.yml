@@ -58,9 +58,9 @@ runs:
         echo "::endgroup::"
 
         # Parse results
-        PASS_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Pass:\s*\K\d+' || echo "0")
-        WARN_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Warn:\s*\K\d+' || echo "0")
-        FAIL_COUNT=$(echo "$AUDIT_OUTPUT" | grep -oP 'Fail:\s*\K\d+' || echo "0")
+        PASS_COUNT=$(echo "$AUDIT_OUTPUT" | sed -n 's/.*Pass:[[:space:]]*\([0-9]*\).*/\1/p' || echo "0")
+        WARN_COUNT=$(echo "$AUDIT_OUTPUT" | sed -n 's/.*Warn:[[:space:]]*\([0-9]*\).*/\1/p' || echo "0")
+        FAIL_COUNT=$(echo "$AUDIT_OUTPUT" | sed -n 's/.*Fail:[[:space:]]*\([0-9]*\).*/\1/p' || echo "0")
 
         echo "pass-count=${PASS_COUNT}" >> "$GITHUB_OUTPUT"
         echo "warn-count=${WARN_COUNT}" >> "$GITHUB_OUTPUT"

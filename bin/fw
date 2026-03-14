@@ -1250,7 +1250,7 @@ case "$cmd" in
                 cat > "$DEPLOY_FILE" << DEPLOYEOF
 # Deployment Record — $(date +%Y-%m-%d %H:%M)
 timestamp: $DEPLOY_TS
-app: $(echo "$@" | grep -oP '(?<=--app )\S+' || echo "unknown")
+app: $(echo "$@" | sed -n 's/.*--app \([^ ]*\).*/\1/p' || echo "unknown")
 command: fw deploy $*
 task: ${FOCUS_TASK:-none}
 commit: ${HEAD_COMMIT:-unknown}
