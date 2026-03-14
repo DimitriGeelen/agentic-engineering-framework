@@ -4,6 +4,8 @@ Provides run_git_command() and run_fw_command() with standardized
 timeouts, encoding, and error handling. Replaces ad-hoc subprocess.run
 calls scattered across blueprints.
 """
+from __future__ import annotations
+
 
 import logging
 import os

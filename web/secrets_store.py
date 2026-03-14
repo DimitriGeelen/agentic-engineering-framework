@@ -6,6 +6,8 @@ Environment variables take precedence over stored keys.
 
 T-378: Fernet encrypted API key storage.
 """
+from __future__ import annotations
+
 
 import base64
 import hashlib

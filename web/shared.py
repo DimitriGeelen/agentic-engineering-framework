@@ -1,4 +1,5 @@
 """Shared helpers for the web UI blueprints."""
+from __future__ import annotations
 
 import logging
 import os

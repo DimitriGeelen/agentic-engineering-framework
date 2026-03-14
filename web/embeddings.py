@@ -7,6 +7,8 @@ via Ollama, stores vectors in sqlite-vec, and provides semantic + hybrid search
 T-245: sqlite-vec embedding layer — semantic search for project knowledge.
 T-263: Upgraded from all-MiniLM-L6-v2 (384-dim) to nomic-embed-text-v2-moe (768-dim).
 """
+from __future__ import annotations
+
 
 import logging
 import os
