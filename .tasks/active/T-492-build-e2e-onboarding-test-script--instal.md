@@ -4,16 +4,16 @@ name: "Build E2E onboarding test script — install → init → doctor → serv
 description: >
   From T-489 GO. Build a test script that validates the complete onboarding path in a temp directory. Fix: (1) fw doctor exit code always 0 bug, (2) preflight non-blocking in init, (3) doctor doesn't check Flask. Script: create temp dir, git init, fw init, fw doctor (expect exit 0), start Watchtower on :9877, run smoke_test.py --port 9877, cleanup. Output JSON summary. Target: <2 minutes, CI-friendly.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [testing, onboarding, ci]
-components: []
+components: [bin/fw, web/context_loader.py, web/templates/index.html]
 related_tasks: []
 created: 2026-03-14T17:05:26Z
-last_update: 2026-03-14T17:05:26Z
-date_finished: null
+last_update: 2026-03-14T20:29:09Z
+date_finished: 2026-03-14T20:29:09Z
 ---
 
 # T-492: Build E2E onboarding test script — install → init → doctor → serve → smoke
@@ -69,3 +69,6 @@ grep -q "onboarding" tests/e2e/onboarding-test.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-492-build-e2e-onboarding-test-script--instal.md
 - **Context:** Initial task creation
+
+### 2026-03-14T20:29:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-492: Build E2E onboarding test script — install → init → doctor → serve → smoke
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T20:29:11Z
+# ============================================================================
+
+task_id: T-492
+task_name: "Build E2E onboarding test script — install → init → doctor → serve → smoke"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T17:05:26Z
+completed: 2026-03-14T20:29:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T20:36:35+01:00
+last_commit: 2026-03-14T20:36:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E2E onboarding test — init → doctor → serve → smoke (5/5 phases pass)
+
+# Key outcomes
+outcomes:
+  - "`tests/e2e/onboarding-test.sh` exists and is executable"
+  - "Script creates temp dir, git init, runs fw init, validates artifacts"
+  - "Script runs fw doctor and checks exit code"
+  - "Script starts Watchtower on test port, runs smoke_test.py, checks results"
+  - "Script produces JSON summary on stdout with `--json` flag"
+  - "Script cleans up temp dir on exit (trap)"
+  - "Script exits 0 on success, non-zero on failure"
+  - "`fw self-test` route in bin/fw calls the script"
+  - "Script completes in under 60 seconds"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-492-build-e2e-onboarding-test-script--instal.md"
+  - "tests/e2e/onboarding-test.sh"
+  - "web/context_loader.py"
+  - "web/templates/index.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T20:36:35"
+    action: "T-492: E2E onboarding test — init → doctor → serve → smoke (5/5 phases pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 203 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, onboarding, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 203
+  commits: 2
+  files_changed: 6
+  lines_added: 480
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-492-build-e2e-onboarding-test-script--instal.md
+generated_by: context-agent-hybrid
