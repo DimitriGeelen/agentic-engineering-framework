@@ -12,7 +12,7 @@ tags: [testing, reliability, D2]
 components: []
 related_tasks: []
 created: 2026-03-12T21:14:17Z
-last_update: 2026-03-12T21:15:39Z
+last_update: 2026-03-12T21:31:13Z
 date_finished: null
 ---
 
@@ -80,24 +80,25 @@ The framework's enforcement layer (30+ bash scripts in `agents/context/`) has ze
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 172 bats tests exist, all assumptions validated, ~7h effort for Option B+ (extend existing). 5 gate incidents in 7 months justify investment.
+
+**Date**: 2026-03-12T21:30:44Z
 ## Decision
 
 **Decision**: GO
 
-**Rationale**: 172 bats tests already exist (3/12 gates covered). All 4 assumptions validated. bats 1.13.0 installed. PoC: 5/5 pass in 700ms, zero script mods. Effort: ~7h to fix 16 failing + cover 9 remaining gates + fw test + GitHub Actions. Option B+ (pragmatic MVP with existing infrastructure).
+**Rationale**: 172 bats tests exist, all assumptions validated, ~7h effort for Option B+ (extend existing). 5 gate incidents in 7 months justify investment.
 
-**Date**: 2026-03-12T21:30:00Z
+**Date**: 2026-03-12T21:30:44Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-12T21:30:44Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 172 bats tests exist, all assumptions validated, ~7h effort for Option B+ (extend existing). 5 gate incidents in 7 months justify investment.

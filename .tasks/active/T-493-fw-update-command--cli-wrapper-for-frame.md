@@ -4,16 +4,16 @@ name: "fw update command — CLI wrapper for framework self-update"
 description: >
   Add 'fw update' subcommand to bin/fw that wraps install.sh logic: git fetch + reset --hard in framework install dir. Show before/after version and changelog. Add --check flag for dry-run. From T-434 inception GO (Option A).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [upgrade, cli]
-components: []
+components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T20:05:12Z
-last_update: 2026-03-14T20:05:12Z
-date_finished: null
+last_update: 2026-03-14T20:14:40Z
+date_finished: 2026-03-14T20:14:40Z
 ---
 
 # T-493: fw update command — CLI wrapper for framework self-update
@@ -67,3 +67,6 @@ bash tests/e2e/upgrade-test.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-493-fw-update-command--cli-wrapper-for-frame.md
 - **Context:** Initial task creation
+
+### 2026-03-14T20:14:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

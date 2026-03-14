@@ -9,7 +9,7 @@ description: >
   before executing — scope analysis, blast radius mapping, upgrade strategy, migration
   tooling, test plan.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -17,7 +17,7 @@ tags: [governance, portability, upgrade, risk, architecture]
 components: [bin/fw, lib/init.sh, CLAUDE.md, FRAMEWORK.md]
 related_tasks: [T-316]
 created: 2026-03-10T21:13:36Z
-last_update: 2026-03-10T21:25:00Z
+last_update: 2026-03-14T19:54:58Z
 date_finished: null
 ---
 
@@ -101,14 +101,14 @@ auto-update (this is manual/commanded upgrade only), cloud distribution, plugin 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] File classification matrix (framework/project/hybrid) produced
-- [ ] Blast radius analysis for framework file changes
-- [ ] Prior art research on CLI framework upgrade patterns
-- [ ] Upgrade strategy options presented with directive scoring
-- [ ] Safety mechanism design (dry-run, rollback, validation)
-- [ ] Research artifact written to docs/reports/
-- [ ] Go/No-Go decision recorded
-- [ ] Build tasks created for approved approach
+- [x] File classification matrix (framework/project/hybrid) produced
+- [x] Blast radius analysis for framework file changes
+- [x] Prior art research on CLI framework upgrade patterns
+- [x] Upgrade strategy options presented with directive scoring
+- [x] Safety mechanism design (dry-run, rollback, validation)
+- [x] Research artifact written to docs/reports/
+- [x] Go/No-Go decision recorded
+- [x] Build tasks created for approved approach
 
 ### Human
 - [ ] [REVIEW] Review upgrade strategy and approve approach
@@ -140,11 +140,18 @@ test -f docs/reports/T-434-upgrade-process-inception.md
 
 ## Decisions
 
-<!-- Pending exploration -->
+**Decision**: GO
 
+**Rationale**: Most upgrade infrastructure already exists. Gaps are narrow: fw update CLI, version tracking, context dir sync. Option A (polish existing) — 3 small build tasks.
+
+**Date**: 2026-03-14T20:05:01Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-434 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Most upgrade infrastructure already exists. Gaps are narrow: fw update CLI, version tracking, context dir sync. Option A (polish existing) — 3 small build tasks.
+
+**Date**: 2026-03-14T20:05:01Z
 
 ## Updates
 
@@ -153,3 +160,11 @@ test -f docs/reports/T-434-upgrade-process-inception.md
 - **Context:** Human identified upgrade process as key gap for external adoption. Emphasized
   thorough investigation, layered testing, and careful decomposition before any build work.
   Specifically requested thinking about the investigation approach itself before executing.
+
+### 2026-03-14T19:54:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-14T20:05:01Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Most upgrade infrastructure already exists. Gaps are narrow: fw update CLI, version tracking, context dir sync. Option A (polish existing) — 3 small build tasks.

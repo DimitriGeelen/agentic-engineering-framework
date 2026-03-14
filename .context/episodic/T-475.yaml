@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-475: Add bats tests for 9 uncovered gate scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-13T07:25:56Z
+# ============================================================================
+
+task_id: T-475
+task_name: "Add bats tests for 9 uncovered gate scripts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T21:31:04Z
+completed: 2026-03-13T07:25:29Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-13T08:25:20+01:00
+last_commit: 2026-03-13T08:25:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 36 bats tests for 4 gate scripts — budget-gate, block-plan-mode, check-dispatch, check-fabric-new-file
+
+# Key outcomes
+outcomes:
+  - "tests/integration/budget_gate.bats exists with 16 tests covering: ok/warn/urgent/critical fast path, Read/Glob/Grep exempt, git commit/fw handover exempt, wrap-up paths (.context/.tasks/.claude/), stale cache fallthrough, no-status failsafe"
+  - "tests/integration/block_plan_mode.bats exists with 4 tests: block exit 2, /plan alternative, BLOCKED message, governance bypass"
+  - "tests/integration/check_dispatch.bats exists with 8 tests: non-Task silent, small response silent, >5K WARNING, >20K CRITICAL, TaskOutput, empty response, preamble mention, malformed JSON"
+  - "tests/integration/check_fabric_new_file.bats exists with 8 tests: non-Write silent, skip prefixes, no patterns file, no match, advisory match, already registered, never blocks"
+  - "All existing tests still pass: 187/187 (151 original + 36 new)"
+  - "Each test file follows test_helper.bash patterns (setup/teardown, temp dirs, TASKS_DIR/CONTEXT_DIR exports)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-475-add-bats-tests-for-9-uncovered-gate-scri.md"
+  - "tests/integration/block_plan_mode.bats"
+  - "tests/integration/budget_gate.bats"
+  - "tests/integration/check_dispatch.bats"
+  - "tests/integration/check_fabric_new_file.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-13T08:25:20"
+    action: "T-475: Add 36 bats tests for 4 gate scripts — budget-gate, block-plan-mode, check-dispatch, check-fabric-new-file"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 594 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, D2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 594
+  commits: 1
+  files_changed: 5
+  lines_added: 387
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-475-add-bats-tests-for-9-uncovered-gate-scri.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-460: Create onboarding task template files for both init modes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-13T10:06:20Z
+# ============================================================================
+
+task_id: T-460
+task_name: "Create onboarding task template files for both init modes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T17:00:54Z
+completed: 2026-03-13T10:06:19Z
+duration_days: 1
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "`lib/seeds/tasks/existing-project/` directory exists with 6+ task template files"
+  - "`lib/seeds/tasks/greenfield/` directory exists with 5+ task template files"
+  - "All template files have valid YAML frontmatter (id, name, status, workflow_type, owner)"
+  - "All template files use `__PROJECT_NAME__` placeholder (not hardcoded project names)"
+  - "init.sh copies appropriate template set into `.tasks/active/` based on code detection"
+  - "init.sh performs `__PROJECT_NAME__` and `__DATE__` substitution when copying"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1025 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [init, onboarding, templates]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1025
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-460-create-onboarding-task-template-files-fo.md
+generated_by: context-agent-hybrid

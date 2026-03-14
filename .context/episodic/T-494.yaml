@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-494: Expand fw upgrade — version tracking, context dir sync, E2E test
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T20:15:01Z
+# ============================================================================
+
+task_id: T-494
+task_name: "Expand fw upgrade — version tracking, context dir sync, E2E test"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T20:05:30Z
+completed: 2026-03-14T20:14:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-14T21:14:09+01:00
+last_commit: 2026-03-14T21:14:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-493, T-494: fw update + fw upgrade expansion with E2E tests (23/23 pass)
+
+# Key outcomes
+outcomes:
+  - "`fw upgrade` records framework VERSION in `.framework.yaml` after successful upgrade"
+  - "`fw upgrade` creates new `.context/` subdirs if missing (bus, scans, inbox, qa)"
+  - "`fw upgrade` shows version comparison (project pinned vs framework current)"
+  - "E2E upgrade test validates full upgrade flow in temp project"
+  - "E2E test is integrated into `fw self-test`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "lib/update.sh"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-493-fw-update-command--cli-wrapper-for-frame.md"
+  - ".tasks/active/T-494-expand-fw-upgrade--version-tracking-cont.md"
+  - "tests/e2e/upgrade-test.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T21:14:09"
+    action: "T-493, T-494: fw update + fw upgrade expansion with E2E tests (23/23 pass)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upgrade, testing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 6
+  lines_added: 667
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-494-expand-fw-upgrade--version-tracking-cont.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-456: Fix commit-msg hook find_task_file() undefined bug
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-13T07:54:58Z
+# ============================================================================
+
+task_id: T-456
+task_name: "Fix commit-msg hook find_task_file() undefined bug"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T17:00:35Z
+completed: 2026-03-13T07:54:31Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-13T08:54:18+01:00
+last_commit: 2026-03-13T08:54:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Source lib/tasks.sh in commit-msg hook — fixes find_task_file() undefined in consumer projects
+
+# Key outcomes
+outcomes:
+  - "`agents/git/lib/hooks.sh` sources `lib/tasks.sh` before calling `find_task_file()`"
+  - "`find_task_file` is available when commit-msg hook runs (verified by grep)"
+  - "Existing bats tests still pass (187/187)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Source lib/tasks.sh in commit-msg hook — fixes find_task_file() undefined in consumer projects"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+  - ".tasks/active/T-456-fix-commit-msg-hook-findtaskfile-undefin.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-13T08:54:18"
+    action: "T-456: Source lib/tasks.sh in commit-msg hook — fixes find_task_file() undefined in consumer projects"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 893 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [init, hooks, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 893
+  commits: 1
+  files_changed: 2
+  lines_added: 22
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-456-fix-commit-msg-hook-findtaskfile-undefin.md
+generated_by: context-agent-hybrid

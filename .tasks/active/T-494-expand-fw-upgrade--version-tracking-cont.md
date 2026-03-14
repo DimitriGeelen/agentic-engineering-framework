@@ -4,16 +4,16 @@ name: "Expand fw upgrade — version tracking, context dir sync, E2E test"
 description: >
   Expand fw upgrade to: (1) record framework VERSION in .framework.yaml on upgrade, (2) create new .context/ subdirs if missing, (3) add E2E upgrade test to fw self-test. From T-434 inception GO (Option A).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [upgrade, testing]
-components: []
+components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T20:05:30Z
-last_update: 2026-03-14T20:08:01Z
-date_finished: null
+last_update: 2026-03-14T20:14:58Z
+date_finished: 2026-03-14T20:14:58Z
 ---
 
 # T-494: Expand fw upgrade — version tracking, context dir sync, E2E test
@@ -68,3 +68,6 @@ bash tests/e2e/upgrade-test.sh
 
 ### 2026-03-14T20:08:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-14T20:14:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

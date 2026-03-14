@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-481: Fix install.sh update path — handle dirty state and macOS filemode
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T14:52:55Z
+# ============================================================================
+
+task_id: T-481
+task_name: "Fix install.sh update path — handle dirty state and macOS filemode"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T14:48:51Z
+completed: 2026-03-14T14:52:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T15:50:37+01:00
+last_commit: 2026-03-14T15:50:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix install.sh update path — reset to origin, disable fileMode for macOS
+
+# Key outcomes
+outcomes:
+  - "`do_install()` update path resets to origin (not `git pull`)"
+  - "`core.fileMode` set to false on fresh clones (macOS compat)"
+  - "`core.fileMode` fixed on existing installs during update"
+  - "Update shows old→new version (commit hash or tag)"
+  - "install.sh passes `bash -n` syntax check"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix install.sh update path — reset to origin, disable fileMode for macOS"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "install.sh"
+  - ".tasks/active/T-481-fix-installsh-update-path--handle-dirty-.md"
+  - ".tasks/active/T-482-inception-install-model--global-shared-v.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T15:50:37"
+    action: "T-481: Fix install.sh update path — reset to origin, disable fileMode for macOS"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, bugfix, installer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 174
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-481-fix-installsh-update-path--handle-dirty-.md
+generated_by: context-agent-hybrid
