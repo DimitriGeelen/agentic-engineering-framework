@@ -2,23 +2,91 @@
 # Fabric Agent - register and scan commands
 # Implements: fw fabric register, fw fabric scan
 
+
+# Excluded directories for recursive registration
+_REGISTER_EXCLUDE_DIRS="node_modules|.git|__pycache__|.venv|venv|.env|dist|build|.next|.nuxt|.cache|.tox|.mypy_cache|.pytest_cache|vendor|target"
+
+# Eligible file extensions for recursive registration
+_REGISTER_EXTENSIONS="py|sh|js|ts|jsx|tsx|yaml|yml|md|html|css|scss|json|toml|cfg|ini|sql|go|rs|java|rb|php|c|h|cpp|hpp|vue|svelte"
+
+_register_directory() {
+    local dir_path="$1"
+    local abs_dir
+    abs_dir=$(cd "$dir_path" 2>/dev/null && pwd) || {
+        echo -e "${RED}Error: Directory not found: $dir_path${NC}"
+        return 1
+    }
+
+    local created=0
+    local skipped=0
+    local excluded=0
+
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        local rel
+        rel=$(python3 -c "import os; print(os.path.relpath('$file', os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file")
+
+        # Check if already registered
+        local slug
+        slug=$(echo "$rel" | sed 's|/|-|g; s|\..*$||; s|^\.||')
+        if [ -f "$COMPONENTS_DIR/${slug}.yaml" ]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        _do_register_file "$rel" > /dev/null 2>&1 && created=$((created + 1)) || excluded=$((excluded + 1))
+    done < <(python3 -c "
+import os, re
+root = '$abs_dir'
+ext_re = re.compile(r'\.($_REGISTER_EXTENSIONS)$')
+exclude_re = re.compile(r'(^|/)($_REGISTER_EXCLUDE_DIRS)/')
+for dirpath, dirnames, filenames in os.walk(root):
+    # Prune excluded dirs in-place
+    dirnames[:] = [d for d in dirnames if not re.match(r'^($_REGISTER_EXCLUDE_DIRS)$', d)]
+    for f in sorted(filenames):
+        if ext_re.search(f):
+            print(os.path.join(dirpath, f))
+" 2>/dev/null)
+
+    echo -e "${GREEN}Directory scan complete${NC}"
+    echo "  Registered: $created new component cards"
+    echo "  Skipped:    $skipped already registered"
+    [ "$excluded" -gt 0 ] && echo "  Errors:     $excluded files could not be registered"
+
+    if [ "$created" -gt 0 ]; then
+        echo ""
+        echo -e "${CYAN}Auto-enriching new cards...${NC}"
+        python3 "$LIB_DIR/enrich.py" 2>/dev/null || true
+    fi
+}
+
 do_register() {
     ensure_fabric_dirs
 
     local file_path="${1:-}"
     if [ -z "$file_path" ]; then
-        echo -e "${RED}Error: File path required${NC}"
-        echo "Usage: fw fabric register <file-path>"
+        echo -e "${RED}Error: File or directory path required${NC}"
+        echo "Usage: fw fabric register <file-or-dir>"
         exit 1
     fi
 
-    # Resolve to relative path from project root
-    local rel_path
-    rel_path=$(python3 -c "import os; print(os.path.relpath(os.path.abspath('$file_path'), os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file_path")
+    # If it's a directory, register recursively
+    local abs_path
+    abs_path=$(cd "$file_path" 2>/dev/null && pwd || echo "$PROJECT_ROOT/$file_path")
+    if [ -d "$abs_path" ] || [ -d "$file_path" ]; then
+        _register_directory "${file_path}"
+        return $?
+    fi
+
+    # Single file mode
+    _do_register_file "$rel_path"
+}
+
+_do_register_file() {
+    local rel_path="$1"
 
     if [ ! -f "$PROJECT_ROOT/$rel_path" ]; then
-        echo -e "${RED}Error: File not found: $rel_path${NC}"
-        exit 1
+        return 1
     fi
 
     # Generate component slug from path
@@ -28,7 +96,6 @@ do_register() {
     local card_file="$COMPONENTS_DIR/${slug}.yaml"
     if [ -f "$card_file" ]; then
         echo -e "${YELLOW}Card already exists: $card_file${NC}"
-        echo "Use 'fw fabric get $rel_path' to view it"
         return 0
     fi
 
@@ -117,7 +184,6 @@ EOF
     echo -e "${GREEN}Card created: $card_file${NC}"
     echo "  Type: $comp_type"
     echo "  Subsystem: $subsystem"
-    echo -e "  ${YELLOW}Fill in: purpose, depends_on (use {target: path, type: calls} format), tags${NC}"
     return 0
 }
 
