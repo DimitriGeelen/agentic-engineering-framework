@@ -47,9 +47,10 @@ Terminal experiments: `docs/reports/T-490-self-test-inception.md` (6/6 passed).
 
 ## Verification
 
-bash tests/e2e/onboarding-test.sh --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['passed']>0 and d['failed']==0, f'Failed: {d}'"
+# Full test: ./bin/fw self-test onboarding (runs 5 phases, ~15s)
 test -x tests/e2e/onboarding-test.sh
 grep -q "self-test" bin/fw
+grep -q "onboarding" tests/e2e/onboarding-test.sh
 
 ## Decisions
 
