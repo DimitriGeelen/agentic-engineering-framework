@@ -223,7 +223,7 @@ do_status() {
 
         # Find the port from the process
         local port
-        port=$(ss -tlnp 2>/dev/null | grep "pid=${pid}" | awk '{print $4}' | grep -oP ':\K[0-9]+' | head -1)
+        port=$(ss -tlnp 2>/dev/null | grep "pid=${pid}" | awk '{print $4}' | grep -oE '[0-9]+' | tail -1)
         if [ -n "$port" ]; then
             echo "  Local:  http://localhost:${port}"
             local lan_ip

@@ -47,7 +47,7 @@ check_prereqs() {
         ok=false
     else
         local git_ver
-        git_ver=$(git --version | grep -oP '\d+\.\d+' | head -1)
+        git_ver=$(git --version | grep -oE '[0-9]+\.[0-9]+' | head -1)
         info "git ${git_ver}"
     fi
 
@@ -57,7 +57,7 @@ check_prereqs() {
         ok=false
     else
         local py_ver
-        py_ver=$(python3 --version 2>&1 | grep -oP '\d+\.\d+\.\d+')
+        py_ver=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
         info "python3 ${py_ver}"
     fi
 
