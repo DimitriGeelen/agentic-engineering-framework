@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-495: Path isolation — eliminate hardcoded absolute paths from all committed files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T22:35:39Z
+# ============================================================================
+
+task_id: T-495
+task_name: "Path isolation — eliminate hardcoded absolute paths from all committed files"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T22:25:26Z
+completed: 2026-03-14T22:35:38Z
+duration_days: 0
+updates_count: 6
+first_commit: 2026-03-14T23:26:26+01:00
+last_commit: 2026-03-14T23:26:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register G-021 path isolation failure — urgent, existential enforcement gap
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (G-021 registered, 3 contamination points, 4 detection gaps identified)"
+  - "Assumptions tested (fw hook 4ms overhead, PATH available in hook context, cwd=project root)"
+  - "Go/No-Go decision made (GO — 5 build tasks, ~2-3h effort)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/concerns.yaml"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-495-path-isolation-inception.md"
+  - ".tasks/active/T-495-path-isolation--eliminate-hardcoded-abso.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T23:26:26"
+    action: "T-495: Register G-021 path isolation failure — urgent, existential enforcement gap"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, enforcement, P0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 4
+  lines_added: 203
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-495-path-isolation--eliminate-hardcoded-abso.md
+generated_by: context-agent-hybrid
