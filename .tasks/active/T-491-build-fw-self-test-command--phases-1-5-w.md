@@ -12,7 +12,7 @@ tags: [testing, self-test, ci]
 components: []
 related_tasks: []
 created: 2026-03-14T17:05:01Z
-last_update: 2026-03-14T17:05:01Z
+last_update: 2026-03-14T17:05:54Z
 date_finished: null
 ---
 
@@ -20,40 +20,33 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Extends `fw self-test` from T-492 (onboarding only) to cover enforcement gates and task lifecycle.
+Research: `docs/reports/T-490-self-test-inception.md` (6/6 experiments passed).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tests/e2e/gates-test.sh` exists — tests task gate, Tier 0 gate via exit codes
+- [x] `tests/e2e/lifecycle-test.sh` exists — creates/updates/completes task in temp project
+- [x] `fw self-test` orchestrates all phases (onboarding + gates + lifecycle)
+- [x] `fw self-test --json` produces combined JSON with all phase results
+- [x] Each phase script is independently runnable
+- [x] All phases pass on the current framework
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Run `fw self-test` and verify all phases pass
+  **Steps:**
+  1. Run `./bin/fw self-test` from framework root
+  2. Watch output — each phase shows PASS/FAIL
+  **Expected:** All phases pass, exit code 0
+  **If not:** Note which phase failed
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bash tests/e2e/gates-test.sh --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['failed']==0, f'Gate tests failed: {d}'"
+bash tests/e2e/lifecycle-test.sh --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['failed']==0, f'Lifecycle tests failed: {d}'"
+test -x tests/e2e/gates-test.sh
+test -x tests/e2e/lifecycle-test.sh
 
 ## Decisions
 
