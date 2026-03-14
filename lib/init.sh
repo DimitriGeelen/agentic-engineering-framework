@@ -332,6 +332,18 @@ CYAML
             ;;
     esac
 
+    # --- Post-init validation (T-461: Tier 1 structural + Tier 2 functional) ---
+    echo ""
+    echo -e "${BOLD}Validating...${NC}"
+    source "$FW_LIB_DIR/validate-init.sh" 2>/dev/null || \
+        source "$(dirname "${BASH_SOURCE[0]}")/validate-init.sh" 2>/dev/null || true
+    if type do_validate_init >/dev/null 2>&1; then
+        if ! do_validate_init "$target_dir" --provider "$provider"; then
+            echo ""
+            echo -e "${YELLOW}Init completed with validation errors — check output above${NC}"
+        fi
+    fi
+
     # --- Activate governance: initialize session context (T-002) ---
     echo ""
     echo -e "Activating governance..."
