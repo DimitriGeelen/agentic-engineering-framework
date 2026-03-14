@@ -2,6 +2,8 @@
 
 T-377: Defines the provider interface and shared data types.
 """
+from __future__ import annotations
+
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass

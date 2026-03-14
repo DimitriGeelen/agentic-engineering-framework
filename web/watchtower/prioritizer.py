@@ -4,6 +4,8 @@
 Orders active tasks by: issues > stale > active (by recency) > captured.
 Session continuity boosts tasks from the last handover.
 """
+from __future__ import annotations
+
 
 import re
 from datetime import datetime, timezone

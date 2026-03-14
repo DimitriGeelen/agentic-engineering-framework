@@ -14,6 +14,8 @@ Rule output format:
         "priority_factors": [{"rule": "...", "detail": "..."}],
     }
 """
+from __future__ import annotations
+
 
 import re
 from datetime import date, datetime, timezone

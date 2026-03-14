@@ -2,6 +2,8 @@
 
 T-377: Manages which LLM provider is active and handles failover.
 """
+from __future__ import annotations
+
 
 import logging
 import os

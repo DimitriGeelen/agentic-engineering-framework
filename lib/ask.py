@@ -10,6 +10,7 @@ Usage:
     python3 lib/ask.py --json "What is the healing loop?"
     python3 lib/ask.py --concise "List enforcement tiers"
 """
+from __future__ import annotations
 
 import argparse
 import json

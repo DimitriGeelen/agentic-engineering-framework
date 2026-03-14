@@ -2,6 +2,8 @@
 
 T-377: OpenRouter is fully OpenAI-compatible (base_url swap).
 """
+from __future__ import annotations
+
 
 import logging
 from typing import Generator

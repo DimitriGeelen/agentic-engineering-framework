@@ -8,6 +8,8 @@ T-258: Model management — pre-load and fallback logic.
 T-262: Replaced model with Qwen3-14B + thinking mode toggle.
 T-377: Refactored to use LLM provider abstraction (Ollama + OpenRouter).
 """
+from __future__ import annotations
+
 
 import logging
 import re

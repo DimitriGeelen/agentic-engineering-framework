@@ -5,6 +5,8 @@ with snippet highlighting. Index is rebuilt on demand when stale.
 
 T-237: Phase 1 — BM25 keyword search via tantivy.
 """
+from __future__ import annotations
+
 
 import time
 from pathlib import Path

@@ -5,6 +5,8 @@ task ID parsing, file collection, and path-to-link resolution.
 
 T-376: Deduplicated from web/search.py and web/embeddings.py.
 """
+from __future__ import annotations
+
 
 import re
 from pathlib import Path

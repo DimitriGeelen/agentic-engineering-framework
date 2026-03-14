@@ -2,6 +2,8 @@
 
 T-377: Extracted from web/ask.py.
 """
+from __future__ import annotations
+
 
 import logging
 from typing import Generator
