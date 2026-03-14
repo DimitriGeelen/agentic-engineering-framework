@@ -86,7 +86,7 @@ if [ -z "$PROJECT_ROOT" ]; then
     _cmd="${1:-}"
     if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
-       [ "$_cmd" != "--version" ] && [ -n "$_cmd" ]; then
+       [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ -n "$_cmd" ]; then
 
         # Non-TTY: silently use defaults (cwd + claude)
         if [ ! -t 0 ]; then
@@ -266,6 +266,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
+    echo -e "  ${GREEN}update${NC}               Update framework installation to latest version"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
@@ -1425,6 +1426,10 @@ print(len(tier0))
         source "$FW_LIB_DIR/validate-init.sh"
         do_validate_init "$@"
         ;;
+    update)
+        source "$FW_LIB_DIR/update.sh"
+        do_update "$@"
+        ;;
     upgrade)
         source "$FW_LIB_DIR/init.sh"
         source "$FW_LIB_DIR/upgrade.sh"
@@ -1980,9 +1985,12 @@ PYSEARCH
             lifecycle)
                 "$FRAMEWORK_ROOT/tests/e2e/lifecycle-test.sh" "$@"
                 ;;
+            upgrade)
+                "$FRAMEWORK_ROOT/tests/e2e/upgrade-test.sh" "$@"
+                ;;
             all)
                 st_exit=0
-                for st_phase in gates lifecycle onboarding; do
+                for st_phase in gates lifecycle upgrade onboarding; do
                     st_script="$FRAMEWORK_ROOT/tests/e2e/${st_phase}-test.sh"
                     if [ -x "$st_script" ]; then
                         "$st_script" "$@" || st_exit=1
@@ -1992,11 +2000,11 @@ PYSEARCH
                 exit $st_exit
                 ;;
             help|--help|-h)
-                echo "Usage: fw self-test [onboarding|gates|lifecycle|all] [--json] [--port N] [--verbose]"
+                echo "Usage: fw self-test [onboarding|gates|lifecycle|upgrade|all] [--json] [--port N] [--verbose]"
                 ;;
             *)
                 echo "Unknown self-test phase: $st_subcmd"
-                echo "Usage: fw self-test [onboarding|gates|lifecycle|all] [--json] [--port N] [--verbose]"
+                echo "Usage: fw self-test [onboarding|gates|lifecycle|upgrade|all] [--json] [--port N] [--verbose]"
                 exit 1
                 ;;
         esac

@@ -75,17 +75,33 @@ do_upgrade() {
     local changes=0
     local skipped=0
 
+    # Version comparison
+    local fw_version="${FW_VERSION:-unknown}"
+    local project_version=""
+    if [ -f "$target_dir/.framework.yaml" ]; then
+        project_version=$(grep "^version:" "$target_dir/.framework.yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
+    fi
+
     echo -e "${BOLD}fw upgrade${NC} - Syncing framework improvements"
     echo ""
     echo "  Project:   $target_dir ($project_name)"
-    echo "  Framework: $FRAMEWORK_ROOT"
+    echo "  Framework: $FRAMEWORK_ROOT (v${fw_version})"
+    if [ -n "$project_version" ]; then
+        if [ "$project_version" = "$fw_version" ]; then
+            echo -e "  Pinned:    v${project_version} ${GREEN}(current)${NC}"
+        else
+            echo -e "  Pinned:    v${project_version} ${YELLOW}(behind v${fw_version})${NC}"
+        fi
+    else
+        echo -e "  Pinned:    ${YELLOW}<none>${NC} (version tracking will be added)"
+    fi
     if [ "$dry_run" = true ]; then
         echo -e "  Mode:      ${YELLOW}DRY RUN${NC} (no changes will be made)"
     fi
     echo ""
 
     # ── 1. CLAUDE.md — preserve project sections, update governance ──
-    echo -e "${YELLOW}[1/6] CLAUDE.md governance sections${NC}"
+    echo -e "${YELLOW}[1/8] CLAUDE.md governance sections${NC}"
 
     local project_claude="$target_dir/CLAUDE.md"
     local template_file="$FRAMEWORK_ROOT/lib/templates/claude-project.md"
@@ -174,7 +190,7 @@ plus Claude Code-specific integration notes.
     fi
 
     # ── 2. Task templates ──
-    echo -e "${YELLOW}[2/6] Task templates${NC}"
+    echo -e "${YELLOW}[2/8] Task templates${NC}"
 
     local tmpl_updated=0
     for tmpl in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
@@ -204,7 +220,7 @@ plus Claude Code-specific integration notes.
     fi
 
     # ── 3. Seed files (universal governance items) ──
-    echo -e "${YELLOW}[3/6] Seed files (universal governance)${NC}"
+    echo -e "${YELLOW}[3/8] Seed files (universal governance)${NC}"
 
     local seed_updated=0
     for seed_name in practices decisions patterns; do
@@ -252,7 +268,7 @@ plus Claude Code-specific integration notes.
     fi
 
     # ── 4. Git hooks ──
-    echo -e "${YELLOW}[4/6] Git hooks${NC}"
+    echo -e "${YELLOW}[4/8] Git hooks${NC}"
 
     if [ -d "$target_dir/.git" ]; then
         if [ "$dry_run" = true ]; then
@@ -272,7 +288,7 @@ plus Claude Code-specific integration notes.
     fi
 
     # ── 5. .claude/settings.json (hooks config) ──
-    echo -e "${YELLOW}[5/6] Claude Code hooks (.claude/settings.json)${NC}"
+    echo -e "${YELLOW}[5/8] Claude Code hooks (.claude/settings.json)${NC}"
 
     local settings_file="$target_dir/.claude/settings.json"
     local expected_hooks=10
@@ -317,7 +333,7 @@ except: print(0)
     fi
 
     # ── 6. .claude/commands/resume.md ──
-    echo -e "${YELLOW}[6/6] Claude Code commands${NC}"
+    echo -e "${YELLOW}[6/8] Claude Code commands${NC}"
 
     local resume_file="$target_dir/.claude/commands/resume.md"
     local framework_resume="$FRAMEWORK_ROOT/lib/templates/resume-command.md"
@@ -335,6 +351,61 @@ except: print(0)
             echo -e "  ${YELLOW}SKIP${NC}  resume.md — run 'fw init --force' to regenerate"
             skipped=$((skipped + 1))
         fi
+    fi
+
+    # ── 7. Context subdirectories (create missing) ──
+    echo -e "${YELLOW}[7/8] Context subdirectories${NC}"
+
+    local ctx_created=0
+    for ctx_subdir in audits bus episodic handovers inbox project qa scans working; do
+        local ctx_path="$target_dir/.context/$ctx_subdir"
+        if [ ! -d "$ctx_path" ]; then
+            ctx_created=$((ctx_created + 1))
+            if [ "$dry_run" != true ]; then
+                mkdir -p "$ctx_path"
+            fi
+        fi
+    done
+
+    if [ "$ctx_created" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD CREATE${NC}  $ctx_created missing subdirectory(ies)"
+        else
+            echo -e "  ${GREEN}CREATED${NC}  $ctx_created missing subdirectory(ies)"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  All context subdirectories present"
+    fi
+
+    # ── 8. Version tracking (.framework.yaml) ──
+    echo -e "${YELLOW}[8/8] Version tracking${NC}"
+
+    local fw_version="${FW_VERSION:-unknown}"
+    local yaml_file="$target_dir/.framework.yaml"
+
+    if [ -f "$yaml_file" ]; then
+        local current_pinned
+        current_pinned=$(grep "^version:" "$yaml_file" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
+
+        if [ "$current_pinned" = "$fw_version" ]; then
+            echo -e "  ${GREEN}OK${NC}  Version $fw_version already recorded"
+        else
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  version: ${current_pinned:-<none>} → $fw_version"
+            else
+                if grep -q "^version:" "$yaml_file" 2>/dev/null; then
+                    _sed_i "s/^version:.*/version: $fw_version/" "$yaml_file"
+                else
+                    echo "version: $fw_version" >> "$yaml_file"
+                fi
+                echo -e "  ${GREEN}UPDATED${NC}  version: ${current_pinned:-<none>} → $fw_version"
+            fi
+        fi
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  No .framework.yaml found"
+        skipped=$((skipped + 1))
     fi
 
     # ── Summary ──
