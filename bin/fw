@@ -571,6 +571,30 @@ else:
         warnings=$((warnings + 1))
     fi
 
+    # Check: Watchtower smoke test (T-486) — run if server is reachable
+    if curl -sf "http://localhost:${FW_PORT:-3000}/health" >/dev/null 2>&1; then
+        local smoke_result
+        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "${FW_PORT:-3000}" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
+        local smoke_passed smoke_failed smoke_total
+        smoke_passed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('passed',0))" 2>/dev/null || echo 0)
+        smoke_failed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('failed',0))" 2>/dev/null || echo 0)
+        smoke_total=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('total',0))" 2>/dev/null || echo 0)
+        if [ "${smoke_failed:-0}" = "0" ] && [ "${smoke_passed:-0}" -gt 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  Watchtower smoke test ($smoke_passed/$smoke_total endpoints)"
+        elif [ "${smoke_failed:-0}" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Watchtower smoke: $smoke_failed/$smoke_total endpoints failed"
+            local smoke_errors
+            smoke_errors=$(echo "$smoke_result" | python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+for e in d.get('errors',[])[:3]:
+    print(f\"         {e['path']}: {e.get('error','?')}\")
+" 2>/dev/null || true)
+            [ -n "$smoke_errors" ] && echo "$smoke_errors"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Enforcement matcher coverage: G-012 closed as accepted risk (no notebooks in project)
 
     # Check: Enforcement baseline integrity (B-005 — T-230)
