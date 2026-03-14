@@ -291,6 +291,7 @@ show_help() {
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
+    echo -e "  ${GREEN}self-test${NC} [phase]     Run E2E self-test (onboarding|all) [--json]"
     echo -e "  ${GREEN}test${NC} [suite]           Run tests (all|unit|integration|web|lint)"
     echo -e "  ${GREEN}version${NC}              Show version information"
     echo -e "  ${GREEN}help${NC}                 Show this help"
@@ -1961,6 +1962,32 @@ PYSEARCH
         ;;
     doctor)
         do_doctor "$@"
+        ;;
+    self-test)
+        # Detect subcommand vs flags — flags start with --
+        st_subcmd="all"
+        if [ $# -gt 0 ] && [[ ! "$1" == --* ]]; then
+            st_subcmd="$1"
+            shift
+        fi
+        case "$st_subcmd" in
+            onboarding|all)
+                if [ -x "$FRAMEWORK_ROOT/tests/e2e/onboarding-test.sh" ]; then
+                    "$FRAMEWORK_ROOT/tests/e2e/onboarding-test.sh" "$@"
+                else
+                    echo -e "${RED}E2E onboarding test not found${NC}"
+                    exit 1
+                fi
+                ;;
+            help|--help|-h)
+                echo "Usage: fw self-test [onboarding|all] [--json] [--port N] [--verbose]"
+                ;;
+            *)
+                echo "Unknown self-test phase: $st_subcmd"
+                echo "Usage: fw self-test [onboarding|all] [--json] [--port N] [--verbose]"
+                exit 1
+                ;;
+        esac
         ;;
     enforcement)
         enforcement_subcmd="${1:-status}"
