@@ -20,40 +20,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+E2E onboarding test validates the complete path from `fw init` through `fw doctor` to Watchtower serving.
+Research: `docs/reports/T-489-onboarding-test-inception.md` (5 untested seams, 17 failure modes).
+Terminal experiments: `docs/reports/T-490-self-test-inception.md` (6/6 passed).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `tests/e2e/onboarding-test.sh` exists and is executable
+- [x] Script creates temp dir, git init, runs fw init, validates artifacts
+- [x] Script runs fw doctor and checks exit code
+- [x] Script starts Watchtower on test port, runs smoke_test.py, checks results
+- [x] Script produces JSON summary on stdout with `--json` flag
+- [x] Script cleans up temp dir on exit (trap)
+- [x] Script exits 0 on success, non-zero on failure
+- [x] `fw self-test` route in bin/fw calls the script
+- [x] Script completes in under 60 seconds
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Run `fw self-test` from project root and verify it passes
+  **Steps:**
+  1. Run `fw self-test` in terminal
+  2. Watch output — each phase should show PASS/FAIL
+  **Expected:** All phases pass, exit code 0
+  **If not:** Note which phase failed and the error message
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bash tests/e2e/onboarding-test.sh --json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['passed']>0 and d['failed']==0, f'Failed: {d}'"
+test -x tests/e2e/onboarding-test.sh
+grep -q "self-test" bin/fw
 
 ## Decisions
 
