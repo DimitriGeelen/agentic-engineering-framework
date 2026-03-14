@@ -24,11 +24,14 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
-# Token thresholds (200K context window, autoCompact disabled — D-027)
-# 170K critical leaves 30K for handover routine (commit + handover generation)
-TOKEN_WARN=120000      # ~60% — informational
-TOKEN_URGENT=150000    # ~75% — commit + consider checkpoint
-TOKEN_CRITICAL=170000  # ~85% — handover NOW
+# Context window size — 1M GA for Opus 4.6 / Sonnet 4.6 (2026-03-13, T-478)
+CONTEXT_WINDOW=${CONTEXT_WINDOW:-1000000}
+
+# Token thresholds (autoCompact disabled — D-027)
+# Proportional to window size. Critical leaves ~100K for handover routine.
+TOKEN_WARN=$((CONTEXT_WINDOW * 60 / 100))        # ~60% (600K at 1M) — informational
+TOKEN_URGENT=$((CONTEXT_WINDOW * 80 / 100))      # ~80% (800K at 1M) — commit + checkpoint
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 90 / 100))    # ~90% (900K at 1M) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=5
@@ -73,7 +76,7 @@ find_transcript() {
 # with 0 tokens — taking the last such entry would hide that context was just destroyed.
 get_context_tokens() {
     local transcript="$1"
-    tail -c 2000000 "$transcript" 2>/dev/null | python3 -c "
+    tail -c 10000000 "$transcript" 2>/dev/null | python3 -c "
 import sys, json
 t = 0
 for line in sys.stdin:
@@ -93,23 +96,23 @@ print(t)
 
 warn_by_tokens() {
     local tokens="$1"
-    local pct=$((tokens * 100 / 200000))
+    local pct=$((tokens * 100 / CONTEXT_WINDOW))
 
     if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "Session wrapping up: ${tokens} tokens (~${pct}% of 200K)." >&2
+        echo "Session wrapping up: ${tokens} tokens (~${pct}% of context window)." >&2
         echo "Task files have all essential state. Commit and handover." >&2
         echo "===========================================" >&2
         echo "" >&2
 
         # --- Auto-trigger handover at critical (T-136) ---
-        # Agent cannot be trusted to act on warnings at 150K+.
+        # Agent cannot be trusted to act on warnings at critical level.
         # Two guards:
         #   1. Re-entry lock: prevents recursive triggering within one checkpoint run
         #   2. Cooldown file: prevents re-firing for 10 minutes after last handover
         #      (Bug fix: without cooldown, every subsequent tool call re-triggers
-        #       because tokens stay above 150K — caused 23 handover commits in sprechloop)
+        #       because tokens stay above critical — caused 23 handover commits in sprechloop)
         local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
         local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
         local COOLDOWN_SECONDS=600  # 10 minutes
@@ -150,7 +153,7 @@ SIGNAL_EOF
         fi
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
-        echo "WARNING: Context at ${tokens} tokens (~${pct}% of 200K)." >&2
+        echo "WARNING: Context at ${tokens} tokens (~${pct}% of context window)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
         echo "ACTION: Commit work, then 'fw handover --checkpoint'" >&2
         echo "" >&2
@@ -291,8 +294,8 @@ case "${1:-}" in
         if [ -n "${transcript:-}" ]; then
             tokens=$(get_context_tokens "$transcript") || true
             if [ "${tokens:-0}" -gt 0 ]; then
-                pct=$((tokens * 100 / 200000))
-                echo "Context tokens: ${tokens} (~${pct}% of 200K window)"
+                pct=$((tokens * 100 / CONTEXT_WINDOW))
+                echo "Context tokens: ${tokens} (~${pct}% of context window)"
             else
                 echo "Context tokens: unavailable (no usage data)"
             fi
