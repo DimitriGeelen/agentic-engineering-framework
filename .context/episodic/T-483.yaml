@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T15:06:55Z
+# ============================================================================
+
+task_id: T-483
+task_name: "Fix Python 3.9 compat — replace union type hints (dict | None) with Optional"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T15:01:09Z
+completed: 2026-03-14T15:06:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T16:06:27+01:00
+last_commit: 2026-03-14T16:06:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add from __future__ import annotations to all web/*.py for Python 3.9 compat
+
+# Key outcomes
+outcomes:
+  - "All 13 affected web/*.py files + lib/ask.py have `from __future__ import annotations` as first statement after docstring"
+  - "No Python syntax errors across all 44 web/*.py files"
+  - "`from __future__` import comes BEFORE all other imports in each file"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/ask.py"
+  - ".tasks/active/T-483-fix-python-39-compat--replace-union-type.md"
+  - "web/ask.py"
+  - "web/embeddings.py"
+  - "web/llm/manager.py"
+  - "web/llm/ollama_provider.py"
+  - "web/llm/openrouter_provider.py"
+  - "web/llm/provider.py"
+  - "web/search.py"
+  - "web/search_utils.py"
+  - "web/secrets_store.py"
+  - "web/shared.py"
+  - "web/subprocess_utils.py"
+  - "web/watchtower/prioritizer.py"
+  - "web/watchtower/rules.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T16:06:27"
+    action: "T-483: Add from __future__ import annotations to all web/*.py for Python 3.9 compat"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, bugfix]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 15
+  lines_added: 96
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-483-fix-python-39-compat--replace-union-type.md
+generated_by: context-agent-hybrid

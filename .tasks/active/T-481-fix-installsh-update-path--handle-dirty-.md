@@ -4,16 +4,16 @@ name: "Fix install.sh update path — handle dirty state and macOS filemode"
 description: >
   install.sh do_install() fails on update when ~/.agentic-framework has dirty files. Root causes: (1) git pull with no stash/reset — framework install dir is not user code, should always match origin. (2) macOS core.fileMode=true reports permission diffs as local changes. Fix: make update path robust.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, bugfix, installer]
 components: []
 related_tasks: []
 created: 2026-03-14T14:48:51Z
-last_update: 2026-03-14T14:48:51Z
-date_finished: null
+last_update: 2026-03-14T14:52:53Z
+date_finished: 2026-03-14T14:52:53Z
 ---
 
 # T-481: Fix install.sh update path — handle dirty state and macOS filemode
@@ -64,3 +64,6 @@ grep -q 'reset --hard' install.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-481-fix-installsh-update-path--handle-dirty-.md
 - **Context:** Initial task creation
+
+### 2026-03-14T14:52:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

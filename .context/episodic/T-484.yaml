@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-484: fw fabric register: accept directories and recursively register files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T15:16:31Z
+# ============================================================================
+
+task_id: T-484
+task_name: "fw fabric register: accept directories and recursively register files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T15:13:30Z
+completed: 2026-03-14T15:16:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T16:16:16+01:00
+last_commit: 2026-03-14T16:16:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw fabric register accepts directories — recursive registration with exclusions
+
+# Key outcomes
+outcomes:
+  - "`fw fabric register <dir>` recursively registers eligible files"
+  - "Skips common exclusions (node_modules, .git, __pycache__, .venv, etc.)"
+  - "Filters to code-like extensions (.py, .sh, .js, .ts, .yaml, .yml, .md, .html, .css, etc.)"
+  - "Reports count of files registered vs skipped"
+  - "Single file registration still works unchanged"
+  - "Syntax check passes on register.sh"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/fabric/lib/register.sh"
+  - ".tasks/active/T-484-fw-fabric-register-accept-directories-an.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T16:16:16"
+    action: "T-484: fw fabric register accepts directories — recursive registration with exclusions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [usability, fabric]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 131
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-484-fw-fabric-register-accept-directories-an.md
+generated_by: context-agent-hybrid

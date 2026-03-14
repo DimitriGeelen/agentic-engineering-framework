@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-486: Watchtower smoke test: runtime route discovery + content markers + fw doctor integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T15:38:54Z
+# ============================================================================
+
+task_id: T-486
+task_name: "Watchtower smoke test: runtime route discovery + content markers + fw doctor integration"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T15:34:18Z
+completed: 2026-03-14T15:38:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-14T16:38:35+01:00
+last_commit: 2026-03-14T16:38:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower smoke test — auto-discover routes, validate content, fw doctor integration
+
+# Key outcomes
+outcomes:
+  - "`web/smoke_test.py` exists and auto-discovers routes via Flask `url_map`"
+  - "All parameterless GET routes tested for HTTP 200 (28/28 pass)"
+  - "Critical routes (/, /tasks, /search, /fabric, /quality, /settings) have content marker checks"
+  - "Script returns JSON summary: `{\"passed\": N, \"failed\": N, \"errors\": [...]}`"
+  - "`fw doctor` includes \"Watchtower endpoints\" section when server is running"
+  - "Script runnable standalone: `python3 web/smoke_test.py [--port 3000]`"
+  - "All web/*.py files pass syntax check"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "docs/reports/T-485-watchtower-smoke-test-inception.md"
+  - ".tasks/active/T-486-watchtower-smoke-test-runtime-route-disc.md"
+  - ".tasks/completed/T-485-inception-watchtower-smoke-test-suite--e.md"
+  - "web/smoke_test.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T16:38:35"
+    action: "T-486: Watchtower smoke test — auto-discover routes, validate content, fw doctor integration"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, testing, reliability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 5
+  lines_added: 462
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-486-watchtower-smoke-test-runtime-route-disc.md
+generated_by: context-agent-hybrid
