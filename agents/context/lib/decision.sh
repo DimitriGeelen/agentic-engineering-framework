@@ -55,13 +55,17 @@ do_add_decision() {
     local decisions_file="$CONTEXT_DIR/project/decisions.yaml"
     local date=$(date -u +"%Y-%m-%d")
 
-    # Get next ID
+    # Get next ID — use PD- prefix in consumer projects to avoid collision with framework D-/FD- IDs
+    local id_prefix="D"
+    if [ -n "$PROJECT_ROOT" ] && [ -n "$FRAMEWORK_ROOT" ] && [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
+        id_prefix="PD"
+    fi
     local next_id=1
     if [ -f "$decisions_file" ]; then
-        local max_id=$(grep "^  - id: D-" "$decisions_file" | sed 's/.*D-0*//' | sort -n | tail -1)
+        local max_id=$(grep "^  - id: ${id_prefix}-" "$decisions_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
         [ -n "$max_id" ] && next_id=$((max_id + 1))
     fi
-    local id=$(printf "D-%03d" $next_id)
+    local id=$(printf "${id_prefix}-%03d" $next_id)
 
     # Ensure decisions file exists with correct format
     if [ ! -f "$decisions_file" ]; then

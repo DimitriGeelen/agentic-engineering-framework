@@ -28,6 +28,8 @@ subcmd = sys.argv[1]
 args = sys.argv[2:]
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
+framework_root = os.environ.get('FRAMEWORK_ROOT', project_root)
+is_consumer = (project_root != framework_root)
 learnings_file = os.path.join(project_root, '.context', 'project', 'learnings.yaml')
 practices_file = os.path.join(project_root, '.context', 'project', 'practices.yaml')
 episodic_dir = os.path.join(project_root, '.context', 'episodic')
@@ -61,8 +63,8 @@ promoted_ids = set()
 for p in practices:
     origin = p.get('derived_from', '')
     # Check if any learning was the origin
-    # Practices can derive from directives (D1) or learnings (L-001)
-    if isinstance(origin, str) and origin.startswith('L-'):
+    # Practices can derive from directives (D1) or learnings (L-001/PL-001)
+    if isinstance(origin, str) and (origin.startswith('L-') or origin.startswith('PL-')):
         promoted_ids.add(origin)
     elif isinstance(origin, list):
         for o in origin:
@@ -273,14 +275,15 @@ elif subcmd.startswith('L-'):
             directive = 'D1'  # Default to antifragility
         print(f'{CYAN}Auto-assigned directive: {directive}{NC}')
 
-    # Generate next practice ID
+    # Generate next practice ID — use PP- prefix in consumer projects to avoid collision with framework P- IDs
+    id_prefix = 'PP' if is_consumer else 'P'
     max_id = 0
     for p in practices:
         pid = p.get('id', '')
-        m = re.match(r'P-(\d+)', pid)
+        m = re.match(rf'{id_prefix}-(\d+)', pid)
         if m:
             max_id = max(max_id, int(m.group(1)))
-    new_id = f'P-{max_id + 1:03d}'
+    new_id = f'{id_prefix}-{max_id + 1:03d}'
 
     # Create the practice
     new_practice = {

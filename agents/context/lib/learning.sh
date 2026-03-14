@@ -40,13 +40,17 @@ do_add_learning() {
     local learnings_file="$CONTEXT_DIR/project/learnings.yaml"
     local date=$(date -u +"%Y-%m-%d")
 
-    # Get next ID
+    # Get next ID — use PL- prefix in consumer projects to avoid collision with framework L- IDs
+    local id_prefix="L"
+    if [ -n "$PROJECT_ROOT" ] && [ -n "$FRAMEWORK_ROOT" ] && [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
+        id_prefix="PL"
+    fi
     local next_id=1
     if [ -f "$learnings_file" ]; then
-        local max_id=$(grep "^- id: L-" "$learnings_file" | sed 's/.*L-0*//' | sort -n | tail -1)
+        local max_id=$(grep "^- id: ${id_prefix}-" "$learnings_file" | sed "s/.*${id_prefix}-0*//" | sort -n | tail -1)
         [ -n "$max_id" ] && next_id=$((max_id + 1))
     fi
-    local id=$(printf "L-%03d" $next_id)
+    local id=$(printf "${id_prefix}-%03d" $next_id)
 
     # Ensure learnings file exists with correct format
     if [ ! -f "$learnings_file" ]; then
