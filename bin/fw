@@ -1971,20 +1971,32 @@ PYSEARCH
             shift
         fi
         case "$st_subcmd" in
-            onboarding|all)
-                if [ -x "$FRAMEWORK_ROOT/tests/e2e/onboarding-test.sh" ]; then
-                    "$FRAMEWORK_ROOT/tests/e2e/onboarding-test.sh" "$@"
-                else
-                    echo -e "${RED}E2E onboarding test not found${NC}"
-                    exit 1
-                fi
+            onboarding)
+                "$FRAMEWORK_ROOT/tests/e2e/onboarding-test.sh" "$@"
+                ;;
+            gates)
+                "$FRAMEWORK_ROOT/tests/e2e/gates-test.sh" "$@"
+                ;;
+            lifecycle)
+                "$FRAMEWORK_ROOT/tests/e2e/lifecycle-test.sh" "$@"
+                ;;
+            all)
+                st_exit=0
+                for st_phase in gates lifecycle onboarding; do
+                    st_script="$FRAMEWORK_ROOT/tests/e2e/${st_phase}-test.sh"
+                    if [ -x "$st_script" ]; then
+                        "$st_script" "$@" || st_exit=1
+                        echo ""
+                    fi
+                done
+                exit $st_exit
                 ;;
             help|--help|-h)
-                echo "Usage: fw self-test [onboarding|all] [--json] [--port N] [--verbose]"
+                echo "Usage: fw self-test [onboarding|gates|lifecycle|all] [--json] [--port N] [--verbose]"
                 ;;
             *)
                 echo "Unknown self-test phase: $st_subcmd"
-                echo "Usage: fw self-test [onboarding|all] [--json] [--port N] [--verbose]"
+                echo "Usage: fw self-test [onboarding|gates|lifecycle|all] [--json] [--port N] [--verbose]"
                 exit 1
                 ;;
         esac
