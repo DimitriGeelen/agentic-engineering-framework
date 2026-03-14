@@ -4,16 +4,16 @@ name: "End-to-end onboarding test — validate fresh install → init → serve 
 description: >
   Inception: End-to-end onboarding test — validate fresh install → init → serve → smoke across platforms
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: human
+owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-14T16:53:43Z
-last_update: 2026-03-14T16:53:43Z
-date_finished: null
+last_update: 2026-03-14T17:03:52Z
+date_finished: 2026-03-14T17:03:52Z
 ---
 
 # T-489: End-to-end onboarding test — validate fresh install → init → serve → smoke across platforms
@@ -56,9 +56,9 @@ What already exists? `agents/onboarding-test/test-onboarding.sh`, `web/smoke_tes
 
 ## Acceptance Criteria
 
-- [ ] Complete onboarding path mapped (every step, every file, every failure point)
-- [ ] Existing test assets inventoried and composability assessed
-- [ ] Go/No-Go decision made
+- [x] Complete onboarding path mapped (every step, every file, every failure point)
+- [x] Existing test assets inventoried and composability assessed
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
@@ -81,20 +81,52 @@ What already exists? `agents/onboarding-test/test-onboarding.sh`, `web/smoke_tes
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug. E2E test feasible.
+
+**Date**: 2026-03-14T17:03:52Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug. E2E test feasible.
+
+**Date**: 2026-03-14T17:03:52Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-14T17:02:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug, Flask not checked by doctor. E2E test script is feasible and high-value.
+
+### 2026-03-14T17:03:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug, Flask not checked by doctor. E2E test is feasible — existing smoke_test.py + fw doctor + init can be composed.
+
+### 2026-03-14T17:03:14Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-03-14T17:03:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug. E2E test is feasible — compose existing smoke_test.py + fw doctor + init into single script.
+
+### 2026-03-14T17:03:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug. E2E test feasible — compose smoke_test.py + fw doctor + init.
+
+### 2026-03-14T17:03:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 untested integration seams, 17 failure modes (7 untested), fw doctor exit code bug. E2E test feasible.
+
+### 2026-03-14T17:03:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

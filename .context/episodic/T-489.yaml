@@ -1,0 +1,68 @@
+# ============================================================================
+# EPISODIC MEMORY - T-489: End-to-end onboarding test — validate fresh install → init → serve → smoke across platforms
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T17:03:53Z
+# ============================================================================
+
+task_id: T-489
+task_name: "End-to-end onboarding test — validate fresh install → init → serve → smoke across platforms"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T16:53:43Z
+completed: 2026-03-14T17:03:52Z
+duration_days: 0
+updates_count: 7
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Complete onboarding path mapped (every step, every file, every failure point)"
+  - "Existing test assets inventoried and composability assessed"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-489-end-to-end-onboarding-test--validate-fre.md
+generated_by: context-agent-hybrid
