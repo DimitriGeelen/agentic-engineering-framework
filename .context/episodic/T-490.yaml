@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-490: fw self-test — agent-driven self-verification with terminal spawning, failure capture, and fix-retest loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-14T17:04:30Z
+# ============================================================================
+
+task_id: T-490
+task_name: "fw self-test — agent-driven self-verification with terminal spawning, failure capture, and fix-retest loop"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T16:54:16Z
+completed: 2026-03-14T17:04:29Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Claude Code terminal capabilities empirically tested (what works, what doesn't)"
+  - "Every enforcement gate assessed for programmatic testability"
+  - "`fw self-test` architecture designed with phases, output format, failure classification"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 4
+  lines_added: 249
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-490-fw-self-test--agent-driven-self-verifica.md
+generated_by: context-agent-hybrid
