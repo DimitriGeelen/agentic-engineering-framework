@@ -823,6 +823,43 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
 | **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
 | No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
+| TermLink check | `fw termlink check` | Verify TermLink installation |
+| TermLink dispatch | `fw termlink dispatch --name N --prompt "..."` | Spawn claude worker in terminal |
+| TermLink cleanup | `fw termlink cleanup` | Close all spawned sessions |
+
+## TermLink (Cross-Terminal Communication)
+
+TermLink is an **optional** external tool for cross-terminal session communication. It enables parallel dispatch, self-testing, remote control, and cross-machine coordination.
+
+**Check availability:** `fw termlink check`
+
+### When to Use
+
+- **Self-test:** Spawn a terminal to run `fw self-test` without blocking the current session
+- **Parallel dispatch:** Run multiple `claude -p` workers in real terminals for independent tasks
+- **Observation:** Read output from other terminal sessions via `termlink output`
+- **Coordination:** Signal between sessions via `termlink event emit/wait`
+
+### Available Commands
+
+```bash
+fw termlink check                           # Is TermLink installed?
+fw termlink spawn --task T-XXX --name NAME  # Open tagged terminal session
+fw termlink exec <session> <command>        # Run command, get structured JSON
+fw termlink status                          # List active sessions
+fw termlink dispatch --task T-XXX --name N --prompt "..."  # Spawn claude worker
+fw termlink wait --name N [--timeout 300]   # Wait for worker completion
+fw termlink result --name N                 # Read worker result
+fw termlink cleanup                         # Close all spawned sessions (3-phase)
+```
+
+### Budget Rule
+
+**Do not spawn new TermLink sessions when context > 60%.** Workers consume orchestrator context when results return. Same headroom rules as sub-agent dispatch: max 5 parallel workers, leave 40K tokens free.
+
+### Cleanup Rule
+
+**Always run `fw termlink cleanup` before session end.** Spawned terminal windows persist after the orchestrator session exits. The session-end checklist includes this step.
 
 ## Auto-Restart (T-179)
 
