@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-482: Inception: Install model — global shared vs project-local vs hybrid
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-15T14:00:40Z
+# ============================================================================
+
+task_id: T-482
+task_name: "Inception: Install model — global shared vs project-local vs hybrid"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T14:49:13Z
+completed: 2026-03-15T14:00:39Z
+duration_days: 1
+updates_count: 6
+first_commit: 2026-03-15T14:29:13+01:00
+last_commit: 2026-03-15T14:29:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Install model inception — full isolation via project-local vendoring (1.2MB vendor set)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with evidence from current topology (2 consumers, version drift, G-021)"
+  - "Assumptions tested (A1: runtime resolution validated by T-496, A2: version compat feasible, A3: 1.2MB vendor set, A4: overruled by human — full isolation regardless of consumer count)"
+  - "Options analyzed with directive scoring (A:12, B:15, C:12, D:14)"
+  - "Research artifact at docs/reports/T-482-install-model-inception.md"
+  - "Go/No-Go decision made (GO — full isolation, plain copy, ~7MB committed)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-482-install-model-inception.md"
+  - ".tasks/active/T-482-inception-install-model--global-shared-v.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-15T14:29:13"
+    action: "T-482: Install model inception — full isolation via project-local vendoring (1.2MB vendor set)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1391 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [architecture, portability, installer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1391
+  commits: 1
+  files_changed: 2
+  lines_added: 226
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-482-inception-install-model--global-shared-v.md
+generated_by: context-agent-hybrid
