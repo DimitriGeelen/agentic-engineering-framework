@@ -80,6 +80,15 @@ do_init() {
         fi
     fi
 
+    # --- Vendor framework (T-498: full project isolation) ---
+    if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ]; then
+        echo -e "${BOLD}Vendoring framework into project...${NC}"
+        do_vendor --target "$target_dir"
+        echo ""
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  .agentic-framework/ already exists (use --force to re-vendor)"
+    fi
+
     # --- Create directory structure ---
     #@init: dir-4mf .tasks/active
     # Active tasks directory
@@ -152,7 +161,7 @@ WGIT
         echo -e "  ${YELLOW}⚠${NC}   No task templates found"
     fi
 
-    #@init: yaml-8kj .framework.yaml project_name,framework_path,version,provider
+    #@init: yaml-8kj .framework.yaml project_name,version,provider
     # Project configuration
     local project_name
     project_name=$(basename "$target_dir")
@@ -175,8 +184,8 @@ WGIT
 
     cat > "$target_dir/.framework.yaml" << FYAML
 # Agentic Engineering Framework - Project Configuration
+# framework_path removed (T-498) — fw resolves from .agentic-framework/bin/fw location
 project_name: $project_name
-framework_path: $FRAMEWORK_ROOT
 version: $FW_VERSION
 provider: $provider
 initialized_at: $init_timestamp
@@ -507,7 +516,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook pre-compact"
+            "command": ".agentic-framework/bin/fw hook pre-compact"
           }
         ]
       }
@@ -518,7 +527,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook post-compact-resume"
+            "command": ".agentic-framework/bin/fw hook post-compact-resume"
           }
         ]
       },
@@ -527,7 +536,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook post-compact-resume"
+            "command": ".agentic-framework/bin/fw hook post-compact-resume"
           }
         ]
       }
@@ -538,7 +547,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook block-plan-mode"
+            "command": ".agentic-framework/bin/fw hook block-plan-mode"
           }
         ]
       },
@@ -547,7 +556,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-active-task"
+            "command": ".agentic-framework/bin/fw hook check-active-task"
           }
         ]
       },
@@ -556,7 +565,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-tier0"
+            "command": ".agentic-framework/bin/fw hook check-tier0"
           }
         ]
       },
@@ -565,7 +574,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook budget-gate"
+            "command": ".agentic-framework/bin/fw hook budget-gate"
           }
         ]
       }
@@ -576,7 +585,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook checkpoint post-tool"
+            "command": ".agentic-framework/bin/fw hook checkpoint post-tool"
           }
         ]
       },
@@ -585,7 +594,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook error-watchdog"
+            "command": ".agentic-framework/bin/fw hook error-watchdog"
           }
         ]
       },
@@ -594,7 +603,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-dispatch"
+            "command": ".agentic-framework/bin/fw hook check-dispatch"
           }
         ]
       },
@@ -603,7 +612,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-fabric-new-file"
+            "command": ".agentic-framework/bin/fw hook check-fabric-new-file"
           }
         ]
       }
