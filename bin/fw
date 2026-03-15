@@ -273,7 +273,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
-    echo -e "  ${GREEN}update${NC}               Update framework installation to latest version"
+    echo -e "  ${GREEN}update${NC}               Update framework (vendored or global) to latest version"
     echo -e "  ${GREEN}vendor${NC}               Copy framework into project .agentic-framework/ (full isolation)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
