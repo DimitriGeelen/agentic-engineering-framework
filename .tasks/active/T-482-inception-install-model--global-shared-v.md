@@ -4,7 +4,7 @@ name: "Inception: Install model — global shared vs project-local vs hybrid"
 description: >
   Current install model: single global clone at ~/.agentic-framework shared by all projects. This creates coupling — dirty state blocks all projects, macOS filemode diffs propagate, no project-level version pinning. Options: A) Keep global + robust updater, B) Project-local vendoring, C) Hybrid (global CLI, project-local config). Need to evaluate isolation, disk usage, update semantics, and multi-project workflows.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [architecture, portability, installer]
 components: []
 related_tasks: []
 created: 2026-03-14T14:49:13Z
-last_update: 2026-03-15T13:22:16Z
-date_finished: null
+last_update: 2026-03-15T14:00:39Z
+date_finished: 2026-03-15T14:00:39Z
 ---
 
 # T-482: Inception: Install model — global shared vs project-local vs hybrid
@@ -66,7 +66,7 @@ Current install model: single global clone at `~/.agentic-framework` (174MB, 289
 - [x] Assumptions tested (A1: runtime resolution validated by T-496, A2: version compat feasible, A3: 1.2MB vendor set, A4: overruled by human — full isolation regardless of consumer count)
 - [x] Options analyzed with directive scoring (A:12, B:15, C:12, D:14)
 - [x] Research artifact at docs/reports/T-482-install-model-inception.md
-- [ ] Go/No-Go decision made
+- [x] Go/No-Go decision made (GO — full isolation, plain copy, ~7MB committed)
 
 ### Human
 - [ ] [REVIEW] Review install model recommendation and approve direction
@@ -99,18 +99,18 @@ Current install model: single global clone at `~/.agentic-framework` (174MB, 289
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Full isolation via project-local vendoring. Plain copy of complete framework (~7MB) committed to project repo. Three init paths (new/existing/clone) all work. Updates are human-decided, pulled from upstream. Global install is bootstrap only.
+
+**Date**: 2026-03-15T14:00:39Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Full isolation via project-local vendoring. Plain copy of complete framework (~7MB) committed to project repo. Three init paths (new/existing/clone) all work. Updates are human-decided, pulled from upstream. Global install is bootstrap only.
+
+**Date**: 2026-03-15T14:00:39Z
 
 ## Updates
 
@@ -119,3 +119,25 @@ Current install model: single global clone at `~/.agentic-framework` (174MB, 289
 
 ### 2026-03-15T13:22:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-15T14:00:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Full isolation via project-local vendoring. Plain copy of complete framework (~7MB) committed to project repo. Three init paths (new/existing/clone) all work. Updates are human-decided, pulled from upstream. Global install is bootstrap only.
+
+### 2026-03-15T14:00:13Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-03-15T14:00:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Full isolation via project-local vendoring. Plain copy of complete framework (~7MB) committed to project repo. Three init paths (new/existing/clone) all work. Updates are human-decided, pulled from upstream. Global install is bootstrap only.
+
+### 2026-03-15T14:00:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Full isolation via project-local vendoring. Plain copy of complete framework (~7MB) committed to project repo. Three init paths (new/existing/clone) all work. Updates are human-decided, pulled from upstream. Global install is bootstrap only.
+
+### 2026-03-15T14:00:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
