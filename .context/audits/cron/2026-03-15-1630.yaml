@@ -1,0 +1,35 @@
+# Audit Results - 2026-03-15-1630
+timestamp: 2026-03-15T15:30:01Z
+sections: "structure,compliance,quality"
+summary:
+  pass: 9
+  warn: 3
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 9 project YAML files parse correctly"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
+  - level: PASS
+    check: "Fabric: 154 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 148/154 cards enriched (6 without edges)"
+  - level: WARN
+    check: "Fabric drift: 1 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
+  - level: PASS
+    check: "All 32 active tasks are valid"
+  - level: WARN
+    check: "Task T-316 is 11 days old with only 0 updates"
+    mitigation: "Add progress updates to T-316-spike-layered-claudemd-framework-base--p.md"

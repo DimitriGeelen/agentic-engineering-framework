@@ -434,3 +434,17 @@ decisions:
     date: 2026-03-11
     task: T-443
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-057
+    decision: "Three-tier task creation — DO as now, MAYBE as next, SKIP in later inception"
+    scope: project
+    date: 2026-03-12
+    task: T-411
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-058
+    decision: "GO — build the cron job"
+    scope: project
+    date: 2026-03-12
+    task: T-442
+    rationale: "Auto-captured from task file on completion"

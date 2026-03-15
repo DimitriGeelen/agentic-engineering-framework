@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-497: fw vendor command — copy framework into project .agentic-framework/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-15T14:07:14Z
+# ============================================================================
+
+task_id: T-497
+task_name: "fw vendor command — copy framework into project .agentic-framework/"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-15T14:00:51Z
+completed: 2026-03-15T14:07:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-15T15:06:23+01:00
+last_commit: 2026-03-15T15:06:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw vendor command — copy complete framework into project .agentic-framework/ (7MB, full isolation)
+
+# Key outcomes
+outcomes:
+  - "`fw vendor` subcommand exists in bin/fw and shows in `fw help`"
+  - "`fw vendor` copies bin/, lib/, agents/, web/, docs/, .tasks/templates/, FRAMEWORK.md, metrics.sh to PROJECT_ROOT/.agentic-framework/"
+  - "`fw vendor` excludes .git/, .context/, .tasks/active/, .tasks/completed/, .fabric/, install.sh"
+  - "`fw vendor` creates VERSION file with current FW_VERSION"
+  - "`fw vendor` is idempotent (re-running overwrites cleanly, 7.0MB both times)"
+  - "`fw vendor --dry-run` shows what would be copied without copying"
+  - "Vendored .agentic-framework/bin/fw is executable and resolves FRAMEWORK_ROOT from its own location"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-497-fw-vendor-command--copy-framework-into-p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-15T15:06:23"
+    action: "T-497: fw vendor command — copy complete framework into project .agentic-framework/ (7MB, full isolation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, isolation, P0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 2
+  lines_added: 151
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-497-fw-vendor-command--copy-framework-into-p.md
+generated_by: context-agent-hybrid

@@ -12,7 +12,7 @@ tags: [architecture, portability, installer]
 components: []
 related_tasks: []
 created: 2026-03-14T14:49:13Z
-last_update: 2026-03-15T14:00:39Z
+last_update: 2026-03-15T14:01:38Z
 date_finished: 2026-03-15T14:00:39Z
 ---
 

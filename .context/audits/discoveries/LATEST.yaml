@@ -1,17 +1,18 @@
-timestamp: 2026-03-11T23:42:20Z
+timestamp: 2026-03-15T07:00:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/430)"
+    check: "D1: Episodic quality — 0% [TODO] (3/477)"
   - id: D2
     level: PASS
-    check: "D2: Human review queue — 48 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 13 task(s) awaiting human action (normal)"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - id: D10
-    level: PASS
-    check: "D10: Decision-without-dialogue — none detected"
+    level: WARN
+    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
+    mitigation: "Review flagged tasks — human dialogue may have been skipped"
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
@@ -19,18 +20,18 @@ findings:
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
-    level: PASS
-    check: "D5: Task lifecycle — no anomalies"
-  - id: D3
     level: WARN
-    check: "D3: Commit velocity — WARN drop today=4 avg=47 ratio=0.1x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+    check: "D5: Task lifecycle — 10 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-332(10d-active) T-334(10d-active)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: PASS
+    check: "D3: Commit velocity — insufficient data"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — none (PASS 34_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=10.0 earlier=9.6)"
+    check: "D6: Completion velocity — normal (PASS recent=5.7 earlier=17.7)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -39,7 +40,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 11
-  warn: 1
+  pass: 10
+  warn: 2
   fail: 0
   total: 12

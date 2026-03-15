@@ -4,16 +4,16 @@ name: "fw update for vendored projects — pull upstream into .agentic-framework
 description: >
   Create/update fw update command to: fetch latest framework from upstream repo (GitHub/OneDev), diff against local .agentic-framework/, report changes (dry-run), apply update (overwrite plain copy), preserve VERSION file. Human-initiated only, agent can suggest. From T-482 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, isolation]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T14:01:20Z
-last_update: 2026-03-15T20:48:04Z
-date_finished: null
+last_update: 2026-03-15T20:52:05Z
+date_finished: 2026-03-15T20:52:05Z
 ---
 
 # T-499: fw update for vendored projects — pull upstream into .agentic-framework/
@@ -67,3 +67,6 @@ grep -q "rollback" lib/update.sh
 
 ### 2026-03-15T20:48:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-15T20:52:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

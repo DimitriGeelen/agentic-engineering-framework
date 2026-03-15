@@ -4,16 +4,16 @@ name: "Implement path isolation — fw hook subcommand + portable settings.json 
 description: >
   From T-495 GO. Build: (1) fw hook subcommand in bin/fw — resolves FRAMEWORK_ROOT from symlink, PROJECT_ROOT from cwd, execs agents/context/$1.sh. (2) Update generate_claude_code_config() in lib/init.sh — use fw hook instead of hardcoded paths. (3) fw upgrade step 5 detects old-style hardcoded paths and regenerates. (4) fw doctor validates hook commands resolve to real executables. (5) E2E test phase for path isolation in self-test.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, enforcement, P0]
-components: []
+components: [bin/fw, C-009, lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T22:35:59Z
-last_update: 2026-03-14T22:35:59Z
-date_finished: null
+last_update: 2026-03-14T22:58:52Z
+date_finished: 2026-03-14T22:58:52Z
 ---
 
 # T-496: Implement path isolation — fw hook subcommand + portable settings.json + doctor validation
@@ -68,3 +68,6 @@ grep -q "hook.*resolv\|hook.*valid\|hook.*path" bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-496-implement-path-isolation--fw-hook-subcom.md
 - **Context:** Initial task creation
+
+### 2026-03-14T22:58:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
