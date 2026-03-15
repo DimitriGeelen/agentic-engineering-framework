@@ -56,6 +56,10 @@ is_signal_fresh() {
     fi
 }
 
+# Set higher bash timeout for long framework operations (audit, fabric, embeddings)
+# Default is 120s which is too short. T-501/T-435.
+export BASH_DEFAULT_TIMEOUT_MS="${BASH_DEFAULT_TIMEOUT_MS:-300000}"
+
 # Main loop
 restart_count=0
 MAX_RESTARTS=5  # Safety valve — don't loop forever
