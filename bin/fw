@@ -62,7 +62,13 @@ resolve_framework() {
         return 0
     fi
 
-    # Otherwise, read from .framework.yaml
+    # T-498: Check for vendored framework in project
+    if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.agentic-framework/FRAMEWORK.md" ]; then
+        echo "$PROJECT_ROOT/.agentic-framework"
+        return 0
+    fi
+
+    # Legacy: read framework_path from .framework.yaml (pre-T-498 projects)
     if [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         local fw_path
         fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^framework_path:[[:space:]]*//')
