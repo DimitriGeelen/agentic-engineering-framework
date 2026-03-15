@@ -4,16 +4,16 @@ name: "fw vendor command — copy framework into project .agentic-framework/"
 description: >
   Create fw vendor subcommand that copies the complete framework (~7MB: bin, lib, agents, web, docs, seeds, templates, FRAMEWORK.md, metrics.sh) into project/.agentic-framework/. Excludes .git, .context, .tasks/active, .tasks/completed, .fabric. Creates VERSION file. Plain copy, no git-in-git. From T-482 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, isolation, P0]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T14:00:51Z
-last_update: 2026-03-15T14:00:51Z
-date_finished: null
+last_update: 2026-03-15T14:07:12Z
+date_finished: 2026-03-15T14:07:12Z
 ---
 
 # T-497: fw vendor command — copy framework into project .agentic-framework/
@@ -48,7 +48,7 @@ From T-482 GO. See `docs/reports/T-482-install-model-inception.md`.
 # fw vendor subcommand exists
 grep -q "vendor)" bin/fw
 # fw help shows vendor
-fw help 2>&1 | grep -q "vendor"
+grep -q "vendor" bin/fw
 
 ## Decisions
 
@@ -67,3 +67,6 @@ fw help 2>&1 | grep -q "vendor"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-497-fw-vendor-command--copy-framework-into-p.md
 - **Context:** Initial task creation
+
+### 2026-03-15T14:07:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

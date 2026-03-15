@@ -4,16 +4,16 @@ name: "Update fw init to integrate vendor step"
 description: >
   Modify fw init to: (1) copy framework into project/.agentic-framework/ as part of initialization, (2) generate settings.json with hooks pointing to .agentic-framework/bin/fw hook <name> instead of fw hook <name>, (3) remove framework_path from .framework.yaml (fw resolves from own location), (4) support all three scenarios: new project, existing codebase, post-clone. From T-482 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, isolation, P0]
-components: []
+components: [bin/fw, lib/init.sh]
 related_tasks: []
 created: 2026-03-15T14:01:10Z
-last_update: 2026-03-15T14:15:56Z
-date_finished: null
+last_update: 2026-03-15T14:19:18Z
+date_finished: 2026-03-15T14:19:18Z
 ---
 
 # T-498: Update fw init to integrate vendor step
@@ -71,3 +71,6 @@ grep -q "agentic-framework/FRAMEWORK.md" bin/fw
 
 ### 2026-03-15T14:15:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-15T14:19:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Migrate existing consumer projects to vendored model"
 description: >
   Migrate Bilderkarte and Sprechloop from global-dependent to vendored model. Run fw vendor in each project, update settings.json hooks to .agentic-framework/bin/fw path, remove framework_path from .framework.yaml, verify fw doctor passes. Also update this framework repo's own settings.json hooks. From T-482 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, isolation]
 components: []
 related_tasks: []
 created: 2026-03-15T14:01:29Z
-last_update: 2026-03-15T20:53:56Z
-date_finished: null
+last_update: 2026-03-15T20:56:02Z
+date_finished: 2026-03-15T20:56:02Z
 ---
 
 # T-500: Migrate existing consumer projects to vendored model
@@ -67,3 +67,6 @@ grep -q "upstream_repo" /opt/001-sprechloop/.framework.yaml
 
 ### 2026-03-15T20:53:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-15T20:56:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

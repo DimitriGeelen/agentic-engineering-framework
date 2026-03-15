@@ -1,0 +1,117 @@
+# Audit Results - 2026-03-13-0700
+timestamp: 2026-03-13T06:00:01Z
+sections: "oe-daily"
+summary:
+  pass: 50
+  warn: 3
+  fail: 0
+findings:
+  - level: PASS
+    check: "CTL-002: Tier 0 guard installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-005: Error watchdog installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-006: Handover coverage for compactions (326 handovers, 115 compactions)"
+  - level: PASS
+    check: "CTL-007: Post-compact resume hook configured in settings.json"
+  - level: PASS
+    check: "CTL-009: Inception T-435 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-473 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-084 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-097 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-107 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-109 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-110 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-118 has decision (6 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-120 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-124 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-138 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-154 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-157 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-158 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-164 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-174 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-178 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-179 has decision (5 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-181 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-190 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-191 has decision (14 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-194 has decision (23 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-200 has decision (8 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-222 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-235 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-254 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-261 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-292 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-294 has decision (22 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-305 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-306 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-307 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-325 has decision (7 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-339 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-356 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-358 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-362 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-375 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-411 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-455 has decision (4 commits)"
+  - level: PASS
+    check: "CTL-009: Inception T-469 has decision (3 commits)"
+  - level: PASS
+    check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
+  - level: PASS
+    check: "CTL-011: pre-push hook installed and executable"
+  - level: WARN
+    check: "CTL-012: Completed task T-451 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-013: T-474 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-474 — environment may have changed"
+  - level: WARN
+    check: "CTL-013: T-467 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-467 — environment may have changed"
+  - level: PASS
+    check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-025: T-470 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-026: Human sovereignty gate present (completion + owner protection)"

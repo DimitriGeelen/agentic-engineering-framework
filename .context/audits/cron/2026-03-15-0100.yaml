@@ -1,0 +1,28 @@
+# Audit Results - 2026-03-15-0100
+timestamp: 2026-03-15T00:00:01Z
+sections: "traceability,episodic"
+summary:
+  pass: 4
+  warn: 4
+  fail: 0
+findings:
+  - level: PASS
+    check: "Git traceability: 98% (1398/1416 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: WARN
+    check: "Completed task T-444 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-444"
+  - level: WARN
+    check: "Completed task T-452 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-452"
+  - level: WARN
+    check: "Completed task T-453 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-453"
+  - level: PASS
+    check: "All 477 episodic summaries have quality content"
+  - level: PASS
+    check: "No orphaned episodic files"
