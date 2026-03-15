@@ -86,7 +86,8 @@ if [ -z "$PROJECT_ROOT" ]; then
     _cmd="${1:-}"
     if [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
-       [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && [ -n "$_cmd" ]; then
+       [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && \
+       [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ]; then
 
         # Non-TTY: silently use defaults (cwd + claude)
         if [ ! -t 0 ]; then
@@ -267,6 +268,7 @@ show_help() {
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}update${NC}               Update framework installation to latest version"
+    echo -e "  ${GREEN}vendor${NC}               Copy framework into project .agentic-framework/ (full isolation)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
@@ -1149,6 +1151,131 @@ PYTASK_VERIFY
     esac
 }
 
+# --- Vendor (T-482/T-497) ---
+# Copy complete framework into project/.agentic-framework/ for full isolation.
+do_vendor() {
+    local dry_run=false
+    local target="${PROJECT_ROOT:-.}"
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --dry-run) dry_run=true; shift ;;
+            --target) target="$2"; shift 2 ;;
+            -h|--help)
+                echo -e "${BOLD}fw vendor${NC} — Copy framework into project for full isolation"
+                echo ""
+                echo "Usage: fw vendor [options]"
+                echo ""
+                echo "Options:"
+                echo "  --dry-run   Show what would be copied without copying"
+                echo "  --target    Target project directory (default: current project)"
+                echo "  -h, --help  Show this help"
+                echo ""
+                echo "Copies the complete framework (~7MB) into PROJECT/.agentic-framework/"
+                echo "After vendoring, the project is self-contained — no global install needed."
+                return 0
+                ;;
+            *) echo -e "${RED}Unknown option: $1${NC}" >&2; return 1 ;;
+        esac
+    done
+
+    local dest="$target/.agentic-framework"
+
+    # What to copy (everything needed for development)
+    local includes=(
+        bin
+        lib
+        agents
+        web
+        docs
+        .tasks/templates
+        FRAMEWORK.md
+        metrics.sh
+    )
+
+    # What to exclude within copied dirs
+    local excludes=(
+        __pycache__
+        "*.pyc"
+        ".DS_Store"
+    )
+
+    if [ "$dry_run" = true ]; then
+        echo -e "${BOLD}fw vendor --dry-run${NC}"
+        echo -e "Source:  ${GREEN}$FRAMEWORK_ROOT${NC}"
+        echo -e "Target:  ${GREEN}$dest${NC}"
+        echo ""
+        echo "Would copy:"
+        for item in "${includes[@]}"; do
+            if [ -e "$FRAMEWORK_ROOT/$item" ]; then
+                local size
+                size=$(du -sh "$FRAMEWORK_ROOT/$item" 2>/dev/null | cut -f1)
+                echo -e "  ${GREEN}+${NC} $item ($size)"
+            fi
+        done
+        echo ""
+        echo "Would exclude: .git, .context, .tasks/{active,completed}, .fabric, install.sh"
+        echo ""
+        echo -e "Version: ${BOLD}$FW_VERSION${NC}"
+        return 0
+    fi
+
+    # Create destination
+    mkdir -p "$dest"
+
+    echo -e "${BOLD}fw vendor${NC} — vendoring framework into project"
+    echo -e "Source:  $FRAMEWORK_ROOT"
+    echo -e "Target:  $dest"
+    echo ""
+
+    # Build rsync exclude args
+    local rsync_excludes=""
+    for item in "${excludes[@]}"; do
+        rsync_excludes="$rsync_excludes --exclude=$item"
+    done
+
+    # Copy each include
+    for item in "${includes[@]}"; do
+        if [ -e "$FRAMEWORK_ROOT/$item" ]; then
+            local dest_dir
+            dest_dir=$(dirname "$dest/$item")
+            mkdir -p "$dest_dir"
+
+            if [ -d "$FRAMEWORK_ROOT/$item" ]; then
+                if command -v rsync &>/dev/null; then
+                    rsync -a --delete $rsync_excludes "$FRAMEWORK_ROOT/$item/" "$dest/$item/"
+                else
+                    rm -rf "$dest/$item"
+                    cp -r "$FRAMEWORK_ROOT/$item" "$dest/$item"
+                    find "$dest/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+                    find "$dest/$item" -name "*.pyc" -delete 2>/dev/null || true
+                    find "$dest/$item" -name ".DS_Store" -delete 2>/dev/null || true
+                fi
+            else
+                cp "$FRAMEWORK_ROOT/$item" "$dest/$item"
+            fi
+            echo -e "  ${GREEN}✓${NC} $item"
+        else
+            echo -e "  ${YELLOW}⊘${NC} $item (not found, skipping)"
+        fi
+    done
+
+    # Create VERSION file
+    echo "$FW_VERSION" > "$dest/VERSION"
+    echo -e "  ${GREEN}✓${NC} VERSION ($FW_VERSION)"
+
+    # Ensure bin/fw is executable
+    chmod +x "$dest/bin/fw" 2>/dev/null || true
+
+    echo ""
+    local final_size
+    final_size=$(du -sh "$dest" 2>/dev/null | cut -f1)
+    echo -e "${GREEN}${BOLD}Vendored successfully${NC} ($final_size)"
+    echo ""
+    echo "The project now contains its own framework at .agentic-framework/"
+    echo "Hooks should reference: .agentic-framework/bin/fw hook <name>"
+}
+
 # --- Main Command Routing ---
 
 cmd="${1:-}"
@@ -2024,6 +2151,9 @@ if total_results == 0:
 else:
     print(f'{total_results} result(s) found')
 PYSEARCH
+        ;;
+    vendor)
+        do_vendor "$@"
         ;;
     hook)
         # fw hook <name> [args...] — runtime path resolution for Claude Code hooks
