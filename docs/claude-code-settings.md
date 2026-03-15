@@ -2,16 +2,19 @@
 
 This document describes all Claude Code settings required for the framework to function correctly.
 
+**Last updated:** 2026-03-15 (T-435 inception, post-T-498 vendored model)
+
 ## Settings File Locations
 
 | File | Scope | Shared? | Purpose |
 |------|-------|---------|---------|
-| `~/.claude/settings.json` | Global (all projects) | No | Permissions, plugins, update channel |
-| `.claude/settings.json` | Project (committed) | Yes | Hooks, enforcement gates |
+| `managed-settings.json` | System (server-deployed) | Org-wide | Enterprise/Teams overrides |
 | `.claude/settings.local.json` | Local (gitignored) | No | Personal overrides |
-| `~/.claude.json` | Internal state | No | Managed by Claude Code (OAuth, caches, preferences) |
+| `.claude/settings.json` | Project (committed) | Yes | Hooks, enforcement gates |
+| `~/.claude/settings.json` | Global (all projects) | No | Permissions, plugins, update channel |
+| `~/.claude.json` | Internal state | No | Managed by Claude Code (OAuth, preferences) |
 
-**Precedence:** Local > Project > Global (for conflicts). Arrays merge across scopes.
+**Precedence:** Managed > Local > Project > Global. Arrays merge across scopes.
 
 ---
 
@@ -30,19 +33,9 @@ This document describes all Claude Code settings required for the framework to f
       "WebFetch(*)",
       "WebSearch(*)",
       "AskUserQuestion(*)",
-      "Task(*)",
-      "mcp__plugin_playwright_playwright__*"
+      "Task(*)"
     ],
     "defaultMode": "dontAsk"
-  },
-  "enabledPlugins": {
-    "context7@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true,
-    "code-review@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
   },
   "autoUpdatesChannel": "stable"
 }
@@ -55,9 +48,9 @@ The framework uses `dontAsk` mode with explicit allow rules. This means:
 - Tools IN the allow list execute **without asking**
 - This is essential because the framework's PreToolUse hooks act as the permission layer instead
 
-**Why not `default` mode?** The framework's hook-based enforcement (task gate, tier 0 guard, budget gate) replaces Claude Code's built-in permission prompts. Using `default` mode would double-prompt the user — once from hooks, once from Claude Code.
+**Why not `normal` mode?** The framework's hook-based enforcement (task gate, tier 0 guard, budget gate) replaces Claude Code's built-in permission prompts. Using `normal` mode would double-prompt the user — once from hooks, once from Claude Code.
 
-**Why not `bypassPermissions`?** That skips ALL checks including hooks. The framework needs hooks to run.
+**Why not bypassing permissions?** That skips ALL checks including hooks. The framework needs hooks to run.
 
 ### Broad Tool Permissions
 
@@ -68,21 +61,16 @@ All core tools are allowed with `(*)` wildcards because:
 
 **Risk:** If hooks are misconfigured, there are no backup permissions. Run `fw doctor` to verify hooks are wired.
 
-### Enabled Plugins
+### Plugins (Optional)
 
-| Plugin | Why Enabled | Framework Use |
-|--------|-------------|---------------|
-| `context7` | Up-to-date library documentation | Research during build tasks |
-| `playwright` | Browser automation for testing | Watchtower UI verification |
-| `commit-commands` | Git commit workflows | Commit helper (optional) |
-| `code-review` | PR review capabilities | Code review skill |
-| `code-simplifier` | Code cleanup agent | Refactoring tasks |
-| `frontend-design` | UI design generation | Watchtower UI development |
-| `typescript-lsp` | TypeScript language server | JS/TS code intelligence |
+Plugins are user-specific and not part of core framework config. Useful ones:
+- `context7` — Up-to-date library documentation
+- `playwright` — Browser automation for Watchtower UI testing
+- `code-review` — PR review capabilities
 
-**Disabled plugins:**
+**Disabled by default:**
 - `superpowers` — Conflicts with framework instruction precedence (claims "supercedes any other instructions")
-- `feature-dev` — Not needed; framework has its own task-driven workflow
+- `feature-dev` — Conflicts with framework task-driven workflow
 
 ---
 
@@ -103,7 +91,7 @@ autoUpdates: false
 2. `SessionStart:compact` hook re-injects context into the fresh session
 3. Manual `/compact` is available when the human decides
 
-**Risk if enabled:** The agent loses task context, focus state, and conversation history at unpredictable moments. Handover quality degrades because the agent doesn't know compaction is coming.
+**Risk if enabled:** The agent loses task context, focus state, and conversation history at unpredictable moments.
 
 ### `verbose: true`
 
@@ -117,55 +105,71 @@ Prevents mid-session updates that could change behavior. Updates are applied man
 
 ## Project Hooks (`.claude/settings.json`)
 
-The framework's enforcement system runs through Claude Code hooks. This is the most critical configuration.
+The framework's enforcement system runs through Claude Code hooks. This is the most critical configuration. All hooks use portable paths (`.agentic-framework/bin/fw hook <name>`) — no hardcoded absolute paths (T-496/T-498).
 
-### PreToolUse Hooks (Gates — Can Block)
+### All Available Hook Events (Claude Code 2026)
 
-| Matcher | Script | Purpose | Exit 2 = Block |
-|---------|--------|---------|-----------------|
-| `EnterPlanMode` | `block-plan-mode.sh` | Blocks built-in plan mode (use `/plan` instead) | Yes |
-| `Write\|Edit` | `check-active-task.sh` | Task gate (P-002): no file edits without active task | Yes |
-| `Bash` | `check-tier0.sh` | Tier 0 guard: blocks destructive commands (force push, rm -rf, DROP TABLE) | Yes |
-| `Write\|Edit\|Bash` | `budget-gate.sh` | Context budget enforcement: blocks source edits at ≥75% context | Yes |
+| Event | Can Block? | Matcher? | Framework Uses |
+|-------|-----------|----------|----------------|
+| `SessionStart` | No | Yes | post-compact-resume (compact, resume) |
+| `InstructionsLoaded` | No | No | — |
+| `UserPromptSubmit` | Yes | No | — (see Rec #4) |
+| `PreToolUse` | Yes | Yes | task gate, tier0, budget, plan blocker |
+| `PermissionRequest` | Yes | No | — |
+| `PostToolUse` | No (async) | Yes | checkpoint, error-watchdog, dispatch, fabric |
+| `PostToolUseFailure` | No (async) | No | — |
+| `Notification` | No | No | — |
+| `SubagentStart` | No | No | — |
+| `SubagentStop` | Yes | No | — |
+| `Stop` | Yes | No | — (see Rec #3) |
+| `TeammateIdle` | Yes | No | — |
+| `TaskCompleted` | Yes | No | — |
+| `ConfigChange` | Yes | No | — |
+| `WorktreeCreate` | Yes | No | — |
+| `WorktreeRemove` | No | No | — |
+| `PreCompact` | No | Yes | pre-compact (auto-handover) |
+| `PostCompact` | ? | ? | — (new, undocumented) |
+| `Elicitation` | Yes | No | — |
 
-**How blocking works:** Exit code 2 = action blocked, stderr shown to agent. Exit code 0 = proceed. Other = warning only.
+### Current Framework Hooks (11 total)
 
-### PostToolUse Hooks (Observers — Cannot Block)
+**PreToolUse (4 hooks — Gates that can block):**
 
-| Matcher | Script | Purpose |
-|---------|--------|---------|
-| `` (all tools) | `checkpoint.sh post-tool` | Context budget monitoring, auto-handover at critical |
-| `Bash` | `error-watchdog.sh` | Detects repeated errors, suggests healing |
-| `Task\|TaskOutput` | `check-dispatch.sh` | Sub-agent dispatch guard (context flood prevention) |
-| `Write` | `check-fabric-new-file.sh` | Reminds to register new source files in component fabric |
+| Matcher | Hook Name | Purpose | Exit 2 = Block |
+|---------|-----------|---------|----------------|
+| `EnterPlanMode` | `block-plan-mode` | Blocks built-in plan mode (use `/plan` instead) | Yes |
+| `Write\|Edit` | `check-active-task` | Task gate (P-002): no file edits without active task | Yes |
+| `Bash` | `check-tier0` | Tier 0 guard: blocks destructive commands | Yes |
+| `Write\|Edit\|Bash` | `budget-gate` | Context budget: blocks source edits at critical | Yes |
 
-### Session Hooks
+**PostToolUse (4 hooks — Observers, cannot block):**
 
-| Event | Matcher | Script | Purpose |
-|-------|---------|--------|---------|
-| `PreCompact` | `` | `pre-compact.sh` | Auto-generates handover before compaction |
-| `SessionStart` | `compact` | `post-compact-resume.sh` | Re-injects context after compaction |
-| `SessionStart` | `resume` | `post-compact-resume.sh` | Re-injects context on `/resume` |
+| Matcher | Hook Name | Purpose |
+|---------|-----------|---------|
+| `` (all) | `checkpoint post-tool` | Context budget monitoring, auto-handover |
+| `Bash` | `error-watchdog` | Detects repeated errors, suggests healing |
+| `Task\|TaskOutput` | `check-dispatch` | Sub-agent dispatch guard |
+| `Write` | `check-fabric-new-file` | Reminds to register new source files |
+
+**Session hooks (3 hooks):**
+
+| Event | Matcher | Hook Name | Purpose |
+|-------|---------|-----------|---------|
+| `PreCompact` | `` | `pre-compact` | Auto-generates handover |
+| `SessionStart` | `compact` | `post-compact-resume` | Re-injects context |
+| `SessionStart` | `resume` | `post-compact-resume` | Re-injects context |
 
 ### Hook Execution Model
 
 - Hooks fire on **every** tool call matching the pattern
-- PreToolUse hooks run **before** the tool — can prevent execution
-- PostToolUse hooks run **after** — observe only
+- PreToolUse hooks run **before** the tool — can prevent execution (exit 2)
+- PostToolUse hooks run **after** — observe only (async)
 - Hooks snapshot at session start — editing `.claude/settings.json` requires restart
-- Timeout: 600s default for command hooks
+- Exit codes: 0 = proceed, 2 = block (stderr shown to agent), other = warning
 
 ---
 
 ## Local Overrides (`.claude/settings.local.json`)
-
-Currently minimal:
-
-```json
-{
-  "prefersReducedMotion": false
-}
-```
 
 Use this file for personal preferences that shouldn't affect other users:
 - Custom permission overrides
@@ -174,65 +178,68 @@ Use this file for personal preferences that shouldn't affect other users:
 
 ---
 
-## Recommendations for Improving Agent Success Rate
+## Recommendations Assessment
 
-### 1. Consider `alwaysThinkingEnabled: true` (Global)
+### Rec #1: Extended Thinking — ALREADY ACTIVE
 
-Extended thinking improves complex reasoning (inception decisions, multi-file refactoring). Add to `~/.claude/settings.json`:
-```json
-"alwaysThinkingEnabled": true
-```
+Extended thinking is enabled by default on Opus 4.6 and Sonnet 4.6 with adaptive reasoning. No setting change needed.
 
-### 2. Set `BASH_DEFAULT_TIMEOUT_MS` Higher for Long Operations
+**New option:** `/effort low|medium|high` controls reasoning depth. Could be useful to document for users — `high` for inception decisions, `low` for routine edits.
 
-Embedding builds, audit runs, and fabric analysis can exceed the default 120s timeout:
-```bash
-export BASH_DEFAULT_TIMEOUT_MS=300000  # 5 minutes
-```
+**Verdict:** No action needed. Document `/effort` in onboarding.
 
-### 3. Add `SessionEnd` Hook for Auto-Handover
+### Rec #2: Bash Timeout — IMPLEMENT
 
-Currently no `SessionEnd` hook exists. Adding one would catch sessions that end without handover:
-```json
-{
-  "matcher": "",
-  "hooks": [{
-    "type": "command",
-    "command": "/opt/999-Agentic-Engineering-Framework/agents/handover/handover.sh --auto"
-  }]
-}
-```
+`BASH_DEFAULT_TIMEOUT_MS` defaults to 120s. Framework operations (audit, fabric analysis, embedding builds) can exceed this. Set in `claude-fw` wrapper or document for users.
 
-### 4. Add `UserPromptSubmit` Hook for Task Gate
+**Verdict:** Add `export BASH_DEFAULT_TIMEOUT_MS=300000` to `claude-fw` wrapper.
 
-Currently the task gate only fires on Write/Edit. A UserPromptSubmit hook could remind the agent to set focus before ANY work begins, not just file modifications.
+### Rec #3: Session End Hook — REVISED
 
-### 5. Consider Sandbox Mode for External Adopters
+`SessionEnd` does not exist. The `Stop` event fires when Claude finishes a response (can block). This is NOT the same as session end — it fires after every response.
 
-For users who don't trust broad `Bash(*)` permissions, enable sandbox with framework-specific allowlists:
-```json
-{
-  "sandbox": {
-    "enabled": true,
-    "filesystem": {
-      "allowWrite": ["//.tasks", "//.context", "//.fabric", "//docs"]
-    }
-  }
-}
-```
+The real gap: no hook fires when the user closes the terminal or types `/exit`. The framework already mitigates this with:
+- Budget gate auto-handover at critical
+- Commit cadence rule (work safe at last commit)
+- `/compact` PreCompact hook
 
-### 6. Pin Model for Consistency
+**Verdict:** No action. The gap is structural (Claude Code limitation). Existing mitigations are sufficient.
 
-Add to global settings to prevent model drift:
-```json
-"model": "claude-opus-4-6"
-```
+### Rec #4: UserPromptSubmit Hook — EXPLORE
+
+`UserPromptSubmit` exists and can block. No matcher support, so it fires on every prompt. Could remind agent to check focus before starting work.
+
+**Risk:** Fires on EVERY prompt — adds latency to every interaction. The task gate on Write/Edit catches 95% of cases. The remaining 5% (agent starts reading code before setting focus) is low risk.
+
+**Verdict:** Defer. Cost (latency on every prompt) outweighs benefit (catching the rare case where agent reads before setting focus). Revisit if task gate misses become frequent.
+
+### Rec #5: Sandbox Mode — DEFER
+
+Sandbox mode exists and is sophisticated. Relevant for external adopters who don't trust `Bash(*)`. Not relevant for current single-user setup.
+
+**Verdict:** Defer to post-launch. Document as "recommended for teams" in onboarding docs.
+
+### Rec #6: Model Pinning — REJECT
+
+Model pinning via `"model": "claude-opus-4-6"` prevents using different models for different tasks. The framework is model-agnostic by design (D4: Portability). Users should choose their model.
+
+**Verdict:** Reject. Document how to pin if desired, but don't recommend it.
+
+### NEW Rec #7: `PostCompact` Hook
+
+New event — could replace/supplement the `SessionStart:compact` hook for post-compaction context injection. Undocumented, so defer until API stabilizes.
+
+**Verdict:** Watch. Add when documented.
+
+### NEW Rec #8: `SubagentStop` Hook
+
+Could enforce sub-agent result size limits structurally (block if output too large). Currently handled by `check-dispatch.sh` on PostToolUse, which is advisory only.
+
+**Verdict:** Explore in future. Could solve G-015 (sub-agent results bypass governance).
 
 ---
 
 ## Verification Checklist
-
-Run these to verify settings are correctly applied:
 
 ```bash
 # Check hooks are wired
@@ -243,10 +250,6 @@ fw doctor
 
 # Verify budget gate works
 cat .context/working/.budget-status
-
-# Verify tier 0 guard
-# The check-tier0.sh script should be executable
-test -x agents/context/check-tier0.sh && echo "OK" || echo "MISSING"
 
 # Verify auto-compact is disabled
 grep autoCompactEnabled ~/.claude.json
@@ -261,10 +264,9 @@ grep defaultMode ~/.claude/settings.json
 
 ## Quick Setup for New Installations
 
-1. Copy `.claude/settings.json` from the framework repo (hooks are project-scoped)
+1. Run `fw init /path/to/project` — creates `.claude/settings.json` with all hooks (portable paths)
 2. Configure global permissions:
    ```bash
-   # Add to ~/.claude/settings.json
    cat > ~/.claude/settings.json << 'EOF'
    {
      "permissions": {
@@ -274,5 +276,5 @@ grep defaultMode ~/.claude/settings.json
    }
    EOF
    ```
-3. Disable auto-compact (set `autoCompactEnabled: false` in `~/.claude.json`)
+3. Disable auto-compact: `claude config set autoCompact false` (or set in `~/.claude.json`)
 4. Run `fw doctor` to verify everything is wired
