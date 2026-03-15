@@ -20,40 +20,35 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+From T-482 GO. See `docs/reports/T-482-install-model-inception.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw vendor` subcommand exists in bin/fw and shows in `fw help`
+- [x] `fw vendor` copies bin/, lib/, agents/, web/, docs/, .tasks/templates/, FRAMEWORK.md, metrics.sh to PROJECT_ROOT/.agentic-framework/
+- [x] `fw vendor` excludes .git/, .context/, .tasks/active/, .tasks/completed/, .fabric/, install.sh
+- [x] `fw vendor` creates VERSION file with current FW_VERSION
+- [x] `fw vendor` is idempotent (re-running overwrites cleanly, 7.0MB both times)
+- [x] `fw vendor --dry-run` shows what would be copied without copying
+- [x] Vendored .agentic-framework/bin/fw is executable and resolves FRAMEWORK_ROOT from its own location
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Run `fw vendor` in a test project and verify .agentic-framework/ contents
+  **Steps:**
+  1. Create temp dir: `mkdir /tmp/test-vendor && cd /tmp/test-vendor && git init`
+  2. Run `fw vendor`
+  3. Check: `ls .agentic-framework/bin/fw` exists and is executable
+  4. Check: `du -sh .agentic-framework/` is ~7MB
+  **Expected:** Complete framework in .agentic-framework/, no .git or .context from framework
+  **If not:** Note what's missing or extra
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# fw vendor subcommand exists
+grep -q "vendor)" bin/fw
+# fw help shows vendor
+fw help 2>&1 | grep -q "vendor"
 
 ## Decisions
 
