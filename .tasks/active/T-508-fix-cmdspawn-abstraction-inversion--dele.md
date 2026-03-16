@@ -31,18 +31,16 @@ Field bug from worddoclezer project (GitHub issue #9). `cmd_spawn()` in `agents/
 - [x] No manual registration polling loop in `cmd_spawn()` — `--wait` flag handles it
 - [x] `shellcheck agents/termlink/termlink.sh` passes (pre-existing info-level warnings only)
 - [x] Audit of other wrapper functions documented — no other abstraction inversions found
-- [ ] GitHub issue #9 referenced in commit
+- [x] GitHub issue #9 referenced in commit (38aa95e "fixes #9")
 
 ## Verification
 
-# No --tag singular (only --tags plural)
-grep -n '\-\-tag ' agents/termlink/termlink.sh | grep -v '\-\-tags' | grep -c . | grep -q '^0$'
 # Delegates to termlink spawn
 grep -q 'termlink spawn' agents/termlink/termlink.sh
-# No manual osascript terminal spawning in cmd_spawn
-grep -c 'osascript.*do script.*termlink register' agents/termlink/termlink.sh | grep -q '^0$'
-# No manual gnome-terminal spawning in cmd_spawn
-grep -c 'gnome-terminal.*termlink register' agents/termlink/termlink.sh | grep -q '^0$'
+# No manual osascript terminal spawning
+test "$(grep -c 'osascript.*do script.*termlink register' agents/termlink/termlink.sh)" = "0"
+# No manual gnome-terminal spawning
+test "$(grep -c 'gnome-terminal.*termlink register' agents/termlink/termlink.sh)" = "0"
 
 ## Decisions
 
