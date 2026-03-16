@@ -4,16 +4,16 @@ name: "Fix fabric graph not rendering on htmx navigation (requires reload)"
 description: >
   Fix fabric graph not rendering on htmx navigation (requires reload)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/base.html, web/templates/fabric_graph.html]
 related_tasks: []
 created: 2026-03-16T06:35:46Z
-last_update: 2026-03-16T06:35:46Z
-date_finished: null
+last_update: 2026-03-16T06:38:59Z
+date_finished: 2026-03-16T06:38:59Z
 ---
 
 # T-507: Fix fabric graph not rendering on htmx navigation (requires reload)
@@ -73,3 +73,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-507-fix-fabric-graph-not-rendering-on-htmx-n.md
 - **Context:** Initial task creation
+
+### 2026-03-16T06:38:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

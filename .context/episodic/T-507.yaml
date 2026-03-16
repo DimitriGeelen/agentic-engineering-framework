@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-507: Fix fabric graph not rendering on htmx navigation (requires reload)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-16T06:39:00Z
+# ============================================================================
+
+task_id: T-507
+task_name: "Fix fabric graph not rendering on htmx navigation (requires reload)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-16T06:35:46Z
+completed: 2026-03-16T06:38:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-16T07:38:42+01:00
+last_commit: 2026-03-16T07:38:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fabric graph not rendering on htmx navigation. Check ACs for graph rendering fix
+
+# Key outcomes
+outcomes:
+  - "Cytoscape/dagre scripts moved to base.html (loaded once, always available)"
+  - "Graph template no longer has duplicate script loads"
+  - "Graph renders on htmx navigation without reload"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Check ACs for graph rendering fix"
+    source: git-mined
+  - description: "Fix fabric graph not rendering on htmx navigation"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-507-fix-fabric-graph-not-rendering-on-htmx-n.md"
+  - "web/templates/base.html"
+  - "web/templates/fabric_graph.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-16T07:38:42"
+    action: "T-507: Fix fabric graph not rendering on htmx navigation"
+  - time: "2026-03-16T07:38:59"
+    action: "T-507: Check ACs for graph rendering fix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 3
+  lines_added: 81
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-507-fix-fabric-graph-not-rendering-on-htmx-n.md
+generated_by: context-agent-hybrid
