@@ -78,10 +78,7 @@
     </article>
 </div>
 
-<!-- Cytoscape.js + dagre layout -->
-<script src="{{ url_for('static', filename='cytoscape.min.js') }}"></script>
-<script src="{{ url_for('static', filename='dagre.min.js') }}"></script>
-<script src="{{ url_for('static', filename='cytoscape-dagre.js') }}"></script>
+<!-- Graph initialization (cytoscape + dagre loaded globally in base.html) -->
 <script>
 (function() {
     var rawNodes = {{ nodes | tojson }};
