@@ -26,8 +26,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cytoscape/dagre scripts moved to base.html (loaded once, always available)
+- [x] Graph template no longer has duplicate script loads
+- [x] Graph renders on htmx navigation without reload
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
