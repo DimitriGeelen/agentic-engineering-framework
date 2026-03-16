@@ -66,45 +66,21 @@ cmd_spawn() {
     done
 
     [ -z "$name" ] && name="worker-$(date +%s)"
+
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
-
-    # Store task tag for status display
     [ -n "$task" ] && echo "$task" > "$wdir/task"
 
-    # Platform-specific terminal spawn + window ID tracking
-    if is_macos; then
-        local spawn_output
-        spawn_output=$(osascript -e "tell application \"Terminal\" to do script \"termlink register --name $name --shell${task:+ --tag task=$task}\"" 2>&1)
-        local wid
-        wid=$(echo "$spawn_output" | sed -n 's/.*window id \([0-9]*\).*/\1/p' | head -1)
-        [ -n "$wid" ] && echo "$wid" > "$wdir/window_id"
-    else
-        # Linux: try common terminal emulators
-        if command -v gnome-terminal >/dev/null 2>&1; then
-            gnome-terminal -- bash -c "termlink register --name $name --shell${task:+ --tag task=$task}; exec bash" &
-        elif command -v x-terminal-emulator >/dev/null 2>&1; then
-            x-terminal-emulator -e bash -c "termlink register --name $name --shell${task:+ --tag task=$task}; exec bash" &
-        elif command -v xterm >/dev/null 2>&1; then
-            xterm -e bash -c "termlink register --name $name --shell${task:+ --tag task=$task}; exec bash" &
-        else
-            die "No supported terminal emulator found (need gnome-terminal, x-terminal-emulator, or xterm)"
-        fi
-    fi
+    # Delegate to termlink spawn — it handles platform detection, shell init
+    # timing, and wait-for-registration natively. (GH #9: the old code
+    # reimplemented these primitives and introduced two bugs.)
+    local spawn_args=(--name "$name" --wait --wait-timeout 30)
+    [ -n "$task" ] && spawn_args+=(--tags "task=$task")
+    spawn_args+=(--shell)
 
-    # Wait for session registration (up to 15s)
-    local found=false
-    for i in $(seq 1 15); do
-        termlink list 2>/dev/null | grep -q "$name" && { found=true; break; }
-        sleep 1
-    done
-
-    if [ "$found" = true ]; then
-        echo -e "${GREEN}OK${NC}  Session '$name' registered"
-        [ -n "$task" ] && echo "  Tagged: $task"
-    else
-        die "Session '$name' did not register within 15s"
-    fi
+    termlink spawn "${spawn_args[@]}"
+    echo -e "${GREEN}OK${NC}  Session '$name' registered"
+    [ -n "$task" ] && echo "  Tagged: $task"
 }
 
 cmd_exec() {
