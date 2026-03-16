@@ -144,7 +144,7 @@ def fabric_overview():
     components = _load_components()
     subsystems = _load_subsystems()
 
-    # Stats
+    # Stats — derive counts from actual component cards
     type_counts = {}
     subsystem_counts = {}
     for c in components:
@@ -152,6 +152,17 @@ def fabric_overview():
         s = c.get("subsystem", "unknown")
         type_counts[t] = type_counts.get(t, 0) + 1
         subsystem_counts[s] = subsystem_counts.get(s, 0) + 1
+
+    # Ensure every subsystem in component cards has a tile
+    registered_ids = {s["id"] for s in subsystems}
+    for sid in sorted(subsystem_counts):
+        if sid not in registered_ids:
+            subsystems.append({
+                "id": sid,
+                "name": sid.replace("-", " ").title(),
+                "purpose": f"Auto-discovered subsystem ({subsystem_counts[sid]} components)",
+                "summary": "",
+            })
 
     edge_count = sum(
         len(c.get("depends_on", []))

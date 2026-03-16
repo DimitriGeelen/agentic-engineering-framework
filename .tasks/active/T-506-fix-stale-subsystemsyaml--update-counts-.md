@@ -20,40 +20,29 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Subsystems.yaml had stale component_count values (created T-214, never updated since). Missing watchtower-web-ui subsystem. RCA: static snapshot with no update mechanism. Fix: derive counts dynamically from component cards.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] subsystems.yaml counts updated to match reality
+- [x] Missing watchtower-web-ui subsystem added to registry
+- [x] Web UI derives subsystem counts dynamically (auto-discovers missing subsystems)
+- [x] CLI `fw fabric overview` derives counts dynamically from cards
+- [x] Both show 13 subsystems, 154 components
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Verify fabric page shows all subsystem tiles
+  **Steps:**
+  1. Open http://localhost:3000/fabric
+  2. Count subsystem tiles in the grid
+  **Expected:** 13 tiles, all with correct component counts
+  **If not:** Check web/blueprints/fabric.py auto-discovery logic
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "import yaml; yaml.safe_load(open('.fabric/subsystems.yaml'))"
+curl -sf http://localhost:3000/fabric | python3 -c "import sys,re; html=sys.stdin.read(); tiles=re.findall(r'subsystem=', html); assert len(tiles)>=13, f'Only {len(tiles)} tiles'"
 
 ## Decisions
 

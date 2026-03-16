@@ -28,21 +28,42 @@ do_overview() {
     done
 
     python3 -c "
-import yaml
+import yaml, os, glob
+
 with open('$subsystems_file') as f:
     data = yaml.safe_load(f)
 
 subsystems = data.get('subsystems', [])
-sub_count = len(subsystems)
 
+# Derive actual counts from component cards
+actual_counts = {}
+for card_path in glob.glob('$COMPONENTS_DIR/*.yaml'):
+    try:
+        with open(card_path) as cf:
+            card = yaml.safe_load(cf)
+        sid = card.get('subsystem', 'unknown')
+        actual_counts[sid] = actual_counts.get(sid, 0) + 1
+    except Exception:
+        pass
+
+# Add missing subsystems discovered from cards
+registered_ids = {s['id'] for s in subsystems}
+for sid in sorted(actual_counts):
+    if sid not in registered_ids:
+        subsystems.append({
+            'id': sid,
+            'name': sid.replace('-', ' ').title(),
+            'summary': '(auto-discovered)',
+        })
+
+sub_count = len(subsystems)
 print(f'## System Topology')
 print(f'{sub_count} subsystems, $comp_count components, $edge_count edges')
 print()
 
 for s in subsystems:
     name = s.get('name', '?')
-    comps = s.get('components', s.get('component_count', 0))
-    count = len(comps) if isinstance(comps, list) else comps
+    count = actual_counts.get(s['id'], 0)
     summary = s.get('summary', '')
     print(f'**{name}** ({count} components): {summary}')
 " 2>/dev/null
