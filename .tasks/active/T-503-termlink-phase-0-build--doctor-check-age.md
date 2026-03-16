@@ -28,12 +28,12 @@ Repo: `https://onedev.docker.ring20.geelenandcompany.com/termlink`
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw doctor` checks for TermLink (WARN not FAIL, includes install hint)
-- [ ] `agents/termlink/AGENT.md` exists with primitives table, OneDev repo link, phase roadmap
-- [ ] `agents/termlink/termlink.sh` implements 8 subcommands adapted from tl-dispatch.sh
-- [ ] `fw termlink` routes to `agents/termlink/termlink.sh`
-- [ ] `fw help` lists termlink command
-- [ ] CLAUDE.md has TermLink section with commands, budget rule, cleanup rule
+- [x] `fw doctor` checks for TermLink (WARN not FAIL, includes install hint)
+- [x] `agents/termlink/AGENT.md` exists with primitives table, OneDev repo link, phase roadmap
+- [x] `agents/termlink/termlink.sh` implements 8 subcommands adapted from tl-dispatch.sh
+- [x] `fw termlink` routes to `agents/termlink/termlink.sh`
+- [x] `fw help` lists termlink command
+- [x] CLAUDE.md has TermLink section with commands, budget rule, cleanup rule
 
 ### Human
 - [ ] [RUBBER-STAMP] Run `fw doctor` and verify TermLink check appears
