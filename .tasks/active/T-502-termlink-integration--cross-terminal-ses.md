@@ -6,16 +6,16 @@ description: >
   into the framework as an optional external tool. Pickup message from TermLink repo (T-148).
   Assess: scope, platform constraints, phased rollout, decomposition into build tasks.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [termlink, integration, cross-terminal]
-components: [bin/fw, CLAUDE.md]
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T23:43:34Z
-last_update: 2026-03-15T23:58:20Z
-date_finished: null
+last_update: 2026-03-15T23:58:35Z
+date_finished: 2026-03-15T23:58:35Z
 ---
 
 # T-502: TermLink integration — cross-terminal session communication for framework
@@ -125,3 +125,6 @@ test -f docs/reports/T-502-termlink-integration-inception.md
 
 ### 2026-03-15T23:58:20Z — status-update [task-update-agent]
 - **Change:** owner: human → agent
+
+### 2026-03-15T23:58:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
