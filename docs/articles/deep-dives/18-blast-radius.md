@@ -12,7 +12,7 @@ A programme manager who modifies a shared interface — a data format, a handoff
 
 AI coding agents have this problem in a more concentrated form. A human developer builds tacit knowledge over months: "if I change the auth module, I need to check the middleware." An AI agent has no tacit knowledge. Every session, the codebase is fresh. It sees the file it is editing. It does not see the six files that import from it, the three templates that render its output, or the two hooks that trigger on its changes.
 
-The Agentic Engineering Framework tracks 154 components across 12 subsystems, connected by 422 dependency edges. Without visibility into that graph, an agent editing one node is flying blind about the other 153.
+The Agentic Engineering Framework tracks every significant component, the subsystem it belongs to, and the dependency edges between them. Without visibility into that graph, an agent editing one node is flying blind about all the others.
 
 ### What blast radius analysis does
 
@@ -29,10 +29,10 @@ bin/fw (fw)
     writes → agents/context/context.sh
     writes → agents/handover/handover.sh
 
-1 registered component(s) changed
+Registered component(s) changed: bin/fw
 ```
 
-The commit modified `bin/fw`. The Component Fabric knows that `bin/fw` has 21 outbound dependencies (it calls 21 other scripts) and 25 inbound dependencies (25 components call or source it). That single file change has a potential blast radius of 46 components. The output makes this visible before anyone discovers it through a failure.
+The commit modified `bin/fw`. The Component Fabric knows that `bin/fw` calls dozens of other scripts and is in turn called or sourced by dozens of components. That single file change has a wide potential blast radius. The output makes this visible before anyone discovers it through a failure.
 
 ### How it works
 
@@ -53,13 +53,13 @@ depends_on:
     type: calls
   - target: context-dispatcher
     type: calls
-  # ... 18 more
+  # ...
 depended_by:
   - source: plugin-audit
     type: called_by
   - source: fabric
     type: called_by
-  # ... 23 more
+  # ...
 ```
 
 When `fw fabric blast-radius HEAD` runs, it extracts changed files from the commit via `git diff-tree`, looks up each file's component card, and reports its dependency edges. The algorithm is deliberately shallow — direct dependencies only. Full transitive impact (what depends on the things that depend on your change) is available via `fw fabric impact <path>`, but the blast radius command optimises for speed and clarity at commit time.
@@ -76,7 +76,7 @@ This is not a failure. It is a nudge. Drift detection (`fw fabric drift`) catche
 
 Three enforcement points, from softest to hardest:
 
-**Post-commit hook.** Every commit triggers a blast radius summary automatically. The agent sees the output immediately after committing. If a changed component has high connectivity (more than 5 dependency edges), the hook flags it with a warning. This catches the common case: an agent edits a utility function without realising it is called by 8 subsystems.
+**Post-commit hook.** Every commit triggers a blast radius summary automatically. The agent sees the output immediately after committing. If a changed component has high connectivity, the hook flags it with a warning. This catches the common case: an agent edits a utility function without realising it is called by multiple subsystems.
 
 **CLAUDE.md procedural rule.** Before setting any task to `work-completed`, the agent must run blast radius analysis if source files changed. This is a governance instruction — the agent's operating manual says to do it. It is soft enforcement: the agent can forget, but the rule is explicit.
 
@@ -86,19 +86,19 @@ Three enforcement points, from softest to hardest:
 
 Blast radius analysis does not block commits. It does not reject changes. It does not force the agent to update all downstream files before proceeding. This is a deliberate design decision.
 
-Prevention — blocking a commit because it affects too many files — would be brittle and counterproductive. Some high-impact commits are necessary. A refactoring that touches 30 components is fine if it is intentional. A one-line fix that accidentally touches 30 components is a problem. The blast radius tool cannot distinguish between these two cases. A human or an informed agent can.
+Prevention — blocking a commit because it affects too many files — would be brittle and counterproductive. Some high-impact commits are necessary. A deliberate refactoring that touches many components is fine. A one-line fix that accidentally touches just as many is a problem. The blast radius tool cannot distinguish between these two cases. A human or an informed agent can.
 
-**The value is in making hidden impact visible at the moment it matters: before the change propagates.** A programme manager who sees "this interface change affects three workstreams" can plan accordingly. An agent who sees "this edit affects 9 downstream components" can proactively check each one. Without visibility, neither the programme manager nor the agent knows there is a problem until downstream failures arrive.
+**The value is in making hidden impact visible at the moment it matters: before the change propagates.** A programme manager who sees "this interface change affects three workstreams" can plan accordingly. An agent who sees the downstream impact of its edit can proactively check each affected file. Without visibility, neither the programme manager nor the agent knows there is a problem until downstream failures arrive.
 
 This aligns with the framework's second directive: **reliability means predictable, observable, auditable execution.** Blast radius analysis makes the impact of every change observable. The decision to act on that observation remains with the human or the agent.
 
 ### What it has caught
 
-The Component Fabric was born from a real incident. During task T-206, nine files were modified in a single session without traceability — a silent corruption chain where changes cascaded through dependencies that nobody tracked. The damage was discovered after the fact, through symptoms, not through visibility. The inception task (T-191) that designed the Component Fabric cited this incident as the primary motivation.
+The Component Fabric was born from a real incident. During an early task, multiple files were modified in a single session without traceability — a silent corruption chain where changes cascaded through dependencies that nobody tracked. The damage was discovered after the fact, through symptoms, not through visibility. The inception that designed the Component Fabric cited this incident as the primary motivation.
 
-Since integration into the post-commit hook (T-236), every commit shows its structural impact. The high-connectivity warning has flagged `bin/fw` (46 edges), `context.sh` (28 edges), and `app.py` (31 edges) — the three files where a careless edit has the widest downstream consequences. These are precisely the files where an agent, working without a structural map, would cause the most damage.
+Since integration into the post-commit hook, every commit shows its structural impact. The high-connectivity warning has flagged the main CLI entry point, the context dispatcher, and the web application — the files where a careless edit has the widest downstream consequences. These are precisely the files where an agent, working without a structural map, would cause the most damage.
 
-The framework now runs `fw fabric blast-radius` after the commit that added TermLink integration — the commit that modified `bin/fw`, the most connected file in the project. The post-commit output said: *"High connectivity (21 edges) — consider: fw fabric blast-radius HEAD."* The agent saw this warning mechanically, without needing to remember that `bin/fw` is important. Structural awareness replaced tacit knowledge.
+The framework now runs `fw fabric blast-radius` after every commit. When a recent integration modified the main CLI entry point — the most connected file in the project — the post-commit output flagged it automatically: *"High connectivity — consider: fw fabric blast-radius HEAD."* The agent saw this warning mechanically, without needing to remember that the file is important. Structural awareness replaced tacit knowledge.
 
 ### Why agents need this more than humans
 
@@ -112,7 +112,7 @@ Blast radius analysis converts tacit structural knowledge into explicit, queryab
 
 Impact analysis is not an AI-specific technique. It predates software engineering entirely. Civil engineers calculate the blast radius of demolition charges. Epidemiologists model the blast radius of an outbreak from a single case. Programme managers assess the blast radius of a schedule delay on dependent workstreams. In each domain, the principle is identical: **before changing something, understand what it touches.**
 
-The Agentic Engineering Framework applies this principle to AI agent commits using a structural topology map (the Component Fabric), shallow dependency traversal (blast radius), and three escalating enforcement points (post-commit hook, procedural rule, verification gate). The implementation is 60 lines of bash and a set of YAML cards. The principle is as old as engineering itself.
+The Agentic Engineering Framework applies this principle to AI agent commits using a structural topology map (the Component Fabric), shallow dependency traversal (blast radius), and three escalating enforcement points (post-commit hook, procedural rule, verification gate). The implementation is a short bash script and a set of YAML cards. The principle is as old as engineering itself.
 
 **A commit without blast radius analysis is a change without impact awareness. The domain changed from civil engineering to AI agent governance. The principle did not.**
 
