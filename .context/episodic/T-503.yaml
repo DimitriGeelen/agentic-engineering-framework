@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-503: TermLink Phase 0 build — doctor check, agents/termlink/, fw route, CLAUDE.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-16T05:09:50Z
+# ============================================================================
+
+task_id: T-503
+task_name: "TermLink Phase 0 build — doctor check, agents/termlink/, fw route, CLAUDE.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-15T23:58:50Z
+completed: 2026-03-16T05:09:49Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-16T01:02:20+01:00
+last_commit: 2026-03-16T06:09:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink Phase 0 partial — agent wrapper + AGENT.md (WIP). TermLink Phase 0 complete — fw route, help entry, CLAUDE.md section
+
+# Key outcomes
+outcomes:
+  - "`fw doctor` checks for TermLink (WARN not FAIL, includes install hint)"
+  - "`agents/termlink/AGENT.md` exists with primitives table, OneDev repo link, phase roadmap"
+  - "`agents/termlink/termlink.sh` implements 8 subcommands adapted from tl-dispatch.sh"
+  - "`fw termlink` routes to `agents/termlink/termlink.sh`"
+  - "`fw help` lists termlink command"
+  - "CLAUDE.md has TermLink section with commands, budget rule, cleanup rule"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/AGENT.md"
+  - "agents/termlink/termlink.sh"
+  - "bin/fw"
+  - "CLAUDE.md"
+  - ".tasks/active/T-502-termlink-integration--cross-terminal-ses.md"
+  - ".tasks/active/T-503-termlink-phase-0-build--doctor-check-age.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-16T01:02:20"
+    action: "T-503: TermLink Phase 0 partial — agent wrapper + AGENT.md (WIP)"
+  - time: "2026-03-16T06:09:44"
+    action: "T-503: TermLink Phase 0 complete — fw route, help entry, CLAUDE.md section"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 310 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, integration, phase-0]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 310
+  commits: 2
+  files_changed: 6
+  lines_added: 669
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-503-termlink-phase-0-build--doctor-check-age.md
+generated_by: context-agent-hybrid

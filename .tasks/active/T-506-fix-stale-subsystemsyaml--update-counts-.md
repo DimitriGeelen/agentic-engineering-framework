@@ -4,16 +4,16 @@ name: "Fix stale subsystems.yaml — update counts, add missing watchtower-web-u
 description: >
   Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
 
-status: started-work
+status: work-completed
 workflow_type: refactor
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/fabric/lib/summary.sh, web/blueprints/fabric.py]
 related_tasks: []
 created: 2026-03-16T06:23:53Z
-last_update: 2026-03-16T06:23:53Z
-date_finished: null
+last_update: 2026-03-16T06:30:10Z
+date_finished: 2026-03-16T06:30:10Z
 ---
 
 # T-506: Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
@@ -61,3 +61,6 @@ curl -sf http://localhost:3000/fabric | python3 -c "import sys,re; html=sys.stdi
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-506-fix-stale-subsystemsyaml--update-counts-.md
 - **Context:** Initial task creation
+
+### 2026-03-16T06:30:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

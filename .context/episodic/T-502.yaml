@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-502: TermLink integration — cross-terminal session communication for framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-15T23:58:36Z
+# ============================================================================
+
+task_id: T-502
+task_name: "TermLink integration — cross-terminal session communication for framework"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-15T23:43:34Z
+completed: 2026-03-15T23:58:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-16T00:36:53+01:00
+last_commit: 2026-03-16T00:58:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink integration Phase 0 — doctor check, agent wrapper, fw route, CLAUDE.md. Inception GO — TermLink integration research + decision
+
+# Key outcomes
+outcomes:
+  - "Research artifact written to `docs/reports/T-502-termlink-integration-inception.md`"
+  - "Pickup spec assessed — scope, platform constraints, gaps identified"
+  - "Phase 0 scope defined with concrete deliverables"
+  - "Go/No-Go recommendation presented with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/AGENT.md"
+  - "agents/termlink/termlink.sh"
+  - "bin/fw"
+  - "CLAUDE.md"
+  - "docs/reports/T-502-termlink-integration-inception.md"
+  - ".tasks/active/T-502-termlink-integration--cross-terminal-ses.md"
+  - ".tasks/active/T-502-termlink-integration-phase-0--fw-doctor-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-16T00:36:53"
+    action: "T-502: TermLink integration Phase 0 — doctor check, agent wrapper, fw route, CLAUDE.md"
+  - time: "2026-03-16T00:58:29"
+    action: "T-502: Inception GO — TermLink integration research + decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, integration, cross-terminal]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 7
+  lines_added: 924
+  lines_removed: 694
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-502-termlink-integration--cross-terminal-ses.md
+generated_by: context-agent-hybrid

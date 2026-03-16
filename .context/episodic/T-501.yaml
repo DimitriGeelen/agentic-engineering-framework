@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-501: Add BASH_DEFAULT_TIMEOUT_MS to claude-fw wrapper
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-15T22:33:45Z
+# ============================================================================
+
+task_id: T-501
+task_name: "Add BASH_DEFAULT_TIMEOUT_MS to claude-fw wrapper"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-15T22:32:43Z
+completed: 2026-03-15T22:33:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-15T23:33:36+01:00
+last_commit: 2026-03-15T23:33:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add BASH_DEFAULT_TIMEOUT_MS=300000 to claude-fw wrapper
+
+# Key outcomes
+outcomes:
+  - "`BASH_DEFAULT_TIMEOUT_MS` exported in `bin/claude-fw` before main loop"
+  - "Uses `${BASH_DEFAULT_TIMEOUT_MS:-300000}` (user can override)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/claude-fw"
+  - ".context/episodic/T-435.yaml"
+  - ".tasks/active/T-435-document-claude-code-settings-and-recomm.md"
+  - ".tasks/active/T-501-add-bashdefaulttimeoutms-to-claude-fw-wr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-15T23:33:36"
+    action: "T-501: Add BASH_DEFAULT_TIMEOUT_MS=300000 to claude-fw wrapper"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 4
+  lines_added: 164
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-501-add-bashdefaulttimeoutms-to-claude-fw-wr.md
+generated_by: context-agent-hybrid
