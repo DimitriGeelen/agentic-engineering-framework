@@ -363,6 +363,52 @@ cmd_result() {
     fi
 }
 
+cmd_update() {
+    local repo_dir="${TERMLINK_REPO:-/opt/termlink}"
+    local quiet=false
+    [ "${1:-}" = "--quiet" ] && quiet=true
+
+    if [ ! -d "$repo_dir/.git" ]; then
+        $quiet && exit 1
+        die "TermLink repo not found at $repo_dir\n  Set TERMLINK_REPO or clone: git clone https://onedev.docker.ring20.geelenandcompany.com/termlink $repo_dir"
+    fi
+
+    # Check for updates
+    cd "$repo_dir"
+    git fetch --quiet 2>/dev/null || die "Failed to fetch from remote"
+    local local_head remote_head
+    local_head=$(git rev-parse HEAD)
+    remote_head=$(git rev-parse @{u} 2>/dev/null || echo "unknown")
+
+    if [ "$local_head" = "$remote_head" ]; then
+        $quiet || echo -e "${GREEN}OK${NC}  TermLink is up to date ($(git log --oneline -1))"
+        return 0
+    fi
+
+    if $quiet; then
+        echo -e "${YELLOW}UPDATE${NC}  TermLink update available"
+        echo "  Local:  $(git log --oneline -1)"
+        echo "  Remote: $(git log --oneline -1 @{u})"
+        echo "  Run: fw termlink update"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Updating TermLink...${NC}"
+    echo "  Before: $(git log --oneline -1)"
+    git pull --quiet 2>/dev/null || die "git pull failed"
+    echo "  After:  $(git log --oneline -1)"
+
+    # Rebuild
+    echo "  Building..."
+    if cargo install --path crates/termlink-cli 2>/dev/null; then
+        local new_version
+        new_version=$(termlink --version 2>/dev/null | head -1)
+        echo -e "${GREEN}OK${NC}  TermLink updated: $new_version"
+    else
+        die "cargo install failed — check build output"
+    fi
+}
+
 cmd_help() {
     echo -e "${BOLD}fw termlink${NC} — TermLink integration for cross-terminal communication"
     echo -e "  Repo: https://onedev.docker.ring20.geelenandcompany.com/termlink"
@@ -376,6 +422,7 @@ cmd_help() {
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
+    echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
     echo "  fw termlink check"
@@ -400,6 +447,7 @@ case "$subcmd" in
     dispatch) cmd_dispatch "$@" ;;
     wait)     cmd_wait "$@" ;;
     result)   cmd_result "$@" ;;
+    update)   cmd_update "$@" ;;
     help|--help|-h) cmd_help ;;
     *) die "Unknown subcommand: $subcmd (run 'fw termlink help')" ;;
 esac
