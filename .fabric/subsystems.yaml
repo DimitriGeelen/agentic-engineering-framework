@@ -6,7 +6,7 @@ subsystems:
   - id: watchtower
     name: Watchtower Web UI
     purpose: "Web dashboard for monitoring framework state — tasks, learnings, patterns, metrics, graduation pipeline"
-    component_count: 37
+    component_count: 65
     summary: "Flask app → blueprints (tasks, discovery, graduation, metrics) → templates → htmx interactions"
     entry_points:
       - "fw serve (start server)"
@@ -15,7 +15,7 @@ subsystems:
   - id: context-fabric
     name: Context Fabric
     purpose: "Persistent memory system — working memory, project memory, episodic memory. Manages learnings, decisions, patterns, focus."
-    component_count: 13
+    component_count: 25
     summary: "context.sh → lib/{learning,decision,pattern,focus,init,status,episodic}.sh → .context/project/*.yaml"
     entry_points:
       - "fw context <command>"
@@ -23,7 +23,7 @@ subsystems:
   - id: framework-core
     name: Framework Core
     purpose: "CLI entry point, library scripts, initialization, harvesting, metrics"
-    component_count: 10
+    component_count: 24
     summary: "bin/fw → lib/{init,harvest,inception,promote,assumption,bus}.sh → metrics.sh"
     entry_points:
       - "fw <command>"
@@ -47,7 +47,7 @@ subsystems:
   - id: healing
     name: Healing Loop
     purpose: "Antifragile error recovery — diagnose issues, suggest mitigations, record patterns"
-    component_count: 5
+    component_count: 6
     summary: "healing.sh → lib/{diagnose,resolve,patterns,suggest}.sh → patterns.yaml"
     entry_points:
       - "fw healing <command>"
@@ -55,7 +55,7 @@ subsystems:
   - id: learnings-pipeline
     name: Learnings Pipeline
     purpose: "Capture, store, display, and validate project learnings"
-    component_count: 4
+    component_count: 5
     summary: "add-learning → learnings.yaml → discovery.py → /learnings + audit YAML check"
     entry_points:
       - "fw context add-learning (CLI)"
@@ -64,7 +64,7 @@ subsystems:
   - id: budget-management
     name: Context Budget Management
     purpose: "Track and enforce context token budget within sessions. Block tool calls at critical level."
-    component_count: 3
+    component_count: 4
     summary: "PreToolUse → budget-gate.sh → .budget-status ← checkpoint.sh ← PostToolUse"
     entry_points:
       - "Automatic (hooks on every tool call)"
@@ -80,7 +80,7 @@ subsystems:
   - id: audit
     name: Audit System
     purpose: "Compliance checking — structure, task quality, git traceability, controls, drift"
-    component_count: 2
+    component_count: 3
     summary: "audit.sh → .context/audits/ (cron every 30 min + pre-push)"
     entry_points:
       - "fw audit"
@@ -92,6 +92,14 @@ subsystems:
     summary: "handover.sh → .context/handovers/LATEST.md"
     entry_points:
       - "fw handover"
+
+  - id: watchtower-web-ui
+    name: Watchtower Web UI (Extended)
+    purpose: "Additional Watchtower components — standalone scripts, discovery blueprints, analytics templates"
+    component_count: 4
+    summary: "watchtower.sh + discoveries blueprint + feedback analytics template"
+    entry_points:
+      - "bin/watchtower.sh"
 
   - id: enforcement
     name: Hook Enforcement
