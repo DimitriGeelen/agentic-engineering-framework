@@ -279,6 +279,7 @@ show_help() {
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
+    echo -e "  ${GREEN}termlink${NC} <cmd>       TermLink integration (check|spawn|exec|status|cleanup|dispatch)"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"
     echo -e "  ${GREEN}task list${NC}          List all tasks (filterable by --status, --type, --component)"
@@ -663,6 +664,16 @@ for e in d.get('errors',[])[:3]:
             [ -n "$smoke_errors" ] && echo "$smoke_errors"
             warnings=$((warnings + 1))
         fi
+    fi
+
+    # Check: TermLink (optional cross-terminal session communication)
+    if command -v termlink >/dev/null 2>&1; then
+        local tl_version
+        tl_version=$(termlink --version 2>/dev/null | head -1)
+        echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
+    else
+        echo -e "  ${YELLOW}WARN${NC}  TermLink not installed (cargo install termlink)"
+        warnings=$((warnings + 1))
     fi
 
     # Enforcement matcher coverage: G-012 closed as accepted risk (no notebooks in project)
@@ -1638,6 +1649,9 @@ print(len(tier0))
     harvest)
         source "$FW_LIB_DIR/harvest.sh"
         do_harvest "$@"
+        ;;
+    termlink)
+        exec "$AGENTS_DIR/termlink/termlink.sh" "$@"
         ;;
     gaps)
         GAPS_FILE="$PROJECT_ROOT/.context/project/gaps.yaml"

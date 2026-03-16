@@ -821,8 +821,52 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | List assumptions | `fw assumption list` | Show all by status |
 | Tier 0 approve | `fw tier0 approve` | Approve a blocked destructive command |
 | Tier 0 status | `fw tier0 status` | Show Tier 0 enforcement status |
+| TermLink check | `fw termlink check` | Verify TermLink installation |
+| TermLink spawn | `fw termlink spawn --task T-XXX` | Open tagged terminal session |
+| TermLink exec | `fw termlink exec <session> <cmd>` | Run command in session (JSON output) |
+| TermLink dispatch | `fw termlink dispatch --name N --prompt P` | Spawn claude -p worker in terminal |
+| TermLink wait | `fw termlink wait --name N` | Wait for worker completion |
+| TermLink status | `fw termlink status` | List active TermLink sessions |
+| TermLink cleanup | `fw termlink cleanup` | Deregister sessions, close windows |
+| TermLink result | `fw termlink result <name>` | Read worker result file |
 | **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
 | No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
+
+## TermLink Integration (T-503)
+
+TermLink is an optional cross-terminal session communication tool (Rust, 26 commands, 264 tests).
+The framework provides a thin wrapper via `fw termlink` that adds task-tagging, budget checks,
+and cleanup tracking while delegating all real work to the `termlink` binary.
+
+- **Repo:** `https://onedev.docker.ring20.geelenandcompany.com/termlink`
+- **Install:** `cargo install --path crates/termlink-cli`
+- **Check:** `fw termlink check` (also in `fw doctor` as WARN)
+
+### Key Primitives
+
+| Command | Purpose |
+|---------|---------|
+| `termlink interact <session> <cmd> --json` | Run command, get structured output (star primitive) |
+| `termlink pty inject <session> --enter` | Send input, fire-and-forget (long-running commands) |
+| `termlink event emit/wait/poll` | Inter-session signaling |
+| `termlink discover --json` | Find sessions by tag/role/name |
+
+### Budget Rules
+
+- **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget
+- **Always cleanup before session end** — `fw termlink cleanup`
+- **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
+- **Leave 40K tokens headroom** before dispatching workers
+
+### Phase Roadmap
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 0 | fw doctor + agent wrapper + fw route + CLAUDE.md | Done (T-503) |
+| 1 | Self-test via termlink interact | Future |
+| 2 | Parallel dispatch (replace Agent tool mesh) | Future |
+| 3 | Remote control + observation | Future |
+| 4 | Cross-machine coordination | Future |
 
 ## Auto-Restart (T-179)
 
