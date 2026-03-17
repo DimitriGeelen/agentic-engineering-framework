@@ -66,11 +66,22 @@ Without governance, AI agents edit files with no record of why, lose all context
 
 The difference: telling someone to wear a hard hat versus installing a door that does not open without one.
 
+## Prerequisites
+
+- **bash 4.4+** — macOS ships with bash 3.2; install a modern version: `brew install bash`
+- **git 2.20+**
+- **python3 3.8+** with **PyYAML** — `pip install pyyaml`
+
+The installer checks these and will tell you what's missing.
+
 ## See It Work (5 Minutes)
 
 ```bash
 # 1. Install
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+
+# Or install from a local clone:
+# bash install.sh --local /path/to/repo
 
 # 2. Initialize a project
 mkdir my-project && cd my-project && git init
@@ -229,7 +240,31 @@ Every session ends with a handover that captures work in progress, suggested nex
 | `fw recall "query"` | Semantic search across project knowledge |
 | `fw metrics` | Project metrics and effort prediction |
 | `fw inception start "name"` | Structured exploration before building |
+| `fw update` | Update framework to latest version |
+| `fw update --check` | Check for updates without applying |
 | `fw help` | All available commands |
+
+## Updating
+
+The framework vendors a copy into each project's `.agentic-framework/` directory for isolation. Updates don't propagate automatically — run:
+
+```bash
+fw update              # Pull latest and update vendored copy
+fw update --check      # Check for updates without applying
+fw update --rollback   # Revert to previous version
+```
+
+For the global installation (`~/.agentic-framework`), re-run the installer or `git pull` in that directory.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `do_vendor: command not found` | Update `fw` — this was fixed in v1.2.6. Re-run the installer. |
+| `find_task_file: command not found` in commit hook | Reinstall hooks: `fw git install-hooks --force` |
+| `fw init` fails with "not a git repository" | `fw init` auto-creates a git repo since v1.2.6. Update `fw`. |
+| `bash: fw: command not found` | Symlink missing — re-run installer or add `~/.local/bin` to PATH |
+| macOS: `bash 3.2` errors | Install bash 4.4+: `brew install bash` |
 
 ## What This Is Not
 
