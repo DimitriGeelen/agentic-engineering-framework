@@ -4,16 +4,16 @@ name: "Write governance.yaml — predictability x blast-radius operation class d
 description: >
   Create governance.yaml declaring 12 operation classes mapped to the 2x2 matrix (predictability x blast-radius). Serves as architecture documentation and risk communication tool. From T-477 Spike 2 draft format.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [governance, architecture, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T11:34:11Z
-last_update: 2026-03-17T11:38:33Z
-date_finished: null
+last_update: 2026-03-17T11:39:44Z
+date_finished: 2026-03-17T11:39:44Z
 ---
 
 # T-511: Write governance.yaml — predictability x blast-radius operation class declarations
@@ -70,3 +70,6 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/project/governance.yaml
 
 ### 2026-03-17T11:38:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-17T11:39:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
