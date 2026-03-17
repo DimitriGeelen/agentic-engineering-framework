@@ -598,7 +598,6 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 case "$path" in
                     .context/*|.tasks/*|.fabric/*|docs/*) continue ;;
                 esac
-                local comp_id
                 comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2-)
                 if [ -n "$comp_id" ]; then
                     RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${comp_id}"
