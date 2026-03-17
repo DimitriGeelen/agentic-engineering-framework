@@ -4,16 +4,16 @@ name: "install.sh: add --local flag support and reject unknown flags"
 description: >
   install.sh silently ignores unknown flags (--local was passed but had no effect). The update path always does git fetch origin. Fix: (1) add argument parsing that rejects unknown flags, (2) support --local <path> to install/update from a local repo instead of origin.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:00:31Z
-last_update: 2026-03-17T23:00:31Z
-date_finished: null
+last_update: 2026-03-17T23:03:04Z
+date_finished: 2026-03-17T23:03:04Z
 ---
 
 # T-524: install.sh: add --local flag support and reject unknown flags
@@ -74,3 +74,6 @@ Discovered during T-522 E2E install test — `install.sh --local /path` silently
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-524-installsh-add---local-flag-support-and-r.md
 - **Context:** Initial task creation
+
+### 2026-03-17T23:03:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -808,4 +808,11 @@ learnings:
   date: 2026-03-14
   context: Added via context agent
   application: TBD
+- id: PL-001
+  learning: "Task tool agents share parent context (expensive, 5 max). TermLink dispatch spawns full Claude Code workers (claude -p) with Edit/Write tools, real isolation, unlimited parallelism, and remote observability. Use Task agents for quick research and lightweight edits. Use TermLink dispatch for heavy parallel work, multi-file generation, and anything benefiting from isolation."
+  source: T-503 TermLink integration, cross-session reflection
+  task: T-522
+  date: 2026-03-17
+  context: Added via context agent
+  application: TBD
 candidates: []

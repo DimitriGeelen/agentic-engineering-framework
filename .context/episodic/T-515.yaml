@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-515: Tier A E2E tests — 12 shell-level enforcement gate tests
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T21:57:43Z
+# ============================================================================
+
+task_id: T-515
+task_name: "Tier A E2E tests — 12 shell-level enforcement gate tests"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T21:10:29Z
+completed: 2026-03-17T21:57:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-17T22:57:04+01:00
+last_commit: 2026-03-17T22:57:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Tier A E2E tests — 28 assertions across 6 test files, all passing. Fix verification section — remove leftover template comments
+
+# Key outcomes
+outcomes:
+  - "Test files exist in `tests/e2e/tier-a/` for gate scenarios"
+  - "Tests use shared lib (setup.sh, teardown.sh, assert.sh)"
+  - "All tests pass when run via `tests/e2e/runner.sh --tier a`"
+  - "JSON output works: `tests/e2e/runner.sh --tier a --json`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification section — remove leftover template comments"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-515-tier-a-e2e-tests--12-shell-level-enforce.md"
+  - "tests/e2e/tier-a/test-budget-gate.sh"
+  - "tests/e2e/tier-a/test-commit-hook.sh"
+  - "tests/e2e/tier-a/test-fw-health.sh"
+  - "tests/e2e/tier-a/test-task-gate.sh"
+  - "tests/e2e/tier-a/test-termlink-primitives.sh"
+  - "tests/e2e/tier-a/test-tier0.sh"
+  - "tests/e2e/tier-a/test-verification-gate.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T22:57:04"
+    action: "T-515: Tier A E2E tests — 28 assertions across 6 test files, all passing"
+  - time: "2026-03-17T22:57:36"
+    action: "T-515: Fix verification section — remove leftover template comments"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, termlink, D2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 47
+  commits: 3
+  files_changed: 13
+  lines_added: 1041
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-515-tier-a-e2e-tests--12-shell-level-enforce.md
+generated_by: context-agent-hybrid

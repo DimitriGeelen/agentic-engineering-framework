@@ -4,7 +4,7 @@ name: "Tier A E2E tests — 12 shell-level enforcement gate tests"
 description: >
   Write 12 test scripts in tests/e2e/tier-a/ covering: task gate (A1-A2), commit hook (A3-A4), Tier 0 (A5-A6), budget gate (A7-A8), inception gate (A9), verification gate (A10), fw doctor (A11), audit (A12). Zero API cost. From T-513 inception build task 2.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [testing, termlink, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T21:10:29Z
-last_update: 2026-03-17T21:21:22Z
-date_finished: null
+last_update: 2026-03-17T21:57:42Z
+date_finished: 2026-03-17T21:57:42Z
 ---
 
 # T-515: Tier A E2E tests — 12 shell-level enforcement gate tests
@@ -55,3 +55,6 @@ test $(ls tests/e2e/tier-a/test-*.sh 2>/dev/null | wc -l) -ge 4
 
 ### 2026-03-17T21:21:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-17T21:57:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

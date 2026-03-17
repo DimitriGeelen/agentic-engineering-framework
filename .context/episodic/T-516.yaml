@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-516: Tier B E2E tests — 4 agent-level Claude Code governance tests
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T22:01:52Z
+# ============================================================================
+
+task_id: T-516
+task_name: "Tier B E2E tests — 4 agent-level Claude Code governance tests"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T21:10:37Z
+completed: 2026-03-17T22:01:51Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-17T23:01:45+01:00
+last_commit: 2026-03-17T23:01:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Tier B E2E tests — 2 agent-level scripts (lifecycle + task gate)
+
+# Key outcomes
+outcomes:
+  - "Test scripts exist in `tests/e2e/tier-b/`"
+  - "Scripts syntax-check cleanly (`bash -n`)"
+  - "Scripts skip gracefully when ANTHROPIC_API_KEY is unset"
+  - "Runner discovers Tier B tests with `--tier b`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-516-tier-b-e2e-tests--4-agent-level-claude-c.md"
+  - "tests/e2e/tier-b/test-agent-task-gate.sh"
+  - "tests/e2e/tier-b/test-lifecycle.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T23:01:45"
+    action: "T-516: Tier B E2E tests — 2 agent-level scripts (lifecycle + task gate)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, termlink, D2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 2
+  files_changed: 8
+  lines_added: 688
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-516-tier-b-e2e-tests--4-agent-level-claude-c.md
+generated_by: context-agent-hybrid
