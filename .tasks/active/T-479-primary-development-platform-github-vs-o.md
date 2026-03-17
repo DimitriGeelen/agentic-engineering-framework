@@ -99,10 +99,21 @@ If both platforms remain active, what's the minimal sync strategy? Push to both 
 
 ## Acceptance Criteria
 
-- [ ] Current OneDev usage audited — what would be lost?
-- [ ] GitHub community readiness assessed
-- [ ] Sync strategy evaluated with operational cost estimate
-- [ ] Decision made: which option (A, B, or C) and why
+### Agent
+- [x] Current OneDev usage audited — what would be lost?
+- [x] GitHub community readiness assessed
+- [x] Sync strategy evaluated with operational cost estimate
+- [x] Research artifact written to `docs/reports/T-479-platform-decision.md`
+
+### Human
+- [ ] [REVIEW] Decision made: which option (A, B, or C) and why
+  **Steps:**
+  1. Read `docs/reports/T-479-platform-decision.md`
+  2. Review the directive scoring and recommendation (Option B: GitHub primary)
+  3. Consider: does the portability concern (D4) outweigh community usability (D3)?
+  4. Decide: approve Option B, choose Option A, or request more investigation
+  **Expected:** Clear direction on primary platform before T-334 launch
+  **If not:** Note specific concerns for further analysis
 
 ## Go/No-Go Criteria
 
@@ -118,11 +129,7 @@ If both platforms remain active, what's the minimal sync strategy? Push to both 
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+test -f docs/reports/T-479-platform-decision.md
 
 ## Decisions
 
