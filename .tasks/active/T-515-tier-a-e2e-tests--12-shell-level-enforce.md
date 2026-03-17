@@ -34,12 +34,6 @@ From T-513 inception (GO) → T-514 scaffolding complete. See `docs/reports/T-51
 
 test $(ls tests/e2e/tier-a/test-*.sh 2>/dev/null | wc -l) -ge 4
 ! timeout 120 bash tests/e2e/runner.sh --tier a 2>&1 | grep -q "FAIL"
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
 
 ## Decisions
 
