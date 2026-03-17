@@ -48,7 +48,7 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force'; then
     exit 0
 fi
 
@@ -133,6 +133,12 @@ PATTERNS = [
      'DOCKER PRUNE: Removes all unused containers, networks, images'),
     (r'\bkubectl\s+delete\s+(namespace|ns)\s',
      'K8S NAMESPACE DELETE: Removes namespace and all resources in it'),
+
+    # === Framework governance bypass (T-510) ===
+    (r'\bfw\s+task\s+update\b[^;|&]*--force\b',
+     'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification gate (P-011)'),
+    (r'\bfw\s+inception\s+decide\b[^;|&]*--force\b',
+     'FW FORCE: Bypasses inception decision validation'),
 ]
 
 for pattern, description in PATTERNS:
