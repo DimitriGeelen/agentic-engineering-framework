@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-509: Harden check-dispatch.sh — promote from advisory to blocking, validate preamble
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T11:38:25Z
+# ============================================================================
+
+task_id: T-509
+task_name: "Harden check-dispatch.sh — promote from advisory to blocking, validate preamble"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T11:33:54Z
+completed: 2026-03-17T11:38:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-17T12:38:17+01:00
+last_commit: 2026-03-17T12:38:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add PreToolUse dispatch gate — blocks Task calls without preamble markers
+
+# Key outcomes
+outcomes:
+  - "PreToolUse hook script `check-dispatch-pre.sh` exists and is executable"
+  - "Hook validates preamble markers in Task tool prompt (needs 2 of 3: write, /tmp/fw-agent, summary)"
+  - "Explore, Plan, haiku, and resumed agents are exempt from preamble check"
+  - "PostToolUse `check-dispatch.sh` still works for response size warnings"
+  - "fw hook help text includes new hook name"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-dispatch-pre.sh"
+  - "bin/fw"
+  - ".tasks/active/T-509-harden-check-dispatchsh--promote-from-ad.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T12:38:17"
+    action: "T-509: Add PreToolUse dispatch gate — blocks Task calls without preamble markers"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, enforcement, D2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 140
+  lines_removed: 26
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-509-harden-check-dispatchsh--promote-from-ad.md
+generated_by: context-agent-hybrid
