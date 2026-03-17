@@ -2854,25 +2854,30 @@ done
 if [ ${#past_audits[@]} -eq 0 ]; then
     echo "First audit recorded. Trends will appear after multiple audits."
 else
-    # Count how many times each warning/failure has appeared
-    declare -A issue_counts
+    # Count how many times each warning/failure has appeared (temp file, POSIX-safe — no declare -A)
+    ISSUE_COUNTS_FILE=$(mktemp)
 
     for audit_file in "${past_audits[@]}"; do
         while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]+check:[[:space:]]* ]]; then
                 check_name=$(echo "$line" | sed 's/.*check: "//' | sed 's/"$//')
-                issue_counts["$check_name"]=$((${issue_counts["$check_name"]:-0} + 1))
+                echo "$check_name" >> "$ISSUE_COUNTS_FILE"
             fi
         done < <(grep -A1 "level: WARN\|level: FAIL" "$audit_file" 2>/dev/null)
     done
 
     # Find repeated issues (appeared 3+ times)
     repeated_issues=()
-    for check in "${!issue_counts[@]}"; do
-        if [ "${issue_counts[$check]}" -ge 3 ]; then
-            repeated_issues+=("$check (${issue_counts[$check]} times)")
-        fi
-    done
+    if [ -s "$ISSUE_COUNTS_FILE" ]; then
+        while IFS= read -r count_line; do
+            count=$(echo "$count_line" | awk '{print $1}')
+            check=$(echo "$count_line" | cut -d' ' -f2-)
+            if [ "$count" -ge 3 ] 2>/dev/null; then
+                repeated_issues+=("$check ($count times)")
+            fi
+        done < <(sort "$ISSUE_COUNTS_FILE" | uniq -c | sort -rn)
+    fi
+    rm -f "$ISSUE_COUNTS_FILE"
 
     if [ ${#repeated_issues[@]} -gt 0 ]; then
         echo -e "${YELLOW}Repeated issues detected (candidates for practice):${NC}"
