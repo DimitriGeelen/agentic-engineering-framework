@@ -66,17 +66,19 @@ check_bash() {
     bash_path=$(command -v bash 2>/dev/null || echo "/bin/bash")
     ver=$("$bash_path" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     major="${ver%%.*}"
-    if [ -n "$major" ] && [ "$major" -ge 4 ] 2>/dev/null; then
-        echo -e "  ${GREEN}OK${NC}  bash $ver (>= 4.0 required)"
+    local minor="${ver#*.}"
+    minor="${minor%%.*}"
+    if [ -n "$major" ] && { [ "$major" -gt 4 ] || { [ "$major" -eq 4 ] && [ "${minor:-0}" -ge 4 ]; }; } 2>/dev/null; then
+        echo -e "  ${GREEN}OK${NC}  bash $ver (>= 4.4 required)"
         return 0
     else
-        echo -e "  ${RED}FAIL${NC}  bash ${ver:-unknown} (>= 4.0 required)"
-        echo -e "       ${CYAN}Why:${NC} Framework uses associative arrays and other bash 4+ features"
-        REQUIRED_MISSING+=("bash >= 4.0")
+        echo -e "  ${RED}FAIL${NC}  bash ${ver:-unknown} (>= 4.4 required)"
+        echo -e "       ${CYAN}Why:${NC} Framework uses associative arrays, nameref, and other bash 4.4+ features"
+        REQUIRED_MISSING+=("bash >= 4.4")
         case "$PKG_MGR" in
             apt) REQUIRED_INSTALL_CMDS+=("sudo apt-get install -y bash") ;;
             brew) REQUIRED_INSTALL_CMDS+=("brew install bash") ;;
-            *) REQUIRED_INSTALL_CMDS+=("# Install bash >= 4.0 via your package manager") ;;
+            *) REQUIRED_INSTALL_CMDS+=("# Install bash >= 4.4 via your package manager") ;;
         esac
         return 1
     fi

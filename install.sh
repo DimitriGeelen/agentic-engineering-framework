@@ -110,7 +110,7 @@ check_prereqs() {
 
     # PyYAML
     if ! python3 -c "import yaml" 2>/dev/null; then
-        warn "PyYAML not found — install with: pip install pyyaml"
+        error "PyYAML not found — install with: pip install pyyaml"
         ok=false
     else
         info "PyYAML installed"
@@ -139,12 +139,18 @@ do_install() {
             git -C "$INSTALL_DIR" remote add "$remote_name" "$LOCAL_REPO"
             git -C "$INSTALL_DIR" fetch "$remote_name" "$BRANCH" --quiet
             git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
+            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
+                warn "Local modifications in $INSTALL_DIR will be overwritten"
+            fi
             git -C "$INSTALL_DIR" reset --hard "${remote_name}/$BRANCH" --quiet
             git -C "$INSTALL_DIR" remote remove "$remote_name" 2>/dev/null || true
         else
             # Update from origin
             git -C "$INSTALL_DIR" fetch origin "$BRANCH" --quiet
             git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
+            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
+                warn "Local modifications in $INSTALL_DIR will be overwritten"
+            fi
             git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH" --quiet
         fi
 
