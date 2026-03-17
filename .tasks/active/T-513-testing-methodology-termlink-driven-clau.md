@@ -89,12 +89,12 @@ All four test the framework's *shell mechanics*. None test the framework's *agen
 ## Acceptance Criteria
 
 ### Agent
-- [ ] TermLink primitives audited for test orchestration reliability
-- [ ] Scenario catalog produced (framework governance → testable behavior)
-- [ ] Assertion strategy defined per scenario type
-- [ ] Proof of concept attempted (1 scenario: spawn → prompt → verify)
-- [ ] Workflow design documented (runner, CI, cost model)
-- [ ] Research artifact at `docs/reports/T-513-termlink-testing-methodology.md`
+- [x] TermLink primitives audited for test orchestration reliability
+- [x] Scenario catalog produced (framework governance → testable behavior)
+- [x] Assertion strategy defined per scenario type
+- [x] Proof of concept attempted (1 scenario: spawn → prompt → verify)
+- [x] Workflow design documented (runner, CI, cost model)
+- [x] Research artifact at `docs/reports/T-513-termlink-testing-methodology.md`
 - [ ] Go/No-Go decision recorded
 
 ### Human
