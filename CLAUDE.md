@@ -629,6 +629,11 @@ When the active task has `workflow_type: inception`:
 5. After a GO decision, **create separate build tasks** for implementation — do not continue building under the inception task ID
 6. **Research artifact first (C-001)** — When starting inception work, create `docs/reports/T-XXX-*.md` BEFORE conducting research. Update the file incrementally as dialogue produces findings. Commit after each dialogue segment. The thinking trail IS the artifact — conversations are ephemeral, files are permanent. (Origin: T-194 — 7 existing controls for research persistence all failed because none enforced capture at the point research happens.)
 7. **Dialogue log (C-001 extension)** — For phases involving human dialogue, include a `## Dialogue Log` section in the research artifact. Record: questions the human posed, answers given, course corrections ("we are not doing X, we are doing Y"), and the outcome/decision that resulted. Structured findings capture WHAT was decided; the dialogue log captures WHY and HOW the reasoning evolved. (Origin: T-194 experiment — 95% of findings captured but conversational reasoning only captured when explicitly logged in Phase 2a.)
+8. **Exploratory Conversation Guard (C-002)** — If a substantive conversation on an untracked topic reaches 3+ exchanges without an active task, STOP and:
+   1. Create an inception task for the topic
+   2. Invoke `/capture` to save the prior dialogue to disk
+   3. Continue the conversation under the new task
+   Trigger: 3 substantive exchanges (exclude greetings, one-word replies, status checks). Enforcement: agent self-governs; no hook coverage (G-005).
 
 ### Web App Startup
 When building a web application:

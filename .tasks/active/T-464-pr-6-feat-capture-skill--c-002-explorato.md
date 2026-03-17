@@ -15,7 +15,7 @@ Claude Code fires zero hooks for pure conversation sessions. A session that neve
 
 Contributed from 010-termlink project (T-108). Tested: 24 turns captured, topic boundary corr
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: next
@@ -31,40 +31,34 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Cherry-pick PR #6 from OneDev branch `feature/conversation-guard-capture-skill`. Contributed from 010-termlink project (T-108). Branch is 126 commits behind master — cherry-pick is cleaner than merge.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] C-002 rule added to CLAUDE.md Inception Discipline section
+- [ ] `/capture` skill exists at `.claude/commands/capture.md`
+- [ ] `agents/capture/read-transcript.py` exists and passes syntax check
+- [ ] Fabric component cards exist for capture reader and skill
+- [ ] Feature branch deleted from remotes after merge
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Test `/capture` skill in a live session
+  **Steps:**
+  1. Start a conversation on an untracked topic
+  2. Create a task: `fw work-on "test capture" --type build`
+  3. Type `/capture`
+  **Expected:** Conversation artifact written to `docs/reports/` and committed
+  **If not:** Check `python3 agents/capture/read-transcript.py --dry-run` for transcript format issues
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f .claude/commands/capture.md
+test -f agents/capture/read-transcript.py
+python3 -c "import ast; ast.parse(open('agents/capture/read-transcript.py').read())"
+grep -q "C-002" CLAUDE.md
+test -f .fabric/components/capture-reader.yaml
+test -f .fabric/components/capture-skill.yaml
 
 ## Decisions
 
