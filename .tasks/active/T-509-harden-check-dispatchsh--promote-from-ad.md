@@ -20,40 +20,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+From T-477 inception (governance declaration layer). PostToolUse advisory is insufficient — T-073 (177K spike) happened despite advisory existing. PreToolUse blocking prevents dispatch WITHOUT preamble.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] PreToolUse hook script `check-dispatch-pre.sh` exists and is executable
+- [x] Hook validates preamble markers in Task tool prompt (needs 2 of 3: write, /tmp/fw-agent, summary)
+- [x] Explore, Plan, haiku, and resumed agents are exempt from preamble check
+- [x] PostToolUse `check-dispatch.sh` still works for response size warnings
+- [x] fw hook help text includes new hook name
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Add PreToolUse Task hook to `.claude/settings.json`
+  **Steps:**
+  1. Open `.claude/settings.json`
+  2. Add this entry to the `PreToolUse` array (after the budget-gate entry):
+     ```json
+     {
+       "matcher": "Task",
+       "hooks": [{ "type": "command", "command": "fw hook check-dispatch-pre" }]
+     }
+     ```
+  3. Restart Claude Code session (hooks snapshot at start)
+  **Expected:** `fw hook check-dispatch-pre` blocks Task calls without preamble markers
+  **If not:** Run `echo '{"tool_name":"Task","tool_input":{"prompt":"do stuff","subagent_type":"general-purpose"}}' | agents/context/check-dispatch-pre.sh; echo $?` — should exit 2
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -x agents/context/check-dispatch-pre.sh
+grep -q "check-dispatch-pre" bin/fw
 
 ## Decisions
 
