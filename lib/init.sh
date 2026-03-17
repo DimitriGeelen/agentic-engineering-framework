@@ -80,6 +80,12 @@ do_init() {
         fi
     fi
 
+    # --- Git init if needed (T-521: hooks and traceability require git) ---
+    if ! git -C "$target_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo -e "  ${GREEN}✓${NC}  Initializing git repository"
+        git init -q "$target_dir"
+    fi
+
     # --- Vendor framework (T-498: full project isolation) ---
     if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ]; then
         echo -e "${BOLD}Vendoring framework into project...${NC}"
