@@ -4,16 +4,16 @@ name: "Fix install.sh and FRAMEWORK.md stale claims"
 description: >
   Agent evaluation found: (1) install.sh reset --hard on update with no dirty-check, (2) PyYAML uses warn() but is fatal, (3) bash version check inconsistency (install.sh=4.4 vs preflight.sh=4.0), (4) FRAMEWORK.md claims automatic updates but vendoring broke that, (5) bin/fw error message references removed framework_path field.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:14:47Z
-last_update: 2026-03-17T23:20:40Z
-date_finished: null
+last_update: 2026-03-17T23:20:57Z
+date_finished: 2026-03-17T23:20:57Z
 ---
 
 # T-528: Fix install.sh and FRAMEWORK.md stale claims
@@ -77,3 +77,6 @@ Agent evaluation report at `/tmp/fw-agent-install-eval.md`. Five code/doc fixes 
 
 ### 2026-03-17T23:20:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-17T23:20:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

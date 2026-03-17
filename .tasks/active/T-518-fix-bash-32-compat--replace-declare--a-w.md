@@ -4,16 +4,16 @@ name: "Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS
 description: >
   macOS ships bash 3.2 which lacks declare -A (bash 4+). Three files crash: update-task.sh:599 (component auto-populate), audit.sh:2775 (trend analysis), diagnose.sh:9 (failure classifier). Replace with parallel arrays or temp-file lookup. Also grep for other declare -A usage and consider fw doctor bash-version warning. Related: T-028 episodic already flagged associative arrays as fragile.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [portability, macos, bash, D4]
-components: []
+components: [C-004, agents/healing/lib/diagnose.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-03-17T22:09:02Z
-last_update: 2026-03-17T22:09:02Z
-date_finished: null
+last_update: 2026-03-17T22:11:22Z
+date_finished: 2026-03-17T22:11:22Z
 ---
 
 # T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
@@ -64,3 +64,6 @@ test -z "$(grep -n '^[^#]*declare -A' agents/task-create/update-task.sh agents/a
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-518-fix-bash-32-compat--replace-declare--a-w.md
 - **Context:** Initial task creation
+
+### 2026-03-17T22:11:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

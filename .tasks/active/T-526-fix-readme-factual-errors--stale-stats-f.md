@@ -4,16 +4,16 @@ name: "Fix README factual errors — stale stats, fabricated counts, wrong thres
 description: >
   Agent evaluation found: (1) task count says 445/312, actual ~523/479, (2) Tier 0 count says 49, actual 13, (3) budget threshold says 85%, should be 90%, (4) traceability says 96%, actual 99%. These appear across multiple locations in README.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:14:40Z
-last_update: 2026-03-17T23:18:43Z
-date_finished: null
+last_update: 2026-03-17T23:20:56Z
+date_finished: 2026-03-17T23:20:56Z
 ---
 
 # T-526: Fix README factual errors — stale stats, fabricated counts, wrong thresholds
@@ -77,3 +77,6 @@ Agent evaluation report at `/tmp/fw-agent-readme-eval.md`. Stats hardcoded in mu
 
 ### 2026-03-17T23:18:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-17T23:20:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

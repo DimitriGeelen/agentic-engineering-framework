@@ -4,7 +4,7 @@ name: "E2E test framework scaffolding — runner.sh, setup/teardown, assertion h
 description: >
   Create tests/e2e/ directory structure with runner.sh orchestrator, lib/setup.sh (spawn TermLink session in temp dir with fw init), lib/teardown.sh (cleanup), lib/assert.sh (file_exists, exit_code_is, grep_file, yaml_field helpers). From T-513 inception build task 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [testing, termlink, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T21:10:08Z
-last_update: 2026-03-17T21:10:08Z
-date_finished: null
+last_update: 2026-03-17T21:14:37Z
+date_finished: 2026-03-17T21:14:37Z
 ---
 
 # T-514: E2E test framework scaffolding — runner.sh, setup/teardown, assertion helpers
@@ -58,3 +58,6 @@ bash tests/e2e/runner.sh --tier a --json 2>/dev/null | python3 -c "import sys,js
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-514-e2e-test-framework-scaffolding--runnersh.md
 - **Context:** Initial task creation
+
+### 2026-03-17T21:14:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -36,11 +36,11 @@ Cherry-pick PR #6 from OneDev branch `feature/conversation-guard-capture-skill`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] C-002 rule added to CLAUDE.md Inception Discipline section
-- [ ] `/capture` skill exists at `.claude/commands/capture.md`
-- [ ] `agents/capture/read-transcript.py` exists and passes syntax check
-- [ ] Fabric component cards exist for capture reader and skill
-- [ ] Feature branch deleted from remotes after merge
+- [x] C-002 rule added to CLAUDE.md Inception Discipline section
+- [x] `/capture` skill exists at `.claude/commands/capture.md`
+- [x] `agents/capture/read-transcript.py` exists and passes syntax check
+- [x] Fabric component cards exist for capture reader and skill
+- [x] Feature branch deleted from remotes after merge
 
 ### Human
 - [ ] [RUBBER-STAMP] Test `/capture` skill in a live session

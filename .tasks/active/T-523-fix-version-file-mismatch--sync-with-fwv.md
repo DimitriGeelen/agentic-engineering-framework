@@ -4,16 +4,16 @@ name: "Fix VERSION file mismatch — sync with FW_VERSION in bin/fw"
 description: >
   VERSION file had 1.0.0 while bin/fw FW_VERSION was 1.2.6. This causes 'updated from v1.2.6 to v1.0.0' regression message when fw update pulls upstream. Fix: update VERSION to match FW_VERSION.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T22:56:47Z
-last_update: 2026-03-17T22:56:47Z
-date_finished: null
+last_update: 2026-03-17T22:57:26Z
+date_finished: 2026-03-17T22:57:26Z
 ---
 
 # T-523: Fix VERSION file mismatch — sync with FW_VERSION in bin/fw
@@ -71,3 +71,6 @@ VERSION file had 1.0.0 while FW_VERSION in bin/fw was 1.2.6. Discovered during T
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-523-fix-version-file-mismatch--sync-with-fwv.md
 - **Context:** Initial task creation
+
+### 2026-03-17T22:57:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
