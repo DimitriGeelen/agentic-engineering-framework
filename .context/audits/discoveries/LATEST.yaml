@@ -1,11 +1,11 @@
-timestamp: 2026-03-15T07:00:01Z
+timestamp: 2026-03-17T07:00:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/477)"
+    check: "D1: Episodic quality — 0% [TODO] (3/491)"
   - id: D2
     level: PASS
-    check: "D2: Human review queue — 13 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 23 task(s) awaiting human action (normal)"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -21,7 +21,7 @@ findings:
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 10 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-332(10d-active) T-334(10d-active)"
+    check: "D5: Task lifecycle — 10 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-332(12d-active) T-334(12d-active)"
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
@@ -30,8 +30,9 @@ findings:
     level: PASS
     check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - id: D6
-    level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=5.7 earlier=17.7)"
+    level: WARN
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=1.0 vs earlier_avg=19.7)"
+    mitigation: "Check for blockers or process issues slowing work"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -40,7 +41,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 10
-  warn: 2
+  pass: 9
+  warn: 3
   fail: 0
   total: 12

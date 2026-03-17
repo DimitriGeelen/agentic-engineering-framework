@@ -4,16 +4,16 @@ name: "Harden check-dispatch.sh — promote from advisory to blocking, validate 
 description: >
   Promote check-dispatch.sh from PostToolUse advisory to PreToolUse blocking. Validate preamble inclusion in Task tool prompts. Enforce max 5 parallel agents. From T-477 Spike 3, Option A build task 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [governance, enforcement, D2]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-17T11:33:54Z
-last_update: 2026-03-17T11:33:54Z
-date_finished: null
+last_update: 2026-03-17T11:38:24Z
+date_finished: 2026-03-17T11:38:24Z
 ---
 
 # T-509: Harden check-dispatch.sh — promote from advisory to blocking, validate preamble
@@ -68,3 +68,6 @@ grep -q "check-dispatch-pre" bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-509-harden-check-dispatchsh--promote-from-ad.md
 - **Context:** Initial task creation
+
+### 2026-03-17T11:38:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
