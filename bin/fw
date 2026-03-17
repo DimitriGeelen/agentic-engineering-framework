@@ -342,9 +342,8 @@ if [ -z "$FRAMEWORK_ROOT" ]; then
     echo "" >&2
     echo "To fix:" >&2
     echo "  - Run fw from inside the framework repo, OR" >&2
-    echo "  - Create .framework.yaml in your project with:" >&2
-    echo "    framework_path: /path/to/999-Agentic-Engineering-Framework" >&2
-    echo "    version: $FW_VERSION" >&2
+    echo "  - Run 'fw init' in your project directory to create .framework.yaml, OR" >&2
+    echo "  - Run 'fw vendor /path/to/framework' to link an existing installation" >&2
     exit 1
 fi
 
