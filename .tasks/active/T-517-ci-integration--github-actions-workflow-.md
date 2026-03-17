@@ -42,12 +42,6 @@ Add E2E Tier A tests to the existing GitHub Actions CI. Tier B is manual-only (A
 ## Verification
 
 python3 -c "import yaml; yaml.safe_load(open('.github/workflows/test.yml'))"
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
 
 ## Decisions
 
