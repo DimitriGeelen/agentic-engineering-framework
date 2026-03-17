@@ -517,6 +517,33 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
 
+### Task Tool vs TermLink Dispatch
+
+The Task tool and TermLink dispatch are two different mechanisms for parallel work. **Choose based on the work type:**
+
+| Factor | Task tool agent | TermLink dispatch (`fw termlink dispatch`) |
+|--------|----------------|---------------------------------------------|
+| Edit/Write tools | Yes (sub-agent) | Yes (spawns full `claude -p` worker) |
+| Context isolation | No (shares parent context window) | Yes (independent process, zero context cost) |
+| Max parallel | 5 (hard limit) | Unlimited (real OS processes) |
+| Observable from outside | No | Yes (attach, stream, output) |
+| Survives context pressure | No (compressed with parent) | Yes (independent session) |
+
+**Use Task tool agents when:**
+- Quick research or codebase exploration (<2K token results)
+- Single-file edits within the current session
+- Lightweight sub-tasks that benefit from shared context
+
+**Use TermLink dispatch when:**
+- Heavy parallel work (>3 agents, or agents doing multi-file edits)
+- E2E testing or command execution requiring terminal isolation
+- Work that should survive parent context compaction
+- Tasks where you want to observe progress remotely
+
+**The rule:** If you're about to dispatch 3+ Task tool agents that will each produce >1K tokens or edit files, use TermLink dispatch instead. The context savings are significant — Task agents share the parent's context budget, TermLink workers do not.
+
+**Evidence:** T-522 session — 3 evaluation agents dispatched via Task tool consumed ~25K parent context tokens. Same work via TermLink dispatch would cost zero parent context.
+
 ### Prompt Template Structure
 
 When dispatching sub-agents, include in the prompt:
@@ -557,6 +584,8 @@ fw bus clear T-XXX
 **Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between.
+
+**TermLink Parallel Workers** (T-522): Spawn TermLink sessions for isolated work. Use `termlink interact` for synchronous commands with JSON output, `termlink pty inject/output` for interactive terminal control. Clean up with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents for heavy parallel work.
 
 ## Agent Behavioral Rules
 
