@@ -31,10 +31,10 @@ The Agentic Engineering Framework adds structural governance to AI coding agents
 → Three-layer memory — decisions, patterns, and task histories persist across sessions
 → Tiered approval — destructive commands require human sign-off
 → Context budget management — auto-handover before the agent loses coherence
-→ Continuous audit — 90+ compliance checks, every 30 minutes
+→ Continuous audit — 130+ compliance checks, every 30 minutes
 → Healing loop — failures become institutional knowledge
 
-I used the framework to build the framework. 441 tasks completed. 98% commit traceability. Every architectural decision recorded with rationale.
+I used the framework to build the framework. 500+ tasks completed. 98% commit traceability. Every architectural decision recorded with rationale.
 
 The domain changed. The principle did not.
 
