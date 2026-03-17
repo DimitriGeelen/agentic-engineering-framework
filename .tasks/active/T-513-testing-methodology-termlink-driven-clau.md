@@ -8,7 +8,7 @@ description: >
   this validates the full agent experience: does Claude Code, governed by the framework,
   actually work correctly through task lifecycle, hook enforcement, and session management?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -16,8 +16,8 @@ tags: [testing, termlink, e2e, quality, D2]
 components: [agents/termlink/termlink.sh, bin/fw]
 related_tasks: [T-491, T-492, T-502, T-503, T-473, T-476]
 created: 2026-03-17T20:26:00Z
-last_update: 2026-03-17T20:26:00Z
-date_finished: null
+last_update: 2026-03-17T21:09:58Z
+date_finished: 2026-03-17T21:09:58Z
 ---
 
 # T-513: Testing methodology: TermLink-driven Claude Code E2E framework validation
@@ -95,7 +95,7 @@ All four test the framework's *shell mechanics*. None test the framework's *agen
 - [x] Proof of concept attempted (1 scenario: spawn → prompt → verify)
 - [x] Workflow design documented (runner, CI, cost model)
 - [x] Research artifact at `docs/reports/T-513-termlink-testing-methodology.md`
-- [ ] Go/No-Go decision recorded
+- [x] Go/No-Go decision recorded
 
 ### Human
 - [ ] [REVIEW] Review methodology and approve testing approach
@@ -128,9 +128,18 @@ test -f docs/reports/T-513-termlink-testing-methodology.md
 
 ## Decisions
 
+**Decision**: GO
+
+**Rationale**: TermLink primitives validated live (spawn+interact <1s, structured JSON). Two-tier approach: Tier A (12 shell-level tests, $0) covers enforcement gates, Tier B (4 agent tests, ~$2-4) covers full lifecycle. 4 build tasks.
+
+**Date**: 2026-03-17T21:09:58Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-513 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: TermLink primitives validated live (spawn+interact <1s, structured JSON). Two-tier approach: Tier A (12 shell-level tests, $0) covers enforcement gates, Tier B (4 agent tests, ~$2-4) covers full lifecycle. 4 build tasks.
+
+**Date**: 2026-03-17T21:09:58Z
 
 ## Updates
 
@@ -139,3 +148,25 @@ test -f docs/reports/T-513-termlink-testing-methodology.md
 - **Context:** User wants to leverage TermLink's new Claude Code session management
   (tl-claude.sh, termlink interact/inject/output) to build automated E2E tests
   that validate framework governance works correctly with a real Claude Code agent.
+
+### 2026-03-17T20:44:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** TermLink primitives validated live (spawn+interact <1s, structured JSON). Two-tier approach: Tier A (12 shell-level tests, $0) covers enforcement gates, Tier B (4 agent tests, ~$2-4) covers full lifecycle. Outcome-based assertions avoid nondeterminism. 4 build tasks.
+
+### 2026-03-17T21:06:30Z — status-update [task-update-agent]
+- **Change:** owner: human → agent
+
+### 2026-03-17T21:06:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** TermLink primitives validated live (spawn+interact <1s, structured JSON). Two-tier approach: Tier A (12 shell-level tests, $0) covers enforcement gates, Tier B (4 agent tests, ~$2-4) covers full lifecycle. 4 build tasks.
+
+### 2026-03-17T21:09:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** TermLink primitives validated live (spawn+interact <1s, structured JSON). Two-tier approach: Tier A (12 shell-level tests, $0) covers enforcement gates, Tier B (4 agent tests, ~$2-4) covers full lifecycle. 4 build tasks.
+
+### 2026-03-17T21:09:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
