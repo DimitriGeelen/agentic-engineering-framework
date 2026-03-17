@@ -82,11 +82,15 @@ fi
 TASK_REF=$(echo "$COMMIT_MSG" | grep -oE "T-[0-9]+" | head -1)
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
-# Resolve FRAMEWORK_ROOT and source task helpers (T-456)
+# Resolve FRAMEWORK_ROOT and source task helpers (T-456, T-520)
 FRAMEWORK_ROOT="$PROJECT_ROOT"
 if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
     _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
     [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+# Check vendored framework path (T-520: framework_path removed in T-498)
+if [ ! -f "$FRAMEWORK_ROOT/lib/tasks.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/tasks.sh" ]; then
+    FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
 fi
 TASKS_DIR="$PROJECT_ROOT/.tasks"
 if [ -f "$FRAMEWORK_ROOT/lib/tasks.sh" ]; then
