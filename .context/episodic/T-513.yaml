@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-513: Testing methodology: TermLink-driven Claude Code E2E framework validation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T21:09:59Z
+# ============================================================================
+
+task_id: T-513
+task_name: "Testing methodology: TermLink-driven Claude Code E2E framework validation"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T20:26:00Z
+completed: 2026-03-17T21:09:58Z
+duration_days: 0
+updates_count: 6
+first_commit: 2026-03-17T21:27:48+01:00
+last_commit: 2026-03-17T21:37:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception setup — TermLink-driven E2E testing methodology. Complete spikes 1-5 — primitives validated, 16 scenarios, two-tier approach
+
+# Key outcomes
+outcomes:
+  - "TermLink primitives audited for test orchestration reliability"
+  - "Scenario catalog produced (framework governance → testable behavior)"
+  - "Assertion strategy defined per scenario type"
+  - "Proof of concept attempted (1 scenario: spawn → prompt → verify)"
+  - "Workflow design documented (runner, CI, cost model)"
+  - "Research artifact at `docs/reports/T-513-termlink-testing-methodology.md`"
+  - "Go/No-Go decision recorded"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-513-termlink-testing-methodology.md"
+  - ".tasks/active/T-513-testing-methodology-termlink-driven-clau.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T21:27:48"
+    action: "T-513: Inception setup — TermLink-driven E2E testing methodology"
+  - time: "2026-03-17T21:37:07"
+    action: "T-513: Complete spikes 1-5 — primitives validated, 16 scenarios, two-tier approach"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, termlink, e2e, quality, D2]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 2
+  files_changed: 2
+  lines_added: 388
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-513-testing-methodology-termlink-driven-clau.md
+generated_by: context-agent-hybrid
