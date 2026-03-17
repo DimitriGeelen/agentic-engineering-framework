@@ -27,6 +27,9 @@ Cross-session reflection: framework agent was using Task tool agents for work th
 ### Agent
 - [x] MEMORY.md updated with Task vs TermLink dispatch decision matrix
 - [x] Learning recorded via fw context add-learning
+- [x] CLAUDE.md Sub-Agent Dispatch Protocol updated with Task vs TermLink section
+- [x] Decision rule added: 3+ agents with >1K output → use TermLink dispatch
+- [x] TermLink dispatch pattern added to Dispatch Patterns section
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
