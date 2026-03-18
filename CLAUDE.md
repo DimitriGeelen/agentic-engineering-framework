@@ -936,6 +936,25 @@ When context budget hits critical, `checkpoint.sh` auto-generates a handover and
 
 **Safety:** 5-minute TTL on signal files, max 5 consecutive restarts, 3-second cancel window, opt-out via `--no-restart`.
 
+## Remote Session Access (TermLink)
+
+Launch with TermLink wrapping for remote observation and control:
+
+```bash
+claude-fw --termlink          # Register session for remote access
+TL_CLAUDE_ENABLED=1 claude-fw # Same via env var
+```
+
+From another terminal:
+
+```bash
+termlink list                              # See the session
+termlink attach claude-master-<PID>        # Full TUI mirror (bidirectional)
+termlink pty output claude-master-<PID> --strip-ansi  # Read recent output
+```
+
+TermLink is optional. Without it installed, `--termlink` prints a warning and falls back to direct mode. The PTY session persists across auto-restarts — the same session is reused when `claude -c` re-launches.
+
 ## Session End Protocol
 
 **Before ending any session:**

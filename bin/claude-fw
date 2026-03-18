@@ -8,6 +8,8 @@
 # Usage:
 #   claude-fw [claude-args...]          # Run with auto-restart enabled
 #   claude-fw --no-restart [args...]    # Run without auto-restart
+#   claude-fw --termlink [args...]      # Register as TermLink session for remote access
+#   TL_CLAUDE_ENABLED=1 claude-fw      # Same via env var
 #
 # The restart signal file is .context/working/.restart-requested
 # Written by: checkpoint.sh auto-handover at critical budget (T-186)
@@ -19,6 +21,7 @@ set -euo pipefail
 
 # Parse our flags (before passing rest to claude)
 AUTO_RESTART=true
+TERMLINK_ENABLED="${TL_CLAUDE_ENABLED:-0}"
 CLAUDE_ARGS=()
 
 for arg in "$@"; do
@@ -26,11 +29,60 @@ for arg in "$@"; do
         --no-restart)
             AUTO_RESTART=false
             ;;
+        --termlink)
+            TERMLINK_ENABLED=1
+            ;;
         *)
             CLAUDE_ARGS+=("$arg")
             ;;
     esac
 done
+
+# TermLink session management
+TERMLINK_SESSION=""
+
+termlink_start() {
+    if [ "$TERMLINK_ENABLED" != "1" ]; then return; fi
+    if ! command -v termlink >/dev/null 2>&1; then
+        echo "claude-fw: --termlink requested but termlink not found on PATH. Ignoring."
+        TERMLINK_ENABLED=0
+        return
+    fi
+
+    TERMLINK_SESSION="claude-master-$$"
+    echo "claude-fw: Registering TermLink session: $TERMLINK_SESSION"
+
+    # Spawn a persistent shell session that survives claude restarts
+    termlink spawn --name "$TERMLINK_SESSION" \
+        --tags "master,claude,framework" \
+        --backend auto --shell \
+        --wait --wait-timeout 15 2>/dev/null || {
+        echo "claude-fw: TermLink spawn failed. Falling back to direct mode."
+        TERMLINK_ENABLED=0
+        TERMLINK_SESSION=""
+        return
+    }
+    sleep 1
+    echo "claude-fw: TermLink session ready. Remote access:"
+    echo "  termlink attach $TERMLINK_SESSION"
+    echo "  termlink pty output $TERMLINK_SESSION --strip-ansi"
+}
+
+termlink_inject() {
+    local cmd="$1"
+    termlink pty inject "$TERMLINK_SESSION" "$cmd" --enter >/dev/null 2>&1
+}
+
+termlink_cleanup() {
+    if [ -n "$TERMLINK_SESSION" ]; then
+        termlink pty inject "$TERMLINK_SESSION" "exit" --enter >/dev/null 2>&1 || true
+        sleep 2
+        termlink clean >/dev/null 2>&1 || true
+    fi
+}
+
+# Cleanup on script exit
+trap 'termlink_cleanup' EXIT
 
 # Signal file location (relative to git root)
 find_signal_file() {
@@ -64,11 +116,36 @@ export BASH_DEFAULT_TIMEOUT_MS="${BASH_DEFAULT_TIMEOUT_MS:-300000}"
 restart_count=0
 MAX_RESTARTS=5  # Safety valve — don't loop forever
 
+# Start TermLink session if requested (before main loop)
+termlink_start
+
 while true; do
     # Run claude with user's arguments
     set +e
-    command claude "${CLAUDE_ARGS[@]}"
-    exit_code=$?
+    if [ "$TERMLINK_ENABLED" = "1" ] && [ -n "$TERMLINK_SESSION" ]; then
+        # Inject claude command into TermLink PTY session
+        termlink_inject "claude ${CLAUDE_ARGS[*]}"
+        # Wait for claude to exit by polling the PTY for shell prompt
+        # We check if claude process is still running inside the session
+        while true; do
+            sleep 5
+            # Check if the session is still alive and claude is running
+            if ! termlink ping "$TERMLINK_SESSION" >/dev/null 2>&1; then
+                exit_code=1
+                break
+            fi
+            # Check if claude process has exited (shell prompt returned)
+            # Use a marker file approach: claude sets exit code on completion
+            local_output=$(termlink pty output "$TERMLINK_SESSION" --lines 3 --strip-ansi 2>/dev/null) || true
+            if echo "$local_output" | grep -qE '^\$|^❯|^➜|claude-fw:|^user@'; then
+                exit_code=0
+                break
+            fi
+        done
+    else
+        command claude "${CLAUDE_ARGS[@]}"
+        exit_code=$?
+    fi
     set -e
 
     # Don't auto-restart if disabled
@@ -111,6 +188,7 @@ while true; do
 
         # Continue with -c flag (resume most recent session)
         CLAUDE_ARGS=("-c")
+        # Note: next loop iteration will use termlink_inject if TERMLINK_ENABLED
     elif [ -f "$signal_file" ]; then
         # Stale signal — clean up and exit
         local_age=$(( $(date +%s) - $(stat -c %Y "$signal_file" 2>/dev/null || echo 0) ))
