@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-450: Deep-dive articles 08-15: gut rewrite — replace agent filler with real incidents
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T11:16:09Z
+# ============================================================================
+
+task_id: T-450
+task_name: "Deep-dive articles 08-15: gut rewrite — replace agent filler with real incidents"
+workflow_type: build
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-03-12T06:37:47Z
+completed: 2026-03-17T11:16:08Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-03-12T08:17:28+01:00
+last_commit: 2026-03-12T09:01:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Article 16 — honest machines, real doubt, fabricated stats exposed. Article 16 rewrite — author's voice, honest doubt, frantic teenager
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/deep-dives/16-honest-machines.md"
+  - "docs/reports/T-450-termlink-honest-assessment.md"
+  - ".tasks/active/T-449-deep-dive-articles-02-06-editing-pass--s.md"
+  - ".tasks/active/T-450-deep-dive-articles-08-15-gut-rewrite--re.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-12T08:17:28"
+    action: "T-450: Article 16 — honest machines, real doubt, fabricated stats exposed"
+  - time: "2026-03-12T09:01:56"
+    action: "T-450: Article 16 rewrite — author's voice, honest doubt, frantic teenager"
+  - time: "2026-03-12T09:01:56"
+    action: "T-450: Article 16 rewrite — author's voice, honest doubt, frantic teenager"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7478 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [content, deep-dives]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7478
+  commits: 3
+  files_changed: 4
+  lines_added: 468
+  lines_removed: 118
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-450-deep-dive-articles-08-15-gut-rewrite--re.md
+generated_by: context-agent-hybrid

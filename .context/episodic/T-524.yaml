@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-524: install.sh: add --local flag support and reject unknown flags
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T23:03:05Z
+# ============================================================================
+
+task_id: T-524
+task_name: "install.sh: add --local flag support and reject unknown flags"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T23:00:31Z
+completed: 2026-03-17T23:03:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-18T00:02:58+01:00
+last_commit: 2026-03-18T00:02:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add --local flag to install.sh and reject unknown flags
+
+# Key outcomes
+outcomes:
+  - "install.sh has `parse_args` function with `--local`, `--branch`, `--install-dir`, `--help` support"
+  - "Unknown flags cause fatal error (not silent ignore)"
+  - "`--local <path>` validates path is a git repo"
+  - "Update path uses local repo as remote when `--local` specified"
+  - "Fresh install clones from local repo when `--local` specified"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "install.sh"
+  - ".tasks/active/T-524-installsh-add---local-flag-support-and-r.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-18T00:02:58"
+    action: "T-524: Add --local flag to install.sh and reject unknown flags"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 147
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-524-installsh-add---local-flag-support-and-r.md
+generated_by: context-agent-hybrid

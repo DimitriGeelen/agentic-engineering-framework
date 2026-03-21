@@ -12,7 +12,7 @@ tags: [governance, enforcement, architecture]
 components: []
 related_tasks: [T-061, T-139, T-193]
 created: 2026-03-14T11:20:55Z
-last_update: 2026-03-14T11:20:55Z
+last_update: 2026-03-17T11:34:22Z
 date_finished: null
 ---
 
@@ -114,11 +114,11 @@ Sketch how PreToolUse hooks would consume the declaration file to derive enforce
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated — the 2×2 matrix captures governance gaps that impact-only tiers miss
-- [ ] Current enforcement surface mapped to the matrix (Spike 1)
-- [ ] Draft declaration format exists and can express both current Tier 0 and prose-only rules (Spike 2)
-- [ ] Runtime mapping is feasible within Claude Code hook constraints (Spike 3)
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated — the 2×2 matrix captures governance gaps that impact-only tiers miss
+- [x] Current enforcement surface mapped to the matrix (Spike 1)
+- [x] Draft declaration format exists and can express both current Tier 0 and prose-only rules (Spike 2)
+- [x] Runtime mapping is feasible within Claude Code hook constraints (Spike 3)
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
@@ -134,28 +134,29 @@ Sketch how PreToolUse hooks would consume the declaration file to derive enforce
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+test -f docs/reports/T-477-governance-declaration-layer.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 2x2 matrix validated: 6 Q4 rules (stochastic x high-blast) have zero structural enforcement. 3 of 5 Q4 classes interceptable via hook enhancements. Option A (extend existing hooks) delivers immediate value in ~8h across 4 build tasks.
+
+**Date**: 2026-03-17T11:26:21Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 2x2 matrix validated: 6 Q4 rules (stochastic x high-blast) have zero structural enforcement. 3 of 5 Q4 classes interceptable via hook enhancements. Option A (extend existing hooks) delivers immediate value in ~8h across 4 build tasks.
+
+**Date**: 2026-03-17T11:26:21Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-17T11:26:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 2x2 matrix validated: 6 Q4 rules (stochastic x high-blast) have zero structural enforcement. 3 of 5 Q4 classes interceptable via hook enhancements. Option A (extend existing hooks) delivers immediate value in ~8h across 4 build tasks.

@@ -517,6 +517,33 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
 
+### Task Tool vs TermLink Dispatch
+
+The Task tool and TermLink dispatch are two different mechanisms for parallel work. **Choose based on the work type:**
+
+| Factor | Task tool agent | TermLink dispatch (`fw termlink dispatch`) |
+|--------|----------------|---------------------------------------------|
+| Edit/Write tools | Yes (sub-agent) | Yes (spawns full `claude -p` worker) |
+| Context isolation | No (shares parent context window) | Yes (independent process, zero context cost) |
+| Max parallel | 5 (hard limit) | Unlimited (real OS processes) |
+| Observable from outside | No | Yes (attach, stream, output) |
+| Survives context pressure | No (compressed with parent) | Yes (independent session) |
+
+**Use Task tool agents when:**
+- Quick research or codebase exploration (<2K token results)
+- Single-file edits within the current session
+- Lightweight sub-tasks that benefit from shared context
+
+**Use TermLink dispatch when:**
+- Heavy parallel work (>3 agents, or agents doing multi-file edits)
+- E2E testing or command execution requiring terminal isolation
+- Work that should survive parent context compaction
+- Tasks where you want to observe progress remotely
+
+**The rule:** If you're about to dispatch 3+ Task tool agents that will each produce >1K tokens or edit files, use TermLink dispatch instead. The context savings are significant — Task agents share the parent's context budget, TermLink workers do not.
+
+**Evidence:** T-522 session — 3 evaluation agents dispatched via Task tool consumed ~25K parent context tokens. Same work via TermLink dispatch would cost zero parent context.
+
 ### Prompt Template Structure
 
 When dispatching sub-agents, include in the prompt:
@@ -579,6 +606,8 @@ fw dispatch hosts
 **Parallel Enrichment** (T-073): N agents each produce one file. MUST write to disk, return only path+summary. Cap at 5 parallel. Use `fw bus post` for formal tracking.
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between.
+
+**TermLink Parallel Workers** (T-522): Spawn TermLink sessions for isolated work. Use `termlink interact` for synchronous commands with JSON output, `termlink pty inject/output` for interactive terminal control. Clean up with `termlink signal SIGTERM` + `termlink clean`. Preferred over Task agents for heavy parallel work.
 
 ## Agent Behavioral Rules
 
@@ -651,6 +680,11 @@ When the active task has `workflow_type: inception`:
 5. After a GO decision, **create separate build tasks** for implementation — do not continue building under the inception task ID
 6. **Research artifact first (C-001)** — When starting inception work, create `docs/reports/T-XXX-*.md` BEFORE conducting research. Update the file incrementally as dialogue produces findings. Commit after each dialogue segment. The thinking trail IS the artifact — conversations are ephemeral, files are permanent. (Origin: T-194 — 7 existing controls for research persistence all failed because none enforced capture at the point research happens.)
 7. **Dialogue log (C-001 extension)** — For phases involving human dialogue, include a `## Dialogue Log` section in the research artifact. Record: questions the human posed, answers given, course corrections ("we are not doing X, we are doing Y"), and the outcome/decision that resulted. Structured findings capture WHAT was decided; the dialogue log captures WHY and HOW the reasoning evolved. (Origin: T-194 experiment — 95% of findings captured but conversational reasoning only captured when explicitly logged in Phase 2a.)
+8. **Exploratory Conversation Guard (C-002)** — If a substantive conversation on an untracked topic reaches 3+ exchanges without an active task, STOP and:
+   1. Create an inception task for the topic
+   2. Invoke `/capture` to save the prior dialogue to disk
+   3. Continue the conversation under the new task
+   Trigger: 3 substantive exchanges (exclude greetings, one-word replies, status checks). Enforcement: agent self-governs; no hook coverage (G-005).
 
 ### Web App Startup
 When building a web application:

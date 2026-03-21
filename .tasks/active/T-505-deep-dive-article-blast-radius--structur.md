@@ -4,7 +4,7 @@ name: "Deep-dive article: Blast Radius — structural impact analysis for agenti
 description: >
   Deep-dive article: Blast Radius — structural impact analysis for agentic engineering
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-16T05:38:21Z
-last_update: 2026-03-16T05:42:23Z
-date_finished: 2026-03-16T05:42:23Z
+last_update: 2026-03-17T11:16:06Z
+date_finished: 2026-03-17T11:16:06Z
 ---
 
 # T-505: Deep-dive article: Blast Radius — structural impact analysis for agentic engineering
@@ -62,4 +62,7 @@ test -f docs/articles/deep-dives/18-blast-radius.md
 - **Context:** Initial task creation
 
 ### 2026-03-16T05:42:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+### 2026-03-17T11:16:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

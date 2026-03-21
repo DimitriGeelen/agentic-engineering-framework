@@ -22,7 +22,7 @@ The [Agentic Engineering Framework](https://github.com/DimitriGeelen/agentic-eng
 - **Three-layer memory** — working memory (session), project memory (patterns + decisions), episodic memory (task histories). The agent recalls what happened across sessions.
 - **Tiered approval** — destructive commands (force push, rm -rf) are intercepted and require human sign-off.
 - **Context budget management** — monitors actual token usage and auto-generates a handover before the agent loses coherence.
-- **Continuous audit** — 90+ compliance checks run every 30 minutes, on push, and on demand.
+- **Continuous audit** — 130+ compliance checks run every 30 minutes, on push, and on demand.
 - **Healing loop** — failures are diagnosed, recorded as patterns, and surfaced when similar issues recur.
 
 **What it looks like:**
@@ -58,7 +58,7 @@ $ git push --force
 ══════════════════════════════════════════════════════════
 ```
 
-I used the framework to build the framework — 441 tasks completed, 98% commit traceability. Every architectural decision is recorded with rationale.
+I used the framework to build the framework — 500+ tasks completed, 98% commit traceability. Every architectural decision is recorded with rationale.
 
 It's open source (Apache 2.0) and works with Claude Code out of the box. Also supports Cursor and any CLI agent, though Claude Code gets the deepest enforcement via hooks.
 

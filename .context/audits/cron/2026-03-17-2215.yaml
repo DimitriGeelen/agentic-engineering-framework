@@ -1,0 +1,25 @@
+# Audit Results - 2026-03-17-2215
+timestamp: 2026-03-17T21:15:01Z
+sections: "oe-fast,oe-research"
+summary:
+  pass: 7
+  warn: 1
+  fail: 0
+findings:
+  - level: PASS
+    check: "C-001: All 3 active inceptions have research artifacts"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: WARN
+    check: "CTL-001: Focus file empty but 2 commit(s) in last 30min"
+    mitigation: "Check .claude/settings.json hook configuration for check-active-task"
+  - level: PASS
+    check: "CTL-003: Budget status file fresh (< 5min old)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 2 (last commit: 31 seconds ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: ok)"

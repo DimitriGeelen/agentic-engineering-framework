@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T22:11:23Z
+# ============================================================================
+
+task_id: T-518
+task_name: "Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T22:09:02Z
+completed: 2026-03-17T22:11:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-17T23:11:19+01:00
+last_commit: 2026-03-17T23:11:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace declare -A with POSIX-safe lookups for macOS bash 3.2 compat
+
+# Key outcomes
+outcomes:
+  - "No `declare -A` in agents/ bin/ lib/"
+  - "update-task.sh component auto-populate works (bash -n passes)"
+  - "audit.sh trend analysis works (bash -n passes)"
+  - "diagnose.sh failure classifier works (bash -n passes)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/healing/lib/diagnose.sh"
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-518-fix-bash-32-compat--replace-declare--a-w.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T23:11:19"
+    action: "T-518: Replace declare -A with POSIX-safe lookups for macOS bash 3.2 compat"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [portability, macos, bash, D4]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 96
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-518-fix-bash-32-compat--replace-declare--a-w.md
+generated_by: context-agent-hybrid

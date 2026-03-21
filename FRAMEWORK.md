@@ -261,9 +261,17 @@ fw work-on "First task" --type build
 
 ### Updating the framework
 
+From within any project that uses the framework:
+
+```bash
+fw update            # pulls latest changes into your framework installation
+```
+
+Or manually update the framework repo:
+
 ```bash
 cd /path/to/agentic-engineering-framework
 git pull
 ```
 
-Existing projects pick up framework updates automatically — they reference the framework via `FRAMEWORK_ROOT` in `.framework.yaml`.
+Projects reference the framework via `framework_path` in `.framework.yaml`. After updating the framework installation, all projects pointing to it will use the new version on their next `fw` invocation.

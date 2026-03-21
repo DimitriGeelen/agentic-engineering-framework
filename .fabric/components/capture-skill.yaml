@@ -1,0 +1,21 @@
+id: capture-skill
+name: "/capture Skill"
+type: skill
+subsystem: capture
+location: .claude/commands/capture.md
+purpose: >
+  Emergency ejector seat for untracked conversations. When invoked, reads the
+  JSONL transcript, extracts the current topic's conversation, writes a structured
+  research artifact to docs/reports/, and commits it. Closes the governance gap
+  where pure conversation sessions bypass all framework enforcement.
+interfaces:
+  - CLI: /capture (Claude Code skill invocation)
+depends_on:
+  - target: agents/capture/read-transcript.py
+    type: calls
+  - target: .context/working/focus.yaml
+    type: reads
+depended_by: []
+tags: [capture, skill, conversation, session-capture, governance]
+created: 2026-03-11
+task: T-108

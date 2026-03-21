@@ -1,0 +1,31 @@
+# Audit Results - 2026-03-17-0115
+timestamp: 2026-03-17T00:15:01Z
+sections: "oe-fast,oe-research"
+summary:
+  pass: 7
+  warn: 3
+  fail: 0
+findings:
+  - level: WARN
+    check: "C-001: Inception T-473 has artifact but task doesn't reference it"
+    mitigation: "Add artifact reference to ## Updates section of T-473"
+  - level: WARN
+    check: "C-001: Inception T-477 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-477-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-479 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-479-*.md — the thinking trail IS the artifact"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-434)"
+  - level: PASS
+    check: "CTL-003: Budget status file stale (195min — no active session)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 7 (last commit: 11 hours ago)"
+  - level: PASS
+    check: "CTL-018: Budget status valid JSON (level: ok)"
