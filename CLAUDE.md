@@ -838,8 +838,9 @@ TermLink is an optional cross-terminal session communication tool (Rust, 26 comm
 The framework provides a thin wrapper via `fw termlink` that adds task-tagging, budget checks,
 and cleanup tracking while delegating all real work to the `termlink` binary.
 
-- **Repo:** `https://onedev.docker.ring20.geelenandcompany.com/termlink`
-- **Install:** `cargo install --path crates/termlink-cli`
+- **Repo:** `https://github.com/DimitriGeelen/termlink` (mirrored from OneDev)
+- **Install (macOS):** `brew install DimitriGeelen/termlink/termlink`
+- **Install (from source):** `cargo install --path crates/termlink-cli`
 - **Check:** `fw termlink check` (also in `fw doctor` as WARN)
 
 ### Key Primitives

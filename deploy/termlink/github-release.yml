@@ -1,0 +1,101 @@
+# GitHub Actions workflow for TermLink releases
+# Copy to: .github/workflows/release.yml in the termlink repo
+#
+# Builds macOS binaries for both aarch64 and x86_64 architectures.
+# Triggers on version tags (e.g., v1.0.0).
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14  # M1/M2/M3 runner
+            artifact: termlink-darwin-aarch64
+          - target: x86_64-apple-darwin
+            os: macos-13  # Intel runner
+            artifact: termlink-darwin-x86_64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build
+        run: |
+          cargo build --release --target ${{ matrix.target }} -p termlink-cli
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/termlink dist/${{ matrix.artifact }}
+          chmod +x dist/${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.artifact }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Build
+        run: |
+          cargo build --release -p termlink-cli
+          mkdir -p dist
+          cp target/release/termlink dist/termlink-linux-x86_64
+          chmod +x dist/termlink-linux-x86_64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: termlink-linux-x86_64
+          path: dist/termlink-linux-x86_64
+
+  release:
+    needs: [build-macos, build-linux]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/termlink-darwin-aarch64
+            dist/termlink-darwin-x86_64
+            dist/termlink-linux-x86_64
+            dist/checksums.txt
+          generate_release_notes: true
