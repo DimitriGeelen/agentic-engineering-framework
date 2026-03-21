@@ -15,7 +15,7 @@ set -euo pipefail
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.agentic-framework}"
 REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-framework.git}"
 BRANCH="${BRANCH:-master}"
-SYMLINK_DIR="/usr/local/bin"
+MODIFY_PATH="${MODIFY_PATH:-false}"
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -103,28 +103,53 @@ do_install() {
 # --- Symlink ---
 link_fw() {
     local fw_path="$INSTALL_DIR/bin/fw"
+    local local_bin="$HOME/.local/bin"
 
     if [[ ! -x "$fw_path" ]]; then
         fatal "bin/fw not found in ${INSTALL_DIR} — clone may be corrupted"
     fi
 
-    # Try /usr/local/bin first (needs sudo), fall back to ~/.local/bin
-    if [[ -w "$SYMLINK_DIR" ]]; then
-        ln -sf "$fw_path" "$SYMLINK_DIR/fw"
-        info "Linked fw → ${SYMLINK_DIR}/fw"
-    elif command -v sudo &>/dev/null; then
-        info "Creating symlink in ${SYMLINK_DIR} (requires sudo)..."
-        sudo ln -sf "$fw_path" "$SYMLINK_DIR/fw"
-        info "Linked fw → ${SYMLINK_DIR}/fw"
-    else
-        # Fallback: ~/.local/bin
-        local local_bin="$HOME/.local/bin"
-        mkdir -p "$local_bin"
-        ln -sf "$fw_path" "$local_bin/fw"
-        info "Linked fw → ${local_bin}/fw"
-        if [[ ":$PATH:" != *":${local_bin}:"* ]]; then
-            warn "Add ${local_bin} to your PATH:"
-            echo "  export PATH=\"${local_bin}:\$PATH\""
+    # Always use ~/.local/bin (no sudo required)
+    mkdir -p "$local_bin"
+    ln -sf "$fw_path" "$local_bin/fw"
+    ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
+    info "Linked fw → ${local_bin}/fw"
+    info "Linked claude-fw → ${local_bin}/claude-fw"
+
+    # Check if ~/.local/bin is in PATH
+    if [[ ":$PATH:" != *":${local_bin}:"* ]]; then
+        echo ""
+        warn "~/.local/bin is not in your PATH"
+        echo ""
+
+        if [[ "$MODIFY_PATH" == "true" ]]; then
+            # CI/automation mode: modify shell config idempotently
+            local shell_rc=""
+            if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$SHELL" == *"zsh"* ]]; then
+                shell_rc="$HOME/.zshrc"
+            else
+                shell_rc="$HOME/.bashrc"
+            fi
+
+            local path_line='export PATH="$HOME/.local/bin:$PATH"'
+            if ! grep -qF "$path_line" "$shell_rc" 2>/dev/null; then
+                echo "" >> "$shell_rc"
+                echo "# Added by Agentic Engineering Framework installer" >> "$shell_rc"
+                echo "$path_line" >> "$shell_rc"
+                info "Added PATH to $shell_rc"
+            else
+                info "PATH already configured in $shell_rc"
+            fi
+        else
+            # Interactive mode: print instructions
+            echo "  Add to your shell config (~/.bashrc or ~/.zshrc):"
+            echo ""
+            echo '    export PATH="$HOME/.local/bin:$PATH"'
+            echo ""
+            echo "  Or run with --modify-path to auto-configure:"
+            echo ""
+            echo "    curl -fsSL ... | MODIFY_PATH=true bash"
+            echo ""
         fi
     fi
 }
