@@ -156,12 +156,46 @@ link_fw() {
 
 # --- Verify ---
 verify() {
-    if command -v fw &>/dev/null; then
-        info "Running fw doctor..."
-        fw doctor || true
+    local fw_path="$INSTALL_DIR/bin/fw"
+    local ok=true
+
+    echo ""
+    info "Post-install verification..."
+    echo ""
+
+    # Step 1: Check fw binary exists
+    if [[ -x "$fw_path" ]]; then
+        info "Step 1/3: fw binary exists ✓"
     else
-        warn "fw not in PATH yet — run: source ~/.bashrc (or open a new terminal)"
-        info "Manual verify: ${INSTALL_DIR}/bin/fw doctor"
+        error "Step 1/3: fw binary not found"
+        echo "  Fix: git clone $REPO_URL $INSTALL_DIR"
+        ok=false
+    fi
+
+    # Step 2: Check fw version works
+    if "$fw_path" version &>/dev/null; then
+        local ver
+        ver=$("$fw_path" version 2>&1 | head -1)
+        info "Step 2/3: fw version works ✓ ($ver)"
+    else
+        error "Step 2/3: fw version failed"
+        echo "  Fix: Check $fw_path is not corrupted"
+        ok=false
+    fi
+
+    # Step 3: Check fw doctor passes
+    if "$fw_path" doctor &>/dev/null; then
+        info "Step 3/3: fw doctor passes ✓"
+    else
+        warn "Step 3/3: fw doctor has warnings (non-fatal)"
+        echo "  Run: $fw_path doctor"
+    fi
+
+    echo ""
+    if [[ "$ok" == "true" ]]; then
+        info "All verification steps passed"
+    else
+        error "Some verification steps failed — see above"
     fi
 }
 
