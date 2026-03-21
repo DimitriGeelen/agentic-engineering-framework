@@ -35,19 +35,22 @@ Setting up TermLink distribution via Homebrew with GitHub Actions automated buil
   **Status:** DONE - Workflow pushed to `.github/workflows/release.yml` on GitHub
   **Note:** Build is failing due to dependency issues (rand 0.9, thiserror 2.x require recent Rust)
 
-- [ ] [REVIEW] Fix remaining GitHub Actions build errors
-  **Status:** Dependencies and code fixes applied, but builds still failing
+- [ ] [REVIEW] Fix remaining GitHub Actions release build errors
+  **Status:** CI passes (cargo check), Release fails (cargo build --release)
   **Steps:**
   1. Run `gh auth login` to re-authenticate gh CLI
-  2. Check build logs: https://github.com/DimitriGeelen/termlink/actions/runs/23383710114
+  2. Check latest build logs: https://github.com/DimitriGeelen/termlink/actions
   3. The following fixes were already applied:
-     - edition 2024 → 2021
+     - Restored edition 2024 (needed for let-chains)
      - thiserror 2 → 1
      - rand 0.9 → 0.8
-     - rand::rng().random() → rand::thread_rng().gen()
-     - Rewrote if-let-chain to nested if
-  4. Investigate what additional issues remain
-  5. Push fix and delete/recreate v0.1.0 tag
+     - rand::thread_rng().gen() → rand::thread_rng().r#gen() (gen reserved in 2024)
+     - Added cmake/clang to CI
+     - Fixed rustls 0.23 root_hint_subjects return type
+  4. Debug why `cargo build --release` fails when `cargo check` passes
+     - Likely aws-lc-rs cross-compilation issue on macOS
+     - Try adding CC/CXX env vars or using ring backend
+  5. Push fix and delete/recreate v0.1.0 tag: `git tag -d v0.1.0 && git push github :refs/tags/v0.1.0 && git tag v0.1.0 && git push github v0.1.0`
   **Expected:** Green builds for all 3 platforms
 
 - [ ] [RUBBER-STAMP] Create Homebrew tap repo and publish formula
@@ -116,3 +119,30 @@ Setting up TermLink distribution via Homebrew with GitHub Actions automated buil
   - Fix: Downgrade thiserror to 1.x and rand to 0.8 for stable Rust compatibility
   - Fix: Update rand API calls for 0.8 compatibility (rng -> thread_rng, random -> gen)
   - Fix: Rewrite if-let-chain for broader Rust version compatibility
+
+### 2026-03-21T22:50:00Z — continued work [agent]
+- **Action:** Additional fixes pushed in session S-2026-0321-2218
+- **Done:**
+  - Restored edition = "2024" (required for let-chains used throughout codebase)
+  - Fixed reserved keyword: rand::thread_rng().gen() → rand::thread_rng().r#gen() (gen reserved in Rust 2024)
+  - Fixed root_hint_subjects return type for rustls 0.23 (Option<&[DistinguishedName]>)
+  - Added cmake and clang to CI workflow (required for aws-lc-rs backend)
+  - CI workflow (`cargo check`) now passes
+- **Still failing:**
+  - Release workflow (`cargo build --release`) still failing on both macOS and Linux
+  - The stable Rust toolchain DOES support edition 2024 (CI passes)
+  - Likely a cross-compilation or aws-lc-rs build issue on macOS
+- **Commits pushed:**
+  - Fix: Use ring crypto backend for cross-platform builds (reverted)
+  - Fix: Add pem feature to rcgen for PEM output support
+  - CI: Add check/test workflow for better error visibility
+  - Fix: Update TLS config for rustls 0.23 with ring crypto provider (reverted)
+  - Fix: Use default rustls features with aws-lc-rs backend
+  - CI: Install cmake and clang dependencies
+  - Fix: Restore Rust 2024 edition and fix reserved keyword
+  - T-530: Use stable toolchain for release builds (matches CI)
+- **TermLink repo location:** /tmp/termlink-work
+- **Homebrew tap prep:** /tmp/homebrew-termlink/
+- **Remotes configured:**
+  - origin: OneDev (onedev.docker.ring20.geelenandcompany.com)
+  - github: git@github.com:DimitriGeelen/termlink.git
