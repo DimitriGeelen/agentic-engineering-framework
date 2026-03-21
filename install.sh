@@ -61,14 +61,6 @@ check_prereqs() {
         info "python3 ${py_ver}"
     fi
 
-    # PyYAML
-    if ! python3 -c "import yaml" 2>/dev/null; then
-        warn "PyYAML not found — install with: pip install pyyaml"
-        ok=false
-    else
-        info "PyYAML installed"
-    fi
-
     if [[ "$ok" != "true" ]]; then
         fatal "Prerequisites not met. Fix the issues above and re-run."
     fi
