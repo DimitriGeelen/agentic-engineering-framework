@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-522: Verify install test fixes — re-run E2E via TermLink (T-519, T-520, T-521)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-17T22:56:34Z
+# ============================================================================
+
+task_id: T-522
+task_name: "Verify install test fixes — re-run E2E via TermLink (T-519, T-520, T-521)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T22:50:32Z
+completed: 2026-03-17T22:56:33Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "fw init completes without `do_vendor: command not found` (T-519)"
+  - "git repo auto-created by fw init (T-521)"
+  - "fw doctor passes (0 failures)"
+  - "Commit with task ref succeeds — no `find_task_file: command not found` (T-520)"
+  - "Full lifecycle works: task create → commit → complete → audit"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-522-verify-install-test-fixes--re-run-e2e-vi.md
+generated_by: context-agent-hybrid

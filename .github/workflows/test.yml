@@ -29,3 +29,54 @@ jobs:
 
       - name: Run tests
         run: bats tests/integration/ tests/unit/
+
+  e2e:
+    name: E2E Tests (Tier A)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-termlink-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-termlink-
+
+      - name: Install TermLink
+        run: |
+          if ! command -v termlink >/dev/null 2>&1; then
+            git clone --depth 1 https://github.com/DimitriGeelen/termlink.git /tmp/termlink
+            cargo install --path /tmp/termlink/crates/termlink-cli
+          fi
+          termlink --version
+
+      - name: Set up framework
+        run: |
+          # Install git hooks (commit-msg hook needed for tests)
+          chmod +x bin/fw agents/git/git.sh
+          ./agents/git/git.sh install-hooks || true
+          # Make fw available
+          export PATH="$PWD/bin:$PATH"
+          fw version
+
+      - name: Run E2E Tier A tests
+        run: |
+          export PATH="$PWD/bin:$HOME/.cargo/bin:$PATH"
+          bash tests/e2e/runner.sh --tier a

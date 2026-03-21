@@ -190,11 +190,11 @@ fw healing diagnose T-015            # Classify and suggest
 fw healing resolve T-015 --mitigation "Added retry logic"  # Record as pattern
 ```
 
-The escalation ladder is deliberate: **A** — do not repeat the same failure. **B** — improve technique. **C** — improve tooling. **D** — change ways of working. Over 312 completed tasks, these patterns accumulate. Resolutions from prior failures are surfaced when similar issues recur.
+The escalation ladder is deliberate: **A** — do not repeat the same failure. **B** — improve technique. **C** — improve tooling. **D** — change ways of working. Over 500 completed tasks, these patterns accumulate. Resolutions from prior failures are surfaced when similar issues recur.
 
 ## Continuous audit
 
-The healing loop handles individual failures. To catch systemic drift, the framework audits itself. 90+ compliance checks run automatically — every 30 minutes, on every push, and on demand:
+The healing loop handles individual failures. To catch systemic drift, the framework audits itself. 130+ compliance checks run automatically — every 30 minutes, on every push, and on demand:
 
 ```bash
 $ fw audit
@@ -209,7 +209,7 @@ This is the equivalent of assurance reporting. Not retrospective. Continuous. Dr
 
 ## Evidence
 
-I used the framework to build the framework. 312 tasks completed. 96% commit traceability across the full task history. Every architectural decision recorded with rationale and rejected alternatives.
+I used the framework to build the framework. 500+ tasks completed. 98% commit traceability across the full task history. Every architectural decision recorded with rationale and rejected alternatives.
 
 A typical commit log:
 
@@ -230,7 +230,7 @@ The framework is built with and tested against Claude Code — that is where the
 
 ## Where it stands
 
-I use this daily for real work. 312 tasks completed. The governance model holds. The context continuity works. The healing loop genuinely improves over time. I would not go back to ungoverned agent development.
+I use this daily for real work. 500+ tasks completed. The governance model holds. The context continuity works. The healing loop genuinely improves over time. I would not go back to ungoverned agent development.
 
 That said, the framework is alpha. It is under active development. There are bugs. There are rough edges. I have taken steps to make it usable for others — install script, Homebrew tap, documentation, GitHub Action — but it has not been tested by a wide audience yet.
 

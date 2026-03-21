@@ -6,12 +6,13 @@
 # This prevents generic keywords (like "error") from matching before specific ones
 CLASSIFY_ORDER=(dependency external environment design code)
 
-declare -A FAILURE_TYPES
-FAILURE_TYPES[dependency]="dependency|package|module|import|require|version.conflict|pip.install|npm.install|missing.module"
-FAILURE_TYPES[external]="api|service|network|third-party|external|upstream|rate.limit|endpoint"
-FAILURE_TYPES[environment]="environment|config|\.env|path.not.found|permission.denied|access.denied|connection.refused"
-FAILURE_TYPES[design]="design|architecture|approach|refactor|rethink|redesign|wrong.approach"
-FAILURE_TYPES[code]="error|exception|bug|syntax|compile|runtime|crash|null|undefined|traceback"
+# Failure type keywords — parallel arrays (POSIX-safe, no declare -A needed)
+# Index-aligned with CLASSIFY_ORDER above
+FAILURE_KEYWORDS_dependency="dependency|package|module|import|require|version.conflict|pip.install|npm.install|missing.module"
+FAILURE_KEYWORDS_external="api|service|network|third-party|external|upstream|rate.limit|endpoint"
+FAILURE_KEYWORDS_environment="environment|config|\.env|path.not.found|permission.denied|access.denied|connection.refused"
+FAILURE_KEYWORDS_design="design|architecture|approach|refactor|rethink|redesign|wrong.approach"
+FAILURE_KEYWORDS_code="error|exception|bug|syntax|compile|runtime|crash|null|undefined|traceback"
 
 classify_failure() {
     local text="$1"
@@ -23,7 +24,8 @@ classify_failure() {
 
     for type in "${CLASSIFY_ORDER[@]}"; do
         local score=0
-        local keywords="${FAILURE_TYPES[$type]}"
+        local kw_var="FAILURE_KEYWORDS_${type}"
+        local keywords="${!kw_var}"
 
         # Count how many keywords match
         IFS='|' read -ra kw_array <<< "$keywords"

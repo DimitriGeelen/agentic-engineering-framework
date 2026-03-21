@@ -577,13 +577,14 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
     FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
     if [ -d "$FABRIC_DIR" ]; then
         # Build location→id lookup from component cards
-        declare -A LOC_TO_ID
+        # Build location→id lookup (temp file, POSIX-safe — no declare -A)
+        LOC_TO_ID_FILE=$(mktemp)
         for card in "$FABRIC_DIR"/*.yaml; do
             [ -f "$card" ] || continue
             c_loc=$(grep "^location:" "$card" 2>/dev/null | sed 's/^location:[[:space:]]*//' | head -1)
             c_id=$(grep "^id:" "$card" 2>/dev/null | sed 's/^id:[[:space:]]*//' | head -1)
             if [ -n "$c_loc" ] && [ -n "$c_id" ]; then
-                LOC_TO_ID["$c_loc"]="$c_id"
+                echo "${c_loc}=${c_id}" >> "$LOC_TO_ID_FILE"
             fi
         done
 
@@ -597,8 +598,9 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 case "$path" in
                     .context/*|.tasks/*|.fabric/*|docs/*) continue ;;
                 esac
-                if [ -n "${LOC_TO_ID[$path]:-}" ]; then
-                    RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${LOC_TO_ID[$path]}"
+                comp_id=$(grep "^${path}=" "$LOC_TO_ID_FILE" 2>/dev/null | head -1 | cut -d= -f2-)
+                if [ -n "$comp_id" ]; then
+                    RESOLVED_COMPONENTS="${RESOLVED_COMPONENTS:+$RESOLVED_COMPONENTS, }${comp_id}"
                 fi
             done
         fi
@@ -615,6 +617,7 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             COMP_COUNT=$(echo "$RESOLVED_COMPONENTS" | tr ',' '\n' | wc -l)
             echo -e "${GREEN}Components: $COMP_COUNT resolved from git history${NC}"
         fi
+        rm -f "$LOC_TO_ID_FILE"
     fi
 
     # === Auto-capture decisions from task file (T-236) ===

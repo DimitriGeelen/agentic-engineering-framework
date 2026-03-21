@@ -8,7 +8,7 @@ I built this because I recognised a pattern. In 25 years of enterprise IT govern
 
 ## What This Has Actually Stopped
 
-Real output from this framework governing its own development (445 tasks, 312 completed):
+Real output from this framework governing its own development (500+ tasks, 470+ completed):
 
 **Agent tries to edit a file without a task:**
 ```
@@ -58,7 +58,7 @@ Changes to hook configuration require human review.
 ══════════════════════════════════════════════════════════
 ```
 
-Every blocked action is logged. Every approval is auditable. 49 Tier 0 approvals recorded in the bypass log so far — all human-authorized, all traceable.
+Every blocked action is logged. Every approval is auditable. All Tier 0 approvals are recorded in the bypass log — human-authorized, traceable.
 
 ## The Problem
 
@@ -66,11 +66,22 @@ Without governance, AI agents edit files with no record of why, lose all context
 
 The difference: telling someone to wear a hard hat versus installing a door that does not open without one.
 
+## Prerequisites
+
+- **bash 4.4+** — macOS ships with bash 3.2; install a modern version: `brew install bash`
+- **git 2.20+**
+- **python3 3.8+** with **PyYAML** — `pip install pyyaml`
+
+The installer checks these and will tell you what's missing.
+
 ## See It Work (5 Minutes)
 
 ```bash
 # 1. Install
 curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+
+# Or install from a local clone:
+# bash install.sh --local /path/to/repo
 
 # 2. Initialize a project
 mkdir my-project && cd my-project && git init
@@ -83,7 +94,7 @@ fw init --provider claude
 fw work-on "Add authentication" --type build
 
 # 5. Run an audit, open the dashboard
-fw audit                 # 90+ governance checks
+fw audit                 # 150+ governance checks
 fw serve                 # http://localhost:3000 — task board, audit, metrics
 ```
 
@@ -101,7 +112,7 @@ Agent tries to edit a file
     │ ✓ Task exists
     ▼
 ┌─────────────────────┐
-│  Budget gate         │──── Context > 85%? → BLOCKED (auto-handover)
+│  Budget gate         │──── Context > 90%? → BLOCKED (auto-handover)
 └─────────────────────┘
     │ ✓ Budget OK
     ▼
@@ -118,10 +129,10 @@ Full structural enforcement requires an agent that supports pre-operation hooks.
 | Tier 0 — blocks destructive commands | Structural (PreToolUse hook) | Convention |
 | Budget management — prevents context exhaustion | Structural (reads transcript) | Manual |
 | Commit traceability — task ref in every commit | Git hook (agent-agnostic) | Git hook (agent-agnostic) |
-| Audit — 90+ governance checks | CLI (agent-agnostic) | CLI (agent-agnostic) |
+| Audit — 150+ governance checks | CLI (agent-agnostic) | CLI (agent-agnostic) |
 | Session handover — context survives restarts | CLI (agent-agnostic) | CLI (agent-agnostic) |
 
-This framework has been developed entirely under its own governance using Claude Code — 445 tasks, 312 completed, 96% commit traceability. Cursor, Copilot, Aider, and other agents are supported by design (`fw init --provider cursor`, `fw init --provider generic`) but have not been validated in production. Contributions and testing from users of those tools are welcome.
+This framework has been developed entirely under its own governance using Claude Code — 500+ tasks, 470+ completed, 99% commit traceability. Cursor, Copilot, Aider, and other agents are supported by design (`fw init --provider cursor`, `fw init --provider generic`) but have not been validated in production. Contributions and testing from users of those tools are welcome.
 
 ## Quickstart
 
@@ -202,7 +213,7 @@ Error escalation: A (do not repeat) → B (improve technique) → C (improve too
 </details>
 
 <details>
-<summary><b>Continuous Audit</b> — 90+ governance checks run every 30 minutes, on every push, and on demand</summary>
+<summary><b>Continuous Audit</b> — 150+ governance checks run every 30 minutes, on every push, and on demand</summary>
 
 Checks cover task quality, git traceability, structural integrity, and control effectiveness. Cron, pre-push hook, or `fw audit` on demand.
 
@@ -229,7 +240,31 @@ Every session ends with a handover that captures work in progress, suggested nex
 | `fw recall "query"` | Semantic search across project knowledge |
 | `fw metrics` | Project metrics and effort prediction |
 | `fw inception start "name"` | Structured exploration before building |
+| `fw update` | Update framework to latest version |
+| `fw update --check` | Check for updates without applying |
 | `fw help` | All available commands |
+
+## Updating
+
+The framework vendors a copy into each project's `.agentic-framework/` directory for isolation. Updates don't propagate automatically — run:
+
+```bash
+fw update              # Pull latest and update vendored copy
+fw update --check      # Check for updates without applying
+fw update --rollback   # Revert to previous version
+```
+
+For the global installation (`~/.agentic-framework`), re-run the installer or `git pull` in that directory.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `do_vendor: command not found` | Update `fw` — this was fixed in v1.2.6. Re-run the installer. |
+| `find_task_file: command not found` in commit hook | Reinstall hooks: `fw git install-hooks --force` |
+| `fw init` fails with "not a git repository" | `fw init` auto-creates a git repo since v1.2.6. Update `fw`. |
+| `bash: fw: command not found` | Symlink missing — re-run installer or add `~/.local/bin` to PATH |
+| macOS: `bash 3.2` errors | Install bash 4.4+: `brew install bash` |
 
 ## What This Is Not
 
@@ -276,7 +311,7 @@ agents/
   handover/               Session handover generation
   healing/                Error recovery and pattern recording
   task-create/            Task creation + update + verification
-  audit/                  Governance checks (90+ rules)
+  audit/                  Governance checks (150+ rules)
   fabric/                 Component topology — deps, impact, drift
   resume/                 Session recovery after compaction
 lib/                      fw subcommands (init, inception, promote)
@@ -307,7 +342,7 @@ Agent     → INITIATIVE   → Can propose, request, suggest — never decides
 
 ## Self-Governing
 
-This framework develops itself using its own governance. 445 tasks created, 312 completed, 96% commit traceability, every decision recorded and searchable. The framework is its own case study — or its own most elaborate yak-shave, depending on your perspective.
+This framework develops itself using its own governance. 500+ tasks created, 470+ completed, 99% commit traceability, every decision recorded and searchable. The framework is its own case study — or its own most elaborate yak-shave, depending on your perspective.
 
 ## Documentation
 

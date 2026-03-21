@@ -3,6 +3,7 @@
 #
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+#   bash install.sh --local /path/to/repo    # install/update from local clone
 #
 # Configuration (environment variables):
 #   INSTALL_DIR   — Where to install (default: ~/.agentic-framework)
@@ -28,6 +29,51 @@ info()  { echo -e "${GREEN}[+]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $*"; }
 error() { echo -e "${RED}[x]${NC} $*" >&2; }
 fatal() { error "$@"; exit 1; }
+
+# --- Argument Parsing ---
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --local)
+                if [[ -z "${2:-}" ]]; then
+                    fatal "--local requires a path argument"
+                fi
+                LOCAL_REPO="$2"
+                if [[ ! -d "$LOCAL_REPO/.git" ]]; then
+                    fatal "--local path is not a git repository: $LOCAL_REPO"
+                fi
+                shift 2
+                ;;
+            --branch)
+                if [[ -z "${2:-}" ]]; then
+                    fatal "--branch requires a value"
+                fi
+                BRANCH="$2"
+                shift 2
+                ;;
+            --install-dir)
+                if [[ -z "${2:-}" ]]; then
+                    fatal "--install-dir requires a path"
+                fi
+                INSTALL_DIR="$2"
+                shift 2
+                ;;
+            -h|--help)
+                echo "Usage: install.sh [options]"
+                echo ""
+                echo "Options:"
+                echo "  --local <path>       Install/update from a local git repo"
+                echo "  --branch <name>      Branch to use (default: master)"
+                echo "  --install-dir <path> Install location (default: ~/.agentic-framework)"
+                echo "  -h, --help           Show this help"
+                exit 0
+                ;;
+            *)
+                fatal "Unknown option: $1 (use --help for usage)"
+                ;;
+        esac
+    done
+}
 
 # --- Prerequisite Checks ---
 check_prereqs() {
@@ -77,11 +123,27 @@ do_install() {
         local old_hash
         old_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-        git -C "$INSTALL_DIR" fetch origin "$BRANCH" --quiet
-
-        # Framework install dir is not user code — always match origin exactly
-        git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
-        git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH" --quiet
+        if [[ -n "$LOCAL_REPO" ]]; then
+            # Update from local repo — add as temporary remote
+            local remote_name="local-install"
+            git -C "$INSTALL_DIR" remote remove "$remote_name" 2>/dev/null || true
+            git -C "$INSTALL_DIR" remote add "$remote_name" "$LOCAL_REPO"
+            git -C "$INSTALL_DIR" fetch "$remote_name" "$BRANCH" --quiet
+            git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
+            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
+                warn "Local modifications in $INSTALL_DIR will be overwritten"
+            fi
+            git -C "$INSTALL_DIR" reset --hard "${remote_name}/$BRANCH" --quiet
+            git -C "$INSTALL_DIR" remote remove "$remote_name" 2>/dev/null || true
+        else
+            # Update from origin
+            git -C "$INSTALL_DIR" fetch origin "$BRANCH" --quiet
+            git -C "$INSTALL_DIR" checkout "$BRANCH" --quiet 2>/dev/null || true
+            if ! git -C "$INSTALL_DIR" diff --quiet 2>/dev/null; then
+                warn "Local modifications in $INSTALL_DIR will be overwritten"
+            fi
+            git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH" --quiet
+        fi
 
         local new_hash
         new_hash=$(git -C "$INSTALL_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -92,8 +154,13 @@ do_install() {
             info "Updated ${old_hash} → ${new_hash}"
         fi
     else
-        info "Cloning framework to ${INSTALL_DIR}..."
-        git clone --branch "$BRANCH" --single-branch --quiet "$REPO_URL" "$INSTALL_DIR"
+        if [[ -n "$LOCAL_REPO" ]]; then
+            info "Cloning framework from local repo to ${INSTALL_DIR}..."
+            git clone --branch "$BRANCH" --single-branch --quiet "$LOCAL_REPO" "$INSTALL_DIR"
+        else
+            info "Cloning framework to ${INSTALL_DIR}..."
+            git clone --branch "$BRANCH" --single-branch --quiet "$REPO_URL" "$INSTALL_DIR"
+        fi
         # Disable fileMode for macOS compatibility (HFS+/APFS permission diffs)
         git -C "$INSTALL_DIR" config core.fileMode false
         info "Cloned successfully"
@@ -201,6 +268,8 @@ verify() {
 
 # --- Main ---
 main() {
+    parse_args "$@"
+
     echo ""
     echo -e "${BOLD}Agentic Engineering Framework — Installer${NC}"
     echo ""

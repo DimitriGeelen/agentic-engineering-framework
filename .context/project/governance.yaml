@@ -1,0 +1,112 @@
+# governance.yaml — Risk-based governance declarations
+# Maps operation classes to enforcement levels based on
+# predictability × blast-radius dimensions (T-477).
+#
+# This file is architecture documentation AND a machine-readable
+# declaration that hooks and agents can consume.
+#
+# Enforcement levels (derived from matrix position):
+#   free    — no governance beyond audit trail (Q1: deterministic × low)
+#   audit   — action logged, reviewable post-hoc (Q2: stochastic × low)
+#   gate    — PreToolUse hook blocks until condition met (Q3: deterministic × high)
+#   approve — requires human approval per instance (Q4: stochastic × high)
+
+version: 1
+schema: predictability-blast-radius/v1
+
+operation_classes:
+
+  # ── Q1: Deterministic × Low blast → free ──────────────────────
+  file_creation:
+    predictability: deterministic
+    blast_radius: low
+    enforcement: free
+    examples: [mkdir, touch, git add]
+
+  status_query:
+    predictability: deterministic
+    blast_radius: low
+    enforcement: free
+    examples: [git status, fw doctor, fw metrics, fw resume quick]
+
+  # ── Q2: Stochastic × Low blast → audit ────────────────────────
+  task_selection:
+    predictability: stochastic
+    blast_radius: low
+    enforcement: audit
+    examples: [choose next task, set horizon, reorder backlog]
+
+  commit_message:
+    predictability: stochastic
+    blast_radius: low
+    enforcement: audit
+    examples: [write commit message, choose commit description]
+
+  # ── Q3: Deterministic × High blast → gate ─────────────────────
+  destructive_command:
+    predictability: deterministic
+    blast_radius: high
+    enforcement: gate
+    gate_script: check-tier0.sh
+    tier: 0
+    examples: [git push --force, rm -rf, DROP TABLE, branch -D]
+
+  source_modification:
+    predictability: deterministic
+    blast_radius: high
+    enforcement: gate
+    gate_script: check-active-task.sh
+    tier: 1
+    examples: [Write to .py/.sh/.yaml, Edit source files]
+
+  context_budget:
+    predictability: deterministic
+    blast_radius: high
+    enforcement: gate
+    gate_script: budget-gate.sh
+    tier: 1
+    examples: [any tool call at >90% context window]
+
+  # ── Q4: Stochastic × High blast → approve ─────────────────────
+  # THE GAP — these 5 classes had zero structural enforcement
+  # before T-477. See docs/reports/T-477-governance-declaration-layer.md.
+  architectural_decision:
+    predictability: stochastic
+    blast_radius: high
+    enforcement: approve
+    approval: human_per_instance
+    rule_ref: "CLAUDE.md §Autonomous Mode Boundaries"
+    examples: [choose implementation approach, design new subsystem, select between architectures]
+
+  human_task_closure:
+    predictability: stochastic
+    blast_radius: high
+    enforcement: approve
+    approval: evidence_required
+    rule_ref: "CLAUDE.md §Human Task Completion Rule"
+    examples: [suggest closing human-owned task, batch-complete, --force on sovereignty gate]
+
+  scope_escalation:
+    predictability: stochastic
+    blast_radius: high
+    enforcement: approve
+    approval: inception_required
+    rule_ref: "CLAUDE.md §Pickup Message Handling"
+    examples: [">3 new files from pickup", new subsystem, new CLI route, new Watchtower page]
+
+  sub_agent_dispatch:
+    predictability: stochastic
+    blast_radius: high
+    enforcement: approve
+    approval: preamble_required
+    gate_script: check-dispatch-pre.sh
+    rule_ref: "CLAUDE.md §Sub-Agent Dispatch Protocol"
+    examples: [Task tool without preamble, ">5 parallel agents"]
+
+  autonomous_bypass:
+    predictability: stochastic
+    blast_radius: high
+    enforcement: approve
+    approval: never_delegated
+    rule_ref: "CLAUDE.md §Autonomous Mode Boundaries"
+    examples: [--force on any gate, change task owner from human, skip verification]

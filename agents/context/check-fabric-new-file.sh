@@ -45,9 +45,51 @@ except ValueError:
     sys.exit(0)
 
 # Skip context/task/fabric/handover files (framework internals)
-skip_prefixes = ('.context/', '.tasks/', '.fabric/', '.claude/', 'docs/generated/')
+skip_prefixes = ('.context/', '.tasks/', '.fabric/', '.claude/', 'docs/generated/', 'docs/')
 if any(rel_path.startswith(p) for p in skip_prefixes):
     sys.exit(0)
+
+# ── Scope escalation counter (T-512) ──
+# Track new source files per task. Warn when >3 — potential scope creep.
+counter_file = os.path.join(PROJECT_ROOT, '.context', 'working', '.new-file-counter')
+focus_file = os.path.join(PROJECT_ROOT, '.context', 'working', 'focus.yaml')
+scope_warning = ''
+
+try:
+    current_task = ''
+    if os.path.isfile(focus_file):
+        with open(focus_file) as f:
+            focus = yaml.safe_load(f) or {}
+        current_task = focus.get('current_task', '') or focus.get('task_id', '')
+
+    if current_task:
+        prev_task = ''
+        prev_count = 0
+        if os.path.isfile(counter_file):
+            with open(counter_file) as f:
+                parts = f.read().strip().split('\t')
+            if len(parts) >= 2:
+                prev_task = parts[0]
+                try:
+                    prev_count = int(parts[1])
+                except ValueError:
+                    prev_count = 0
+
+        if prev_task != current_task:
+            prev_count = 0
+
+        new_count = prev_count + 1
+        with open(counter_file, 'w') as f:
+            f.write(f'{current_task}\t{new_count}')
+
+        if new_count > 3:
+            scope_warning = (
+                f'SCOPE ALERT: {new_count} new source files created under {current_task}. '
+                'If this work came from a pickup message or grew beyond the original scope, '
+                'consider creating an inception task. (G-020, T-512)'
+            )
+except Exception:
+    pass  # Counter is best-effort, never block
 
 # Check if fabric card already exists
 comp_dir = os.path.join(PROJECT_ROOT, '.fabric', 'components')
@@ -81,16 +123,20 @@ for p in patterns:
         matches = True
         break
 
-if not matches:
-    sys.exit(0)
+# Build advisory message
+parts = []
+if matches:
+    parts.append(f'NOTE: New source file created: {rel_path}')
+    parts.append(f'Consider: fw fabric register {rel_path}')
+if scope_warning:
+    parts.append(scope_warning)
 
-# Emit advisory reminder
-advice = f'NOTE: New source file created: {rel_path}\nConsider: fw fabric register {rel_path}'
-result = {
-    'hookSpecificOutput': {
-        'hookEventName': 'PostToolUse',
-        'additionalContext': advice
+if parts:
+    result = {
+        'hookSpecificOutput': {
+            'hookEventName': 'PostToolUse',
+            'additionalContext': '\n'.join(parts)
+        }
     }
-}
-print(json.dumps(result))
+    print(json.dumps(result))
 " 2>/dev/null || true
