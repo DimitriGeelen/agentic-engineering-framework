@@ -548,6 +548,28 @@ fw bus clear T-XXX
 
 **Size gating:** Payloads < 2KB are inline. Payloads >= 2KB are auto-moved to `.context/bus/blobs/` and referenced. This prevents T-073-class context explosions (~97% context savings in simulation).
 
+### Cross-Machine Dispatch (`fw dispatch`)
+
+For cross-machine communication without TermLink, use SSH-based dispatch:
+
+```bash
+# Send result to remote machine
+fw dispatch send --host dev-server --task T-XXX --agent explore --summary "Found issues"
+
+# Or use --remote flag with bus post
+fw bus post --remote dev-server --task T-XXX --agent explore --summary "Found issues"
+
+# List available SSH hosts
+fw dispatch hosts
+```
+
+**Requirements:**
+- SSH access to remote host (configured in `~/.ssh/config`)
+- Agentic Framework installed on remote host
+- Remote user has write access to `.context/bus/`
+
+**How it works:** The local machine serializes the bus envelope as JSON and pipes it via SSH to `fw bus receive` on the remote machine, which stores it in the remote bus channel.
+
 ### Dispatch Patterns (from project history)
 
 **Parallel Investigation** (T-059, T-061, T-086): 3-5 Explore agents scan different aspects. Each returns structured findings. Orchestrator synthesizes.
@@ -810,6 +832,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Read bus results | `fw bus read T-XXX [R-NNN]` | |
 | Bus manifest | `fw bus manifest [T-XXX]` | |
 | Clear bus channel | `fw bus clear T-XXX` | |
+| Dispatch to remote | `fw dispatch send --host HOST --task T-XXX --agent TYPE --summary "..."` | |
+| Bus post remote | `fw bus post --remote HOST --task T-XXX --agent TYPE --summary "..."` | |
+| List SSH hosts | `fw dispatch hosts` | |
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |

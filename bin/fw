@@ -262,6 +262,7 @@ show_help() {
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
+    echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
     echo -e "  ${GREEN}consolidate${NC} <cmd>   Memory consolidation (scan, apply, report)"
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
@@ -1355,6 +1356,10 @@ case "$cmd" in
     bus)
         source "$FW_LIB_DIR/bus.sh"
         do_bus "$@"
+        ;;
+    dispatch)
+        source "$FW_LIB_DIR/dispatch.sh"
+        do_dispatch "$@"
         ;;
     upstream)
         source "$FW_LIB_DIR/upstream.sh"

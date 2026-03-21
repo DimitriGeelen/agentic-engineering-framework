@@ -28,6 +28,7 @@ do_bus() {
         read) do_bus_read "$@" ;;
         manifest) do_bus_manifest "$@" ;;
         clear) do_bus_clear "$@" ;;
+        receive) do_bus_receive "$@" ;;
         -h|--help|"") do_bus_help ;;
         *)
             echo -e "${RED}Unknown bus command: $subcmd${NC}" >&2
@@ -41,15 +42,17 @@ do_bus_help() {
     echo -e "${BOLD}fw bus${NC} - Task-scoped result ledger"
     echo ""
     echo -e "${BOLD}Commands:${NC}"
-    echo -e "  ${GREEN}post${NC}      Post a result to a task channel"
+    echo -e "  ${GREEN}post${NC}      Post a result to a task channel (local or remote)"
     echo -e "  ${GREEN}read${NC}      Read results from a task channel"
     echo -e "  ${GREEN}manifest${NC}  Show summary of all results for a task"
     echo -e "  ${GREEN}clear${NC}     Clear results for a completed task"
+    echo -e "  ${GREEN}receive${NC}   Receive a result envelope from stdin (for SSH dispatch)"
     echo ""
     echo -e "${BOLD}Usage:${NC}"
     echo '  fw bus post --task T-XXX --agent explore --summary "Found 3 issues"'
     echo '  fw bus post --task T-XXX --agent explore --summary "Full report" --result "inline text"'
     echo '  fw bus post --task T-XXX --agent code --summary "Wrote file" --blob /path/to/file'
+    echo '  fw bus post --remote dev-server --task T-XXX --agent TYPE --summary "text"'
     echo "  fw bus read T-XXX              # Read all results"
     echo "  fw bus read T-XXX R-003        # Read specific result"
     echo "  fw bus manifest T-XXX          # Summary view"
@@ -58,11 +61,15 @@ do_bus_help() {
     echo -e "${BOLD}Size gating:${NC}"
     echo "  Payloads < ${BUS_SIZE_GATE}B are stored inline in the YAML envelope."
     echo "  Payloads >= ${BUS_SIZE_GATE}B are auto-moved to .context/bus/blobs/ and referenced."
+    echo ""
+    echo -e "${BOLD}Remote dispatch:${NC}"
+    echo "  Use --remote HOST to dispatch via SSH to a remote framework instance."
+    echo "  Requires: SSH access to HOST with framework installed."
 }
 
 do_bus_post() {
     local task_id="" agent_type="" msg_type="artifact" summary=""
-    local result_text="" blob_path="" agent_id_val=""
+    local result_text="" blob_path="" agent_id_val="" remote_host=""
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -73,6 +80,7 @@ do_bus_post() {
             --result) result_text="$2"; shift 2 ;;
             --blob) blob_path="$2"; shift 2 ;;
             --agent-id) agent_id_val="$2"; shift 2 ;;
+            --remote) remote_host="$2"; shift 2 ;;
             -h|--help) do_bus_help; return 0 ;;
             *)
                 echo -e "${RED}Unknown option: $1${NC}" >&2
@@ -80,6 +88,14 @@ do_bus_post() {
                 ;;
         esac
     done
+
+    # If --remote is specified, delegate to dispatch
+    if [ -n "$remote_host" ]; then
+        source "$FW_LIB_DIR/dispatch.sh"
+        do_dispatch_send --host "$remote_host" --task "$task_id" --agent "$agent_type" \
+            --summary "$summary" ${result_text:+--result "$result_text"}
+        return $?
+    fi
 
     # Validation
     if [ -z "$task_id" ]; then
@@ -361,4 +377,40 @@ do_bus_clear() {
     fi
 
     echo -e "${GREEN}Cleared${NC} $task_id channel ($cleared results removed)"
+}
+
+do_bus_receive() {
+    # Receive a JSON envelope from stdin (used by SSH dispatch)
+    # Converts JSON to YAML and stores in local bus channel
+
+    local envelope
+    envelope=$(cat)
+
+    if [ -z "$envelope" ]; then
+        echo -e "${RED}ERROR: No envelope received on stdin${NC}" >&2
+        return 1
+    fi
+
+    # Parse JSON envelope and post locally
+    local task_id agent_type summary payload source_host
+    task_id=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('task_id',''))")
+    agent_type=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('agent_type',''))")
+    summary=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('summary',''))")
+    payload=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('payload',''))")
+    source_host=$(echo "$envelope" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('source_host','unknown'))")
+
+    if [ -z "$task_id" ] || [ -z "$agent_type" ] || [ -z "$summary" ]; then
+        echo -e "${RED}ERROR: Invalid envelope — missing required fields${NC}" >&2
+        return 1
+    fi
+
+    # Annotate summary with source
+    local annotated_summary="[from $source_host] $summary"
+
+    # Post locally
+    if [ -n "$payload" ]; then
+        do_bus_post --task "$task_id" --agent "$agent_type" --summary "$annotated_summary" --result "$payload"
+    else
+        do_bus_post --task "$task_id" --agent "$agent_type" --summary "$annotated_summary"
+    fi
 }
