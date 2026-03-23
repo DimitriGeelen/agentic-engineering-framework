@@ -2,7 +2,7 @@
 id: T-530
 name: "Continue fixing TermLink release builds"
 description: >
-  Continue fixing TermLink release builds
+  Fix TermLink GitHub Actions release builds — workflow templates, rust-toolchain action, Homebrew tap
 
 status: started-work
 workflow_type: build

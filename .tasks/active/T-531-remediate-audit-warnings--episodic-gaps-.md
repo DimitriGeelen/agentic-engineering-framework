@@ -1,8 +1,8 @@
 ---
-id: T-513
-name: "Remove PyYAML check from install.sh"
+id: T-531
+name: "Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks"
 description: >
-  Remove phantom PyYAML dependency check from install.sh — framework doesn't use PyYAML directly
+  Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks
 
 status: started-work
 workflow_type: build
@@ -11,12 +11,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-21T15:58:15Z
-last_update: 2026-03-21T15:58:15Z
+created: 2026-03-23T07:54:23Z
+last_update: 2026-03-23T07:54:23Z
 date_finished: null
 ---
 
-# T-513: Remove PyYAML check from install.sh
+# T-531: Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks
 
 ## Context
 
@@ -25,9 +25,12 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] PyYAML check removed from install.sh check_prereqs function
-- [x] install.sh still validates bash, git, python3
-- [x] install.sh runs without error (bash -n syntax check)
+- [ ] Missing episodic summaries generated (T-444, T-452, T-453, T-519, T-520, T-521)
+- [ ] Short task descriptions expanded to >=50 chars (T-513, T-514, T-525, T-529, T-530)
+- [ ] Stale tasks T-316 and T-432 have progress updates
+- [ ] Missing inception research stubs created (T-508, T-509, T-510, T-511, T-512)
+- [ ] Fabric drift addressed (governance.yaml registered)
+- [ ] Audit re-run shows reduced warning count
 
 ## Verification
 
@@ -53,7 +56,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-21T15:58:15Z — task-created [task-create-agent]
+### 2026-03-23T07:54:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /home/dimitri-mint-dev/.agentic-framework/.tasks/active/T-513-remove-pyyaml-check-from-installsh.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-531-remediate-audit-warnings--episodic-gaps-.md
 - **Context:** Initial task creation

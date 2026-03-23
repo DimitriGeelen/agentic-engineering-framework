@@ -2,7 +2,7 @@
 id: T-529
 name: "Capture Task vs TermLink dispatch learning"
 description: >
-  Capture Task vs TermLink dispatch learning
+  Capture learning on when to use Task tool agents vs TermLink dispatch — decision matrix in CLAUDE.md
 
 status: work-completed
 workflow_type: refactor

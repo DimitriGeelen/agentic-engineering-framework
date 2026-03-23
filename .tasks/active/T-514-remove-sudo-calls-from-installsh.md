@@ -2,7 +2,7 @@
 id: T-514
 name: "Remove sudo calls from install.sh"
 description: >
-  Remove sudo calls from install.sh
+  Remove sudo privilege escalation from install.sh — use ~/.local/bin user-space install instead
 
 status: started-work
 workflow_type: build

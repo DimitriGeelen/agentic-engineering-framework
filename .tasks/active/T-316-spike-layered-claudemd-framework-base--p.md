@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-04T19:27:32Z
-last_update: 2026-03-04T19:27:32Z
+last_update: 2026-03-23T09:00:00Z
 date_finished: null
 ---
 
@@ -83,5 +83,5 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-03-23 — Status check
+- Parked at horizon:later. Blocked on Claude Code supporting multi-file CLAUDE.md or include directives. fw upgrade (T-494) covers the practical need for now. Will revisit if Anthropic adds include support.

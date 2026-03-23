@@ -2,7 +2,7 @@
 id: T-525
 name: "README accuracy evaluation"
 description: >
-  README accuracy evaluation
+  Evaluate README.md claims against actual codebase — verify stats, counts, and feature descriptions
 
 status: started-work
 workflow_type: build

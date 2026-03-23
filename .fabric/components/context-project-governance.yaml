@@ -1,0 +1,17 @@
+id: .context/project/governance.yaml
+name: governance
+type: data
+subsystem: context-fabric
+location: .context/project/governance.yaml
+tags: [context, project-memory, governance, enforcement]
+
+purpose: "Risk-based governance declarations — machine-readable predictability x blast-radius matrix mapping operations to enforcement levels. Created by T-511."
+
+depends_on: []
+
+depended_by:
+  - target: agents/audit/audit.sh
+    type: read_by
+
+last_verified: 2026-03-23
+created_by: T-531
