@@ -89,20 +89,25 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.
+
+**Date**: 2026-03-23T09:21:54Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.
+
+**Date**: 2026-03-23T09:21:54Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-23T09:21:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.

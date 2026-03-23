@@ -20,6 +20,8 @@ do_dispatch() {
     case "$subcmd" in
         send) do_dispatch_send "$@" ;;
         hosts) do_dispatch_hosts ;;
+        approve) do_dispatch_approve ;;
+        reset) do_dispatch_reset ;;
         -h|--help|"") do_dispatch_help ;;
         *)
             echo -e "${RED}Unknown dispatch command: $subcmd${NC}" >&2
@@ -152,4 +154,21 @@ do_dispatch_hosts() {
 
     echo ""
     echo "Test connectivity: ssh -o BatchMode=yes HOST 'fw version'"
+}
+
+# --- Agent dispatch approval (T-533) ---
+
+do_dispatch_approve() {
+    local approval_file="$PROJECT_ROOT/.context/working/.dispatch-approval"
+    mkdir -p "$(dirname "$approval_file")"
+    date +%s > "$approval_file"
+    echo -e "${GREEN}Agent dispatch approved${NC} (5-minute window)"
+    echo "  The PreToolUse gate will allow Agent tool dispatches for the next 5 minutes."
+}
+
+do_dispatch_reset() {
+    local counter_file="$PROJECT_ROOT/.context/working/.agent-dispatch-counter"
+    local approval_file="$PROJECT_ROOT/.context/working/.dispatch-approval"
+    rm -f "$counter_file" "$approval_file"
+    echo "Agent dispatch counter and approval reset."
 }

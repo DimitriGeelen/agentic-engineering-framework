@@ -576,6 +576,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".agentic-framework/bin/fw hook check-agent-dispatch"
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit|Bash",
         "hooks": [
           {
@@ -626,7 +635,7 @@ generate_claude_code_config() {
   }
 }
 SJSON
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 11 hooks: task gate, tier0, budget, plan blocker, compact, resume, checkpoint, error-watchdog, dispatch guard, fabric new-file)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 12 hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, fabric new-file)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi

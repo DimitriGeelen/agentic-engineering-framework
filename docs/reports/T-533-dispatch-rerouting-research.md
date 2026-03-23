@@ -47,6 +47,19 @@ CLAUDE.md dispatch protocol says "use TermLink for 3+ heavy agents" but this is 
 - **Pro:** Flexible, mirrors proven Tier 0 pattern
 - **Con:** Friction on legitimate multi-agent work
 
+## Decision: GO — Option D (Tier 0-style approval with counter)
+
+**Implementation:**
+- `agents/context/check-agent-dispatch.sh` — PreToolUse hook on Agent tool
+- Counter tracks dispatches in `.context/working/.agent-dispatch-counter`
+- First 2 dispatches free, 3rd+ blocked unless approved or TermLink not installed
+- `fw dispatch approve` — 5-min TTL approval (like Tier 0)
+- `fw dispatch reset` — reset counter
+- Graceful degradation: if TermLink not installed, warn but allow
+
+**Wiring:** Added to `lib/init.sh` settings.json template as 12th hook.
+Existing projects need manual addition to `.claude/settings.json`.
+
 ## Dialogue Log
 
 - Human noticed 3 background agents used where TermLink should have been
