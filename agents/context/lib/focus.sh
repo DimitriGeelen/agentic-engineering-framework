@@ -38,19 +38,34 @@ do_focus() {
             exit 1
         fi
 
-        # Update focus.yaml
-        if [ -f "$focus_file" ]; then
-            _sed_i "s/^current_task:.*/current_task: $task_id/" "$focus_file"
-        else
-            # Create minimal focus file
-            cat > "$focus_file" << EOF
-current_task: $task_id
-priorities: []
-blockers: []
-pending_decisions: []
-reminders: []
-EOF
+        # Read current session ID for stamping
+        local session_file="$CONTEXT_DIR/working/session.yaml"
+        local current_session_id=""
+        if [ -f "$session_file" ]; then
+            current_session_id=$(grep "^session_id:" "$session_file" | head -1 | awk '{print $2}')
         fi
+
+        # Update focus.yaml with task + session stamp (T-560)
+        python3 -c "
+import yaml, sys
+focus_file = '$focus_file'
+task_id = '$task_id'
+session_id = '${current_session_id:-unknown}'
+try:
+    with open(focus_file) as f:
+        data = yaml.safe_load(f) or {}
+except:
+    data = {}
+data['current_task'] = task_id
+data['focus_session'] = session_id
+with open(focus_file, 'w') as f:
+    f.write('# Working Memory - Current Focus\n')
+    f.write(f'# Session: {session_id}\n\n')
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+" 2>/dev/null || {
+            # Fallback if Python fails
+            _sed_i "s/^current_task:.*/current_task: $task_id/" "$focus_file"
+        }
 
         # Update session.yaml tasks_touched
         local session_file="$CONTEXT_DIR/working/session.yaml"

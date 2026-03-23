@@ -80,17 +80,29 @@ if [ ! -f "$FOCUS_FILE" ]; then
     exit 0
 fi
 
-# Read current task from focus.yaml
-CURRENT_TASK=$(python3 -c "
+# Read current task AND session stamp from focus.yaml
+read -r CURRENT_TASK FOCUS_SESSION < <(python3 -c "
 import yaml, sys
 try:
     with open('$FOCUS_FILE') as f:
         data = yaml.safe_load(f)
-    task = data.get('current_task', '') if data else ''
-    print(task if task and task != 'null' else '')
+    if not data:
+        print(' ')
+    else:
+        task = data.get('current_task', '') or ''
+        if task == 'null': task = ''
+        session = data.get('focus_session', '') or ''
+        print(f'{task} {session}')
 except:
-    print('')
+    print(' ')
 " 2>/dev/null)
+
+# Read current session ID for comparison
+CURRENT_SESSION=""
+SESSION_FILE="$PROJECT_ROOT/.context/working/session.yaml"
+if [ -f "$SESSION_FILE" ]; then
+    CURRENT_SESSION=$(grep "^session_id:" "$SESSION_FILE" 2>/dev/null | head -1 | awk '{print $2}')
+fi
 
 if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
@@ -102,6 +114,40 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
     echo "Attempting to modify: $FILE_PATH" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
+    exit 2
+fi
+
+# --- Session stamp validation (T-560) ---
+# If focus was set in a PREVIOUS session, block and advise.
+# This prevents stale focus from granting a free pass to new sessions.
+if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" != "$CURRENT_SESSION" ]; then
+    # Look up task name for advisory
+    STALE_TASK_NAME=""
+    STALE_FILE=$(find_task_file "$CURRENT_TASK" active 2>/dev/null)
+    if [ -n "$STALE_FILE" ]; then
+        STALE_TASK_NAME=$(grep "^name:" "$STALE_FILE" 2>/dev/null | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+    fi
+
+    echo "" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "  STALE FOCUS — Task From Previous Session" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "" >&2
+    echo "  Previous task: $CURRENT_TASK" >&2
+    [ -n "$STALE_TASK_NAME" ] && echo "  Name:          $STALE_TASK_NAME" >&2
+    echo "  Set in session: $FOCUS_SESSION" >&2
+    echo "  Current session: $CURRENT_SESSION" >&2
+    echo "" >&2
+    echo "  Focus was set in a previous session. To continue this task:" >&2
+    echo "    fw work-on $CURRENT_TASK" >&2
+    echo "" >&2
+    echo "  To start different work:" >&2
+    echo "    fw work-on 'New task name' --type build" >&2
+    echo "" >&2
+    echo "  Attempting to modify: $FILE_PATH" >&2
+    echo "  Policy: T-560 (Session-Stamped Focus Enforcement)" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "" >&2
     exit 2
 fi
 

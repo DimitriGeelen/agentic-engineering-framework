@@ -4,7 +4,7 @@ name: "Investigate task hook reliability on Linux — PreToolUse Write/Edit gate
 description: >
   User reports being able to write files without being prompted to create tasks. This happens all the time on Linux. Previously on macOS the hook worked. Investigate: is check-active-task.sh firing? Is there a platform difference? Check hook registration, PATH resolution, and Claude Code hook execution on Linux.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T17:00:05Z
-last_update: 2026-03-23T17:00:05Z
+last_update: 2026-03-23T17:07:55Z
 date_finished: null
 ---
 
@@ -20,40 +20,28 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+User reports Write/Edit operations succeeding without task gate blocking. Worked on macOS, possibly broken on Linux. Platform: Linux 6.8.0-88-generic, Claude Code 2.1.74.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Root cause identified — why hook doesn't fire or fires but doesn't block
+- [ ] Investigation findings documented in this task file
+- [ ] Fix applied if root cause is in framework code
+- [ ] `fw doctor` hook validation passes on Linux
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Restart Claude Code session and try to Write without a task — verify it blocks
+  **Steps:**
+  1. `fw context focus --clear` (or start fresh session without focus)
+  2. Try to edit any source file
+  3. Check for "BLOCKED: No active task" message
+  **Expected:** Write/Edit is blocked
+  **If not:** Check `fw doctor` output, verify hooks in settings.json
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+fw doctor 2>&1 | grep -q "Hook path validation"
 
 ## Decisions
 
@@ -72,3 +60,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-560-investigate-task-hook-reliability-on-lin.md
 - **Context:** Initial task creation
+
+### 2026-03-23T17:00:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
