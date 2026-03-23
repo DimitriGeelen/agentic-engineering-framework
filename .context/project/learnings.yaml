@@ -815,4 +815,102 @@ learnings:
   date: 2026-03-17
   context: Added via context agent
   application: TBD
+- id: L-102
+  learning: "fabric register on large monorepo: agent registered 2999 components instead of 30-50 key ones. Pickup prompt said 'quality over quantity' and '30-50 components' but agent interpreted 'register key components' as 'register everything'. Need explicit caps in pickup prompts (e.g., 'DO NOT register more than 50 components') and possibly a fw fabric register --max flag"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-103
+  learning: "Remote agent session governance: agent started 8 tasks simultaneously and skipped onboarding sequence (T-001-T-006) to jump to inception tasks (T-007+). Pickup prompts need explicit sequencing enforcement: 'COMPLETE T-001-T-006 IN ORDER BEFORE creating inception tasks. ONE task focus at a time.' Also created placeholder T-013 with name 'task name' — agents need structural guardrails against empty task creation"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-104
+  learning: "Commit cadence in remote sessions: agent made only 1 commit across ~30 minutes of work including 2999 fabric registrations. Remote/autonomous sessions need stronger commit cadence enforcement — possibly a PostToolUse hook that warns after N tool calls without a commit, or pickup prompt language: 'COMMIT after completing each onboarding task'"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-105
+  learning: "TermLink coaching works: injected 614-byte coaching message identifying 5 issues. Remote agent received it, acknowledged, and corrected all 5: deleted 2999 bulk components, removed placeholder task, reset inception tasks to captured, committed cleanup. Effective coaching pattern: numbered issues, specific counts, clear instructions. Total turnaround ~5 minutes"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-106
+  learning: "Remote agent status file pattern works well: instructed agent to write eval-status.txt, it produced a clean structured status with milestones, completed tasks, ready tasks, fabric stats, and commit list. Much more reliable than parsing TermLink PTY output. Recommend as standard pattern for all remote/autonomous sessions"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-107
+  learning: "Fabric register without edges: agent registered 46 components but all had zero edges (depends_on/depended_by). fw fabric register creates cards without relationship data. Onboarding T-003 should explicitly require: 'register components AND map their dependencies'. Consider: fw fabric register should prompt for at least 1 dependency, or fw fabric enrich should be part of onboarding"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-108
+  learning: "Git traceability audit false-fail on ingested repos: audit reports 0% traceability because it counts ALL commits (21557 upstream OpenClaw). For ingested/forked repos, audit should only count commits after framework init, or have a 'baseline commit' marker. Otherwise every ingested project starts with FAIL"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-109
+  learning: "fw fabric register creates edge placeholders not real edges: agent enriched 46 cards but all had depends_on: [] with comment templates. The register flow needs a second pass that reads actual source imports (import/require statements) and maps them to registered component paths. Consider: fw fabric enrich --auto that parses imports, or make the register flow ask 'what does this depend on?'"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-110
+  learning: "TermLink injection can accidentally suspend Claude Code: injecting long messages with special characters through termlink pty inject can produce escape sequences that Claude Code interprets as ctrl+z (suspend). This happened when coaching messages with dashes, quotes, and unicode were injected. Mitigation: keep injected messages SHORT and ASCII-only, or write coaching to a file and inject 'cat /path/to/coaching.txt' instead"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-111
+  learning: "Autonomous agent session with TermLink coaching produced excellent results: 6 inception tasks, 6 research artifacts, 14 commits, all GO decisions — completed in ~1 hour with minimal intervention. Key success factors: (1) clear pickup prompt with explicit instructions, (2) file-based coaching via supervisor-coaching.txt, (3) status file for monitoring, (4) short ASCII-only TermLink injections for nudges, (5) letting it work without over-coaching"
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-112
+  learning: "Path isolation check needed in TermLink project: similar framework_root vs project_root bleeding may exist in the TermLink Rust codebase. Needs investigation in the TermLink repo, not here."
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-113
+  learning: "Inception GO decisions are authority, not initiative. The Authority Model says agents propose, humans decide. A GO decision commits engineering resources and closes architectural doors — that's authority. All historical inception decision commits were human-authored (evidence from git log). Structural enforcement: block agents from running fw inception decide, make it Tier 0. Agent writes recommendation with PENDING HUMAN CONFIRMATION, human confirms."
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-114
+  learning: "Risk signals apply to build tasks, not inception creation. Steelman/strawman analysis showed: at inception creation time the future is unknown (temporal paradox — cant predict build task count). But at build time, signals ARE observable: fabric cards reveal subsystem boundaries, filename patterns reveal external system edits, dependency edges reveal cross-subsystem impact. Put the risk gate where the data exists."
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: L-115
+  learning: "Simple rules beat complex classifiers for governance. Strawman demolished structural risk classification at inception time (false positives, gaming, temporal paradox). Simple rule — all inception GO decisions require human confirmation — achieves same protection with zero machinery. Framework over-engineering history (G-002 status simplification, L-057 unused bus, R-032 bypass pressure) confirms: simpler gates get respected, complex ones get bypassed."
+  source: observation
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
 candidates: []
