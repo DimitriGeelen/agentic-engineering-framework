@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-531: Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-23T09:47:06Z
+# ============================================================================
+
+task_id: T-531
+task_name: "Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T07:54:23Z
+completed: 2026-03-23T09:47:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-23T09:08:00+01:00
+last_commit: 2026-03-23T09:08:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remediate 16 audit warnings — episodic gaps, descriptions, research stubs, fabric drift
+
+# Key outcomes
+outcomes:
+  - "Missing episodic summaries generated (T-444, T-452, T-453, T-519, T-520, T-521)"
+  - "Short task descriptions expanded to >=50 chars (T-541, T-542, T-525, T-529, T-530)"
+  - "Stale tasks T-316 and T-432 have progress updates"
+  - "Missing inception research stubs created (T-508, T-509, T-510, T-511, T-512)"
+  - "Fabric drift addressed (governance.yaml registered)"
+  - "Audit re-run shows reduced warning count"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-444.yaml"
+  - ".context/episodic/T-452.yaml"
+  - ".context/episodic/T-453.yaml"
+  - ".context/episodic/T-519.yaml"
+  - ".context/episodic/T-520.yaml"
+  - ".context/episodic/T-521.yaml"
+  - "docs/reports/T-508-pyyaml-dependency-audit.md"
+  - "docs/reports/T-509-sudo-removal.md"
+  - "docs/reports/T-510-phantom-aef-binary.md"
+  - "docs/reports/T-511-termlink-homebrew-tap.md"
+  - "docs/reports/T-512-fw-dispatch-ssh.md"
+  - ".fabric/components/context-project-governance.yaml"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+  - ".tasks/active/T-432-re-evaluate-skip-refactoring-findings-27.md"
+  - ".tasks/active/T-513-remove-pyyaml-check-from-installsh.md"
+  - ".tasks/active/T-514-remove-sudo-calls-from-installsh.md"
+  - ".tasks/active/T-525-readme-accuracy-evaluation.md"
+  - ".tasks/active/T-529-capture-task-vs-termlink-dispatch-learni.md"
+  - ".tasks/active/T-530-continue-fixing-termlink-release-builds.md"
+  - ".tasks/active/T-531-remediate-audit-warnings--episodic-gaps-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T09:08:00"
+    action: "T-531: Remediate 16 audit warnings — episodic gaps, descriptions, research stubs, fabric drift"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 112 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 112
+  commits: 1
+  files_changed: 20
+  lines_added: 576
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-531-remediate-audit-warnings--episodic-gaps-.md
+generated_by: context-agent-hybrid

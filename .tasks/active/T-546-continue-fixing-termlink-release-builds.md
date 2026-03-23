@@ -1,22 +1,22 @@
 ---
-id: T-525
-name: "README accuracy evaluation"
+id: T-546
+name: "Continue fixing TermLink release builds"
 description: >
-  Evaluate README.md claims against actual codebase — verify stats, counts, and feature descriptions
+  Fix TermLink GitHub Actions release builds — workflow templates, rust-toolchain action, Homebrew tap
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:09:33Z
-last_update: 2026-03-23T09:51:03Z
-date_finished: 2026-03-23T09:51:03Z
+created: 2026-03-21T22:45:15Z
+last_update: 2026-03-21T22:45:15Z
+date_finished: null
 ---
 
-# T-525: README accuracy evaluation
+# T-530: Continue fixing TermLink release builds
 
 ## Context
 
@@ -25,8 +25,9 @@ date_finished: 2026-03-23T09:51:03Z
 ## Acceptance Criteria
 
 ### Agent
-- [x] Evaluation report written to /tmp/fw-agent-readme-eval.md
-- [x] Report covers: install accuracy, command accuracy, stats verification, link validity, version consistency
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] Release workflow uses Rust 1.85+ (edition 2024 support)
+- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,10 +68,7 @@ date_finished: 2026-03-23T09:51:03Z
 
 ## Updates
 
-### 2026-03-17T23:09:33Z — task-created [task-create-agent]
+### 2026-03-21T22:45:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-525-readme-accuracy-evaluation.md
+- **Output:** /home/dimitri-mint-dev/.agentic-framework/.tasks/active/T-530-continue-fixing-termlink-release-builds.md
 - **Context:** Initial task creation
-
-### 2026-03-23T09:51:03Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

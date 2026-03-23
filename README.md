@@ -8,7 +8,7 @@ I built this because I recognised a pattern. In 25 years of enterprise IT govern
 
 ## What This Has Actually Stopped
 
-Real output from this framework governing its own development (500+ tasks, 470+ completed):
+Real output from this framework governing its own development (545+ tasks, 488+ completed):
 
 **Agent tries to edit a file without a task:**
 ```
@@ -70,7 +70,7 @@ The difference: telling someone to wear a hard hat versus installing a door that
 
 - **bash 4.4+** — macOS ships with bash 3.2; install a modern version: `brew install bash`
 - **git 2.20+**
-- **python3 3.8+** with **PyYAML** — `pip install pyyaml`
+- **python3 3.8+** (PyYAML optional — needed only for `fw serve` dashboard)
 
 The installer checks these and will tell you what's missing.
 
@@ -132,7 +132,7 @@ Full structural enforcement requires an agent that supports pre-operation hooks.
 | Audit — 150+ governance checks | CLI (agent-agnostic) | CLI (agent-agnostic) |
 | Session handover — context survives restarts | CLI (agent-agnostic) | CLI (agent-agnostic) |
 
-This framework has been developed entirely under its own governance using Claude Code — 500+ tasks, 470+ completed, 99% commit traceability. Cursor, Copilot, Aider, and other agents are supported by design (`fw init --provider cursor`, `fw init --provider generic`) but have not been validated in production. Contributions and testing from users of those tools are welcome.
+This framework has been developed entirely under its own governance using Claude Code — 545+ tasks, 488+ completed, 96% commit traceability. Cursor, Copilot, Aider, and other agents are supported by design (`fw init --provider cursor`, `fw init --provider generic`) but have not been validated in production. Contributions and testing from users of those tools are welcome.
 
 ## Quickstart
 
@@ -301,7 +301,7 @@ Run OpenClaw for multi-app automation. Run LangGraph for agent orchestration. Ru
 <details>
 <summary><b>Architecture</b></summary>
 
-The framework runs as a CLI (`fw`) that routes to specialized agents. Internally it is organized into 12 subsystems, but you interact with roughly 6 commands and a dashboard.
+The framework runs as a CLI (`fw`) that routes to specialized agents. Internally it is organized into 15 subsystems, but you interact with roughly 6 commands and a dashboard.
 
 ```
 bin/fw                    CLI entry point
@@ -342,7 +342,7 @@ Agent     → INITIATIVE   → Can propose, request, suggest — never decides
 
 ## Self-Governing
 
-This framework develops itself using its own governance. 500+ tasks created, 470+ completed, 99% commit traceability, every decision recorded and searchable. The framework is its own case study — or its own most elaborate yak-shave, depending on your perspective.
+This framework develops itself using its own governance. 545+ tasks created, 488+ completed, 96% commit traceability, every decision recorded and searchable. The framework is its own case study — or its own most elaborate yak-shave, depending on your perspective.
 
 ## Documentation
 
