@@ -111,3 +111,4 @@ This means a freshly initialized project can immediately drift into ungoverned w
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Tag-based gate in check-active-task.sh + SessionStart injection. Marker exists on seed templates, backward compatible, minimal change surface. Escape hatch via fw onboarding skip.
+- **Research artifact:** `docs/reports/T-532-onboarding-gate-research.md`

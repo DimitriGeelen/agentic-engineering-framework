@@ -25,9 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Release workflow uses Rust 1.85+ (edition 2024 support)
-- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully
+- [x] Release workflow uses Rust 1.85+ (edition 2024 support) — uses dtolnay/rust-toolchain@stable (≥1.85)
+- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully — requires tag push to verify
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

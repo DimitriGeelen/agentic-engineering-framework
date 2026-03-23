@@ -111,3 +111,4 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.
+- **Research artifact:** `docs/reports/T-533-dispatch-rerouting-research.md`
