@@ -121,8 +121,8 @@ This decision affects every future task in the framework. It must be thorough.
 ### Agent
 - [x] Phase 1 complete: language audit artifact with quantified distribution
 - [x] Phase 2 complete: prototype comparison artifact with measurable results
-- [ ] Phase 3 complete: migration path artifact with concrete design
-- [ ] Phase 4 complete: constitutional review artifact with directive-by-directive analysis
+- [x] Phase 3 complete: migration path artifact with concrete design
+- [x] Phase 4 complete: constitutional review artifact with directive-by-directive analysis
 - [ ] Phase 5 complete: GO/NO-GO decision recorded with full rationale
 
 ### Human
