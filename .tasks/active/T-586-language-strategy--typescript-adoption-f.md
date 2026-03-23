@@ -1,0 +1,218 @@
+---
+id: T-586
+name: "Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo"
+description: >
+  Fundamental architectural decision: should new framework components (loop detection, health checks, event loops, session management, token budget) be written in TypeScript instead of the current bash+Python hybrid? The framework is already three languages (bash orchestration, Python data processing, Python/Flask web). Every non-trivial hook shells out to Python. Patterns extracted from OpenClaw are all TypeScript requiring rewrite. This is a multi-session inception spanning language audit, prototype spikes, migration path analysis, and constitutional directive review.
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: [architecture, language, constitutional]
+components: []
+related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585]
+created: 2026-03-23T21:32:53Z
+last_update: 2026-03-23T21:32:53Z
+date_finished: null
+---
+
+# T-586: Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo
+
+## Problem Statement
+
+The framework was designed as "bash scripts for portability" (Directive 4). In practice it has become a three-language hybrid: bash for orchestration, Python for all non-trivial data processing (YAML, JSON, semantic search, enrichment, budget calculation), and Python/Flask/Jinja for the Watchtower web UI. Every PreToolUse hook contains inline `python3 -c` blocks. The "no dependencies" portability argument is void — we already require Python 3, PyYAML, Flask, and optionally Ollama/Qdrant.
+
+Meanwhile, 8 new inception tasks (T-578 through T-585) require implementing sophisticated patterns (loop detection, dedup, session keys, token budgets, health checks) that were originally designed in TypeScript. Rewriting them in bash+Python is translation overhead with reduced type safety.
+
+The question is NOT "should we rewrite everything in TypeScript." The question is: **for new components, should we adopt TypeScript as the implementation language, while keeping bash as the orchestration/glue layer?**
+
+This decision affects every future task in the framework. It must be thorough.
+
+## Assumptions
+
+1. Node.js/TypeScript is as portable as Python across framework target platforms (macOS, Linux, WSL)
+2. Claude Code users already have Node.js installed (Claude Code requires it)
+3. TypeScript compilation can be handled at install/update time, not runtime
+4. Bash remains necessary for git hooks, CLI entry points, and shell-level orchestration
+5. A hybrid bash+TypeScript architecture is manageable (bash calls TS binaries, similar to current bash calls Python)
+6. The migration can be incremental — new components in TS, existing components stay bash until individually justified
+7. Type safety will reduce bugs like the `framework_root` vs `project_root` variable name error (T-553)
+8. Developer experience improves — single language for data processing instead of inline Python in bash
+
+## Exploration Plan
+
+### Phase 1: Language Audit (1 session)
+**Goal:** Quantify the current language distribution and dependency reality.
+- Count lines of bash, Python (standalone), Python (inline in bash), Jinja, YAML
+- Map which components use Python: list every `python3 -c` and `python3` invocation
+- Map external dependencies: what does `fw doctor` already require?
+- Measure: how many of the 162 components are "pure bash" vs "bash+Python hybrid"?
+- Document Node.js availability on target platforms (macOS default? Linux package managers? WSL?)
+- **Artifact:** `docs/reports/T-586-language-audit.md`
+
+### Phase 2: Prototype Spike (1-2 sessions)
+**Goal:** Build one real component in TypeScript and one in bash+Python. Compare.
+- **Candidate:** Loop detection (T-578) — complex enough to stress-test both approaches
+- Build PostToolUse loop detector in TypeScript (~100 LOC, direct port from OpenClaw)
+- Build same in bash+Python hybrid (current architecture style)
+- Compare: LOC, readability, type safety, error handling, test coverage, execution time
+- Test: does the TS version work as a Claude Code hook? (`fw hook loop-detect` → runs compiled JS)
+- Test: does `fw doctor` detect and validate TS components?
+- **Artifact:** `docs/reports/T-586-prototype-comparison.md`
+
+### Phase 3: Migration Path Analysis (1 session)
+**Goal:** Design the incremental migration strategy if GO.
+- Define the boundary: what stays bash forever (git hooks, CLI entry point, simple glue)?
+- Define the boundary: what moves to TS (data processing, complex hooks, new subsystems)?
+- Design the build pipeline: when does TS compile? Install time? `fw update`? Pre-commit?
+- Design the dev experience: how does a contributor add a new TS component?
+- Assess impact on `fw init --vendor`: does vendoring work with compiled TS?
+- Assess impact on CI: do GitHub Actions need Node.js?
+- Map consumer project impact: does adding TS to the framework affect projects using it?
+- **Artifact:** `docs/reports/T-586-migration-path.md`
+
+### Phase 4: Constitutional Review (1 session)
+**Goal:** Verify alignment with the four directives.
+- **Antifragility (D1):** Does TypeScript make the system more or less resilient? Type safety vs compilation step.
+- **Reliability (D2):** Does TypeScript improve predictability? Types catch bugs earlier vs new failure mode (compilation).
+- **Usability (D3):** Is it easier to extend/debug? Modern language vs additional toolchain.
+- **Portability (D4):** Is Node.js as available as Python? Does compilation affect vendoring? Does it lock us into an ecosystem?
+- Review: does the OpenClaw evaluation provide evidence for/against? (They chose TypeScript for 523K LOC and achieved strict type discipline)
+- **Artifact:** `docs/reports/T-586-constitutional-review.md`
+
+### Phase 5: Decision + Codification (1 session)
+**Goal:** GO/NO-GO with rationale, and if GO, codify the language policy.
+- Synthesize findings from Phases 1-4
+- Present decision to human with evidence
+- If GO: write `docs/adr/ADR-XXX-language-strategy.md` (Architecture Decision Record)
+- If GO: update CLAUDE.md with language policy (which components in which language)
+- If GO: create build tasks for migrating the first batch of components
+- If NO-GO: document why, capture learnings, close
+- **Artifact:** ADR + updated CLAUDE.md (if GO)
+
+## Technical Constraints
+
+- Framework must continue to work on macOS (bash 3.2 + Homebrew), Linux (bash 4+), and WSL
+- Git hooks must remain shell scripts (git invokes them directly)
+- `fw` CLI entry point must remain bash (shell PATH resolution, no compilation needed to start)
+- Claude Code hooks (`fw hook <name>`) must respond within ~200ms (PreToolUse blocks tool execution)
+- Consumer projects using `fw init --vendor` must not require Node.js if they don't opt into TS components
+- The framework must remain inspectable — no opaque compiled bundles replacing readable source
+
+## Scope Fence
+
+**IN scope:**
+- Language choice for NEW components (hooks, agents, libraries)
+- Incremental adoption — TS alongside bash, not replacing it
+- Build/compilation pipeline design
+- Impact on portability, vendoring, CI
+- Constitutional directive alignment
+- Prototype comparison (one component, two implementations)
+
+**OUT of scope:**
+- Rewriting existing bash components in TypeScript (that's a separate decision per component)
+- Rewriting Watchtower in a different framework (Flask→Express or similar)
+- Changing the `fw` CLI from bash to TypeScript
+- Adopting a full TypeScript monorepo toolchain (turborepo, nx, etc.)
+- Runtime type checking or schema validation libraries (zod, etc.) — that's implementation detail
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Phase 1 complete: language audit artifact with quantified distribution
+- [ ] Phase 2 complete: prototype comparison artifact with measurable results
+- [ ] Phase 3 complete: migration path artifact with concrete design
+- [ ] Phase 4 complete: constitutional review artifact with directive-by-directive analysis
+- [ ] Phase 5 complete: GO/NO-GO decision recorded with full rationale
+
+### Human
+- [ ] [REVIEW] Constitutional alignment assessment — does TypeScript adoption truly serve the four directives or is it engineering convenience dressed as improvement?
+  **Steps:**
+  1. Read `docs/reports/T-586-constitutional-review.md`
+  2. Challenge each directive assessment — is the evidence real or hypothetical?
+  3. Consider: would a new contributor find bash or TypeScript more approachable?
+  **Expected:** Clear-eyed assessment of trade-offs, not advocacy for either side
+  **If not:** Push back on weak arguments, request additional evidence
+
+- [ ] [REVIEW] Prototype comparison — is the TypeScript version meaningfully better or just different?
+  **Steps:**
+  1. Read both implementations side by side
+  2. Run both, check execution time
+  3. Assess: would you rather debug the bash or TS version at 3am?
+  **Expected:** Honest comparison with measurable differences
+  **If not:** Request additional metrics or a second prototype
+
+- [ ] [REVIEW] Migration path — is incremental adoption realistic or does it create a worse hybrid?
+  **Steps:**
+  1. Read `docs/reports/T-586-migration-path.md`
+  2. Consider: 3 languages (bash+Python+TS) is worse than 2 (bash+Python). Does TS REPLACE Python, or add a fourth?
+  3. Check: does the build pipeline add friction for contributors?
+  **Expected:** Practical path that reduces complexity, not increases it
+  **If not:** Challenge whether "new in TS, old in bash" creates a maintenance burden
+
+## Go/No-Go Criteria
+
+**GO if:**
+- TypeScript prototype is measurably better (fewer bugs, faster, more readable) than bash+Python equivalent
+- Node.js is available on all target platforms with no additional setup for Claude Code users
+- Incremental adoption path exists that REDUCES total language count (TS replaces Python, not adds to it)
+- Build/compilation step is invisible to users (happens at install/update, not runtime)
+- Constitutional review shows net positive across all four directives
+
+**NO-GO if:**
+- Prototype shows marginal improvement that doesn't justify toolchain complexity
+- Node.js availability is problematic on any target platform
+- Incremental adoption creates a THREE-language codebase (bash+Python+TS) worse than current TWO (bash+Python)
+- Compilation step creates friction (slow installs, stale builds, debug-vs-source confusion)
+- Constitutional review shows Portability (D4) regression that can't be mitigated
+
+## Research Artifacts
+
+- `/opt/openclaw-evaluation/.context/working/round2-T-015.md` — Tool call policy (TypeScript patterns we'd adopt)
+- `/opt/openclaw-evaluation/.context/working/round2-T-016.md` — Safety guardrails (TypeScript patterns)
+- `/opt/openclaw-evaluation/.context/working/round2-T-017.md` — Extension SDK (TypeScript minimalism)
+- `/opt/openclaw-evaluation/.context/working/round2-T-020.md` — Synthesis (steal list, all TypeScript)
+- `/opt/openclaw-evaluation/.context/working/round2-T-021.md` — P1-P4 deep-dive (portability assessment per pattern)
+- `/opt/openclaw-evaluation/.context/working/round2-T-022.md` — Architecture patterns (keyed async queue, 50 LOC TS)
+- `docs/reports/T-549-openclaw-component-quality.md` — Type discipline evidence (523K LOC strict TS)
+- `docs/reports/T-549-openclaw-framework-learnings.md` — Framework bugs from bash/Python issues
+
+## Related Tasks
+
+- T-578: Loop detection (candidate for prototype spike)
+- T-579: Idempotency/dedup layer
+- T-580: Error classification
+- T-581: Hook error boundaries
+- T-582: Session isolation
+- T-583: Background health check
+- T-584: Structured logging
+- T-585: Skills token budget
+- T-553: enrich.py bug (example of Python variable name error that TS types would catch)
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     For inception tasks, verification is often not needed (decisions, not code).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
