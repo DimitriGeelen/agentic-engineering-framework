@@ -10,7 +10,7 @@ owner: human
 horizon: now
 tags: [architecture, language, constitutional]
 components: []
-related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585]
+related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T-593, T-594, T-595]
 created: 2026-03-23T21:32:53Z
 last_update: 2026-03-23T21:32:53Z
 date_finished: null
@@ -253,10 +253,18 @@ This decision affects every future task in the framework. It must be thorough.
 
 **All 5 GO/NO-GO signals still point GO.** Proceeding to Phase 3 (migration path) and Phase 4 (constitutional review).
 
-### 2026-03-23T22:30:36Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Phase 1 signals all GO: esbuild 3ms compile + 20ms runtime, vendoring unaffected, tsc output readable, 56% unsafe shell escaping eliminated by TS, language count stays at 2. Proceeding to Phase 2 prototype spike. This is a multi-phase inception — decision is interim GO for Phase 2, not final.
+### 2026-03-23 — Phase 3+4 Complete: Migration Path + Constitutional Review
+
+**Artifacts:**
+- `docs/reports/T-586-migration-path.md` — Incremental adoption: what stays bash (entry points, git hooks), what moves to TS (data processing, new hooks), build pipeline (esbuild at `fw update`), `fw-util` pattern replacing ~290 inline Python blocks, vendoring ships pre-compiled JS only
+- `docs/reports/T-586-constitutional-review.md` — D1 antifragility NET POSITIVE (types catch #1 bug class), D2 reliability NET POSITIVE (proper files, lintable), D3 usability NET POSITIVE with friction (IDE support vs build step), D4 portability NEUTRAL (Node.js matches audience)
+
+**Key design decisions:**
+- `lib/ts/src/` for sources, `lib/ts/dist/` for compiled output (committed to repo)
+- Stale-guard pattern: `[[ src -nt dist ]] && esbuild` — one stat() per invocation
+- Vendoring excludes: `lib/ts/src`, `tsconfig.json`, `package.json`, `node_modules`
+- Runtime fallback: `fw_run_ts()` tries Node, falls back to Python
+- Language count stays at 2: TS replaces Python (doesn't add to it); three-language phase is transient
 
 ### 2026-03-23 — Phase 5 Complete: Final GO Decision
 
@@ -277,3 +285,69 @@ All agent ACs complete. Task remains open for human review of:
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** All 5 GO criteria met, 0 NO-GO triggered. Phase 1: 56% unsafe inline Python, Node.js guaranteed. Phase 2: TS 2x faster, shell-escape immune, scorecard 8-2-1. Phase 3: incremental path, fw-util replaces 290 Python blocks, vendor-transparent. Phase 4: all 4 directives net positive or neutral. Human approved.
+
+## Dialogue Log (C-001)
+
+Key exchanges that shaped this inception. Captures WHY and HOW reasoning evolved.
+
+### Session S-2026-0323-2236: Phase 1 + Course Correction
+
+**Human:** "further investigate i guess :: The framework is NOT a bash project..."
+**Context:** Agent had jumped to Phase 2 (prototype spike) after initial Phase 1 findings. Human corrected: deeper investigation of Phase 1 findings was needed first.
+**Course correction:** Agent stopped prototype work, returned to investigating: Watchtower coupling (zero code imports), hook performance overhead (9 Python invocations = ~450ms), fw-util replacement pattern, three-layer architecture analysis.
+**Outcome:** 5 additional deep-dive reports (Q1-Q5) produced, all of which strengthened the GO case with concrete evidence rather than assumptions.
+
+**Human:** "should we termlink separate agent for each question?"
+**Context:** 5 independent research questions identified. Human suggested TermLink dispatch for parallel investigation.
+**What happened:** TermLink dispatch failed — `CLAUDECODE` env var (set by parent Claude Code session) blocked nested `claude -p` invocations. RCA: `fw termlink dispatch` never unset the env var. Fix applied to `agents/termlink/termlink.sh`. Learning captured under T-576.
+**Outcome:** Fell back to Task tool agents (5 parallel). All 5 produced artifacts. TermLink structural fix committed.
+
+**Human:** "SO is there a structural ISSUE == RCA == FIX == Learning from this??!!!"
+**Context:** Agent had fixed the CLAUDECODE symptom but hadn't escalated to structural analysis.
+**Course correction:** Agent performed full RCA, identified that previous "successful" TermLink usage was coaching existing sessions (not spawning new ones), recorded pattern + learning, filed T-576.
+**Lesson:** Symptom fixes without RCA violate G-019. Human had to push for proper escalation.
+
+**Human:** "go lets first record everything, traceability, rich context compact and then start fresh again"
+**Context:** Phase 1 complete, all signals GO. Human wanted clean session boundary.
+**Outcome:** All artifacts committed (4 commits), handover generated, session compacted.
+
+### Session S-2026-0323-2331: Phases 2-5
+
+**Human:** "proceed" (after /resume)
+**Context:** Fresh session after compaction. Resumed T-586, proceeded to Phase 2.
+**What happened:** Built both prototypes, ran head-to-head benchmarks (7 test categories), compiled comparison report. TS won 8-2-1.
+
+**Agent:** Presented Phase 2 results, proceeded to Phases 3+4 (migration path + constitutional review), presented GO/NO-GO synthesis against all 5 criteria.
+
+**Human:** "Go on all 5"
+**Context:** Agent presented the 5 GO criteria with evidence and asked for human decision.
+**Decision:** Final GO. Human approved without requesting artifact review — evidence was convincing as presented.
+
+**Human:** "create build tasks make sure we have documented all our research, dialogues and decisions"
+**Context:** Post-GO, human wanted proper traceability before implementation begins.
+**Outcome:** This dialogue log + build task creation.
+
+## Research Artifact Index
+
+| # | Artifact | Phase | Key Finding |
+|---|----------|-------|-------------|
+| 1 | `docs/reports/T-586-language-audit.md` | 1 | 42K bash + 25K Python, 54/98 scripts hybrid, 199 inline python3 blocks |
+| 2 | `docs/reports/T-586-q1-compilation.md` | 1 | esbuild 3ms, compiled JS 20ms vs Python 40ms, 5 failure modes mapped |
+| 3 | `docs/reports/T-586-q2-vendoring.md` | 1 | One rsync exclude, dual-mode runtime detection, zero consumer impact |
+| 4 | `docs/reports/T-586-q3-inspectability.md` | 1 | tsc ES2022 = 1:1 readable, no opaque bundles, Claude Code itself is opaque |
+| 5 | `docs/reports/T-586-q4-shell-escaping.md` | 1 | 84 (56%) unsafe, 32 break on quotes, check-tier0.sh highest risk |
+| 6 | `docs/reports/T-586-q5-language-count.md` | 1 | Watchtower zero coupling, bash+TS core = 2 langs |
+| 7 | `docs/reports/T-586-prototype-comparison.md` | 2 | TS 28ms vs 54ms, escaping immune, scorecard 8-2-1, hook integration works |
+| 8 | `docs/reports/T-586-migration-path.md` | 3 | lib/ts/ layout, fw-util pattern, stale-guard, vendor excludes, CI changes |
+| 9 | `docs/reports/T-586-constitutional-review.md` | 4 | D1+D2 positive, D3 positive w/friction, D4 neutral, honest assessment |
+
+**Prototype spikes:**
+- `docs/spikes/T-586-loop-detect-ts/loop-detect.ts` — 261 LOC TypeScript (complete)
+- `docs/spikes/T-586-loop-detect-ts/loop-detect.js` — 180 LOC compiled JS (esbuild)
+- `docs/spikes/T-586-loop-detect-bash/loop-detect.sh` — 218 LOC bash+Python (complete)
+- `docs/spikes/T-586-benchmark.sh` — Head-to-head benchmark harness
+
+**OpenClaw references used:**
+- `/opt/openclaw-evaluation/src/agents/tool-loop-detection.ts` — 624 LOC, 4 detectors (source for prototype)
+- `/opt/openclaw-evaluation/.context/working/round2-T-022.md` — Keyed async queue (50 LOC TS pattern)
+- `docs/reports/T-549-openclaw-component-quality.md` — 523K LOC strict TS evidence
