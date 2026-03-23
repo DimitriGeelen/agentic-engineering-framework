@@ -1,8 +1,8 @@
 ---
-id: T-524
-name: "install.sh: add --local flag support and reject unknown flags"
+id: T-526
+name: "Fix README factual errors — stale stats, fabricated counts, wrong thresholds"
 description: >
-  install.sh silently ignores unknown flags (--local was passed but had no effect). The update path always does git fetch origin. Fix: (1) add argument parsing that rejects unknown flags, (2) support --local <path> to install/update from a local repo instead of origin.
+  Agent evaluation found: (1) task count says 445/312, actual ~523/479, (2) Tier 0 count says 49, actual 13, (3) budget threshold says 85%, should be 90%, (4) traceability says 96%, actual 99%. These appear across multiple locations in README.md.
 
 status: work-completed
 workflow_type: build
@@ -11,25 +11,25 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:00:31Z
-last_update: 2026-03-17T23:03:04Z
-date_finished: 2026-03-17T23:03:04Z
+created: 2026-03-17T23:14:40Z
+last_update: 2026-03-23T11:08:47Z
+date_finished: 2026-03-17T23:20:56Z
 ---
 
-# T-524: install.sh: add --local flag support and reject unknown flags
+# T-526: Fix README factual errors — stale stats, fabricated counts, wrong thresholds
 
 ## Context
 
-Discovered during T-522 E2E install test — `install.sh --local /path` silently ignored the flag because no arg parsing existed.
+Agent evaluation report at `/tmp/fw-agent-readme-eval.md`. Stats hardcoded in multiple README locations.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] install.sh has `parse_args` function with `--local`, `--branch`, `--install-dir`, `--help` support
-- [x] Unknown flags cause fatal error (not silent ignore)
-- [x] `--local <path>` validates path is a git repo
-- [x] Update path uses local repo as remote when `--local` specified
-- [x] Fresh install clones from local repo when `--local` specified
+- [x] Task counts updated to match `ls .tasks/completed/ | wc -l` and `ls .tasks/active/ | wc -l`
+- [x] Tier 0 approval count matches `grep -c "commit:" .context/project/bypass-log.yaml`
+- [x] Budget threshold in enforcement diagram changed from 85% to 90%
+- [x] Traceability percentage updated to match actual
+- [x] No occurrence of "445" or "312 completed" remains in README
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,10 +70,13 @@ Discovered during T-522 E2E install test — `install.sh --local /path` silently
 
 ## Updates
 
-### 2026-03-17T23:00:31Z — task-created [task-create-agent]
+### 2026-03-17T23:14:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-524-installsh-add---local-flag-support-and-r.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-526-fix-readme-factual-errors--stale-stats-f.md
 - **Context:** Initial task creation
 
-### 2026-03-17T23:03:04Z — status-update [task-update-agent]
+### 2026-03-17T23:18:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-17T23:20:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

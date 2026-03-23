@@ -1,33 +1,36 @@
 ---
-id: T-530
-name: "Continue fixing TermLink release builds"
+id: T-527
+name: "README additions — prerequisites, troubleshooting, fw update/vendor docs"
 description: >
-  Fix TermLink GitHub Actions release builds — workflow templates, rust-toolchain action, Homebrew tap
+  Three documentation gaps found by agent evaluation: (1) No prerequisites section (bash 4.4+, python3, PyYAML, macOS note), (2) No troubleshooting section for common errors, (3) fw update and fw vendor completely undocumented. All high priority for new user experience.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-21T22:45:15Z
-last_update: 2026-03-21T22:45:15Z
-date_finished: null
+created: 2026-03-17T23:14:43Z
+last_update: 2026-03-23T11:08:47Z
+date_finished: 2026-03-17T23:22:07Z
 ---
 
-# T-530: Continue fixing TermLink release builds
+# T-527: README additions — prerequisites, troubleshooting, fw update/vendor docs
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Agent evaluation reports at `/tmp/fw-agent-docs-gaps.md` and `/tmp/fw-agent-readme-eval.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Release workflow uses Rust 1.85+ (edition 2024 support)
-- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully
+- [x] Prerequisites section exists in README with bash 4.4+, python3, PyYAML, git requirements
+- [x] macOS note about `brew install bash` included
+- [x] `fw update` and `fw update --check` documented in README
+- [x] Vendored model (.agentic-framework/) explained in Updating section
+- [x] Troubleshooting section with top 5 common errors and fixes
+- [x] `install.sh --local` documented in README install section
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,7 +71,13 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-21T22:45:15Z — task-created [task-create-agent]
+### 2026-03-17T23:14:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /home/dimitri-mint-dev/.agentic-framework/.tasks/active/T-530-continue-fixing-termlink-release-builds.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-527-readme-additions--prerequisites-troubles.md
 - **Context:** Initial task creation
+
+### 2026-03-17T23:21:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-17T23:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

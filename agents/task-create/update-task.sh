@@ -53,6 +53,8 @@ check_acceptance_criteria() {
     local human_acs placeholder_acs placeholder_count
 
     ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+    # Strip HTML comments — template examples contain checkbox patterns that get miscounted
+    ac_section=$(echo "$ac_section" | sed '/<!--/,/-->/d')
     [ -z "$ac_section" ] && return 0
 
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
@@ -304,11 +306,13 @@ if [ -n "$NEW_STATUS" ]; then
             # T-193: Partial-complete re-run — check if human ACs now satisfied
             echo -e "${CYAN}Re-checking partial-complete status...${NC}"
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
+            # Strip HTML comments — template examples contain checkbox patterns
+            AC_SECTION=$(echo "$AC_SECTION" | sed '/<!--/,/-->/d')
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
 
-            if [ "$ALL_TOTAL" -gt 0 ] && [ "$ALL_UNCHECKED" -eq 0 ]; then
+            if [ "$ALL_UNCHECKED" -eq 0 ]; then
                 echo -e "${GREEN}All ACs checked (including human) ✓${NC}"
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 mv "$TASK_FILE" "$DEST"

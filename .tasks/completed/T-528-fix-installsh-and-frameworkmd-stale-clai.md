@@ -1,35 +1,35 @@
 ---
-id: T-529
-name: "Capture Task vs TermLink dispatch learning"
+id: T-528
+name: "Fix install.sh and FRAMEWORK.md stale claims"
 description: >
-  Capture learning on when to use Task tool agents vs TermLink dispatch — decision matrix in CLAUDE.md
+  Agent evaluation found: (1) install.sh reset --hard on update with no dirty-check, (2) PyYAML uses warn() but is fatal, (3) bash version check inconsistency (install.sh=4.4 vs preflight.sh=4.0), (4) FRAMEWORK.md claims automatic updates but vendoring broke that, (5) bin/fw error message references removed framework_path field.
 
 status: work-completed
-workflow_type: refactor
+workflow_type: build
 owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:24:22Z
-last_update: 2026-03-17T23:33:32Z
-date_finished: 2026-03-17T23:33:32Z
+created: 2026-03-17T23:14:47Z
+last_update: 2026-03-23T11:08:48Z
+date_finished: 2026-03-17T23:20:57Z
 ---
 
-# T-529: Capture Task vs TermLink dispatch learning
+# T-528: Fix install.sh and FRAMEWORK.md stale claims
 
 ## Context
 
-Cross-session reflection: framework agent was using Task tool agents for work that TermLink dispatch would handle better. Capture the decision matrix.
+Agent evaluation report at `/tmp/fw-agent-install-eval.md`. Five code/doc fixes across install.sh, preflight.sh, FRAMEWORK.md, and bin/fw.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] MEMORY.md updated with Task vs TermLink dispatch decision matrix
-- [x] Learning recorded via fw context add-learning
-- [x] CLAUDE.md Sub-Agent Dispatch Protocol updated with Task vs TermLink section
-- [x] Decision rule added: 3+ agents with >1K output → use TermLink dispatch
-- [x] TermLink dispatch pattern added to Dispatch Patterns section
+- [x] install.sh update path has dirty-check before reset --hard (warns user)
+- [x] PyYAML check uses error() not warn() since it's fatal
+- [x] Bash version check aligned between install.sh and preflight.sh (both 4.4+)
+- [x] FRAMEWORK.md "automatic updates" claim corrected for vendored model
+- [x] bin/fw error message no longer references removed framework_path field
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,10 +70,13 @@ Cross-session reflection: framework agent was using Task tool agents for work th
 
 ## Updates
 
-### 2026-03-17T23:24:22Z — task-created [task-create-agent]
+### 2026-03-17T23:14:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-529-capture-task-vs-termlink-dispatch-learni.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-528-fix-installsh-and-frameworkmd-stale-clai.md
 - **Context:** Initial task creation
 
-### 2026-03-17T23:33:32Z — status-update [task-update-agent]
+### 2026-03-17T23:20:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-17T23:20:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -1,32 +1,35 @@
 ---
-id: T-525
-name: "README accuracy evaluation"
+id: T-522
+name: "Verify install test fixes — re-run E2E via TermLink (T-519, T-520, T-521)"
 description: >
-  Evaluate README.md claims against actual codebase — verify stats, counts, and feature descriptions
+  Re-run the full TermLink E2E installation test to confirm fixes from T-519 (do_vendor ordering), T-520 (hook FRAMEWORK_ROOT resolution), T-521 (git init in fw init). Previous test found these bugs; this run validates the fixes.
 
 status: work-completed
-workflow_type: build
+workflow_type: test
 owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:09:33Z
-last_update: 2026-03-23T09:51:03Z
-date_finished: 2026-03-23T09:51:03Z
+created: 2026-03-17T22:50:32Z
+last_update: 2026-03-23T11:08:41Z
+date_finished: 2026-03-17T22:56:33Z
 ---
 
-# T-525: README accuracy evaluation
+# T-522: Verify install test fixes — re-run E2E via TermLink (T-519, T-520, T-521)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Re-run E2E install test via TermLink after T-519/T-520/T-521 fixes. Also verifies full lifecycle (init → doctor → hooks → commit → complete → audit).
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Evaluation report written to /tmp/fw-agent-readme-eval.md
-- [x] Report covers: install accuracy, command accuracy, stats verification, link validity, version consistency
+- [x] fw init completes without `do_vendor: command not found` (T-519)
+- [x] git repo auto-created by fw init (T-521)
+- [x] fw doctor passes (0 failures)
+- [x] Commit with task ref succeeds — no `find_task_file: command not found` (T-520)
+- [x] Full lifecycle works: task create → commit → complete → audit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -42,6 +45,12 @@ date_finished: 2026-03-23T09:51:03Z
          **Expected:** All panels visible, no console errors
          **If not:** Screenshot the broken panel and note the console error
 -->
+
+## Updates
+
+- All 3 fixes verified via TermLink E2E test
+- New finding: install.sh `--local` flag doesn't exist (silently ignored), update path always fetches from origin
+- New finding: VERSION file (1.0.0) disagrees with FW_VERSION in bin/fw (1.2.6) — causes "updated from v1.2.6 to v1.0.0" regression on fw update
 
 ## Verification
 
@@ -67,10 +76,10 @@ date_finished: 2026-03-23T09:51:03Z
 
 ## Updates
 
-### 2026-03-17T23:09:33Z — task-created [task-create-agent]
+### 2026-03-17T22:50:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-525-readme-accuracy-evaluation.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-522-verify-install-test-fixes--re-run-e2e-vi.md
 - **Context:** Initial task creation
 
-### 2026-03-23T09:51:03Z — status-update [task-update-agent]
+### 2026-03-17T22:56:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

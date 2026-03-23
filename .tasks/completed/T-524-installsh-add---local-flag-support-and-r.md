@@ -1,8 +1,8 @@
 ---
-id: T-528
-name: "Fix install.sh and FRAMEWORK.md stale claims"
+id: T-524
+name: "install.sh: add --local flag support and reject unknown flags"
 description: >
-  Agent evaluation found: (1) install.sh reset --hard on update with no dirty-check, (2) PyYAML uses warn() but is fatal, (3) bash version check inconsistency (install.sh=4.4 vs preflight.sh=4.0), (4) FRAMEWORK.md claims automatic updates but vendoring broke that, (5) bin/fw error message references removed framework_path field.
+  install.sh silently ignores unknown flags (--local was passed but had no effect). The update path always does git fetch origin. Fix: (1) add argument parsing that rejects unknown flags, (2) support --local <path> to install/update from a local repo instead of origin.
 
 status: work-completed
 workflow_type: build
@@ -11,25 +11,25 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:14:47Z
-last_update: 2026-03-17T23:20:57Z
-date_finished: 2026-03-17T23:20:57Z
+created: 2026-03-17T23:00:31Z
+last_update: 2026-03-23T11:08:47Z
+date_finished: 2026-03-17T23:03:04Z
 ---
 
-# T-528: Fix install.sh and FRAMEWORK.md stale claims
+# T-524: install.sh: add --local flag support and reject unknown flags
 
 ## Context
 
-Agent evaluation report at `/tmp/fw-agent-install-eval.md`. Five code/doc fixes across install.sh, preflight.sh, FRAMEWORK.md, and bin/fw.
+Discovered during T-522 E2E install test — `install.sh --local /path` silently ignored the flag because no arg parsing existed.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] install.sh update path has dirty-check before reset --hard (warns user)
-- [x] PyYAML check uses error() not warn() since it's fatal
-- [x] Bash version check aligned between install.sh and preflight.sh (both 4.4+)
-- [x] FRAMEWORK.md "automatic updates" claim corrected for vendored model
-- [x] bin/fw error message no longer references removed framework_path field
+- [x] install.sh has `parse_args` function with `--local`, `--branch`, `--install-dir`, `--help` support
+- [x] Unknown flags cause fatal error (not silent ignore)
+- [x] `--local <path>` validates path is a git repo
+- [x] Update path uses local repo as remote when `--local` specified
+- [x] Fresh install clones from local repo when `--local` specified
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,13 +70,10 @@ Agent evaluation report at `/tmp/fw-agent-install-eval.md`. Five code/doc fixes 
 
 ## Updates
 
-### 2026-03-17T23:14:47Z — task-created [task-create-agent]
+### 2026-03-17T23:00:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-528-fix-installsh-and-frameworkmd-stale-clai.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-524-installsh-add---local-flag-support-and-r.md
 - **Context:** Initial task creation
 
-### 2026-03-17T23:20:40Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-### 2026-03-17T23:20:57Z — status-update [task-update-agent]
+### 2026-03-17T23:03:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

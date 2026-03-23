@@ -1,35 +1,35 @@
 ---
-id: T-526
-name: "Fix README factual errors — stale stats, fabricated counts, wrong thresholds"
+id: T-529
+name: "Capture Task vs TermLink dispatch learning"
 description: >
-  Agent evaluation found: (1) task count says 445/312, actual ~523/479, (2) Tier 0 count says 49, actual 13, (3) budget threshold says 85%, should be 90%, (4) traceability says 96%, actual 99%. These appear across multiple locations in README.md.
+  Capture learning on when to use Task tool agents vs TermLink dispatch — decision matrix in CLAUDE.md
 
 status: work-completed
-workflow_type: build
+workflow_type: refactor
 owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:14:40Z
-last_update: 2026-03-17T23:20:56Z
-date_finished: 2026-03-17T23:20:56Z
+created: 2026-03-17T23:24:22Z
+last_update: 2026-03-23T11:08:48Z
+date_finished: 2026-03-17T23:33:32Z
 ---
 
-# T-526: Fix README factual errors — stale stats, fabricated counts, wrong thresholds
+# T-529: Capture Task vs TermLink dispatch learning
 
 ## Context
 
-Agent evaluation report at `/tmp/fw-agent-readme-eval.md`. Stats hardcoded in multiple README locations.
+Cross-session reflection: framework agent was using Task tool agents for work that TermLink dispatch would handle better. Capture the decision matrix.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Task counts updated to match `ls .tasks/completed/ | wc -l` and `ls .tasks/active/ | wc -l`
-- [x] Tier 0 approval count matches `grep -c "commit:" .context/project/bypass-log.yaml`
-- [x] Budget threshold in enforcement diagram changed from 85% to 90%
-- [x] Traceability percentage updated to match actual
-- [x] No occurrence of "445" or "312 completed" remains in README
+- [x] MEMORY.md updated with Task vs TermLink dispatch decision matrix
+- [x] Learning recorded via fw context add-learning
+- [x] CLAUDE.md Sub-Agent Dispatch Protocol updated with Task vs TermLink section
+- [x] Decision rule added: 3+ agents with >1K output → use TermLink dispatch
+- [x] TermLink dispatch pattern added to Dispatch Patterns section
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,13 +70,10 @@ Agent evaluation report at `/tmp/fw-agent-readme-eval.md`. Stats hardcoded in mu
 
 ## Updates
 
-### 2026-03-17T23:14:40Z — task-created [task-create-agent]
+### 2026-03-17T23:24:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-526-fix-readme-factual-errors--stale-stats-f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-529-capture-task-vs-termlink-dispatch-learni.md
 - **Context:** Initial task creation
 
-### 2026-03-17T23:18:43Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-### 2026-03-17T23:20:56Z — status-update [task-update-agent]
+### 2026-03-17T23:33:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

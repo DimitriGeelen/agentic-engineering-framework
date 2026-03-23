@@ -1,8 +1,8 @@
 ---
-id: T-527
-name: "README additions — prerequisites, troubleshooting, fw update/vendor docs"
+id: T-523
+name: "Fix VERSION file mismatch — sync with FW_VERSION in bin/fw"
 description: >
-  Three documentation gaps found by agent evaluation: (1) No prerequisites section (bash 4.4+, python3, PyYAML, macOS note), (2) No troubleshooting section for common errors, (3) fw update and fw vendor completely undocumented. All high priority for new user experience.
+  VERSION file had 1.0.0 while bin/fw FW_VERSION was 1.2.6. This causes 'updated from v1.2.6 to v1.0.0' regression message when fw update pulls upstream. Fix: update VERSION to match FW_VERSION.
 
 status: work-completed
 workflow_type: build
@@ -11,26 +11,22 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-17T23:14:43Z
-last_update: 2026-03-17T23:22:07Z
-date_finished: 2026-03-17T23:22:07Z
+created: 2026-03-17T22:56:47Z
+last_update: 2026-03-23T11:08:47Z
+date_finished: 2026-03-17T22:57:26Z
 ---
 
-# T-527: README additions — prerequisites, troubleshooting, fw update/vendor docs
+# T-523: Fix VERSION file mismatch — sync with FW_VERSION in bin/fw
 
 ## Context
 
-Agent evaluation reports at `/tmp/fw-agent-docs-gaps.md` and `/tmp/fw-agent-readme-eval.md`.
+VERSION file had 1.0.0 while FW_VERSION in bin/fw was 1.2.6. Discovered during T-522 E2E install test — fw update in consumer projects showed "updated from v1.2.6 to v1.0.0" regression.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Prerequisites section exists in README with bash 4.4+, python3, PyYAML, git requirements
-- [x] macOS note about `brew install bash` included
-- [x] `fw update` and `fw update --check` documented in README
-- [x] Vendored model (.agentic-framework/) explained in Updating section
-- [x] Troubleshooting section with top 5 common errors and fixes
-- [x] `install.sh --local` documented in README install section
+- [x] VERSION file matches FW_VERSION in bin/fw
+- [x] `cat VERSION` outputs `1.2.6`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,13 +67,10 @@ Agent evaluation reports at `/tmp/fw-agent-docs-gaps.md` and `/tmp/fw-agent-read
 
 ## Updates
 
-### 2026-03-17T23:14:43Z — task-created [task-create-agent]
+### 2026-03-17T22:56:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-527-readme-additions--prerequisites-troubles.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-523-fix-version-file-mismatch--sync-with-fwv.md
 - **Context:** Initial task creation
 
-### 2026-03-17T23:21:05Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-### 2026-03-17T23:22:07Z — status-update [task-update-agent]
+### 2026-03-17T22:57:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
