@@ -142,20 +142,25 @@ This is a **dual-purpose evaluation:**
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Infrastructure confirmed: SSH to .107, OpenClaw cloned, fw init complete (doctor 0 failures), CLAUDE.md has governance sections (1015 lines), git hooks installed, 6 onboarding tasks ready. TermLink compiling from source. Pickup prompt generated with full framework + TermLink enablement.
+
+**Date**: 2026-03-23T11:52:34Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Infrastructure confirmed: SSH to .107, OpenClaw cloned, fw init complete (doctor 0 failures), CLAUDE.md has governance sections (1015 lines), git hooks installed, 6 onboarding tasks ready. TermLink compiling from source. Pickup prompt generated with full framework + TermLink enablement.
+
+**Date**: 2026-03-23T11:52:34Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-23T11:52:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Infrastructure confirmed: SSH to .107, OpenClaw cloned, fw init complete (doctor 0 failures), CLAUDE.md has governance sections (1015 lines), git hooks installed, 6 onboarding tasks ready. TermLink compiling from source. Pickup prompt generated with full framework + TermLink enablement.
