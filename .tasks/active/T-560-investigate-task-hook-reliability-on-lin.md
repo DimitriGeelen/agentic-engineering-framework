@@ -25,10 +25,10 @@ User reports Write/Edit operations succeeding without task gate blocking. Worked
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified — why hook doesn't fire or fires but doesn't block
-- [ ] Investigation findings documented in this task file
-- [ ] Fix applied if root cause is in framework code
-- [ ] `fw doctor` hook validation passes on Linux
+- [x] Root cause identified — stale focus.yaml persists across sessions, granting free pass to new sessions without explicit task selection
+- [x] Investigation findings documented in this task file (see Updates section)
+- [x] Fix applied: session-stamped focus (focus.sh stamps session_id, check-active-task.sh validates stamp matches current session)
+- [x] `fw doctor` hook validation passes on Linux
 
 ### Human
 - [ ] [RUBBER-STAMP] Restart Claude Code session and try to Write without a task — verify it blocks
