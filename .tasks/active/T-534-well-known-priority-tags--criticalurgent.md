@@ -88,3 +88,4 @@ date_finished: null
 
 ### 2026-03-23T09:08:34Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+- **Research artifact:** `docs/reports/T-534-priority-tags-research.md`

@@ -13,7 +13,7 @@ interfaces:
 depends_on:
   - target: agents/capture/read-transcript.py
     type: calls
-  - target: .context/working/focus.yaml
+  - target: agents/context/lib/focus.sh
     type: reads
 depended_by: []
 tags: [capture, skill, conversation, session-capture, governance]

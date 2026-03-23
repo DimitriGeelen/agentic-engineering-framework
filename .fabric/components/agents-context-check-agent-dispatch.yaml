@@ -6,7 +6,7 @@ location: agents/context/check-agent-dispatch.sh
 tags: [enforcement, termlink, dispatch]
 purpose: Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed.
 depends_on:
-- target: lib-dispatch
+- target: lib/dispatch.sh
   type: calls
 depended_by: []
 last_verified: '2026-03-23'
