@@ -120,7 +120,7 @@ This decision affects every future task in the framework. It must be thorough.
 
 ### Agent
 - [x] Phase 1 complete: language audit artifact with quantified distribution
-- [ ] Phase 2 complete: prototype comparison artifact with measurable results
+- [x] Phase 2 complete: prototype comparison artifact with measurable results
 - [ ] Phase 3 complete: migration path artifact with concrete design
 - [ ] Phase 4 complete: constitutional review artifact with directive-by-directive analysis
 - [ ] Phase 5 complete: GO/NO-GO decision recorded with full rationale
@@ -240,6 +240,25 @@ This decision affects every future task in the framework. It must be thorough.
 **Prototype spikes started (incomplete, in docs/spikes/):**
 - `T-586-loop-detect-ts/loop-detect.ts` — 190 LOC TS loop detector (from OpenClaw reference)
 - `T-586-loop-detect-bash/loop-detect.sh` — Bash+Python equivalent (incomplete)
+
+### 2026-03-23 — Phase 2 Complete: Prototype Comparison
+
+**Artifact:** `docs/reports/T-586-prototype-comparison.md`
+
+**What was built:** PostToolUse loop detector (3 detectors: generic_repeat, ping_pong, no_progress) implemented identically in TypeScript (261 LOC) and bash+Python hybrid (218 LOC). Compiled with esbuild, benchmarked head-to-head.
+
+**Key results:**
+1. **Performance:** Compiled TS 28ms vs bash+Python 54ms (2x faster)
+2. **Shell escaping:** TS immune; bash+Python breaks on `'''` in input (SyntaxError)
+3. **Type safety:** TS catches variable name/type errors at compile time; Python has none
+4. **Testability:** TS functions importable + unit-testable; Python trapped inside `python3 -c` string
+5. **LOC:** TS slightly longer (261 vs 218) but all logic in proper language, not string literal
+6. **Error handling:** Equivalent — both fail open (exit 0)
+7. **Hook integration:** Both work identically as Claude Code PostToolUse hooks
+
+**Scorecard:** TypeScript 8, Bash+Python 2, Tie 1.
+
+**All 5 GO/NO-GO signals still point GO.** Proceeding to Phase 3 (migration path) and Phase 4 (constitutional review).
 
 ### 2026-03-23T22:30:36Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
