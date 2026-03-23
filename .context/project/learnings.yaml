@@ -913,4 +913,25 @@ learnings:
   date: 2026-03-23
   context: Added via context agent
   application: TBD
+- id: L-116
+  learning: "fw task create has no authorization gate — any agent can batch-create inception tasks on any project without human approval. Bash PreToolUse only checks Tier 0 (destructive commands), not resource-committing commands like task creation. Cross-project task creation is also ungated."
+  source: P-001
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: PL-002
+  learning: "TermLink event dispatch-and-forget pattern fails — emitting events to supervisor session works but nobody polls/waits for them. Must set up termlink event wait in background BEFORE dispatching work, or build a polling loop. Also: 7 unprocessed pickup requests from 150-skills-manager sitting on fw-agent event bus since 2026-03-20."
+  source: P-001
+  task: T-549
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
+- id: PL-003
+  learning: "fw termlink dispatch fails silently inside Claude Code sessions — CLAUDECODE=1 env var inherited by TermLink sessions blocks claude -p. Fix: unset CLAUDECODE in worker run.sh before invoking claude. Workaround: inject 'unset CLAUDECODE && claude -p ...' directly via termlink pty inject."
+  source: P-001
+  task: T-576
+  date: 2026-03-23
+  context: Added via context agent
+  application: TBD
 candidates: []

@@ -93,6 +93,14 @@ failure_patterns:
     date_learned: 2026-02-21
     mitigation: "check-active-task.sh now validates task file exists in .tasks/active/. Registered as G-013 (closed)."
 
+  - id: FP-011
+    pattern: "fw termlink dispatch silently fails inside Claude Code — CLAUDECODE env var blocks claude -p"
+    description: "fw termlink dispatch silently fails inside Claude Code — CLAUDECODE env var blocks claude -p"
+    scope: project
+    learned_from: T-576
+    date_learned: 2026-03-23
+    mitigation: "Added unset CLAUDECODE to termlink.sh worker script. Needs integration test: dispatch from within Claude Code session."
+
 success_patterns:
   - id: SP-001
     pattern: "Phased implementation"

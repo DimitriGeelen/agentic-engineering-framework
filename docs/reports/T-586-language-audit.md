@@ -130,15 +130,94 @@ Every Claude Code hook uses inline Python:
 1. **"Bash for portability" is fiction.** The framework is already a Python-dependent hybrid. 55% of bash scripts can't function without Python 3.
 2. **Python is used as a data processing layer, not for business logic.** 90%+ of inline Python is YAML parsing, JSON handling, path ops, and date formatting — exactly what a typed language would do better.
 3. **The audit system is the heaviest Python user** (21 python3 invocations). It's also the most complex bash script and would benefit most from type safety.
-4. **Every hook uses Python.** The 200ms hook response time constraint means any language change must be fast to start. Python cold start: ~50ms. Node.js cold start: ~80ms. Compiled JS: ~30ms.
+4. **Every hook uses Python — and it's slow.** 9 python3 invocations per Write/Edit = ~450ms overhead. Exceeds the 200ms target. A single compiled TS binary would be ~30ms.
 5. **Node.js is already available on every target platform**, and guaranteed for Claude Code users.
-6. **Adding TypeScript would be language 4 during migration**, but could replace Python to return to 2 (bash + TS). The question is whether the migration path achieves this or creates a worse 3-language state.
-7. **The Watchtower web UI (10K LOC Python/Flask) is the anchor.** Unless it's rewritten, Python stays as a dependency. TS adoption would mean: bash (orchestration) + TS (data processing/hooks) + Python (web UI). That's still 3 languages.
+6. **Watchtower is optional and decoupled.** Framework core runs without Flask. Treating Watchtower as separate eliminates the "3 language" concern.
+7. **TS can REPLACE Python in framework core**, not add to it. Core goes from bash+Python to bash+TS. Watchtower stays Python but it's optional.
+
+## Deep Analysis: Watchtower Coupling
+
+**Critical finding: Watchtower is OPTIONAL and DECOUPLED from framework core.**
+
+### Coupling analysis
+
+| Question | Answer |
+|----------|--------|
+| Does framework core import from `web/`? | NO — zero imports |
+| Does Watchtower import from `agents/`/`lib/`? | NO — reads files from disk, no code imports |
+| Can `fw task/context/audit/git/handover` run without Flask? | YES — all pure bash+Python |
+| What `fw` commands touch `web/`? | Only `fw serve` and `fw scan` |
+
+### Three-layer architecture (actual)
+
+| Layer | Language | Purpose | Separable? |
+|-------|----------|---------|-----------|
+| 1. Orchestration | Bash | CLI, hooks, routing, glue | Stays bash forever |
+| 2. Data processing | Python (inline) | YAML/JSON parse, path ops, string ops | **Replaceable by TS** |
+| 3. Web dashboard | Python/Flask | Watchtower UI | **Optional, separate install** |
+
+### Python dependency reality (framework core only)
+
+| Category | What | Can be replaced? |
+|----------|------|-----------------|
+| **HARD dep** | PyYAML (75 reads + 7 writes in bash) | Yes — `js-yaml` npm package |
+| **Standalone** | 9 Python scripts, 2,668 LOC total | Yes — all are data processing |
+| **Inline** | 199 `python3 -c` blocks, ~6,360 LOC | Yes — utility binary pattern |
+
+### Migration scenario
+
+If TypeScript replaces inline Python + standalone scripts:
+- **Framework core = bash + TS** (TWO languages — GO criterion met)
+- **Watchtower = Python/Flask** (separate optional component, own install)
+- Python goes from HARD requirement to OPTIONAL (only needed for web dashboard)
+
+## Performance: Hook Overhead
+
+### Startup benchmarks (this machine, Linux)
+
+| Runtime | Cold start | With YAML import |
+|---------|-----------|-----------------|
+| bash | 2ms | N/A |
+| node | 22ms | ~30ms (js-yaml) |
+| python3 | 44ms | 57ms (PyYAML) |
+
+### Current hook overhead per Write/Edit
+
+A single `Write` tool call triggers 3 PreToolUse hooks sequentially:
+1. `check-active-task.sh` — 3 `python3` calls = ~170ms
+2. `check-project-boundary.sh` — up to 4 `python3` calls = ~230ms
+3. `budget-gate.sh` — 2 `python3` calls = ~115ms
+
+**Total: ~9 python3 invocations = ~450ms Python overhead per tool call**
+
+This EXCEEDS the 200ms hook response target. A compiled TS binary doing all 9 operations in a single process invocation would run in ~30ms.
+
+### The "fw-util" pattern
+
+All 199 inline Python blocks reduce to ~5 operations:
+1. `fw-util yaml-get <file> <field>` — replaces 75 occurrences
+2. `fw-util yaml-set <file> <field> <value>` — replaces 7 occurrences
+3. `fw-util json-get <file> <field>` — replaces 63 occurrences
+4. `fw-util path-resolve <path>` — replaces 87 occurrences
+5. `fw-util path-contains <root> <path>` — replaces remaining
+
+A single compiled TS binary (~200 LOC) could replace ALL inline Python with faster startup and type safety.
+
+## Revised Key Findings
+
+1. **"Bash for portability" is fiction.** 55% of bash scripts can't function without Python 3.
+2. **Watchtower is optional and decoupled.** Framework core runs without Flask/web. Treating Watchtower as a separate component eliminates the "anchor" problem.
+3. **Python's ONLY hard dependency is PyYAML.** Everything else is stdlib or optional.
+4. **TS CAN replace Python in framework core** — reducing from 3 languages (bash+Python+Jinja) to 2 (bash+TS), with Watchtower as optional 3rd.
+5. **Current hook performance is already poor.** 9 Python invocations per tool call = ~450ms. A single TS binary would be 15x faster.
+6. **Node.js is guaranteed** on the target platform (Claude Code requires it).
+7. **Migration is incremental.** A `fw-util` TS binary replacing inline Python blocks can coexist with remaining Python during transition.
 
 ## Implications for Phase 2 (Prototype Spike)
 
 The audit data suggests the prototype comparison (Phase 2) should focus on:
-- **Hook performance**: Can a TS hook respond within 200ms? (Python: ~50ms overhead per `python3 -c`)
-- **YAML handling**: Is TS YAML parsing as convenient as PyYAML? (130 YAML parse points to eventually migrate)
-- **Developer experience**: Is `const data = yaml.parse(fs.readFileSync(path))` better than `python3 -c "import yaml; ..."`?
-- **The Watchtower question**: Does keeping Flask mean we permanently stay at 3 languages?
+- **Hook performance**: Single TS binary vs 9 Python invocations — measure real hook latency
+- **YAML handling**: Is `js-yaml` as convenient as PyYAML? (75 YAML parse points to migrate)
+- **The fw-util pattern**: Build a minimal TS utility binary, test it as a drop-in for `python3 -c` blocks
+- **Developer experience**: Is one compiled binary with subcommands better than inline Python?
+- **Compilation story**: How does `fw update` trigger TS compilation? How fast is it?

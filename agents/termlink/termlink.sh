@@ -239,6 +239,9 @@ METAEOF
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"
 cd "$PROJECT_DIR"
 
+# T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
+unset CLAUDECODE 2>/dev/null || true
+
 # Background process + kill watchdog (macOS has no `timeout` command)
 claude -p "$(cat "$WDIR/prompt.md")" --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!

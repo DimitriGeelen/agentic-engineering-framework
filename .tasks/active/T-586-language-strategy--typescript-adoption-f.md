@@ -119,7 +119,7 @@ This decision affects every future task in the framework. It must be thorough.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Phase 1 complete: language audit artifact with quantified distribution
+- [x] Phase 1 complete: language audit artifact with quantified distribution
 - [ ] Phase 2 complete: prototype comparison artifact with measurable results
 - [ ] Phase 3 complete: migration path artifact with concrete design
 - [ ] Phase 4 complete: constitutional review artifact with directive-by-directive analysis
@@ -199,20 +199,49 @@ This decision affects every future task in the framework. It must be thorough.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Phase 1 signals all GO: esbuild 3ms compile + 20ms runtime, vendoring unaffected, tsc output readable, 56% unsafe shell escaping eliminated by TS, language count stays at 2. Proceeding to Phase 2 prototype spike. This is a multi-phase inception — decision is interim GO for Phase 2, not final.
+
+**Date**: 2026-03-23T22:30:36Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Phase 1 signals all GO: esbuild 3ms compile + 20ms runtime, vendoring unaffected, tsc output readable, 56% unsafe shell escaping eliminated by TS, language count stays at 2. Proceeding to Phase 2 prototype spike. This is a multi-phase inception — decision is interim GO for Phase 2, not final.
+
+**Date**: 2026-03-23T22:30:36Z
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-03-23 — Phase 1 Complete: Language Audit + Deep Investigation
+
+**Artifacts produced:**
+- `docs/reports/T-586-language-audit.md` — Main audit: LOC distribution, Python dependency mapping, Watchtower coupling analysis, hook performance benchmarks
+- `docs/reports/T-586-q1-compilation.md` — esbuild 3ms compile, 20ms runtime, tsconfig template, failure modes
+- `docs/reports/T-586-q2-vendoring.md` — One-line rsync exclude, dual-mode runtime detection pattern
+- `docs/reports/T-586-q3-inspectability.md` — tsc ES2022 output is 1:1 readable, no opaque bundles
+- `docs/reports/T-586-q4-shell-escaping.md` — 56% of inline Python UNSAFE, 32 invocations break on quotes
+- `docs/reports/T-586-q5-language-count.md` — bash+TS core + optional Watchtower = 2 languages
+
+**Key findings:**
+1. Framework is 3-language hybrid: 42K bash + 25K Python + 13K Jinja + 13K JS
+2. 55% of bash scripts shell out to Python (54/98)
+3. 199 inline `python3 -c` blocks, 84 use unsafe shell variable interpolation
+4. Watchtower is OPTIONAL and DECOUPLED — zero code coupling to core
+5. Python's only hard dep is PyYAML; everything else is stdlib or optional
+6. Node.js guaranteed on target platform (Claude Code requires it)
+7. esbuild compiles in 3ms, compiled JS runs 2.5x faster than Python startup
+8. Vendoring can exclude .ts, ship pre-compiled .js with zero consumer impact
+9. All 5 GO/NO-GO signals point GO for Phase 2
+
+**Also fixed:** T-576 (CLAUDECODE env var blocking TermLink dispatch) — `unset CLAUDECODE` added to termlink.sh worker script.
+
+**Prototype spikes started (incomplete, in docs/spikes/):**
+- `T-586-loop-detect-ts/loop-detect.ts` — 190 LOC TS loop detector (from OpenClaw reference)
+- `T-586-loop-detect-bash/loop-detect.sh` — Bash+Python equivalent (incomplete)
+
+### 2026-03-23T22:30:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Phase 1 signals all GO: esbuild 3ms compile + 20ms runtime, vendoring unaffected, tsc output readable, 56% unsafe shell escaping eliminated by TS, language count stays at 2. Proceeding to Phase 2 prototype spike. This is a multi-phase inception — decision is interim GO for Phase 2, not final.
