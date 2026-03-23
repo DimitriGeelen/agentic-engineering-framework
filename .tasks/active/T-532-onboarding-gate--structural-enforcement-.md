@@ -89,20 +89,25 @@ This means a freshly initialized project can immediately drift into ungoverned w
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Tag-based gate in check-active-task.sh + SessionStart injection. Marker exists on seed templates, backward compatible, minimal change surface. Escape hatch via fw onboarding skip.
+
+**Date**: 2026-03-23T09:08:49Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Tag-based gate in check-active-task.sh + SessionStart injection. Marker exists on seed templates, backward compatible, minimal change surface. Escape hatch via fw onboarding skip.
+
+**Date**: 2026-03-23T09:08:49Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-23T09:08:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Tag-based gate in check-active-task.sh + SessionStart injection. Marker exists on seed templates, backward compatible, minimal change surface. Escape hatch via fw onboarding skip.

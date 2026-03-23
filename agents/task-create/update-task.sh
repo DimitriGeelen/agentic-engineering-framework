@@ -572,6 +572,31 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
     fi
 
+    # === Onboarding completion check (T-535) ===
+    # If the completed task was tagged onboarding, check if all onboarding tasks are done.
+    # If so, write the marker file so the PreToolUse gate fast-paths.
+    if head -20 "$TASK_FILE" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+        ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
+        if [ ! -f "$ONBOARDING_MARKER" ]; then
+            all_done=true
+            for otf in "$TASKS_DIR/active"/T-*.md; do
+                [ -f "$otf" ] || continue
+                if head -20 "$otf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+                    otf_status=$(grep "^status:" "$otf" | head -1 | sed 's/status:[[:space:]]*//')
+                    if [ "$otf_status" != "work-completed" ]; then
+                        all_done=false
+                        break
+                    fi
+                fi
+            done
+            if [ "$all_done" = true ]; then
+                mkdir -p "$(dirname "$ONBOARDING_MARKER")"
+                echo "completed: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ONBOARDING_MARKER"
+                echo -e "${GREEN}All onboarding tasks complete! Onboarding gate disabled.${NC}"
+            fi
+        fi
+    fi
+
     # === Auto-populate components field (T-224) ===
     # Resolve git diff paths to component IDs via .fabric/components/*.yaml location field
     FABRIC_DIR="$PROJECT_ROOT/.fabric/components"

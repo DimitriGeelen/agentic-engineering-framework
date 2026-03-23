@@ -42,6 +42,36 @@ ${GOTCHAS}
 "
 fi
 
+# Onboarding enforcement (T-535) — surface incomplete onboarding tasks prominently
+ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
+if [ ! -f "$ONBOARDING_MARKER" ]; then
+    ONBOARDING_LIST=""
+    for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
+        [ -f "$tf" ] || continue
+        if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+            tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+            if [ "$tf_status" != "work-completed" ]; then
+                tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
+                tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                ONBOARDING_LIST="${ONBOARDING_LIST}
+- ${tf_id}: ${tf_name} (${tf_status})"
+            fi
+        fi
+    done
+    if [ -n "$ONBOARDING_LIST" ]; then
+        CONTEXT="${CONTEXT}
+## ONBOARDING REQUIRED
+
+Setup tasks must complete before other work. The PreToolUse gate will block non-onboarding edits.
+${ONBOARDING_LIST}
+
+Start with: \`fw work-on T-001\`
+Skip (not recommended): \`fw onboarding skip\`
+
+"
+    fi
+fi
+
 # Current focus
 if [ -f "$FOCUS_FILE" ]; then
     FOCUS_TASK=$(grep "^current_task:" "$FOCUS_FILE" 2>/dev/null | cut -d: -f2 | tr -d ' ')

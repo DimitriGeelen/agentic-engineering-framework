@@ -157,6 +157,56 @@ case "$TASK_STATUS" in
         ;;
 esac
 
+# --- Onboarding gate (T-535) ---
+# If incomplete onboarding tasks exist, only allow work on onboarding tasks.
+# Detection: tasks with tags containing "onboarding" in .tasks/active/.
+# Fast path: .context/working/.onboarding-complete marker means all done.
+ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
+if [ ! -f "$ONBOARDING_MARKER" ]; then
+    # Check if any active tasks have onboarding tag and are not completed
+    INCOMPLETE_ONBOARDING=""
+    for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
+        [ -f "$tf" ] || continue
+        if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+            tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+            if [ "$tf_status" != "work-completed" ]; then
+                tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
+                tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                INCOMPLETE_ONBOARDING="${INCOMPLETE_ONBOARDING}  ${tf_id}: ${tf_name} (${tf_status})\n"
+            fi
+        fi
+    done
+
+    if [ -n "$INCOMPLETE_ONBOARDING" ]; then
+        # Check if current task is an onboarding task
+        CURRENT_IS_ONBOARDING=false
+        if [ -n "$ACTIVE_FILE" ] && head -20 "$ACTIVE_FILE" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+            CURRENT_IS_ONBOARDING=true
+        fi
+
+        if [ "$CURRENT_IS_ONBOARDING" = false ]; then
+            echo "" >&2
+            echo "BLOCKED: Onboarding tasks incomplete. Complete setup before starting other work." >&2
+            echo "" >&2
+            echo "Remaining onboarding tasks:" >&2
+            echo -e "$INCOMPLETE_ONBOARDING" >&2
+            echo "To work on onboarding:" >&2
+            echo "  fw work-on T-001" >&2
+            echo "" >&2
+            echo "To skip onboarding (not recommended):" >&2
+            echo "  fw onboarding skip" >&2
+            echo "" >&2
+            echo "Attempting to modify: $FILE_PATH" >&2
+            echo "Policy: T-532 (Onboarding Enforcement Gate)" >&2
+            exit 2
+        fi
+    else
+        # All onboarding tasks done (or none exist) — write marker for fast path
+        mkdir -p "$(dirname "$ONBOARDING_MARKER")"
+        echo "completed: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ONBOARDING_MARKER"
+    fi
+fi
+
 # --- Inception awareness ---
 # If the active task is inception type with no decision, warn (don't block)
 # ACTIVE_FILE already resolved above

@@ -406,6 +406,7 @@ show_help() {
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo -e "  ${GREEN}termlink${NC} <cmd>       TermLink integration (check|spawn|exec|status|cleanup|dispatch)"
+    echo -e "  ${GREEN}onboarding${NC} <cmd>     Onboarding gate (status|skip|reset)"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"
     echo -e "  ${GREEN}task list${NC}          List all tasks (filterable by --status, --type, --component)"
@@ -1657,6 +1658,79 @@ print(len(tier0))
         ;;
     termlink)
         exec "$AGENTS_DIR/termlink/termlink.sh" "$@"
+        ;;
+    onboarding)
+        ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
+        subcmd="${1:-status}"
+        shift 2>/dev/null || true
+        case "$subcmd" in
+            status)
+                if [ -f "$ONBOARDING_MARKER" ]; then
+                    echo -e "${GREEN}Onboarding complete${NC}"
+                    cat "$ONBOARDING_MARKER"
+                    exit 0
+                fi
+                echo -e "${BOLD}Onboarding Tasks${NC}"
+                echo ""
+                found=0
+                for tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
+                    [ -f "$tf" ] || continue
+                    if head -20 "$tf" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+                        tf_id=$(grep "^id:" "$tf" | head -1 | sed 's/id:[[:space:]]*//')
+                        tf_name=$(grep "^name:" "$tf" | head -1 | sed 's/name:[[:space:]]*//' | tr -d '"')
+                        tf_status=$(grep "^status:" "$tf" | head -1 | sed 's/status:[[:space:]]*//')
+                        if [ "$tf_status" = "work-completed" ]; then
+                            echo -e "  ${GREEN}✓${NC}  ${tf_id}: ${tf_name}"
+                        else
+                            echo -e "  ${YELLOW}○${NC}  ${tf_id}: ${tf_name} (${tf_status})"
+                        fi
+                        found=$((found + 1))
+                    fi
+                done
+                if [ "$found" -eq 0 ]; then
+                    echo "  No onboarding tasks found."
+                fi
+                ;;
+            skip)
+                if [ -f "$ONBOARDING_MARKER" ]; then
+                    echo "Onboarding already complete."
+                    exit 0
+                fi
+                echo -e "${YELLOW}Skipping onboarding tasks.${NC}"
+                echo "You can still complete them later: fw task list --tag onboarding"
+                mkdir -p "$(dirname "$ONBOARDING_MARKER")"
+                echo "skipped: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ONBOARDING_MARKER"
+                echo "reason: manual skip via fw onboarding skip" >> "$ONBOARDING_MARKER"
+                # Log to bypass-log
+                BYPASS_LOG="$PROJECT_ROOT/.context/bypass-log.yaml"
+                if [ -f "$BYPASS_LOG" ]; then
+                    python3 -c "
+import yaml, datetime
+with open('$BYPASS_LOG') as f:
+    data = yaml.safe_load(f) or {}
+entries = data.get('entries', [])
+entries.append({
+    'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+    'type': 'onboarding-skip',
+    'reason': 'Manual skip via fw onboarding skip',
+    'authorized_by': 'human'
+})
+data['entries'] = entries
+with open('$BYPASS_LOG', 'w') as f:
+    yaml.dump(data, f, default_flow_style=False)
+" 2>/dev/null
+                fi
+                echo -e "${GREEN}Onboarding gate disabled.${NC}"
+                ;;
+            reset)
+                rm -f "$ONBOARDING_MARKER"
+                echo "Onboarding gate re-enabled."
+                ;;
+            *)
+                echo "Usage: fw onboarding {status|skip|reset}"
+                exit 1
+                ;;
+        esac
         ;;
     gaps)
         GAPS_FILE="$PROJECT_ROOT/.context/project/gaps.yaml"
