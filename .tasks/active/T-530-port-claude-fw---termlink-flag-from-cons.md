@@ -4,16 +4,16 @@ name: "Port claude-fw --termlink flag from consumer project to upstream"
 description: >
   Port the --termlink flag implementation from /opt/995_2021-kosten/.agentic-framework/bin/claude-fw to the upstream bin/claude-fw. Adds TermLink PTY session wrapping so Claude Code sessions can be observed/controlled remotely via termlink attach. Opt-in via --termlink flag or TL_CLAUDE_ENABLED=1 env var. Graceful fallback if termlink not installed. Based on spec at /opt/termlink/docs/specs/T-157-claude-fw-termlink-pickup.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z
-last_update: 2026-03-18T08:31:44Z
-date_finished: null
+last_update: 2026-03-23T09:52:05Z
+date_finished: 2026-03-23T09:52:05Z
 ---
 
 # T-530: Port claude-fw --termlink flag from consumer project to upstream
@@ -76,3 +76,6 @@ grep -q 'Remote Session Access' CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-530-port-claude-fw---termlink-flag-from-cons.md
 - **Context:** Initial task creation
+
+### 2026-03-23T09:52:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
