@@ -1,0 +1,108 @@
+---
+id: T-533
+name: "Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work"
+description: >
+  Inception: Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-23T08:43:03Z
+last_update: 2026-03-23T08:43:03Z
+date_finished: null
+---
+
+# T-533: Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work
+
+## Problem Statement
+
+CLAUDE.md §Sub-Agent Dispatch Protocol states: "If you're about to dispatch 3+ Task tool agents that will each produce >1K tokens or edit files, use TermLink dispatch instead." This rule is **behavioral only** — the agent decides whether to follow it. Evidence: T-531 session dispatched 3 Explore agents via Task tool (~270K parent context tokens consumed). Same work via TermLink would cost zero parent context.
+
+The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreToolUse hook on the Agent tool could structurally enforce the TermLink-first rule by blocking heavy dispatches and requiring either TermLink or explicit approval.
+
+**For whom:** Framework agents managing context budget.
+**Why now:** TermLink integration (T-503) is stable. The dispatch protocol is documented but unenforced. Context waste from Task tool overuse is a recurring problem.
+
+## Assumptions
+
+- A-001: PreToolUse hooks can match the `Agent` tool (need to verify Claude Code hook matcher supports this)
+- A-002: We can detect "heavy dispatch" from the Agent tool's prompt parameter (length, keywords like "Explore", "research")
+- A-003: A simple heuristic (agent count tracking + prompt size) is sufficient — no need for perfect prediction
+- A-004: TermLink being optional means the hook must degrade gracefully when TermLink isn't installed
+
+## Exploration Plan
+
+1. **Spike A (20min):** Verify PreToolUse hook can match `Agent` tool — check Claude Code hook matcher syntax
+2. **Spike B (30min):** Design detection heuristic — what signals indicate "this should be TermLink"? Options: prompt length >500 chars, 3+ Agent calls in sequence, explicit markers
+3. **Spike C (20min):** Design approval flow — `fw dispatch approve` (like tier0 approve) with TTL
+4. **Spike D (20min):** Fallback behavior when TermLink not installed — warn vs block
+
+## Technical Constraints
+
+- PreToolUse hook must return JSON with `decision` field (allow/block)
+- Cannot inspect other pending tool calls (each PreToolUse fires independently per tool)
+- TermLink is optional — hook must not break projects without TermLink installed
+- Must not block lightweight single-agent dispatches (quick research, codebase search)
+
+## Scope Fence
+
+**IN scope:**
+- PreToolUse hook on Agent tool
+- Heuristic for heavy dispatch detection
+- Approval mechanism with TTL
+- Graceful degradation without TermLink
+
+**OUT of scope:**
+- Automatic TermLink dispatch (agent must do this manually)
+- Changes to the Agent tool's behavior
+- Counting concurrent agents (no shared state between hook invocations)
+
+## Acceptance Criteria
+
+- [ ] Problem statement validated
+- [ ] Assumptions tested
+- [ ] Go/No-Go decision made
+
+## Go/No-Go Criteria
+
+**GO if:**
+- PreToolUse hooks can match the Agent tool
+- A useful heuristic exists that doesn't over-block lightweight dispatches
+- Approval flow is clean and fast
+
+**NO-GO if:**
+- Hook matcher cannot target the Agent tool
+- No reliable heuristic — too many false positives blocking legitimate quick agents
+- TermLink absence makes the hook more annoying than helpful
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     For inception tasks, verification is often not needed (decisions, not code).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
