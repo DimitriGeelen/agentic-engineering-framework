@@ -16,7 +16,7 @@ last_update: 2026-03-23T09:45:15Z
 date_finished: 2026-03-23T09:45:15Z
 ---
 
-# T-513: Remove PyYAML check from install.sh
+# T-541: Remove PyYAML check from install.sh
 
 ## Context
 

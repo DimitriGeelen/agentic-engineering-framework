@@ -5,7 +5,7 @@ description: >
   Inception: Fix phantom aef binary name
 
 status: work-completed
-workflow_type: inception
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
@@ -16,7 +16,7 @@ last_update: 2026-03-21T15:58:05Z
 date_finished: 2026-03-21T15:58:05Z
 ---
 
-# T-510: Fix phantom aef binary name
+# T-538: Fix phantom aef binary name
 
 ## Problem Statement
 

@@ -16,7 +16,7 @@ last_update: 2026-03-23T09:46:04Z
 date_finished: 2026-03-23T09:46:04Z
 ---
 
-# T-515: Fix phantom aef binary name and add post-install verification
+# T-543: Fix phantom aef binary name and add post-install verification
 
 ## Context
 

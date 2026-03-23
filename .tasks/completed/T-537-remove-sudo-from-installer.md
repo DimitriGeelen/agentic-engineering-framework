@@ -5,7 +5,7 @@ description: >
   Inception: Remove sudo from installer
 
 status: work-completed
-workflow_type: inception
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
@@ -16,7 +16,7 @@ last_update: 2026-03-21T15:58:03Z
 date_finished: 2026-03-21T15:58:03Z
 ---
 
-# T-509: Remove sudo from installer
+# T-537: Remove sudo from installer
 
 ## Problem Statement
 

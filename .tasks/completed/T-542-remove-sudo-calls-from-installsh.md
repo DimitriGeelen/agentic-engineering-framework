@@ -16,7 +16,7 @@ last_update: 2026-03-23T09:45:42Z
 date_finished: 2026-03-23T09:45:42Z
 ---
 
-# T-514: Remove sudo calls from install.sh
+# T-542: Remove sudo calls from install.sh
 
 ## Context
 

@@ -5,7 +5,7 @@ description: >
   Inception: TermLink Homebrew tap distribution
 
 status: work-completed
-workflow_type: inception
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
@@ -16,7 +16,7 @@ last_update: 2026-03-21T15:58:07Z
 date_finished: 2026-03-21T15:58:07Z
 ---
 
-# T-511: TermLink Homebrew tap distribution
+# T-539: TermLink Homebrew tap distribution
 
 ## Problem Statement
 

@@ -5,7 +5,7 @@ description: >
   Inception: Drop PyYAML phantom dependency
 
 status: work-completed
-workflow_type: inception
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
@@ -16,7 +16,7 @@ last_update: 2026-03-21T15:58:01Z
 date_finished: 2026-03-21T15:58:01Z
 ---
 
-# T-508: Drop PyYAML phantom dependency
+# T-536: Drop PyYAML phantom dependency
 
 ## Problem Statement
 

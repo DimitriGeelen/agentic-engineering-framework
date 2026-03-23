@@ -16,7 +16,7 @@ last_update: 2026-03-21T16:03:53Z
 date_finished:
 ---
 
-# T-516: Create TermLink Homebrew tap with GitHub Actions builds
+# T-544: Create TermLink Homebrew tap with GitHub Actions builds
 
 ## Context
 
