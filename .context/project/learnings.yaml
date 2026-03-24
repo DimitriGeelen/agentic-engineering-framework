@@ -934,4 +934,11 @@ learnings:
   date: 2026-03-23
   context: Added via context agent
   application: TBD
+- id: L-117
+  learning: "Agent must NEVER edit files outside PROJECT_ROOT, even when a task references an external project. Cross-repo fixes must be sent as pickup proposals via TermLink dispatch, not applied directly. T-546 violated this by editing /opt/termlink/ from within the framework repo — 3 commits pushed to GitHub had to be force-reverted."
+  source: P-001
+  task: T-546
+  date: 2026-03-24
+  context: Added via context agent
+  application: TBD
 candidates: []

@@ -593,3 +593,19 @@ bypasses:
   command_hash: 542cb58ec0fb0983fe00be9000c18a02bb2d413d09ed6f33db42a8c43d0413f8
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-24T08:15:02Z'
+  tier: 0
+  risk: 'HARD RESET: Permanently discards all uncommitted changes'
+  command_preview: cd /opt/termlink && git tag -d v0.1.1 2>/dev/null; git reset --hard
+    d172cd1 2>&1
+  command_hash: 9045a36418dc197a25d73361e874da91084014e0ef25a407b4a7e19506adfd7d
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-24T08:15:19Z'
+  tier: 0
+  risk: 'FORCE PUSH: Can overwrite remote commit history'
+  command_preview: cd /opt/termlink && git push github main --force 2>&1 | grep -v
+    "^\[PASS\]\|^\[WARN\]\|^=== \|^       \|^$" | tail -10
+  command_hash: a77f666b92a3b49d4bd629ebcf7e811c0222d88dc80635734189519ef34f03c1
+  authorized_by: human
+  mechanism: fw tier0 approve

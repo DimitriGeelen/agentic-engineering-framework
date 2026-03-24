@@ -1,11 +1,11 @@
-timestamp: 2026-03-17T23:22:40Z
+timestamp: 2026-03-24T08:19:21Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (3/506)"
+    check: "D1: Episodic quality — 2% [TODO] (13/531)"
   - id: D2
     level: PASS
-    check: "D2: Human review queue — 36 task(s) awaiting human action (normal)"
+    check: "D2: Human review queue — 19 task(s) awaiting human action (normal)"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -21,19 +21,17 @@ findings:
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 10 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-332(12d-active) T-334(12d-active)"
+    check: "D5: Task lifecycle — 15 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) (+5 more)"
     mitigation: "Review flagged tasks for process issues"
   - id: D3
-    level: WARN
-    check: "D3: Commit velocity — WARN drop today=4 avg=27 ratio=0.1x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=0 avg=26 ratio=0.0x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 28_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 10_commits_24h)"
   - id: D6
-    level: WARN
-    check: "D6: Completion velocity — sustained drop (drop recent_avg=4.0 vs earlier_avg=19.7)"
-    mitigation: "Check for blockers or process issues slowing work"
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=4.0 earlier=4.4)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -42,7 +40,7 @@ findings:
     check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 8
-  warn: 4
+  pass: 10
+  warn: 2
   fail: 0
   total: 12

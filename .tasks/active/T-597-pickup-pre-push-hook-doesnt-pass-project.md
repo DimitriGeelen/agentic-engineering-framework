@@ -1,22 +1,22 @@
 ---
-id: T-546
-name: "Continue fixing TermLink release builds"
+id: T-597
+name: "PICKUP: Pre-push hook doesn't pass PROJECT_ROOT to audit script"
 description: >
-  Fix TermLink GitHub Actions release builds — workflow templates, rust-toolchain action, Homebrew tap
+  From termlink T-141: audit script runs against framework repo instead of consumer project. Fix: pass PROJECT_ROOT in agents/git/lib/hooks.sh line ~328
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [pickup, termlink]
 components: []
 related_tasks: []
-created: 2026-03-21T22:45:15Z
-last_update: 2026-03-24T07:48:02Z
+created: 2026-03-24T08:22:01Z
+last_update: 2026-03-24T08:22:01Z
 date_finished: null
 ---
 
-# T-546: Continue fixing TermLink release builds
+# T-597: PICKUP: Pre-push hook doesn't pass PROJECT_ROOT to audit script
 
 ## Context
 
@@ -25,8 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] Release workflow uses Rust 1.85+ (edition 2024 support) — uses dtolnay/rust-toolchain@stable (≥1.85)
-- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully — requires tag push to verify
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,7 +68,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-21T22:45:15Z — task-created [task-create-agent]
+### 2026-03-24T08:22:01Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /home/dimitri-mint-dev/.agentic-framework/.tasks/active/T-530-continue-fixing-termlink-release-builds.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-597-pickup-pre-push-hook-doesnt-pass-project.md
 - **Context:** Initial task creation
