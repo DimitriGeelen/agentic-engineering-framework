@@ -634,25 +634,31 @@ print(f'{total},{broken},{stale_paths}')
     fi
 
     # Check 9: Test infrastructure
-    if command -v bats >/dev/null 2>&1; then
-        if [ -d "$FRAMEWORK_ROOT/tests/unit" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
-            local test_count
-            test_count=$(bats --count "$FRAMEWORK_ROOT/tests/unit/" 2>/dev/null || echo "0")
-            echo -e "  ${GREEN}OK${NC}  Test infrastructure (bats installed, $test_count unit tests)"
+    # T-574: Skip framework-development checks on consumer projects
+    if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
+        if command -v bats >/dev/null 2>&1; then
+            if [ -d "$FRAMEWORK_ROOT/tests/unit" ] && ls "$FRAMEWORK_ROOT/tests/unit/"*.bats >/dev/null 2>&1; then
+                local test_count
+                test_count=$(bats --count "$FRAMEWORK_ROOT/tests/unit/" 2>/dev/null || echo "0")
+                echo -e "  ${GREEN}OK${NC}  Test infrastructure (bats installed, $test_count unit tests)"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  bats installed but no unit tests found in tests/unit/"
+                warnings=$((warnings + 1))
+            fi
         else
-            echo -e "  ${YELLOW}WARN${NC}  bats installed but no unit tests found in tests/unit/"
+            echo -e "  ${YELLOW}WARN${NC}  bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
+            warnings=$((warnings + 1))
+        fi
+
+        if command -v shellcheck >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  ShellCheck linter"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  shellcheck not installed"
             warnings=$((warnings + 1))
         fi
     else
-        echo -e "  ${YELLOW}WARN${NC}  bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
-        warnings=$((warnings + 1))
-    fi
-
-    if command -v shellcheck >/dev/null 2>&1; then
-        echo -e "  ${GREEN}OK${NC}  ShellCheck linter"
-    else
-        echo -e "  ${YELLOW}WARN${NC}  shellcheck not installed"
-        warnings=$((warnings + 1))
+        echo -e "  ${CYAN}SKIP${NC}  Test infrastructure (consumer project — tests live in framework repo)"
+        echo -e "  ${CYAN}SKIP${NC}  ShellCheck linter (consumer project)"
     fi
 
     # Check N: Orphaned MCP processes (T-180)
