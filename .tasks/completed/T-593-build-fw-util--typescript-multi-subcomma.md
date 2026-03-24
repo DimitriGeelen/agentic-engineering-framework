@@ -4,7 +4,7 @@ name: "Build fw-util — TypeScript multi-subcommand utility replacing inline Py
 description: >
   Build the fw-util TypeScript utility that replaces ~290 inline python3 -c blocks across 49 bash scripts. Subcommands: yaml-get (read YAML key), yaml-set (write YAML key), json-get (read JSON key), json-set (write JSON key), path-rel (relative path), path-resolve (absolute path), date-fmt (ISO date formatting), frontmatter-parse (YAML frontmatter extraction). Single esbuild bundle (~50KB). Called from bash as: node lib/ts/dist/fw-util.js <subcommand> <args>. Depends on T-592 (scaffold). Design source: docs/reports/T-586-migration-path.md section 2 Tier 2 + section 11.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-595]
 created: 2026-03-23T22:50:30Z
-last_update: 2026-03-24T06:30:07Z
-date_finished: null
+last_update: 2026-03-24T06:32:37Z
+date_finished: 2026-03-24T06:32:37Z
 ---
 
 # T-593: Build fw-util — TypeScript multi-subcommand utility replacing inline Python
@@ -86,3 +86,6 @@ rm -f /tmp/fw-util-test.yaml /tmp/fw-util-test.json
 
 ### 2026-03-24T06:30:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T06:32:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
