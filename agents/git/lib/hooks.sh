@@ -300,8 +300,9 @@ HOOK_EOF
 # Part of: Agentic Engineering Framework
 # VERSION=1.0
 
-# Find project root (where .git is)
+# Find project root (where .git is) and export for audit script
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+export PROJECT_ROOT
 
 # Resolve audit script: check .framework.yaml first, then local agents/
 AUDIT_SCRIPT=""
