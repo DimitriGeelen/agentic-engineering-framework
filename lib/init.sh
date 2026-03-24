@@ -623,6 +623,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".agentic-framework/bin/fw hook loop-detect"
+          }
+        ]
+      },
+      {
         "matcher": "Write",
         "hooks": [
           {
