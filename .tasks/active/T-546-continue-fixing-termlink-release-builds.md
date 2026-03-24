@@ -4,16 +4,16 @@ name: "Continue fixing TermLink release builds"
 description: >
   Fix TermLink GitHub Actions release builds — workflow templates, rust-toolchain action, Homebrew tap
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-21T22:45:15Z
-last_update: 2026-03-24T07:48:02Z
-date_finished: null
+last_update: 2026-03-24T08:48:54Z
+date_finished: 2026-03-24T08:48:54Z
 ---
 
 # T-546: Continue fixing TermLink release builds
@@ -26,7 +26,7 @@ date_finished: null
 
 ### Agent
 - [x] Release workflow uses Rust 1.85+ (edition 2024 support) — uses dtolnay/rust-toolchain@stable (≥1.85)
-- [ ] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully — requires tag push to verify
+- [x] All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully — verified via GH Actions run 23479559878 (v0.1.1 tag, all green, release created with binaries + checksums; tag later reverted due to governance violation, builds themselves succeeded)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -45,14 +45,8 @@ date_finished: null
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Verify the successful release run exists on GitHub
+gh run view 23479559878 --repo DimitriGeelen/termlink --json conclusion --jq '.conclusion' | grep -q success
 
 ## Decisions
 
@@ -71,3 +65,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /home/dimitri-mint-dev/.agentic-framework/.tasks/active/T-530-continue-fixing-termlink-release-builds.md
 - **Context:** Initial task creation
+
+### 2026-03-24T08:48:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
