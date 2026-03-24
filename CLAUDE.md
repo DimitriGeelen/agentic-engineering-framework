@@ -912,6 +912,14 @@ and cleanup tracking while delegating all real work to the `termlink` binary.
 | `termlink event emit/wait/poll` | Inter-session signaling |
 | `termlink discover --json` | Find sessions by tag/role/name |
 
+### Timeout Orphan Warning (T-577)
+
+**Do NOT use `termlink run --timeout` for long-running tasks.** When `termlink run` times out, it deregisters the session but does NOT kill the process. The process becomes orphaned — invisible to TermLink, unmonitorable, still consuming resources. Discovered when a `claude -p` agent wrote output 65 minutes after a 900s timeout.
+
+**Use `fw termlink dispatch` instead** — it has its own kill watchdog that properly terminates the process on timeout. If you must use `termlink run` directly, add your own kill logic.
+
+`fw termlink cleanup` detects and terminates orphaned dispatch processes.
+
 ### Budget Rules
 
 - **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget
