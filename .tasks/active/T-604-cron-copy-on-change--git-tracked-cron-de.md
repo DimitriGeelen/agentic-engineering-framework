@@ -1,0 +1,71 @@
+---
+id: T-604
+name: "Cron copy-on-change — git-tracked cron definitions with drift detection and sudo degradation"
+description: >
+  T-603 GO: Implement Option F. Move cron definitions to PROJECT_ROOT/.context/cron/ as source of truth (git-tracked). fw audit schedule install copies to /etc/cron.d/ with sudo. Audit detects drift (project ≠ installed) and prints remediation command. Graceful degradation: root→auto, sudo→auto, no-sudo→print command. Cross-platform: same pattern for cron.d, launchd, systemd timers. Related: T-603, T-602, T-559.
+
+status: started-work
+workflow_type: build
+owner: human
+horizon: now
+tags: [urgent]
+components: []
+related_tasks: []
+created: 2026-03-24T09:51:08Z
+last_update: 2026-03-24T09:52:42Z
+date_finished: null
+---
+
+# T-604: Cron copy-on-change — git-tracked cron definitions with drift detection and sudo degradation
+
+## Context
+
+T-603 GO (Option F). Cron definitions move from inline heredoc in audit.sh to git-tracked files in `PROJECT_ROOT/.context/cron/`. Install copies to `/etc/cron.d/` with sudo degradation. Audit detects drift.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Cron definition template exists at `.context/cron/agentic-audit.crontab` (git-tracked)
+- [x] `schedule install` generates cron file in `.context/cron/` then copies to `/etc/cron.d/`
+- [x] `schedule install` uses sudo when not root, prints manual command when sudo unavailable
+- [x] `schedule status` shows drift warning when project file ≠ installed file
+- [x] `schedule status` prints remediation command on drift
+- [x] `schedule remove` removes installed copy, keeps project source file
+- [x] Vendored copy synced (`.agentic-framework/agents/audit/audit.sh`)
+
+### Human
+- [ ] [RUBBER-STAMP] Run `fw audit schedule install` and verify cron installed from project file
+  **Steps:**
+  1. `fw audit schedule install`
+  2. `diff .context/cron/agentic-audit.crontab /etc/cron.d/agentic-audit-999-agentic-engineering-framework`
+  3. `fw audit schedule status` — should show no drift
+  **Expected:** Files identical, status shows INSTALLED with no drift warning
+  **If not:** Check paths in output
+
+## Verification
+
+# Project cron source file exists
+test -f .context/cron/agentic-audit.crontab
+# Installed cron matches project source
+diff -q .context/cron/agentic-audit.crontab /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-24T09:51:08Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-604-cron-copy-on-change--git-tracked-cron-de.md
+- **Context:** Initial task creation
+
+### 2026-03-24T09:52:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

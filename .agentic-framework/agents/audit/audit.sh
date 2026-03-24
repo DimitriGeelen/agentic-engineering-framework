@@ -23,48 +23,58 @@ AUDITS_DIR="$CONTEXT_DIR/audits"
 if [ "${1:-}" = "schedule" ]; then
     shift
     # T-602: Project-specific cron filename to prevent multi-project collision
+    # T-604: Cron definitions are git-tracked in PROJECT_ROOT/.context/cron/
     project_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-    CRON_FILE="/etc/cron.d/agentic-audit-${project_slug}"
-    # Also check for legacy single-name cron file
+    CRON_INSTALL="/etc/cron.d/agentic-audit-${project_slug}"
+    CRON_SOURCE="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     LEGACY_CRON_FILE="/etc/cron.d/agentic-audit"
     FW_PATH="$(readlink -f "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "$FRAMEWORK_ROOT/bin/fw")"
 
-    case "${1:-status}" in
-        install)
-            if ! command -v crontab >/dev/null 2>&1 && [ ! -d /etc/cron.d ]; then
-                echo "ERROR: cron not available on this system" >&2
-                exit 1
-            fi
-            # Warn if legacy cron exists for a different project
-            if [ -f "$LEGACY_CRON_FILE" ]; then
-                legacy_project=$(grep -m1 'PROJECT_ROOT=' "$LEGACY_CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
-                if [ -n "$legacy_project" ]; then
-                    echo "NOTE: Migrating legacy cron from $LEGACY_CRON_FILE"
-                    if [ "$legacy_project" = "$PROJECT_ROOT" ]; then
-                        echo "  Same project — removing old file"
-                        rm -f "$LEGACY_CRON_FILE"
-                    else
-                        echo "  WARNING: Legacy cron belongs to $legacy_project"
-                        echo "  That project should run 'fw audit schedule install' to migrate"
-                        echo "  Leaving legacy file in place (will not overwrite)"
-                    fi
-                    echo ""
-                fi
-            fi
-            # Warn if project-specific file exists for a different project (basename collision)
-            if [ -f "$CRON_FILE" ]; then
-                existing_project=$(grep -m1 'PROJECT_ROOT=' "$CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
-                if [ -n "$existing_project" ] && [ "$existing_project" != "$PROJECT_ROOT" ]; then
-                    echo "WARNING: Cron file $CRON_FILE belongs to $existing_project"
-                    echo "  Both projects share basename '$project_slug' — using hash suffix"
-                    project_hash=$(echo "$PROJECT_ROOT" | md5sum | head -c 8)
-                    CRON_FILE="/etc/cron.d/agentic-audit-${project_slug}-${project_hash}"
-                fi
-            fi
-            mkdir -p "$CONTEXT_DIR/audits/cron"
-            cat > "$CRON_FILE" << CRONEOF
-# Agentic Engineering Framework — Scheduled Audits (T-184 + T-196 + T-602)
-# Installed by: fw audit schedule install
+    # Helper: copy project cron source to /etc/cron.d/ with sudo degradation
+    _cron_copy_to_system() {
+        local src="$1" dst="$2"
+        if [ "$(id -u)" = "0" ]; then
+            cp "$src" "$dst"
+            chmod 644 "$dst"
+            return 0
+        elif command -v sudo >/dev/null 2>&1; then
+            sudo cp "$src" "$dst"
+            sudo chmod 644 "$dst"
+            return 0
+        else
+            echo ""
+            echo "NOTE: Root permissions required to install cron."
+            echo "Run this command manually:"
+            echo ""
+            echo "  sudo cp \"$src\" \"$dst\" && sudo chmod 644 \"$dst\""
+            echo ""
+            return 1
+        fi
+    }
+
+    # Helper: remove a system cron file with sudo degradation
+    _cron_remove_from_system() {
+        local dst="$1"
+        if [ "$(id -u)" = "0" ]; then
+            rm -f "$dst"
+            return 0
+        elif command -v sudo >/dev/null 2>&1; then
+            sudo rm -f "$dst"
+            return 0
+        else
+            echo "NOTE: Root permissions required to remove cron."
+            echo "Run: sudo rm -f \"$dst\""
+            return 1
+        fi
+    }
+
+    # Generate the cron source file in PROJECT_ROOT (git-tracked)
+    _cron_generate_source() {
+        mkdir -p "$(dirname "$CRON_SOURCE")"
+        cat > "$CRON_SOURCE" << CRONEOF
+# Agentic Engineering Framework — Scheduled Audits (T-184 + T-196 + T-602 + T-604)
+# Source of truth: $CRON_SOURCE (git-tracked)
+# Installed to: $CRON_INSTALL (copy — use 'fw audit schedule install' to sync)
 # Project: $PROJECT_ROOT
 # Two audit tracks: Structural (project well-formed) + OE (controls working)
 SHELL=/bin/bash
@@ -106,8 +116,52 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Retention: prune cron audit files older than 7 days (daily at 9am)
 0 9 * * * root find "$CONTEXT_DIR/audits/cron" -name "*.yaml" -mtime +7 -delete 2>/dev/null
 CRONEOF
-            chmod 644 "$CRON_FILE"
-            echo "Cron schedule installed: $CRON_FILE"
+    }
+
+    case "${1:-status}" in
+        install)
+            if ! command -v crontab >/dev/null 2>&1 && [ ! -d /etc/cron.d ]; then
+                echo "ERROR: cron not available on this system" >&2
+                exit 1
+            fi
+
+            # Migrate legacy cron if present
+            if [ -f "$LEGACY_CRON_FILE" ]; then
+                legacy_project=$(grep -m1 'PROJECT_ROOT=' "$LEGACY_CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
+                if [ -n "$legacy_project" ]; then
+                    echo "NOTE: Migrating legacy cron from $LEGACY_CRON_FILE"
+                    if [ "$legacy_project" = "$PROJECT_ROOT" ]; then
+                        echo "  Same project — removing old file"
+                        _cron_remove_from_system "$LEGACY_CRON_FILE"
+                    else
+                        echo "  WARNING: Legacy cron belongs to $legacy_project"
+                        echo "  That project should run 'fw audit schedule install' to migrate"
+                    fi
+                    echo ""
+                fi
+            fi
+
+            # Handle basename collision
+            if [ -f "$CRON_INSTALL" ]; then
+                existing_project=$(grep -m1 'PROJECT_ROOT=' "$CRON_INSTALL" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
+                if [ -n "$existing_project" ] && [ "$existing_project" != "$PROJECT_ROOT" ]; then
+                    echo "WARNING: Cron file $CRON_INSTALL belongs to $existing_project"
+                    echo "  Both projects share basename '$project_slug' — using hash suffix"
+                    project_hash=$(echo "$PROJECT_ROOT" | md5sum | head -c 8)
+                    CRON_INSTALL="/etc/cron.d/agentic-audit-${project_slug}-${project_hash}"
+                fi
+            fi
+
+            # Step 1: Generate source file in project (git-tracked)
+            _cron_generate_source
+            echo "Cron source: $CRON_SOURCE (git-tracked)"
+
+            # Step 2: Copy to system cron directory
+            mkdir -p "$CONTEXT_DIR/audits/cron"
+            if _cron_copy_to_system "$CRON_SOURCE" "$CRON_INSTALL"; then
+                echo "Cron installed: $CRON_INSTALL"
+            fi
+
             echo ""
             echo "Schedule:"
             echo "  Every 30min: structure, compliance, quality (structural)"
@@ -125,37 +179,59 @@ CRONEOF
             ;;
         remove)
             removed=false
-            if [ -f "$CRON_FILE" ]; then
-                rm -f "$CRON_FILE"
-                echo "Cron schedule removed: $CRON_FILE"
-                removed=true
+            if [ -f "$CRON_INSTALL" ]; then
+                if _cron_remove_from_system "$CRON_INSTALL"; then
+                    echo "Cron schedule removed: $CRON_INSTALL"
+                    removed=true
+                fi
             fi
             # Also remove legacy file if it belongs to this project
             if [ -f "$LEGACY_CRON_FILE" ]; then
                 legacy_project=$(grep -m1 'PROJECT_ROOT=' "$LEGACY_CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
                 if [ "$legacy_project" = "$PROJECT_ROOT" ]; then
-                    rm -f "$LEGACY_CRON_FILE"
-                    echo "Legacy cron schedule removed: $LEGACY_CRON_FILE"
-                    removed=true
+                    if _cron_remove_from_system "$LEGACY_CRON_FILE"; then
+                        echo "Legacy cron schedule removed: $LEGACY_CRON_FILE"
+                        removed=true
+                    fi
                 fi
             fi
             if [ "$removed" = false ]; then
                 echo "No cron schedule installed for this project."
             fi
+            echo ""
+            echo "NOTE: Project source file kept at $CRON_SOURCE"
+            echo "  To remove: rm \"$CRON_SOURCE\""
             ;;
         status)
-            # Find this project's cron file (project-specific or legacy)
+            # Find this project's installed cron file
             actual_cron=""
-            if [ -f "$CRON_FILE" ]; then
-                actual_cron="$CRON_FILE"
+            if [ -f "$CRON_INSTALL" ]; then
+                actual_cron="$CRON_INSTALL"
             elif [ -f "$LEGACY_CRON_FILE" ]; then
                 legacy_project=$(grep -m1 'PROJECT_ROOT=' "$LEGACY_CRON_FILE" 2>/dev/null | sed 's/.*PROJECT_ROOT="\([^"]*\)".*/\1/')
                 if [ "$legacy_project" = "$PROJECT_ROOT" ]; then
                     actual_cron="$LEGACY_CRON_FILE"
                 fi
             fi
+
             if [ -n "$actual_cron" ]; then
                 echo "Cron schedule: INSTALLED ($actual_cron)"
+
+                # T-604: Drift detection — compare project source vs installed copy
+                if [ -f "$CRON_SOURCE" ]; then
+                    if ! diff -q "$CRON_SOURCE" "$actual_cron" >/dev/null 2>&1; then
+                        echo "  ⚠ DRIFT DETECTED: project source ≠ installed copy"
+                        echo "  Source: $CRON_SOURCE"
+                        echo "  Installed: $actual_cron"
+                        echo ""
+                        echo "  To sync: fw audit schedule install"
+                    else
+                        echo "  Source: $CRON_SOURCE (in sync)"
+                    fi
+                else
+                    echo "  ⚠ No project source file — run 'fw audit schedule install' to generate"
+                fi
+
                 echo ""
                 grep -v "^#" "$actual_cron" | grep -v "^$" | grep -v "^SHELL\|^PATH" | while read -r line; do
                     echo "  $line"
@@ -171,8 +247,12 @@ CRONEOF
                 fi
             else
                 echo "Cron schedule: NOT INSTALLED"
-                echo ""
-                echo "Install with: fw audit schedule install"
+                if [ -f "$CRON_SOURCE" ]; then
+                    echo "  Project source exists: $CRON_SOURCE"
+                    echo "  Install with: fw audit schedule install"
+                else
+                    echo "  Install with: fw audit schedule install"
+                fi
             fi
             ;;
         *)
