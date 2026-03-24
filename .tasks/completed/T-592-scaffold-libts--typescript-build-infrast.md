@@ -4,7 +4,7 @@ name: "Scaffold lib/ts/ — TypeScript build infrastructure for framework"
 description: >
   Create the TypeScript build infrastructure decided in T-586 (GO). Set up lib/ts/src/, lib/ts/dist/, package.json (dev deps only: typescript, @types/node, esbuild), tsconfig.json (ES2022, Node16, strict), build.sh with stale-guard, fw build command, .gitattributes for dist/ linguist-generated. Add TS build health check to fw doctor. Add Node.js check (WARN) to install.sh. Add TS excludes to vendoring rsync. Add tsc --noEmit to CI workflow. Create lib/runtime.sh with fw_run_ts() fallback pattern.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-593, T-594]
 created: 2026-03-23T22:49:40Z
-last_update: 2026-03-24T06:20:13Z
-date_finished: null
+last_update: 2026-03-24T06:24:33Z
+date_finished: 2026-03-24T06:24:33Z
 ---
 
 # T-592: Scaffold lib/ts/ — TypeScript build infrastructure for framework
@@ -56,8 +56,8 @@ test -x lib/build.sh
 test -f lib/runtime.sh
 # fw build works (no-op with no sources)
 bash lib/build.sh
-# Doctor doesn't crash
-fw doctor
+# Doctor TS check outputs expected message
+bin/fw doctor 2>&1 | grep "TypeScript build" >/dev/null
 
 ## Decisions
 
@@ -82,3 +82,6 @@ fw doctor
 
 ### 2026-03-24T06:20:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T06:24:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
