@@ -4,16 +4,16 @@ name: "Port loop detector to TypeScript — first real TS hook component"
 description: >
   Port the T-586 Phase 2 prototype (docs/spikes/T-586-loop-detect-ts/loop-detect.ts, 261 LOC) into lib/ts/src/loop-detect.ts as the first production TS component. Wire as PostToolUse hook in settings.json template. Compile via fw build. 3 detectors: generic_repeat, ping_pong, no_progress. Uses shared state module from T-592 scaffold. Replaces/supersedes T-578 inception (loop detection) — that inception's question is answered by T-586 GO decision. Depends on T-592 (scaffold). Reference: docs/reports/T-586-prototype-comparison.md, docs/spikes/T-586-loop-detect-ts/.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: [hooks, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-578]
 created: 2026-03-23T23:00:46Z
-last_update: 2026-03-24T06:32:48Z
-date_finished: null
+last_update: 2026-03-24T06:35:43Z
+date_finished: 2026-03-24T06:35:43Z
 ---
 
 # T-594: Port loop detector to TypeScript — first real TS hook component
@@ -87,3 +87,6 @@ echo "" | node lib/ts/dist/loop-detect.js
 
 ### 2026-03-24T06:32:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T06:35:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
