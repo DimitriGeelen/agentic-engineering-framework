@@ -25,14 +25,15 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
-# Context window size — 1M GA for Opus 4.6 / Sonnet 4.6 (2026-03-13, T-478)
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-1000000}
+# Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
+# Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
+CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
 
 # Token thresholds (autoCompact disabled — D-027)
-# Proportional to window size. Critical leaves ~100K for handover routine.
-TOKEN_WARN=$((CONTEXT_WINDOW * 60 / 100))        # ~60% (600K at 1M)
-TOKEN_URGENT=$((CONTEXT_WINDOW * 80 / 100))      # ~80% (800K at 1M)
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 90 / 100))    # ~90% (900K at 1M)
+# Tighter margins required for smaller window. ~10K headroom for handover routine.
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (150K at 200K)
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K)
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K)
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=5

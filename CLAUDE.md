@@ -465,16 +465,17 @@ The Watchtower web UI at `/fabric` provides: subsystem overview, component table
 
 ### Work Proposal Rule
 - **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
-- Below 60% (600K tokens): proceed normally
-- 60-80% (600K-800K): propose only small, bounded tasks; commit first
-- Above 80% (800K+): propose only wrap-up actions (commit, learnings, handover)
-- Above 90% (900K+): handover immediately, no new work
+- Below 75% (<150K tokens): proceed normally
+- 75-85% (150K-170K): propose only small, bounded tasks; commit first
+- Above 85% (170K+): propose only wrap-up actions (commit, learnings, handover)
+- Above 95% (190K+): handover immediately, no new work
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
 - **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
 - **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
-- Escalation ladder: **600K** ok→warn (note), **800K** warn→urgent (warning), **900K** urgent→critical (**BLOCK**)
+- Escalation ladder: **150K** ok→warn (note), **170K** warn→urgent (warning), **190K** urgent→critical (**BLOCK**)
+- Context window: **200K** (observed 2026-03-24, T-596 — Anthropic reduced from 1M without notice)
 - At critical, allowed: git commit/add, fw handover/task, reading files, Write/Edit to `.context/` `.tasks/` `.claude/` (wrap-up paths). Blocked: Write/Edit to source files, general Bash
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`
@@ -669,7 +670,7 @@ Human ACs represent real verification steps. Unvalidated deliverables carry down
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
-**Structural enforcement (T-139, T-478):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=900K tokens, ~90% of 1M window). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `CONTEXT_WINDOW` env var (default: 1M).
+**Structural enforcement (T-139, T-478, T-596):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=190K tokens, ~95% of 200K window). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `CONTEXT_WINDOW` env var (default: 200K).
 
 ### Inception Discipline
 When the active task has `workflow_type: inception`:

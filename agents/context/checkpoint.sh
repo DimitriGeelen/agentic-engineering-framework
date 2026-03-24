@@ -24,14 +24,15 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
-# Context window size — 1M GA for Opus 4.6 / Sonnet 4.6 (2026-03-13, T-478)
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-1000000}
+# Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
+# Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
+CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
 
 # Token thresholds (autoCompact disabled — D-027)
-# Proportional to window size. Critical leaves ~100K for handover routine.
-TOKEN_WARN=$((CONTEXT_WINDOW * 60 / 100))        # ~60% (600K at 1M) — informational
-TOKEN_URGENT=$((CONTEXT_WINDOW * 80 / 100))      # ~80% (800K at 1M) — commit + checkpoint
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 90 / 100))    # ~90% (900K at 1M) — handover NOW
+# Tighter margins required for smaller window. ~10K headroom for handover routine.
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (150K at 200K) — informational
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K) — commit + checkpoint
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=5
