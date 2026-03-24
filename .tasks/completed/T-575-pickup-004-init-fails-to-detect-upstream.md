@@ -4,7 +4,7 @@ name: "PICKUP-004: Init fails to detect upstream_repo for non-GitHub clones"
 description: >
   From 150-skills-manager via TermLink. MEDIUM. Three nested github.com gates in init.sh reject all non-GitHub remotes. upstream_repo silently missing, breaks fw update. RCA: /opt/150-skills-manager/.context/handovers/rca-004-init-upstream-repo.md. Pickup: /opt/150-skills-manager/.context/handovers/pickup-004-init-upstream-repo.md. Learning: L-008.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:58:38Z
-last_update: 2026-03-24T11:52:02Z
-date_finished: null
+last_update: 2026-03-24T11:52:41Z
+date_finished: 2026-03-24T11:52:41Z
 ---
 
 # T-575: PICKUP-004: Init fails to detect upstream_repo for non-GitHub clones
@@ -54,3 +54,6 @@ grep -q "upstream_repo" lib/init.sh
 
 ### 2026-03-24T11:52:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T11:52:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
