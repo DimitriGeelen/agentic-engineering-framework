@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-529: Capture Task vs TermLink dispatch learning
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-23T11:08:48Z
+# ============================================================================
+
+task_id: T-529
+task_name: "Capture Task vs TermLink dispatch learning"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T23:24:22Z
+completed: 2026-03-23T11:06:10Z
+duration_days: 6
+updates_count: 2
+first_commit: 2026-03-18T00:26:00+01:00
+last_commit: 2026-03-18T00:33:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Capture Task vs TermLink dispatch learning — decision matrix in MEMORY.md. Add Task vs TermLink dispatch enforcement to CLAUDE.md
+
+# Key outcomes
+outcomes:
+  - "MEMORY.md updated with Task vs TermLink dispatch decision matrix"
+  - "Learning recorded via fw context add-learning"
+  - "CLAUDE.md Sub-Agent Dispatch Protocol updated with Task vs TermLink section"
+  - "Decision rule added: 3+ agents with >1K output → use TermLink dispatch"
+  - "TermLink dispatch pattern added to Dispatch Patterns section"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-529-capture-task-vs-termlink-dispatch-learni.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-18T00:26:00"
+    action: "T-529: Capture Task vs TermLink dispatch learning — decision matrix in MEMORY.md"
+  - time: "2026-03-18T00:33:24"
+    action: "T-529: Add Task vs TermLink dispatch enforcement to CLAUDE.md"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7901 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7901
+  commits: 2
+  files_changed: 2
+  lines_added: 105
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-529-capture-task-vs-termlink-dispatch-learni.md
+generated_by: context-agent-hybrid

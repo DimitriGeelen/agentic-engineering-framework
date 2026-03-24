@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-527: README additions — prerequisites, troubleshooting, fw update/vendor docs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-23T11:08:47Z
+# ============================================================================
+
+task_id: T-527
+task_name: "README additions — prerequisites, troubleshooting, fw update/vendor docs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T23:14:43Z
+completed: 2026-03-23T11:06:10Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-03-18T00:22:02+01:00
+last_commit: 2026-03-18T00:22:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  README additions — prerequisites, troubleshooting, updating docs
+
+# Key outcomes
+outcomes:
+  - "Prerequisites section exists in README with bash 4.4+, python3, PyYAML, git requirements"
+  - "macOS note about `brew install bash` included"
+  - "`fw update` and `fw update --check` documented in README"
+  - "Vendored model (.agentic-framework/) explained in Updating section"
+  - "Troubleshooting section with top 5 common errors and fixes"
+  - "`install.sh --local` documented in README install section"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "README.md"
+  - ".tasks/active/T-527-readme-additions--prerequisites-troubles.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-18T00:22:02"
+    action: "T-527: README additions — prerequisites, troubleshooting, updating docs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7911 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7911
+  commits: 1
+  files_changed: 2
+  lines_added: 115
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-527-readme-additions--prerequisites-troubles.md
+generated_by: context-agent-hybrid

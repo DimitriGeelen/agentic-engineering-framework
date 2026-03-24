@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-595: Migrate highest-risk inline Python blocks to fw-util calls
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-24T07:20:02Z
+# ============================================================================
+
+task_id: T-595
+task_name: "Migrate highest-risk inline Python blocks to fw-util calls"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T23:00:57Z
+completed: 2026-03-24T07:20:00Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-24T08:15:53+01:00
+last_commit: 2026-03-24T08:15:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Migrate highest-risk inline Python blocks to safe patterns
+
+# Key outcomes
+outcomes:
+  - "`check-tier0.sh:176-199` — audit log writer uses env vars instead of string interpolation"
+  - "`create-task.sh:161-199` — all template vars passed via env, not interpolation"
+  - "`validate-init.sh:155,198,204` — primary path uses fw-util; Python kept as fallback"
+  - "11 `open('$path')` patterns migrated to env-var pattern across 6 files (validate-init, upgrade, self-audit, assumption, handover)"
+  - "Remaining patterns in audit.sh, fabric/*.sh, resume.sh are lower risk (framework-controlled paths)"
+  - "Bats tests: 73/74 pass (1 pre-existing failure unrelated to migration)"
+  - "`fw doctor` passes (1 pre-existing warning)"
+  - "Each migrated invocation handles file-not-found gracefully"
+  - "Input with quotes processes correctly (tested create-task.sh with single+double quotes)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/self-audit.sh"
+  - "agents/context/check-tier0.sh"
+  - "agents/handover/handover.sh"
+  - "agents/task-create/create-task.sh"
+  - "lib/assumption.sh"
+  - "lib/upgrade.sh"
+  - "lib/validate-init.sh"
+  - ".tasks/active/T-595-migrate-highest-risk-inline-python-block.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T08:15:53"
+    action: "T-595: Migrate highest-risk inline Python blocks to safe patterns"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 499 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, typescript, T-586]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 499
+  commits: 2
+  files_changed: 12
+  lines_added: 536
+  lines_removed: 80
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-595-migrate-highest-risk-inline-python-block.md
+generated_by: context-agent-hybrid

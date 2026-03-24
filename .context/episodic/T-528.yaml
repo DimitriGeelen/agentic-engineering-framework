@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-528: Fix install.sh and FRAMEWORK.md stale claims
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-23T11:08:48Z
+# ============================================================================
+
+task_id: T-528
+task_name: "Fix install.sh and FRAMEWORK.md stale claims"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-17T23:14:47Z
+completed: 2026-03-23T11:06:10Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-03-18T00:20:40+01:00
+last_commit: 2026-03-18T00:20:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix install.sh and FRAMEWORK.md stale claims
+
+# Key outcomes
+outcomes:
+  - "install.sh update path has dirty-check before reset --hard (warns user)"
+  - "PyYAML check uses error() not warn() since it's fatal"
+  - "Bash version check aligned between install.sh and preflight.sh (both 4.4+)"
+  - "FRAMEWORK.md \"automatic updates\" claim corrected for vendored model"
+  - "bin/fw error message no longer references removed framework_path field"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix install.sh and FRAMEWORK.md stale claims"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "FRAMEWORK.md"
+  - "install.sh"
+  - "lib/preflight.sh"
+  - ".tasks/active/T-528-fix-installsh-and-frameworkmd-stale-clai.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-18T00:20:40"
+    action: "T-528: Fix install.sh and FRAMEWORK.md stale claims"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7911 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7911
+  commits: 1
+  files_changed: 5
+  lines_added: 105
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-528-fix-installsh-and-frameworkmd-stale-clai.md
+generated_by: context-agent-hybrid
