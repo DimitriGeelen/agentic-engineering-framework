@@ -22,6 +22,21 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Type check TypeScript
+        run: |
+          if [ -d lib/ts/src ] && find lib/ts/src -name '*.ts' -not -name '*.d.ts' | grep -q .; then
+            cd lib/ts
+            npm ci
+            npx tsc --noEmit
+          else
+            echo "No TypeScript sources — skipping type check"
+          fi
+
       - name: Install bats-core
         run: |
           git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats

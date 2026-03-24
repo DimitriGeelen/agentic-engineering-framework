@@ -134,6 +134,11 @@ do_vendor() {
         __pycache__
         "*.pyc"
         ".DS_Store"
+        "lib/ts/src"
+        "lib/ts/tsconfig.json"
+        "lib/ts/package.json"
+        "lib/ts/package-lock.json"
+        "lib/ts/node_modules"
     )
 
     if [ "$dry_run" = true ]; then
@@ -404,6 +409,7 @@ show_help() {
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
+    echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo -e "  ${GREEN}termlink${NC} <cmd>       TermLink integration (check|spawn|exec|status|cleanup|dispatch)"
     echo -e "  ${GREEN}onboarding${NC} <cmd>     Onboarding gate (status|skip|reset)"
@@ -802,6 +808,34 @@ for e in d.get('errors',[])[:3]:
     else
         echo -e "  ${YELLOW}WARN${NC}  TermLink not installed (cargo install termlink)"
         warnings=$((warnings + 1))
+    fi
+
+    # Check: TypeScript build health (optional)
+    if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
+        shopt -s nullglob
+        local _ts_files=("$FRAMEWORK_ROOT/lib/ts/src/"*.ts)
+        shopt -u nullglob
+        if [ ${#_ts_files[@]} -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  TypeScript build (no sources yet)"
+        elif command -v node >/dev/null 2>&1; then
+            local _ts_stale=0
+            for _ts_src in "${_ts_files[@]}"; do
+                local _ts_out="$FRAMEWORK_ROOT/lib/ts/dist/$(basename "${_ts_src%.ts}.js")"
+                if [ ! -f "$_ts_out" ] || [ "$_ts_src" -nt "$_ts_out" ]; then
+                    _ts_stale=1
+                    break
+                fi
+            done
+            if [ "$_ts_stale" -eq 1 ]; then
+                echo -e "  ${YELLOW}WARN${NC}  TypeScript build stale (run 'fw build')"
+                warnings=$((warnings + 1))
+            else
+                echo -e "  ${GREEN}OK${NC}  TypeScript build (${#_ts_files[@]} source(s))"
+            fi
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Node.js not found (TS hooks will use Python fallback)"
+            warnings=$((warnings + 1))
+        fi
     fi
 
     # Enforcement matcher coverage: G-012 closed as accepted risk (no notebooks in project)
@@ -1652,6 +1686,9 @@ print(len(tier0))
         echo ""
         source "$FW_LIB_DIR/init.sh"
         do_init "$@"
+        ;;
+    build)
+        exec "$FRAMEWORK_ROOT/lib/build.sh" "$@"
         ;;
     harvest)
         source "$FW_LIB_DIR/harvest.sh"

@@ -107,6 +107,15 @@ check_prereqs() {
         info "python3 ${py_ver}"
     fi
 
+    # Node.js (optional — recommended for TypeScript hooks, Python fallback otherwise)
+    if command -v node &>/dev/null; then
+        local node_ver
+        node_ver=$(node --version 2>&1 | sed 's/^v//')
+        info "node ${node_ver} (recommended for TS hooks)"
+    else
+        warn "Node.js not found (optional — Python fallback for TS hooks)"
+    fi
+
     if [[ "$ok" != "true" ]]; then
         fatal "Prerequisites not met. Fix the issues above and re-run."
     fi

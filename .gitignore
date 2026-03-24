@@ -11,6 +11,9 @@ __pycache__/
 deploy/onedev-pr-sync.sh
 .context/working/.onedev-pr-seen
 
+# TypeScript build artifacts
+lib/ts/node_modules/
+
 # Temporary screenshots (Playwright MCP output)
 *.png
 # But track documentation screenshots

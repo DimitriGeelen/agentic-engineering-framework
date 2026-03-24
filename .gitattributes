@@ -1,0 +1,2 @@
+# Mark compiled TypeScript output as generated (excluded from GitHub language stats)
+lib/ts/dist/*.js linguist-generated=true
