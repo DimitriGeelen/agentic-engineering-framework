@@ -114,6 +114,15 @@
             "command": "fw hook check-fabric-new-file"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "fw hook commit-cadence"
+          }
+        ]
       }
     ]
   }
