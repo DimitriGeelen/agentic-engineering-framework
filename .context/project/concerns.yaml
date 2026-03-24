@@ -643,3 +643,23 @@ concerns:
     last_reviewed: 2026-03-24
     resolved_date: 2026-03-24
     related_task: T-572
+
+  - id: G-022
+    type: gap
+    title: "Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit"
+    description: >
+      Hardcoded cron filename means only one project per machine gets scheduled audits.
+      Last to install wins, all others silently lose cron. Same class as G-021 (silent
+      enforcement disabling). Discovered when 150-skills-manager overwrote framework
+      repo's cron without warning.
+    spec_reference: "CLAUDE.md §Constitutional Directive D2 (Reliability), agents/audit/audit.sh:25"
+    severity: urgent
+    evidence:
+      - "audit.sh:25 — CRON_FILE='/etc/cron.d/agentic-audit' hardcoded"
+      - "150-skills-manager agent overwrote framework cron, dismissed with 'for now this is fine'"
+      - "No overwrite warning, no collision detection"
+      - "fw doctor does not check cron ownership"
+    status: watching
+    created: 2026-03-24
+    last_reviewed: 2026-03-24
+    related_task: T-601
