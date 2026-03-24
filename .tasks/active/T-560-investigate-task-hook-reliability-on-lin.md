@@ -4,16 +4,16 @@ name: "Investigate task hook reliability on Linux — PreToolUse Write/Edit gate
 description: >
   User reports being able to write files without being prompted to create tasks. This happens all the time on Linux. Previously on macOS the hook worked. Investigate: is check-active-task.sh firing? Is there a platform difference? Check hook registration, PATH resolution, and Claude Code hook execution on Linux.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-23T17:00:05Z
-last_update: 2026-03-23T17:07:55Z
-date_finished: null
+last_update: 2026-03-24T10:52:42Z
+date_finished: 2026-03-24T10:52:42Z
 ---
 
 # T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
@@ -41,7 +41,7 @@ User reports Write/Edit operations succeeding without task gate blocking. Worked
 
 ## Verification
 
-fw doctor 2>&1 | grep -q "Hook path validation"
+fw doctor > /tmp/fw-doctor-t560.txt 2>&1 || true; grep -q "Hook path validation" /tmp/fw-doctor-t560.txt
 
 ## Decisions
 
@@ -63,3 +63,6 @@ fw doctor 2>&1 | grep -q "Hook path validation"
 
 ### 2026-03-23T17:00:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T10:52:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
