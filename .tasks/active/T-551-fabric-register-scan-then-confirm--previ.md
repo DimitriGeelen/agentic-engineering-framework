@@ -4,7 +4,7 @@ name: "Fabric register scan-then-confirm — preview before bulk registration, t
 description: >
   fw fabric register on a directory should preview what will be registered (subsystem breakdown, file counts) before creating cards. Single file = no gate. Directory = always preview. --yes flag for automation. Also update onboarding T-003 template with scaled guidance and add CLAUDE.md governance rule. Origin: T-549 OpenClaw eval — agent registered 2734 cards blindly, required coaching + cleanup.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:05:30Z
-last_update: 2026-03-23T16:05:30Z
+last_update: 2026-03-24T21:36:25Z
 date_finished: null
 ---
 
@@ -20,51 +20,22 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw fabric register <dir>` blindly creates cards for all eligible files. On OpenClaw (2734 files), this caused context explosion. Add preview-then-confirm for directory registration.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Directory registration shows preview (file count, subsystem breakdown) before creating cards
+- [x] Preview exits without creating cards unless `--yes` flag is passed
+- [x] Single file registration is unchanged (no gate)
+- [x] `--yes` flag bypasses preview confirmation
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q "\-\-yes" agents/fabric/lib/register.sh
+grep -q "preview\|Preview" agents/fabric/lib/register.sh
 
 ## Decisions
-
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
 
 ## Updates
 
@@ -72,3 +43,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-551-fabric-register-scan-then-confirm--previ.md
 - **Context:** Initial task creation
+
+### 2026-03-24T21:36:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
