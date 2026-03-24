@@ -64,6 +64,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "fw hook check-project-boundary"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "fw hook budget-gate"
           }
         ]
