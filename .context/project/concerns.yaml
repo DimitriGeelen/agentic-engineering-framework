@@ -633,7 +633,13 @@ concerns:
       - "fw upgrade gives false green (counts hooks, doesn't validate paths)"
       - "fw self-test gives false confidence (same-machine testing)"
     related_to: "G-007 (same root cause class, fixed only for 3 budget scripts)"
-    status: watching
+    status: resolved
+    resolution: >
+      All 3 contamination points fixed upstream: (1) init.sh uses quoted heredoc with
+      portable .agentic-framework/bin/fw paths (T-496), (2) framework_path removed from
+      .framework.yaml (T-498), (3) __FRAMEWORK_ROOT__ sed substitution removed (T-572).
+      fw doctor now validates hook paths (check 6). Dead sed line cleaned up T-572.
     created: 2026-03-14
-    last_reviewed: 2026-03-14
-    related_task: T-434
+    last_reviewed: 2026-03-24
+    resolved_date: 2026-03-24
+    related_task: T-572

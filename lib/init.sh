@@ -450,9 +450,9 @@ generate_claude_md() {
 
     if [ -f "$template_file" ]; then
         # Use comprehensive template with placeholder substitution
+        # T-572: removed __FRAMEWORK_ROOT__ substitution (G-021 path isolation — no absolute paths in committed files)
         sed \
             -e "s|__PROJECT_NAME__|$project_name|g" \
-            -e "s|__FRAMEWORK_ROOT__|$FRAMEWORK_ROOT|g" \
             "$template_file" > "$config_file"
     else
         # Fallback: inline minimal CLAUDE.md if template missing
