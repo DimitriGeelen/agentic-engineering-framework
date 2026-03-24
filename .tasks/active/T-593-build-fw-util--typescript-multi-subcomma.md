@@ -4,7 +4,7 @@ name: "Build fw-util — TypeScript multi-subcommand utility replacing inline Py
 description: >
   Build the fw-util TypeScript utility that replaces ~290 inline python3 -c blocks across 49 bash scripts. Subcommands: yaml-get (read YAML key), yaml-set (write YAML key), json-get (read JSON key), json-set (write JSON key), path-rel (relative path), path-resolve (absolute path), date-fmt (ISO date formatting), frontmatter-parse (YAML frontmatter extraction). Single esbuild bundle (~50KB). Called from bash as: node lib/ts/dist/fw-util.js <subcommand> <args>. Depends on T-592 (scaffold). Design source: docs/reports/T-586-migration-path.md section 2 Tier 2 + section 11.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-595]
 created: 2026-03-23T22:50:30Z
-last_update: 2026-03-23T22:50:30Z
+last_update: 2026-03-24T06:30:07Z
 date_finished: null
 ---
 
@@ -31,21 +31,21 @@ Enables: T-595 (migration of highest-risk blocks)
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/ts/src/fw-util.ts` exists with subcommand dispatch
-- [ ] Subcommand `yaml-get <file> <key>` reads YAML key (supports dot-path: `a.b.c`)
-- [ ] Subcommand `yaml-set <file> <key> <value>` writes YAML key
-- [ ] Subcommand `json-get <file> <key>` reads JSON key (supports dot-path)
-- [ ] Subcommand `json-set <file> <key> <value>` writes JSON key
-- [ ] Subcommand `path-rel <from> <to>` computes relative path
-- [ ] Subcommand `path-resolve <base> <path>` resolves absolute path
-- [ ] Subcommand `date-fmt [--iso|--epoch|--human]` formats current time
-- [ ] Subcommand `frontmatter <file>` extracts YAML frontmatter as JSON
-- [ ] All subcommands read data from files/args (never shell interpolation)
-- [ ] `fw build` compiles to `lib/ts/dist/fw-util.js` (single bundle, <100KB)
-- [ ] `node lib/ts/dist/fw-util.js --help` lists all subcommands
-- [ ] Handles missing files gracefully (exit 1 + message, no stack trace)
-- [ ] Handles malformed YAML/JSON gracefully (exit 1 + message)
-- [ ] Execution time <30ms per invocation (benchmarked)
+- [x] `lib/ts/src/fw-util.ts` exists with subcommand dispatch
+- [x] Subcommand `yaml-get <file> <key>` reads YAML key (supports dot-path: `a.b.c`)
+- [x] Subcommand `yaml-set <file> <key> <value>` writes YAML key
+- [x] Subcommand `json-get <file> <key>` reads JSON key (supports dot-path)
+- [x] Subcommand `json-set <file> <key> <value>` writes JSON key
+- [x] Subcommand `path-rel <from> <to>` computes relative path
+- [x] Subcommand `path-resolve <base> <path>` resolves absolute path
+- [x] Subcommand `date-fmt [--iso|--epoch|--human]` formats current time
+- [x] Subcommand `frontmatter <file>` extracts YAML frontmatter as JSON
+- [x] All subcommands read data from files/args (never shell interpolation)
+- [x] `fw build` compiles to `lib/ts/dist/fw-util.js` (single bundle, 93KB)
+- [x] `node lib/ts/dist/fw-util.js --help` lists all subcommands
+- [x] Handles missing files gracefully (exit 1 + message, no stack trace)
+- [x] Handles malformed YAML/JSON gracefully (exit 1 + message)
+- [x] Execution time <30ms per invocation (benchmarked: 20-30ms)
 
 ## Verification
 
@@ -59,8 +59,10 @@ echo '{"key":"value","nested":{"deep":"found"}}' > /tmp/fw-util-test.json
 test "$(node lib/ts/dist/fw-util.js json-get /tmp/fw-util-test.json nested.deep)" = "found"
 # Path operations
 node lib/ts/dist/fw-util.js path-rel /opt/framework /opt/framework/lib/ts
-# Frontmatter extraction (uses a real task file)
-node lib/ts/dist/fw-util.js frontmatter .tasks/active/T-592-scaffold-libts--typescript-build-infrast.md
+# Frontmatter extraction (uses this task file)
+node lib/ts/dist/fw-util.js frontmatter .tasks/active/T-593-build-fw-util--typescript-multi-subcomma.md
+# Error handling: missing file exits 1
+! node lib/ts/dist/fw-util.js yaml-get /nonexistent.yaml key 2>/dev/null
 # Cleanup
 rm -f /tmp/fw-util-test.yaml /tmp/fw-util-test.json
 
@@ -81,3 +83,6 @@ rm -f /tmp/fw-util-test.yaml /tmp/fw-util-test.json
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-593-build-fw-util--typescript-multi-subcomma.md
 - **Context:** Initial task creation
+
+### 2026-03-24T06:30:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
