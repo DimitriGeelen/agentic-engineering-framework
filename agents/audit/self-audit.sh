@@ -251,16 +251,21 @@ else
     pass "settings.json exists"
 
     # Validate JSON
-    if ! python3 -c "import json; json.load(open('$SETTINGS_FILE'))" 2>/dev/null; then
+    if command -v node >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js" ]; then
+        _json_valid=$(node "$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js" json-get "$SETTINGS_FILE" __validate 2>/dev/null; echo $?)
+    else
+        _json_valid=$(python3 -c "import json; json.load(open('$SETTINGS_FILE'))" 2>/dev/null; echo $?)
+    fi
+    if [ "$_json_valid" != "0" ]; then
         fail "settings.json is not valid JSON"
     else
         pass "settings.json valid JSON"
 
         # Validate hook structure and count results
-        hook_output=$(python3 -c "
-import json, sys
+        hook_output=$(VALIDATE_FILE="$SETTINGS_FILE" python3 -c "
+import json, sys, os
 
-with open('$SETTINGS_FILE') as f:
+with open(os.environ['VALIDATE_FILE']) as f:
     settings = json.load(f)
 
 hooks = settings.get('hooks', {})

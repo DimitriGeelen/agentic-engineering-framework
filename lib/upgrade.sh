@@ -295,9 +295,9 @@ plus Claude Code-specific integration notes.
     if [ -f "$settings_file" ]; then
         # Check hook count AND path isolation (G-021)
         local hook_status
-        hook_status=$(python3 -c "
-import json
-with open('$settings_file') as f:
+        hook_status=$(VALIDATE_FILE="$settings_file" python3 -c "
+import json, os
+with open(os.environ['VALIDATE_FILE']) as f:
     data = json.load(f)
 total = sum(len(v) for v in data.get('hooks', {}).values())
 # Check for hardcoded paths (path isolation violation)

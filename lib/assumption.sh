@@ -138,9 +138,9 @@ print(next_id)
 PYADD
 
     local new_id
-    new_id=$(python3 -c "
-import yaml
-with open('$ASSUMPTIONS_FILE') as f:
+    new_id=$(VALIDATE_FILE="$ASSUMPTIONS_FILE" python3 -c "
+import yaml, os
+with open(os.environ['VALIDATE_FILE']) as f:
     data = yaml.safe_load(f) or {}
 assumptions = data.get('assumptions', [])
 if assumptions:

@@ -156,47 +156,58 @@ TAGS_YAML=$(format_yaml_array "$TAGS")
 RELATED_YAML=$(format_yaml_array "$RELATED")
 
 # Select template content based on workflow type
+# All vars passed via env to avoid shell interpolation into Python source (T-595)
 if [ "$WORKFLOW_TYPE" = "inception" ] && [ -f "$TASKS_DIR/templates/inception.md" ]; then
-    # Use inception template — replace placeholders via Python (safe with special chars)
+    TC_TEMPLATE="$TASKS_DIR/templates/inception.md" \
+    TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_HORIZON="$HORIZON" \
+    TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" TC_RELATED_YAML="$RELATED_YAML" \
+    TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys
-with open('$TASKS_DIR/templates/inception.md') as f:
+import sys, os
+e = os.environ
+with open(e['TC_TEMPLATE']) as f:
     t = f.read()
-t = t.replace('id: T-XXX', 'id: $TASK_ID')
-t = t.replace('name:', 'name: \"' + sys.argv[1].replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
-t = t.replace('status: captured', 'status: $STATUS')
-t = t.replace('horizon: now', 'horizon: $HORIZON')
-t = t.replace('owner:', 'owner: $OWNER', 1)
-t = t.replace('tags: []', 'tags: $TAGS_YAML')
-t = t.replace('related_tasks: []', 'related_tasks: $RELATED_YAML')
-t = t.replace('created:', 'created: $TIMESTAMP', 1)
-t = t.replace('last_update:', 'last_update: $TIMESTAMP', 1)
-t = t.replace('# T-XXX: [Inception Name]', '# $TASK_ID: ' + sys.argv[1])
-t = t.replace('[Chronological log', '### $TIMESTAMP — task-created [task-create-agent]\n- **Action:** Created inception task\n- **Output:** $FILEPATH\n- **Context:** Initial task creation\n\n[Chronological log')
-with open('$FILEPATH', 'w') as f:
+name, desc = sys.argv[1], sys.argv[2]
+t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
+t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
+t = t.replace('description: >', 'description: >\n  ' + desc, 1)
+t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
+t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
+t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
+t = t.replace('tags: []', 'tags: ' + e['TC_TAGS_YAML'])
+t = t.replace('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'])
+t = t.replace('created:', 'created: ' + e['TC_TIMESTAMP'], 1)
+t = t.replace('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], 1)
+t = t.replace('# T-XXX: [Inception Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
+t = t.replace('[Chronological log', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created inception task\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation\n\n[Chronological log')
+with open(e['TC_FILEPATH'], 'w') as f:
     f.write(t)
 " "$NAME" "$DESCRIPTION"
 elif [ -f "$TASKS_DIR/templates/default.md" ]; then
-    # Use default template — replace placeholders via Python (safe with special chars)
+    TC_TEMPLATE="$TASKS_DIR/templates/default.md" \
+    TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_WORKFLOW_TYPE="$WORKFLOW_TYPE" \
+    TC_HORIZON="$HORIZON" TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" \
+    TC_RELATED_YAML="$RELATED_YAML" TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys
-with open('$TASKS_DIR/templates/default.md') as f:
+import sys, os
+e = os.environ
+with open(e['TC_TEMPLATE']) as f:
     t = f.read()
-t = t.replace('id: T-XXX', 'id: $TASK_ID')
-t = t.replace('name:', 'name: \"' + sys.argv[1].replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + sys.argv[2], 1)
-t = t.replace('status: captured', 'status: $STATUS')
-t = t.replace('workflow_type:', 'workflow_type: $WORKFLOW_TYPE', 1)
-t = t.replace('owner:', 'owner: $OWNER', 1)
-t = t.replace('horizon: now', 'horizon: $HORIZON')
-t = t.replace('tags: []', 'tags: $TAGS_YAML')
-t = t.replace('related_tasks: []', 'related_tasks: $RELATED_YAML')
-t = t.replace('created:', 'created: $TIMESTAMP', 1)
-t = t.replace('last_update:', 'last_update: $TIMESTAMP', 1)
-t = t.replace('# T-XXX: [Task Name]', '# $TASK_ID: ' + sys.argv[1])
-t = t.replace('<!-- Auto-populated by git mining at task completion.\\n     Manual entries optional during execution. -->', '### $TIMESTAMP — task-created [task-create-agent]\n- **Action:** Created task via task-create agent\n- **Output:** $FILEPATH\n- **Context:** Initial task creation')
-with open('$FILEPATH', 'w') as f:
+name, desc = sys.argv[1], sys.argv[2]
+t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
+t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
+t = t.replace('description: >', 'description: >\n  ' + desc, 1)
+t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
+t = t.replace('workflow_type:', 'workflow_type: ' + e['TC_WORKFLOW_TYPE'], 1)
+t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
+t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
+t = t.replace('tags: []', 'tags: ' + e['TC_TAGS_YAML'])
+t = t.replace('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'])
+t = t.replace('created:', 'created: ' + e['TC_TIMESTAMP'], 1)
+t = t.replace('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], 1)
+t = t.replace('# T-XXX: [Task Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
+t = t.replace('<!-- Auto-populated by git mining at task completion.\\n     Manual entries optional during execution. -->', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created task via task-create agent\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation')
+with open(e['TC_FILEPATH'], 'w') as f:
     f.write(t)
 " "$NAME" "$DESCRIPTION"
 else

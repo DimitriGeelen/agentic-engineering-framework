@@ -267,9 +267,9 @@ PENDING_OBS=0
 URGENT_OBS=0
 if [ -f "$INBOX_FILE" ]; then
     PENDING_OBS=$(grep -c 'status: pending' "$INBOX_FILE" 2>/dev/null) || PENDING_OBS=0
-    URGENT_OBS=$(python3 -c "
-import re
-with open('$INBOX_FILE') as f:
+    URGENT_OBS=$(VALIDATE_FILE="$INBOX_FILE" python3 -c "
+import re, os
+with open(os.environ['VALIDATE_FILE']) as f:
     content = f.read()
 blocks = re.split(r'\n  - ', content)
 urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)

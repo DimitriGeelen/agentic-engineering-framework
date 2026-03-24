@@ -173,16 +173,21 @@ if [ -f "$APPROVAL_FILE" ]; then
             rm -f "$APPROVAL_FILE"
 
             # Log to bypass-log for audit trail (fire-and-forget)
+            # Data passed via env vars to avoid shell interpolation into source code (T-595)
+            T0_LOG_FILE="$PROJECT_ROOT/.context/bypass-log.yaml" \
+            T0_DESCRIPTION="$DESCRIPTION" \
+            T0_COMMAND_PREVIEW="${COMMAND:0:120}" \
+            T0_COMMAND_HASH="$COMMAND_HASH" \
             python3 -c "
 import yaml, datetime, os
 
-log_file = os.path.join('$PROJECT_ROOT', '.context', 'bypass-log.yaml')
+log_file = os.environ['T0_LOG_FILE']
 entry = {
     'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
     'tier': 0,
-    'risk': '$DESCRIPTION',
-    'command_preview': '''${COMMAND:0:120}''',
-    'command_hash': '$COMMAND_HASH',
+    'risk': os.environ['T0_DESCRIPTION'],
+    'command_preview': os.environ['T0_COMMAND_PREVIEW'],
+    'command_hash': os.environ['T0_COMMAND_HASH'],
     'authorized_by': 'human',
     'mechanism': 'fw tier0 approve',
 }

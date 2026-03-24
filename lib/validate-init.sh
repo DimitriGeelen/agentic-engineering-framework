@@ -56,6 +56,9 @@ do_validate_init() {
 
     local has_python=false
     command -v python3 >/dev/null 2>&1 && has_python=true
+    local has_node=false
+    command -v node >/dev/null 2>&1 && has_node=true
+    local fw_util="$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js"
 
     local total=0 passed=0 failed=0 skipped=0
 
@@ -151,6 +154,25 @@ do_validate_init() {
             yaml)
                 if [ ! -f "$full_path" ]; then
                     detail="file missing"
+                elif [ "$has_node" = true ] && [ -f "$fw_util" ]; then
+                    if ! node "$fw_util" yaml-get "$full_path" __validate 2>/dev/null >/dev/null; then
+                        detail="invalid YAML"
+                    elif [ -n "$check_args" ]; then
+                        local missing=""
+                        IFS=',' read -ra keys <<< "$check_args"
+                        for key in "${keys[@]}"; do
+                            if ! grep -q "^${key}[[:space:]]*:" "$full_path" 2>/dev/null; then
+                                missing="${missing:+$missing, }$key"
+                            fi
+                        done
+                        if [ -n "$missing" ]; then
+                            detail="missing keys: $missing"
+                        else
+                            result="pass"
+                        fi
+                    else
+                        result="pass"
+                    fi
                 elif [ "$has_python" = true ]; then
                     if ! python3 -c "import yaml; yaml.safe_load(open('$full_path'))" 2>/dev/null; then
                         detail="invalid YAML"
@@ -194,6 +216,25 @@ do_validate_init() {
             json)
                 if [ ! -f "$full_path" ]; then
                     detail="file missing"
+                elif [ "$has_node" = true ] && [ -f "$fw_util" ]; then
+                    if ! node "$fw_util" json-get "$full_path" __validate 2>/dev/null >/dev/null; then
+                        detail="invalid JSON"
+                    elif [ -n "$check_args" ]; then
+                        local missing=""
+                        IFS=',' read -ra keys <<< "$check_args"
+                        for key in "${keys[@]}"; do
+                            if ! node "$fw_util" json-get "$full_path" "$key" 2>/dev/null >/dev/null; then
+                                missing="${missing:+$missing, }$key"
+                            fi
+                        done
+                        if [ -n "$missing" ]; then
+                            detail="missing keys: $missing"
+                        else
+                            result="pass"
+                        fi
+                    else
+                        result="pass"
+                    fi
                 elif [ "$has_python" = true ]; then
                     if ! python3 -c "import json; json.load(open('$full_path'))" 2>/dev/null; then
                         detail="invalid JSON"
@@ -248,9 +289,9 @@ do_validate_init() {
                     continue
                 else
                     local broken
-                    broken=$(python3 -c "
+                    broken=$(VALIDATE_FILE="$full_path" python3 -c "
 import json, os
-with open('$full_path') as f:
+with open(os.environ['VALIDATE_FILE']) as f:
     data = json.load(f)
 for event, entries in data.get('hooks', {}).items():
     for entry in entries:
@@ -322,9 +363,9 @@ for event, entries in data.get('hooks', {}).items():
     if [ -f "$settings_file" ] && [ "$has_python" = true ]; then
         total=$((total + 1))
         local broken_hooks
-        broken_hooks=$(python3 -c "
+        broken_hooks=$(VALIDATE_FILE="$settings_file" python3 -c "
 import json, os
-with open('$settings_file') as f:
+with open(os.environ['VALIDATE_FILE']) as f:
     data = json.load(f)
 broken = []
 for event, entries in data.get('hooks', {}).items():
@@ -424,9 +465,9 @@ print(','.join(bad))
                 [ -f "$govpath" ] || continue
                 total=$((total + 1))
                 local leaked
-                leaked=$(python3 -c "
-import yaml
-with open('$govpath') as f:
+                leaked=$(VALIDATE_FILE="$govpath" python3 -c "
+import yaml, os
+with open(os.environ['VALIDATE_FILE']) as f:
     data = yaml.safe_load(f) or {}
 leaked = []
 for key, items in data.items():
