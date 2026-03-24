@@ -583,7 +583,7 @@ def main():
     print(f"Processing {len(targets)} cards...\n")
 
     # Phase 1: Compute forward edges (depends_on)
-    forward = compute_forward_edges(targets, loc_to_id, framework_root)
+    forward = compute_forward_edges(targets, loc_to_id, project_root)
 
     # Phase 2: Compute reverse edges (depended_by) — uses ALL cards as targets
     reverse = compute_reverse_edges(forward, cards, id_to_card)
