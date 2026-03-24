@@ -12,7 +12,7 @@ tags: [urgent]
 components: []
 related_tasks: []
 created: 2026-03-24T09:17:00Z
-last_update: 2026-03-24T09:17:22Z
+last_update: 2026-03-24T09:18:26Z
 date_finished: null
 ---
 
@@ -73,18 +73,18 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Clear bug, clear fix (Option D: basename + collision warning), <50 lines, urgent
+
+**Date**: 2026-03-24T09:26:11Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Clear bug, clear fix (Option D: basename + collision warning), <50 lines, urgent
+
+**Date**: 2026-03-24T09:26:11Z
 
 ## Updates
 
@@ -94,3 +94,13 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
 ### 2026-03-24T09:17:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
 - **Change:** tags: +urgent
+
+### 2026-03-24T09:25:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Clear bug, clear fix (Option D: basename + collision warning), <50 lines, urgent — actively breaking multi-project setups
+
+### 2026-03-24T09:26:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Clear bug, clear fix (Option D: basename + collision warning), <50 lines, urgent
