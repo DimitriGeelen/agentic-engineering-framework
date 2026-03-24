@@ -4,7 +4,7 @@ name: "Inception: Bridge fw dispatch to TermLink file/remote — replace SSH tex
 description: >
   TermLink already has file send/receive, hub server, and remote commands. But fw dispatch only sends JSON text over SSH. Bridge the gap: wire fw bus/dispatch to use termlink file send, termlink remote send-file, and termlink hub for cross-machine communication. Research why the previous attempt failed, what TermLink capabilities exist, and design the integration.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:05:48Z
-last_update: 2026-03-24T09:10:38Z
+last_update: 2026-03-24T09:13:06Z
 date_finished: null
 ---
 
@@ -98,3 +98,6 @@ date_finished: null
 ### 2026-03-24T09:10:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Change:** horizon: next → next
+
+### 2026-03-24T09:13:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

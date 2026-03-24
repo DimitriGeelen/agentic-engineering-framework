@@ -4,7 +4,7 @@ name: "PICKUP-002: Doctor hook validation doesnt recognize vendored fw paths"
 description: >
   From 150-skills-manager via TermLink. HIGH. Doctor inline Python checks script_path == fw but hooks use .agentic-framework/bin/fw hook name. All 5 expected hooks report as not found. Consumer patch validated. RCA: /opt/150-skills-manager/.context/handovers/rca-002-doctor-hook-validation.md. Pickup: /opt/150-skills-manager/.context/handovers/pickup-002-doctor-hook-validation.md. Learning: L-006.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:58:34Z
-last_update: 2026-03-24T10:59:28Z
-date_finished: null
+last_update: 2026-03-24T10:59:59Z
+date_finished: 2026-03-24T10:59:59Z
 ---
 
 # T-573: PICKUP-002: Doctor hook validation doesnt recognize vendored fw paths
@@ -54,3 +54,6 @@ fw doctor > /tmp/fw-doctor-t573.txt 2>&1 || true; grep -q "Hook path validation"
 
 ### 2026-03-24T10:59:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T10:59:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
