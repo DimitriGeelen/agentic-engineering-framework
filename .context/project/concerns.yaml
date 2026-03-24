@@ -659,7 +659,35 @@ concerns:
       - "150-skills-manager agent overwrote framework cron, dismissed with 'for now this is fine'"
       - "No overwrite warning, no collision detection"
       - "fw doctor does not check cron ownership"
-    status: watching
+    status: closed
+    resolution: >
+      T-602: project-specific cron filenames (basename slug). T-604: cron definitions
+      moved to PROJECT_ROOT/.context/cron/ as git-tracked source of truth with
+      copy-on-change, drift detection, and sudo degradation.
     created: 2026-03-24
     last_reviewed: 2026-03-24
     related_task: T-601
+
+  - id: R-037
+    type: risk
+    title: "Project boundary hook scans bash command text literally — false positives on string literals"
+    description: >
+      check-project-boundary.sh (T-559) uses regex on raw bash command text.
+      Cannot distinguish actual cd/redirect operations from paths inside quoted
+      strings, echo output, or test data. Conservative (false positives are safe)
+      but causes friction for self-tests and commands that mention other paths.
+    spec_reference: "agents/context/check-project-boundary.sh, T-559"
+    severity: low
+    likelihood: 3
+    impact: 1
+    score: 3
+    ranking: low
+    evidence:
+      - "T-559 verification commands blocked because test JSON contained /opt/openclaw-evaluation"
+      - "Workaround: construct paths dynamically to avoid literal matches"
+      - "/dev/null false positive fixed (added /dev/ to allowed zones)"
+    trigger: "3+ distinct false positive reports from different tasks"
+    status: watching
+    created: 2026-03-24
+    last_reviewed: 2026-03-24
+    related_task: T-559
