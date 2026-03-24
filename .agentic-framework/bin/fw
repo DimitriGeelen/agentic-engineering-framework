@@ -430,6 +430,7 @@ show_help() {
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
     echo -e "  ${GREEN}gaps${NC}                 Show spec-reality gaps being watched"
+    echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}validate-init${NC}        Verify fw init output is correct and complete"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
@@ -1821,6 +1822,51 @@ for gap in watching:
 if not watching:
     print("  \033[0;32mNo gaps being watched\033[0m")
 PYEOF
+        ;;
+    traceability)
+        # T-590: Traceability baseline for imported projects
+        BASELINE_FILE="$PROJECT_ROOT/.context/project/traceability-baseline"
+        subcmd="${1:-status}"
+        shift 2>/dev/null || true
+        case "$subcmd" in
+            baseline)
+                head_sha=$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null)
+                if [ -z "$head_sha" ]; then
+                    echo -e "${RED}ERROR:${NC} Not a git repository"
+                    exit 1
+                fi
+                mkdir -p "$(dirname "$BASELINE_FILE")"
+                echo "$head_sha" > "$BASELINE_FILE"
+                commit_count=$(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null | wc -l | tr -d ' ')
+                echo -e "${GREEN}Traceability baseline set${NC}"
+                echo "  Commit: $head_sha"
+                echo "  Commits excluded: $commit_count (everything up to and including HEAD)"
+                echo "  File: $BASELINE_FILE"
+                echo ""
+                echo "Audit will now only check commits AFTER this point for task references."
+                ;;
+            status)
+                if [ -f "$BASELINE_FILE" ]; then
+                    baseline_sha=$(cat "$BASELINE_FILE" | tr -d '[:space:]')
+                    echo -e "${GREEN}Traceability baseline active${NC}"
+                    echo "  Baseline: $baseline_sha"
+                    after_count=$(git -C "$PROJECT_ROOT" log --oneline "${baseline_sha}..HEAD" 2>/dev/null | wc -l | tr -d ' ')
+                    echo "  Commits after baseline: $after_count"
+                else
+                    echo -e "${YELLOW}No traceability baseline set${NC}"
+                    echo "  Audit checks ALL commits for task references."
+                    echo "  For imported projects: fw traceability baseline"
+                fi
+                ;;
+            reset)
+                rm -f "$BASELINE_FILE"
+                echo "Traceability baseline removed. Audit will check all commits."
+                ;;
+            *)
+                echo "Usage: fw traceability {baseline|status|reset}"
+                exit 1
+                ;;
+        esac
         ;;
     decisions)
         python3 << 'PYDECISIONS'

@@ -792,8 +792,19 @@ if should_run_section "traceability"; then
 echo "=== GIT TRACEABILITY CHECKS ==="
 
 if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
-    total_commits=$(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null | wc -l | tr -d ' ')
-    task_commits=$(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null | grep -E "T-[0-9]+" | wc -l | tr -d ' ')
+    # T-590: Traceability baseline — only count commits after baseline on imported projects
+    TRACE_BASELINE_FILE="$PROJECT_ROOT/.context/project/traceability-baseline"
+    trace_range=""
+    if [ -f "$TRACE_BASELINE_FILE" ]; then
+        trace_base=$(cat "$TRACE_BASELINE_FILE" | tr -d '[:space:]')
+        if git -C "$PROJECT_ROOT" rev-parse --verify "$trace_base" >/dev/null 2>&1; then
+            trace_range="${trace_base}..HEAD"
+            pass "Traceability baseline active (excluding pre-ingestion commits)"
+        fi
+    fi
+
+    total_commits=$(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null | wc -l | tr -d ' ')
+    task_commits=$(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null | grep -E "T-[0-9]+" | wc -l | tr -d ' ')
 
     if [ "$total_commits" -gt 0 ]; then
         pct=$((task_commits * 100 / total_commits))
@@ -838,7 +849,7 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
                 orphan_refs=$((orphan_refs + 1))
             fi
         fi
-    done < <(git -C "$PROJECT_ROOT" log --oneline 2>/dev/null)
+    done < <(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null)
 
     if [ "$orphan_refs" -eq 0 ] && [ "$task_commits" -gt 0 ]; then
         pass "All commit task refs resolve to actual tasks"
@@ -1640,16 +1651,33 @@ if should_run_section "oe-hourly"; then
 echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
 
 # CTL-008 OE: Task Reference Gate — recent commits have T-XXX prefix
-total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | wc -l | tr -d ' ')
+# T-590: Respect traceability baseline if set
+_ctl008_range=""
+_ctl008_baseline_file="$PROJECT_ROOT/.context/project/traceability-baseline"
+if [ -f "$_ctl008_baseline_file" ]; then
+    _ctl008_base=$(cat "$_ctl008_baseline_file" | tr -d '[:space:]')
+    if git -C "$PROJECT_ROOT" rev-parse --verify "$_ctl008_base" >/dev/null 2>&1; then
+        _ctl008_range="${_ctl008_base}..HEAD"
+    fi
+fi
+if [ -n "$_ctl008_range" ]; then
+    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | wc -l | tr -d ' ')
+else
+    total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | wc -l | tr -d ' ')
+fi
 if [ "$total_recent" -gt 0 ]; then
-    without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    if [ -n "$_ctl008_range" ]; then
+        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    else
+        without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
+    fi
     without_task=$(echo "$without_task" | tr -d '[:space:]')
     ratio=$(( (total_recent - without_task) * 100 / total_recent ))
     if [ "$ratio" -ge 95 ]; then
         pass "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)"
     elif [ "$ratio" -ge 80 ]; then
         grace_warn "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
-             "$(git -C "$PROJECT_ROOT" log --oneline -20 | grep -v '^[a-f0-9]* T-' | head -3)" \
+             "$(git -C "$PROJECT_ROOT" log --oneline -20 ${_ctl008_range} | grep -v '^[a-f0-9]* T-' | head -3)" \
              "Ensure all commits use T-XXX prefix (commit-msg hook)"
     else
         grace_fail "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)" \
@@ -3069,10 +3097,17 @@ try:
 except Exception:
     velocity = 0
 
-# Traceability
+# Traceability (T-590: respect baseline if set)
 try:
+    trace_cmd = ["git", "log", "--oneline", "--format=%s"]
+    baseline_file = os.path.join(CONTEXT_DIR, "project", "traceability-baseline")
+    if os.path.isfile(baseline_file):
+        baseline_sha = open(baseline_file).read().strip()
+        trace_cmd.append(f"{baseline_sha}..HEAD")
+    else:
+        trace_cmd.extend(["-200"])
     r = subprocess.run(
-        ["git", "log", "--oneline", "-200", "--format=%s"],
+        trace_cmd,
         capture_output=True, text=True, timeout=10, cwd=PROJECT_ROOT,
     )
     lines = [l for l in r.stdout.strip().split("\n") if l.strip()] if r.returncode == 0 else []
