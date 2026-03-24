@@ -4,7 +4,7 @@ name: "PICKUP-003: Doctor scope confusion — consumer vs framework context"
 description: >
   From 150-skills-manager via TermLink. MEDIUM. Doctor checks FRAMEWORK_ROOT for tests/unit and other resources that only exist in framework-as-project context. Consumer projects get false warnings. RCA: /opt/150-skills-manager/.context/handovers/rca-003-doctor-scope-confusion.md. Pickup: /opt/150-skills-manager/.context/handovers/pickup-003-doctor-scope-confusion.md. Learning: L-007.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:58:36Z
-last_update: 2026-03-24T11:48:58Z
-date_finished: null
+last_update: 2026-03-24T11:49:41Z
+date_finished: 2026-03-24T11:49:41Z
 ---
 
 # T-574: PICKUP-003: Doctor scope confusion — consumer vs framework context
@@ -54,3 +54,6 @@ fw doctor > /tmp/fw-doctor-t574.txt 2>&1 || true; grep -q "Hook path validation"
 
 ### 2026-03-24T11:48:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T11:49:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
