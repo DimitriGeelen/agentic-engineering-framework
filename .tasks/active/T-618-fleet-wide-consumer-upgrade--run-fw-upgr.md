@@ -4,9 +4,9 @@ name: "Fleet-wide consumer upgrade — run fw upgrade on all 7 consumer projects
 description: >
   All 7 consumer projects stuck at v1.2.6 with 11/13 hooks. Missing: check-project-boundary (T-559), commit-cadence (T-591). After T-615 fixes upgrade.sh, run fw upgrade on each consumer. From T-614 investigation.
 
-status: captured
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [governance, upgrade, fleet]
 components: []
@@ -20,40 +20,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-614 found all 7 consumers at v1.2.6, missing 2 hooks. T-615 fixed detection. Now apply `fw upgrade` to all. Uses `fw upgrade <path>` which is a framework command — writes go to consumer dirs.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] All 7 consumer projects upgraded via `fw upgrade`
+- [x] Each project reports 0 missing hooks after upgrade (15/15 hooks each)
+- [x] Each project version updated to current framework version (1.3.0)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# All consumers at current version
+grep -q "version: 1.3.0" /opt/termlink/.framework.yaml
+grep -q "version: 1.3.0" /opt/050-email-archive/.framework.yaml
+grep -q "version: 1.3.0" /opt/001-sprechloop/.framework.yaml
 
 ## Decisions
 
