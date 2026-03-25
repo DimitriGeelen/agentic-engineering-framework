@@ -4,7 +4,7 @@ name: "PICKUP-007: TermLink run timeout creates orphaned processes"
 description: >
   From 150-skills-manager via TermLink. HIGH. termlink run deregisters session on timeout but does not kill process. Orphaned process keeps running invisibly. No reattach, no timed_out state, no kill flag. Discovered when claude -p wrote output 65min after 900s timeout. This is a TermLink upstream bug. Pickup: /opt/150-skills-manager/.context/handovers/pickup-007-termlink-timeout-orphans.md. Learnings: L-019b, L-019c, L-019d.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:58:41Z
-last_update: 2026-03-24T18:09:41Z
-date_finished: null
+last_update: 2026-03-24T18:11:39Z
+date_finished: 2026-03-24T18:11:39Z
 ---
 
 # T-577: PICKUP-007: TermLink run timeout creates orphaned processes
@@ -50,3 +50,6 @@ grep -q "termlink run.*orphan\|orphan.*timeout" CLAUDE.md
 
 ### 2026-03-24T18:09:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T18:11:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

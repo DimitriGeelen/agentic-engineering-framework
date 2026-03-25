@@ -4,16 +4,16 @@ name: "Fix fw upgrade — sync vendored hook scripts to consumers"
 description: >
   fw upgrade regenerates settings.json with all hooks but does not copy the backing scripts to consumer .agentic-framework/agents/context/. Result: hooks reference scripts that don't exist, blocking all tool use in consumer sessions. Discovered after T-618 fleet upgrade broke /opt/150-skills-manager.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-25T22:24:40Z
-last_update: 2026-03-25T22:24:40Z
-date_finished: null
+last_update: 2026-03-25T22:26:12Z
+date_finished: 2026-03-25T22:26:12Z
 ---
 
 # T-622: Fix fw upgrade — sync vendored hook scripts to consumers
@@ -52,3 +52,6 @@ grep -q 'agents/context' lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-622-fix-fw-upgrade--sync-vendored-hook-scrip.md
 - **Context:** Initial task creation
+
+### 2026-03-25T22:26:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

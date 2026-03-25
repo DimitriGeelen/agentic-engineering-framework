@@ -4,7 +4,7 @@ name: "Fleet-wide consumer upgrade — run fw upgrade on all 7 consumer projects
 description: >
   All 7 consumer projects stuck at v1.2.6 with 11/13 hooks. Missing: check-project-boundary (T-559), commit-cadence (T-591). After T-615 fixes upgrade.sh, run fw upgrade on each consumer. From T-614 investigation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [governance, upgrade, fleet]
 components: []
 related_tasks: []
 created: 2026-03-25T20:17:26Z
-last_update: 2026-03-25T20:17:26Z
-date_finished: null
+last_update: 2026-03-25T22:17:07Z
+date_finished: 2026-03-25T22:17:07Z
 ---
 
 # T-618: Fleet-wide consumer upgrade — run fw upgrade on all 7 consumer projects
@@ -53,3 +53,6 @@ grep -q "version: 1.3.0" /opt/001-sprechloop/.framework.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-618-fleet-wide-consumer-upgrade--run-fw-upgr.md
 - **Context:** Initial task creation
+
+### 2026-03-25T22:17:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

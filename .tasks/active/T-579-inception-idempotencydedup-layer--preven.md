@@ -77,18 +77,18 @@ The framework IS moving toward multi-agent:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: DEFER
 
+**Rationale**: DEFER full dedup until TermLink Phase 2 ships. Exception: fix bus.sh ID generation now — only component designed for multi-agent with race condition in core operation. Steelman found 16 surfaces but strawman showed zero incidents in 530 tasks. Reactive fix for the rest is 2 hours when real failure shape is known.
+
+**Date**: 2026-03-25T13:33:41Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: DEFER full dedup until TermLink Phase 2 ships. Exception: fix bus.sh ID generation now — only component designed for multi-agent with race condition in core operation. Steelman found 16 surfaces but strawman showed zero incidents in 530 tasks. Reactive fix for the rest is 2 hours when real failure shape is known.
+
+**Date**: 2026-03-25T13:33:41Z
 
 ## Updates
 
@@ -99,8 +99,19 @@ The framework IS moving toward multi-agent:
 
 ### 2026-03-25T12:25:00Z — human-feedback [agent]
 - **Action:** Human challenged: "what if we go towards multi-agent execution?"
-- **Revision:** TermLink dispatch already spawns concurrent workers sharing .tasks/ and .context/. No file locking on update-task.sh. DEFER is more appropriate — add flock guards when TermLink Phase 2 ships.
-- **Revised recommendation:** DEFER with trigger condition
+- **Revision:** TermLink dispatch already spawns concurrent workers. DEFER revised.
+
+### 2026-03-25T12:40:00Z — steelman-strawman [agent]
+- **Action:** Dispatched steelman (FOR) and strawman (AGAINST) agents
+- **Steelman:** 16 race-condition surfaces, bus.sh most dangerous (designed for multi-agent, uses find|wc for IDs), flock costs 2ms
+- **Strawman:** Zero incidents in 1589 commits/530 tasks, TermLink workers get separate task IDs, flock not on macOS (D4 violation)
+- **Synthesis:** DEFER full dedup, but fix bus.sh now — only component designed for concurrent use with race condition in core ID generation
+- **Decision:** Human chose DEFER with bus.sh exception
 
 ### 2026-03-25T12:15:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T13:33:41Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** DEFER full dedup until TermLink Phase 2 ships. Exception: fix bus.sh ID generation now — only component designed for multi-agent with race condition in core operation. Steelman found 16 surfaces but strawman showed zero incidents in 530 tasks. Reactive fix for the rest is 2 hours when real failure shape is known.

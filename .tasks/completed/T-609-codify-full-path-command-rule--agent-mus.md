@@ -4,7 +4,7 @@ name: "Codify full-path command rule — agent must give copy-pasteable commands
 description: >
   When the agent gives humans commands to run, they must be single-line, copy-pasteable, with cd to PROJECT_ROOT and bin/fw not bare fw. Currently only in agent memory — needs to be in CLAUDE.md as a structural rule under Agent Behavioral Rules. Also update Human AC format to use full paths in Steps blocks. Origin: user friction running fw inception decide from wrong directory.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:27:09Z
-last_update: 2026-03-25T15:31:10Z
-date_finished: null
+last_update: 2026-03-25T15:34:01Z
+date_finished: 2026-03-25T15:34:01Z
 ---
 
 # T-609: Codify full-path command rule — agent must give copy-pasteable commands with cd and absolute paths
@@ -58,3 +58,6 @@ grep -q "cd.*&&.*bin/fw" .tasks/templates/inception.md
 
 ### 2026-03-25T15:31:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T15:34:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

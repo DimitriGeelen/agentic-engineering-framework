@@ -4,7 +4,7 @@ name: "Fabric register scan-then-confirm — preview before bulk registration, t
 description: >
   fw fabric register on a directory should preview what will be registered (subsystem breakdown, file counts) before creating cards. Single file = no gate. Directory = always preview. --yes flag for automation. Also update onboarding T-003 template with scaled guidance and add CLAUDE.md governance rule. Origin: T-549 OpenClaw eval — agent registered 2734 cards blindly, required coaching + cleanup.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:05:30Z
-last_update: 2026-03-24T21:36:25Z
-date_finished: null
+last_update: 2026-03-24T21:38:30Z
+date_finished: 2026-03-24T21:38:30Z
 ---
 
 # T-551: Fabric register scan-then-confirm — preview before bulk registration, three-layer codification
@@ -46,3 +46,6 @@ grep -q "preview\|Preview" agents/fabric/lib/register.sh
 
 ### 2026-03-24T21:36:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T21:38:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

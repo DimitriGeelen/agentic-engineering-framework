@@ -4,16 +4,16 @@ name: "Fix fw upgrade hook count bug — enumerate by type not count"
 description: >
   upgrade.sh expects 10 hooks but init.sh generates 13. Detection is by count only, not type. Fix: enumerate required hooks by name, compare against consumer settings.json, report missing/extra. From T-614 investigation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [governance, upgrade, bug]
-components: []
+components: [lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-25T20:17:00Z
-last_update: 2026-03-25T20:17:00Z
-date_finished: null
+last_update: 2026-03-25T22:16:00Z
+date_finished: 2026-03-25T22:16:00Z
 ---
 
 # T-615: Fix fw upgrade hook count bug — enumerate by type not count
@@ -55,3 +55,6 @@ grep -q 'extract_hooks' lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-615-fix-fw-upgrade-hook-count-bug--enumerate.md
 - **Context:** Initial task creation
+
+### 2026-03-25T22:16:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

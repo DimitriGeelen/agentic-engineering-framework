@@ -4,7 +4,7 @@ name: "TermLink consumer project governance bypass investigation — Tier 0 bypa
 description: >
   TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T20:03:41Z
-last_update: 2026-03-25T20:03:41Z
-date_finished: null
+last_update: 2026-03-25T21:42:17Z
+date_finished: 2026-03-25T21:42:17Z
 ---
 
 # T-614: TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis
@@ -50,7 +50,7 @@ date_finished: null
 - [ ] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read the research artifact and recommendation in this task
   2. Evaluate go/no-go criteria against findings
@@ -78,20 +78,37 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 5 root causes confirmed      
+  across 7 consumers. Fix upgrade.sh hook detection, add doctor checks, audit trail, fleet upgrade. GO.
+
+**Date**: 2026-03-25T21:40:19Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 5 root causes confirmed      
+  across 7 consumers. Fix upgrade.sh hook detection, add doctor checks, audit trail, fleet upgrade. GO.
+
+**Date**: 2026-03-25T21:40:19Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-25T20:32:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 root causes confirmed across 7 consumers. Remediation bounded: fix
+  upgrade.sh hook detection, add doctor checks, upgrade fleet. GO.
+
+### 2026-03-25T21:40:19Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 root causes confirmed      
+  across 7 consumers. Fix upgrade.sh hook detection, add doctor checks, audit trail, fleet upgrade. GO.
+
+### 2026-03-25T21:42:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

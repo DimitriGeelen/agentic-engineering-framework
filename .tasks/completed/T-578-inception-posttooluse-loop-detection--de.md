@@ -4,7 +4,7 @@ name: "Inception: PostToolUse loop detection — detect and block repetitive fai
 description: >
   OpenClaw has 4-detector loop detection system (generic_repeat, known_poll_no_progress, ping_pong, global_circuit_breaker) using SHA256 hashing of canonicalized params + outcome tracking. Our framework has zero protection against agents calling the same failing command 50 times, burning context silently. Investigate: PostToolUse hook that hashes tool_name + params, tracks outcome hashes, warns at 5 repetitions, blocks at 10. Source: T-015 comparative analysis, OpenClaw tool-loop-detection.ts.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:09:25Z
-last_update: 2026-03-25T11:52:15Z
-date_finished: null
+last_update: 2026-03-25T11:53:52Z
+date_finished: 2026-03-25T11:53:52Z
 ---
 
 # T-578: Inception: PostToolUse loop detection — detect and block repetitive failing tool calls
@@ -83,3 +83,7 @@ Shell wrapper: `agents/context/loop-detect.sh`. State: `.context/working/.loop-d
 ### 2026-03-25T12:00:00Z — superseded [agent]
 - **Action:** Found existing implementation at lib/ts/src/loop-detect.ts (T-594)
 - **Decision:** SUPERSEDED — no exploration needed
+
+### 2026-03-25T11:53:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Superseded by T-594

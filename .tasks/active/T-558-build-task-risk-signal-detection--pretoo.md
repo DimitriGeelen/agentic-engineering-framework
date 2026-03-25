@@ -84,14 +84,11 @@ Origin: T-549 steelman/strawman analysis concluded risk signals are valid but ap
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: DEFER
+
+**Rationale**: Existing 7 guards cover proposed risk signals, no concrete gap identified
+
+**Date**: 2026-03-25T15:54:38Z
 
 ## Findings
 
@@ -136,7 +133,11 @@ Adding ~60 lines and Python-based fabric queries to every Write/Edit call for a 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Existing 7 guards cover proposed risk signals, no concrete gap identified
+
+**Date**: 2026-03-25T15:54:38Z
 
 ## Updates
 
@@ -147,3 +148,14 @@ Adding ~60 lines and Python-based fabric queries to every Write/Edit call for a 
 
 ### 2026-03-25T09:53:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T15:16:19Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Existing 7 guards cover proposed risk signals, no  
+  concrete gap identified
+
+### 2026-03-25T15:54:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Existing 7 guards cover proposed risk signals, no concrete gap identified

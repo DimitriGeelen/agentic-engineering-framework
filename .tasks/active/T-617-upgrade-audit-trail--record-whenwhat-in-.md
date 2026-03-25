@@ -4,16 +4,16 @@ name: "Upgrade audit trail — record when/what in .framework.yaml and .context"
 description: >
   fw upgrade has no audit trail. Cannot answer when upgrade ran or what version upgraded from. Add: timestamp in .framework.yaml, upgrade history in .context/audits/upgrades.yaml. From T-614 investigation.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [governance, upgrade, audit]
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-25T20:17:23Z
-last_update: 2026-03-25T22:20:32Z
-date_finished: null
+last_update: 2026-03-25T22:39:57Z
+date_finished: 2026-03-25T22:39:57Z
 ---
 
 # T-617: Upgrade audit trail — record when/what in .framework.yaml and .context
@@ -66,3 +66,6 @@ grep -q 'upgrades.yaml' lib/upgrade.sh
 
 ### 2026-03-25T22:20:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T22:39:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

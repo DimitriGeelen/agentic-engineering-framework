@@ -4,7 +4,7 @@ name: "enrich.py TypeScript/JavaScript import detection — extend fabric edge d
 description: >
   enrich.py only parses .sh/.py/.html imports. On TypeScript projects, zero edges detected. Add import detection for: import/export from, require(), dynamic import(). Map import paths to registered component paths (relative, package, barrel). Consider pluggable parser architecture for future languages (Go, Rust, Java). Origin: T-549 OpenClaw eval — 52 edges added manually because enricher was language-blind.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:06:19Z
-last_update: 2026-03-24T21:26:13Z
-date_finished: null
+last_update: 2026-03-24T21:28:54Z
+date_finished: 2026-03-24T21:28:54Z
 ---
 
 # T-552: enrich.py TypeScript/JavaScript import detection — extend fabric edge discovery beyond bash/python/html
@@ -48,3 +48,6 @@ grep -q "detect_ts_js_imports" agents/fabric/lib/enrich.py
 
 ### 2026-03-24T21:26:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T21:28:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

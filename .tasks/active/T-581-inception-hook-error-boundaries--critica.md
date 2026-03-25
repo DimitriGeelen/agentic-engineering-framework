@@ -4,16 +4,16 @@ name: "Inception: Hook error boundaries — critical vs advisory hook failure mo
 description: >
   A broken advisory hook (fabric awareness, checkpoint) exits non-zero and blocks the tool call same as a critical hook (task gate, tier0). OpenClaw solves this with error boundaries — failed plugins are marked error but host continues. Investigate: classify framework hooks as critical (must block on failure: check-active-task, check-tier0, budget-gate, check-project-boundary) vs advisory (should warn only: checkpoint, error-watchdog, check-fabric-new-file). Advisory hooks should use || true fallback so non-zero exit logs a warning instead of blocking. Research source: /opt/openclaw-evaluation/.context/working/round2-T-017.md (extension SDK analysis, error boundary section). OpenClaw source: src/plugin-sdk/plugin-entry.ts (try-catch at registration), src/gateway/extensions.ts (error-marked extensions continue). Related framework: .claude/settings.json (hook configuration), bin/fw hook dispatch (line 2270), agents/context/*.sh (all hook scripts).
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:11:29Z
-last_update: 2026-03-25T11:54:05Z
-date_finished: null
+last_update: 2026-03-25T12:15:19Z
+date_finished: 2026-03-25T12:15:19Z
 ---
 
 # T-581: Inception: Hook error boundaries — critical vs advisory hook failure modes
@@ -110,18 +110,18 @@ No code change needed. The hooks are already classified by their event type: Pre
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: Hooks already implement error boundaries correctly — PreToolUse fails closed, PostToolUse fails open. No code change needed.
+
+**Date**: 2026-03-25T12:15:19Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Hooks already implement error boundaries correctly — PreToolUse fails closed, PostToolUse fails open. No code change needed.
+
+**Date**: 2026-03-25T12:15:19Z
 
 ## Updates
 
@@ -132,3 +132,12 @@ No code change needed. The hooks are already classified by their event type: Pre
 - **Action:** Audited all 11 hooks for error handling and crash resilience
 - **Finding:** PreToolUse hooks fail closed (correct for critical gates), PostToolUse hooks already fail open via || true, exit 0, or dependency checks
 - **Recommendation:** NO-GO — existing patterns are adequate
+
+### 2026-03-25T12:15:19Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Hooks already implement error boundaries correctly — PreToolUse fails closed, PostToolUse fails open. No code change needed.
+
+### 2026-03-25T12:15:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

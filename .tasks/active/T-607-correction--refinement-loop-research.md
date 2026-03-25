@@ -1,22 +1,22 @@
 ---
-id: T-580
-name: "Inception: Error classification — permanent vs transient separation in healing loop"
+id: T-607
+name: "Correction & Refinement Loop Research"
 description: >
-  OpenClaw classifies delivery errors as permanent (chat not found, bot blocked — move to failed/) vs transient (network, 5xx — retry with backoff). This prevents wasting retries on unrecoverable failures. Our healing agent classifies errors by type (code, dependency, environment, design, external) but has no permanent/transient separation — it suggests retry for ALL failures including ones that can never succeed. Investigate: add permanent/transient markers to patterns.yaml entries, healing agent should skip retry suggestions for permanent errors, auto-classify based on error pattern history (same error 3+ times = likely permanent). Research source: docs/reports/T-549-openclaw-value-extraction.md (P6: multi-provider failover with error classification), .context/working/round2-T-016.md on OpenClaw eval project (error classification section). OpenClaw source: src/delivery/delivery-queue.ts (permanent error detection), src/agents/auth-profiles.ts (billing/auth error classification for provider rotation). Related: T-562 (safety guardrails), agents/healing/ (our healing loop implementation).
+  Research how the Email Copilot handles user corrections and maintains conversation state
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-23T21:09:57Z
-last_update: 2026-03-25T15:18:04Z
-date_finished: null
+created: 2026-03-25T14:38:47Z
+last_update: 2026-03-25T14:43:32Z
+date_finished: 2026-03-25T14:43:32Z
 ---
 
-# T-580: Inception: Error classification — permanent vs transient separation in healing loop
+# T-607: Correction & Refinement Loop Research
 
 ## Problem Statement
 
@@ -44,9 +44,19 @@ date_finished: null
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Read the research artifact and recommendation in this task
+  2. Evaluate go/no-go criteria against findings
+  3. Run: `fw inception decide T-XXX go|no-go --rationale "your rationale"`
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
@@ -86,5 +96,6 @@ date_finished: null
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
 
-### 2026-03-25T15:18:04Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+### 2026-03-25T14:43:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Research document written at docs/inception/T-070-correction-refinement-loop.md (946 lines)

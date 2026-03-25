@@ -6,16 +6,16 @@ description: >
   Missing: UFW firewall check. When starting on a non-default port, LAN clients can't connect because
   UFW policy is DROP. Add auto-detect and auto-open (with user notification) to do_start().
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/watchtower.sh]
 related_tasks: []
 created: 2026-03-25T21:59:43Z
-last_update: 2026-03-25T21:59:43Z
-date_finished: null
+last_update: 2026-03-25T23:00:16Z
+date_finished: 2026-03-25T23:00:16Z
 ---
 
 # T-621: fw serve command — start Watchtower with port, firewall, and LAN access checks
@@ -64,3 +64,6 @@ bash -n bin/watchtower.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-621-fw-serve-command--start-watchtower-with-.md
 - **Context:** Initial task creation
+
+### 2026-03-25T23:00:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

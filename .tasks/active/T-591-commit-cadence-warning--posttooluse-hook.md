@@ -4,16 +4,16 @@ name: "Commit cadence warning — PostToolUse hook counting edits since last com
 description: >
   Agents make many edits without committing, risking work loss on context exhaustion. Build PostToolUse commit-cadence.sh hook: counts edits via .edit-counter, warns at 10, strong warns at 20. Exempt paths: .context/, .tasks/, .claude/. Reset via post-commit git hook. Follows existing counter patterns (.tool-counter, .budget-gate-counter) and PostToolUse advisory patterns (checkpoint.sh, error-watchdog.sh). Source: T-024 comparative analysis.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:50:55Z
-last_update: 2026-03-24T21:22:06Z
-date_finished: null
+last_update: 2026-03-24T21:25:05Z
+date_finished: 2026-03-24T21:25:05Z
 ---
 
 # T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
@@ -58,3 +58,6 @@ grep -q "edit-counter" agents/git/lib/hooks.sh
 
 ### 2026-03-24T21:22:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-24T21:25:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

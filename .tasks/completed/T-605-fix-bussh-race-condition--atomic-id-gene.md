@@ -4,7 +4,7 @@ name: "Fix bus.sh race condition — atomic ID generation for multi-agent safety
 description: >
   bus.sh uses find|wc -l for result ID generation (R-001, R-002). Two concurrent fw bus post calls get same ID — second overwrites first. Fix with atomic ID generation (mkdir-based or counter file with flock). bus.sh is the only component explicitly designed for multi-agent use that has zero concurrency protection. Origin: T-579 steelman/strawman analysis. Scope: bus.sh ID generation only, not full dedup layer.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T13:51:44Z
-last_update: 2026-03-25T13:51:49Z
-date_finished: null
+last_update: 2026-03-25T14:08:59Z
+date_finished: 2026-03-25T14:08:59Z
 ---
 
 # T-605: Fix bus.sh race condition — atomic ID generation for multi-agent safety
@@ -57,3 +57,6 @@ grep -q 'mkdir.*_bus_candidate.*lock' lib/bus.sh
 
 ### 2026-03-25T13:51:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T14:08:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
