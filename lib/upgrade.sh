@@ -287,8 +287,73 @@ plus Claude Code-specific integration notes.
         echo -e "  ${CYAN}SKIP${NC}  Not a git repository"
     fi
 
+    # ── 4b. Vendored framework scripts (.agentic-framework/) ──
+    echo -e "${YELLOW}[4b/9] Vendored framework scripts${NC}"
+
+    local vendored_dir="$target_dir/.agentic-framework"
+    if [ -d "$vendored_dir" ]; then
+        local script_updated=0
+        # Sync agents/context/*.sh (hook scripts)
+        for src_script in "$FRAMEWORK_ROOT/agents/context/"*.sh; do
+            [ -f "$src_script" ] || continue
+            local sname
+            sname=$(basename "$src_script")
+            local dst_script="$vendored_dir/agents/context/$sname"
+            if [ ! -f "$dst_script" ] || ! diff -q "$src_script" "$dst_script" > /dev/null 2>&1; then
+                script_updated=$((script_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    mkdir -p "$vendored_dir/agents/context"
+                    cp "$src_script" "$dst_script"
+                    chmod +x "$dst_script"
+                fi
+            fi
+        done
+        # Sync agents/context/lib/ (shared libraries)
+        if [ -d "$FRAMEWORK_ROOT/agents/context/lib" ]; then
+            for src_lib in "$FRAMEWORK_ROOT/agents/context/lib/"*; do
+                [ -f "$src_lib" ] || continue
+                local lname
+                lname=$(basename "$src_lib")
+                local dst_lib="$vendored_dir/agents/context/lib/$lname"
+                if [ ! -f "$dst_lib" ] || ! diff -q "$src_lib" "$dst_lib" > /dev/null 2>&1; then
+                    script_updated=$((script_updated + 1))
+                    if [ "$dry_run" != true ]; then
+                        mkdir -p "$vendored_dir/agents/context/lib"
+                        cp "$src_lib" "$dst_lib"
+                        [ -x "$src_lib" ] && chmod +x "$dst_lib"
+                    fi
+                fi
+            done
+        fi
+        # Sync bin/fw (consumer's vendored fw binary)
+        if [ -f "$FRAMEWORK_ROOT/bin/fw" ]; then
+            local dst_fw="$vendored_dir/bin/fw"
+            if [ ! -f "$dst_fw" ] || ! diff -q "$FRAMEWORK_ROOT/bin/fw" "$dst_fw" > /dev/null 2>&1; then
+                script_updated=$((script_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    mkdir -p "$vendored_dir/bin"
+                    cp "$FRAMEWORK_ROOT/bin/fw" "$dst_fw"
+                    chmod +x "$dst_fw"
+                fi
+            fi
+        fi
+
+        if [ "$script_updated" -gt 0 ]; then
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  $script_updated vendored script(s)"
+            else
+                echo -e "  ${GREEN}UPDATED${NC}  $script_updated vendored script(s) synced"
+            fi
+        else
+            echo -e "  ${GREEN}OK${NC}  All vendored scripts current"
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
+    fi
+
     # ── 5. .claude/settings.json (hooks config) ──
-    echo -e "${YELLOW}[5/8] Claude Code hooks (.claude/settings.json)${NC}"
+    echo -e "${YELLOW}[5/9] Claude Code hooks (.claude/settings.json)${NC}"
 
     local settings_file="$target_dir/.claude/settings.json"
     local fw_settings="$FRAMEWORK_ROOT/.claude/settings.json"
@@ -396,7 +461,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
     fi
 
     # ── 6. .claude/commands/resume.md ──
-    echo -e "${YELLOW}[6/8] Claude Code commands${NC}"
+    echo -e "${YELLOW}[6/9] Claude Code commands${NC}"
 
     local resume_file="$target_dir/.claude/commands/resume.md"
     local framework_resume="$FRAMEWORK_ROOT/lib/templates/resume-command.md"
@@ -417,7 +482,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
     fi
 
     # ── 7. Context subdirectories (create missing) ──
-    echo -e "${YELLOW}[7/8] Context subdirectories${NC}"
+    echo -e "${YELLOW}[7/9] Context subdirectories${NC}"
 
     local ctx_created=0
     for ctx_subdir in audits bus episodic handovers inbox project qa scans working; do
@@ -442,7 +507,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
     fi
 
     # ── 8. Version tracking (.framework.yaml) ──
-    echo -e "${YELLOW}[8/8] Version tracking${NC}"
+    echo -e "${YELLOW}[8/9] Version tracking${NC}"
 
     local fw_version="${FW_VERSION:-unknown}"
     local yaml_file="$target_dir/.framework.yaml"

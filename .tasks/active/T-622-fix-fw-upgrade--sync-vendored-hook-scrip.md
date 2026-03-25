@@ -1,0 +1,54 @@
+---
+id: T-622
+name: "Fix fw upgrade — sync vendored hook scripts to consumers"
+description: >
+  fw upgrade regenerates settings.json with all hooks but does not copy the backing scripts to consumer .agentic-framework/agents/context/. Result: hooks reference scripts that don't exist, blocking all tool use in consumer sessions. Discovered after T-618 fleet upgrade broke /opt/150-skills-manager.
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-25T22:24:40Z
+last_update: 2026-03-25T22:24:40Z
+date_finished: null
+---
+
+# T-622: Fix fw upgrade — sync vendored hook scripts to consumers
+
+## Context
+
+T-618 fleet upgrade added hooks to settings.json but didn't sync the backing scripts to `.agentic-framework/agents/context/`. Missing scripts cause hook errors blocking all tool use. CRITICAL — consumers are broken right now.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `fw upgrade` syncs `agents/context/*.sh` to consumer's `.agentic-framework/agents/context/`
+- [x] `fw upgrade` syncs `bin/fw` to consumer's `.agentic-framework/bin/fw`
+- [x] All 7 consumers have complete hook scripts after re-running upgrade
+- [x] `fw upgrade --dry-run` reports vendored script drift
+
+## Verification
+
+bash -n lib/upgrade.sh
+grep -q 'agents/context' lib/upgrade.sh
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-25T22:24:40Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-622-fix-fw-upgrade--sync-vendored-hook-scrip.md
+- **Context:** Initial task creation
