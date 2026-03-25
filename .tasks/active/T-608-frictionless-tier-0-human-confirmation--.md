@@ -8,7 +8,7 @@ description: >
   web UI approval button, TermLink out-of-band channel. Hard constraint: agent must not be able to
   bypass or fake the confirmation. Related: T-557 (inception decide gate), T-559 (boundary gate).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:26:08Z
-last_update: 2026-03-25T15:26:08Z
+last_update: 2026-03-25T15:29:49Z
 date_finished: null
 ---
 
@@ -36,9 +36,38 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 ## Exploration Plan
 
 1. **Spike 1: Claude Code hook capabilities** — Can a PreToolUse hook present an interactive prompt? What control does the hook have over the approval flow? (1hr)
-2. **Spike 2: Out-of-band approval** — Watchtower web UI button that writes a signed approval token. Agent polls for token. Human clicks button in browser. (2hr)
+2. **Spike 2: Watchtower approval surface** — LEADING APPROACH (human direction). Expand existing Human AC display into interactive approval cards. Details below. (2hr)
 3. **Spike 3: Challenge-response with timing** — Hook generates challenge, human types response in Claude Code chat. Can the agent read and replay it? What prevents this? (1hr)
 4. **Spike 4: TermLink approval channel** — Separate TermLink session that only the human can interact with. Agent sends request, human approves in another terminal. (1hr)
+
+### Spike 2 Detail: Watchtower Approval Surface (human-directed)
+
+**Concept:** Watchtower already shows Human ACs in task detail views. Expand this into a full interactive approval interface:
+
+**UI components:**
+- Each Human AC becomes an expandable card with: approve/reject buttons, feedback text area, status badge
+- Tier 0 pending approvals appear as a prominent notification/queue
+- Mobile-responsive — approve from phone while agent works on desktop
+
+**Data flow:**
+1. Agent hits Tier 0 gate → writes pending approval to `.context/approvals/T-XXX.yaml`
+2. Watchtower shows pending approval prominently (badge, notification)
+3. Human clicks approve/reject + optional feedback in browser
+4. Watchtower writes response to approval ledger via API endpoint
+5. Agent pickup: cron scans approval ledger every 30s, OR agent checks `fw approvals pending`
+
+**Unfakeability guarantee:** Agent can READ `.context/approvals/` but cannot POST to Watchtower's HTTP endpoints (the web server writes the files, not the agent). The approval ledger becomes a write-once surface that only the web UI can modify.
+
+**Scope expansion — also solves Human AC backlog:**
+- 26 tasks with unchecked Human ACs could all be processed through Watchtower
+- Each AC gets approve + feedback, agent picks up responses
+- Eliminates the "come back to Claude and tell me you verified it" friction
+
+**Pickup mechanism options:**
+- A: Human types "check approvals" in Claude Code prompt
+- B: Cron job scans `.context/approvals/` every 30s, writes to inbox
+- C: PostToolUse hook checks for new approvals periodically
+- Option B preferred — zero friction for both human and agent
 
 ## Technical Constraints
 
@@ -50,8 +79,8 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 ## Scope Fence
 
-**IN:** Tier 0 confirmation flow, inception decide confirmation
-**OUT:** General authentication, multi-user access control, remote approval workflows
+**IN:** Tier 0 confirmation flow, inception decide confirmation, Human AC approval/feedback via Watchtower
+**OUT:** General authentication, multi-user access control, remote approval workflows, full Watchtower redesign
 
 ## Acceptance Criteria
 
@@ -107,3 +136,6 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-25T15:29:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
