@@ -63,13 +63,157 @@ def _update_frontmatter_field(file_path, field, value):
     return True, None
 
 
+def _parse_ac_body(body):
+    """Parse Steps/Expected/If-not from AC body text."""
+    steps = []
+    expected = ''
+    if_not = ''
+    if not body:
+        return steps, expected, if_not
+
+    lines = body.split('\n')
+    current_field = None
+    current_content = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('**Steps:**'):
+            current_field = 'steps'
+            current_content = []
+            continue
+        elif stripped.startswith('**Expected:**'):
+            if current_field == 'steps':
+                steps = [s for s in current_content if s.strip()]
+            current_field = 'expected'
+            rest = stripped[len('**Expected:**'):].strip()
+            current_content = [rest] if rest else []
+            continue
+        elif stripped.startswith('**If not:**'):
+            if current_field == 'steps':
+                steps = [s for s in current_content if s.strip()]
+            elif current_field == 'expected':
+                expected = '\n'.join(current_content).strip()
+            current_field = 'if_not'
+            rest = stripped[len('**If not:**'):].strip()
+            current_content = [rest] if rest else []
+            continue
+        if current_field:
+            current_content.append(stripped)
+
+    if current_field == 'steps':
+        steps = [s for s in current_content if s.strip()]
+    elif current_field == 'expected':
+        expected = '\n'.join(current_content).strip()
+    elif current_field == 'if_not':
+        if_not = '\n'.join(current_content).strip()
+
+    # Strip numbered prefixes from steps (e.g., "1. Do thing" → "Do thing")
+    steps = [re_mod.sub(r'^\d+\.\s*', '', s) for s in steps]
+
+    return steps, expected, if_not
+
+
 def _parse_acceptance_criteria(body_text):
-    """Parse AC checkboxes from task body. Returns list of (line_idx, checked, text)."""
+    """Parse AC checkboxes with section, confidence, and body details.
+
+    Returns list of dicts with keys:
+      line_idx, checked, text, section, confidence, body, steps, expected, if_not
+    """
     criteria = []
-    for i, line in enumerate(body_text.split('\n')):
+    lines = body_text.split('\n')
+    in_ac_section = False
+    current_section = 'general'
+    in_comment = False
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        # Track HTML comments (skip them)
+        if '<!--' in stripped:
+            in_comment = True
+        if in_comment:
+            if '-->' in stripped:
+                in_comment = False
+            i += 1
+            continue
+
+        # Track AC section boundaries
+        if stripped.startswith('## Acceptance Criteria'):
+            in_ac_section = True
+            current_section = 'general'
+            i += 1
+            continue
+        if in_ac_section and stripped.startswith('## ') and 'Acceptance Criteria' not in stripped:
+            in_ac_section = False
+            i += 1
+            continue
+
+        if not in_ac_section:
+            i += 1
+            continue
+
+        # Detect subsection headers
+        if stripped == '### Agent' or stripped.startswith('### Agent'):
+            current_section = 'agent'
+            i += 1
+            continue
+        if stripped == '### Human' or stripped.startswith('### Human'):
+            current_section = 'human'
+            i += 1
+            continue
+
+        # Parse AC checkbox
         m = re_mod.match(r'^- \[([ xX])\] (.+)$', line)
         if m:
-            criteria.append((i, m.group(1).lower() == 'x', m.group(2)))
+            text = m.group(2)
+            checked = m.group(1).lower() == 'x'
+
+            # Parse confidence marker
+            confidence = None
+            cm = re_mod.match(r'^\[RUBBER-STAMP\]\s*(.+)$', text)
+            if cm:
+                confidence = 'rubber-stamp'
+                text = cm.group(1)
+            else:
+                cm = re_mod.match(r'^\[REVIEW\]\s*(.+)$', text)
+                if cm:
+                    confidence = 'review'
+                    text = cm.group(1)
+
+            # Collect body lines (indented content following this AC)
+            body_lines = []
+            j = i + 1
+            while j < len(lines):
+                next_line = lines[j]
+                if re_mod.match(r'^- \[[ xX]\]', next_line):
+                    break
+                if next_line.startswith('## ') or next_line.startswith('### '):
+                    break
+                body_lines.append(next_line)
+                j += 1
+
+            while body_lines and not body_lines[-1].strip():
+                body_lines.pop()
+
+            body = '\n'.join(body_lines) if body_lines else ''
+            steps, expected, if_not = _parse_ac_body(body)
+
+            criteria.append({
+                'line_idx': i,
+                'checked': checked,
+                'text': text,
+                'section': current_section,
+                'confidence': confidence,
+                'body': body,
+                'steps': steps,
+                'expected': expected,
+                'if_not': if_not,
+            })
+
+        i += 1
+
     return criteria
 
 

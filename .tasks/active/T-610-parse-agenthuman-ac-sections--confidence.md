@@ -4,7 +4,7 @@ name: "Parse Agent/Human AC sections + confidence markers in Watchtower"
 description: >
   Extend Watchtower task detail page to distinguish Agent vs Human ACs. Parse ### Agent and ### Human section headers in AC parsing. Parse [RUBBER-STAMP] and [REVIEW] confidence markers. Render Human ACs as structured cards (steps/expected/if-not) instead of raw text. Disable agent-side checkbox toggling for Human ACs. Prerequisite for T-608 Watchtower approval surface.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-608, T-611, T-612]
 created: 2026-03-25T16:51:14Z
-last_update: 2026-03-25T16:51:14Z
+last_update: 2026-03-25T16:57:29Z
 date_finished: null
 ---
 
@@ -25,11 +25,11 @@ Part of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_parse_acceptance_criteria()` in `web/blueprints/tasks.py` returns section type (agent/human/none) per AC item
-- [ ] `[RUBBER-STAMP]` and `[REVIEW]` confidence markers parsed and available in template context
-- [ ] Human ACs rendered as structured cards with steps/expected/if-not sections
-- [ ] Human AC checkboxes visually distinct from Agent ACs (disabled or styled differently)
-- [ ] Task detail page groups ACs under Agent/Human headers when sections exist
+- [x] `_parse_acceptance_criteria()` in `web/blueprints/tasks.py` returns section type (agent/human/none) per AC item
+- [x] `[RUBBER-STAMP]` and `[REVIEW]` confidence markers parsed and available in template context
+- [x] Human ACs rendered as structured cards with steps/expected/if-not sections
+- [x] Human AC checkboxes visually distinct from Agent ACs (disabled or styled differently)
+- [x] Task detail page groups ACs under Agent/Human headers when sections exist
 
 ### Human
 - [ ] [REVIEW] Human AC cards render correctly with structured layout
@@ -62,3 +62,6 @@ curl -sf http://localhost:3000/tasks/T-608 | grep -q "Human"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-610-parse-agenthuman-ac-sections--confidence.md
 - **Context:** Initial task creation
+
+### 2026-03-25T16:57:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
