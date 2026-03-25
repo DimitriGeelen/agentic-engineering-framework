@@ -15,7 +15,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T14:05:56Z
-last_update: 2026-03-25T14:05:56Z
+last_update: 2026-03-25T14:20:48Z
 date_finished: null
 ---
 
@@ -55,9 +55,9 @@ date_finished: null
 # lib/version.sh syntax check
 bash -n lib/version.sh
 # version subcommand routing works
-bin/fw version check 2>&1 | grep -q "FW_VERSION"
+bin/fw version check 2>&1 | cat | grep -q "FW_VERSION"
 # dry-run doesn't modify files
-bin/fw version bump patch --dry-run 2>&1 | grep -q "dry-run"
+bin/fw version bump patch --dry-run 2>&1 | cat | grep -q "dry-run"
 
 ## Decisions
 
