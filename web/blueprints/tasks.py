@@ -560,7 +560,7 @@ def toggle_ac(task_id):
     ok, new_state, err = _toggle_ac_line(task_file, line_idx)
     if ok:
         checked_attr = "checked" if new_state else ""
-        return f'<input type="checkbox" {checked_attr} disabled style="margin:0;">'
+        return f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'
     return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500
 
 
