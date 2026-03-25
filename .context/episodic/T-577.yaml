@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-577: PICKUP-007: TermLink run timeout creates orphaned processes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-25T11:47:10Z
+# ============================================================================
+
+task_id: T-577
+task_name: "PICKUP-007: TermLink run timeout creates orphaned processes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-23T20:58:41Z
+completed: 2026-03-24T18:11:39Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-23T21:58:53+01:00
+last_commit: 2026-03-24T19:11:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-549: Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577). Add orphan detection to fw termlink cleanup + document timeout pitfall
+
+# Key outcomes
+outcomes:
+  - "`fw termlink cleanup` detects orphaned dispatch processes (running but no TermLink session)"
+  - "`fw termlink cleanup` kills orphaned processes with SIGTERM"
+  - "`fw termlink cleanup` reports orphaned process count"
+  - "CLAUDE.md TermLink section warns about `termlink run` timeout orphan risk"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/termlink/termlink.sh"
+  - "agents/termlink/termlink.sh"
+  - "CLAUDE.md"
+  - ".tasks/active/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/active/T-572-pickup-001-path-isolation-failures-in-mu.md"
+  - ".tasks/active/T-573-pickup-002-doctor-hook-validation-doesnt.md"
+  - ".tasks/active/T-574-pickup-003-doctor-scope-confusion--consu.md"
+  - ".tasks/active/T-575-pickup-004-init-fails-to-detect-upstream.md"
+  - ".tasks/active/T-576-pickup-006-claudecode-env-var-blocks-ter.md"
+  - ".tasks/active/T-577-pickup-007-termlink-run-timeout-creates-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T21:58:53"
+    action: "T-549: Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577)"
+  - time: "2026-03-24T19:11:35"
+    action: "T-577: Add orphan detection to fw termlink cleanup + document timeout pitfall"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1272 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1272
+  commits: 2
+  files_changed: 10
+  lines_added: 1060
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-577-pickup-007-termlink-run-timeout-creates-.md
+generated_by: context-agent-hybrid

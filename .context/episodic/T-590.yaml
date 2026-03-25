@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-590: Traceability baseline — audit ignores pre-ingestion commits on imported projects
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-25T11:47:14Z
+# ============================================================================
+
+task_id: T-590
+task_name: "Traceability baseline — audit ignores pre-ingestion commits on imported projects"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-23T21:50:53Z
+completed: 2026-03-24T21:06:24Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-24T22:06:19+01:00
+last_commit: 2026-03-24T22:06:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add traceability baseline for imported projects
+
+# Key outcomes
+outcomes:
+  - "`.context/project/traceability-baseline` file stores baseline commit SHA"
+  - "`fw traceability baseline` CLI command creates the baseline (sets to current HEAD)"
+  - "Audit Section 3 (git traceability) uses baseline when present"
+  - "Audit CTL-008 (hourly task reference check) uses baseline when present"
+  - "Cron metrics Python code uses baseline when present"
+  - "Without baseline file, audit behaves as before (backward compatible)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/audit/audit.sh"
+  - ".agentic-framework/bin/fw"
+  - "agents/audit/audit.sh"
+  - "bin/fw"
+  - ".tasks/active/T-590-traceability-baseline--audit-ignores-pre.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T22:06:19"
+    action: "T-590: Add traceability baseline for imported projects"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1395 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1395
+  commits: 1
+  files_changed: 5
+  lines_added: 192
+  lines_removed: 54
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-590-traceability-baseline--audit-ignores-pre.md
+generated_by: context-agent-hybrid

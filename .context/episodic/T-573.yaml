@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-573: PICKUP-002: Doctor hook validation doesnt recognize vendored fw paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-25T11:47:12Z
+# ============================================================================
+
+task_id: T-573
+task_name: "PICKUP-002: Doctor hook validation doesnt recognize vendored fw paths"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T20:58:34Z
+completed: 2026-03-24T10:59:59Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-23T21:58:53+01:00
+last_commit: 2026-03-24T12:00:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-549: Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577). Fix doctor hook validation for vendored fw paths. Complete — doctor validates vendored fw hook paths
+
+# Key outcomes
+outcomes:
+  - "Doctor hook validation recognizes paths ending in `/fw` (not just bare `fw`)"
+  - "Doctor resolves relative fw paths against PROJECT_ROOT for existence check"
+  - "`fw doctor` passes on this project (framework repo)"
+  - "Vendored copy synced"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix doctor hook validation for vendored fw paths"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/bin/fw"
+  - "bin/fw"
+  - ".tasks/active/T-546-continue-fixing-termlink-release-builds.md"
+  - ".tasks/active/T-553-fix-enrichpy-line-586--undefined-framewo.md"
+  - ".tasks/active/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/active/T-572-pickup-001-path-isolation-failures-in-mu.md"
+  - ".tasks/active/T-573-pickup-002-doctor-hook-validation-doesnt.md"
+  - ".tasks/active/T-574-pickup-003-doctor-scope-confusion--consu.md"
+  - ".tasks/active/T-575-pickup-004-init-fails-to-detect-upstream.md"
+  - ".tasks/active/T-576-pickup-006-claudecode-env-var-blocks-ter.md"
+  - ".tasks/active/T-577-pickup-007-termlink-run-timeout-creates-.md"
+  - ".tasks/active/T-597-pickup-pre-push-hook-doesnt-pass-project.md"
+  - ".tasks/active/T-598-inception-bridge-fw-dispatch-to-termlink.md"
+  - ".tasks/active/T-602-fix-multi-project-cron-collision--projec.md"
+  - ".tasks/completed/T-573-pickup-002-doctor-hook-validation-doesnt.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T21:58:53"
+    action: "T-549: Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577)"
+  - time: "2026-03-24T11:59:55"
+    action: "T-573: Fix doctor hook validation for vendored fw paths"
+  - time: "2026-03-24T12:00:05"
+    action: "T-573: Complete — doctor validates vendored fw hook paths"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 841 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 841
+  commits: 3
+  files_changed: 15
+  lines_added: 3316
+  lines_removed: 268
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-573-pickup-002-doctor-hook-validation-doesnt.md
+generated_by: context-agent-hybrid
