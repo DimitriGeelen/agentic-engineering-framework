@@ -596,6 +596,15 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
+            "command": ".agentic-framework/bin/fw hook check-project-boundary"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": ".agentic-framework/bin/fw hook budget-gate"
           }
         ]
@@ -646,12 +655,21 @@ generate_claude_code_config() {
             "command": ".agentic-framework/bin/fw hook check-fabric-new-file"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".agentic-framework/bin/fw hook commit-cadence"
+          }
+        ]
       }
     ]
   }
 }
 SJSON
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 12 hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, fabric new-file)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, loop-detect, fabric new-file, project-boundary, commit-cadence)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi

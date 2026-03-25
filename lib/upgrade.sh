@@ -291,64 +291,107 @@ plus Claude Code-specific integration notes.
     echo -e "${YELLOW}[5/8] Claude Code hooks (.claude/settings.json)${NC}"
 
     local settings_file="$target_dir/.claude/settings.json"
-    local expected_hooks=10
+    local fw_settings="$FRAMEWORK_ROOT/.claude/settings.json"
     if [ -f "$settings_file" ]; then
-        # Check hook count AND path isolation (G-021)
-        local hook_status
-        hook_status=$(VALIDATE_FILE="$settings_file" python3 -c "
+        # Compare hooks by TYPE enumeration (T-615: not count)
+        # Source of truth: framework's own .claude/settings.json
+        local hook_analysis
+        hook_analysis=$(FW_FILE="$fw_settings" CONSUMER_FILE="$settings_file" python3 -c "
 import json, os
-with open(os.environ['VALIDATE_FILE']) as f:
-    data = json.load(f)
-total = sum(len(v) for v in data.get('hooks', {}).values())
-# Check for hardcoded paths (path isolation violation)
-stale = 0
-for event, entries in data.get('hooks', {}).items():
-    for entry in entries:
-        for hook in entry.get('hooks', []):
-            cmd = hook.get('command', '')
-            if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
-                stale += 1
-print(f'{total},{stale}')
-" 2>/dev/null || echo "0,0")
-        local actual_hooks stale_hooks
-        actual_hooks=$(echo "$hook_status" | cut -d, -f1)
-        stale_hooks=$(echo "$hook_status" | cut -d, -f2)
+
+def extract_hooks(path):
+    hooks = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        for event, entries in data.get('hooks', {}).items():
+            for entry in entries:
+                for hook in entry.get('hooks', []):
+                    cmd = hook.get('command', '')
+                    if 'fw hook' in cmd:
+                        name = cmd.split('fw hook ')[-1].strip()
+                    else:
+                        name = cmd.strip().split('/')[-1]
+                    hooks.add((event, name))
+    except (json.JSONDecodeError, FileNotFoundError):
+        pass
+    return hooks
+
+def check_stale_paths(path):
+    stale = 0
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        for event, entries in data.get('hooks', {}).items():
+            for entry in entries:
+                for hook in entry.get('hooks', []):
+                    cmd = hook.get('command', '')
+                    if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
+                        stale += 1
+    except (json.JSONDecodeError, FileNotFoundError):
+        pass
+    return stale
+
+fw_hooks = extract_hooks(os.environ['FW_FILE'])
+consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
+stale = check_stale_paths(os.environ['CONSUMER_FILE'])
+
+missing = fw_hooks - consumer_hooks
+missing_names = '; '.join(f'{e}:{n}' for e, n in sorted(missing)) if missing else ''
+print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_names}')
+" 2>/dev/null || echo "0|0|0|0|parse-error")
+        local fw_total consumer_total missing_count stale_hooks missing_names
+        fw_total=$(echo "$hook_analysis" | cut -d'|' -f1)
+        consumer_total=$(echo "$hook_analysis" | cut -d'|' -f2)
+        missing_count=$(echo "$hook_analysis" | cut -d'|' -f3)
+        stale_hooks=$(echo "$hook_analysis" | cut -d'|' -f4)
+        missing_names=$(echo "$hook_analysis" | cut -d'|' -f5)
 
         local needs_regen=false
-        if [ "$actual_hooks" -lt "$expected_hooks" ]; then
-            needs_regen=true
-        fi
-        if [ "${stale_hooks:-0}" -gt 0 ]; then
-            needs_regen=true
-        fi
+        [ "$missing_count" -gt 0 ] && needs_regen=true
+        [ "${stale_hooks:-0}" -gt 0 ] && needs_regen=true
 
         if [ "$needs_regen" = true ]; then
             changes=$((changes + 1))
             local reason=""
-            [ "$actual_hooks" -lt "$expected_hooks" ] && reason="missing $(($expected_hooks - $actual_hooks)) hooks"
-            [ "${stale_hooks:-0}" -gt 0 ] && { [ -n "$reason" ] && reason="$reason + "; reason="${reason}${stale_hooks} hardcoded paths"; }
+            if [ "$missing_count" -gt 0 ]; then
+                reason="missing $missing_count hook(s): $missing_names"
+            fi
+            if [ "${stale_hooks:-0}" -gt 0 ]; then
+                [ -n "$reason" ] && reason="$reason + "
+                reason="${reason}${stale_hooks} hardcoded paths"
+            fi
             if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason → portable 'fw hook' format"
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason"
             else
                 cp "$settings_file" "${settings_file}.bak"
                 local save_force="${force:-false}"
                 force=true
                 generate_claude_code_config "$target_dir"
                 force="$save_force"
-                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason → portable). Backup: settings.json.bak"
+                echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason). Backup: settings.json.bak"
             fi
         else
-            echo -e "  ${GREEN}OK${NC}  $actual_hooks/$expected_hooks hooks present (portable)"
+            echo -e "  ${GREEN}OK${NC}  $consumer_total/$fw_total hooks present (all types matched)"
         fi
     else
+        local fw_hook_count=0
+        if [ -f "$fw_settings" ]; then
+            fw_hook_count=$(python3 -c "
+import json
+with open('$fw_settings') as f:
+    data = json.load(f)
+print(sum(len(v) for v in data.get('hooks', {}).values()))
+" 2>/dev/null || echo "0")
+        fi
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
-            echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json ($expected_hooks hooks)"
+            echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json ($fw_hook_count hooks)"
         else
             force=true
             generate_claude_code_config "$target_dir"
             force=false
-            echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json ($expected_hooks hooks)"
+            echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json ($fw_hook_count hooks)"
         fi
     fi
 
