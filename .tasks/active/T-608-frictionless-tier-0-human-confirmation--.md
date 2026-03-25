@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:26:08Z
-last_update: 2026-03-25T15:29:49Z
+last_update: 2026-03-25T15:30:08Z
 date_finished: null
 ---
 
@@ -85,9 +85,9 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] All 4 spikes explored or ruled out with rationale
-- [ ] Recommendation written with go/no-go
+- [x] Problem statement validated
+- [x] All 4 spikes explored or ruled out with rationale
+- [x] Recommendation written with go/no-go
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -119,18 +119,20 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Watchtower approval surface — unfakeable, <1s friction, mobile, solves Human
+  AC backlog
+
+**Date**: 2026-03-25T16:49:25Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Watchtower approval surface — unfakeable, <1s friction, mobile, solves Human
+  AC backlog
+
+**Date**: 2026-03-25T16:49:25Z
 
 ## Updates
 
@@ -139,3 +141,9 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 ### 2026-03-25T15:29:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-25T16:49:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Watchtower approval surface — unfakeable, <1s friction, mobile, solves Human
+  AC backlog
