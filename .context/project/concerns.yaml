@@ -691,3 +691,46 @@ concerns:
     created: 2026-03-24
     last_reviewed: 2026-03-24
     related_task: T-559
+
+  - id: G-023
+    type: gap
+    title: "Consumer project governance decays silently — no detection, no propagation, no audit trail"
+    description: >
+      All 7 consumer projects are at v1.2.6 while framework is at v1.3.0.
+      Each is missing 2 hooks (check-project-boundary, commit-cadence) and
+      ~180 lines of CLAUDE.md governance rules. fw upgrade exists but: (1) hook
+      detection uses count (expects 10) not type enumeration — hardcoded count
+      is wrong (init.sh generates 13), (2) fw doctor has no consumer staleness
+      check, (3) no upgrade audit trail exists, (4) fw update doesn't suggest
+      fw upgrade for known consumers. Same class as G-021/G-022: silent
+      enforcement disabling. Net effect: consumer agents operate under stale
+      governance rules and missing enforcement hooks indefinitely.
+    spec_reference: "CLAUDE.md §Constitutional Directive D2 (Reliability), lib/upgrade.sh, bin/fw (doctor)"
+    severity: urgent
+    evidence:
+      - "T-614: All 7 consumers at v1.2.6, framework at v1.3.0"
+      - "Hook count: consumers have 11, framework has 13 — 2 missing"
+      - "Missing hooks: check-project-boundary (T-559), commit-cadence (T-591)"
+      - "upgrade.sh expected_hooks=10 but init.sh generates 13 — count mismatch bug"
+      - "fw doctor has zero consumer-awareness checks"
+      - "No upgrade timestamp in .framework.yaml"
+      - "CLAUDE.md in consumers is 180 lines behind (missing T-609, TermLink, updated budgets)"
+      - "Bash tool not task-gated (check-active-task matches Write|Edit only) — bypass vector"
+    fleet_impact:
+      - "/opt/openclaw-evaluation — 2 days stale, 11/13 hooks"
+      - "/opt/3021-Bilderkarte-tool-llm — 13 days stale, 11/13 hooks"
+      - "/opt/termlink — 17 days stale, 11/13 hooks"
+      - "/opt/050-email-archive — 7 days stale, 11/13 hooks"
+      - "/opt/150-skills-manager — 2 days stale, 11/13 hooks"
+      - "/opt/001-sprechloop — 36 days stale, 11/13 hooks"
+      - "/opt/995_2021-kosten — 9 days stale, 11/13 hooks"
+    remediation:
+      - "T-615: Fix hook count bug in upgrade.sh (enumerate by type, not count)"
+      - "T-616: Add consumer staleness check to fw doctor"
+      - "T-617: Upgrade audit trail in .framework.yaml and .context"
+      - "T-618: Fleet-wide consumer upgrade (all 7 projects)"
+      - "T-619: Inception — Bash task gate with bootstrap allowlist"
+    status: watching
+    created: 2026-03-25
+    last_reviewed: 2026-03-25
+    related_task: T-614

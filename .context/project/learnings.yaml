@@ -941,4 +941,25 @@ learnings:
   date: 2026-03-24
   context: Added via context agent
   application: TBD
+- id: PL-004
+  learning: "tier0 approve is only needed inside Claude Code hooks — when giving humans commands to run directly in their terminal, never include tier0 approve. The human IS the authority, the gate only blocks the agent."
+  source: P-001
+  task: T-609
+  date: 2026-03-25
+  context: Added via context agent
+  application: TBD
+- id: L-118
+  learning: "fw upgrade hook detection uses count (expects 10), not type enumeration. init.sh generates 13 hooks. All 7 consumer projects stuck at 11/13 hooks because upgrade.sh never flags the discrepancy. Discovered via T-614 investigation of TermLink governance bypass."
+  source: P-001
+  task: T-614
+  date: 2026-03-25
+  context: Added via context agent
+  application: TBD
+- id: L-119
+  learning: "Consumer project governance decays silently. All 7 consumers at v1.2.6, framework at v1.3.0. No doctor check, no upgrade audit trail, no automated detection. fw upgrade exists but nobody runs it. The framework has no mechanism to alert when consumers are stale."
+  source: P-001
+  task: T-614
+  date: 2026-03-25
+  context: Added via context agent
+  application: TBD
 candidates: []
