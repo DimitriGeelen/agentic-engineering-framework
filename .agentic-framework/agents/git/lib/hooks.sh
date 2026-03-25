@@ -335,6 +335,16 @@ echo ""
 echo "=== Pre-Push Audit Check ==="
 echo ""
 
+# Version staleness advisory (T-606)
+latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
+if [ -n "$latest_tag" ]; then
+    commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)
+    if [ "$commits_since" -gt 50 ]; then
+        echo "NOTE: $commits_since commits since $latest_tag. Consider: fw version bump patch --tag"
+        echo ""
+    fi
+fi
+
 # Run audit
 "$AUDIT_SCRIPT"
 audit_exit=$?

@@ -439,6 +439,9 @@ show_help() {
     echo -e "  ${GREEN}self-test${NC} [phase]     Run E2E self-test (onboarding|all) [--json]"
     echo -e "  ${GREEN}test${NC} [suite]           Run tests (all|unit|integration|web|lint)"
     echo -e "  ${GREEN}version${NC}              Show version information"
+    echo -e "  ${GREEN}version bump${NC} <part>  Bump major|minor|patch (--tag, --dry-run)"
+    echo -e "  ${GREEN}version check${NC}        Verify all version sources in sync + staleness"
+    echo -e "  ${GREEN}version sync${NC}         Sync all VERSION files to FW_VERSION"
     echo -e "  ${GREEN}help${NC}                 Show this help"
     echo ""
     echo -e "${BOLD}Paths:${NC}"
@@ -2773,7 +2776,32 @@ PYPREDICT
         exit $_test_exit
         ;;
     version|-v|--version)
-        show_version
+        _ver_sub="${1:-}"
+        case "$_ver_sub" in
+            bump)
+                shift
+                source "$FW_LIB_DIR/version.sh"
+                do_version_bump "$@"
+                ;;
+            check)
+                shift
+                source "$FW_LIB_DIR/version.sh"
+                do_version_check "$@"
+                ;;
+            sync)
+                shift
+                source "$FW_LIB_DIR/version.sh"
+                do_version_sync "$@"
+                ;;
+            ""|--help|-h|-v|--version)
+                show_version
+                ;;
+            *)
+                echo -e "${RED}Unknown version subcommand: $_ver_sub${NC}" >&2
+                echo "Usage: fw version [bump|check|sync]" >&2
+                exit 1
+                ;;
+        esac
         ;;
     help|-h|--help)
         show_help
