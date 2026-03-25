@@ -523,10 +523,26 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  version: ${current_pinned:-<none>} → $fw_version"
             else
+                # Record upgraded_from before overwriting version
+                if [ -n "$current_pinned" ]; then
+                    if grep -q "^upgraded_from:" "$yaml_file" 2>/dev/null; then
+                        _sed_i "s/^upgraded_from:.*/upgraded_from: $current_pinned/" "$yaml_file"
+                    else
+                        echo "upgraded_from: $current_pinned" >> "$yaml_file"
+                    fi
+                fi
                 if grep -q "^version:" "$yaml_file" 2>/dev/null; then
                     _sed_i "s/^version:.*/version: $fw_version/" "$yaml_file"
                 else
                     echo "version: $fw_version" >> "$yaml_file"
+                fi
+                # Record last_upgrade timestamp
+                local upgrade_ts
+                upgrade_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+                if grep -q "^last_upgrade:" "$yaml_file" 2>/dev/null; then
+                    _sed_i "s/^last_upgrade:.*/last_upgrade: $upgrade_ts/" "$yaml_file"
+                else
+                    echo "last_upgrade: $upgrade_ts" >> "$yaml_file"
                 fi
                 echo -e "  ${GREEN}UPDATED${NC}  version: ${current_pinned:-<none>} → $fw_version"
             fi
@@ -534,6 +550,25 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
     else
         echo -e "  ${YELLOW}SKIP${NC}  No .framework.yaml found"
         skipped=$((skipped + 1))
+    fi
+
+    # ── 8b. Upgrade audit trail (.context/audits/upgrades.yaml) ──
+    if [ "$dry_run" != true ] && [ -n "${current_pinned:-}" ] && [ "${current_pinned:-}" != "$fw_version" ]; then
+        local audit_file="$target_dir/.context/audits/upgrades.yaml"
+        mkdir -p "$(dirname "$audit_file")"
+        if [ ! -f "$audit_file" ]; then
+            echo "# Upgrade audit trail (T-617)" > "$audit_file"
+            echo "upgrades:" >> "$audit_file"
+        fi
+        local upgrade_ts
+        upgrade_ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        cat >> "$audit_file" <<EOF
+  - timestamp: $upgrade_ts
+    from_version: "${current_pinned:-unknown}"
+    to_version: "$fw_version"
+    framework_root: "$FRAMEWORK_ROOT"
+EOF
+        echo -e "  ${GREEN}LOGGED${NC}  Upgrade trail → .context/audits/upgrades.yaml"
     fi
 
     # ── Summary ──

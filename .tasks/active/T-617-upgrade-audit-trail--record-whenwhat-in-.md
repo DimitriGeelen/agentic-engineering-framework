@@ -4,7 +4,7 @@ name: "Upgrade audit trail — record when/what in .framework.yaml and .context"
 description: >
   fw upgrade has no audit trail. Cannot answer when upgrade ran or what version upgraded from. Add: timestamp in .framework.yaml, upgrade history in .context/audits/upgrades.yaml. From T-614 investigation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [governance, upgrade, audit]
 components: []
 related_tasks: []
 created: 2026-03-25T20:17:23Z
-last_update: 2026-03-25T20:17:23Z
+last_update: 2026-03-25T22:20:32Z
 date_finished: null
 ---
 
@@ -20,40 +20,31 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw upgrade` has no audit trail. Cannot answer "when did this project last upgrade?" or "what version did it upgrade from?". Add `last_upgrade` timestamp and `upgraded_from` to `.framework.yaml`, plus append history to `.context/audits/upgrades.yaml`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/upgrade.sh` writes `last_upgrade` ISO timestamp to consumer `.framework.yaml` after successful upgrade
+- [x] `lib/upgrade.sh` writes `upgraded_from` (previous version) to consumer `.framework.yaml`
+- [x] `lib/upgrade.sh` appends entry to consumer `.context/audits/upgrades.yaml` with timestamp, from_version, to_version
+- [x] `bash -n lib/upgrade.sh` passes (syntax check)
+- [x] Dry-run mode does NOT write audit trail
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Run `fw upgrade /opt/001-sprechloop --dry-run` and verify no `.framework.yaml` changes
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw upgrade /opt/001-sprechloop --dry-run`
+  2. Check `.framework.yaml` was not modified: `cd /opt/001-sprechloop && git diff .framework.yaml`
+  **Expected:** No diff — dry-run doesn't touch files
+  **If not:** Check `lib/upgrade.sh` dry_run guard around audit trail writes
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+bash -n lib/upgrade.sh
+grep -q 'last_upgrade' lib/upgrade.sh
+grep -q 'upgraded_from' lib/upgrade.sh
+grep -q 'upgrades.yaml' lib/upgrade.sh
 
 ## Decisions
 
@@ -72,3 +63,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-617-upgrade-audit-trail--record-whenwhat-in-.md
 - **Context:** Initial task creation
+
+### 2026-03-25T22:20:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
