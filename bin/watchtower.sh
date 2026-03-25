@@ -54,6 +54,30 @@ port_in_use() {
     ss -tlnp 2>/dev/null | grep -q ":${port} " 2>/dev/null
 }
 
+ensure_firewall_open() {
+    local port="$1"
+    # Skip if ufw is not installed
+    if ! command -v ufw >/dev/null 2>&1; then
+        return 0
+    fi
+    # Skip if ufw is inactive
+    if ! ufw status 2>/dev/null | grep -q "Status: active"; then
+        return 0
+    fi
+    # Check if port is already allowed
+    if ufw status 2>/dev/null | grep -qE "^${port}/tcp\s+ALLOW"; then
+        log_info "Firewall: port $port already open."
+        return 0
+    fi
+    # Open the port
+    log_info "Firewall: opening port $port/tcp (UFW policy is DROP)..."
+    if ufw allow "$port/tcp" comment "Watchtower (fw serve)" >/dev/null 2>&1; then
+        log_info "Firewall: port $port opened for LAN access."
+    else
+        log_warn "Firewall: failed to open port $port — LAN access may be blocked."
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # stop — Graceful shutdown with SIGTERM, fallback to SIGKILL
 # ---------------------------------------------------------------------------
@@ -183,6 +207,7 @@ do_start() {
         # Check HTTP response
         if curl -sf "http://localhost:${port}/" > /dev/null 2>&1; then
             log_info "Health check passed."
+            ensure_firewall_open "$port"
             echo ""
             echo -e "${BOLD}Watchtower is running${NC}"
             echo -e "  Local:  http://localhost:${port}"
