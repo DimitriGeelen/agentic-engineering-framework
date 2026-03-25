@@ -43,6 +43,7 @@ NAV_GROUPS = [
         ("Graph",       "fabric.fabric_graph",      None),
     ]),
     ("Govern", [
+        ("Approvals",     "approvals.approvals",                   None),
         ("Directives",    "core.directives",                       None),
         ("Enforcement",   "enforcement.enforcement_dashboard",     None),
         ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),

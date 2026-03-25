@@ -4,7 +4,7 @@ name: "Tier 0 approval queue — pending/approved/rejected cards in Watchtower"
 description: >
   Add Tier 0 approval surface to Watchtower. Agent writes pending approval to .context/approvals/T-XXX.yaml when hitting a gate. Watchtower shows pending approvals as prominent cards with approve/reject buttons and feedback textarea. Watchtower API endpoint writes response to approval ledger (not file write — unfakeable). Includes approval expiry handling. Part of T-608 Watchtower approval surface.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-608, T-610, T-612]
 created: 2026-03-25T16:51:23Z
-last_update: 2026-03-25T16:51:23Z
+last_update: 2026-03-25T17:32:27Z
 date_finished: null
 ---
 
@@ -25,13 +25,13 @@ Core of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.context/approvals/` directory structure defined with YAML schema for pending/approved/rejected
-- [ ] `check-tier0.sh` writes pending approval YAML to `.context/approvals/` when blocking
-- [ ] Watchtower blueprint `/approvals` shows pending approval queue
-- [ ] Each approval card has approve/reject buttons + feedback textarea
-- [ ] POST `/api/approvals/<id>/decide` endpoint writes response to approval ledger
-- [ ] Approval expiry: pending approvals older than 1 hour marked stale
-- [ ] Agent file writes to `.context/approvals/` are request-only — response written by Flask endpoint
+- [x] `.context/approvals/` directory structure defined with YAML schema for pending/approved/rejected
+- [x] `check-tier0.sh` writes pending approval YAML to `.context/approvals/` when blocking
+- [x] Watchtower blueprint `/approvals` shows pending approval queue
+- [x] Each approval card has approve/reject buttons + feedback textarea
+- [x] POST `/api/approvals/decide` endpoint writes response to approval ledger
+- [x] Approval expiry: pending approvals older than 1 hour marked stale
+- [x] Agent file writes to `.context/approvals/` are request-only — response written by Flask endpoint
 
 ### Human
 - [ ] [REVIEW] Approval cards are clear and usable — approve/reject flow works intuitively
@@ -68,3 +68,6 @@ curl -sf http://localhost:3000/approvals | grep -q "Approval"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-611-tier-0-approval-queue--pendingapprovedre.md
 - **Context:** Initial task creation
+
+### 2026-03-25T17:32:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
