@@ -1,0 +1,64 @@
+---
+id: T-610
+name: "Parse Agent/Human AC sections + confidence markers in Watchtower"
+description: >
+  Extend Watchtower task detail page to distinguish Agent vs Human ACs. Parse ### Agent and ### Human section headers in AC parsing. Parse [RUBBER-STAMP] and [REVIEW] confidence markers. Render Human ACs as structured cards (steps/expected/if-not) instead of raw text. Disable agent-side checkbox toggling for Human ACs. Prerequisite for T-608 Watchtower approval surface.
+
+status: captured
+workflow_type: build
+owner: claude-code
+horizon: next
+tags: []
+components: []
+related_tasks: [T-608, T-611, T-612]
+created: 2026-03-25T16:51:14Z
+last_update: 2026-03-25T16:51:14Z
+date_finished: null
+---
+
+# T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
+
+## Context
+
+Part of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/reports/T-608-tier0-approval-surface.md`.
+
+## Acceptance Criteria
+
+### Agent
+- [ ] `_parse_acceptance_criteria()` in `web/blueprints/tasks.py` returns section type (agent/human/none) per AC item
+- [ ] `[RUBBER-STAMP]` and `[REVIEW]` confidence markers parsed and available in template context
+- [ ] Human ACs rendered as structured cards with steps/expected/if-not sections
+- [ ] Human AC checkboxes visually distinct from Agent ACs (disabled or styled differently)
+- [ ] Task detail page groups ACs under Agent/Human headers when sections exist
+
+### Human
+- [ ] [REVIEW] Human AC cards render correctly with structured layout
+  **Steps:**
+  1. Start Watchtower: `cd /opt/999-Agentic-Engineering-Framework && python3 web/app.py`
+  2. Open http://localhost:3000/tasks/T-608 (or any task with Human ACs)
+  3. Verify Human ACs show as cards with steps/expected/if-not, not raw markdown
+  4. Verify Agent ACs show as normal checkboxes
+  **Expected:** Clear visual separation between Agent and Human ACs
+  **If not:** Screenshot the task detail page and note what's wrong
+
+## Verification
+
+curl -sf http://localhost:3000/tasks/T-608 | grep -q "Human"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-25T16:51:14Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-610-parse-agenthuman-ac-sections--confidence.md
+- **Context:** Initial task creation
