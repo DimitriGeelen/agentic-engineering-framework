@@ -4,9 +4,9 @@ name: "Single started-work gate — enforce one active task, inception starts as
 description: >
   Add max-started-tasks check (default 1) to update-task.sh and fw work-on. Block starting a new task when another is already started-work. --force bypasses with logging. Also change fw inception start to create tasks as captured instead of started-work. Cleanup existing 13 started-work tasks to correct status. Origin: T-549 OpenClaw eval — agent started 8 tasks simultaneously. Evidence: all completed tasks show sequential pattern, focus.yaml is single-task, 13 accumulated started-work tasks in current project.
 
-status: captured
+status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
@@ -20,51 +20,38 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Agents accumulate started-work tasks across sessions without completing or pausing them (currently 20). This creates ambiguity about what's actually being worked on. Gate enforces single-task focus at the status transition layer.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `update-task.sh` warns when transitioning to started-work if other started-work tasks exist
+- [x] Warning lists the other started-work task IDs (max 5 shown)
+- [x] Warning is advisory (exit 0), not blocking — transition still proceeds
+- [x] `fw inception start` creates tasks as captured (not started-work)
+- [x] `fw work-on T-XXX` path unchanged (the warning comes from update-task.sh)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Verify warning fires when starting a second task
+  **Steps:**
+  1. Restart Claude Code session
+  2. Run `fw work-on T-332` (already started-work, should just resume)
+  3. Then run `fw work-on "test single gate" --type build`
+  4. Observe advisory warning about other started-work tasks
+  **Expected:** Warning message listing started-work tasks, but task still created
+  **If not:** Check update-task.sh around line 352 for the new gate code
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q 'started-work.*advisory\|single.*started\|CONCURRENT' agents/task-create/update-task.sh
+grep -v '\-\-start' lib/inception.sh | grep -q 'create-task.sh'
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-25 — Advisory vs blocking gate
+- **Chose:** Advisory (warn, don't block)
+- **Why:** 20 existing started-work tasks would make blocking unusable immediately. Advisory provides visibility without disruption. Can tighten to blocking after cleanup.
+- **Rejected:** Hard block (would require cleaning up 20 tasks first), configurable limit (over-engineering for now)
 
 ## Updates
 

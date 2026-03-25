@@ -359,6 +359,36 @@ if [ -n "$NEW_STATUS" ]; then
             fi
         fi
 
+        # === Concurrent Started-Work Advisory (T-554) ===
+        # Warn when starting work if other tasks are already started-work.
+        # Advisory only — does not block. Helps maintain single-task focus.
+        if [ "$NEW_STATUS" = "started-work" ]; then
+            _other_started=""
+            _other_count=0
+            for _tf in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
+                [ -f "$_tf" ] || continue
+                [ "$_tf" = "$TASK_FILE" ] && continue
+                if grep -q "^status: started-work" "$_tf" 2>/dev/null; then
+                    _other_count=$((_other_count + 1))
+                    if [ "$_other_count" -le 5 ]; then
+                        _tid=$(grep "^id:" "$_tf" | head -1 | awk '{print $2}')
+                        _other_started="${_other_started}  ${_tid}\n"
+                    fi
+                fi
+            done
+            if [ "$_other_count" -gt 0 ]; then
+                echo ""
+                echo -e "${YELLOW}CONCURRENT TASKS: ${_other_count} other task(s) already in started-work${NC}"
+                echo -e "$_other_started"
+                if [ "$_other_count" -gt 5 ]; then
+                    echo "  ... and $((_other_count - 5)) more"
+                fi
+                echo "  Consider pausing tasks you're not actively working on:"
+                echo "    fw task update T-XXX --status captured"
+                echo ""
+            fi
+        fi
+
         # === Human Sovereignty Gate (R-033/T-198) ===
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_human_sovereignty

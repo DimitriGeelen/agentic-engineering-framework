@@ -65,13 +65,14 @@ do_inception_start() {
     done
 
     # Create inception task using create-task.sh
+    # T-554: Inception tasks start as captured (not started-work).
+    # Use fw work-on T-XXX to explicitly start work when ready.
     local output
     output=$("$AGENTS_DIR/task-create/create-task.sh" \
         --name "$name" \
         --description "Inception: $name" \
         --type inception \
-        --owner "$owner" \
-        --start 2>&1)
+        --owner "$owner" 2>&1)
 
     echo "$output"
 
