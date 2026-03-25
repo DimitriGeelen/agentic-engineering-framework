@@ -214,6 +214,102 @@ except:
     rm -f "$APPROVAL_FILE"
 fi
 
+# ── Check for Watchtower approval in .context/approvals/ (T-612) ──
+APPROVAL_DIR="$PROJECT_ROOT/.context/approvals"
+WATCHTOWER_TTL="${TIER0_WATCHTOWER_TTL:-3600}"  # Default 1 hour
+RESOLVED_FILE="$APPROVAL_DIR/resolved-${COMMAND_HASH:0:12}.yaml"
+
+if [ -f "$RESOLVED_FILE" ]; then
+    WT_RESULT=$(T0_RESOLVED="$RESOLVED_FILE" T0_TTL="$WATCHTOWER_TTL" T0_HASH="$COMMAND_HASH" python3 -c "
+import yaml, time, os, sys
+
+resolved_file = os.environ['T0_RESOLVED']
+ttl = int(os.environ['T0_TTL'])
+expected_hash = os.environ['T0_HASH']
+
+try:
+    with open(resolved_file) as f:
+        data = yaml.safe_load(f) or {}
+except:
+    print('SKIP')
+    sys.exit(0)
+
+status = data.get('status', '')
+full_hash = data.get('command_hash', '')
+
+if status != 'approved' or full_hash != expected_hash:
+    print('SKIP')
+    sys.exit(0)
+
+# Check TTL from response timestamp
+resp = data.get('response', {})
+ts = resp.get('responded_at', '') or data.get('timestamp', '')
+if not ts:
+    print('SKIP')
+    sys.exit(0)
+
+from datetime import datetime, timezone
+try:
+    dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+    age = time.time() - dt.timestamp()
+    if age > ttl:
+        print('EXPIRED')
+    else:
+        print('APPROVED')
+except:
+    print('SKIP')
+" 2>/dev/null)
+
+    if [ "$WT_RESULT" = "APPROVED" ]; then
+        # Valid Watchtower approval — consume it and allow
+        # Mark as consumed (single-use, keep file for audit trail)
+        T0_RESOLVED="$RESOLVED_FILE" python3 -c "
+import yaml, os
+from datetime import datetime, timezone
+
+f = os.environ['T0_RESOLVED']
+with open(f) as fh:
+    data = yaml.safe_load(fh) or {}
+data['status'] = 'consumed'
+data.setdefault('response', {})['consumed_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+with open(f, 'w') as fh:
+    yaml.dump(data, fh, default_flow_style=False, sort_keys=False)
+" 2>/dev/null
+
+        # Log to bypass-log for audit trail (fire-and-forget)
+        T0_LOG_FILE="$PROJECT_ROOT/.context/bypass-log.yaml" \
+        T0_DESCRIPTION="$DESCRIPTION" \
+        T0_COMMAND_PREVIEW="${COMMAND:0:120}" \
+        T0_COMMAND_HASH="$COMMAND_HASH" \
+        python3 -c "
+import yaml, datetime, os
+
+log_file = os.environ['T0_LOG_FILE']
+entry = {
+    'timestamp': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+    'tier': 0,
+    'risk': os.environ['T0_DESCRIPTION'],
+    'command_preview': os.environ['T0_COMMAND_PREVIEW'],
+    'command_hash': os.environ['T0_COMMAND_HASH'],
+    'authorized_by': 'human',
+    'mechanism': 'watchtower',
+}
+try:
+    if os.path.exists(log_file):
+        with open(log_file) as f:
+            data = yaml.safe_load(f) or {}
+    else:
+        data = {}
+    data.setdefault('bypasses', []).append(entry)
+    with open(log_file, 'w') as f:
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+except:
+    pass
+" 2>/dev/null &
+        exit 0
+    fi
+fi
+
 # ── Block with explanation ──
 echo "" >&2
 echo "══════════════════════════════════════════════════════════" >&2
@@ -236,5 +332,18 @@ echo "" >&2
 
 # Write the pending command hash so 'fw tier0 approve' can pick it up
 echo "$COMMAND_HASH $(date +%s) PENDING" > "${APPROVAL_FILE}.pending"
+
+# Also write a human-readable YAML for Watchtower approval surface (T-611)
+APPROVAL_DIR="${APPROVAL_DIR:-$PROJECT_ROOT/.context/approvals}"
+mkdir -p "$APPROVAL_DIR" 2>/dev/null
+APPROVAL_YAML="$APPROVAL_DIR/pending-${COMMAND_HASH:0:12}.yaml"
+cat > "$APPROVAL_YAML" <<YAMLEOF
+timestamp: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+type: tier0
+risk: "$DESCRIPTION"
+command_preview: "${COMMAND:0:200}"
+command_hash: "$COMMAND_HASH"
+status: pending
+YAMLEOF
 
 exit 2
