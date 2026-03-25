@@ -4,7 +4,7 @@ name: "OpenClaw learnings: framework fixes — audit baseline marker, commit cad
 description: >
   Two framework improvement items from the eval. (1) Git traceability audit on ingested repos — audit counted all 21557 upstream OpenClaw commits at 0 percent traceability. Need a baseline commit marker so audit only counts post-framework-init commits. (2) Commit cadence warning hook — PostToolUse hook warning after N edits without commit. No structural enforcement exists for minimum commit frequency. Research approaches, write findings. Review with human.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T17:18:11Z
-last_update: 2026-03-23T17:18:11Z
+last_update: 2026-03-25T09:54:55Z
 date_finished: null
 ---
 
@@ -20,43 +20,30 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Two framework gaps discovered during T-549 OpenClaw evaluation:
+1. Git traceability audit counts ALL upstream commits (0% traceability on ingested repos)
+2. No structural enforcement for commit frequency — agents make many edits without committing
 
-## Assumptions
+## Status: SUPERSEDED
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Both items were independently built before this inception started:
 
-## Exploration Plan
+1. **Audit baseline marker** → Built in **T-590** (committed `d8177dc`)
+   - `fw traceability baseline` sets HEAD SHA as baseline
+   - Audit uses `${baseline}..HEAD` range for post-import commits only
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+2. **Commit cadence hook** → Built in **T-591** (committed `70e40fb`)
+   - PostToolUse hook on Write|Edit counts edits via `.edit-counter`
+   - Warns at 10 edits, strong warns at 20, reset via post-commit hook
 
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+No further exploration needed.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
-
-## Go/No-Go Criteria
-
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested (both items already built)
+- [x] Recommendation written — superseded by T-590 and T-591
 
 ## Verification
 
@@ -79,9 +66,17 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: SUPERSEDED
+
+**Rationale**: Both deliverables (audit baseline marker, commit cadence hook) were independently built in T-590 and T-591 before this inception started. No further exploration needed.
+
+**Date**: 2026-03-25T10:00:00Z
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-03-25T09:54:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-25T10:00:00Z — superseded [agent]
+- **Action:** Both items already built in T-590 (baseline) and T-591 (commit cadence)
+- **Decision:** SUPERSEDED — no exploration needed
