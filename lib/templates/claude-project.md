@@ -613,6 +613,14 @@ After **every commit**, briefly report what was done and ask if the user wants t
 
 **Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=150K tokens, ~75%). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
 
+### Copy-Pasteable Commands (T-609)
+When giving the human a command to run (Tier 0 approvals, inception decisions, verification steps, Human AC instructions), the command MUST be:
+
+1. **Single-line, copy-pasteable** — works when pasted into any terminal, from any directory
+2. **Prefixed with `cd`** — always include `cd /path/to/project &&` so directory context is explicit
+3. **Use `bin/fw` not `fw`** — the global `fw` may resolve to a different install
+4. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line
+
 ### Inception Discipline
 When the active task has `workflow_type: inception`:
 1. **State the phase** — Say "This is an inception/exploration task" before doing any work

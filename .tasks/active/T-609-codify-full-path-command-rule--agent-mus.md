@@ -4,7 +4,7 @@ name: "Codify full-path command rule — agent must give copy-pasteable commands
 description: >
   When the agent gives humans commands to run, they must be single-line, copy-pasteable, with cd to PROJECT_ROOT and bin/fw not bare fw. Currently only in agent memory — needs to be in CLAUDE.md as a structural rule under Agent Behavioral Rules. Also update Human AC format to use full paths in Steps blocks. Origin: user friction running fw inception decide from wrong directory.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:27:09Z
-last_update: 2026-03-25T15:27:09Z
+last_update: 2026-03-25T15:31:10Z
 date_finished: null
 ---
 
@@ -20,40 +20,23 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+User ran `fw inception decide` from `/home/dimitri-mint-dev/` — got "No framework project detected". The global `fw` resolves to a different install. Rule exists only in agent memory. Needs codifying in CLAUDE.md + inception template + Human AC format.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] CLAUDE.md: New rule under "Agent Behavioral Rules" for copy-pasteable commands
+- [x] CLAUDE.md: Human AC Format Requirements updated — Steps must include cd + full paths
+- [x] CLAUDE.md: Multi-line commands guidance — use `&&` chaining, avoid bare newlines
+- [x] Inception template updated: Human AC uses full path in `fw inception decide` example
+- [x] Vendored CLAUDE.md synced (`.agentic-framework/` templates)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Rule exists in CLAUDE.md
+grep -q "copy-pasteable" CLAUDE.md
+# Inception template has full path
+grep -q "cd.*&&.*bin/fw" .tasks/templates/inception.md
 
 ## Decisions
 
@@ -72,3 +55,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-609-codify-full-path-command-rule--agent-mus.md
 - **Context:** Initial task creation
+
+### 2026-03-25T15:31:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
