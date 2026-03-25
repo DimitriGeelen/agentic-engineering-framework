@@ -34,7 +34,7 @@ OpenClaw has 4 dedup layers because it's a multi-tenant server with concurrent a
 ### Agent
 - [x] Problem statement validated
 - [x] Assumptions tested — all 4 disproved (single-agent architecture)
-- [x] Recommendation: NO-GO
+- [x] Recommendation: DEFER (revised from NO-GO after multi-agent analysis)
 
 ### Human
 - [ ] [REVIEW] Review findings and approve no-go
@@ -46,8 +46,26 @@ OpenClaw has 4 dedup layers because it's a multi-tenant server with concurrent a
 
 ## Go/No-Go Criteria
 
-**GO if:** Evidence of double-firing causing real problems, or multi-agent planned
-**NO-GO if:** Single-agent sequential architecture eliminates the need
+**GO if:** Multi-agent execution lands (TermLink Phase 2+) and concurrent task operations observed
+**NO-GO if:** Single-agent sequential architecture remains the only execution mode
+**DEFER if:** Multi-agent is planned but not yet producing concurrent state mutations
+
+## Multi-Agent Risk Assessment (added after human feedback)
+
+The framework IS moving toward multi-agent:
+- TermLink dispatch spawns concurrent workers sharing `.tasks/` and `.context/`
+- `fw bus` designed for multi-agent result coordination
+- T-571 (supervisor event loop) = explicit multi-agent orchestration
+
+**Concrete risks when multi-agent lands:**
+1. Two workers `fw task update T-XXX --status work-completed` simultaneously — no file locking
+2. Concurrent episodic generation for same task — double-write
+3. Concurrent `fw context focus` — last-write-wins on focus.yaml
+4. Cron audit running while a worker modifies task state
+
+**Current mitigation:** TermLink workers typically operate on DIFFERENT tasks (dispatched with specific task IDs). The bus system serializes results. But there's no structural guarantee.
+
+**Revised recommendation: DEFER** — not needed today (single-agent), but add `flock`-based guards to `update-task.sh` when TermLink Phase 2 (parallel dispatch) ships. The trigger: first time two workers operate on the same task concurrently.
 
 ## Verification
 
@@ -77,7 +95,12 @@ OpenClaw has 4 dedup layers because it's a multi-tenant server with concurrent a
 ### 2026-03-25T12:20:00Z — inception-exploration [agent]
 - **Action:** Investigated update-task.sh idempotency, hook re-entry, cron double-fire
 - **Finding:** Same-status guard exists, hooks are synchronous, architecture is single-agent
-- **Recommendation:** NO-GO — dedup problem doesn't exist in our architecture
+- **Initial recommendation:** NO-GO
+
+### 2026-03-25T12:25:00Z — human-feedback [agent]
+- **Action:** Human challenged: "what if we go towards multi-agent execution?"
+- **Revision:** TermLink dispatch already spawns concurrent workers sharing .tasks/ and .context/. No file locking on update-task.sh. DEFER is more appropriate — add flock guards when TermLink Phase 2 ships.
+- **Revised recommendation:** DEFER with trigger condition
 
 ### 2026-03-25T12:15:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
