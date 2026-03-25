@@ -887,6 +887,88 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         warnings=$((warnings + 1))
     fi
 
+    # Check: Consumer project fleet health (T-616)
+    # Only runs from framework repo — scans /opt for .framework.yaml
+    if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
+        local consumer_count=0
+        local consumer_issues=0
+        local fw_settings_file="$FRAMEWORK_ROOT/.claude/settings.json"
+        echo ""
+        echo -e "  ${BOLD}Consumer Projects${NC}"
+        for fw_yaml in /opt/*/.framework.yaml; do
+            [ -f "$fw_yaml" ] || continue
+            local consumer_dir
+            consumer_dir=$(dirname "$fw_yaml")
+            # Skip the framework itself
+            [ "$consumer_dir" = "$FRAMEWORK_ROOT" ] && continue
+            consumer_count=$((consumer_count + 1))
+            local cname cversion
+            cname=$(basename "$consumer_dir")
+            cversion=$(grep "^version:" "$fw_yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
+            # Check version match
+            local version_ok=true
+            if [ -n "$cversion" ] && [ "$cversion" != "$FW_VERSION" ]; then
+                version_ok=false
+            fi
+            # Check hooks by type (reuse T-615 logic)
+            local consumer_settings="$consumer_dir/.claude/settings.json"
+            local hook_info="ok"
+            if [ -f "$consumer_settings" ] && [ -f "$fw_settings_file" ]; then
+                hook_info=$(FW_FILE="$fw_settings_file" CONSUMER_FILE="$consumer_settings" python3 -c "
+import json, os
+def extract_hooks(path):
+    hooks = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        for event, entries in data.get('hooks', {}).items():
+            for entry in entries:
+                for hook in entry.get('hooks', []):
+                    cmd = hook.get('command', '')
+                    if 'fw hook' in cmd:
+                        name = cmd.split('fw hook ')[-1].strip()
+                    else:
+                        name = cmd.strip().split('/')[-1]
+                    hooks.add((event, name))
+    except (json.JSONDecodeError, FileNotFoundError):
+        pass
+    return hooks
+fw_hooks = extract_hooks(os.environ['FW_FILE'])
+consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
+missing = fw_hooks - consumer_hooks
+if missing:
+    names = ', '.join(n for _, n in sorted(missing))
+    print(f'missing {len(missing)}: {names}')
+else:
+    print(f'ok {len(consumer_hooks)}/{len(fw_hooks)}')
+" 2>/dev/null || echo "parse-error")
+            fi
+            # Report
+            if [ "$version_ok" = true ] && [[ "$hook_info" == ok* ]]; then
+                local hook_counts="${hook_info#ok }"
+                echo -e "  ${GREEN}OK${NC}  $cname (v$cversion, $hook_counts hooks)"
+            else
+                local reasons=""
+                if [ "$version_ok" = false ]; then
+                    reasons="v$cversion → v$FW_VERSION"
+                fi
+                if [[ "$hook_info" == missing* ]]; then
+                    [ -n "$reasons" ] && reasons="$reasons, "
+                    reasons="$reasons$hook_info"
+                fi
+                echo -e "  ${YELLOW}WARN${NC}  $cname ($reasons)"
+                echo -e "         Run: fw upgrade $consumer_dir"
+                warnings=$((warnings + 1))
+                consumer_issues=$((consumer_issues + 1))
+            fi
+        done
+        if [ "$consumer_count" -eq 0 ]; then
+            echo -e "  ${CYAN}SKIP${NC}  No consumer projects found in /opt"
+        elif [ "$consumer_issues" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  All $consumer_count consumer(s) current"
+        fi
+    fi
+
     # Summary
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
