@@ -4,7 +4,7 @@ name: "Inception: Idempotency/dedup layer — prevent hook re-entry and double t
 description: >
   OpenClaw has 4 dedup layers (inbound, persistent, global cache, agent-wait) using composite keys and TTL-based eviction. Our framework has zero dedup — if a task completion triggers twice (hook re-entry, retry), update-task.sh processes it again. Investigate: idempotency guard for update-task.sh (hash task_id+status+timestamp), hook re-entry prevention for PreToolUse/PostToolUse, and whether cron audit can double-fire. Research source: docs/reports/T-549-openclaw-architecture-mapping.md (Section 4: Key Patterns, deduplication), .context/working/round2-T-016.md on OpenClaw eval project (full gap analysis). OpenClaw source: src/gateway/server.impl.ts (idempotencyKeys map), src/delivery/delivery-queue.ts (persistent dedup with file locks). Related: T-562 (safety guardrails comparative task).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:09:51Z
-last_update: 2026-03-23T21:09:51Z
+last_update: 2026-03-25T12:15:54Z
 date_finished: null
 ---
 
@@ -20,43 +20,34 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+OpenClaw has 4 dedup layers because it's a multi-tenant server with concurrent agents. Does our framework need similar dedup for hooks and task completion?
 
-## Assumptions
+## Findings
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+- **update-task.sh** already has same-status guard (line 336): `"Status already — no change"`. Double completion is a no-op.
+- **Hooks** are synchronous shell scripts — Claude Code calls them one at a time. Re-entry is architecturally impossible.
+- **Cron audit** generates reports (write-only). Double-firing overwrites output harmlessly.
+- **Root cause**: OpenClaw needs 4 dedup layers because it's multi-tenant with concurrent agents. Our framework is single-agent, sequential. The concurrency that creates dedup problems doesn't exist here.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested — all 4 disproved (single-agent architecture)
+- [x] Recommendation: NO-GO
+
+### Human
+- [ ] [REVIEW] Review findings and approve no-go
+  **Steps:**
+  1. Read findings above
+  2. Run: `fw inception decide T-579 no-go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Ask for clarification
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** Evidence of double-firing causing real problems, or multi-agent planned
+**NO-GO if:** Single-agent sequential architecture eliminates the need
 
 ## Verification
 
@@ -83,5 +74,10 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-03-25T12:20:00Z — inception-exploration [agent]
+- **Action:** Investigated update-task.sh idempotency, hook re-entry, cron double-fire
+- **Finding:** Same-status guard exists, hooks are synchronous, architecture is single-agent
+- **Recommendation:** NO-GO — dedup problem doesn't exist in our architecture
+
+### 2026-03-25T12:15:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
