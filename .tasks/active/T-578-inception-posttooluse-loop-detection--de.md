@@ -4,7 +4,7 @@ name: "Inception: PostToolUse loop detection — detect and block repetitive fai
 description: >
   OpenClaw has 4-detector loop detection system (generic_repeat, known_poll_no_progress, ping_pong, global_circuit_breaker) using SHA256 hashing of canonicalized params + outcome tracking. Our framework has zero protection against agents calling the same failing command 50 times, burning context silently. Investigate: PostToolUse hook that hashes tool_name + params, tracks outcome hashes, warns at 5 repetitions, blocks at 10. Source: T-015 comparative analysis, OpenClaw tool-loop-detection.ts.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:09:25Z
-last_update: 2026-03-23T21:09:25Z
+last_update: 2026-03-25T11:52:15Z
 date_finished: null
 ---
 
@@ -32,41 +32,21 @@ An agent calling the same failing command 50 times burns context silently with z
 - Related framework: `agents/context/checkpoint.sh` (existing PostToolUse hook — potential integration point)
 - Related framework: `agents/context/budget-gate.sh` (PreToolUse pattern to follow for blocking)
 
-## Assumptions
+## Status: SUPERSEDED
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Already built in T-594 (port loop detector to TypeScript). Production implementation at `lib/ts/src/loop-detect.ts` includes all 3 detectors:
+- **generic_repeat**: same tool+params called N times (warn 5, block 10)
+- **ping_pong**: alternating between two tool calls
+- **no_progress**: same tool+params+result repeated
 
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+Shell wrapper: `agents/context/loop-detect.sh`. State: `.context/working/.loop-detect.json`.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
-
-## Go/No-Go Criteria
-
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested (implementation already exists)
+- [x] Recommendation written — superseded by T-594
 
 ## Verification
 
@@ -89,9 +69,17 @@ An agent calling the same failing command 50 times burns context silently with z
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: SUPERSEDED
+
+**Rationale**: Loop detection was independently built in T-586 (spike) and T-594 (production port) before this inception started. 3-detector TypeScript implementation with SHA256 hashing, warn/block thresholds, state persistence.
+
+**Date**: 2026-03-25T12:00:00Z
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-03-25T11:52:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-25T12:00:00Z — superseded [agent]
+- **Action:** Found existing implementation at lib/ts/src/loop-detect.ts (T-594)
+- **Decision:** SUPERSEDED — no exploration needed
