@@ -246,8 +246,14 @@
     {% for ac in human_acs %}
     <details class="human-ac-card" {% if not ac.checked %}open{% endif %}>
         <summary>
-            <input type="checkbox" {% if ac.checked %}checked{% endif %} disabled
-                   style="margin:0; opacity:0.6; cursor:default;">
+            <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input[type=checkbox]" hx-swap="outerHTML"
+                  class="inline-reset" onclick="event.stopPropagation();">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
             {% if ac.confidence == 'review' %}
             <span class="confidence-badge badge-review">Review</span>
             {% elif ac.confidence == 'rubber-stamp' %}

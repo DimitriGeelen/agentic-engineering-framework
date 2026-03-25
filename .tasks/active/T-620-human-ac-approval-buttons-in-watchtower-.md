@@ -1,0 +1,69 @@
+---
+id: T-620
+name: "Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI"
+description: >
+  Add approve/reject buttons for Human ACs on the Watchtower task detail page. When a human clicks approve, it checks the AC checkbox in the task markdown file. This completes the T-608 approval surface chain: T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent pickup) → this task (Human AC buttons).
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-25T21:45:49Z
+last_update: 2026-03-25T21:47:52Z
+date_finished: null
+---
+
+# T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI
+
+## Context
+
+Human AC checkboxes in task_detail.html are rendered as `disabled` with no form — users can see them but not approve/reject from the web UI. Agent ACs already have interactive toggle-ac forms. This adds the same for Human ACs.
+
+Related: T-608 → T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent pickup)
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Human AC checkboxes in task_detail.html are wrapped in a toggle-ac form (not disabled)
+- [ ] Clicking a Human AC checkbox POSTs to /api/task/<id>/toggle-ac and updates the task file
+- [ ] curl test: POST to toggle-ac endpoint returns updated checkbox HTML
+
+### Human
+- [ ] [RUBBER-STAMP] Human AC checkboxes are clickable in Watchtower task detail
+  **Steps:**
+  1. Open http://192.168.10.107:8050/tasks/T-614
+  2. Scroll to Human ACs section
+  3. Click a Human AC checkbox
+  **Expected:** Checkbox toggles, task file updated on disk
+  **If not:** Check browser console for errors, verify CSRF token
+
+## Verification
+
+curl -sf http://localhost:8050/tasks/T-614 | grep -q 'hx-post="/api/task/T-614/toggle-ac"'
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-25T21:45:49Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-620-human-ac-approval-buttons-in-watchtower-.md
+- **Context:** Initial task creation
+
+### 2026-03-25T21:46:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+
+### 2026-03-25T21:47:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
