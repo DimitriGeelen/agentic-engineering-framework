@@ -4,9 +4,9 @@ name: "Inception GO decision human-confirm gate — block fw inception decide fo
 description: >
   All inception GO/NO-GO decisions require human confirmation. Block agents from running fw inception decide directly — add to check-tier0.sh as Tier 0 operation. Agent writes research + recommendation with PENDING HUMAN CONFIRMATION in Decision section. Human runs fw inception decide T-XXX go. Add Human AC to inception template: [REVIEW] Review exploration findings and approve go/no-go. Keep default owner: agenthuman for all inceptions. Origin: T-549 eval + 3-agent authority analysis. Evidence: Authority Model says agent=initiative not authority. GO decisions commit resources = authority. All historical inception decision commits were human-authored.
 
-status: captured
+status: started-work
 workflow_type: build
-owner:
+owner: human
 horizon: next
 tags: []
 components: []
@@ -20,40 +20,31 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Inception GO/NO-GO decisions commit resources (build tasks, development effort). Per the Authority Model, this is authority — not initiative. Agents should research and recommend, but the human decides. Origin: T-549 eval + 3-agent authority analysis. All historical inception decisions were human-authored.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `check-tier0.sh` blocks ALL `fw inception decide` commands (not just `--force`)
+- [x] Keyword pre-filter updated to catch `fw inception decide` without `--force`
+- [x] Existing `--force` pattern removed (subsumed by the broader block)
+- [x] Inception template (`inception.md`) includes Human AC for reviewing go/no-go
+- [x] Block message tells agent to present recommendation and let human run the command
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [RUBBER-STAMP] Restart Claude Code session and verify `fw inception decide` is blocked
+  **Steps:**
+  1. Restart Claude Code to pick up hook changes
+  2. Try to run `fw inception decide T-434 defer --rationale "test"` via Bash
+  3. Observe Tier 0 block message
+  **Expected:** TIER 0 BLOCK with "INCEPTION DECISION" risk description
+  **If not:** Check `agents/context/check-tier0.sh` patterns and keyword pre-filter
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+grep -q 'fw.*inception.*decide' agents/context/check-tier0.sh
+grep -q 'INCEPTION DECISION' agents/context/check-tier0.sh
+grep -q 'REVIEW.*go/no-go' .tasks/templates/inception.md
 
 ## Decisions
 

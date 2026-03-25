@@ -48,7 +48,7 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
@@ -137,8 +137,11 @@ PATTERNS = [
     # === Framework governance bypass (T-510) ===
     (r'\bfw\s+task\s+update\b[^;|&]*--force\b',
      'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification gate (P-011)'),
-    (r'\bfw\s+inception\s+decide\b[^;|&]*--force\b',
-     'FW FORCE: Bypasses inception decision validation'),
+
+    # === Inception decision gate (T-557) ===
+    # GO/NO-GO decisions are authority, not initiative. Agent recommends, human decides.
+    (r'\bfw\s+inception\s+decide\b',
+     'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your recommendation and rationale, then ask the human to run: fw inception decide T-XXX go|no-go --rationale \"...\"'),
 ]
 
 for pattern, description in PATTERNS:

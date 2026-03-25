@@ -43,9 +43,19 @@ date_finished: null
 
 ## Acceptance Criteria
 
+### Agent
 - [ ] Problem statement validated
 - [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [ ] Recommendation written with rationale
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Read the research artifact and recommendation in this task
+  2. Evaluate go/no-go criteria against findings
+  3. Run: `fw inception decide T-XXX go|no-go --rationale "your rationale"`
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
