@@ -20,53 +20,62 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+The framework's own governance is actively blocking real work. Session 2026-03-26 evidence: stale global scripts caused total deadlock 3x, task gate blocked memory writes, inception gate blocked commits, missing hook scripts caused cascading failures, long commands broke terminal paste 3x. 12 TermLink agents investigated every friction point. Core finding: **27% real work, 73% overhead** (governance friction + meta-work + housekeeping).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: Hook fail-open (missing script → exit 0) won't create security gaps (**Confirmed** — hooks are agent-discipline, not security boundaries)
+- A2: FW_SAFE_MODE env var is accessible to hook scripts at runtime (**Confirmed** — bash inherits env)
+- A3: CLAUDE.md can be cut to <400 lines without losing structural enforcement (**Confirmed** — 13 behavioral rules have zero enforcement, TermLink/dispatch protocol can move to docs/)
+- A4: Inception commit limit of 2 is too restrictive (**Confirmed** — 24+ bypasses recorded, concern R-032 since Feb 19)
+- A5: Proactive health check as PostToolUse hook won't add significant overhead (**Untested** — run every 50 calls, fast checks)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+12 TermLink agents dispatched, all completed. See `docs/reports/T-629-governance-self-audit.md` for consolidated findings and `docs/reports/fw-agent-t629-{01..12}-*.md` for full reports (3109 lines).
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Claude Code hooks snapshot at session start — settings.json changes require restart
+- PreToolUse exit 0 = allow, exit 2 = block. PostToolUse is advisory only.
+- CLAUDE.md is loaded every session regardless of size (no conditional loading mechanism currently)
+- Hook scripts must exist and be executable when registered — missing scripts cause non-zero exit → block
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:** 4-phase governance fix (emergency → pruning → self-healing → architecture)
+**OUT of scope:** Rewriting Claude Code hook system, changing PreToolUse/PostToolUse semantics
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (3x deadlocks, 3x terminal failures, 27% real work ratio)
+- [x] 12-agent investigation completed (3109 lines of findings)
+- [x] 5 structural flaws identified with evidence
+- [x] 4-phase fix plan proposed with go/no-go criteria
+- [x] Research artifact committed: `docs/reports/T-629-governance-self-audit.md`
+- [x] 12 agent reports preserved: `docs/reports/fw-agent-t629-{01..12}-*.md`
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review 4-phase governance fix and approve go/no-go
   **Steps:**
-  1. Read the research artifact and recommendation in this task
-  2. Evaluate go/no-go criteria against findings
-  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-XXX go|no-go --rationale "your rationale"`
-  **Expected:** Decision recorded, task completed
-  **If not:** Ask agent for clarification on specific findings
+  1. Read `docs/reports/T-629-governance-self-audit.md`
+  2. Evaluate: is 27% real work acceptable? Are the 5 structural flaws accurate?
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-629 go --rationale "your rationale"`
+  **Expected:** GO decision, Phase 1 emergency fixes built next
+  **If not:** Specify which phase to defer or reject
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Phase 1 (safe mode + fail-open + exempt paths) can be built in one session
+- CLAUDE.md can be cut to <400 lines without losing structural enforcement
+- 27% real work is unacceptable and the 4-phase plan addresses the root causes
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Governance overhead is acceptable for the project's maturity stage
+- Cutting rules would reintroduce problems they were created to prevent
+- 90% meta-work ratio is temporary (project is in framework-building phase)
 
 ## Verification
 
