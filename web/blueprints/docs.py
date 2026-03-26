@@ -1,13 +1,17 @@
-"""Generated documentation blueprint — serves auto-generated component reference docs."""
+"""Generated documentation blueprint — serves auto-generated component reference docs
+and a general-purpose file viewer for project markdown files (T-632)."""
 
 import os
 from pathlib import Path
 
 import markdown2
 import yaml
-from flask import Blueprint, abort
+from flask import Blueprint, abort, request
 
 from web.shared import FRAMEWORK_ROOT, render_page
+
+# Safe directories for file viewer (relative to FRAMEWORK_ROOT)
+_VIEWABLE_DIRS = ("docs/", ".tasks/", ".context/handovers/", ".context/episodic/")
 
 bp = Blueprint("docs", __name__)
 
@@ -95,5 +99,54 @@ def docs_detail(card_name):
         "docs_detail.html",
         page_title=first_line,
         card_name=card_name,
+        html_content=html_content,
+    )
+
+
+@bp.route("/file/<path:filepath>")
+def file_viewer(filepath):
+    """Render any project markdown file from safe directories (T-632).
+
+    Only serves files under _VIEWABLE_DIRS to prevent path traversal.
+    """
+    # Block path traversal
+    if ".." in filepath:
+        abort(404)
+
+    # Must be under a safe directory
+    if not any(filepath.startswith(d) for d in _VIEWABLE_DIRS):
+        abort(404)
+
+    # Must be markdown
+    if not filepath.endswith(".md"):
+        abort(404)
+
+    file_path = FRAMEWORK_ROOT / filepath
+    if not file_path.exists() or not file_path.is_file():
+        abort(404)
+
+    # Resolve and verify still under FRAMEWORK_ROOT (symlink protection)
+    resolved = file_path.resolve()
+    if not str(resolved).startswith(str(FRAMEWORK_ROOT.resolve())):
+        abort(404)
+
+    content_md = file_path.read_text()
+    html_content = markdown2.markdown(
+        content_md, extras=["tables", "fenced-code-blocks", "code-friendly"]
+    )
+
+    # Title from first heading or filename
+    first_line = ""
+    for line in content_md.split("\n"):
+        if line.startswith("#"):
+            first_line = line.lstrip("# ").strip()
+            break
+    if not first_line:
+        first_line = file_path.name
+
+    return render_page(
+        "docs_detail.html",
+        page_title=first_line,
+        card_name=file_path.stem,
         html_content=html_content,
     )
