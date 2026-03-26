@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-546: Continue fixing TermLink release builds
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-26T21:19:18Z
+# ============================================================================
+
+task_id: T-546
+task_name: "Continue fixing TermLink release builds"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-21T22:45:15Z
+completed: 2026-03-24T08:49:05Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-03-24T09:22:09+01:00
+last_commit: 2026-03-24T09:49:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register governance violation — cross-repo edit reverted. Complete — all 3 release builds verified green (run 23479559878)
+
+# Key outcomes
+outcomes:
+  - "Release workflow uses Rust 1.85+ (edition 2024 support) — uses dtolnay/rust-toolchain@stable (≥1.85)"
+  - "All 3 build jobs (macOS aarch64, macOS x86_64, Linux) complete successfully — verified via GH Actions run 23479559878 (v0.1.1 tag, all green, release created with binaries + checksums; tag later reverted due to governance violation, builds themselves succeeded)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Register governance violation — cross-repo edit reverted"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-24.yaml"
+  - ".context/audits/cron/2026-03-16-0845.yaml"
+  - ".context/audits/cron/2026-03-16-0915.yaml"
+  - ".context/audits/cron/2026-03-24-0845.yaml"
+  - ".context/audits/cron/2026-03-24-0900.yaml"
+  - ".context/audits/cron/2026-03-24-0915.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/bypass-log.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - ".tasks/active/T-546-continue-fixing-termlink-release-builds.md"
+  - ".tasks/active/T-597-pickup-pre-push-hook-doesnt-pass-project.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T09:22:09"
+    action: "T-546: Register governance violation — cross-repo edit reverted"
+  - time: "2026-03-24T09:49:05"
+    action: "T-546: Complete — all 3 release builds verified green (run 23479559878)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3483 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3483
+  commits: 2
+  files_changed: 19
+  lines_added: 677
+  lines_removed: 158
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-546-continue-fixing-termlink-release-builds.md
+generated_by: context-agent-hybrid

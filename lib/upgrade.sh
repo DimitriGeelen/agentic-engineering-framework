@@ -352,6 +352,58 @@ plus Claude Code-specific integration notes.
         echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
     fi
 
+    # ── 4c. Global install sync ($HOME/.agentic-framework/) ──
+    echo -e "${YELLOW}[4c/9] Global install sync${NC}"
+
+    local global_dir="$HOME/.agentic-framework"
+    if [ -d "$global_dir/agents/context" ]; then
+        local global_updated=0
+        # Sync agents/context/*.sh
+        for src_script in "$FRAMEWORK_ROOT/agents/context/"*.sh; do
+            [ -f "$src_script" ] || continue
+            local sname
+            sname=$(basename "$src_script")
+            local dst_script="$global_dir/agents/context/$sname"
+            if [ ! -f "$dst_script" ] || ! diff -q "$src_script" "$dst_script" > /dev/null 2>&1; then
+                global_updated=$((global_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    cp "$src_script" "$dst_script"
+                    chmod +x "$dst_script"
+                fi
+            fi
+        done
+        # Sync agents/context/lib/
+        if [ -d "$FRAMEWORK_ROOT/agents/context/lib" ]; then
+            for src_lib in "$FRAMEWORK_ROOT/agents/context/lib/"*; do
+                [ -f "$src_lib" ] || continue
+                local lname
+                lname=$(basename "$src_lib")
+                local dst_lib="$global_dir/agents/context/lib/$lname"
+                if [ ! -f "$dst_lib" ] || ! diff -q "$src_lib" "$dst_lib" > /dev/null 2>&1; then
+                    global_updated=$((global_updated + 1))
+                    if [ "$dry_run" != true ]; then
+                        mkdir -p "$global_dir/agents/context/lib"
+                        cp "$src_lib" "$dst_lib"
+                        [ -x "$src_lib" ] && chmod +x "$dst_lib"
+                    fi
+                fi
+            done
+        fi
+
+        if [ "$global_updated" -gt 0 ]; then
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD UPDATE${NC}  $global_updated global script(s)"
+            else
+                echo -e "  ${GREEN}UPDATED${NC}  $global_updated global script(s) synced to $global_dir"
+            fi
+        else
+            echo -e "  ${GREEN}OK${NC}  Global install scripts current"
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  No global install at $global_dir"
+    fi
+
     # ── 5. .claude/settings.json (hooks config) ──
     echo -e "${YELLOW}[5/9] Claude Code hooks (.claude/settings.json)${NC}"
 

@@ -14,7 +14,7 @@ tags: [termlink, integration, cross-terminal]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T23:43:34Z
-last_update: 2026-03-15T23:58:35Z
+last_update: 2026-03-26T21:19:18Z
 date_finished: 2026-03-15T23:58:35Z
 ---
 
@@ -72,7 +72,7 @@ Building any code (that's for build tasks after GO decision).
 - [x] Go/No-Go recommendation presented with rationale
 
 ### Human
-- [ ] [REVIEW] Review TermLink integration approach and decide go/no-go
+- [x] [REVIEW] Review TermLink integration approach and decide go/no-go
   **Steps:**
   1. Read `docs/reports/T-502-termlink-integration-inception.md`
   2. Assess: is Phase 0 scope right? Any missing concerns?

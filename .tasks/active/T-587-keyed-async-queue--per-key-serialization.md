@@ -20,40 +20,26 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Per-key serialization primitive for concurrent framework operations. When multiple TermLink workers or parallel agents operate on the same task/resource simultaneously, YAML file corruption and race conditions can occur. The bus already has atomic ID generation (T-605 `mkdir` lock in `lib/bus.sh:119-137`), but no per-key serialization exists for task updates, focus changes, or healing operations. The primitive: given a key (e.g., task ID `T-042`), serialize all operations on that key while allowing operations on different keys to proceed in parallel. Bash implementation uses `flock` on per-key lock files. Related: T-586 (language strategy), T-582 (session isolation).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] A shell library `lib/keylock.sh` exists providing `keylock_acquire <key>` and `keylock_release <key>` functions that serialize operations per key using `flock` on files in `$PROJECT_ROOT/.context/locks/`
+- [ ] Cross-key parallelism works: two concurrent processes holding locks on different keys (e.g., `T-001` and `T-002`) do not block each other — verified by a test that acquires both in parallel and checks both complete within 2 seconds
+- [ ] Same-key serialization works: two concurrent processes acquiring the same key execute sequentially — verified by a test that writes timestamps from two parallel workers to a shared file and confirms non-overlapping execution windows
+- [ ] Stale lock cleanup: locks older than a configurable timeout (default 5 minutes) are automatically released on next acquisition attempt, preventing deadlocks from crashed processes
+- [ ] `update-task.sh` uses `keylock_acquire $TASK_ID` / `keylock_release $TASK_ID` around the task file read-modify-write sequence to prevent concurrent task updates from corrupting YAML frontmatter
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Library exists and sources without error
+bash -c "source lib/keylock.sh"
+# Lock directory is created on first use
+bash -c "source lib/keylock.sh && keylock_acquire test-verify && keylock_release test-verify && [ -d .context/locks ]"
+# Stale lock detection works (create a lock > 5min old, verify re-acquisition succeeds)
+bash -c "source lib/keylock.sh && mkdir -p .context/locks && touch -t 202601010000 .context/locks/stale-test.lock && keylock_acquire stale-test && keylock_release stale-test"
 
 ## Decisions
 

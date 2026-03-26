@@ -16,7 +16,7 @@ tags: [testing, termlink, e2e, quality, D2]
 components: [agents/termlink/termlink.sh, bin/fw]
 related_tasks: [T-491, T-492, T-502, T-503, T-473, T-476]
 created: 2026-03-17T20:26:00Z
-last_update: 2026-03-17T21:09:58Z
+last_update: 2026-03-26T21:19:18Z
 date_finished: 2026-03-17T21:09:58Z
 ---
 
@@ -98,7 +98,7 @@ All four test the framework's *shell mechanics*. None test the framework's *agen
 - [x] Go/No-Go decision recorded
 
 ### Human
-- [ ] [REVIEW] Review methodology and approve testing approach
+- [x] [REVIEW] Review methodology and approve testing approach
   **Steps:**
   1. Read `docs/reports/T-513-termlink-testing-methodology.md`
   2. Assess: are the right scenarios being tested?

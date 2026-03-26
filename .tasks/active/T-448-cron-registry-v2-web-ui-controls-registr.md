@@ -20,40 +20,44 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Follow-up to T-433 (inception GO) and T-447 (read-only page, completed). Implements Option B from `docs/reports/T-433-cron-registry-inception.md`: structured registry YAML as source of truth, web UI controls (pause/resume/run-now with Tier B confirmation), and LLM-generated job documentation via Ollama. Builds on T-604's git-tracked crontab pattern in `.context/cron/`. Current read-only blueprint: `web/blueprints/cron.py`, template: `web/templates/cron.html`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (active/paused), description. `cron.py` reads from registry YAML instead of parsing `/etc/cron.d/` directly.
+- [ ] `fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped naming (`agentic-audit-{project-slug}`).
+- [ ] API endpoints exist under `/api/v1/cron/`: POST `jobs/<id>/pause` (comments out in cron file), POST `jobs/<id>/resume` (uncomments), POST `jobs/<id>/run` (triggers manual execution). Each returns JSON with updated job state. Pause/resume regenerate the cron file from registry.
+- [ ] Web UI cron page (`/cron`) shows pause/resume toggle and "Run Now" button per job. Controls use confirmation dialogs before executing (Tier B safety model from T-433 Spike 2). Page updates after action without full reload (fetch + DOM update or page refresh).
+- [ ] LLM-generated job descriptions: API endpoint GET `/api/v1/cron/jobs/<id>/describe` calls Ollama to generate a human-readable description from the job's command, schedule, and cron file comments. Result is cached in `cron-registry.yaml` under the job's `description` field. Falls back to static description if Ollama is unavailable.
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Cron controls work correctly and feel safe
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && curl -sf http://localhost:3000/cron | grep -q "Run Now"`
+  2. Open http://localhost:3000/cron in browser
+  3. Click "Pause" on one job — confirm dialog appears, click confirm
+  4. Verify job shows as paused, check `/etc/cron.d/agentic-audit-*` has the line commented out
+  5. Click "Resume" — verify job is active again
+  6. Click "Run Now" on an audit job — verify it triggers and shows result
+  **Expected:** Controls work, confirmations prevent accidental clicks, state persists across page reload
+  **If not:** Note which control failed and check browser console + Flask logs
+
+- [ ] [REVIEW] LLM-generated descriptions are accurate and useful
+  **Steps:**
+  1. Open http://localhost:3000/cron in browser
+  2. Check if job descriptions are populated (may need to trigger generation)
+  3. Compare descriptions against actual cron commands for accuracy
+  **Expected:** Descriptions explain what each job does in plain English, matching the actual command behavior
+  **If not:** Note inaccurate descriptions for correction
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "import yaml; d=yaml.safe_load(open('.context/cron-registry.yaml')); assert 'jobs' in d; assert len(d['jobs']) >= 8; print(f'OK: {len(d[\"jobs\"])} jobs in registry')"
+python3 -c "import yaml; d=yaml.safe_load(open('.context/cron-registry.yaml')); j=d['jobs'][0]; assert all(k in j for k in ('id','name','schedule','command','status')); print('OK: job schema valid')"
+curl -sf http://localhost:3000/cron | grep -q "Run Now"
+curl -sf http://localhost:3000/cron | grep -q "Pause\|Resume"
+grep -q "cron/jobs" web/blueprints/cron.py
 
 ## Decisions
 

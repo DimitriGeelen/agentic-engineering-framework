@@ -4,7 +4,7 @@ name: "Handover commit attribution — use session ID not active task ID"
 description: >
   fw handover --commit attributes the commit to whatever task is in focus (e.g. T-012: Session handover). Handovers are session-level, not task-level. Change to use T-012 housekeeping prefix or session ID (S-YYYY-MMDD-HHMM). Low effort — change commit message format in handover.sh. Origin: T-549 OpenClaw eval — handover committed under T-012 (TermLink learnings task).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:21:22Z
-last_update: 2026-03-23T16:21:22Z
+last_update: 2026-03-26T16:03:14Z
 date_finished: null
 ---
 
@@ -20,40 +20,32 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`_resolve_commit_task()` in `agents/handover/handover.sh:12-51` resolves the task ID for handover commits via a 6-step cascade: `--task` flag → T-012 → slug match → auto-create → **focused task** → T-000. Step 5 (focused task, line 40-48) is the bug: when T-012 doesn't exist in a consumer project, handover commits get attributed to the currently focused work task (e.g., "T-549: Session handover S-..."), polluting that task's git log. Handovers are session-level operations and should never be attributed to work tasks.
+
+**Scope:** Modify `_resolve_commit_task()` only. No changes to commit format, git agent, or handover template.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] `_resolve_commit_task()` removes the focused-task fallback (lines 40-48) — handover commits never use the task from `focus.yaml`
+- [ ] When no T-012 or handover-slug task exists, auto-creation (lines 28-37) remains the primary fallback — a dedicated handover task is always created rather than borrowing a work task
+- [ ] The T-000 absolute fallback (line 50) remains as last resort after auto-creation failure
+- [ ] Both normal-mode (line 646) and checkpoint-mode (line 155) commit messages use the resolved handover task, not any work task
+- [ ] `handover.sh --task T-XXX` override still works (line 13-14 unchanged)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Focused task fallback must not exist in _resolve_commit_task
+! grep -A5 'focus_file.*focus.yaml' agents/handover/handover.sh | grep -q 'COMMIT_TASK=.*focused'
+# T-000 fallback still exists
+grep -q 'COMMIT_TASK="T-000"' agents/handover/handover.sh
+# --task flag still accepted
+grep -q '\-\-task.*COMMIT_TASK' agents/handover/handover.sh
+# Auto-create path still exists
+grep -q 'Auto-created handover task' agents/handover/handover.sh
+# Script parses without errors
+bash -n agents/handover/handover.sh
 
 ## Decisions
 
@@ -72,3 +64,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-556-handover-commit-attribution--use-session.md
 - **Context:** Initial task creation
+
+### 2026-03-26T16:03:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

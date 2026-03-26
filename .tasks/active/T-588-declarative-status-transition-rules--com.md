@@ -20,40 +20,32 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Currently `lib/enums.sh` declares status transitions as a bash array (`VALID_TRANSITIONS`) with O(n) linear scan via `is_valid_transition()`. The task description (OpenClaw Pattern 4) proposes externalizing to YAML and compiling to O(1) lookup. Precedent: `governance.yaml` already declares operation classes as machine-readable YAML. Related: T-511 (governance.yaml), T-586 (language strategy — may influence whether compilation is bash or Python).
+
+Key files:
+- `lib/enums.sh` — current transition definitions (lines 28-39) and validation functions (lines 64-71)
+- `agents/task-create/update-task.sh` — consumer: calls `is_valid_transition()` and `valid_transitions_for()`
+- `.context/project/governance.yaml` — precedent for declarative governance YAML
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] A `status-transitions.yaml` file exists declaring all valid statuses, legacy statuses, and allowed transitions in human-readable YAML (no bash syntax)
+- [ ] `lib/enums.sh` reads `status-transitions.yaml` at source-time and populates an associative array for O(1) transition lookup (replaces the linear `VALID_TRANSITIONS` array scan)
+- [ ] `is_valid_transition()`, `valid_transitions_for()`, `is_valid_status()`, and `is_recognized_status()` continue to work with identical behavior (backward compatible — no callers need changes)
+- [ ] `fw doctor` includes a check that `status-transitions.yaml` has no orphaned states (states in transitions not in the statuses list) and no unreachable states (statuses with no inbound or outbound transition)
+- [ ] All 8 existing transitions from `lib/enums.sh` are faithfully represented in the YAML file (including the 2 legacy-compat transitions)
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# YAML file parses correctly
+python3 -c "import yaml; d=yaml.safe_load(open('status-transitions.yaml')); assert 'transitions' in d or 'statuses' in d, 'Missing expected keys'"
+# Backward compat: valid transition still works
+cd /opt/999-Agentic-Engineering-Framework && source lib/enums.sh && is_valid_transition "captured" "started-work"
+# Backward compat: invalid transition still rejected
+cd /opt/999-Agentic-Engineering-Framework && source lib/enums.sh && ! is_valid_transition "captured" "work-completed"
+# fw doctor passes
+cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor
 
 ## Decisions
 
