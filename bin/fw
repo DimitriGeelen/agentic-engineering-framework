@@ -1430,10 +1430,11 @@ PYTASK_VERIFY
                 exit 1
             fi
 
-            # Determine Watchtower URL (env > running PID port > default)
+            # Determine Watchtower URL (env > running PID port+host > default)
             local base_url="${WATCHTOWER_URL:-}"
             if [ -z "$base_url" ]; then
                 local wt_port=""
+                local wt_host=""
                 local wt_pid=""
                 if [ -f "$PROJECT_ROOT/.context/working/watchtower.pid" ]; then
                     wt_pid=$(cat "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null)
@@ -1441,7 +1442,11 @@ PYTASK_VERIFY
                         wt_port=$(ss -tlnp 2>/dev/null | grep "pid=$wt_pid" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
                     fi
                 fi
-                base_url="http://localhost:${wt_port:-3000}"
+                # Dynamic hostname: use first non-loopback IP, fall back to hostname
+                wt_host=$(hostname -I 2>/dev/null | awk '{print $1}')
+                wt_host="${wt_host:-$(hostname 2>/dev/null)}"
+                wt_host="${wt_host:-localhost}"
+                base_url="http://${wt_host}:${wt_port:-3000}"
             fi
             local review_url="${base_url}/tasks/${task_id}#human-ac"
 
