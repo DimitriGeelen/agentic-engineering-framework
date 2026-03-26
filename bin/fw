@@ -1469,7 +1469,7 @@ PYTASK_VERIFY
             echo -e "  ${BOLD}Human AC Review: $task_id${NC}"
             echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
             echo -e ""
-            echo -e "  ${BOLD}${review_url}${NC}"
+            echo "  ${review_url}"
             echo -e ""
 
             # QR code (if python3 qrcode available)

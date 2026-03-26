@@ -395,6 +395,16 @@ def task_detail(task_id):
     # Parse AC checkboxes for interactive rendering
     ac_items = _parse_acceptance_criteria(task_content)
 
+    # Find research artifacts (docs/reports/T-XXX-* and fw-agent-tXXX-*)
+    artifacts = []
+    reports_dir = PROJECT_ROOT / "docs" / "reports"
+    if reports_dir.exists():
+        tid_lower = task_id.lower().replace("-", "")
+        for f in sorted(reports_dir.glob("*.md")):
+            fname = f.name.lower().replace("-", "")
+            if tid_lower in fname:
+                artifacts.append({"name": f.name, "path": f"docs/reports/{f.name}"})
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -404,6 +414,7 @@ def task_detail(task_id):
         task_id=task_id,
         status_options=status_options,
         ac_items=ac_items,
+        artifacts=artifacts,
     )
 
 

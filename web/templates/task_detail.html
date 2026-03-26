@@ -182,6 +182,18 @@
     </tbody>
 </table>
 
+<!-- Research Artifacts (T-632) -->
+{% if artifacts %}
+<details open>
+    <summary><strong>Research Artifacts</strong> <small>({{ artifacts|length }})</small></summary>
+    <ul>
+    {% for a in artifacts %}
+        <li><a href="/file/{{ a.path }}">{{ a.name }}</a></li>
+    {% endfor %}
+    </ul>
+</details>
+{% endif %}
+
 <!-- Description (click to edit) -->
 {% if task.description %}
 <details open>
