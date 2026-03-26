@@ -27,13 +27,13 @@ Prerequisites: Watchtower AC checkboxes (T-620), toggle-ac API, Python qrcode 7.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw task review T-XXX` command exists and runs
-- [ ] Prints clickable URL to Watchtower task page with #human-ac anchor
-- [ ] Prints QR code (using python3 qrcode library) encoding the same URL
-- [ ] Uses configurable base URL (localhost:3000 default, prod URL from .framework.yaml or env)
-- [ ] Watchtower task template has `id="human-ac"` anchor on Human AC section
-- [ ] `bash -n` passes on the new script
-- [ ] `--poll` flag: polls task file every 5s, exits 0 when all Human ACs checked (timeout 10min)
+- [x] `fw task review T-XXX` command exists and runs
+- [x] Prints clickable URL to Watchtower task page with #human-ac anchor
+- [x] Prints QR code (using python3 qrcode library) encoding the same URL
+- [x] Uses configurable base URL (localhost:3000 default, WATCHTOWER_URL env override)
+- [x] Watchtower task template has `id="human-ac"` anchor on Human AC section
+- [x] `bash -n` passes on bin/fw
+- [x] `--poll` flag: polls task file every 5s, exits 0 when all Human ACs checked (timeout 10min)
 
 ### Human
 - [ ] [RUBBER-STAMP] URL opens correct task page in browser
