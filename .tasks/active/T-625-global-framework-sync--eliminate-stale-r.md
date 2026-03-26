@@ -76,7 +76,7 @@ A6: Consumer projects on other machines (Mac .107) have the same vulnerability
 - [x] All 5 investigation spikes completed with findings
 - [x] Assumptions A1-A6 validated or invalidated (4 confirmed, 1 partial, 1 unknown)
 - [x] Recommendation written with rationale and rejected alternatives
-- [ ] Research artifact committed: `docs/reports/T-625-global-framework-sync.md`
+- [x] Research artifact committed: `docs/reports/T-625-global-framework-sync.md`
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision

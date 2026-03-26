@@ -147,18 +147,35 @@ This is a safety net — Fix 1 removes the hook dependency, but the global insta
 
 Replace `/root/.agentic-framework/` with a symlink to `/opt/999-Agentic-Engineering-Framework/.agentic-framework/`. Zero maintenance, always in sync. Only viable on machines with a single primary framework repo.
 
+## Correction: Spike 4 Agent Error
+
+TermLink shell verification (2026-03-26) proved the Spike 4 agent was **wrong** about bare `fw` usage:
+
+| Project | Bare `fw` | Relative | Spike 4 claimed |
+|---------|-----------|----------|-----------------|
+| 150-skills-manager | 0 | 15 | "8 bare fw" (WRONG) |
+| termlink | 0 | 11 | "8 bare fw" (WRONG) |
+| agentic-engineering-framework | N/A | N/A | "8 bare fw" — project deleted (was stale duplicate) |
+
+**All remaining projects already use relative `.agentic-framework/bin/fw` paths.** The hook path class of the problem is already solved. The only remaining issue is the global install at `/root/.agentic-framework/` going stale.
+
+## Revised Recommendation
+
+**Single fix needed:** Add global install sync to `fw upgrade` (lib/upgrade.sh, ~30 lines). When upgrading from the framework repo, also sync hook scripts to `$HOME/.agentic-framework/`.
+
+Optional: symlink `/root/.agentic-framework` → framework repo's `.agentic-framework/` for zero-maintenance on development machines.
+
 ## Rejected Alternatives
 
 | Alternative | Why Rejected |
 |-------------|-------------|
-| Relative paths in hooks | Spike 1 showed framework has no support; Spike 4 revealed consumers already USE them successfully — so "relative paths don't work" was wrong. They DO work. |
+| Migrate hook paths to relative | Already done — all projects use relative paths |
 | Global install only (no vendored) | Breaks multi-project isolation. Each project needs its own vendored copy for version pinning. |
 | Cron job to sync global install | Adds complexity, timing issues, requires sudo for some paths. Upgrade propagation is simpler. |
 | Remove global install entirely | Breaks `fw` CLI access from non-project directories. Users expect `fw version`, `fw doctor` etc. to work anywhere. |
 
 ## Build Tasks (if GO)
 
-1. **T-626**: Migrate 3 bare-fw projects to relative hook paths (24 hooks, sed + verify)
-2. **T-627**: Add global install sync to `fw upgrade` (lib/upgrade.sh, ~30 lines)
-3. **T-628**: Sync stale consumer scripts (001-sprechloop: 1, 050-email-archive: 3)
-4. **T-629** (optional): Symlink `/root/.agentic-framework` on this machine
+1. **T-626**: Add global install sync to `fw upgrade` (lib/upgrade.sh, ~30 lines)
+2. **T-627**: Sync stale consumer scripts (001-sprechloop: 1, 050-email-archive: 3)
+3. **T-628** (optional): Symlink `/root/.agentic-framework` on this machine
