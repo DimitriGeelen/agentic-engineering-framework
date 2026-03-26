@@ -1407,6 +1407,112 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        review)
+            # T-631: Print clickable URL + QR code for Human AC review in Watchtower
+            local task_id="${1:-}"
+            local poll_flag="${2:-}"
+
+            if [ -z "$task_id" ]; then
+                echo -e "${RED}Usage: fw task review T-XXX [--poll]${NC}" >&2
+                exit 1
+            fi
+
+            # Find task file
+            local task_file=""
+            for f in "$PROJECT_ROOT/.tasks/active/$task_id"*.md "$PROJECT_ROOT/.tasks/completed/$task_id"*.md; do
+                if [ -f "$f" ]; then
+                    task_file="$f"
+                    break
+                fi
+            done
+            if [ -z "$task_file" ]; then
+                echo -e "${RED}ERROR: Task $task_id not found${NC}" >&2
+                exit 1
+            fi
+
+            # Determine Watchtower URL (env > .framework.yaml > default)
+            local base_url="${WATCHTOWER_URL:-http://localhost:3000}"
+            local review_url="${base_url}/task/${task_id}#human-ac"
+
+            # Count Human ACs
+            local human_total=0
+            local human_checked=0
+            local in_human=false
+            while IFS= read -r line; do
+                if echo "$line" | grep -q '### Human'; then
+                    in_human=true; continue
+                fi
+                if $in_human && echo "$line" | grep -qE '^### |^## '; then
+                    break
+                fi
+                if $in_human && echo "$line" | grep -qE '^\- \[[ xX]\]'; then
+                    human_total=$((human_total + 1))
+                    if echo "$line" | grep -qE '^\- \[[xX]\]'; then
+                        human_checked=$((human_checked + 1))
+                    fi
+                fi
+            done < "$task_file"
+
+            echo ""
+            echo -e "══════════════════════════════════════════════════"
+            echo -e "  ${BOLD}Human AC Review: $task_id${NC}"
+            echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
+            echo -e ""
+            echo -e "  ${BOLD}${review_url}${NC}"
+            echo -e ""
+
+            # QR code (if python3 qrcode available)
+            python3 -c "
+import sys
+try:
+    import qrcode
+    qr = qrcode.QRCode(border=1, box_size=1)
+    qr.add_data('$review_url')
+    qr.make()
+    qr.print_ascii(invert=True)
+except ImportError:
+    print('  (install python3-qrcode for QR code)')
+" 2>/dev/null
+
+            echo -e ""
+            echo -e "  Click the link or scan QR to review Human ACs"
+            echo -e "══════════════════════════════════════════════════"
+            echo ""
+
+            # Optional polling mode
+            if [ "$poll_flag" = "--poll" ]; then
+                echo -e "${CYAN}Polling for Human AC completion (timeout 10min)...${NC}"
+                local timeout=600
+                local elapsed=0
+                while [ $elapsed -lt $timeout ]; do
+                    sleep 5
+                    elapsed=$((elapsed + 5))
+                    # Re-count checked Human ACs
+                    human_checked=0
+                    in_human=false
+                    while IFS= read -r line; do
+                        if echo "$line" | grep -q '### Human'; then
+                            in_human=true; continue
+                        fi
+                        if $in_human && echo "$line" | grep -qE '^### |^## '; then
+                            break
+                        fi
+                        if $in_human && echo "$line" | grep -qE '^\- \[[xX]\]'; then
+                            human_checked=$((human_checked + 1))
+                        fi
+                    done < "$task_file"
+
+                    if [ "$human_checked" -ge "$human_total" ] && [ "$human_total" -gt 0 ]; then
+                        echo -e "${GREEN}All Human ACs checked (${human_checked}/${human_total})${NC}"
+                        exit 0
+                    fi
+                    printf "\r  Waiting... ${human_checked}/${human_total} checked (${elapsed}s)"
+                done
+                echo ""
+                echo -e "${YELLOW}Timeout — ${human_checked}/${human_total} Human ACs checked${NC}"
+                exit 1
+            fi
+            ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
             echo ""
@@ -1416,6 +1522,7 @@ PYTASK_VERIFY
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"
             echo "  verify [T-XXX]    Run verification commands (T-070) or list awaiting tasks (T-193)"
+            echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
@@ -1423,6 +1530,8 @@ PYTASK_VERIFY
             echo '  fw task update T-XXX --add-tag "watchtower,ui"'
             echo '  fw task update T-XXX --status work-completed'
             echo '  fw task verify T-XXX  # Run verification commands from task'
+            echo '  fw task review T-631  # Print URL + QR for Human AC review'
+            echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'

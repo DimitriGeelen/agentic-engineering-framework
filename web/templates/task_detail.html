@@ -242,7 +242,7 @@
     {# ── Human ACs (structured cards) ──────────────────── #}
     {% if human_acs %}
     {% set human_checked = human_acs | selectattr('checked') | list | length %}
-    <div class="ac-section-label">Human <small>({{ human_checked }}/{{ human_acs|length }})</small></div>
+    <div id="human-ac" class="ac-section-label">Human <small>({{ human_checked }}/{{ human_acs|length }})</small></div>
     {% for ac in human_acs %}
     <details class="human-ac-card" {% if not ac.checked %}open{% endif %}>
         <summary>
