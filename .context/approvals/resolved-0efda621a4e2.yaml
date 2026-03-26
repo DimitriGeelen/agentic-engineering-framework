@@ -1,0 +1,10 @@
+timestamp: '2026-03-25T21:35:52Z'
+status: expired
+command_hash: 0efda621a4e29cd717e0e561315c9214fb5ab622bc15cb8473dbd430ca7185b9
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+command_preview: 'bin/fw inception decide T-614 go --rationale "5 root causes confirmed
+  across 7 consumers. Remediation bounded: fix upgrade.sh hook detection (T-615),
+  add doctor checks (T-616), audit trail (T-617), fl'
+type: tier0

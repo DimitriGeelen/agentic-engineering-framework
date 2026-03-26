@@ -4,16 +4,16 @@ name: "Human AC approval buttons in Watchtower — check/uncheck Human ACs from 
 description: >
   Add approve/reject buttons for Human ACs on the Watchtower task detail page. When a human clicks approve, it checks the AC checkbox in the task markdown file. This completes the T-608 approval surface chain: T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent pickup) → this task (Human AC buttons).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-25T21:45:49Z
-last_update: 2026-03-25T22:59:04Z
-date_finished: null
+last_update: 2026-03-26T12:30:46Z
+date_finished: 2026-03-26T12:30:46Z
 ---
 
 # T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI
@@ -27,9 +27,9 @@ Related: T-608 → T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent p
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Human AC checkboxes in task_detail.html are wrapped in a toggle-ac form (not disabled)
-- [ ] Clicking a Human AC checkbox POSTs to /api/task/<id>/toggle-ac and updates the task file
-- [ ] curl test: POST to toggle-ac endpoint returns updated checkbox HTML
+- [x] Human AC checkboxes in task_detail.html are wrapped in a toggle-ac form (not disabled)
+- [x] Clicking a Human AC checkbox POSTs to /api/task/<id>/toggle-ac and updates the task file
+- [x] curl test: POST to toggle-ac endpoint returns updated checkbox HTML
 
 ### Human
 - [ ] [RUBBER-STAMP] Human AC checkboxes are clickable in Watchtower task detail
@@ -67,3 +67,6 @@ curl -sf http://localhost:8050/tasks/T-614 | grep -q 'hx-post="/api/task/T-614/t
 
 ### 2026-03-25T21:47:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-26T12:30:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

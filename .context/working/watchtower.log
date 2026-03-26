@@ -1,4 +1,5 @@
-Watchtower running at http://0.0.0.0:3000
+FW_SECRET_KEY not set — using auto-generated key. Set FW_SECRET_KEY for production deployment.
+Watchtower running at http://0.0.0.0:8050
   Project root: /opt/999-Agentic-Engineering-Framework
   Framework:    /opt/999-Agentic-Engineering-Framework
 
@@ -6,11 +7,8 @@ Watchtower running at http://0.0.0.0:3000
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:3000
- * Running on http://192.168.10.107:3000
+ * Running on http://127.0.0.1:8050
+ * Running on http://192.168.10.107:8050
 Press CTRL+C to quit
-127.0.0.1 - - [25/Feb/2026 08:17:10] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:17:20] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:18:53] "POST /search/ask HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:19:25] "POST /search/ask HTTP/1.1" 200 -
-127.0.0.1 - - [25/Feb/2026 08:20:02] "POST /search/ask HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 23:01:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Mar/2026 13:30:47] "GET /tasks/T-614 HTTP/1.1" 200 -

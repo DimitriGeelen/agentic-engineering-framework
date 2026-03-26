@@ -1,0 +1,54 @@
+# Audit Results - 2026-03-25-0830
+timestamp: 2026-03-25T07:30:01Z
+sections: "structure,compliance,quality,discovery"
+summary:
+  pass: 14
+  warn: 6
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 10 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 162 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 152/162 cards enriched (10 without edges)"
+  - level: WARN
+    check: "Fabric drift: 5 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
+  - level: PASS
+    check: "All 75 active tasks are valid"
+  - level: WARN
+    check: "Task T-316 is 21 days old with only 1 updates"
+    mitigation: "Add progress updates to T-316-spike-layered-claudemd-framework-base--p.md"
+  - level: WARN
+    check: "Task T-432 is 15 days old with only 1 updates"
+    mitigation: "Add progress updates to T-432-re-evaluate-skip-refactoring-findings-27.md"
+  - level: WARN
+    check: "Task T-548 has no updates but status is started-work"
+    mitigation: "Add update entry to T-548-npm-install-pathway--evaluate-whether-to.md"
+  - level: WARN
+    check: "Task T-571 has no updates but status is started-work"
+    mitigation: "Add update entry to T-571-termlink-supervisor-event-loop--reliable.md"
+  - level: PASS
+    check: "D1: Episodic quality — 2% [TODO] (13/537)"
+  - level: PASS
+    check: "D2: Human review queue — 24 task(s) awaiting human action (normal)"
+  - level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - level: PASS
+    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
+  - level: WARN
+    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
+    mitigation: "Review flagged tasks — human dialogue may have been skipped"
+  - level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"

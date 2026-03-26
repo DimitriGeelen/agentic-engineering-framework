@@ -609,3 +609,49 @@ bypasses:
   command_hash: a77f666b92a3b49d4bd629ebcf7e811c0222d88dc80635734189519ef34f03c1
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-24T09:26:11Z'
+  tier: 0
+  risk: 'FW FORCE: Bypasses inception decision validation'
+  command_preview: 'fw inception decide T-601 go --rationale "Clear bug, clear fix
+    (Option D: basename + collision warning), <50 lines, urge'
+  command_hash: 46f051a7e147aa1bc441375232b8578465c432893299592e01c29ab07d242fb5
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-25T11:51:08Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: 'fw inception decide T-434 go --rationale "Option A approved. Directive
+    scores: Antifragility 8, Reliability 9, Usability'
+  command_hash: b60d8204e9e971dc34d77dfa58fe77e50ad538ccfb4427353e5b26f9eb8fae83
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-25T11:52:00Z'
+  tier: 0
+  risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or
+    verification gate (P-011)'
+  command_preview: fw task update T-434 --status work-completed --force 2>&1
+  command_hash: 85fc01a6d860d122a437fda8793cd89f0b277293c475ea951f98b5b0059c28c7
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-25T12:15:19Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: "fw inception decide T-581 no-go --rationale \"Hooks already implement\
+    \ error boundaries correctly \u2014 PreToolUse fails close"
+  command_hash: 96bafa2709fc607335a0c62734689b3d3ecaaffd04b094a704b45bad0daa1ead
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-25T13:33:41Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: 'fw inception decide T-579 defer --rationale "DEFER full dedup
+    until TermLink Phase 2 ships. Exception: fix bus.sh ID gen'
+  command_hash: d04e9e3d3f326dc9ad1507672472b26baf39adbfc152f7bad94feaec6380d833
+  authorized_by: human
+  mechanism: fw tier0 approve

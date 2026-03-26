@@ -4,16 +4,16 @@ name: "Agent approval pickup — hook/cron scanning Watchtower approval ledger"
 description: >
   Implement agent-side pickup mechanism for Watchtower approvals. Options: (A) PostToolUse hook checks .context/approvals/ periodically, (B) cron job scans every 30s and writes to inbox, (C) agent explicitly checks via fw approvals pending. Preferred: option B (cron, zero friction). Connects Tier 0 hook block to Watchtower approval response. Part of T-608 Watchtower approval surface.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: next
 tags: []
-components: []
+components: [agents/context/check-tier0.sh, bin/fw]
 related_tasks: [T-608, T-610, T-611]
 created: 2026-03-25T16:51:32Z
-last_update: 2026-03-25T16:51:32Z
-date_finished: null
+last_update: 2026-03-26T12:30:48Z
+date_finished: 2026-03-26T12:30:48Z
 ---
 
 # T-612: Agent approval pickup — hook/cron scanning Watchtower approval ledger
@@ -25,11 +25,11 @@ Closes the loop for T-608 Watchtower approval surface. After T-611 enables human
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `check-tier0.sh` checks `.context/approvals/` for approved responses matching the pending command hash
-- [ ] Approved response consumption: once read by hook, approval is marked consumed (single-use)
-- [ ] `fw approvals pending` command shows outstanding approval requests
-- [ ] `fw approvals status` shows recent approvals (approved/rejected/expired)
-- [ ] Timeout: if no response within configured TTL (default 1hr), pending request expires
+- [x] `check-tier0.sh` checks `.context/approvals/` for approved responses matching the pending command hash
+- [x] Approved response consumption: once read by hook, approval is marked consumed (single-use)
+- [x] `fw approvals pending` command shows outstanding approval requests
+- [x] `fw approvals status` shows recent approvals (approved/rejected/expired)
+- [x] Timeout: if no response within configured TTL (default 1hr), pending request expires
 
 ### Human
 - [ ] [RUBBER-STAMP] End-to-end flow works: agent blocked → approve in Watchtower → agent retries and succeeds
@@ -62,3 +62,9 @@ bin/fw approvals --help 2>&1 | grep -q "approvals"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-612-agent-approval-pickup--hookcron-scanning.md
 - **Context:** Initial task creation
+
+### 2026-03-26T12:30:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-03-26T12:30:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

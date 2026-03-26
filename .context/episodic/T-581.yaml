@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-581: Inception: Hook error boundaries — critical vs advisory hook failure modes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-25T12:15:21Z
+# ============================================================================
+
+task_id: T-581
+task_name: "Inception: Hook error boundaries — critical vs advisory hook failure modes"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T21:11:29Z
+completed: 2026-03-25T12:15:19Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-03-25T12:56:56+01:00
+last_commit: 2026-03-25T12:56:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception exploration — hook error boundaries, recommend NO-GO
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested — hooks already have adequate defensive patterns"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Inception exploration — hook error boundaries, recommend NO-GO"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-581-hook-error-boundaries.md"
+  - ".tasks/active/T-581-inception-hook-error-boundaries--critica.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-25T12:56:56"
+    action: "T-581: Inception exploration — hook error boundaries, recommend NO-GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2343 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2343
+  commits: 1
+  files_changed: 2
+  lines_added: 97
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-581-inception-hook-error-boundaries--critica.md
+generated_by: context-agent-hybrid
