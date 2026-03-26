@@ -2,6 +2,7 @@
 and a general-purpose file viewer for project markdown files (T-632)."""
 
 import os
+import re as re_mod
 from pathlib import Path
 
 import markdown2
@@ -12,6 +13,27 @@ from web.shared import FRAMEWORK_ROOT, render_page
 
 # Safe directories for file viewer (relative to FRAMEWORK_ROOT)
 _VIEWABLE_DIRS = ("docs/", ".tasks/", ".context/handovers/", ".context/episodic/")
+
+# Regex for file references that should become clickable links (T-633)
+_FILE_REF_RE = re_mod.compile(
+    r'(?<!href=")'           # Not already inside an href
+    r'(?<!/file/)'           # Not already a /file/ link
+    r'(`?)'                  # Optional opening backtick
+    r'((?:docs/reports/|\.tasks/(?:active|completed)/|\.context/(?:handovers|episodic)/)'
+    r'[A-Za-z0-9_/.-]+\.(?:md|yaml))'  # File path
+    r'(`?)'                  # Optional closing backtick
+)
+
+
+def _auto_link_files(html):
+    """Convert file path references in rendered HTML to clickable /file/ links (T-633)."""
+    def _replace(m):
+        tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
+        # Verify file exists before linking
+        if (FRAMEWORK_ROOT / path).exists():
+            return f'<a href="/file/{path}">{tick1}{path}{tick2}</a>'
+        return m.group(0)
+    return _FILE_REF_RE.sub(_replace, html)
 
 bp = Blueprint("docs", __name__)
 
@@ -134,6 +156,7 @@ def file_viewer(filepath):
     html_content = markdown2.markdown(
         content_md, extras=["tables", "fenced-code-blocks", "code-friendly"]
     )
+    html_content = _auto_link_files(html_content)
 
     # Title from first heading or filename
     first_line = ""

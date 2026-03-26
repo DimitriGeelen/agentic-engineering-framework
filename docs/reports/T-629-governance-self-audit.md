@@ -138,15 +138,15 @@ CLAUDE.md contains two types of rules mixed together without distinction:
 ## Evidence Files
 
 Full agent reports (3109 lines total):
-- `/tmp/fw-agent-t629-01-deadlocks.md` — Deadlock pattern matrix
-- `/tmp/fw-agent-t629-02-cascades.md` — Hook failure cascade diagram
-- `/tmp/fw-agent-t629-03-healing.md` — Self-healing gap analysis
-- `/tmp/fw-agent-t629-04-circular.md` — 6 circular dependencies documented
-- `/tmp/fw-agent-t629-05-taskgate.md` — Task gate: 12 checks, friction points
-- `/tmp/fw-agent-t629-06-inception.md` — Inception gate: 24+ bypasses
-- `/tmp/fw-agent-t629-07-cmdlen.md` — 41 commands >80 chars
-- `/tmp/fw-agent-t629-08-session.md` — 22K tokens before real work
-- `/tmp/fw-agent-t629-09-consumers.md` — Consumer health scores
-- `/tmp/fw-agent-t629-10-errors.md` — 87 error messages rated
-- `/tmp/fw-agent-t629-11-time.md` — Session time analysis
-- `/tmp/fw-agent-t629-12-meta.md` — Governance-to-value ratio: 9:1
+- `docs/reports/fw-agent-t629-01-deadlocks.md` — Deadlock pattern matrix
+- `docs/reports/fw-agent-t629-02-cascades.md` — Hook failure cascade diagram
+- `docs/reports/fw-agent-t629-03-healing.md` — Self-healing gap analysis
+- `docs/reports/fw-agent-t629-04-circular.md` — 6 circular dependencies documented
+- `docs/reports/fw-agent-t629-05-taskgate.md` — Task gate: 12 checks, friction points
+- `docs/reports/fw-agent-t629-06-inception.md` — Inception gate: 24+ bypasses
+- `docs/reports/fw-agent-t629-07-cmdlen.md` — 41 commands >80 chars
+- `docs/reports/fw-agent-t629-08-session.md` — 22K tokens before real work
+- `docs/reports/fw-agent-t629-09-consumers.md` — Consumer health scores
+- `docs/reports/fw-agent-t629-10-errors.md` — 87 error messages rated
+- `docs/reports/fw-agent-t629-11-time.md` — Session time analysis
+- `docs/reports/fw-agent-t629-12-meta.md` — Governance-to-value ratio: 9:1
