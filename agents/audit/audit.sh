@@ -1842,16 +1842,28 @@ shopt -s nullglob
 for task_file in "$TASKS_DIR/completed"/*.md; do
     [ -f "$task_file" ] || continue
     # Check for unchecked ACs in Acceptance Criteria section
+    # Skip ### Human subsection — those are human-owned and intentionally unchecked (T-193)
     in_ac=false
+    in_human=false
     while IFS= read -r line; do
         if echo "$line" | grep -q "^## Acceptance Criteria"; then
             in_ac=true
+            in_human=false
             continue
         fi
         if echo "$line" | grep -q "^## " && [ "$in_ac" = true ]; then
             break
         fi
-        if [ "$in_ac" = true ] && echo "$line" | grep -q '^\- \[ \]'; then
+        # Track Human/Agent subsections within AC
+        if [ "$in_ac" = true ] && echo "$line" | grep -q "^### Human"; then
+            in_human=true
+            continue
+        fi
+        if [ "$in_ac" = true ] && echo "$line" | grep -q "^### "; then
+            in_human=false
+            continue
+        fi
+        if [ "$in_ac" = true ] && [ "$in_human" = false ] && echo "$line" | grep -q '^\- \[ \]'; then
             task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
             warn "CTL-012: Completed task $task_id has unchecked AC" \
                  "$(echo "$line" | head -c 80)" \
