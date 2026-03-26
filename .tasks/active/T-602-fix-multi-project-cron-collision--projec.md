@@ -32,7 +32,7 @@ G-022 / T-601 GO. See `docs/reports/T-601-multi-project-cron-collision.md`.
 - [x] Two projects can have concurrent cron files in /etc/cron.d/ (verified: both coexist)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw audit schedule install` on 150-skills-manager and verify both cron files coexist
+- [x] [RUBBER-STAMP] Run `fw audit schedule install` on 150-skills-manager and verify both cron files coexist
   **Steps:**
   1. On this machine: `ls /etc/cron.d/agentic-audit-*`
   2. Run `cd /opt/150-skills-manager && fw audit schedule install`

@@ -15,7 +15,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T14:05:56Z
-last_update: 2026-03-25T14:30:17Z
+last_update: 2026-03-26T15:47:28Z
 date_finished: 2026-03-25T14:21:39Z
 ---
 
@@ -43,7 +43,7 @@ date_finished: 2026-03-25T14:21:39Z
 - [x] Vendored copy synced to `.agentic-framework/lib/version.sh`
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw version bump patch --dry-run` and verify output shows all files
+- [x] [RUBBER-STAMP] Run `fw version bump patch --dry-run` and verify output shows all files
   **Steps:**
   1. Run `fw version bump patch --dry-run`
   2. Verify it lists bin/fw, VERSION, .agentic-framework/VERSION, .agentic-framework/bin/fw

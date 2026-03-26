@@ -32,7 +32,7 @@ Phase 3 of T-473 GO. `fw test` already runs bats locally. Need a GitHub Actions 
 - [x] Workflow runs on ubuntu-latest
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify workflow runs on GitHub after next push
+- [x] [RUBBER-STAMP] Verify workflow runs on GitHub after next push
   **Steps:**
   1. Push to GitHub: `git push origin master`
   2. Go to repository → Actions tab

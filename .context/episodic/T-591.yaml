@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-26T15:47:29Z
+# ============================================================================
+
+task_id: T-591
+task_name: "Commit cadence warning — PostToolUse hook counting edits since last commit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-23T21:50:55Z
+completed: 2026-03-24T21:25:05Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-24T22:24:59+01:00
+last_commit: 2026-03-24T22:24:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add commit cadence warning — PostToolUse hook counting edits since last commit
+
+# Key outcomes
+outcomes:
+  - "`commit-cadence.sh` PostToolUse hook exists in `agents/context/`"
+  - "Hook increments `.context/working/.edit-counter` on Write/Edit tool calls"
+  - "Hook skips exempt paths (`.context/`, `.tasks/`, `.claude/`)"
+  - "Hook warns at 10 edits, strong warns at 20"
+  - "Post-commit git hook resets `.edit-counter` to 0"
+  - "Hook registered in settings.json PostToolUse on `Write|Edit` matcher"
+  - "[RUBBER-STAMP] Restart Claude Code session and make 10+ edits without committing — verify warning appears"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/commit-cadence.sh"
+  - ".agentic-framework/agents/git/lib/hooks.sh"
+  - ".agentic-framework/bin/fw"
+  - "agents/context/commit-cadence.sh"
+  - "agents/git/lib/hooks.sh"
+  - "bin/fw"
+  - ".claude/settings.json"
+  - ".tasks/active/T-591-commit-cadence-warning--posttooluse-hook.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T22:24:59"
+    action: "T-591: Add commit cadence warning — PostToolUse hook counting edits since last commit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1414 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1414
+  commits: 1
+  files_changed: 8
+  lines_added: 642
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-591-commit-cadence-warning--posttooluse-hook.md
+generated_by: context-agent-hybrid

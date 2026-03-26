@@ -12,7 +12,7 @@ tags: []
 components: [agents/context/check-active-task.sh, agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-23T17:00:05Z
-last_update: 2026-03-24T10:52:42Z
+last_update: 2026-03-26T15:47:29Z
 date_finished: 2026-03-24T10:52:42Z
 ---
 
@@ -31,7 +31,7 @@ User reports Write/Edit operations succeeding without task gate blocking. Worked
 - [x] `fw doctor` hook validation passes on Linux
 
 ### Human
-- [ ] [RUBBER-STAMP] Restart Claude Code session and try to Write without a task — verify it blocks
+- [x] [RUBBER-STAMP] Restart Claude Code session and try to Write without a task — verify it blocks
   **Steps:**
   1. `fw context focus --clear` (or start fresh session without focus)
   2. Try to edit any source file

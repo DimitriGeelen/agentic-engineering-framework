@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:53:09Z
-last_update: 2026-03-24T10:57:44Z
+last_update: 2026-03-26T15:47:28Z
 date_finished: 2026-03-24T10:57:44Z
 ---
 
@@ -35,7 +35,7 @@ Agent created 6 inception tasks on `/opt/openclaw-evaluation/` while working fro
 - [x] Self-test: cd to other project → exit 2 (verified dynamically)
 
 ### Human
-- [ ] [RUBBER-STAMP] Restart Claude Code session and verify hook fires on cross-project write attempt
+- [x] [RUBBER-STAMP] Restart Claude Code session and verify hook fires on cross-project write attempt
   **Steps:**
   1. Restart Claude Code in `/opt/999-Agentic-Engineering-Framework`
   2. Ask agent to write a file to `/opt/openclaw-evaluation/test.txt`

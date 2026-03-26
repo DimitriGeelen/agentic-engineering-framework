@@ -12,7 +12,7 @@ tags: [governance, enforcement, D2]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-17T11:33:54Z
-last_update: 2026-03-17T11:38:24Z
+last_update: 2026-03-26T15:47:28Z
 date_finished: 2026-03-17T11:38:24Z
 ---
 
@@ -32,7 +32,7 @@ From T-477 inception (governance declaration layer). PostToolUse advisory is ins
 - [x] fw hook help text includes new hook name
 
 ### Human
-- [ ] [RUBBER-STAMP] Add PreToolUse Task hook to `.claude/settings.json`
+- [x] [RUBBER-STAMP] Add PreToolUse Task hook to `.claude/settings.json`
   **Steps:**
   1. Open `.claude/settings.json`
   2. Add this entry to the `PreToolUse` array (after the budget-gate entry):

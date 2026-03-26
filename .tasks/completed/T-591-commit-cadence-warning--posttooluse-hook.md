@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:50:55Z
-last_update: 2026-03-24T21:25:05Z
+last_update: 2026-03-26T15:47:29Z
 date_finished: 2026-03-24T21:25:05Z
 ---
 
@@ -33,7 +33,7 @@ Agents make many edits without committing, risking work loss on context exhausti
 - [x] Hook registered in settings.json PostToolUse on `Write|Edit` matcher
 
 ### Human
-- [ ] [RUBBER-STAMP] Restart Claude Code session and make 10+ edits without committing — verify warning appears
+- [x] [RUBBER-STAMP] Restart Claude Code session and make 10+ edits without committing — verify warning appears
   **Steps:**
   1. Restart session to pick up new hook
   2. Make 10+ Write/Edit calls without a git commit

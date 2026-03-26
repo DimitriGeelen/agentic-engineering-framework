@@ -12,7 +12,7 @@ tags: [testing, ci, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T21:10:45Z
-last_update: 2026-03-17T22:03:37Z
+last_update: 2026-03-26T15:47:29Z
 date_finished: 2026-03-17T22:03:37Z
 ---
 
@@ -31,7 +31,7 @@ Add E2E Tier A tests to the existing GitHub Actions CI. Tier B is manual-only (A
 - [x] YAML validates cleanly
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify workflow runs on GitHub after next push
+- [x] [RUBBER-STAMP] Verify workflow runs on GitHub after next push
   **Steps:**
   1. Push to GitHub
   2. Check Actions tab for "Test" workflow

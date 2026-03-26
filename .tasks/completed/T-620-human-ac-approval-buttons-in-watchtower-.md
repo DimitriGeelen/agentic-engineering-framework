@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-25T21:45:49Z
-last_update: 2026-03-26T12:30:46Z
+last_update: 2026-03-26T15:47:28Z
 date_finished: 2026-03-26T12:30:46Z
 ---
 
@@ -32,7 +32,7 @@ Related: T-608 → T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent p
 - [x] curl test: POST to toggle-ac endpoint returns updated checkbox HTML
 
 ### Human
-- [ ] [RUBBER-STAMP] Human AC checkboxes are clickable in Watchtower task detail
+- [x] [RUBBER-STAMP] Human AC checkboxes are clickable in Watchtower task detail
   **Steps:**
   1. Open http://192.168.10.107:8050/tasks/T-614
   2. Scroll to Human ACs section
