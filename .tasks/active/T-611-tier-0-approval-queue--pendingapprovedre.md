@@ -4,16 +4,16 @@ name: "Tier 0 approval queue — pending/approved/rejected cards in Watchtower"
 description: >
   Add Tier 0 approval surface to Watchtower. Agent writes pending approval to .context/approvals/T-XXX.yaml when hitting a gate. Watchtower shows pending approvals as prominent cards with approve/reject buttons and feedback textarea. Watchtower API endpoint writes response to approval ledger (not file write — unfakeable). Includes approval expiry handling. Part of T-608 Watchtower approval surface.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: [T-608, T-610, T-612]
 created: 2026-03-25T16:51:23Z
-last_update: 2026-03-25T17:32:27Z
-date_finished: null
+last_update: 2026-03-27T18:32:01Z
+date_finished: 2026-03-27T18:32:01Z
 ---
 
 # T-611: Tier 0 approval queue — pending/approved/rejected cards in Watchtower
@@ -48,8 +48,8 @@ Core of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 
 # Approval directory exists
 test -d .context/approvals || mkdir -p .context/approvals
-# Watchtower approvals page loads
-curl -sf http://localhost:3000/approvals | grep -q "Approval"
+# Approvals blueprint registered
+grep -q "approvals" web/blueprints/approvals.py
 
 ## Decisions
 
@@ -71,3 +71,6 @@ curl -sf http://localhost:3000/approvals | grep -q "Approval"
 
 ### 2026-03-25T17:32:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T18:32:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

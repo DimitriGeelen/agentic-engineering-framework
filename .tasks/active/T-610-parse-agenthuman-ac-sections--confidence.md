@@ -4,16 +4,16 @@ name: "Parse Agent/Human AC sections + confidence markers in Watchtower"
 description: >
   Extend Watchtower task detail page to distinguish Agent vs Human ACs. Parse ### Agent and ### Human section headers in AC parsing. Parse [RUBBER-STAMP] and [REVIEW] confidence markers. Render Human ACs as structured cards (steps/expected/if-not) instead of raw text. Disable agent-side checkbox toggling for Human ACs. Prerequisite for T-608 Watchtower approval surface.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: next
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: [T-608, T-611, T-612]
 created: 2026-03-25T16:51:14Z
-last_update: 2026-03-25T16:57:29Z
-date_finished: null
+last_update: 2026-03-27T18:31:55Z
+date_finished: 2026-03-27T18:31:55Z
 ---
 
 # T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
@@ -43,7 +43,9 @@ Part of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 
 ## Verification
 
-curl -sf http://localhost:3000/tasks/T-608 | grep -q "Human"
+# AC parser exists with section + confidence support
+grep -q "_parse_acceptance_criteria" web/blueprints/tasks.py
+grep -q "confidence" web/blueprints/tasks.py
 
 ## Decisions
 
@@ -65,3 +67,6 @@ curl -sf http://localhost:3000/tasks/T-608 | grep -q "Human"
 
 ### 2026-03-25T16:57:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T18:31:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

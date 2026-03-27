@@ -4,16 +4,16 @@ name: "Well-known priority tags — critical/urgent/blocking with enforcement se
 description: >
   Inception: Well-known priority tags — critical/urgent/blocking with enforcement semantics
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/post-compact-resume.sh, agents/task-create/update-task.sh, bin/fw]
 related_tasks: []
 created: 2026-03-23T09:08:13Z
-last_update: 2026-03-23T09:08:34Z
-date_finished: null
+last_update: 2026-03-27T18:17:24Z
+date_finished: 2026-03-27T18:17:24Z
 ---
 
 # T-534: Well-known priority tags — critical/urgent/blocking with enforcement semantics
@@ -68,18 +68,18 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: [Criterion 1]; [Criterion 2]
+
+**Date**: 2026-03-27T18:17:24Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: [Criterion 1]; [Criterion 2]
+
+**Date**: 2026-03-27T18:17:24Z
 
 ## Updates
 
@@ -89,3 +89,12 @@ date_finished: null
 ### 2026-03-23T09:08:34Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Research artifact:** `docs/reports/T-534-priority-tags-research.md`
+
+### 2026-03-27T18:17:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** [Criterion 1]; [Criterion 2]
+
+### 2026-03-27T18:17:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

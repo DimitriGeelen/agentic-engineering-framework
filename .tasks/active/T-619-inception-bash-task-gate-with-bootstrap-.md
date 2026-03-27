@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [governance, enforcement, inception]
 components: []
 related_tasks: []
 created: 2026-03-25T20:17:29Z
-last_update: 2026-03-25T20:17:29Z
+last_update: 2026-03-27T17:48:41Z
 date_finished: null
 ---
 
@@ -95,3 +95,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T17:48:41Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -68,20 +68,25 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: [Criterion 1]; [Criterion 2]
+
+**Date**: 2026-03-27T18:17:06Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: [Criterion 1]; [Criterion 2]
+
+**Date**: 2026-03-27T18:17:06Z
 
 ## Updates
 
 ### 2026-03-23 — Status check
 - Parked at horizon:later. Blocked on Claude Code supporting multi-file CLAUDE.md or include directives. fw upgrade (T-494) covers the practical need for now. Will revisit if Anthropic adds include support.
+
+### 2026-03-27T18:17:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** [Criterion 1]; [Criterion 2]

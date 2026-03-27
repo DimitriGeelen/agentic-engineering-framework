@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T18:31:56Z
+# ============================================================================
+
+task_id: T-610
+task_name: "Parse Agent/Human AC sections + confidence markers in Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-25T16:51:14Z
+completed: 2026-03-27T18:31:55Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-03-25T17:52:45+01:00
+last_commit: 2026-03-25T18:06:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-608: Create 3 build tasks for Watchtower approval surface. Parse Agent/Human AC sections + confidence markers in Watchtower
+
+# Key outcomes
+outcomes:
+  - "`_parse_acceptance_criteria()` in `web/blueprints/tasks.py` returns section type (agent/human/none) per AC item"
+  - "`[RUBBER-STAMP]` and `[REVIEW]` confidence markers parsed and available in template context"
+  - "Human ACs rendered as structured cards with steps/expected/if-not sections"
+  - "Human AC checkboxes visually distinct from Agent ACs (disabled or styled differently)"
+  - "Task detail page groups ACs under Agent/Human headers when sections exist"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-610-parse-agenthuman-ac-sections--confidence.md"
+  - ".tasks/active/T-611-tier-0-approval-queue--pendingapprovedre.md"
+  - ".tasks/active/T-612-agent-approval-pickup--hookcron-scanning.md"
+  - "web/blueprints/tasks.py"
+  - "web/templates/task_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-25T17:52:45"
+    action: "T-608: Create 3 build tasks for Watchtower approval surface"
+  - time: "2026-03-25T18:06:18"
+    action: "T-610: Parse Agent/Human AC sections + confidence markers in Watchtower"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2980 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2980
+  commits: 2
+  files_changed: 5
+  lines_added: 509
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-610-parse-agenthuman-ac-sections--confidence.md
+generated_by: context-agent-hybrid

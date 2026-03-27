@@ -4,16 +4,16 @@ name: "Inception: Idempotency/dedup layer — prevent hook re-entry and double t
 description: >
   OpenClaw has 4 dedup layers (inbound, persistent, global cache, agent-wait) using composite keys and TTL-based eviction. Our framework has zero dedup — if a task completion triggers twice (hook re-entry, retry), update-task.sh processes it again. Investigate: idempotency guard for update-task.sh (hash task_id+status+timestamp), hook re-entry prevention for PreToolUse/PostToolUse, and whether cron audit can double-fire. Research source: docs/reports/T-549-openclaw-architecture-mapping.md (Section 4: Key Patterns, deduplication), .context/working/round2-T-016.md on OpenClaw eval project (full gap analysis). OpenClaw source: src/gateway/server.impl.ts (idempotencyKeys map), src/delivery/delivery-queue.ts (persistent dedup with file locks). Related: T-562 (safety guardrails comparative task).
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:09:51Z
-last_update: 2026-03-25T12:15:54Z
-date_finished: null
+last_update: 2026-03-27T18:31:47Z
+date_finished: 2026-03-27T18:31:47Z
 ---
 
 # T-579: Inception: Idempotency/dedup layer — prevent hook re-entry and double task completion
@@ -115,3 +115,6 @@ The framework IS moving toward multi-agent:
 - **Action:** Recorded inception decision
 - **Decision:** DEFER
 - **Rationale:** DEFER full dedup until TermLink Phase 2 ships. Exception: fix bus.sh ID generation now — only component designed for multi-agent with race condition in core operation. Steelman found 16 surfaces but strawman showed zero incidents in 530 tasks. Reactive fix for the rest is 2 hours when real failure shape is known.
+
+### 2026-03-27T18:31:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
