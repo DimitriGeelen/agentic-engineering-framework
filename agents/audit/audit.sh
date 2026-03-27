@@ -1973,7 +1973,7 @@ done
 shopt -u nullglob
 
 # CTL-026 OE: Human Sovereignty Gate — update-task.sh has both gate checks
-if grep -q 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
+if grep -qi 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
     if grep -q 'human ownership is protected' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
         pass "CTL-026: Human sovereignty gate present (completion + owner protection)"
     else
