@@ -4,16 +4,16 @@ name: "MCP auto-config — seed .mcp.json during fw init and reconcile during fw
 description: >
   MCP auto-config — seed .mcp.json during fw init and reconcile during fw upgrade
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T13:33:54Z
-last_update: 2026-03-27T13:33:54Z
-date_finished: null
+last_update: 2026-03-27T13:49:20Z
+date_finished: 2026-03-27T13:49:20Z
 ---
 
 # T-646: MCP auto-config — seed .mcp.json during fw init and reconcile during fw upgrade
@@ -67,3 +67,6 @@ bash -n lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md
 - **Context:** Initial task creation
+
+### 2026-03-27T13:49:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

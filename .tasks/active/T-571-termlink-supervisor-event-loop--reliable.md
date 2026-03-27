@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:56:23Z
-last_update: 2026-03-23T20:56:23Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -85,3 +85,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -4,7 +4,7 @@ name: "Fix broken /file/ route in Watchtower docs.py"
 description: >
   Fix broken /file/ route in Watchtower docs.py
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T13:50:33Z
-last_update: 2026-03-27T14:01:58Z
-date_finished: null
+last_update: 2026-03-27T14:03:33Z
+date_finished: 2026-03-27T14:03:33Z
 ---
 
 # T-647: Fix broken /file/ route in Watchtower docs.py
@@ -52,3 +52,6 @@ grep -q 'PROJECT_ROOT / path' web/blueprints/docs.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-647-fix-broken-file-route-in-watchtower-docs.md
 - **Context:** Initial task creation
+
+### 2026-03-27T14:03:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

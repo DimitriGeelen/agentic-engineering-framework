@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [portability, macos, bash, D4]
 components: [C-004, agents/healing/lib/diagnose.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-03-17T22:09:02Z
-last_update: 2026-03-17T22:11:22Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-17T22:11:22Z
 ---
 
@@ -67,3 +67,6 @@ test -z "$(grep -n '^[^#]*declare -A' agents/task-create/update-task.sh agents/a
 
 ### 2026-03-17T22:11:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

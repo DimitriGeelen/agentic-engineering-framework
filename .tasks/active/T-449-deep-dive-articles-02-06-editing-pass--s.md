@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: refactor
 owner: human
-horizon: now
+horizon: next
 tags: [content, deep-dives]
 components: [docs/articles/deep-dives/02-tier0-protection.md, docs/articles/deep-dives/03-context-budget.md, docs/articles/deep-dives/05-healing-loop.md, docs/articles/deep-dives/06-authority-model.md]
 related_tasks: [T-450, T-338, T-446]
 created: 2026-03-12T06:37:40Z
-last_update: 2026-03-12T06:37:40Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: null
 ---
 
@@ -89,3 +89,6 @@ test -s docs/articles/deep-dives/06-authority-model.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-449-deep-dive-articles-02-06-editing-pass--s.md
 - **Context:** Initial task creation
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

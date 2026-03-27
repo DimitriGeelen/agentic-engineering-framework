@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-16T05:38:21Z
-last_update: 2026-03-17T11:16:06Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-17T11:16:06Z
 ---
 
@@ -66,3 +66,6 @@ test -f docs/articles/deep-dives/18-blast-radius.md
 
 ### 2026-03-17T11:16:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

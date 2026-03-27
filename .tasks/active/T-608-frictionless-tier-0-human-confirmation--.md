@@ -11,12 +11,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T15:26:08Z
-last_update: 2026-03-25T15:30:08Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -147,3 +147,6 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 - **Decision:** GO
 - **Rationale:** Watchtower approval surface — unfakeable, <1s friction, mobile, solves Human
   AC backlog
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

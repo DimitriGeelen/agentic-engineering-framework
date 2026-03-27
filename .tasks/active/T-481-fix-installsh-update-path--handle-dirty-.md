@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [portability, bugfix, installer]
 components: []
 related_tasks: []
 created: 2026-03-14T14:48:51Z
-last_update: 2026-03-14T14:52:53Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-14T14:52:53Z
 ---
 
@@ -67,3 +67,6 @@ grep -q 'reset --hard' install.sh
 
 ### 2026-03-14T14:52:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

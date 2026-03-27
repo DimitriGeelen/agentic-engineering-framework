@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [governance, hooks, deadlock]
 components: [lib/upgrade.sh, bin/fw, .claude/settings.json]
 related_tasks: [T-622, T-614, T-481]
 created: 2026-03-26T13:41:33Z
-last_update: 2026-03-26T13:41:33Z
+last_update: 2026-03-27T17:34:08Z
 date_finished: null
 ---
 
@@ -127,3 +127,6 @@ A6: Consumer projects on other machines (Mac .107) have the same vulnerability
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T17:34:08Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

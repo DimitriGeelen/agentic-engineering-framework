@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [urgent, security]
 components: []
 related_tasks: [T-559, T-602, T-601]
 created: 2026-03-24T09:44:00Z
-last_update: 2026-03-24T09:51:01Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -166,3 +166,6 @@ T-602 fixed the multi-project collision symptom, but the boundary exception itse
 
 ### 2026-03-24T09:51:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

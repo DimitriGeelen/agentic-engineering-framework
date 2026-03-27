@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [governance, architecture, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T11:34:11Z
-last_update: 2026-03-17T11:39:44Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-17T11:39:44Z
 ---
 
@@ -73,3 +73,6 @@ python3 -c "import yaml; d=yaml.safe_load(open('.context/project/governance.yaml
 
 ### 2026-03-17T11:39:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

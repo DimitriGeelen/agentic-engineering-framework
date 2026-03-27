@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z
-last_update: 2026-03-23T09:52:05Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-23T09:52:05Z
 ---
 
@@ -79,3 +79,6 @@ grep -q 'Remote Session Access' CLAUDE.md
 
 ### 2026-03-23T09:52:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

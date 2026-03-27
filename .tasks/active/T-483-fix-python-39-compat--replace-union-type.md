@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [portability, bugfix]
 components: [web/embeddings.py, web/search.py, web/search_utils.py, web/shared.py, web/subprocess_utils.py]
 related_tasks: []
 created: 2026-03-14T15:01:09Z
-last_update: 2026-03-14T15:06:54Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: 2026-03-14T15:06:54Z
 ---
 
@@ -71,3 +71,6 @@ grep -rn "from __future__ import annotations" web/shared.py web/ask.py web/searc
 
 ### 2026-03-14T15:06:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

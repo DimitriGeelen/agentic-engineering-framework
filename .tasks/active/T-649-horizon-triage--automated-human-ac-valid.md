@@ -1,22 +1,22 @@
 ---
-id: T-628
-name: "Fix long command line breaks — framework outputs and Human AC steps must be terminal-safe"
+id: T-649
+name: "Horizon triage + automated Human AC validation across work-completed tasks"
 description: >
-  Recurring issue: framework commands (tier0 approve, inception decide, Human AC steps) produce long lines that break when pasted into terminals. Happened 3+ times with cp+chmod chains. Need structural fix: framework-generated commands must be <80 chars or split into separate lines.
+  Horizon triage + automated Human AC validation across work-completed tasks
 
 status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-26T21:33:55Z
-last_update: 2026-03-27T17:34:22Z
+created: 2026-03-27T17:32:54Z
+last_update: 2026-03-27T17:32:54Z
 date_finished: null
 ---
 
-# T-628: Fix long command line breaks — framework outputs and Human AC steps must be terminal-safe
+# T-649: Horizon triage + automated Human AC validation across work-completed tasks
 
 ## Context
 
@@ -26,8 +26,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Stale/blocked tasks triaged to correct horizons (horizon changes did not persist — fw task update --horizon may be broken)
+- [x] Work-completed tasks validated with programmatic + playwright checks
+- [x] Validation results reported per task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,10 +69,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-26T21:33:55Z — task-created [task-create-agent]
+### 2026-03-27T17:32:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-628-fix-long-command-line-breaks--framework-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-649-horizon-triage--automated-human-ac-valid.md
 - **Context:** Initial task creation
-
-### 2026-03-27T17:34:22Z — status-update [task-update-agent]
-- **Change:** horizon: now → next

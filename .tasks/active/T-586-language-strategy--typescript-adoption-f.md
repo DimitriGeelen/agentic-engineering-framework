@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [architecture, language, constitutional]
 components: []
 related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T-593, T-594, T-595]
 created: 2026-03-23T21:32:53Z
-last_update: 2026-03-23T21:32:53Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -351,3 +351,6 @@ Key exchanges that shaped this inception. Captures WHY and HOW reasoning evolved
 - `/opt/openclaw-evaluation/src/agents/tool-loop-detection.ts` — 624 LOC, 4 detectors (source for prototype)
 - `/opt/openclaw-evaluation/.context/working/round2-T-022.md` — Keyed async queue (50 LOC TS pattern)
 - `docs/reports/T-549-openclaw-component-quality.md` — 523K LOC strict TS evidence
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

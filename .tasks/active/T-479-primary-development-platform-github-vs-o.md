@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [infrastructure, launch, portability]
 components: []
 related_tasks: [T-334, T-442, T-443, T-476]
 created: 2026-03-14T12:51:19Z
-last_update: 2026-03-14T12:51:19Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -150,3 +150,6 @@ test -f docs/reports/T-479-platform-decision.md
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T08:43:03Z
-last_update: 2026-03-23T08:43:03Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -112,3 +112,6 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
 - **Decision:** GO
 - **Rationale:** Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.
 - **Research artifact:** `docs/reports/T-533-dispatch-rerouting-research.md`
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

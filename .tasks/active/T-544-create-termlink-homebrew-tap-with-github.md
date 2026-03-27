@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-21T16:02:14Z
-last_update: 2026-03-21T16:03:53Z
+last_update: 2026-03-27T17:34:07Z
 date_finished:
 ---
 
@@ -146,3 +146,6 @@ Setting up TermLink distribution via Homebrew with GitHub Actions automated buil
 - **Remotes configured:**
   - origin: OneDev (onedev.docker.ring20.geelenandcompany.com)
   - github: git@github.com:DimitriGeelen/termlink.git
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

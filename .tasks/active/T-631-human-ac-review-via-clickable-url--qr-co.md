@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-26T22:20:03Z
-last_update: 2026-03-26T22:20:03Z
+last_update: 2026-03-27T17:34:22Z
 date_finished: null
 ---
 
@@ -72,3 +72,6 @@ python3 -c "import qrcode; print('ok')"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-631-human-ac-review-via-clickable-url--qr-co.md
 - **Context:** Initial task creation
+
+### 2026-03-27T17:34:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [urgent]
 components: []
 related_tasks: []
 created: 2026-03-24T09:51:08Z
-last_update: 2026-03-24T09:52:42Z
+last_update: 2026-03-27T17:34:07Z
 date_finished: null
 ---
 
@@ -69,3 +69,6 @@ diff -q .context/cron/agentic-audit.crontab /etc/cron.d/agentic-audit-999-agenti
 
 ### 2026-03-24T09:52:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T17:34:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
