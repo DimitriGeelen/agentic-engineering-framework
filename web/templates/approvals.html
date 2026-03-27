@@ -1,4 +1,5 @@
 <style>
+/* Approval card base */
 .approval-card {
     border: 2px solid var(--pico-muted-border-color);
     border-radius: var(--pico-border-radius);
@@ -90,15 +91,140 @@
     color: var(--pico-muted-color);
     font-size: 0.9rem;
 }
+
+/* Summary counts bar (T-639) */
+.approvals-summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.approval-stat {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    text-align: center;
+    min-width: 80px;
+    flex: 1;
+}
+.approval-stat .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+.approval-stat .stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+}
+.approval-stat.total {
+    border-color: var(--pico-primary);
+}
+.approval-stat.tier0-active .stat-value { color: #f59e0b; }
+.approval-stat.go-active .stat-value { color: #1565c0; }
+.approval-stat.ac-active .stat-value { color: #7c3aed; }
+
+/* GO decision card */
+.approval-card.go-decision {
+    border-color: #1565c0;
+    background: #1565c008;
+}
+.decision-inline {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.decision-inline label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0;
+}
+.dec-go { color: #10b981; font-weight: 700; }
+.dec-nogo { color: #ef4444; font-weight: 700; }
+.dec-defer { color: #6b7280; font-weight: 700; }
+
+/* Human AC group card */
+.approval-card.human-ac-group {
+    border-color: #7c3aed44;
+    background: #7c3aed04;
+}
+.ac-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+}
+.ac-list li {
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+}
+.ac-list li form { display: inline; margin: 0; padding: 0; }
+.ac-list li input[type=checkbox] { margin: 0.15rem 0 0; }
+.ac-checked { text-decoration: line-through; opacity: 0.5; }
+.confidence-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
+    white-space: nowrap;
+}
+.badge-review { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
+.badge-rubber-stamp { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+.badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
+.badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+
+/* Section headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0.5rem;
+}
+.section-header h3 { margin: 0; }
+.section-header small { color: var(--pico-muted-color); font-weight: 400; }
 </style>
 
 <div class="page-header">
-    <h1>Approvals {% if active_count %}<small>({{ active_count }} pending)</small>{% endif %}</h1>
+    <h1>Approvals {% if total_count %}<small>({{ total_count }} pending)</small>{% endif %}</h1>
 </div>
 
-{% if pending %}
-<h3>Pending</h3>
-{% for item in pending %}
+<!-- Summary counts bar -->
+<div class="approvals-summary">
+    <div class="approval-stat {{ 'tier0-active' if tier0_count else '' }}">
+        <span class="stat-value">{{ tier0_count }}</span>
+        <span class="stat-label">Tier 0</span>
+    </div>
+    <div class="approval-stat {{ 'go-active' if go_count else '' }}">
+        <span class="stat-value">{{ go_count }}</span>
+        <span class="stat-label">GO Decisions</span>
+    </div>
+    <div class="approval-stat {{ 'ac-active' if ac_count else '' }}">
+        <span class="stat-value">{{ ac_count }}</span>
+        <span class="stat-label">Human ACs</span>
+    </div>
+    <div class="approval-stat total">
+        <span class="stat-value">{{ total_count }}</span>
+        <span class="stat-label">Total</span>
+    </div>
+</div>
+
+<!-- ═══ Section A: Tier 0 Approvals (agent blocked) ═══ -->
+{% if pending_tier0 %}
+<div class="section-header">
+    <h3>Tier 0 Approvals</h3>
+    <small>Agent blocked — requires your decision</small>
+</div>
+{% for item in pending_tier0 %}
 <div class="approval-card {{ item.status }}">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div class="approval-risk">{{ item.risk }}</div>
@@ -125,28 +251,126 @@
     {% endif %}
 </div>
 {% endfor %}
-{% else %}
+{% endif %}
+
+<!-- ═══ Section B: GO/NO-GO Decisions (inception stalled) ═══ -->
+{% if pending_go %}
+<div class="section-header">
+    <h3>Inception Decisions</h3>
+    <small>{{ go_count }} pending GO/NO-GO</small>
+</div>
+{% for t in pending_go %}
+<div class="approval-card go-decision">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
+            {{ t.name }}
+        </div>
+        <span class="status-badge badge-pending">Pending</span>
+    </div>
+    {% if t.problem_excerpt %}
+    <p class="approval-meta" style="margin-top:0.4rem;">{{ t.problem_excerpt }}</p>
+    {% endif %}
+    {% if t.artifacts %}
+    <div style="font-size:0.8rem; margin:0.25rem 0;">
+        Research: {% for a in t.artifacts %}
+        <a href="/file/{{ a.path }}">{{ a.name }}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if t.assumption_counts.total %}
+    <div class="approval-meta">
+        Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated
+    </div>
+    {% endif %}
+    <form action="/inception/{{ t.task_id }}/decide" method="post" style="margin-top:0.5rem;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="decision-inline">
+            <label><input type="radio" name="decision" value="go" required>
+                <span class="dec-go">GO</span></label>
+            <label><input type="radio" name="decision" value="no-go">
+                <span class="dec-nogo">NO-GO</span></label>
+            <label><input type="radio" name="decision" value="defer">
+                <span class="dec-defer">DEFER</span></label>
+        </div>
+        <textarea name="rationale" placeholder="Rationale (required)..." required
+                  class="approval-feedback" style="margin-top:0.4rem;"></textarea>
+        <div class="approval-actions">
+            <button type="submit" style="font-size:0.85rem; padding:0.4rem 1rem;">
+                Record Decision
+            </button>
+        </div>
+    </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- ═══ Section C: Human Acceptance Criteria ═══ -->
+{% if pending_acs %}
+<div class="section-header">
+    <h3>Human Acceptance Criteria</h3>
+    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
+</div>
+{% for t in pending_acs %}
+<div class="approval-card human-ac-group">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <div>
+            <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
+            {{ t.name }}
+        </div>
+        <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
+    </div>
+    <ul class="ac-list">
+        {% for ac in t.human_acs %}
+        <li>
+            <form hx-post="/api/task/{{ t.task_id }}/toggle-ac"
+                  hx-target="find input[type=checkbox]" hx-swap="outerHTML"
+                  style="display:inline;">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
+            {% if ac.confidence == 'review' %}
+            <span class="confidence-badge badge-review">Review</span>
+            {% elif ac.confidence == 'rubber-stamp' %}
+            <span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>
+            {% endif %}
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- ═══ Empty state ═══ -->
+{% if not pending_tier0 and not pending_go and not pending_acs %}
 <div class="empty-state">
-    <p>No pending approvals.</p>
-    <p><small>When the agent hits a Tier 0 gate, the pending approval will appear here.</small></p>
+    <p>Nothing needs your attention.</p>
+    <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>
 </div>
 {% endif %}
 
-{% if resolved %}
-<h3>Recent</h3>
-{% for item in resolved %}
-<div class="approval-card {{ item.status }}">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="approval-risk" style="font-weight:400;">{{ item.risk }}</div>
-        <span class="status-badge badge-{{ item.status }}">{{ item.status }}</span>
+<!-- ═══ Recently Resolved ═══ -->
+{% if resolved_tier0 %}
+<details style="margin-top:2rem;">
+    <summary><h3 style="display:inline;">Recent</h3></summary>
+    {% for item in resolved_tier0 %}
+    <div class="approval-card {{ item.status }}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="approval-risk" style="font-weight:400;">{{ item.risk }}</div>
+            <span class="status-badge badge-{{ item.status }}">{{ item.status }}</span>
+        </div>
+        <div class="approval-meta">
+            {{ item.get('response', {}).get('responded_at', '') }}
+            {% if item.get('response', {}).get('feedback') %}
+             — {{ item.response.feedback }}
+            {% endif %}
+        </div>
+        <div class="approval-command">{{ item.command_preview }}</div>
     </div>
-    <div class="approval-meta">
-        {{ item.get('response', {}).get('responded_at', '') }}
-        {% if item.get('response', {}).get('feedback') %}
-         — {{ item.response.feedback }}
-        {% endif %}
-    </div>
-    <div class="approval-command">{{ item.command_preview }}</div>
-</div>
-{% endfor %}
+    {% endfor %}
+</details>
 {% endif %}

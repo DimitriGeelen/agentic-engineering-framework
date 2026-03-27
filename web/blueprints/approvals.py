@@ -1,4 +1,10 @@
-"""Approvals blueprint — Tier 0 approval queue and Human AC approvals (T-611)."""
+"""Approvals blueprint — Unified approval surface (T-611, T-639).
+
+Shows three urgency-ordered sections:
+  A. Tier 0 approvals (agent blocked)
+  B. Pending GO/NO-GO inception decisions
+  C. Tasks with unchecked Human ACs
+"""
 
 import os
 import time
@@ -8,7 +14,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
 
 bp = Blueprint("approvals", __name__)
 
@@ -68,20 +74,140 @@ def _load_resolved_approvals():
     return resolved[:20]  # Last 20
 
 
+def _load_pending_go_decisions():
+    """Scan active inception tasks where decision is still pending.
+
+    Returns list of dicts with: task_id, name, status, problem_excerpt,
+    assumption_counts, artifacts.
+    """
+    from web.blueprints.inception import _extract_decision, _extract_section, _load_assumptions
+
+    task_dir = PROJECT_ROOT / ".tasks" / "active"
+    if not task_dir.exists():
+        return []
+
+    assumptions = _load_assumptions()
+    results = []
+
+    for f in sorted(task_dir.glob("T-*.md")):
+        try:
+            content = f.read_text()
+        except OSError:
+            continue
+        fm, body = parse_frontmatter(content)
+        if not fm or fm.get("workflow_type") != "inception":
+            continue
+        if _extract_decision(body) != "pending":
+            continue
+
+        task_id = fm.get("id", "")
+        linked = [a for a in assumptions if a.get("linked_task") == task_id]
+
+        # Find research artifacts
+        artifacts = []
+        reports_dir = PROJECT_ROOT / "docs" / "reports"
+        if reports_dir.exists():
+            tid_lower = task_id.lower().replace("-", "")
+            for rpt in sorted(reports_dir.iterdir()):
+                if rpt.suffix == ".md" and tid_lower in rpt.name.lower().replace("-", ""):
+                    artifacts.append({"name": rpt.name, "path": f"docs/reports/{rpt.name}"})
+
+        problem = _extract_section(body, "Problem Statement")
+        # Truncate to first 2 lines
+        problem_lines = problem.split("\n")[:2]
+        problem_excerpt = " ".join(line.strip() for line in problem_lines if line.strip())
+        if len(problem_excerpt) > 200:
+            problem_excerpt = problem_excerpt[:197] + "..."
+
+        results.append({
+            "task_id": task_id,
+            "name": fm.get("name", ""),
+            "status": fm.get("status", ""),
+            "problem_excerpt": problem_excerpt,
+            "assumption_counts": {
+                "total": len(linked),
+                "validated": sum(1 for a in linked if a.get("status") == "validated"),
+            },
+            "artifacts": artifacts,
+        })
+
+    return results
+
+
+def _load_pending_human_acs():
+    """Scan active tasks for unchecked Human ACs.
+
+    Returns list of dicts with: task_id, name, status, human_acs list.
+    Only includes tasks where at least one Human AC is unchecked.
+    """
+    from web.blueprints.tasks import _parse_acceptance_criteria
+
+    task_dir = PROJECT_ROOT / ".tasks" / "active"
+    if not task_dir.exists():
+        return []
+
+    results = []
+
+    for f in sorted(task_dir.glob("T-*.md")):
+        try:
+            content = f.read_text()
+        except OSError:
+            continue
+        fm, body = parse_frontmatter(content)
+        if not fm:
+            continue
+
+        all_acs = _parse_acceptance_criteria(body)
+        human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
+        unchecked = [ac for ac in human_acs if not ac["checked"]]
+
+        if not unchecked:
+            continue
+
+        results.append({
+            "task_id": fm.get("id", ""),
+            "name": fm.get("name", ""),
+            "status": fm.get("status", ""),
+            "human_acs": human_acs,
+        })
+
+    return results
+
+
 @bp.route("/approvals")
 def approvals():
-    pending = _load_pending_approvals()
-    resolved = _load_resolved_approvals()
+    # Tier 0 (existing)
+    pending_tier0 = _load_pending_approvals()
+    resolved_tier0 = _load_resolved_approvals()
 
-    # Count by status
-    active_count = sum(1 for a in pending if a.get("status") == "pending")
+    # GO/NO-GO decisions
+    pending_go = _load_pending_go_decisions()
+
+    # Human ACs
+    pending_acs = _load_pending_human_acs()
+
+    # Counts
+    tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
+    go_count = len(pending_go)
+    ac_count = sum(
+        sum(1 for ac in t["human_acs"] if not ac["checked"])
+        for t in pending_acs
+    )
+    total = tier0_count + go_count + len(pending_acs)
 
     return render_page(
         "approvals.html",
         page_title="Approvals",
-        pending=pending,
-        resolved=resolved,
-        active_count=active_count,
+        pending_tier0=pending_tier0,
+        resolved_tier0=resolved_tier0,
+        pending_go=pending_go,
+        pending_acs=pending_acs,
+        tier0_count=tier0_count,
+        go_count=go_count,
+        ac_count=ac_count,
+        ac_task_count=len(pending_acs),
+        total_count=total,
+        active_count=tier0_count,
     )
 
 
