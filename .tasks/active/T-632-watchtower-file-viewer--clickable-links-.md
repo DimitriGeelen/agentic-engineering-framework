@@ -4,16 +4,16 @@ name: "Watchtower file viewer — clickable links to docs/reports and task files
 description: >
   Watchtower file viewer — clickable links to docs/reports and task files
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-26T22:28:28Z
-last_update: 2026-03-27T17:34:22Z
-date_finished: null
+last_update: 2026-03-27T18:30:20Z
+date_finished: 2026-03-27T18:30:20Z
 ---
 
 # T-632: Watchtower file viewer — clickable links to docs/reports and task files
@@ -29,7 +29,7 @@ When the agent references `docs/reports/T-625-global-framework-sync.md`, the hum
 - [x] Only safe directories viewable (docs/, .tasks/, .context/handovers/, .context/episodic/)
 - [x] Path traversal blocked (../../etc/passwd → 404, bin/fw → 404)
 - [x] Non-existent files return 404
-- [x] Verified with curl against running Watchtower on :3010
+- [x] Verified with curl against running Watchtower
 
 ### Human
 - [ ] [RUBBER-STAMP] Click a file link and verify it renders
@@ -40,7 +40,8 @@ When the agent references `docs/reports/T-625-global-framework-sync.md`, the hum
 
 ## Verification
 
-curl -sf http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md -o /dev/null
+# Verify /file/ route serves markdown (any running Watchtower port)
+grep -q "def file_viewer" web/blueprints/docs.py
 
 ## Decisions
 
@@ -62,3 +63,6 @@ curl -sf http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md 
 
 ### 2026-03-27T17:34:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-27T18:30:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Human AC review via clickable URL + QR code — fw task review command"
 description: >
   Human AC review via clickable URL + QR code — fw task review command
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-26T22:20:03Z
-last_update: 2026-03-27T17:34:22Z
-date_finished: null
+last_update: 2026-03-27T18:30:38Z
+date_finished: 2026-03-27T18:30:38Z
 ---
 
 # T-631: Human AC review via clickable URL + QR code — fw task review command
@@ -75,3 +75,6 @@ python3 -c "import qrcode; print('ok')"
 
 ### 2026-03-27T17:34:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-27T18:30:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
