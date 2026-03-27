@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-647: Fix broken /file/ route in Watchtower docs.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T18:08:01Z
+# ============================================================================
+
+task_id: T-647
+task_name: "Fix broken /file/ route in Watchtower docs.py"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-27T13:50:33Z
+completed: 2026-03-27T14:03:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-27T15:03:27+01:00
+last_commit: 2026-03-27T15:03:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Close as not-a-bug — /file/ route already uses PROJECT_ROOT
+
+# Key outcomes
+outcomes:
+  - "`docs.py` file_viewer route uses PROJECT_ROOT instead of FRAMEWORK_ROOT"
+  - "`docs.py` _auto_link_files uses PROJECT_ROOT for existence checks"
+  - "/file/ route returns 200 for existing project files"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Close as not-a-bug — /file/ route already uses PROJECT_ROOT"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-647-fix-broken-file-route-in-watchtower-docs.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T15:03:27"
+    action: "T-647: Close as not-a-bug — /file/ route already uses PROJECT_ROOT"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 1
+  lines_added: 54
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-647-fix-broken-file-route-in-watchtower-docs.md
+generated_by: context-agent-hybrid

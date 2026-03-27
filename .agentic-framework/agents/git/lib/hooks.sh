@@ -72,7 +72,9 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo "To fix:"
     echo "  1. Add task reference: git commit -m \"T-XXX: your message\""
     echo "  2. Create a task: ./agents/task-create/create-task.sh"
-    echo "  3. Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
+    echo "  3. Emergency bypass (human only):"
+    echo "       fw tier0 approve"
+    echo "       git commit --no-verify"
     echo ""
     echo "Note: --no-verify is Tier 0 protected. Bypasses are logged."
     exit 1
@@ -123,12 +125,15 @@ if [ -n "$TASK_REF" ]; then
                 echo "  fw inception decide $TASK_REF go --rationale 'reason'"
                 echo "  fw inception decide $TASK_REF no-go --rationale 'reason'"
                 echo ""
-                echo "Emergency bypass (human only): fw tier0 approve && git commit --no-verify"
+                echo "Emergency bypass (human only):"
+                echo "  fw tier0 approve"
+                echo "  git commit --no-verify"
                 exit 1
             else
                 echo ""
                 echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/2 before gate)"
-                echo "  After exploration: fw inception decide $TASK_REF go|no-go --rationale '...'"
+                echo "  After exploration:"
+                echo "    fw inception decide $TASK_REF go --rationale '...'"
                 echo ""
             fi
         fi
@@ -364,7 +369,9 @@ if [ $audit_exit -eq 2 ]; then
     echo "ERROR: Push blocked - audit has FAILURES"
     echo ""
     echo "Fix the issues above before pushing."
-    echo "Emergency bypass (human only): fw tier0 approve && git push --no-verify"
+    echo "Emergency bypass (human only):"
+    echo "  fw tier0 approve"
+    echo "  git push --no-verify"
     echo ""
     exit 1
 elif [ $audit_exit -eq 1 ]; then
@@ -390,7 +397,8 @@ HOOK_EOF
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
-    echo "  - Bypass: fw tier0 approve && git commit/push --no-verify (Tier 0 protected)"
+    echo "  - Bypass: fw tier0 approve (Tier 0 protected)"
+    echo "           then: git commit/push --no-verify"
 }
 
 show_hooks_help() {
