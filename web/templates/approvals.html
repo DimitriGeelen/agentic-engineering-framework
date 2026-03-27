@@ -294,7 +294,7 @@
                 <span class="dec-defer">DEFER</span></label>
         </div>
         <textarea name="rationale" placeholder="Rationale (required)..." required
-                  class="approval-feedback" style="margin-top:0.4rem;"></textarea>
+                  class="approval-feedback" style="margin-top:0.4rem;">{{ t.rationale_hint or '' }}</textarea>
         <div class="approval-actions">
             <button type="submit" style="font-size:0.85rem; padding:0.4rem 1rem;">
                 Record Decision

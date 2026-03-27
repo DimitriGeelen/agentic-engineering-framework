@@ -310,6 +310,31 @@ except:
     fi
 fi
 
+# ── Check for prior rejection feedback (T-641) ──
+REJECTION_FEEDBACK=""
+if [ -f "$RESOLVED_FILE" ]; then
+    REJECTION_FEEDBACK=$(T0_RESOLVED="$RESOLVED_FILE" T0_HASH="$COMMAND_HASH" python3 -c "
+import yaml, os, sys
+
+resolved_file = os.environ['T0_RESOLVED']
+expected_hash = os.environ['T0_HASH']
+
+try:
+    with open(resolved_file) as f:
+        data = yaml.safe_load(f) or {}
+except:
+    sys.exit(0)
+
+if data.get('status') != 'rejected' or data.get('command_hash', '') != expected_hash:
+    sys.exit(0)
+
+resp = data.get('response', {})
+feedback = resp.get('feedback', '')
+if feedback:
+    print(feedback)
+" 2>/dev/null)
+fi
+
 # ── Block with explanation ──
 # Detect Watchtower URL for approval link (T-638)
 WT_URL="${WATCHTOWER_URL:-}"
@@ -338,6 +363,11 @@ echo "" >&2
 echo "  This command is classified as Tier 0 (consequential)." >&2
 echo "  It requires explicit human approval before execution." >&2
 echo "" >&2
+if [ -n "$REJECTION_FEEDBACK" ]; then
+echo "  Previous rejection feedback:" >&2
+echo "    $REJECTION_FEEDBACK" >&2
+echo "" >&2
+fi
 echo "  Approve in Watchtower:" >&2
 echo "    ${WT_URL}/approvals" >&2
 echo "" >&2

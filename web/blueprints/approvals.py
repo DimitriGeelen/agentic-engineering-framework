@@ -119,6 +119,34 @@ def _load_pending_go_decisions():
         if len(problem_excerpt) > 200:
             problem_excerpt = problem_excerpt[:197] + "..."
 
+        # Extract recommendation or GO criteria for rationale prepopulation
+        rec = _extract_section(body, "Recommendation")
+        if not rec or len(rec) < 10:
+            gonogo = _extract_section(body, "Go/No-Go Criteria")
+            # Extract just the "GO if:" bullet points
+            if gonogo:
+                go_lines = []
+                in_go = False
+                for line in gonogo.split("\n"):
+                    stripped = line.strip()
+                    if stripped.startswith("**GO if:**"):
+                        in_go = True
+                        continue
+                    if stripped.startswith("**NO-GO if:**"):
+                        break
+                    if in_go and stripped.startswith("- "):
+                        go_lines.append(stripped[2:].strip())
+                rec = "; ".join(go_lines) if go_lines else ""
+
+        # Truncate rationale hint
+        rationale_hint = ""
+        if rec:
+            # Strip markdown formatting
+            hint = rec.replace("**", "").replace("*", "").strip()
+            if len(hint) > 200:
+                hint = hint[:197] + "..."
+            rationale_hint = hint
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
@@ -129,6 +157,7 @@ def _load_pending_go_decisions():
                 "validated": sum(1 for a in linked if a.get("status") == "validated"),
             },
             "artifacts": artifacts,
+            "rationale_hint": rationale_hint,
         })
 
     return results
