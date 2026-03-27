@@ -4,7 +4,7 @@ name: "Tier 0 rejection feedback — write rejection reason to resolved YAML, ag
 description: >
   Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T11:45:50Z
-last_update: 2026-03-27T11:45:50Z
-date_finished: null
+last_update: 2026-03-27T11:50:32Z
+date_finished: 2026-03-27T11:50:32Z
 ---
 
 # T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
@@ -51,3 +51,6 @@ grep -q 'rejected\|rejection\|feedback' agents/context/check-tier0.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-641-tier-0-rejection-feedback--write-rejecti.md
 - **Context:** Initial task creation
+
+### 2026-03-27T11:50:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
