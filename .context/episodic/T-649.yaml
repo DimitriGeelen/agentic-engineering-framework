@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-649: Horizon triage + automated Human AC validation across work-completed tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T17:54:28Z
+# ============================================================================
+
+task_id: T-649
+task_name: "Horizon triage + automated Human AC validation across work-completed tasks"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-27T17:32:54Z
+completed: 2026-03-27T17:54:22Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-27T18:36:42+01:00
+last_commit: 2026-03-27T18:36:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  WIP — horizon triage + automated validation of 15 work-completed tasks
+
+# Key outcomes
+outcomes:
+  - "Stale/blocked tasks triaged to correct horizons"
+  - "Work-completed tasks validated with programmatic + playwright checks"
+  - "Validation results reported per task"
+  - "Test regressions from T-648 versioning change fixed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval"
+  - ".context/working/.tier0-approval.pending"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".tasks/active/T-449-deep-dive-articles-02-06-editing-pass--s.md"
+  - ".tasks/active/T-477-risk-based-governance-declaration-layer-.md"
+  - ".tasks/active/T-479-primary-development-platform-github-vs-o.md"
+  - ".tasks/active/T-481-fix-installsh-update-path--handle-dirty-.md"
+  - ".tasks/active/T-483-fix-python-39-compat--replace-union-type.md"
+  - ".tasks/active/T-505-deep-dive-article-blast-radius--structur.md"
+  - ".tasks/active/T-511-write-governanceyaml--predictability-x-b.md"
+  - ".tasks/active/T-518-fix-bash-32-compat--replace-declare--a-w.md"
+  - ".tasks/active/T-530-port-claude-fw---termlink-flag-from-cons.md"
+  - ".tasks/active/T-532-onboarding-gate--structural-enforcement-.md"
+  - ".tasks/active/T-533-agent-to-termlink-dispatch-rerouting--pr.md"
+  - ".tasks/active/T-544-create-termlink-homebrew-tap-with-github.md"
+  - ".tasks/active/T-548-npm-install-pathway--evaluate-whether-to.md"
+  - ".tasks/active/T-549-openclaw-deep-dive--ingest-existing-proj.md"
+  - ".tasks/active/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/active/T-586-language-strategy--typescript-adoption-f.md"
+  - ".tasks/active/T-601-multi-project-cron-collision--fw-audit-s.md"
+  - ".tasks/active/T-603-inception-project-boundary-exceptions--e.md"
+  - ".tasks/active/T-604-cron-copy-on-change--git-tracked-cron-de.md"
+  - ".tasks/active/T-608-frictionless-tier-0-human-confirmation--.md"
+  - ".tasks/active/T-625-global-framework-sync--eliminate-stale-r.md"
+  - ".tasks/active/T-628-fix-long-command-line-breaks--framework-.md"
+  - ".tasks/active/T-631-human-ac-review-via-clickable-url--qr-co.md"
+  - ".tasks/active/T-632-watchtower-file-viewer--clickable-links-.md"
+  - ".tasks/active/T-645-landing-page-summary-card--replace-full-.md"
+  - ".tasks/active/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md"
+  - ".tasks/active/T-648-bump-version-to-v140.md"
+  - ".tasks/active/T-649-horizon-triage--automated-human-ac-valid.md"
+  - ".tasks/completed/T-647-fix-broken-file-route-in-watchtower-docs.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T18:36:42"
+    action: "T-649: WIP — horizon triage + automated validation of 15 work-completed tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 43
+  lines_added: 366
+  lines_removed: 82
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-649-horizon-triage--automated-human-ac-valid.md
+generated_by: context-agent-hybrid

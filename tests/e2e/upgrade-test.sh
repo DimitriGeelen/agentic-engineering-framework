@@ -90,7 +90,7 @@ fi
 # Test 2: fw update --check works (fetches and compares, or reports network error)
 # ══════════════════════════════════════════════════════════════
 update_check_output=$("$FRAMEWORK_ROOT/bin/fw" update --check 2>&1 || true)
-if echo "$update_check_output" | grep -qE "Already up to date|Update available|Failed to fetch"; then
+if echo "$update_check_output" | grep -qE "Already up to date|Update available|Failed to fetch|No upstream_repo"; then
     phase_pass "update-check" "fw update --check reports status"
 else
     phase_fail "update-check" "fw update --check output unexpected"
@@ -148,8 +148,8 @@ if [ -f "$TMPDIR/.framework.yaml" ]; then
     # Check version was written
     if grep -q "^version:" "$TMPDIR/.framework.yaml" 2>/dev/null; then
         local_version=$(grep "^version:" "$TMPDIR/.framework.yaml" | sed 's/^version:[[:space:]]*//')
-        # FW_VERSION is defined in bin/fw line 14, may differ from VERSION file
-        fw_version=$(grep '^FW_VERSION=' "$FRAMEWORK_ROOT/bin/fw" | head -1 | sed 's/FW_VERSION="//;s/"//')
+        # T-648: FW_VERSION is now git-derived, get actual running version
+        fw_version=$("$FRAMEWORK_ROOT/bin/fw" version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
         if [ -z "$fw_version" ]; then
             fw_version=$(cat "$FRAMEWORK_ROOT/VERSION" 2>/dev/null || echo "unknown")
         fi
