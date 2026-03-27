@@ -101,3 +101,6 @@ date_finished: null
 
 ### 2026-03-24T09:13:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27 — artifact-reference [audit-fix]
+- **Research artifact:** docs/reports/T-598-dispatch-termlink-bridge.md

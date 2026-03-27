@@ -159,3 +159,6 @@ Adding ~60 lines and Python-based fabric queries to every Write/Edit call for a 
 - **Action:** Recorded inception decision
 - **Decision:** DEFER
 - **Rationale:** Existing 7 guards cover proposed risk signals, no concrete gap identified
+
+### 2026-03-27 — artifact-reference [audit-fix]
+- **Research artifact:** docs/reports/T-558-risk-signal-gate-analysis.md

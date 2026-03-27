@@ -150,3 +150,6 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-27 — artifact-reference [audit-fix]
+- **Research artifact:** docs/reports/T-608-tier0-approval-surface.md

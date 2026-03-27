@@ -167,3 +167,6 @@ This is a **dual-purpose evaluation:**
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-27 — artifact-reference [audit-fix]
+- **Research artifact:** docs/reports/T-549-openclaw-architecture-mapping.md
