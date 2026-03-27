@@ -311,6 +311,22 @@ except:
 fi
 
 # ── Block with explanation ──
+# Detect Watchtower URL for approval link (T-638)
+WT_URL="${WATCHTOWER_URL:-}"
+if [ -z "$WT_URL" ]; then
+    WT_PORT="" WT_HOST="" WT_PID=""
+    if [ -f "$PROJECT_ROOT/.context/working/watchtower.pid" ]; then
+        WT_PID=$(cat "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null)
+        if [ -n "$WT_PID" ] && kill -0 "$WT_PID" 2>/dev/null; then
+            WT_PORT=$(ss -tlnp 2>/dev/null | grep "pid=$WT_PID" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
+        fi
+    fi
+    WT_HOST=$(hostname -I 2>/dev/null | awk '{print $1}')
+    WT_HOST="${WT_HOST:-$(hostname 2>/dev/null)}"
+    WT_HOST="${WT_HOST:-localhost}"
+    WT_URL="http://${WT_HOST}:${WT_PORT:-3000}"
+fi
+
 echo "" >&2
 echo "══════════════════════════════════════════════════════════" >&2
 echo "  TIER 0 BLOCK — Destructive Command Detected" >&2
@@ -322,9 +338,11 @@ echo "" >&2
 echo "  This command is classified as Tier 0 (consequential)." >&2
 echo "  It requires explicit human approval before execution." >&2
 echo "" >&2
-echo "  To proceed (after the human approves):" >&2
+echo "  Approve in Watchtower:" >&2
+echo "    ${WT_URL}/approvals" >&2
+echo "" >&2
+echo "  Or via CLI:" >&2
 echo "    ./bin/fw tier0 approve" >&2
-echo "  Then retry the same command." >&2
 echo "" >&2
 echo "  Policy: 011-EnforcementConfig.md §Tier 0" >&2
 echo "══════════════════════════════════════════════════════════" >&2
