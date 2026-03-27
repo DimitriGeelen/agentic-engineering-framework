@@ -20,43 +20,45 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Healing agent classifies errors into 5 types (code, dependency, environment, design, external) but has no permanent vs transient distinction. Suggests retry-based recovery for ALL failures — including ones that can never succeed. See `docs/reports/T-580-error-classification.md` for full analysis.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Permanent/transient distinction would improve healing agent advice quality
+2. A single YAML field addition is sufficient (no schema overhaul needed)
+3. Existing 11 failure patterns can be backfilled trivially
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Review healing agent code (diagnose.sh, resolve.sh, patterns.yaml) — DONE
+2. Review OpenClaw error classification approach — DONE
+3. Assess design options (manual field vs auto-detect vs hybrid) — DONE
+4. Go/No-Go decision — DONE
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+None — this is a YAML schema extension and bash script modification.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Add `permanence` field, modify diagnose/resolve suggestions, backfill patterns
+**OUT:** Auto-detection heuristic (defer to future task), UI changes
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Clear problem with concrete symptom (retry advice for permanent errors)
+- Small bounded scope (2-3 files, 1 new field, backward-compatible)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Requires schema overhaul or breaks existing patterns
+- No evidence that bad advice is actually being given
 
 ## Verification
 
