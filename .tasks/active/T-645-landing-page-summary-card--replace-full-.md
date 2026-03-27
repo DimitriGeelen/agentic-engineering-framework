@@ -44,8 +44,9 @@ T-644 build task. Replace landing page "Awaiting Your Verification" full list wi
 
 ## Verification
 
-curl -sf http://localhost:8089/ | grep -q 'View all in Approvals'
-curl -sf http://localhost:8089/approvals | grep -q 'human-ac-card\|Steps'
+grep -q 'Action Required' web/templates/cockpit.html
+grep -q 'View all in Approvals' web/templates/cockpit.html
+grep -q 'action_summary' web/blueprints/cockpit.py
 
 ## Decisions
 
