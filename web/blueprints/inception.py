@@ -232,7 +232,24 @@ def record_decision(task_id):
     rationale = request.form.get("rationale", "").strip()
     if decision not in ("go", "no-go", "defer") or not rationale:
         abort(400)
-    run_fw_command(["inception", "decide", task_id, decision, "--rationale", rationale], timeout=10)
+    stdout, stderr, ok = run_fw_command(
+        ["inception", "decide", task_id, decision, "--rationale", rationale],
+        timeout=30,
+    )
+
+    # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
+    if request.headers.get("HX-Request"):
+        if ok:
+            color = "#10b981" if decision == "go" else "#ef4444" if decision == "no-go" else "#6b7280"
+            label = decision.upper()
+            return (
+                f'<div class="approval-card" style="border-color:{color}; opacity:0.7;">'
+                f'<strong>{task_id}</strong>: Decision recorded — '
+                f'<span style="color:{color}; font-weight:700;">{label}</span>'
+                f'</div>'
+            )
+        return f'<p style="color:var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 

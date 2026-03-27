@@ -283,7 +283,8 @@
         Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated
     </div>
     {% endif %}
-    <form action="/inception/{{ t.task_id }}/decide" method="post" style="margin-top:0.5rem;">
+    <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
+          style="margin-top:0.5rem;">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-inline">
             <label><input type="radio" name="decision" value="go" required>
