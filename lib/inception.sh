@@ -259,9 +259,11 @@ PYDECIDE
 EOF
 
     # Complete task if go or no-go (not defer)
+    # --force bypasses sovereignty gate (R-033) because inception decide itself
+    # required Tier 0 approval — human authority was already exercised (T-637)
     if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
         echo ""
-        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --reason "Inception decision: $decision_upper" 2>&1
+        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force --reason "Inception decision: $decision_upper" 2>&1
     fi
 
     echo ""
