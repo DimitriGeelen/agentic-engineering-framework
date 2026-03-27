@@ -331,19 +331,29 @@ if [ -z "$AUDIT_SCRIPT" ]; then
     exit 1
 fi
 
+# Stamp VERSION file from git describe (T-648: git-derived versioning)
+_version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+if [ -n "$_version" ]; then
+    _version="${_version#v}"
+    if [[ "$_version" == *-*-* ]]; then
+        _base="${_version%%-*}"
+        _rest="${_version#*-}"
+        _commits="${_rest%%-*}"
+        _major_minor="${_base%.*}"
+        _stamped="${_major_minor}.${_commits}"
+    else
+        _stamped="$_version"
+    fi
+    echo "$_stamped" > "$PROJECT_ROOT/VERSION"
+    if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+        echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
+    fi
+    echo "VERSION stamped: $_stamped"
+fi
+
 echo ""
 echo "=== Pre-Push Audit Check ==="
 echo ""
-
-# Version staleness advisory (T-606)
-latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || true)
-if [ -n "$latest_tag" ]; then
-    commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)
-    if [ "$commits_since" -gt 50 ]; then
-        echo "NOTE: $commits_since commits since $latest_tag. Consider: fw version bump patch --tag"
-        echo ""
-    fi
-fi
 
 # Run audit
 "$AUDIT_SCRIPT"
