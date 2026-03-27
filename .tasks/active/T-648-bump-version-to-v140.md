@@ -27,9 +27,9 @@ date_finished: null
 ### Agent
 - [x] `bin/fw` derives version from `git describe` — no hardcoded FW_VERSION
 - [x] Falls back to `VERSION` file when not in git repo (consumer installs)
-- [ ] `fw version` shows `1.4.X` where X = commits since v1.4.0 tag
+- [x] `fw version` shows `1.4.X` where X = commits since v1.4.0 tag
 - [x] Pre-push hook stamps `VERSION` file from git describe
-- [ ] Tag v1.4.0 created
+- [x] Tag v1.4.0 created
 - [x] Upstream copies synced (.agentic-framework/bin/fw, VERSION)
 
 ### Human
