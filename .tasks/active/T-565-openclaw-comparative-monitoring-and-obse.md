@@ -4,7 +4,7 @@ name: "OpenClaw comparative: monitoring and observability vs audit/watchtower"
 description: >
   Dispatch to OpenClaw eval agent: How does OpenClaw observe running agents, detect failures, surface health? Compare to our audit/checkpoint/cron approach and Watchtower UI. What can we learn for our monitoring stack? Write findings. Review with human.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T17:17:49Z
-last_update: 2026-03-23T17:17:49Z
+last_update: 2026-03-27T19:25:05Z
 date_finished: null
 ---
 
@@ -20,43 +20,41 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Compare OpenClaw's observability (health probes, metrics, process registry) vs our audit/watchtower approach. See `docs/reports/T-565-monitoring-observability.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. OpenClaw's real-time monitoring may be superior — INVALIDATED (different architecture)
+2. Our audit-based approach may have blind spots — VALIDATED (T-583 addresses the gap)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Inventory OpenClaw observability (6 layers) — DONE
+2. Inventory our observability (10 layers) — DONE
+3. Gap analysis — DONE
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+N/A — comparative analysis only.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Comparative analysis of monitoring approaches
+**OUT:** Implementing new monitoring (T-583 already covers that)
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made (NO-GO — T-583 already captures the adoptable pattern)
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- OpenClaw has monitoring we demonstrably lack and need
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Our compliance-based approach is more comprehensive for our use case (validated)
 
 ## Verification
 
@@ -85,3 +83,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T19:25:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
