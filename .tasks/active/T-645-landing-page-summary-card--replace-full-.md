@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T12:38:18Z
-last_update: 2026-03-27T12:38:18Z
+last_update: 2026-03-27T13:54:47Z
 date_finished: null
 ---
 
@@ -25,17 +25,17 @@ T-644 build task. Replace landing page "Awaiting Your Verification" full list wi
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Landing page shows unified "Action Required" summary with counts
-- [ ] Top 3 most-AC tasks shown as preview
-- [ ] "View all in Approvals" link present
-- [ ] /approvals Human AC cards have expandable Steps/Expected/If-not
-- [ ] Per-task "Complete Task" button on /approvals when all ACs checked
-- [ ] Landing page loads without errors
+- [x] Landing page shows unified "Action Required" summary with counts
+- [x] Top 3 most-AC tasks shown as preview
+- [x] "View all in Approvals" link present
+- [x] /approvals Human AC cards have expandable Steps/Expected/If-not
+- [x] Per-task "Complete Task" button on /approvals when all ACs checked
+- [x] Landing page loads without errors
 
 ### Human
 - [ ] [REVIEW] Landing page summary card looks clean and useful
   **Steps:**
-  1. Open http://192.168.10.107:3000/ in browser
+  1. Open http://192.168.10.107:8089/ in browser
   2. Verify "Action Required" summary replaces old full list
   3. Click "View all in Approvals" link
   4. On /approvals, expand a Human AC to see Steps/Expected
@@ -44,8 +44,8 @@ T-644 build task. Replace landing page "Awaiting Your Verification" full list wi
 
 ## Verification
 
-curl -sf http://localhost:3000/ | grep -q 'View all in Approvals\|action-summary'
-curl -sf http://localhost:3000/approvals | grep -q 'human-ac-card\|Steps'
+curl -sf http://localhost:8089/ | grep -q 'View all in Approvals'
+curl -sf http://localhost:8089/approvals | grep -q 'human-ac-card\|Steps'
 
 ## Decisions
 

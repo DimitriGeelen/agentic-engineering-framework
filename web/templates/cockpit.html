@@ -112,25 +112,34 @@
 </div>
 {% endif %}
 
-{# --- Awaiting Your Verification (amber) — T-193 ------------ #}
-{% if human_verify %}
+{# --- Action Required — unified summary card (T-645) ---------- #}
+{% if action_summary and action_summary.total > 0 %}
 <div class="wt-section">
-    <h4 class="wt-section-title">Awaiting Your Verification ({{ human_verify|length }})</h4>
-    {% for task in human_verify %}
-    <div class="wt-card wt-card-amber">
-        <div class="wt-card-summary">
-            <a href="/tasks/{{ task.task_id }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                {{ task.task_id }}: {{ task.name }}
-            </a>
+    <h4 class="wt-section-title">
+        Action Required
+        <a href="/approvals" class="wt-show-all" style="text-decoration:none;">View all in Approvals &rarr;</a>
+    </h4>
+    <div class="wt-card" style="border-left: 3px solid #f59e0b;">
+        <div style="display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+            {% if action_summary.tier0_count %}
+            <span><strong style="color:#f59e0b;">{{ action_summary.tier0_count }}</strong> Tier 0</span>
+            {% endif %}
+            {% if action_summary.go_count %}
+            <span><strong style="color:#1565c0;">{{ action_summary.go_count }}</strong> GO Decisions</span>
+            {% endif %}
+            {% if action_summary.human_ac_count %}
+            <span><strong style="color:#7c3aed;">{{ action_summary.human_ac_count }}</strong> Human ACs
+                <small style="color:var(--pico-muted-color);">({{ action_summary.human_ac_task_count }} tasks)</small>
+            </span>
+            {% endif %}
         </div>
-        <div class="wt-card-detail">
-            Human ACs: {{ task.checked }}/{{ task.total }} checked
-            {% for item in task.unchecked_items %}
-            <br>&nbsp;&nbsp;&#9744; {{ item }}
-            {% endfor %}
+        {% for task in action_summary.top_tasks %}
+        <div class="wt-card-detail" style="padding:0.15rem 0;">
+            <a href="/tasks/{{ task.task_id }}">{{ task.task_id }}</a>: {{ task.name[:60] }}{% if task.name|length > 60 %}...{% endif %}
+            <small style="color:var(--pico-muted-color);">({{ task.total - task.checked }} unchecked)</small>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endif %}
 
