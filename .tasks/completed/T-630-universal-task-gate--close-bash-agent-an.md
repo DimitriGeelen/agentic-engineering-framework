@@ -4,7 +4,7 @@ name: "Universal task gate — close Bash, Agent, and TermLink bypass paths that
 description: >
   Inception: Universal task gate — close Bash, Agent, and TermLink bypass paths that violate core principle
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-26T22:01:13Z
-last_update: 2026-03-26T22:01:13Z
-date_finished: null
+last_update: 2026-03-27T10:22:30Z
+date_finished: 2026-03-27T09:56:28Z
 ---
 
 # T-630: Universal task gate — close Bash, Agent, and TermLink bypass paths that violate core principle
@@ -83,7 +83,7 @@ The framework's core principle — "Nothing gets done without a task" — has a 
 - [x] Recommendation written with rationale (GO — 3 build tasks)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-630-universal-task-gate.md`
   2. Evaluate: does the Bash gate have acceptable false-positive rate?
@@ -116,20 +116,28 @@ The framework's core principle — "Nothing gets done without a task" — has a 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: D-016 overturned by D-059, 40 days evidence, safe-command allowlist under 0.5% false-positive
+
+**Date**: 2026-03-27T09:45:08Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: D-016 overturned by D-059, 40 days evidence, safe-command allowlist under 0.5% false-positive
+
+**Date**: 2026-03-27T09:45:08Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T09:45:08Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** D-016 overturned by D-059, 40 days evidence, safe-command allowlist under 0.5% false-positive
+
+### 2026-03-27T09:56:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

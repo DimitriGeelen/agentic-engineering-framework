@@ -4,16 +4,16 @@ name: "Deterministic human-facing action routing — structural enforcement that
 description: >
   Inception: Deterministic human-facing action routing — structural enforcement that agent always routes through Watchtower/fw-task-review instead of pasting raw commands
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-tier0.sh]
 related_tasks: []
 created: 2026-03-27T08:42:51Z
-last_update: 2026-03-27T08:43:54Z
-date_finished: null
+last_update: 2026-03-27T09:56:30Z
+date_finished: 2026-03-27T09:56:30Z
 ---
 
 # T-635: Deterministic human-facing action routing — structural enforcement that agent always routes through Watchtower/fw-task-review instead of pasting raw commands
@@ -58,7 +58,7 @@ The agent keeps bypassing standard human-facing tools (fw task review, Watchtowe
 - [x] Recommendation written with rationale (docs/reports/T-635-human-action-routing.md)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read the research artifact and recommendation in this task
   2. Evaluate go/no-go criteria against findings
@@ -87,18 +87,18 @@ The agent keeps bypassing standard human-facing tools (fw task review, Watchtowe
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 3+ bypasses this session, all 3 deliverables feasible under 50 lines each
+
+**Date**: 2026-03-27T09:48:39Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 3+ bypasses this session, all 3 deliverables feasible under 50 lines each
+
+**Date**: 2026-03-27T09:48:39Z
 
 ## Updates
 
@@ -107,3 +107,11 @@ The agent keeps bypassing standard human-facing tools (fw task review, Watchtowe
 
 ### 2026-03-27T08:43:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T09:48:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 3+ bypasses this session, all 3 deliverables feasible under 50 lines each
+
+### 2026-03-27T09:56:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

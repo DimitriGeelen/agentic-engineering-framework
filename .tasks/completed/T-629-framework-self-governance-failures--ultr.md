@@ -4,16 +4,16 @@ name: "Framework self-governance failures — ultra-deep audit of operational fr
 description: >
   The framework's own governance is actively blocking real work. This session hit: stale global scripts deadlocking all tools, task gates blocking memory writes, inception gates blocking commits, hooks failing on missing scripts, long commands breaking in terminals. 12-agent TermLink investigation into every operational friction point, deadlock pattern, and self-defeating enforcement.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, web/blueprints/docs.py, web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-26T21:35:09Z
-last_update: 2026-03-26T21:35:09Z
-date_finished: null
+last_update: 2026-03-27T10:22:30Z
+date_finished: 2026-03-27T09:56:27Z
 ---
 
 # T-629: Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement
@@ -57,7 +57,7 @@ The framework's own governance is actively blocking real work. Session 2026-03-2
 - [x] 12 agent reports preserved: `docs/reports/fw-agent-t629-{01..12}-*.md`
 
 ### Human
-- [ ] [REVIEW] Review 4-phase governance fix and approve go/no-go
+- [x] [REVIEW] Review 4-phase governance fix and approve go/no-go
   **Steps:**
   1. Read `docs/reports/T-629-governance-self-audit.md`
   2. Evaluate: is 27% real work acceptable? Are the 5 structural flaws accurate?
@@ -87,20 +87,28 @@ The framework's own governance is actively blocking real work. Session 2026-03-2
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 12-agent audit confirmed 5 structural flaws, 27% real work unacceptable
+
+**Date**: 2026-03-27T09:37:28Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 12-agent audit confirmed 5 structural flaws, 27% real work unacceptable
+
+**Date**: 2026-03-27T09:37:28Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T09:37:28Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 12-agent audit confirmed 5 structural flaws, 27% real work unacceptable
+
+### 2026-03-27T09:56:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

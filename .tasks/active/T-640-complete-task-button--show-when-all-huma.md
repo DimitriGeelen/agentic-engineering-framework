@@ -4,16 +4,16 @@ name: "\"Complete Task\" button — show when all Human ACs checked, auto-comple
 description: >
   "Complete Task" button — show when all Human ACs checked, auto-complete via Watchtower
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-27T11:32:46Z
-last_update: 2026-03-27T11:32:46Z
-date_finished: null
+last_update: 2026-03-27T11:36:45Z
+date_finished: 2026-03-27T11:36:45Z
 ---
 
 # T-640: "Complete Task" button — show when all Human ACs checked, auto-complete via Watchtower
@@ -63,3 +63,6 @@ grep -q 'complete-button' web/templates/task_detail.html
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-640-complete-task-button--show-when-all-huma.md
 - **Context:** Initial task creation
+
+### 2026-03-27T11:36:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

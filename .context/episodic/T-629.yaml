@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-629: Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T09:56:28Z
+# ============================================================================
+
+task_id: T-629
+task_name: "Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-26T21:35:09Z
+completed: 2026-03-27T09:56:27Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-26T22:46:32+01:00
+last_commit: 2026-03-26T23:11:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  12-agent governance self-audit — research artifact complete. Preserve 12 agent reports + fill inception task from research
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (3x deadlocks, 3x terminal failures, 27% real work ratio)"
+  - "12-agent investigation completed (3109 lines of findings)"
+  - "5 structural flaws identified with evidence"
+  - "4-phase fix plan proposed with go/no-go criteria"
+  - "Research artifact committed: `docs/reports/T-629-governance-self-audit.md`"
+  - "12 agent reports preserved: `docs/reports/fw-agent-t629-{01..12}-*.md`"
+  - "[REVIEW] Review 4-phase governance fix and approve go/no-go"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/fw-agent-t629-01-deadlocks.md"
+  - "docs/reports/fw-agent-t629-02-cascades.md"
+  - "docs/reports/fw-agent-t629-03-healing.md"
+  - "docs/reports/fw-agent-t629-04-circular.md"
+  - "docs/reports/fw-agent-t629-05-taskgate.md"
+  - "docs/reports/fw-agent-t629-06-inception.md"
+  - "docs/reports/fw-agent-t629-07-cmdlen.md"
+  - "docs/reports/fw-agent-t629-08-session.md"
+  - "docs/reports/fw-agent-t629-09-consumers.md"
+  - "docs/reports/fw-agent-t629-10-errors.md"
+  - "docs/reports/fw-agent-t629-11-time.md"
+  - "docs/reports/fw-agent-t629-12-meta.md"
+  - "docs/reports/T-629-governance-self-audit.md"
+  - ".tasks/active/T-629-framework-self-governance-failures--ultr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-26T22:46:32"
+    action: "T-629: 12-agent governance self-audit — research artifact complete"
+  - time: "2026-03-26T23:11:13"
+    action: "T-629: Preserve 12 agent reports + fill inception task from research"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 741 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 741
+  commits: 2
+  files_changed: 14
+  lines_added: 3389
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-629-framework-self-governance-failures--ultr.md
+generated_by: context-agent-hybrid

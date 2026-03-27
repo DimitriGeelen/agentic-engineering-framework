@@ -87,18 +87,18 @@ Two great human approval mechanisms exist but are disconnected: Watchtower /appr
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 5-agent research complete, Phase 1 fits 3 build tasks, Human AC toggle already works, high value low effort
+
+**Date**: 2026-03-27T10:21:27Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 5-agent research complete, Phase 1 fits 3 build tasks, Human AC toggle already works, high value low effort
+
+**Date**: 2026-03-27T10:21:27Z
 
 ## Updates
 
@@ -107,3 +107,8 @@ Two great human approval mechanisms exist but are disconnected: Watchtower /appr
 
 ### 2026-03-27T10:06:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T10:21:27Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5-agent research complete, Phase 1 fits 3 build tasks, Human AC toggle already works, high value low effort

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-633: Auto-link file references — fw commands and Watchtower markdown emit clickable URLs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T06:47:35Z
+# ============================================================================
+
+task_id: T-633
+task_name: "Auto-link file references — fw commands and Watchtower markdown emit clickable URLs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-26T22:37:19Z
+completed: 2026-03-27T06:47:34Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-26T23:40:00+01:00
+last_commit: 2026-03-27T07:47:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Auto-link file references in Watchtower markdown renderer. Dynamic hostname + port in fw task review — no hardcoded localhost. Add research artifact links to fw task review, show, and inception decide
+
+# Key outcomes
+outcomes:
+  - "Watchtower markdown renderer auto-links `docs/reports/*.md` references to `/file/` viewer"
+  - "Watchtower markdown renderer auto-links `.tasks/*.md` references to `/file/` viewer"
+  - "Auto-linker uses relative URLs (no hardcoded localhost or port)"
+  - "T-629 evidence files updated from /tmp/ to docs/reports/ paths (12 now clickable)"
+  - "`fw inception decide` outputs research artifact links after recording decision"
+  - "`fw task show` outputs research artifact links if they exist"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "docs/reports/T-629-governance-self-audit.md"
+  - "lib/inception.sh"
+  - ".tasks/active/T-633-auto-link-file-references--fw-commands-a.md"
+  - "web/blueprints/docs.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-26T23:40:00"
+    action: "T-633: Auto-link file references in Watchtower markdown renderer"
+  - time: "2026-03-26T23:40:44"
+    action: "T-633: Dynamic hostname + port in fw task review — no hardcoded localhost"
+  - time: "2026-03-27T07:47:12"
+    action: "T-633: Add research artifact links to fw task review, show, and inception decide"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 490 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 490
+  commits: 3
+  files_changed: 5
+  lines_added: 151
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-633-auto-link-file-references--fw-commands-a.md
+generated_by: context-agent-hybrid

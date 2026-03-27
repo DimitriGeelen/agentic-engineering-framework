@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-630: Universal task gate — close Bash, Agent, and TermLink bypass paths that violate core principle
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-27T09:56:30Z
+# ============================================================================
+
+task_id: T-630
+task_name: "Universal task gate — close Bash, Agent, and TermLink bypass paths that violate core principle"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-26T22:01:13Z
+completed: 2026-03-27T09:56:28Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-03-26T23:06:23+01:00
+last_commit: 2026-03-26T23:06:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Universal task gate inception — 5 spikes complete, research artifact, GO recommendation
+
+# Key outcomes
+outcomes:
+  - "All 5 spikes completed with findings"
+  - "Research artifact written at docs/reports/T-630-universal-task-gate.md"
+  - "Bash file-write detection pattern tested against real session data (7920 invocations, <0.5% FP)"
+  - "Safe-command allowlist defined (27 patterns in 6 categories)"
+  - "FW_SAFE_MODE escape hatch designed (env var, 3 lines, Tier 0 stays active)"
+  - "Recommendation written with rationale (GO — 3 build tasks)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-630-universal-task-gate.md"
+  - ".tasks/active/T-630-universal-task-gate--close-bash-agent-an.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-26T23:06:23"
+    action: "T-630: Universal task gate inception — 5 spikes complete, research artifact, GO recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 715 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 715
+  commits: 1
+  files_changed: 2
+  lines_added: 323
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-630-universal-task-gate--close-bash-agent-an.md
+generated_by: context-agent-hybrid

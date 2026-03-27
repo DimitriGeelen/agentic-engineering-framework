@@ -79,7 +79,7 @@ A6: Consumer projects on other machines (Mac .107) have the same vulnerability
 - [x] Research artifact committed: `docs/reports/T-625-global-framework-sync.md`
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-625-global-framework-sync.md`
   2. Evaluate the recommended approach against your multi-machine setup
