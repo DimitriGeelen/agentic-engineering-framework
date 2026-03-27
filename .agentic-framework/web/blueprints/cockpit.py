@@ -124,6 +124,7 @@ def get_action_summary() -> dict:
             text = fn.read_text(errors="replace")
             if "workflow_type: inception" not in text:
                 continue
+            # Check for pending decision
             has_decision = False
             for line in text.split("\n"):
                 stripped = line.strip()
@@ -135,6 +136,7 @@ def get_action_summary() -> dict:
             if not has_decision:
                 go_count += 1
 
+    # Top 3 tasks by unchecked AC count
     top_tasks = sorted(human_verify, key=lambda t: t["total"] - t["checked"], reverse=True)[:3]
 
     return {

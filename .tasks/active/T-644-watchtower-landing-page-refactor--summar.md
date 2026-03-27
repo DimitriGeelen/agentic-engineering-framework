@@ -4,7 +4,7 @@ name: "Watchtower landing page refactor — summary dashboard pointing to /appro
 description: >
   Inception: Watchtower landing page refactor — summary dashboard pointing to /approvals as action hub
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T12:30:32Z
-last_update: 2026-03-27T12:30:42Z
-date_finished: null
+last_update: 2026-03-27T12:36:56Z
+date_finished: 2026-03-27T12:36:56Z
 ---
 
 # T-644: Watchtower landing page refactor — summary dashboard pointing to /approvals as action hub
@@ -81,18 +81,18 @@ Three surfaces show "what needs human attention" — landing page (read-only ful
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: go
+
+**Date**: 2026-03-27T12:36:56Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: go
+
+**Date**: 2026-03-27T12:36:56Z
 
 ## Updates
 
@@ -101,3 +101,12 @@ Three surfaces show "what needs human attention" — landing page (read-only ful
 
 ### 2026-03-27T12:30:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-27T12:36:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** go
+
+### 2026-03-27T12:36:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

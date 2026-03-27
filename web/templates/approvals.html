@@ -321,17 +321,19 @@
         </div>
         <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
     </div>
-    <ul class="ac-list">
-        {% for ac in t.human_acs %}
-        <li>
+    {% set unchecked_count = t.human_acs | rejectattr('checked') | list | length %}
+    {% for ac in t.human_acs %}
+    <details class="human-ac-card" {% if not ac.checked %}open{% endif %}
+             style="margin:0.3rem 0; padding:0.4rem 0.6rem; border-radius:4px; background:var(--pico-code-background-color);">
+        <summary style="display:flex; align-items:flex-start; gap:0.4rem; cursor:pointer; font-size:0.85rem;">
             <form hx-post="/api/task/{{ t.task_id }}/toggle-ac"
                   hx-target="find input[type=checkbox]" hx-swap="outerHTML"
-                  style="display:inline;">
+                  style="display:inline;" onclick="event.stopPropagation();">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="line" value="{{ ac.line_idx }}">
                 <input type="checkbox" {% if ac.checked %}checked{% endif %}
                        onchange="this.form.requestSubmit()"
-                       style="margin:0;">
+                       style="margin:0.15rem 0 0;">
             </form>
             {% if ac.confidence == 'review' %}
             <span class="confidence-badge badge-review">Review</span>
@@ -339,9 +341,37 @@
             <span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>
             {% endif %}
             <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
-        </li>
-        {% endfor %}
-    </ul>
+        </summary>
+        {% if ac.steps or ac.expected or ac.if_not %}
+        <div style="padding:0.3rem 0 0 1.5rem; font-size:0.8rem;">
+            {% if ac.steps %}
+            <div style="margin-bottom:0.3rem;"><strong>Steps:</strong></div>
+            <ol style="margin:0 0 0.3rem 1rem; padding:0;">
+                {% for step in ac.steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+            {% endif %}
+            {% if ac.expected %}
+            <div><strong>Expected:</strong> {{ ac.expected }}</div>
+            {% endif %}
+            {% if ac.if_not %}
+            <div style="color:var(--pico-muted-color);"><strong>If not:</strong> {{ ac.if_not }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </details>
+    {% endfor %}
+    {% if unchecked_count == 0 %}
+    <div style="margin-top:0.5rem;">
+        <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
+                Complete Task
+            </button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 {% endfor %}
 {% endif %}
