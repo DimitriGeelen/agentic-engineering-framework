@@ -1259,6 +1259,20 @@ else:
         for line in desc.strip().split('\n'):
             print(f'  {line.strip()}')
         print()
+
+# Research artifacts (T-633)
+reports_dir = os.path.join(project_root, 'docs', 'reports')
+if os.path.isdir(reports_dir):
+    tid_lower = task_id.lower().replace('-', '')
+    artifacts = []
+    for fn in sorted(os.listdir(reports_dir)):
+        if fn.endswith('.md') and tid_lower in fn.lower().replace('-', ''):
+            artifacts.append(fn)
+    if artifacts:
+        print(f'{BOLD}Research Artifacts{NC}')
+        for a in artifacts:
+            print(f'  {GREEN}*{NC} docs/reports/{a}')
+        print()
 PYTASK_SHOW
             ;;
         verify)
@@ -1490,7 +1504,20 @@ except ImportError:
     print('  (install python3-qrcode for QR code)')
 " 2>/dev/null
 
-            echo -e ""
+            # Research artifacts (T-633)
+            local artifacts_found=false
+            for artifact in "$PROJECT_ROOT"/docs/reports/"$task_id"-*.md "$PROJECT_ROOT"/docs/reports/fw-agent-"$(echo "$task_id" | tr '[:upper:]' '[:lower:]' | tr -d '-')"-*.md; do
+                if [ -f "$artifact" ]; then
+                    if ! $artifacts_found; then
+                        echo -e "  ${BOLD}Research Artifacts:${NC}"
+                        artifacts_found=true
+                    fi
+                    local rel_path="${artifact#$PROJECT_ROOT/}"
+                    echo "  ${base_url}/file/${rel_path}"
+                fi
+            done
+            if $artifacts_found; then echo ""; fi
+
             echo -e "  Click the link or scan QR to review Human ACs"
             echo -e "══════════════════════════════════════════════════"
             echo ""

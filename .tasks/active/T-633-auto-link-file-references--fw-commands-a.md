@@ -29,8 +29,8 @@ When Watchtower renders markdown (file viewer, task body), file references like 
 - [x] Watchtower markdown renderer auto-links `.tasks/*.md` references to `/file/` viewer
 - [x] Auto-linker uses relative URLs (no hardcoded localhost or port)
 - [x] T-629 evidence files updated from /tmp/ to docs/reports/ paths (12 now clickable)
-- [ ] `fw inception decide` outputs research artifact links after recording decision
-- [ ] `fw task show` outputs research artifact links if they exist
+- [x] `fw inception decide` outputs research artifact links after recording decision
+- [x] `fw task show` outputs research artifact links if they exist
 
 ### Human
 - [ ] [RUBBER-STAMP] Verify auto-linked references are clickable in file viewer
