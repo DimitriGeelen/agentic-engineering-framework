@@ -20,43 +20,17 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
-
-## Assumptions
-
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+Compare OpenClaw's agent isolation (session keys, channel boundaries) vs ours (process isolation, T-560 stamping). See `docs/reports/T-564-agent-isolation.md`.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made (NO-GO — covered by T-582)
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** Need additional isolation beyond T-582. **NO-GO if:** T-582 covers it (validated).
 
 ## Verification
 

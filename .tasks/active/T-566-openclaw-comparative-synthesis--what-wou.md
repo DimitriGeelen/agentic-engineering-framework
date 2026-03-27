@@ -20,43 +20,18 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
-
-## Assumptions
-
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+Synthesize all 5 OpenClaw comparatives (T-561 through T-565) into actionable findings. See `docs/reports/T-566-openclaw-synthesis.md`.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated (all 5 comparatives complete)
+- [x] Assumptions tested
+- [x] Go/No-Go decision made (3 adoptable patterns identified)
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** Comparatives reveal patterns worth adopting. **Validated:** 3 patterns identified.
+**NO-GO if:** Architectural differences make all patterns non-applicable.
 
 ## Verification
 

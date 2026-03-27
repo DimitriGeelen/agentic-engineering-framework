@@ -4,7 +4,7 @@ name: "OpenClaw comparative: extension SDK design — what enables 80+ extension
 description: >
   Dispatch to OpenClaw eval agent: What makes 80+ extensions possible? Minimal surface area for a working extension? Extension isolation (one bad extension doesnt crash system)? Contributor DX? Is there a pattern for making our framework extensible by other projects? Write findings. Review with human.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T17:17:44Z
-last_update: 2026-03-23T17:17:44Z
+last_update: 2026-03-27T19:26:18Z
 date_finished: null
 ---
 
@@ -20,43 +20,17 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
-
-## Assumptions
-
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+Compare OpenClaw's extension SDK (80+ extensions) vs our agent/hook model. See `docs/reports/T-563-extension-sdk-design.md`.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made (NO-GO — governance, not extensibility)
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** Need community extensions. **NO-GO if:** Extensions should be governed (validated).
 
 ## Verification
 
@@ -85,3 +59,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T19:26:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
