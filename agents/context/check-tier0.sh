@@ -337,13 +337,18 @@ echo "$COMMAND_HASH $(date +%s) PENDING" > "${APPROVAL_FILE}.pending"
 APPROVAL_DIR="${APPROVAL_DIR:-$PROJECT_ROOT/.context/approvals}"
 mkdir -p "$APPROVAL_DIR" 2>/dev/null
 APPROVAL_YAML="$APPROVAL_DIR/pending-${COMMAND_HASH:0:12}.yaml"
-cat > "$APPROVAL_YAML" <<YAMLEOF
-timestamp: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-type: tier0
-risk: "$DESCRIPTION"
-command_preview: "${COMMAND:0:200}"
-command_hash: "$COMMAND_HASH"
-status: pending
-YAMLEOF
+T0_RISK="$DESCRIPTION" T0_CMD="$COMMAND" T0_HASH="$COMMAND_HASH" python3 -c "
+import yaml, sys, os
+data = {
+    'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+    'type': 'tier0',
+    'risk': os.environ.get('T0_RISK', ''),
+    'command_preview': os.environ.get('T0_CMD', '')[:200],
+    'command_hash': os.environ.get('T0_HASH', ''),
+    'status': 'pending',
+}
+with open(sys.argv[1], 'w') as f:
+    yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+" "$APPROVAL_YAML" 2>/dev/null || true
 
 exit 2
