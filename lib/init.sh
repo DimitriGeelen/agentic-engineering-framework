@@ -674,6 +674,25 @@ SJSON
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
     fi
 
+    # --- .mcp.json (MCP server configuration for Claude Code) ---
+    if [ ! -f "$dir/.mcp.json" ] || [ "${force:-false}" = true ]; then
+        cat > "$dir/.mcp.json" << 'MCPJSON'
+{
+  "context7": {
+    "command": "npx",
+    "args": ["-y", "@upstash/context7-mcp"]
+  },
+  "playwright": {
+    "command": "npx",
+    "args": ["@playwright/mcp@latest", "--no-sandbox"]
+  }
+}
+MCPJSON
+        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright)"
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  .mcp.json already exists"
+    fi
+
     # --- .claude/commands/resume.md (project-specific /resume) ---
     if [ ! -f "$dir/.claude/commands/resume.md" ] || [ "${force:-false}" = true ]; then
         cat > "$dir/.claude/commands/resume.md" << 'RESUME'

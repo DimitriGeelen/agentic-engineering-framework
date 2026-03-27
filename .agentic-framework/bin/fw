@@ -390,6 +390,7 @@ show_help() {
     echo -e "  ${GREEN}assumption${NC} <cmd>    Assumption tracking (add, validate, invalidate, list)"
     echo -e "  ${GREEN}promote${NC} <cmd>         Graduation pipeline (suggest, status, L-XXX)"
     echo -e "  ${GREEN}tier0${NC} <cmd>          Tier 0 enforcement (approve, status)"
+    echo -e "  ${GREEN}approvals${NC} <cmd>      Approval queue (pending, status, expire)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
     echo -e "  ${GREEN}dispatch${NC} <cmd>       SSH-based cross-machine communication (send, hosts)"
@@ -678,6 +679,39 @@ print(f'{total},{broken},{stale_paths}')
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
 
+    # Check: .mcp.json configuration (T-646)
+    local mcp_json="$PROJECT_ROOT/.mcp.json"
+    if [ -f "$mcp_json" ]; then
+        local mcp_check
+        mcp_check=$(python3 -c "
+import json
+with open('$mcp_json') as f:
+    data = json.load(f)
+total = len(data)
+has_context7 = 'context7' in data
+has_playwright = 'playwright' in data
+missing = []
+if not has_context7: missing.append('context7')
+if not has_playwright: missing.append('playwright')
+print(f'{total}|{\",\".join(missing)}')
+" 2>/dev/null || echo "0|parse-error")
+        local mcp_total mcp_missing
+        mcp_total=$(echo "$mcp_check" | cut -d'|' -f1)
+        mcp_missing=$(echo "$mcp_check" | cut -d'|' -f2)
+        if [ -n "$mcp_missing" ] && [ "$mcp_missing" != "parse-error" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  .mcp.json missing recommended servers: $mcp_missing (run: fw upgrade)"
+            warnings=$((warnings + 1))
+        elif [ "$mcp_missing" = "parse-error" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  .mcp.json exists but failed to parse"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  .mcp.json ($mcp_total MCP server(s) configured)"
+        fi
+    else
+        echo -e "  ${YELLOW}WARN${NC}  No .mcp.json found (run: fw upgrade to create)"
+        warnings=$((warnings + 1))
+    fi
+
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
     if [ -f "$settings_file" ]; then
         local hook_result
@@ -885,6 +919,88 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
     elif [ ! -f "$baseline_file" ]; then
         echo -e "  ${YELLOW}WARN${NC}  No enforcement baseline — run 'fw enforcement baseline' to create"
         warnings=$((warnings + 1))
+    fi
+
+    # Check: Consumer project fleet health (T-616)
+    # Only runs from framework repo — scans /opt for .framework.yaml
+    if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
+        local consumer_count=0
+        local consumer_issues=0
+        local fw_settings_file="$FRAMEWORK_ROOT/.claude/settings.json"
+        echo ""
+        echo -e "  ${BOLD}Consumer Projects${NC}"
+        for fw_yaml in /opt/*/.framework.yaml; do
+            [ -f "$fw_yaml" ] || continue
+            local consumer_dir
+            consumer_dir=$(dirname "$fw_yaml")
+            # Skip the framework itself
+            [ "$consumer_dir" = "$FRAMEWORK_ROOT" ] && continue
+            consumer_count=$((consumer_count + 1))
+            local cname cversion
+            cname=$(basename "$consumer_dir")
+            cversion=$(grep "^version:" "$fw_yaml" 2>/dev/null | sed 's/^version:[[:space:]]*//' || true)
+            # Check version match
+            local version_ok=true
+            if [ -n "$cversion" ] && [ "$cversion" != "$FW_VERSION" ]; then
+                version_ok=false
+            fi
+            # Check hooks by type (reuse T-615 logic)
+            local consumer_settings="$consumer_dir/.claude/settings.json"
+            local hook_info="ok"
+            if [ -f "$consumer_settings" ] && [ -f "$fw_settings_file" ]; then
+                hook_info=$(FW_FILE="$fw_settings_file" CONSUMER_FILE="$consumer_settings" python3 -c "
+import json, os
+def extract_hooks(path):
+    hooks = set()
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        for event, entries in data.get('hooks', {}).items():
+            for entry in entries:
+                for hook in entry.get('hooks', []):
+                    cmd = hook.get('command', '')
+                    if 'fw hook' in cmd:
+                        name = cmd.split('fw hook ')[-1].strip()
+                    else:
+                        name = cmd.strip().split('/')[-1]
+                    hooks.add((event, name))
+    except (json.JSONDecodeError, FileNotFoundError):
+        pass
+    return hooks
+fw_hooks = extract_hooks(os.environ['FW_FILE'])
+consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
+missing = fw_hooks - consumer_hooks
+if missing:
+    names = ', '.join(n for _, n in sorted(missing))
+    print(f'missing {len(missing)}: {names}')
+else:
+    print(f'ok {len(consumer_hooks)}/{len(fw_hooks)}')
+" 2>/dev/null || echo "parse-error")
+            fi
+            # Report
+            if [ "$version_ok" = true ] && [[ "$hook_info" == ok* ]]; then
+                local hook_counts="${hook_info#ok }"
+                echo -e "  ${GREEN}OK${NC}  $cname (v$cversion, $hook_counts hooks)"
+            else
+                local reasons=""
+                if [ "$version_ok" = false ]; then
+                    reasons="v$cversion → v$FW_VERSION"
+                fi
+                if [[ "$hook_info" == missing* ]]; then
+                    [ -n "$reasons" ] && reasons="$reasons, "
+                    reasons="$reasons$hook_info"
+                fi
+                echo -e "  ${YELLOW}WARN${NC}  $cname ($reasons)"
+                echo -e "         Run: fw upgrade $consumer_dir"
+                warnings=$((warnings + 1))
+                consumer_issues=$((consumer_issues + 1))
+            fi
+        done
+        if [ "$consumer_count" -eq 0 ]; then
+            echo -e "  ${CYAN}SKIP${NC}  No consumer projects found in /opt"
+        elif [ "$consumer_issues" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  All $consumer_count consumer(s) current"
+        fi
     fi
 
     # Summary
@@ -1176,6 +1292,20 @@ else:
         for line in desc.strip().split('\n'):
             print(f'  {line.strip()}')
         print()
+
+# Research artifacts (T-633)
+reports_dir = os.path.join(project_root, 'docs', 'reports')
+if os.path.isdir(reports_dir):
+    tid_lower = task_id.lower().replace('-', '')
+    artifacts = []
+    for fn in sorted(os.listdir(reports_dir)):
+        if fn.endswith('.md') and tid_lower in fn.lower().replace('-', ''):
+            artifacts.append(fn)
+    if artifacts:
+        print(f'{BOLD}Research Artifacts{NC}')
+        for a in artifacts:
+            print(f'  {GREEN}*{NC} docs/reports/{a}')
+        print()
 PYTASK_SHOW
             ;;
         verify)
@@ -1324,6 +1454,69 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        review)
+            # T-631/T-634: Print clickable URL + QR code for Human AC review
+            local task_id="${1:-}"
+            local poll_flag="${2:-}"
+
+            if [ -z "$task_id" ]; then
+                echo -e "${RED}Usage: fw task review T-XXX [--poll]${NC}" >&2
+                exit 1
+            fi
+
+            # Find task file
+            local task_file=""
+            for f in "$PROJECT_ROOT/.tasks/active/$task_id"*.md "$PROJECT_ROOT/.tasks/completed/$task_id"*.md; do
+                if [ -f "$f" ]; then
+                    task_file="$f"
+                    break
+                fi
+            done
+            if [ -z "$task_file" ]; then
+                echo -e "${RED}ERROR: Task $task_id not found${NC}" >&2
+                exit 1
+            fi
+
+            # Shared review output (T-634)
+            source "$FW_LIB_DIR/review.sh"
+            emit_review "$task_id" "$task_file"
+
+            # Optional polling mode
+            if [ "$poll_flag" = "--poll" ]; then
+                echo -e "${CYAN}Polling for Human AC completion (timeout 10min)...${NC}"
+                local timeout=600
+                local elapsed=0
+                while [ $elapsed -lt $timeout ]; do
+                    sleep 5
+                    elapsed=$((elapsed + 5))
+                    # Count Human ACs from task file
+                    local human_total=0 human_checked=0 in_human=false
+                    while IFS= read -r line; do
+                        if echo "$line" | grep -q '### Human'; then
+                            in_human=true; continue
+                        fi
+                        if $in_human && echo "$line" | grep -qE '^### |^## '; then
+                            break
+                        fi
+                        if $in_human && echo "$line" | grep -qE '^\- \[[ xX]\]'; then
+                            human_total=$((human_total + 1))
+                            if echo "$line" | grep -qE '^\- \[[xX]\]'; then
+                                human_checked=$((human_checked + 1))
+                            fi
+                        fi
+                    done < "$task_file"
+
+                    if [ "$human_checked" -ge "$human_total" ] && [ "$human_total" -gt 0 ]; then
+                        echo -e "${GREEN}All Human ACs checked (${human_checked}/${human_total})${NC}"
+                        exit 0
+                    fi
+                    printf "\r  Waiting... ${human_checked}/${human_total} checked (${elapsed}s)"
+                done
+                echo ""
+                echo -e "${YELLOW}Timeout — ${human_checked}/${human_total} Human ACs checked${NC}"
+                exit 1
+            fi
+            ;;
         ""|help|-h|--help)
             echo -e "${BOLD}fw task${NC} - Task management"
             echo ""
@@ -1333,6 +1526,7 @@ PYTASK_VERIFY
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"
             echo "  verify [T-XXX]    Run verification commands (T-070) or list awaiting tasks (T-193)"
+            echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo ""
             echo "Usage:"
             echo '  fw task create --name "Fix bug" --type build --owner human'
@@ -1340,6 +1534,8 @@ PYTASK_VERIFY
             echo '  fw task update T-XXX --add-tag "watchtower,ui"'
             echo '  fw task update T-XXX --status work-completed'
             echo '  fw task verify T-XXX  # Run verification commands from task'
+            echo '  fw task review T-631  # Print URL + QR for Human AC review'
+            echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
@@ -1628,6 +1824,201 @@ print(len(tier0))
             *)
                 echo -e "${RED}Unknown tier0 subcommand: $tier0_subcmd${NC}"
                 echo "Run 'fw tier0 help' for usage"
+                exit 1
+                ;;
+        esac
+        ;;
+    approvals)
+        # Approval queue management — pending/status/expire (T-612)
+        approvals_subcmd="${1:-}"
+        shift || true
+        APPROVAL_DIR="$PROJECT_ROOT/.context/approvals"
+        case "$approvals_subcmd" in
+            pending)
+                echo -e "${BOLD}Pending Approvals${NC}"
+                echo ""
+                if [ ! -d "$APPROVAL_DIR" ]; then
+                    echo -e "  ${GREEN}No approvals directory — nothing pending${NC}"
+                    exit 0
+                fi
+                found=0
+                now=$(date +%s)
+                ttl="${TIER0_WATCHTOWER_TTL:-3600}"
+                for f in "$APPROVAL_DIR"/pending-*.yaml; do
+                    [ -f "$f" ] || continue
+                    # Check expiry and display
+                    T0_FILE="$f" T0_NOW="$now" T0_TTL="$ttl" python3 -c "
+import yaml, re, os, sys
+from datetime import datetime, timezone
+
+f = os.environ['T0_FILE']
+now = int(os.environ['T0_NOW'])
+ttl = int(os.environ['T0_TTL'])
+
+try:
+    with open(f) as fh:
+        data = yaml.safe_load(fh) or {}
+except yaml.YAMLError:
+    # Fallback: parse key fields with regex for malformed YAML
+    with open(f) as fh:
+        raw = fh.read()
+    data = {}
+    for key in ('timestamp', 'status', 'risk', 'command_preview', 'command_hash'):
+        m = re.search(rf'^{key}:\s*[\"'']?(.+?)[\"'']?\s*$', raw, re.MULTILINE)
+        if m:
+            data[key] = m.group(1)
+
+ts = data.get('timestamp', '')
+status = data.get('status', 'pending')
+risk = str(data.get('risk', 'unknown'))[:80]
+preview = str(data.get('command_preview', ''))[:60]
+chash = str(data.get('command_hash', ''))[:12]
+
+age_str = '?'
+expired = False
+if ts:
+    try:
+        dt = datetime.fromisoformat(str(ts).replace('Z', '+00:00'))
+        age = now - dt.timestamp()
+        if age > ttl:
+            expired = True
+            status = 'expired'
+        mins = int(age / 60)
+        if mins < 60:
+            age_str = f'{mins}m ago'
+        else:
+            age_str = f'{mins // 60}h {mins % 60}m ago'
+    except:
+        pass
+
+color = '\033[1;33m' if not expired else '\033[0;31m'
+nc = '\033[0m'
+print(f'  {color}{status.upper()}{nc}  {chash}  ({age_str})')
+print(f'    Risk: {risk}')
+print(f'    Cmd:  {preview}')
+print()
+" 2>/dev/null
+                    found=$((found + 1))
+                done
+                if [ "$found" -eq 0 ]; then
+                    echo -e "  ${GREEN}No pending approvals${NC}"
+                fi
+                ;;
+            status)
+                echo -e "${BOLD}Approval History${NC}"
+                echo ""
+                if [ ! -d "$APPROVAL_DIR" ]; then
+                    echo -e "  ${GREEN}No approvals directory${NC}"
+                    exit 0
+                fi
+                # Show pending count
+                pending_count=0
+                for f in "$APPROVAL_DIR"/pending-*.yaml; do
+                    [ -f "$f" ] && pending_count=$((pending_count + 1))
+                done
+                echo -e "  Pending: ${YELLOW}${pending_count}${NC}"
+                echo ""
+                # Show recent resolved
+                echo -e "  ${BOLD}Recent resolved:${NC}"
+                found=0
+                for f in $(ls -t "$APPROVAL_DIR"/resolved-*.yaml 2>/dev/null | head -10); do
+                    [ -f "$f" ] || continue
+                    T0_FILE="$f" python3 -c "
+import yaml, os
+
+f = os.environ['T0_FILE']
+with open(f) as fh:
+    data = yaml.safe_load(fh) or {}
+
+status = data.get('status', '?')
+chash = data.get('command_hash', '')[:12]
+risk = data.get('risk', '')[:60]
+resp = data.get('response', {})
+mechanism = resp.get('mechanism', '?')
+responded = resp.get('responded_at', '?')
+
+colors = {'approved': '\033[0;32m', 'rejected': '\033[0;31m', 'consumed': '\033[0;36m', 'expired': '\033[1;33m'}
+c = colors.get(status, '\033[0m')
+nc = '\033[0m'
+print(f'    {c}{status.upper():10}{nc}  {chash}  via {mechanism}  at {responded}')
+print(f'              {risk}')
+" 2>/dev/null
+                    found=$((found + 1))
+                done
+                if [ "$found" -eq 0 ]; then
+                    echo "    (none)"
+                fi
+                echo ""
+                ;;
+            expire)
+                # Manually expire stale pending approvals
+                if [ ! -d "$APPROVAL_DIR" ]; then
+                    echo "No approvals directory"
+                    exit 0
+                fi
+                now=$(date +%s)
+                ttl="${TIER0_WATCHTOWER_TTL:-3600}"
+                expired_count=0
+                for f in "$APPROVAL_DIR"/pending-*.yaml; do
+                    [ -f "$f" ] || continue
+                    is_expired=$(T0_FILE="$f" T0_NOW="$now" T0_TTL="$ttl" python3 -c "
+import yaml, re, os, sys
+from datetime import datetime, timezone
+f = os.environ['T0_FILE']
+now = int(os.environ['T0_NOW'])
+ttl = int(os.environ['T0_TTL'])
+try:
+    with open(f) as fh:
+        data = yaml.safe_load(fh) or {}
+except yaml.YAMLError:
+    with open(f) as fh:
+        raw = fh.read()
+    data = {}
+    for key in ('timestamp', 'status', 'command_hash', 'risk', 'command_preview', 'type'):
+        m = re.search(rf'^{key}:\s*[\"'']?(.+?)[\"'']?\s*$', raw, re.MULTILINE)
+        if m:
+            data[key] = m.group(1)
+ts = data.get('timestamp', '')
+if ts:
+    try:
+        dt = datetime.fromisoformat(str(ts).replace('Z', '+00:00'))
+        age = now - dt.timestamp()
+        if age > ttl:
+            data['status'] = 'expired'
+            chash = str(data.get('command_hash', ''))[:12]
+            resolved = f.replace('pending-', 'resolved-')
+            with open(resolved, 'w') as fh2:
+                yaml.dump(data, fh2, default_flow_style=False, sort_keys=False)
+            os.unlink(f)
+            print('1')
+            sys.exit(0)
+    except:
+        pass
+print('0')
+" 2>/dev/null)
+                    if [ "$is_expired" = "1" ]; then
+                        expired_count=$((expired_count + 1))
+                    fi
+                done
+                echo -e "Expired ${YELLOW}${expired_count}${NC} pending approval(s)"
+                ;;
+            ""|help|-h|--help)
+                echo -e "${BOLD}fw approvals${NC} — Approval queue management (T-612)"
+                echo ""
+                echo "Subcommands:"
+                echo "  pending    Show outstanding approval requests"
+                echo "  status     Show recent approval history (approved/rejected/expired)"
+                echo "  expire     Manually expire stale pending approvals (TTL: 1hr)"
+                echo ""
+                echo "Approvals are created when check-tier0.sh blocks a destructive command."
+                echo "They can be approved via 'fw tier0 approve' (CLI) or via Watchtower web UI."
+                echo ""
+                echo "Environment:"
+                echo "  TIER0_WATCHTOWER_TTL  Approval TTL in seconds (default: 3600)"
+                ;;
+            *)
+                echo -e "${RED}Unknown approvals subcommand: $approvals_subcmd${NC}"
+                echo "Run 'fw approvals help' for usage"
                 exit 1
                 ;;
         esac

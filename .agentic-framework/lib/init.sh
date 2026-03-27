@@ -596,6 +596,15 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
+            "command": ".agentic-framework/bin/fw hook check-project-boundary"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": ".agentic-framework/bin/fw hook budget-gate"
           }
         ]
@@ -646,14 +655,42 @@ generate_claude_code_config() {
             "command": ".agentic-framework/bin/fw hook check-fabric-new-file"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".agentic-framework/bin/fw hook commit-cadence"
+          }
+        ]
       }
     ]
   }
 }
 SJSON
-        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all 12 hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, fabric new-file)"
+        echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, loop-detect, fabric new-file, project-boundary, commit-cadence)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
+    fi
+
+    # --- .mcp.json (MCP server configuration for Claude Code) ---
+    if [ ! -f "$dir/.mcp.json" ] || [ "${force:-false}" = true ]; then
+        cat > "$dir/.mcp.json" << 'MCPJSON'
+{
+  "context7": {
+    "command": "npx",
+    "args": ["-y", "@upstash/context7-mcp"]
+  },
+  "playwright": {
+    "command": "npx",
+    "args": ["@playwright/mcp@latest", "--no-sandbox"]
+  }
+}
+MCPJSON
+        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright)"
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  .mcp.json already exists"
     fi
 
     # --- .claude/commands/resume.md (project-specific /resume) ---
