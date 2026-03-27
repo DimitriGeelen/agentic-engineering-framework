@@ -41,10 +41,10 @@ Four-layer enforcement: when a task has human ACs or a GO decision, the framewor
 
 ## Verification
 
-grep -q '_emit_review' lib/review.sh
-grep -q '_emit_review\|emit_review' lib/inception.sh
-grep -q '_emit_review\|emit_review' agents/task-create/update-task.sh
-test -f .claude/skills/review.md
+grep -q 'emit_review' lib/review.sh
+grep -q 'emit_review' lib/inception.sh
+grep -q 'emit_review' agents/task-create/update-task.sh
+test -f .claude/commands/review.md
 
 ## Decisions
 
