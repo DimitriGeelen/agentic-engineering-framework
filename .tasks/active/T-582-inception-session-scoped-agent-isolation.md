@@ -4,7 +4,7 @@ name: "Inception: Session-scoped agent isolation — session keys + crash recove
 description: >
   Two concurrent agents sharing a project corrupt each others focus, session state, and working memory. Already hit in practice: fw-agent + openclaw-eval + 150-skills-manager all active simultaneously. T-560 session-stamped focus is a crude single-writer lock, not true isolation. Investigate: (1) Session key pattern from OpenClaw (agent:<id>:<scope>) giving each agent its own namespace (.context/working/<session-key>/). Blast radius: touches every agent that reads .context/working/. (2) Crash recovery: detect stale sessions (no heartbeat >5min), archive orphaned state, reset focus. Add to fw context init. Already hit: eval agent compacted and sat idle with stale state, previous sessions left orphaned focus files. Research source: /opt/openclaw-evaluation/.context/working/round2-T-018.md (full isolation analysis). OpenClaw source: src/agents/session-manager.ts (session key derivation), src/gateway/runtime-state.ts (process registry + TTL), src/agents/agent-runtime.ts (crash recovery: kill children, flush queues, archive transcript). Related framework: agents/context/lib/focus.sh (current single-file focus), agents/context/lib/init.sh (context init — integration point for crash recovery), T-560 (session-stamped focus — predecessor).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:18:38Z
-last_update: 2026-03-23T21:18:38Z
+last_update: 2026-03-27T19:14:40Z
 date_finished: null
 ---
 
@@ -20,43 +20,47 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Concurrent agents sharing a project corrupt each other's focus, session state, and working memory. T-560 session stamping is stale-detection, not isolation. See `docs/reports/T-582-session-scoped-agent-isolation.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+1. Concurrent agents are a real use case (TermLink workers) — validated
+2. T-560 session stamping is insufficient — validated (deadlock on concurrent sessions)
+3. Hybrid namespace (focus + budget only) is practical first step — validated (Option D)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Review shared state in `.context/working/` — DONE
+2. Review T-560 mechanism — DONE
+3. Review OpenClaw session key pattern — DONE
+4. Evaluate 4 isolation options — DONE
+5. Go/No-Go — DONE
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- ~15 files read `.context/working/`, full namespacing has high blast radius
+- focus.yaml and budget-status are the two highest-conflict files
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Session isolation for focus/budget, crash recovery design
+**OUT:** Full multi-agent coordination, lock-free writes
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Concurrent agents are a real use case (validated: TermLink workers)
+- Bounded solution exists (validated: Option D, 2-3 files)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Only one agent ever runs per project (false — TermLink workers exist)
+- T-560 is sufficient (false — deadlocks on concurrent sessions)
 
 ## Verification
 
@@ -85,3 +89,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-27T19:14:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
