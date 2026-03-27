@@ -28,11 +28,11 @@ date_finished: null
 
 ### Agent
 
-- [ ] `_resolve_commit_task()` removes the focused-task fallback (lines 40-48) — handover commits never use the task from `focus.yaml`
-- [ ] When no T-012 or handover-slug task exists, auto-creation (lines 28-37) remains the primary fallback — a dedicated handover task is always created rather than borrowing a work task
-- [ ] The T-000 absolute fallback (line 50) remains as last resort after auto-creation failure
-- [ ] Both normal-mode (line 646) and checkpoint-mode (line 155) commit messages use the resolved handover task, not any work task
-- [ ] `handover.sh --task T-XXX` override still works (line 13-14 unchanged)
+- [x] `_resolve_commit_task()` removes the focused-task fallback (lines 40-48) — handover commits never use the task from `focus.yaml`
+- [x] When no T-012 or handover-slug task exists, auto-creation (lines 28-37) remains the primary fallback — a dedicated handover task is always created rather than borrowing a work task
+- [x] The T-000 absolute fallback (line 50) remains as last resort after auto-creation failure
+- [x] Both normal-mode (line 646) and checkpoint-mode (line 155) commit messages use the resolved handover task, not any work task
+- [x] `handover.sh --task T-XXX` override still works (line 13-14 unchanged)
 
 ## Verification
 
