@@ -324,6 +324,21 @@
 </details>
 {% endif %}
 
+<!-- Complete Task button (T-640) -->
+<div id="complete-button">
+{% if can_complete %}
+<form hx-post="/api/task/{{ task_id }}/complete" hx-target="#complete-result" hx-swap="innerHTML"
+      style="margin: 1rem 0;">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="primary"
+            style="background:#10b981; border-color:#10b981; padding:0.5rem 1.5rem;">
+        Complete Task
+    </button>
+</form>
+<div id="complete-result"></div>
+{% endif %}
+</div>
+
 <!-- Episodic Summary -->
 {% if episodic %}
 <details open>

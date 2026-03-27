@@ -405,6 +405,12 @@ def task_detail(task_id):
             if tid_lower in fname:
                 artifacts.append({"name": f.name, "path": f"docs/reports/{f.name}"})
 
+    # Compute whether "Complete Task" button should show (T-640)
+    can_complete = False
+    if ac_items and task_data.get("status") != "work-completed":
+        all_checked = all(ac["checked"] for ac in ac_items)
+        can_complete = all_checked
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -415,6 +421,7 @@ def task_detail(task_id):
         status_options=status_options,
         ac_items=ac_items,
         artifacts=artifacts,
+        can_complete=can_complete,
     )
 
 
@@ -508,6 +515,24 @@ def update_task_type(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
+    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+
+
+@bp.route("/api/task/<task_id>/complete", methods=["POST"])
+def complete_task(task_id):
+    """Complete a task from the browser — passes --force since human clicked it (T-640)."""
+    if not re_mod.match(r"^T-\d{3}$", task_id):
+        abort(404)
+
+    stdout, stderr, ok = run_fw_command([
+        "task", "update", task_id, "--status", "work-completed",
+        "--force", "--reason", "Completed via Watchtower UI (human action)",
+    ])
+    if ok:
+        return (
+            '<p style="color: var(--pico-ins-color);">Task completed.</p>'
+            f'<div id="complete-button" hx-swap-oob="innerHTML"></div>'
+        )
     return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
 
 
