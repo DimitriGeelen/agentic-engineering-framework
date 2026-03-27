@@ -1,19 +1,19 @@
 ---
 id: T-613
-name: "Update Homebrew tap formula to v1.3.0 + fix consumer project hook errors"
+name: "Update Homebrew tap formula to v1.4.0 + fix consumer project hook errors"
 description: >
-  Update Homebrew tap formula to v1.3.0 + fix consumer project hook errors
+  Update Homebrew tap formula to v1.4.0 with git-derived versioning, MCP auto-config, and Watchtower approvals
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T17:08:35Z
-last_update: 2026-03-25T17:08:35Z
-date_finished: null
+last_update: 2026-03-27T18:04:50Z
+date_finished: 2026-03-27T18:04:50Z
 ---
 
 # T-613: Update Homebrew tap formula to v1.3.0 + fix consumer project hook errors
@@ -26,7 +26,8 @@ Homebrew tap at 1.2.6 while source is at 1.3.0 (470 commits behind). Consumer pr
 
 ### Agent
 - [x] v1.3.0 tag pushed to both GitHub and OneDev
-- [x] Homebrew formula updated with v1.3.0 URL and SHA256
+- [x] v1.4.0 tag pushed to both GitHub and OneDev
+- [x] Homebrew formula updated with v1.4.0 URL and SHA256
 - [x] Formula pushed to homebrew-agentic-fw tap repo
 
 ### Human
@@ -34,12 +35,12 @@ Homebrew tap at 1.2.6 while source is at 1.3.0 (470 commits behind). Consumer pr
   **Steps:**
   1. `brew update && brew upgrade agentic-fw`
   2. `fw version`
-  **Expected:** Version shows 1.3.0
+  **Expected:** Version shows 1.4.0
   **If not:** Run `brew tap-info dimitrigeelen/agentic-fw` and check HEAD commit
 
 ## Verification
 
-grep -q "v1.3.0" /tmp/homebrew-agentic-fw/Formula/agentic-fw.rb
+grep -q "v1.4.0" /tmp/homebrew-agentic-fw/Formula/agentic-fw.rb
 
 ## Decisions
 
@@ -58,3 +59,12 @@ grep -q "v1.3.0" /tmp/homebrew-agentic-fw/Formula/agentic-fw.rb
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-613-update-homebrew-tap-formula-to-v130--fix.md
 - **Context:** Initial task creation
+
+### 2026-03-27T19:05:00Z — updated to v1.4.0
+- **Action:** Updated formula from v1.3.0 to v1.4.0 (T-648 introduced git-derived versioning)
+- **v1.4.0 tag pushed:** GitHub + OneDev
+- **Formula SHA256:** 81556a9f7bd04bd1aa7fec4f028e705a898a5730f2caee82196b1616a941314f
+- **Formula pushed:** homebrew-agentic-fw main (f533eaf)
+
+### 2026-03-27T18:04:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
