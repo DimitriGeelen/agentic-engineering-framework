@@ -573,6 +573,12 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
         echo "Finalize after verification: fw task update $TASK_ID --status work-completed"
 
+        # T-634: Auto-emit review (URL + QR + artifacts) on partial-complete
+        if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/review.sh"
+            emit_review "$TASK_ID" "$TASK_FILE"
+        fi
+
         # T-325: Check human AC quality — warn if Steps blocks are missing
         HUMAN_AC_SECTION=$(sed -n '/^### Human/,/^## \|^### [^H]/p' "$TASK_FILE" 2>/dev/null | head -n -1)
         HUMAN_AC_COUNT=$(echo "$HUMAN_AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)

@@ -268,23 +268,12 @@ EOF
     echo -e "${GREEN}Inception decision recorded${NC}"
     echo "Task: $task_id"
     echo "Decision: $decision_upper"
-    echo ""
 
-    # Research artifacts (T-633)
-    local tid_lower
-    tid_lower=$(echo "$task_id" | tr '[:upper:]' '[:lower:]' | tr -d '-')
-    local artifacts_found=false
-    for artifact in "$PROJECT_ROOT"/docs/reports/"$task_id"-*.md "$PROJECT_ROOT"/docs/reports/fw-agent-"$tid_lower"-*.md; do
-        if [ -f "$artifact" ]; then
-            if ! $artifacts_found; then
-                echo -e "${BOLD}Research Artifacts:${NC}"
-                artifacts_found=true
-            fi
-            local rel_path="${artifact#$PROJECT_ROOT/}"
-            echo "  $rel_path"
-        fi
-    done
-    if $artifacts_found; then echo ""; fi
+    # T-634: Auto-emit review (URL + QR + artifacts) after decision
+    if [ -f "$FW_LIB_DIR/review.sh" ]; then
+        source "$FW_LIB_DIR/review.sh"
+        emit_review "$task_id" "$task_file"
+    fi
 
     if [ "$decision" = "go" ]; then
         echo -e "${YELLOW}Next: Create build tasks for implementation${NC}"
