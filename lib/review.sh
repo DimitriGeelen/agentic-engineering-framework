@@ -46,7 +46,18 @@ emit_review() {
         wt_host="${wt_host:-localhost}"
         base_url="http://${wt_host}:${wt_port:-3000}"
     fi
-    local review_url="${base_url}/tasks/${task_id}#human-ac"
+    # Detect workflow type for URL routing (T-642)
+    local workflow_type=""
+    workflow_type=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
+    local review_url
+    local review_label
+    if [ "$workflow_type" = "inception" ]; then
+        review_url="${base_url}/inception/${task_id}"
+        review_label="Inception Review"
+    else
+        review_url="${base_url}/tasks/${task_id}#human-ac"
+        review_label="Human AC Review"
+    fi
 
     # Count Human ACs
     local human_total=0 human_checked=0 in_human=false
@@ -67,7 +78,7 @@ emit_review() {
 
     echo ""
     echo -e "══════════════════════════════════════════════════"
-    echo -e "  ${BOLD}Human AC Review: $task_id${NC}"
+    echo -e "  ${BOLD}${review_label}: $task_id${NC}"
     echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
     echo -e ""
     echo "  ${review_url}"
