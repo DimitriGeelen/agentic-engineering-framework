@@ -51,11 +51,23 @@ import yaml, sys
 focus_file = '$focus_file'
 task_id = '$task_id'
 session_id = '${current_session_id:-unknown}'
+defaults = {
+    'current_task': None,
+    'priorities': [],
+    'blockers': [],
+    'pending_decisions': [],
+    'reminders': ['Run audit before pushing', 'Create handover before ending session'],
+    'focus_session': None,
+}
 try:
     with open(focus_file) as f:
         data = yaml.safe_load(f) or {}
 except:
     data = {}
+# Ensure all default fields exist
+for k, v in defaults.items():
+    if k not in data:
+        data[k] = v
 data['current_task'] = task_id
 data['focus_session'] = session_id
 with open(focus_file, 'w') as f:
