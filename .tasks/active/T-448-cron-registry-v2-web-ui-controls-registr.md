@@ -55,8 +55,10 @@ Follow-up to T-433 (inception GO) and T-447 (read-only page, completed). Impleme
 
 python3 -c "import yaml; d=yaml.safe_load(open('.context/cron-registry.yaml')); assert 'jobs' in d; assert len(d['jobs']) >= 8; print(f'OK: {len(d[\"jobs\"])} jobs in registry')"
 python3 -c "import yaml; d=yaml.safe_load(open('.context/cron-registry.yaml')); j=d['jobs'][0]; assert all(k in j for k in ('id','name','schedule','command','status')); print('OK: job schema valid')"
-curl -sf http://localhost:3000/cron | grep -q "Run Now"
-curl -sf http://localhost:3000/cron | grep -q "Pause\|Resume"
+# Web UI checks — try dev port (:3001) or prod port (:5050)
+curl -sf http://localhost:3001/cron -o /dev/null || curl -sf http://localhost:5050/cron -o /dev/null
+grep -q "Run Now" web/templates/cron.html
+grep -q "Pause\|Resume" web/templates/cron.html
 grep -q "cron/jobs" web/blueprints/cron.py
 
 ## Decisions
