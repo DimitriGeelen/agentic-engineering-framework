@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-583: Inception: Background health check — periodic silent-failure detection for hooks, tasks, focus
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T09:32:02Z
+# ============================================================================
+
+task_id: T-583
+task_name: "Inception: Background health check — periodic silent-failure detection for hooks, tasks, focus"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T21:21:51Z
+completed: 2026-03-28T09:32:01Z
+duration_days: 5
+updates_count: 2
+first_commit: 2026-03-27T20:18:05+01:00
+last_commit: 2026-03-27T20:18:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception complete — background health check probe design
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-583-background-health-check.md"
+  - ".tasks/active/T-583-inception-background-health-check--perio.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T20:18:05"
+    action: "T-583: Inception complete — background health check probe design"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6490 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6490
+  commits: 1
+  files_changed: 2
+  lines_added: 133
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-583-inception-background-health-check--perio.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-556: Handover commit attribution — use session ID not active task ID
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T09:28:23Z
+# ============================================================================
+
+task_id: T-556
+task_name: "Handover commit attribution — use session ID not active task ID"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T16:21:22Z
+completed: 2026-03-27T19:13:26Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-03-27T20:13:20+01:00
+last_commit: 2026-03-27T20:13:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove focused-task fallback from handover commit attribution
+
+# Key outcomes
+outcomes:
+  - "`_resolve_commit_task()` removes the focused-task fallback (lines 40-48) — handover commits never use the task from `focus.yaml`"
+  - "When no T-012 or handover-slug task exists, auto-creation (lines 28-37) remains the primary fallback — a dedicated handover task is always created rather than borrowing a work task"
+  - "The T-000 absolute fallback (line 50) remains as last resort after auto-creation failure"
+  - "Both normal-mode (line 646) and checkpoint-mode (line 155) commit messages use the resolved handover task, not any work task"
+  - "`handover.sh --task T-XXX` override still works (line 13-14 unchanged)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/handover/handover.sh"
+  - "agents/handover/handover.sh"
+  - ".tasks/active/T-556-handover-commit-attribution--use-session.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T20:13:20"
+    action: "T-556: Remove focused-task fallback from handover commit attribution"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5932 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5932
+  commits: 1
+  files_changed: 3
+  lines_added: 663
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-556-handover-commit-attribution--use-session.md
+generated_by: context-agent-hybrid
