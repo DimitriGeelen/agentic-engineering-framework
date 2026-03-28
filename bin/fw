@@ -422,6 +422,7 @@ show_help() {
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
+    echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
