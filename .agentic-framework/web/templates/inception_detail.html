@@ -1,0 +1,343 @@
+<style>
+    .decision-banner {
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    .decision-banner.go { background: rgba(46, 125, 50, 0.15); border-left: 4px solid #2e7d32; color: #2e7d32; }
+    .decision-banner.no-go { background: rgba(198, 40, 40, 0.15); border-left: 4px solid #c62828; color: #c62828; }
+    .decision-banner.defer { background: rgba(249, 168, 37, 0.15); border-left: 4px solid #f9a825; color: #795548; }
+    .decision-banner.pending { background: rgba(21, 101, 192, 0.1); border-left: 4px solid #1565c0; color: var(--pico-color); }
+    .section-card {
+        margin-bottom: 1rem;
+    }
+    .section-card header {
+        font-weight: 600;
+    }
+    .section-content {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .section-content p { margin-bottom: 0.5rem; }
+    .section-content ul, .section-content ol { margin: 0.25rem 0 0.5rem 1.25rem; }
+    .section-content code { font-size: 0.85em; }
+    .assumption-card {
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--pico-muted-border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .assumption-status {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .status-validated { background-color: #2e7d32; color: white; }
+    .status-invalidated { background-color: #c62828; color: white; }
+    .status-untested { background-color: #f9a825; color: #333; }
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+    }
+    .meta-item {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .meta-item .meta-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--pico-muted-color);
+        letter-spacing: 0.05em;
+    }
+    .criteria-list {
+        margin: 0.5rem 0;
+    }
+    .criteria-list li {
+        margin-bottom: 0.25rem;
+    }
+    .back-link {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .action-btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 4px;
+        cursor: pointer;
+        border: 1px solid;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .btn-validate { background: transparent; color: #2e7d32; border-color: #2e7d32; }
+    .btn-validate:hover { background: #2e7d32; color: white; }
+    .btn-invalidate { background: transparent; color: #c62828; border-color: #c62828; }
+    .btn-invalidate:hover { background: #c62828; color: white; }
+    .evidence-form {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .evidence-form input[type="text"] {
+        margin-bottom: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        flex: 1;
+    }
+    .evidence-form button {
+        margin-bottom: 0;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .add-assumption-form {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    .add-assumption-form input[type="text"] {
+        margin-bottom: 0;
+        padding: 0.3rem 0.5rem;
+        font-size: 0.85rem;
+        flex: 1;
+    }
+    .add-assumption-form button {
+        margin-bottom: 0;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    .decision-form {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .decision-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .decision-buttons label {
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 2px solid;
+        transition: all 0.15s;
+    }
+    .decision-buttons input[type="radio"] { display: none; }
+    .decision-buttons input[type="radio"]:checked + .dec-go { background: #2e7d32; color: white; border-color: #2e7d32; }
+    .decision-buttons input[type="radio"]:checked + .dec-nogo { background: #c62828; color: white; border-color: #c62828; }
+    .decision-buttons input[type="radio"]:checked + .dec-defer { background: #f9a825; color: #333; border-color: #f9a825; }
+    .dec-go { color: #2e7d32; border-color: #2e7d32; }
+    .dec-nogo { color: #c62828; border-color: #c62828; }
+    .dec-defer { color: #f9a825; border-color: #f9a825; }
+</style>
+
+<a href="/inception" class="back-link" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; All Inceptions</a>
+
+<div class="page-header">
+    <h1><code>{{ task_id }}</code>: {{ task.name }}</h1>
+</div>
+
+<!-- Decision banner -->
+{% set dec = decision_state | lower %}
+{% if dec == 'go' %}
+<div class="decision-banner go">Decision: GO</div>
+{% elif dec in ('no-go', 'no_go') %}
+<div class="decision-banner no-go">Decision: NO-GO</div>
+{% elif dec == 'defer' %}
+<div class="decision-banner defer">Decision: DEFER — exploration continues</div>
+{% else %}
+<div class="decision-banner pending">Decision pending — exploration in progress</div>
+{% endif %}
+
+<!-- Metadata -->
+<div class="meta-grid">
+    <div class="meta-item">
+        <div class="meta-label">Status</div>
+        <div>{{ task.status }}</div>
+    </div>
+    <div class="meta-item">
+        <div class="meta-label">Owner</div>
+        <div>{{ task.owner | default('unassigned') }}</div>
+    </div>
+    <div class="meta-item">
+        <div class="meta-label">Created</div>
+        <div>{{ task.created | default('unknown') }}</div>
+    </div>
+    {% if task.date_finished %}
+    <div class="meta-item">
+        <div class="meta-label">Finished</div>
+        <div>{{ task.date_finished }}</div>
+    </div>
+    {% endif %}
+    <div class="meta-item">
+        <div class="meta-label">Assumptions</div>
+        <div>{{ linked_assumptions | length }}</div>
+    </div>
+</div>
+
+<!-- Problem Statement -->
+{% if sections.problem %}
+<article class="section-card">
+    <header>Problem Statement</header>
+    <div class="section-content">{{ sections.problem }}</div>
+</article>
+{% endif %}
+
+<!-- Linked Assumptions -->
+<article class="section-card">
+    <header>Assumptions ({{ linked_assumptions | length }})</header>
+    {% for a in linked_assumptions %}
+    <div class="assumption-card" id="assumption-{{ a.id }}">
+        <div class="flex-1">
+            <code>{{ a.id }}</code> &mdash; {{ a.statement }}
+            {% if a.evidence %}
+            <div style="font-size: 0.8rem; color: var(--pico-muted-color); margin-top: 0.25rem;">
+                {% for e in a.evidence %}
+                <div>Evidence: {{ e.outcome }} ({{ e.date }})</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if a.status == 'untested' %}
+            <details style="margin-top: 0.4rem;">
+                <summary style="font-size: 0.75rem; cursor: pointer;">Resolve this assumption...</summary>
+                <form action="/assumptions/{{ a.id }}/resolve" method="post" class="evidence-form">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="redirect" value="/inception/{{ task_id }}">
+                    <input type="text" name="evidence" placeholder="Evidence..." required>
+                    <button type="submit" name="action" value="validate" class="action-btn btn-validate">Validate</button>
+                    <button type="submit" name="action" value="invalidate" class="action-btn btn-invalidate">Invalidate</button>
+                </form>
+            </details>
+            {% endif %}
+        </div>
+        <div>
+            <span class="assumption-status status-{{ a.status|default('untested') }}">{{ a.status|default('untested')|capitalize }}</span>
+        </div>
+    </div>
+    {% endfor %}
+    {% if task._location == 'active' %}
+    <form action="/inception/{{ task_id }}/add-assumption" method="post" class="add-assumption-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="statement" placeholder="New assumption to test..." required>
+        <button type="submit">Add Assumption</button>
+    </form>
+    {% endif %}
+</article>
+
+<!-- Exploration Plan -->
+{% if sections.exploration %}
+<article class="section-card">
+    <header>Exploration Plan</header>
+    <div class="section-content">{{ sections.exploration }}</div>
+</article>
+{% endif %}
+
+<!-- Technical Constraints -->
+{% if sections.constraints %}
+<article class="section-card">
+    <header>Technical Constraints</header>
+    <div class="section-content">{{ sections.constraints }}</div>
+</article>
+{% endif %}
+
+<!-- Scope Fence -->
+{% if sections.scope %}
+<article class="section-card">
+    <header>Scope Fence</header>
+    <div class="section-content">{{ sections.scope }}</div>
+</article>
+{% endif %}
+
+<!-- Go/No-Go Criteria -->
+{% if sections.criteria %}
+<article class="section-card">
+    <header>Go/No-Go Criteria</header>
+    <div class="section-content">{{ sections.criteria }}</div>
+</article>
+{% endif %}
+
+<!-- Agent Recommendation (T-679) -->
+{% if sections.recommendation %}
+<article class="section-card">
+    <header>Agent Recommendation</header>
+    <div class="section-content">{{ sections.recommendation }}</div>
+</article>
+{% endif %}
+
+<!-- Decision Details -->
+{% if sections.decision and dec != 'pending' %}
+<article class="section-card">
+    <header>Decision Record</header>
+    <div class="section-content">{{ sections.decision }}</div>
+</article>
+{% elif dec == 'pending' and task._location == 'active' %}
+<article class="section-card">
+    <header>Record Decision</header>
+    <form action="/inception/{{ task_id }}/decide" method="post" class="decision-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <div class="decision-buttons">
+            <label><input type="radio" name="decision" value="go" required><span class="dec-go">GO</span></label>
+            <label><input type="radio" name="decision" value="no-go"><span class="dec-nogo">NO-GO</span></label>
+            <label><input type="radio" name="decision" value="defer"><span class="dec-defer">DEFER</span></label>
+        </div>
+        <textarea name="rationale" placeholder="Rationale for this decision..." required
+                  style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;">{{ rationale_hint or '' }}</textarea>
+        <button type="submit" class="text-sm">Record Decision</button>
+    </form>
+</article>
+{% endif %}
+
+<!-- Updates Log -->
+{% if sections.updates %}
+<details class="mt-2">
+    <summary>Update Log</summary>
+    <div class="section-content" style="font-size: 0.85rem; margin-top: 0.75rem;">{{ sections.updates }}</div>
+</details>
+{% endif %}
+
+<!-- Episodic Memory -->
+{% if episodic %}
+<details style="margin-top: 1rem;">
+    <summary>Episodic Memory</summary>
+    <div style="margin-top: 0.75rem; font-size: 0.85rem;">
+        {% if episodic.summary %}
+        <p>{{ episodic.summary }}</p>
+        {% endif %}
+        {% if episodic.outcomes %}
+        <p><strong>Outcomes:</strong></p>
+        <ul>
+            {% for o in episodic.outcomes %}
+            <li>{{ o }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if episodic.tags %}
+        <p class="text-muted">
+            Tags: {% for tag in episodic.tags %}<code>{{ tag }}</code> {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+</details>
+{% endif %}

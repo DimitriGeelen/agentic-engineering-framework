@@ -1,0 +1,195 @@
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>Search and ask questions across tasks, decisions, learnings, patterns, and documentation.</p>
+</div>
+
+{% include '_partials/search_input.html' %}
+
+<!-- Search results area (hidden when Ask AI tab is active) -->
+<div id="search-results-area">
+{% include '_partials/search_results.html' %}
+</div>
+
+<!-- Ask AI chat tab (T-409) -->
+{% include '_partials/chat_tab.html' %}
+
+<style>
+/* ── Search hero ──────────────────────────────────────── */
+.search-hero { margin-bottom: 1.5rem; }
+.search-hero form[role="search"] { display: block !important; }
+.search-hero fieldset[role="group"] > input[type="search"] { flex: 1 1 0%; min-width: 0; }
+.search-hero fieldset[role="group"] > button { flex: 0 0 auto; white-space: nowrap; }
+
+/* ── Controls row (pills + gear + hint) ──────────────── */
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.search-mode-pills {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.mode-pill {
+    background: none;
+    border: none;
+    border-right: 1px solid var(--pico-muted-border-color);
+    padding: 0.2rem 0.7rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    color: var(--pico-muted-color);
+    transition: background 0.15s, color 0.15s;
+    margin: 0;
+    border-radius: 0;
+    line-height: 1.4;
+    font-weight: 500;
+}
+.mode-pill:last-child { border-right: none; }
+.mode-pill:hover { background: var(--pico-primary-focus); color: var(--pico-color); }
+.mode-pill.active {
+    background: var(--pico-primary);
+    color: #fff;
+}
+
+.search-settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 50%;
+    color: var(--pico-muted-color);
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
+}
+.search-settings-btn:hover {
+    color: var(--pico-primary);
+    border-color: var(--pico-primary);
+}
+.search-settings-btn svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
+
+.search-hint {
+    color: var(--pico-muted-color);
+    font-size: 0.78rem;
+}
+
+/* ── Tag cloud (T-392) ───────────────────────────────── */
+.tag-cloud-section { margin-bottom: 1rem; }
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+.tag-chip {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--pico-muted-border-color);
+    color: var(--pico-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+.tag-chip:hover {
+    background: var(--pico-primary);
+    color: #fff;
+}
+.tag-sm { font-size: 0.72rem; }
+.tag-md { font-size: 0.82rem; font-weight: 500; }
+.tag-lg { font-size: 0.92rem; font-weight: 600; }
+.tag-xl { font-size: 1.02rem; font-weight: 700; }
+
+/* ── Search pills ─────────────────────────────────────── */
+.search-pill {
+    font-size: 0.8rem !important;
+    padding: 0.2rem 0.6rem !important;
+    border-radius: 999px !important;
+    white-space: nowrap;
+}
+
+/* ── Empty state grid ─────────────────────────────────── */
+.search-empty-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+@media (max-width: 768px) {
+    .search-empty-grid { grid-template-columns: 1fr; }
+}
+
+.search-card {
+    padding: 1rem 1.25rem;
+}
+
+/* ── Saved answer links ───────────────────────────────── */
+.saved-answer-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+    color: var(--pico-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+    line-height: 1.4;
+}
+.saved-answer-link:last-child { border-bottom: none; }
+.saved-answer-link:hover { color: var(--pico-primary); }
+.saved-answer-link svg { margin-top: 0.15rem; }
+
+/* ── Recent search chips ──────────────────────────────── */
+.recent-chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pico-muted-border-color);
+    color: var(--pico-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.recent-chip:hover {
+    background: var(--pico-primary-focus);
+    color: var(--pico-primary);
+}
+
+/* ── Chat styles (T-409) ─────────────────────────────── */
+.chat-msg pre { position: relative; }
+.chat-msg pre code { display: block; padding: 1rem; border-radius: var(--pico-border-radius); overflow-x: auto; }
+.chat-ai-content { line-height: 1.7; }
+.chat-ai-content p { margin-bottom: 0.75rem; }
+.chat-ai-content ul, .chat-ai-content ol { margin-bottom: 0.75rem; padding-left: 1.5rem; }
+.chat-ai-content h1, .chat-ai-content h2, .chat-ai-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
+#chat-thread::-webkit-scrollbar { width: 4px; }
+#chat-thread::-webkit-scrollbar-thumb { background: var(--pico-muted-border-color); border-radius: 2px; }
+
+/* ── Legacy Q&A card styles (kept for backward compat) ── */
+.copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; padding: 0.15rem 0.5rem; font-size: 0.7rem; cursor: pointer; opacity: 0.6; background: var(--pico-muted-border-color); border: none; border-radius: 3px; color: var(--pico-color); }
+.copy-btn:hover { opacity: 1; }
+sup.citation { color: var(--pico-primary); font-weight: 600; cursor: default; }
+.pill-active { background: var(--pico-primary) !important; color: #fff !important; border-color: var(--pico-primary) !important; }
+</style>
+
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('static', filename='js/markdown-render.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search-qa.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>

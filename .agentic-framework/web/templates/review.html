@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Review {{ task_id }}</title>
+    <script>
+        (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+    </script>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <script src="/static/htmx.min.js"></script>
+    <style>
+        /* Mobile-first: single column, large touch targets */
+        * { box-sizing: border-box; }
+        body {
+            padding: 1rem;
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Task header */
+        .review-header {
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+        }
+        .review-header h2 {
+            font-size: 1.1rem;
+            margin: 0 0 0.25rem;
+            line-height: 1.3;
+        }
+        .review-meta {
+            font-size: 0.8rem;
+            color: var(--pico-muted-color);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Progress bar */
+        .ac-progress {
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .ac-progress-bar {
+            height: 6px;
+            background: var(--pico-muted-border-color);
+            border-radius: 3px;
+            margin-top: 0.3rem;
+            overflow: hidden;
+        }
+        .ac-progress-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Tier 0 alert */
+        .tier0-alert {
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #ef444408;
+        }
+        .tier0-alert h3 {
+            font-size: 0.95rem;
+            color: #ef4444;
+            margin: 0 0 0.5rem;
+        }
+        .tier0-risk {
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        .tier0-command {
+            font-family: monospace;
+            font-size: 0.75rem;
+            background: var(--pico-code-background-color);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 0.5rem 0;
+        }
+        .tier0-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .tier0-actions button {
+            flex: 1;
+            min-height: 48px;
+            font-size: 1rem;
+            margin: 0;
+        }
+        .btn-approve {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .btn-approve:hover { background: #059669; border-color: #059669; }
+        .btn-reject {
+            background: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+        .btn-reject:hover { background: #ef444422; }
+        .tier0-feedback {
+            width: 100%;
+            font-size: 0.85rem;
+            min-height: 2.5rem;
+            margin-top: 0.5rem;
+            resize: vertical;
+        }
+
+        /* AC cards */
+        .ac-card {
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            background: var(--pico-card-background-color);
+        }
+        .ac-card.checked {
+            opacity: 0.55;
+            border-color: #10b98155;
+        }
+        .ac-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .ac-card-header .ac-check {
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        /* Confidence badges */
+        .confidence-badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .badge-review { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
+        .badge-rubber-stamp { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+
+        /* AC detail (steps, expected, if-not) */
+        .ac-detail {
+            padding: 0.5rem 0 0 1.75rem;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .ac-detail strong {
+            display: block;
+            margin-top: 0.4rem;
+            margin-bottom: 0.1rem;
+        }
+        .ac-detail ol {
+            margin: 0 0 0.3rem 1.25rem;
+            padding: 0;
+        }
+        .ac-detail .if-not {
+            color: var(--pico-muted-color);
+        }
+
+        /* Action button (check/uncheck) */
+        .ac-action-btn {
+            width: 100%;
+            min-height: 48px;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+        .ac-action-btn.uncheck {
+            background: transparent;
+            border: 1px solid var(--pico-muted-border-color);
+            color: var(--pico-muted-color);
+        }
+
+        /* Complete task button */
+        .complete-section {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 2px solid #10b981;
+        }
+        .complete-btn {
+            width: 100%;
+            min-height: 56px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .complete-btn:hover { background: #059669; border-color: #059669; }
+
+        /* Artifacts */
+        .artifacts-section {
+            margin-top: 1.25rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--pico-muted-border-color);
+        }
+        .artifacts-section h4 {
+            font-size: 0.85rem;
+            margin: 0 0 0.5rem;
+            color: var(--pico-muted-color);
+        }
+        .artifacts-section a {
+            display: block;
+            font-size: 0.8rem;
+            padding: 0.3rem 0;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+        }
+        .badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
+        .badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+    </style>
+</head>
+<body class="review-page">
+
+    <!-- Task header -->
+    <div class="review-header">
+        <h2>{{ task_id }}: {{ task_name }}</h2>
+        <div class="review-meta">
+            <span class="status-badge badge-{{ task_status|replace('-','') }}">{{ task_status }}</span>
+            <span>Owner: {{ task_owner }}</span>
+        </div>
+    </div>
+
+    <!-- Tier 0 approvals (if any pending) -->
+    {% for item in pending_tier0 %}
+    <div class="tier0-alert">
+        <h3>Tier 0 Approval Required</h3>
+        <div class="tier0-risk">{{ item.risk }}</div>
+        <div class="tier0-command">{{ item.command_preview }}</div>
+        <form hx-post="/api/approvals/decide" hx-target="#tier0-result-{{ loop.index }}" hx-swap="innerHTML">
+            <input type="hidden" name="command_hash" value="{{ item.command_hash }}">
+            <textarea name="feedback" class="tier0-feedback" placeholder="Optional feedback..."></textarea>
+            <div class="tier0-actions">
+                <button type="submit" name="decision" value="approved" class="btn-approve">Approve</button>
+                <button type="submit" name="decision" value="rejected" class="btn-reject">Reject</button>
+            </div>
+        </form>
+        <div id="tier0-result-{{ loop.index }}"></div>
+    </div>
+    {% endfor %}
+
+    <!-- Human ACs with polling -->
+    <div id="ac-container"
+         hx-get="/review/{{ task_id }}/acs"
+         hx-trigger="every 5s"
+         hx-swap="innerHTML">
+        {% include '_review_acs.html' %}
+    </div>
+
+    <!-- Research artifacts -->
+    {% if artifacts %}
+    <div class="artifacts-section">
+        <h4>Research Artifacts</h4>
+        {% for a in artifacts %}
+        <a href="/file/{{ a.path }}" target="_blank">{{ a.name }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</body>
+</html>

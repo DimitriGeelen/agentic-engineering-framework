@@ -1,0 +1,207 @@
+<style>
+/* Approval card base */
+.approval-card {
+    border: 2px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+    margin: 0.75rem 0;
+    background: var(--pico-card-background-color);
+}
+.approval-card.pending {
+    border-color: #f59e0b;
+    background: #f59e0b08;
+}
+.approval-card.approved {
+    border-color: #10b981;
+    opacity: 0.7;
+}
+.approval-card.rejected {
+    border-color: #ef4444;
+    opacity: 0.7;
+}
+.approval-card.expired {
+    border-color: var(--pico-muted-border-color);
+    opacity: 0.5;
+}
+.approval-risk {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+.approval-command {
+    font-family: monospace;
+    font-size: 0.8rem;
+    background: var(--pico-code-background-color);
+    padding: 0.4rem 0.6rem;
+    border-radius: 3px;
+    word-break: break-all;
+    margin: 0.5rem 0;
+}
+.approval-meta {
+    font-size: 0.75rem;
+    color: var(--pico-muted-color);
+    margin-bottom: 0.5rem;
+}
+.approval-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin-top: 0.5rem;
+}
+.approval-actions button {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    margin: 0;
+}
+.btn-approve {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+.btn-approve:hover { background: #059669; border-color: #059669; }
+.btn-reject {
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+.btn-reject:hover { background: #ef444422; }
+.approval-feedback {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.5rem;
+    min-height: 2rem;
+    margin: 0;
+    resize: vertical;
+}
+.status-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+}
+.badge-pending { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
+.badge-approved { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+.badge-rejected { background: #ef444422; color: #dc2626; border: 1px solid #ef444455; }
+.badge-expired { background: #6b728022; color: #6b7280; border: 1px solid #6b728055; }
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--pico-muted-color);
+    font-size: 0.9rem;
+}
+
+/* Summary counts bar (T-639) */
+.approvals-summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.approval-stat {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    text-align: center;
+    min-width: 80px;
+    flex: 1;
+}
+.approval-stat .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: block;
+}
+.approval-stat .stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--pico-muted-color);
+}
+.approval-stat.total {
+    border-color: var(--pico-primary);
+}
+.approval-stat.tier0-active .stat-value { color: #f59e0b; }
+.approval-stat.go-active .stat-value { color: #1565c0; }
+.approval-stat.ac-active .stat-value { color: #7c3aed; }
+
+/* GO decision card */
+.approval-card.go-decision {
+    border-color: #1565c0;
+    background: #1565c008;
+}
+.decision-inline {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.decision-inline label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin: 0;
+}
+.dec-go { color: #10b981; font-weight: 700; }
+.dec-nogo { color: #ef4444; font-weight: 700; }
+.dec-defer { color: #6b7280; font-weight: 700; }
+
+/* Human AC group card */
+.approval-card.human-ac-group {
+    border-color: #7c3aed44;
+    background: #7c3aed04;
+}
+.ac-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+}
+.ac-list li {
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+}
+.ac-list li form { display: inline; margin: 0; padding: 0; }
+.ac-list li input[type=checkbox] { margin: 0.15rem 0 0; }
+.ac-checked { text-decoration: line-through; opacity: 0.5; }
+.confidence-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.05rem 0.3rem;
+    border-radius: 2px;
+    white-space: nowrap;
+}
+.badge-review { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
+.badge-rubber-stamp { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+.badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
+.badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+
+/* Section headers */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0.5rem;
+}
+.section-header h3 { margin: 0; }
+.section-header small { color: var(--pico-muted-color); font-weight: 400; }
+</style>
+
+<div class="page-header">
+    <h1>Approvals {% if total_count %}<small>({{ total_count }} pending)</small>{% endif %}</h1>
+</div>
+
+<!-- Polling container: auto-refreshes every 10s (T-669) -->
+<div id="approvals-content"
+     hx-get="/approvals/content"
+     hx-trigger="every 10s"
+     hx-swap="innerHTML">
+{% include '_approvals_content.html' %}
+</div><!-- /approvals-content polling container (T-669) -->

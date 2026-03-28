@@ -1,0 +1,64 @@
+<!-- AC fragment for /review/T-XXX — rendered inline and via htmx polling (T-667) -->
+
+<!-- Progress bar -->
+<div class="ac-progress">
+    Human ACs: {{ checked_count }}/{{ total_count }}
+    <div class="ac-progress-bar">
+        <div class="ac-progress-fill" style="width: {{ (checked_count / total_count * 100) if total_count else 0 }}%;"></div>
+    </div>
+</div>
+
+<!-- AC cards -->
+{% for ac in human_acs %}
+<div class="ac-card {% if ac.checked %}checked{% endif %}">
+    <div class="ac-card-header">
+        <form class="ac-check" hx-post="/api/task/{{ task_id }}/toggle-ac"
+              hx-vals='{"line": "{{ ac.line_idx }}"}'
+              hx-swap="none"
+              hx-on::after-request="htmx.ajax('GET', '/review/{{ task_id }}/acs', {target:'#ac-container', swap:'innerHTML'})">
+            <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                   onchange="this.form.requestSubmit();"
+                   style="width: 24px; height: 24px; margin: 0; cursor: pointer;">
+        </form>
+        {% if ac.confidence == 'review' %}
+        <span class="confidence-badge badge-review">Review</span>
+        {% elif ac.confidence == 'rubber-stamp' %}
+        <span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>
+        {% endif %}
+        <span {% if ac.checked %}style="text-decoration: line-through; opacity: 0.6;"{% endif %}>{{ ac.text }}</span>
+    </div>
+    {% if not ac.checked and (ac.steps or ac.expected or ac.if_not) %}
+    <div class="ac-detail">
+        {% if ac.steps %}
+        <strong>Steps:</strong>
+        <ol>
+            {% for step in ac.steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+        </ol>
+        {% endif %}
+        {% if ac.expected %}
+        <strong>Expected:</strong> {{ ac.expected }}
+        {% endif %}
+        {% if ac.if_not %}
+        <div class="if-not"><strong>If not:</strong> {{ ac.if_not }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% if not human_acs %}
+<div style="text-align: center; padding: 2rem; color: var(--pico-muted-color);">
+    No Human ACs for this task.
+</div>
+{% endif %}
+
+<!-- Complete Task button (when all checked) -->
+{% if all_checked and total_count > 0 %}
+<div class="complete-section">
+    <form hx-post="/api/task/{{ task_id }}/complete" hx-target="#ac-container" hx-swap="innerHTML">
+        <button type="submit" class="complete-btn">Complete Task</button>
+    </form>
+</div>
+{% endif %}

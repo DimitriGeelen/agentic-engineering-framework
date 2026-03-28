@@ -22,6 +22,9 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Source enumerations (single source of truth)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
+# Per-key locking for concurrent task updates (T-587)
+source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
+
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, FORCE, colors
 
@@ -140,6 +143,22 @@ check_acceptance_criteria() {
             PARTIAL_COMPLETE=true
         else
             echo -e "${GREEN}Human: $HUMAN_AC_CHECKED/$HUMAN_AC_TOTAL checked ✓${NC}"
+        fi
+    fi
+}
+
+# T-679: Auto-emit review on partial-complete transition
+# Called after work-completed transition when human ACs remain.
+# Also available standalone: fw task review T-XXX
+auto_emit_review_if_partial() {
+    if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
+        echo ""
+        echo -e "${BOLD}Present this to the human for review:${NC}"
+        if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/review.sh"
+            emit_review "$TASK_ID" "$TASK_FILE"
+        else
+            echo "  fw task review $TASK_ID"
         fi
     fi
 }
@@ -281,6 +300,12 @@ fi
 if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
     echo -e "${RED}ERROR: Task $TASK_ID not found${NC}" >&2
     exit 1
+fi
+
+# Acquire per-task lock to prevent concurrent modifications (T-587)
+if type keylock_acquire &>/dev/null; then
+    keylock_acquire "$TASK_ID"
+    trap 'keylock_release "$TASK_ID" 2>/dev/null' EXIT
 fi
 
 # Read current state

@@ -1,0 +1,53 @@
+<!-- Audit results fragment (returned by htmx POST /api/audit/run) -->
+
+{% if audit_status == "PASS" %}
+<article style="border-left: 4px solid var(--pico-ins-color);">
+{% elif audit_status == "WARN" %}
+<article style="border-left: 4px solid #e8a317;">
+{% else %}
+<article style="border-left: 4px solid var(--pico-del-color);">
+{% endif %}
+    <header>
+        <strong>Audit:
+        {% if audit_status == "PASS" %}
+            PASS
+        {% elif audit_status == "WARN" %}
+            WARN
+        {% else %}
+            FAIL
+        {% endif %}
+        </strong>
+        &mdash;
+        {{ audit_summary.get("pass", 0) }} passed,
+        {{ audit_summary.get("warn", 0) }} warnings,
+        {{ audit_summary.get("fail", 0) }} failures
+        {% if audit_timestamp %}
+        <small style="float: right; color: var(--pico-muted-color);">{{ audit_timestamp }}</small>
+        {% endif %}
+    </header>
+
+    {% for finding in findings %}
+    {% if finding.level in ("WARN", "FAIL") %}
+    <details open>
+        <summary>
+            {% if finding.level == "WARN" %}
+                <span style="color: #e8a317;">WARN</span>
+            {% else %}
+                <span style="color: var(--pico-del-color);">FAIL</span>
+            {% endif %}
+            &mdash; {{ finding.check }}
+        </summary>
+        {% if finding.mitigation %}
+        <p style="margin-left: 1rem;"><small><strong>Mitigation:</strong> {{ finding.mitigation }}</small></p>
+        {% endif %}
+    </details>
+    {% else %}
+    <details>
+        <summary>
+            <span style="color: var(--pico-ins-color);">PASS</span>
+            &mdash; {{ finding.check }}
+        </summary>
+    </details>
+    {% endif %}
+    {% endfor %}
+</article>

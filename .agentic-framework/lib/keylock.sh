@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# keylock.sh — Per-key serialization primitive using flock
+# T-587: Keyed async queue for concurrent framework operations
+#
+# Usage:
+#   source lib/keylock.sh
+#   keylock_acquire "T-042"   # Blocks until lock acquired
+#   # ... critical section ...
+#   keylock_release "T-042"   # Releases lock
+#
+# Cross-key parallelism: locks on different keys do not block each other.
+# Same-key serialization: locks on the same key execute sequentially.
+# Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-released.
+
+# Guard against double-sourcing
+[ -n "${_KEYLOCK_LOADED:-}" ] && return 0
+_KEYLOCK_LOADED=1
+
+# Configuration
+KEYLOCK_DIR="${PROJECT_ROOT:-.}/.context/locks"
+KEYLOCK_TIMEOUT="${KEYLOCK_TIMEOUT:-300}"  # seconds before stale lock cleanup
+
+# Track file descriptors per key for release
+# declare -A requires bash 4+; fail gracefully
+if ! declare -A _KEYLOCK_FDS 2>/dev/null; then
+    echo "keylock: bash 4+ required for associative arrays" >&2
+    return 1 2>/dev/null || exit 1
+fi
+_KEYLOCK_FD_COUNTER=200  # Start FDs at 200 to avoid collisions
+
+# Sanitize key name for filesystem use
+_keylock_path() {
+    local key="$1"
+    # Replace non-alphanumeric chars with dashes
+    local safe_key
+    safe_key=$(echo "$key" | sed 's/[^a-zA-Z0-9_-]/-/g')
+    echo "${KEYLOCK_DIR}/${safe_key}.lock"
+}
+
+# Clean stale locks older than KEYLOCK_TIMEOUT
+_keylock_clean_stale() {
+    local lock_file="$1"
+    if [ -f "$lock_file" ]; then
+        local now
+        now=$(date +%s)
+        local file_time
+        file_time=$(stat -c %Y "$lock_file" 2>/dev/null || stat -f %m "$lock_file" 2>/dev/null || echo 0)
+        local age=$((now - file_time))
+        if [ "$age" -gt "$KEYLOCK_TIMEOUT" ]; then
+            rm -f "$lock_file"
+            return 0  # Stale lock cleaned
+        fi
+    fi
+    return 1  # No stale lock
+}
+
+# Acquire a per-key lock (blocks until acquired)
+keylock_acquire() {
+    local key="$1"
+    [ -z "$key" ] && { echo "keylock_acquire: key required" >&2; return 1; }
+
+    mkdir -p "$KEYLOCK_DIR" 2>/dev/null
+
+    local lock_file
+    lock_file=$(_keylock_path "$key")
+
+    # Clean stale lock if exists
+    _keylock_clean_stale "$lock_file" 2>/dev/null || true
+
+    # Touch lock file (creates if needed)
+    touch "$lock_file"
+
+    # Allocate file descriptor
+    local fd=$_KEYLOCK_FD_COUNTER
+    _KEYLOCK_FD_COUNTER=$((_KEYLOCK_FD_COUNTER + 1))
+
+    # Open FD and acquire exclusive lock (blocks until available)
+    eval "exec ${fd}>\"${lock_file}\""
+    flock -x "$fd"
+
+    # Store FD for release
+    _KEYLOCK_FDS["$key"]=$fd
+
+    return 0
+}
+
+# Release a per-key lock
+keylock_release() {
+    local key="$1"
+    [ -z "$key" ] && { echo "keylock_release: key required" >&2; return 1; }
+
+    local fd="${_KEYLOCK_FDS[$key]}"
+    if [ -n "$fd" ]; then
+        # Release lock by closing the file descriptor
+        eval "exec ${fd}>&-"
+        unset "_KEYLOCK_FDS[$key]"
+    fi
+
+    return 0
+}

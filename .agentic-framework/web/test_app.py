@@ -1,0 +1,1098 @@
+"""
+Test suite for the Watchtower web UI.
+
+Covers: all routes (200s), htmx partial rendering, CSRF protection,
+error handlers, task detail pages, kanban board, quality gate,
+session cockpit, search, and data integrity.
+
+Run: pytest web/test_app.py -v
+"""
+
+import os
+import subprocess
+import sys
+from unittest.mock import patch, MagicMock
+
+import pytest
+
+# Ensure web package is importable
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from web.app import app
+
+
+@pytest.fixture
+def client():
+    """Flask test client with testing config."""
+    app.config["TESTING"] = True
+    app.config["SECRET_KEY"] = "test-secret-key"
+    with app.test_client() as c:
+        yield c
+
+
+@pytest.fixture
+def csrf_client(client):
+    """Client with a valid CSRF token pre-loaded."""
+    client.get("/")
+    with client.session_transaction() as sess:
+        token = sess.get("_csrf_token", "")
+    return client, token
+
+
+# =========================================================================
+# Route availability — every page returns 200
+# =========================================================================
+
+
+class TestRoutes:
+    """All main routes return 200."""
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/",
+            "/project",
+            "/directives",
+            "/timeline",
+            "/tasks",
+            "/tasks?view=board",
+            "/tasks?view=list",
+            "/tasks?show_all=true",
+            "/decisions",
+            "/learnings",
+            "/gaps",
+            "/search",
+            "/quality",
+            "/metrics",
+            "/patterns",
+            "/patterns?type=failure",
+        ],
+    )
+    def test_route_returns_200(self, client, path):
+        resp = client.get(path)
+        assert resp.status_code == 200, f"{path} returned {resp.status_code}"
+
+    def test_search_with_query(self, client):
+        resp = client.get("/search?q=lifecycle")
+        assert resp.status_code == 200
+        assert b"lifecycle" in resp.data.lower() or b"Search" in resp.data
+
+
+# =========================================================================
+# htmx partial rendering
+# =========================================================================
+
+
+class TestHtmxPartials:
+    """HX-Request header returns fragment (no <html> wrapper)."""
+
+    @pytest.mark.parametrize(
+        "path",
+        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality", "/metrics", "/patterns"],
+    )
+    def test_htmx_returns_fragment(self, client, path):
+        resp = client.get(path, headers={"HX-Request": "true"})
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "<!DOCTYPE" not in html
+        assert "<html" not in html
+
+    @pytest.mark.parametrize(
+        "path",
+        ["/", "/tasks", "/timeline", "/quality"],
+    )
+    def test_full_page_has_wrapper(self, client, path):
+        resp = client.get(path)
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "<!DOCTYPE" in html or "<html" in html
+
+
+# =========================================================================
+# CSRF protection
+# =========================================================================
+
+
+class TestCSRF:
+    """State-changing requests require valid CSRF token."""
+
+    def test_post_without_csrf_returns_403(self, client):
+        resp = client.post("/api/task/T-001/status", data={"status": "started-work"})
+        assert resp.status_code == 403
+
+    def test_post_with_invalid_csrf_returns_403(self, client):
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": "invalid-token"},
+        )
+        assert resp.status_code == 403
+
+    def test_post_with_valid_csrf_succeeds(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code != 403
+
+    def test_csrf_via_header(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work"},
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code != 403
+
+
+# =========================================================================
+# Error handlers
+# =========================================================================
+
+
+class TestErrorHandlers:
+    """Custom error pages render correctly."""
+
+    def test_404_returns_error_page(self, client):
+        resp = client.get("/nonexistent-page-xyz")
+        assert resp.status_code == 404
+        assert b"Not Found" in resp.data
+
+    def test_404_for_invalid_task_id(self, client):
+        resp = client.get("/tasks/INVALID")
+        assert resp.status_code == 404
+
+    def test_404_for_nonexistent_task(self, client):
+        resp = client.get("/tasks/T-999")
+        assert resp.status_code == 404
+
+    def test_project_doc_path_traversal(self, client):
+        resp = client.get("/project/../../etc/passwd")
+        assert resp.status_code == 404
+
+    def test_project_doc_nonexistent(self, client):
+        resp = client.get("/project/nonexistent-doc-xyz")
+        assert resp.status_code == 404
+
+
+# =========================================================================
+# Task detail pages
+# =========================================================================
+
+
+class TestTaskDetail:
+    """Task detail pages render with correct data."""
+
+    def test_task_detail_renders(self, client):
+        resp = client.get("/tasks/T-001")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "T-001" in html
+
+    def test_task_id_validation_blocks_injection(self, client):
+        resp = client.get("/tasks/T-001;rm+-rf")
+        assert resp.status_code == 404
+
+    def test_task_status_api_validates_status(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "invalid-status", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_task_status_api_validates_task_id(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/INVALID/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code == 404
+
+
+# =========================================================================
+# Kanban Board
+# =========================================================================
+
+
+class TestKanbanBoard:
+    """Kanban board view works correctly."""
+
+    def test_board_view_renders(self, client):
+        resp = client.get("/tasks?view=board")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Board" in html or "board" in html
+
+    def test_list_view_renders(self, client):
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "List" in html or "table" in html.lower()
+
+    def test_create_task_form_present(self, client):
+        resp = client.get("/tasks?view=board")
+        html = resp.data.decode()
+        assert "Create Task" in html
+
+    def test_create_task_api_requires_name(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_create_task_api_validates_type(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "invalid", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+
+# =========================================================================
+# Timeline
+# =========================================================================
+
+
+class TestTimeline:
+    """Timeline endpoints work correctly."""
+
+    def test_timeline_page(self, client):
+        resp = client.get("/timeline")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "S-" in html
+
+    def test_timeline_task_detail_api(self, client):
+        resp = client.get("/api/timeline/task/T-001")
+        assert resp.status_code == 200
+
+    def test_timeline_task_invalid_id(self, client):
+        resp = client.get("/api/timeline/task/INVALID")
+        assert resp.status_code == 404
+
+    def test_timeline_task_nonexistent(self, client):
+        resp = client.get("/api/timeline/task/T-999")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Quality Gate
+# =========================================================================
+
+
+class TestQualityGate:
+    """Quality Gate page renders and API endpoints work."""
+
+    def test_quality_page_renders(self, client):
+        resp = client.get("/quality")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Quality Gate" in html
+        assert "Traceability" in html
+
+    def test_quality_page_shows_audit_status(self, client):
+        resp = client.get("/quality")
+        html = resp.data.decode()
+        assert "PASS" in html or "WARN" in html or "FAIL" in html
+
+    def test_quality_has_action_buttons(self, client):
+        resp = client.get("/quality")
+        html = resp.data.decode()
+        assert "Run Audit" in html
+        assert "Run Tests" in html
+
+    def test_audit_api_requires_csrf(self, client):
+        resp = client.post("/api/audit/run")
+        assert resp.status_code == 403
+
+    def test_tests_api_requires_csrf(self, client):
+        resp = client.post("/api/tests/run")
+        assert resp.status_code == 403
+
+
+# =========================================================================
+# Session Cockpit
+# =========================================================================
+
+
+class TestSessionCockpit:
+    """Session status and write action endpoints."""
+
+    def test_session_status_returns_200(self, client):
+        resp = client.get("/api/session/status")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Branch" in html or "branch" in html
+
+    def test_session_status_shows_git_info(self, client):
+        resp = client.get("/api/session/status")
+        html = resp.data.decode()
+        assert "master" in html or "main" in html
+
+    def test_decision_api_requires_csrf(self, client):
+        resp = client.post("/api/decision", data={"decision": "Test"})
+        assert resp.status_code == 403
+
+    def test_decision_api_requires_text(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/decision",
+            data={"decision": "", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_learning_api_requires_csrf(self, client):
+        resp = client.post("/api/learning", data={"learning": "Test"})
+        assert resp.status_code == 403
+
+    def test_learning_api_requires_text(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/learning",
+            data={"learning": "", "_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_session_init_requires_csrf(self, client):
+        resp = client.post("/api/session/init")
+        assert resp.status_code == 403
+
+    def test_healing_api_requires_csrf(self, client):
+        resp = client.post("/api/healing/T-001")
+        assert resp.status_code == 403
+
+    def test_healing_api_validates_task_id(self, csrf_client):
+        client, token = csrf_client
+        resp = client.post(
+            "/api/healing/INVALID",
+            data={"_csrf_token": token},
+        )
+        assert resp.status_code == 400
+
+
+# =========================================================================
+# Data integrity
+# =========================================================================
+
+
+class TestDataIntegrity:
+    """Pages display real framework data."""
+
+    def test_dashboard_shows_watchtower(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Watchtower" in html
+
+    def test_dashboard_has_task_counts(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "task" in html.lower() or "Task" in html
+
+    def test_gaps_page_shows_gaps(self, client):
+        resp = client.get("/gaps")
+        html = resp.data.decode()
+        assert "G-001" in html
+
+    def test_decisions_page_shows_decisions(self, client):
+        resp = client.get("/decisions")
+        html = resp.data.decode()
+        assert "AD-001" in html or "architectural" in html.lower()
+
+    def test_learnings_page_shows_content(self, client):
+        resp = client.get("/learnings")
+        html = resp.data.decode()
+        assert "L-001" in html or "learning" in html.lower()
+
+    def test_directives_page_shows_d1_d4(self, client):
+        resp = client.get("/directives")
+        html = resp.data.decode()
+        assert "Antifragility" in html or "D1" in html
+
+    def test_project_page_lists_docs(self, client):
+        resp = client.get("/project")
+        html = resp.data.decode()
+        assert "001-Vision" in html or "Vision" in html
+
+    def test_project_doc_renders_markdown(self, client):
+        resp = client.get("/project/001-Vision")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "<h" in html or "<p>" in html
+
+    def test_tasks_page_shows_tasks(self, client):
+        resp = client.get("/tasks?view=list")
+        html = resp.data.decode()
+        assert "T-0" in html
+
+    def test_search_returns_results(self, client):
+        resp = client.get("/search?q=antifragility")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Navigation — Watchtower grouped nav
+# =========================================================================
+
+
+class TestNavigation:
+    """Navigation uses grouped Watchtower layout."""
+
+    def test_watchtower_brand_present(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Watchtower" in html
+
+    def test_nav_groups_present(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        for group in ["Work", "Knowledge", "Govern"]:
+            assert group in html, f"Navigation group missing: {group}"
+
+    def test_nav_has_search(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "search" in html.lower()
+
+    def test_ambient_strip_present(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "ambient-strip" in html
+
+    def test_footer_shows_watchtower(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Watchtower v1.0.0" in html
+
+
+# =========================================================================
+# Phase 3 — Operational Intelligence
+# =========================================================================
+
+
+class TestMetrics:
+    """Metrics page shows project health data."""
+
+    def test_metrics_has_task_counts(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Active Tasks" in html
+        assert "completed" in html.lower()
+
+    def test_metrics_has_traceability(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Traceability" in html
+        assert "gauge-" in html
+
+    def test_metrics_has_knowledge_counts(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Knowledge Items" in html
+
+    def test_metrics_has_recent_commits(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Recent Commits" in html
+
+    def test_metrics_has_refresh_button(self, client):
+        resp = client.get("/metrics")
+        html = resp.data.decode()
+        assert "Refresh" in html
+
+
+class TestPatterns:
+    """Patterns page shows categorized patterns with filtering."""
+
+    def test_patterns_has_all_types(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "FP-" in html or "SP-" in html or "AF-" in html or "WP-" in html
+
+    def test_patterns_filter_by_type(self, client):
+        resp = client.get("/patterns?type=failure")
+        html = resp.data.decode()
+        assert "FP-" in html
+        assert "SP-" not in html
+
+    def test_patterns_antifragile_has_escalation(self, client):
+        resp = client.get("/patterns?type=antifragile")
+        html = resp.data.decode()
+        assert "escalation-ladder" in html
+        assert "step-letter" in html
+
+    def test_patterns_has_tab_bar(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "pattern-tabs" in html
+        assert "Failure" in html
+
+    def test_patterns_cards_link_to_tasks(self, client):
+        resp = client.get("/patterns")
+        html = resp.data.decode()
+        assert "/tasks/T-" in html
+
+
+class TestPhase3Integration:
+    """Cross-cutting Phase 3 integration checks."""
+
+    def test_learnings_no_longer_has_pattern_tables(self, client):
+        resp = client.get("/learnings")
+        html = resp.data.decode()
+        assert "Failure Patterns" not in html
+        assert "pattern" in html.lower()  # but has the link
+
+    def test_learnings_has_patterns_link(self, client):
+        resp = client.get("/learnings")
+        html = resp.data.decode()
+        assert "/patterns" in html
+
+    def test_nav_has_patterns(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Patterns" in html
+
+    def test_nav_has_metrics(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Metrics" in html
+
+    def test_dashboard_has_system_health(self, client):
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "System Health" in html
+
+
+# =========================================================================
+# Phase 4 — Cockpit UI (scan-driven dashboard)
+# =========================================================================
+
+
+def _make_scan_data(**overrides):
+    """Build minimal valid scan data for testing."""
+    data = {
+        "schema_version": "1.0",
+        "timestamp": "2026-02-14T12:00:00+00:00",
+        "scan_status": "complete",
+        "summary": "Test scan summary",
+        "needs_decision": [],
+        "framework_recommends": [],
+        "opportunities": [],
+        "work_queue": [],
+        "risks": [],
+        "project_health": {
+            "audit_status": "PASS",
+            "traceability": "85%",
+            "knowledge": {"learnings": 5, "patterns": 3, "decisions": 2},
+            "gaps_watching": 1,
+        },
+        "antifragility": {},
+        "warnings": [],
+        "recent_failures": [],
+    }
+    data.update(overrides)
+    return data
+
+
+class TestCockpitUI:
+    """Cockpit dashboard renders when scan data exists."""
+
+    def test_cockpit_renders_with_scan_data(self, client, monkeypatch):
+        """Dashboard shows cockpit view when LATEST.yaml exists."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Watchtower" in html
+        assert "Scan:" in html
+        assert "System Health" in html
+
+    def test_cockpit_fallback_without_scan(self, client, monkeypatch):
+        """Dashboard falls back to index.html without scan data."""
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: None)
+        resp = client.get("/")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Watchtower" in html
+        # Fallback dashboard has Project Pulse section
+        assert "Project Pulse" in html or "System Health" in html
+
+    def test_cockpit_shows_needs_decision(self, client, monkeypatch):
+        """Needs Decision section appears when items exist."""
+        scan_data = _make_scan_data(needs_decision=[
+            {
+                "id": "ND-001",
+                "summary": "Stale task needs attention",
+                "type": "stale_task",
+                "priority_factors": [{"detail": "20 days without update"}],
+                "suggested_action": {"command": "task", "args": "update T-002 --status issues"},
+            },
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Needs Your Decision" in html
+        assert "Stale task needs attention" in html
+        assert "Approve" in html
+        assert "Defer" in html
+
+    def test_cockpit_shows_framework_recommends(self, client, monkeypatch):
+        """Framework Recommends section appears when items exist."""
+        scan_data = _make_scan_data(framework_recommends=[
+            {
+                "id": "FR-001",
+                "summary": "Graduate learning to practice",
+                "type": "learning_graduation",
+                "priority_factors": [],
+                "recommended_action": {"command": "context", "args": "graduate L-001"},
+            },
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Framework Recommends" in html
+        assert "Graduate learning to practice" in html
+        assert "Apply" in html
+
+    def test_cockpit_shows_work_queue(self, client, monkeypatch):
+        """Work Direction section shows prioritized tasks."""
+        scan_data = _make_scan_data(work_queue=[
+            {"priority": 1, "task_id": "T-001", "name": "Build feature", "status": "started-work"},
+            {"priority": 2, "task_id": "T-002", "name": "Fix bug", "status": "issues"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Work Direction" in html
+        assert "T-001" in html
+        assert "Build feature" in html
+        assert "Focus" in html
+
+    def test_cockpit_shows_opportunities(self, client, monkeypatch):
+        """Opportunities section appears when items exist."""
+        scan_data = _make_scan_data(opportunities=[
+            {"id": "OP-001", "summary": "Add more tests"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Opportunities" in html
+        assert "Add more tests" in html
+
+    def test_cockpit_shows_risks(self, client, monkeypatch):
+        """Risks appear in the scan summary section."""
+        scan_data = _make_scan_data(risks=[
+            {"summary": "Knowledge debt accumulating"},
+        ])
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "Risks" in html
+        assert "Knowledge debt accumulating" in html
+
+    def test_cockpit_all_clear_banner(self, client, monkeypatch):
+        """All Clear banner shows when no items need attention."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "All Clear" in html
+
+    def test_cockpit_htmx_returns_fragment(self, client, monkeypatch):
+        """Cockpit returns fragment for htmx requests."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/", headers={"HX-Request": "true"})
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "<!DOCTYPE" not in html
+        assert "Watchtower" in html
+
+    def test_cockpit_scan_age_display(self, client, monkeypatch):
+        """Scan age is displayed in the header."""
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        # Should show some age indicator (e.g., "Xh ago", "Xd ago", etc.)
+        assert "Scan:" in html
+
+    def test_cockpit_partial_scan_warning(self, client, monkeypatch):
+        """Partial scan status shows warning banner."""
+        scan_data = _make_scan_data(scan_status="partial")
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: scan_data)
+        resp = client.get("/")
+        html = resp.data.decode()
+        assert "partially completed" in html
+
+
+class TestCockpitControlActions:
+    """Cockpit control action API endpoints."""
+
+    def test_scan_refresh_requires_csrf(self, client):
+        resp = client.post("/api/scan/refresh")
+        assert resp.status_code == 403
+
+    def test_scan_approve_requires_csrf(self, client):
+        resp = client.post("/api/scan/approve/ND-001")
+        assert resp.status_code == 403
+
+    def test_scan_defer_requires_csrf(self, client):
+        resp = client.post("/api/scan/defer/ND-001")
+        assert resp.status_code == 403
+
+    def test_scan_apply_requires_csrf(self, client):
+        resp = client.post("/api/scan/apply/FR-001")
+        assert resp.status_code == 403
+
+    def test_scan_focus_requires_csrf(self, client):
+        resp = client.post("/api/scan/focus/T-001")
+        assert resp.status_code == 403
+
+    def test_scan_focus_validates_task_id(self, csrf_client, monkeypatch):
+        """Focus endpoint rejects invalid task IDs."""
+        client, token = csrf_client
+        resp = client.post(
+            "/api/scan/focus/INVALID",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 400
+        assert b"Invalid task ID" in resp.data
+
+    def test_scan_defer_without_scan_data(self, csrf_client, monkeypatch):
+        """Defer endpoint returns 400 when no scan data exists."""
+        client, token = csrf_client
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: None)
+        resp = client.post(
+            "/api/scan/defer/ND-001",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 400
+
+    def test_scan_approve_not_found(self, csrf_client, monkeypatch):
+        """Approve returns 404 for non-existent recommendation."""
+        client, token = csrf_client
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: scan_data)
+        resp = client.post(
+            "/api/scan/approve/NONEXISTENT",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 404
+
+    def test_scan_apply_not_found(self, csrf_client, monkeypatch):
+        """Apply returns 404 for non-existent recommendation."""
+        client, token = csrf_client
+        scan_data = _make_scan_data()
+        monkeypatch.setattr("web.blueprints.cockpit.load_scan", lambda: scan_data)
+        resp = client.post(
+            "/api/scan/apply/NONEXISTENT",
+            headers={"X-CSRF-Token": token},
+        )
+        assert resp.status_code == 404
+
+
+# =========================================================================
+# Edge cases — subprocess TimeoutExpired
+# =========================================================================
+
+
+def _timeout_side_effect(*args, **kwargs):
+    """Raise TimeoutExpired for any subprocess.run call."""
+    raise subprocess.TimeoutExpired(cmd=args[0], timeout=kwargs.get("timeout", 30))
+
+
+def _failing_subprocess(*args, **kwargs):
+    """Return a CompletedProcess with non-zero exit and stderr."""
+    result = MagicMock()
+    result.returncode = 1
+    result.stdout = ""
+    result.stderr = "fatal: something went wrong"
+    return result
+
+
+class TestSubprocessTimeout:
+    """Task API endpoints handle subprocess.TimeoutExpired gracefully."""
+
+    def test_status_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_create_task_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_horizon_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/horizon",
+            data={"horizon": "now", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_owner_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/owner",
+            data={"owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_type_update_timeout(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/type",
+            data={"type": "build", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+
+    def test_traceability_timeout_returns_zero(self, client, monkeypatch):
+        """_get_traceability returns 0 when git times out (page still renders)."""
+        monkeypatch.setattr("web.blueprints.core.subprocess.run", _timeout_side_effect)
+        resp = client.get("/")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Edge cases — subprocess non-zero exit (stderr errors)
+# =========================================================================
+
+
+class TestSubprocessStderr:
+    """Task API endpoints handle subprocess failures with stderr gracefully."""
+
+    def test_status_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/status",
+            data={"status": "started-work", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"Error" in resp.data
+        assert b"fatal" in resp.data
+
+    def test_create_task_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/create",
+            data={"name": "Test", "type": "build", "owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+        assert b"fatal" in resp.data
+
+    def test_horizon_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/horizon",
+            data={"horizon": "now", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+    def test_owner_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/owner",
+            data={"owner": "human", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+    def test_type_update_stderr(self, csrf_client, monkeypatch):
+        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        client, token = csrf_client
+        resp = client.post(
+            "/api/task/T-001/type",
+            data={"type": "build", "_csrf_token": token},
+        )
+        assert resp.status_code == 500
+
+
+# =========================================================================
+# Edge cases — malformed YAML files
+# =========================================================================
+
+
+class TestMalformedYAML:
+    """Pages render gracefully when YAML files are corrupt."""
+
+    def test_corrupt_gaps_yaml(self, client, tmp_path, monkeypatch):
+        """Gaps page handles corrupt gaps.yaml without crashing."""
+        corrupt = tmp_path / "gaps.yaml"
+        corrupt.write_text("{{{{not: valid: yaml: [")
+        monkeypatch.setattr(
+            "web.blueprints.discovery.PROJECT_ROOT", tmp_path,
+        )
+        # Create minimal dir structure so page doesn't error on missing dirs
+        (tmp_path / ".context" / "project").mkdir(parents=True, exist_ok=True)
+        corrupt_gaps = tmp_path / ".context" / "project" / "gaps.yaml"
+        corrupt_gaps.write_text("{{{{not: valid: yaml: [")
+        resp = client.get("/gaps")
+        assert resp.status_code == 200
+
+    def test_corrupt_learnings_yaml(self, client, tmp_path, monkeypatch):
+        """Learnings page handles corrupt learnings.yaml without crashing."""
+        proj = tmp_path / ".context" / "project"
+        proj.mkdir(parents=True, exist_ok=True)
+        (proj / "learnings.yaml").write_text(":::bad yaml")
+        (proj / "patterns.yaml").write_text(":::bad yaml")
+        (proj / "practices.yaml").write_text(":::bad yaml")
+        monkeypatch.setattr("web.blueprints.discovery.PROJECT_ROOT", tmp_path)
+        resp = client.get("/learnings")
+        assert resp.status_code == 200
+
+    def test_corrupt_decisions_yaml(self, client, tmp_path, monkeypatch):
+        """Decisions page handles corrupt decisions.yaml without crashing."""
+        proj = tmp_path / ".context" / "project"
+        proj.mkdir(parents=True, exist_ok=True)
+        (proj / "decisions.yaml").write_text("[[[invalid")
+        monkeypatch.setattr("web.blueprints.discovery.PROJECT_ROOT", tmp_path)
+        resp = client.get("/decisions")
+        assert resp.status_code == 200
+
+    def test_corrupt_task_file_in_list(self, client, tmp_path, monkeypatch):
+        """Task list handles a task file with corrupt frontmatter."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-999-corrupt.md").write_text("---\n{{{bad\n---\n# content")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_corrupt_audit_yaml(self, client, tmp_path, monkeypatch):
+        """Audit status handles corrupt audit file."""
+        audits = tmp_path / ".context" / "audits"
+        audits.mkdir(parents=True, exist_ok=True)
+        (audits / "2026-01-01.yaml").write_text("not: [valid: yaml")
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # _get_audit_status should return safe defaults
+        from web.blueprints.core import _get_audit_status
+        status, p, w, f = _get_audit_status()
+        assert status == "UNKNOWN" or isinstance(status, str)
+
+
+# =========================================================================
+# Edge cases — missing directories and empty files
+# =========================================================================
+
+
+class TestMissingDirectories:
+    """Pages render when expected directories are missing."""
+
+    def test_dashboard_no_context_dir(self, client, tmp_path, monkeypatch):
+        """Dashboard renders when .context/ doesn't exist."""
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # Need scan to be None for fallback dashboard
+        monkeypatch.setattr("web.blueprints.core.load_scan", lambda: None)
+        resp = client.get("/")
+        assert resp.status_code == 200
+
+    def test_tasks_no_tasks_dir(self, client, tmp_path, monkeypatch):
+        """Task list renders when .tasks/ doesn't exist."""
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_tasks_empty_active_dir(self, client, tmp_path, monkeypatch):
+        """Task list renders with empty active directory."""
+        (tmp_path / ".tasks" / "active").mkdir(parents=True, exist_ok=True)
+        (tmp_path / ".tasks" / "completed").mkdir(parents=True, exist_ok=True)
+        (tmp_path / ".context" / "episodic").mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+
+    def test_timeline_no_handovers(self, client, tmp_path, monkeypatch):
+        """Timeline renders without handover files."""
+        monkeypatch.setattr("web.blueprints.core.PROJECT_ROOT", tmp_path)
+        # Timeline also uses core._get_recent_sessions
+        resp = client.get("/timeline")
+        assert resp.status_code == 200
+
+    def test_metrics_no_context(self, client, tmp_path, monkeypatch):
+        """Metrics page renders when .context/ is missing."""
+        monkeypatch.setattr("web.blueprints.metrics.PROJECT_ROOT", tmp_path)
+        # Also need tasks dir absent
+        resp = client.get("/metrics")
+        assert resp.status_code == 200
+
+
+# =========================================================================
+# Edge cases — empty/minimal task files
+# =========================================================================
+
+
+class TestEmptyTaskFiles:
+    """Task views handle edge-case task files."""
+
+    def test_task_file_no_frontmatter(self, client, tmp_path, monkeypatch):
+        """Task file with no YAML frontmatter is skipped in listing."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-998-no-fm.md").write_text("# Just a heading\nNo frontmatter here.")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-998" not in resp.data
+
+    def test_task_file_empty(self, client, tmp_path, monkeypatch):
+        """Empty task file is skipped in listing."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-997-empty.md").write_text("")
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-997" not in resp.data
+
+    def test_task_file_frontmatter_missing_fields(self, client, tmp_path, monkeypatch):
+        """Task file with minimal frontmatter (missing optional fields) still works."""
+        active = tmp_path / ".tasks" / "active"
+        active.mkdir(parents=True, exist_ok=True)
+        (active / "T-996-minimal.md").write_text(
+            "---\nid: T-996\nname: Minimal\nstatus: captured\n---\n# Minimal task"
+        )
+        completed = tmp_path / ".tasks" / "completed"
+        completed.mkdir(parents=True, exist_ok=True)
+        episodic = tmp_path / ".context" / "episodic"
+        episodic.mkdir(parents=True, exist_ok=True)
+        monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        resp = client.get("/tasks?view=list")
+        assert resp.status_code == 200
+        assert b"T-996" in resp.data

@@ -1,0 +1,17 @@
+{
+  "name": "agentic-framework-ts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript components for the Agentic Engineering Framework",
+  "scripts": {
+    "build": "bash ../build.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "js-yaml": "^4.1.1",
+    "typescript": "^5.7.0"
+  }
+}

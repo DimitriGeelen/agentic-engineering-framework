@@ -1,0 +1,152 @@
+# Framework Decisions — Seeded by fw init
+# Universal architectural decisions that govern how the framework operates.
+# scope: universal — applies to all projects using the framework
+# Project-specific decisions (technology choices, product scope) are NOT included.
+#
+# To add a project-specific decision: fw context add-decision "..." --task T-XXX
+# Universal decisions are synced from the framework via: fw governance sync (planned)
+
+decisions:
+  - id: FD-001
+    decision: "Use commit-msg hook (not pre-commit) for task reference enforcement"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-013
+    rationale: "Validates message format, not file content; more appropriate for task ref check"
+    directives_served: [D2]
+
+  - id: FD-002
+    decision: "Audit saves history to YAML files"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-014
+    rationale: "Enables trend detection without database, human-readable"
+    directives_served: [D1, D2]
+
+  - id: FD-003
+    decision: "3+ occurrences triggers practice candidate"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-014
+    rationale: "Balance between noise (too few) and missing patterns (too many)"
+    directives_served: [D1]
+
+  - id: FD-004
+    decision: "Tier 0 violations are FAIL not WARN"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-014
+    rationale: "Consequential actions must never bypass task requirement"
+    directives_served: [D1, D2]
+
+  - id: FD-005
+    decision: "Knowledge pyramid with 4 levels and graduation criteria"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-011
+    rationale: "Higher levels require more evidence and are harder to change — directives require human approval"
+    directives_served: [D1, D2]
+
+  - id: FD-006
+    decision: "Monitor context budget via token reading from JSONL transcript, not tool-call counting"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-059
+    rationale: "Tool calls are a garbage proxy — one call can consume 50 or 50,000 tokens. JSONL transcript contains actual usage."
+    directives_served: [D1, D2]
+
+  - id: FD-007
+    decision: "Check tokens every 5th tool call, not every call"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-059
+    rationale: "23ms per check is fine but unnecessary on every call. Every 5th gives ~5-minute granularity."
+    directives_served: [D2, D3]
+
+  - id: FD-008
+    decision: "4-status task lifecycle: captured, started-work, issues, work-completed"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-051
+    rationale: "Evidence from 50 tasks showed 0 uses of 'refined' and 0 uses of 'blocked'. Issues covered all blocking scenarios."
+    directives_served: [D2, D3]
+
+  - id: FD-009
+    decision: "PreToolUse hook blocks Write/Edit only, not Bash"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-063
+    rationale: "Bash is needed for task creation itself; blocking it creates chicken-and-egg problem"
+    directives_served: [D1, D2]
+
+  - id: FD-010
+    decision: "fw work-on accepts both name strings (create new) and task IDs (resume existing)"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-064
+    rationale: "Single command makes compliance easier than non-compliance"
+    directives_served: [D2, D3]
+
+  - id: FD-011
+    decision: "Three-tier plugin classification: AWARE / SILENT / BYPASSING"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-067
+    rationale: "SILENT plugins need no action — only BYPASSING needs attention. Doctor check catches issues routinely."
+    directives_served: [D1, D2]
+
+  - id: FD-012
+    decision: "Tags over hierarchy for task grouping"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-086
+    rationale: "Flat tags are simpler, more flexible, and avoid taxonomy design. Epics add brittle coupling."
+    directives_served: [D3]
+
+  - id: FD-013
+    decision: "Passive git metrics over manual estimation"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-086
+    rationale: "Manual story points meaningless for AI agents. Git data is objective."
+    directives_served: [D2]
+
+  - id: FD-014
+    decision: "Build dispatch infrastructure (protocol + templates) instead of specialized agent types"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-097
+    rationale: "Cannot create new Claude Code agent types. Generic agents handle 7/8 dispatches. Real problem is ad-hoc result management."
+    directives_served: [D2, D4]
+
+  - id: FD-015
+    decision: "Acceptance criteria gate + closed-task commit warning for task lifecycle enforcement"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-112
+    rationale: "work-completed was an unvalidated flag. AC gate prevents premature closure, commit warning makes post-closure work visible."
+    directives_served: [D2]
+
+  - id: FD-016
+    decision: "Hybrid episodic: git-mined timeline/metrics + task-file AC/decisions"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-117
+    rationale: "58% empty task files prove Updates-as-log failed. 97% git traceability proves commits are the natural authority."
+    directives_served: [D1, D2]
+
+  - id: FD-017
+    decision: "Error-watchdog PostToolUse hook for Bash error detection"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-118
+    rationale: "7 systematic error bypass instances. Hook is low overhead (~25ms), detects high-confidence errors."
+    directives_served: [D1, D2]
+
+  - id: FD-018
+    decision: "Result ledger (fw bus) with 2KB size gating for sub-agent results"
+    scope: universal
+    inherited_from: framework
+    origin_task: T-109
+    rationale: "Formalizes write-to-disk convention. 2KB gating prevents context explosion (~97% savings in simulation)."
+    directives_served: [D1, D2]

@@ -1,0 +1,82 @@
+{% from '_partials/badge.html' import badge %}
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ gaps|length }} specification-reality gaps with decision triggers and evidence tracking.</p>
+</div>
+
+{% if gaps %}
+{% for g in gaps %}
+<article>
+    <header>
+        <div class="flex-between">
+            <span>
+                <code>{{ g.id }}</code> &mdash; {{ g.title }}
+            </span>
+            <span>
+                {{ badge(g.severity | default('unknown')) }}
+                {% set _status_map = {'watching': 'watching', 'decided-build': 'build', 'decided-simplify': 'simplify', 'closed': 'closed'} %}
+                {{ badge(_status_map.get(g.status, g.status | default('unknown'))) }}
+            </span>
+        </div>
+    </header>
+
+    <p>{{ g.description }}</p>
+
+    {% if g.spec_reference %}
+    <p class="text-base"><strong>Spec:</strong> <code>{{ g.spec_reference }}</code></p>
+    {% endif %}
+
+    {% if g.why_not_now %}
+    <details>
+        <summary>Why not now?</summary>
+        <p class="text-muted">{{ g.why_not_now }}</p>
+    </details>
+    {% endif %}
+
+    {% if g.decision_trigger %}
+    <details>
+        <summary>Decision trigger</summary>
+        <p>{{ g.decision_trigger }}</p>
+        {% if g.trigger_check %}
+        <p class="text-sm text-muted">
+            Check type: <code>{{ g.trigger_check.type }}</code>
+            {% if g.trigger_check.hint %} &mdash; {{ g.trigger_check.hint }}{% endif %}
+            {% if g.trigger_check.check %}<br>Command: <code>{{ g.trigger_check.check }}</code>{% endif %}
+            {% if g.trigger_check.threshold %}<br>Threshold: {{ g.trigger_check.threshold }}{% endif %}
+        </p>
+        {% endif %}
+    </details>
+    {% endif %}
+
+    {% if g.evidence_needed or g.evidence_collected %}
+    <details>
+        <summary>Evidence</summary>
+        {% if g.evidence_needed %}
+        <p><strong>Needed:</strong> {{ g.evidence_needed }}</p>
+        {% endif %}
+        {% if g.evidence_collected %}
+        <p><strong>Collected:</strong> {{ g.evidence_collected }}</p>
+        {% endif %}
+    </details>
+    {% endif %}
+
+    {% if g.alternative_outcome %}
+    <details>
+        <summary>Alternative outcome</summary>
+        <p class="text-muted">{{ g.alternative_outcome }}</p>
+    </details>
+    {% endif %}
+
+    <footer style="text-align: left; border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--pico-muted-color);">
+        {% if g.related_directives %}Directives: {{ g.related_directives | join(', ') }} | {% endif %}
+        Created: {{ g.created | default('unknown') }}
+        {% if g.last_reviewed %} | Last reviewed: {{ g.last_reviewed }}{% endif %}
+    </footer>
+</article>
+{% endfor %}
+{% else %}
+<div class="coming-soon">
+    <h3>No Gaps Found</h3>
+    <p>No gaps were found in <code>.context/project/gaps.yaml</code>.</p>
+</div>
+{% endif %}

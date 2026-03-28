@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{ error_title }}</title>
+    <script>
+        (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+    </script>
+    <link rel="stylesheet" href="/static/pico.min.css">
+    <style>
+        body {
+            padding: 2rem 1rem;
+            max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        p { color: var(--pico-muted-color); font-size: 0.9rem; }
+        .error-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .error-actions a {
+            display: block;
+            min-height: 48px;
+            line-height: 48px;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        .btn-primary {
+            background: var(--pico-primary);
+            color: white;
+        }
+        .btn-secondary {
+            border: 1px solid var(--pico-muted-border-color);
+            color: var(--pico-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-icon">
+        {% if reason == 'completed' %}&#10003;{% else %}&#128269;{% endif %}
+    </div>
+    <h2>{{ error_title }}</h2>
+    <p>{{ error_detail }}</p>
+
+    <div class="error-actions">
+        <a href="/approvals" class="btn-primary">View All Approvals</a>
+        {% if reason == 'completed' %}
+        <a href="/tasks/{{ task_id }}" class="btn-secondary">View Task Details</a>
+        {% endif %}
+    </div>
+</body>
+</html>

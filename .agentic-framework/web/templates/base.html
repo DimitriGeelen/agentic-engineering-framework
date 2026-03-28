@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ page_title | default("Watchtower") }} — Agentic Engineering Framework</title>
+    <script>
+        (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
+    <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='highlight-github-dark.min.css') }}">
+    <script src="{{ url_for('static', filename='highlight.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='marked.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='purify.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='cytoscape.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dagre.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='cytoscape-dagre.js') }}"></script>
+    <style>
+        /* ── Nav ─────────────────────────────────────────────── */
+        nav.site-nav {
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-card-background-color);
+        }
+        nav.site-nav > ul {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        nav.site-nav .brand {
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-right: 1rem;
+            text-decoration: none;
+            color: var(--pico-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        nav.site-nav .brand img {
+            height: 1.4rem;
+            width: auto;
+        }
+        nav.site-nav .brand:hover { text-decoration: none; opacity: 0.85; }
+        nav.site-nav .spacer { flex: 1; }
+
+        /* Dropdown overrides for horizontal nav */
+        nav.site-nav details.dropdown { margin: 0; padding: 0; }
+        nav.site-nav details.dropdown > summary {
+            padding: 0.4rem 0.75rem;
+            margin: 0;
+            font-size: 0.925rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav details.dropdown > summary:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown.active-group > summary {
+            color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul { min-width: 10rem; }
+        nav.site-nav details.dropdown ul li a {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.75rem;
+            display: block;
+            text-decoration: none;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav details.dropdown ul li a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav details.dropdown ul li a[aria-current="page"] {
+            color: var(--pico-primary);
+            font-weight: 600;
+        }
+
+        /* Search link */
+        nav.site-nav .nav-search a {
+            display: flex; align-items: center;
+            padding: 0.4rem 0.6rem;
+            text-decoration: none;
+            color: var(--pico-color);
+            border-radius: var(--pico-border-radius);
+            font-size: 0.925rem;
+        }
+        nav.site-nav .nav-search a:hover {
+            background: var(--pico-primary-focus);
+        }
+        nav.site-nav .nav-search svg {
+            width: 1rem; height: 1rem;
+            stroke: currentColor; stroke-width: 2; fill: none;
+        }
+
+        /* Project docs link */
+        nav.site-nav .nav-docs a {
+            padding: 0.4rem 0.75rem;
+            text-decoration: none;
+            color: var(--pico-color);
+            font-size: 0.925rem;
+            border-radius: var(--pico-border-radius);
+        }
+        nav.site-nav .nav-docs a:hover {
+            background: var(--pico-primary-focus);
+        }
+
+        /* ── Ambient Status Strip ────────────────────────────── */
+        .ambient-strip {
+            background: var(--pico-card-background-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+            padding: 0.25rem 1rem;
+            font-size: 0.775rem;
+            color: var(--pico-muted-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .ambient-strip .sep { color: var(--pico-muted-border-color); }
+        .ambient-strip .audit-pass { color: #2e7d32; font-weight: 600; }
+        .ambient-strip .audit-warn { color: #e8a317; font-weight: 600; }
+        .ambient-strip .audit-fail { color: #c62828; font-weight: 600; }
+
+        /* ── Mobile nav toggle ───────────────────────────────── */
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            padding: 0.4rem;
+            cursor: pointer;
+            color: var(--pico-color);
+            margin: 0;
+            line-height: 1;
+        }
+        .nav-toggle svg { width: 1.5rem; height: 1.5rem; stroke: currentColor; stroke-width: 2.5; fill: none; }
+
+        /* ── Content and footer ──────────────────────────────── */
+        main { min-height: 60vh; }
+        .page-header { margin-bottom: 2rem; }
+        .page-header h1 { margin-bottom: 0.25rem; }
+        .page-header p { color: var(--pico-muted-color); }
+        .coming-soon {
+            text-align: center; padding: 3rem 1rem;
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: var(--pico-border-radius); margin-top: 1.5rem;
+        }
+        .coming-soon h3 { color: var(--pico-muted-color); }
+        footer.site-footer {
+            text-align: center; padding: 1.5rem 0;
+            color: var(--pico-muted-color); font-size: 0.875rem;
+            border-top: 1px solid var(--pico-muted-border-color); margin-top: 2rem;
+        }
+
+        /* ── Table scroll on mobile ─────────────────────────── */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* ── Mobile breakpoint (<768px) ─────────────────────── */
+        @media (max-width: 768px) {
+            /* Nav: show hamburger, stack items vertically */
+            .nav-toggle { display: block; }
+            nav.site-nav > ul { flex-wrap: wrap; }
+            nav.site-nav .nav-items { display: none; width: 100%; }
+            nav.site-nav .nav-items.open { display: contents; }
+            nav.site-nav .spacer { display: none; }
+            nav.site-nav details.dropdown { width: 100%; }
+            nav.site-nav details.dropdown > summary { padding: 0.5rem 0.75rem; }
+            nav.site-nav .nav-docs,
+            nav.site-nav .nav-search { width: auto; }
+
+            /* Ambient strip: smaller, wrappable */
+            .ambient-strip { font-size: 0.7rem; gap: 0.4rem; padding: 0.2rem 0.75rem; }
+
+            /* 3-col grids → 1-col */
+            [style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
+        }
+
+        /* ── Phone breakpoint (<576px) ──────────────────────── */
+        @media (max-width: 576px) {
+            /* Form rows stack */
+            .form-row, .grid { grid-template-columns: 1fr !important; }
+
+            /* Page header tighter */
+            .page-header { margin-bottom: 1rem; }
+            .page-header h1 { font-size: 1.3rem; }
+
+            /* Ambient strip: hide less important items */
+            .ambient-strip .sep:nth-child(n+4),
+            .ambient-strip > span:nth-child(n+5):not(:last-child) { display: none; }
+        }
+
+        /* ── Utility classes ──────────────────────────────── */
+        /* Text */
+        .text-muted { color: var(--pico-muted-color); }
+        .text-success { color: #2e7d32; }
+        .text-danger { color: #c62828; }
+        .text-warning { color: #e8a317; }
+        .italic { font-style: italic; }
+        .font-bold { font-weight: 700; }
+        .text-center { text-align: center; }
+
+        /* Font sizes */
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.85rem; }
+        .text-base { font-size: 0.875rem; }
+        .text-lg { font-size: 1.1rem; }
+        .text-xl { font-size: 1.5rem; }
+
+        /* Layout */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-center { display: flex; align-items: center; }
+        .inline-flex-center { margin: 0; padding: 0; display: inline-flex; align-items: center; }
+        .inline-reset { margin: 0; padding: 0; display: inline; }
+        .hidden { display: none; }
+        .flex-1 { flex: 1; }
+
+        /* Spacing */
+        .gap-xs { gap: 0.25rem; }
+        .gap-sm { gap: 0.35rem; }
+        .gap-md { gap: 0.5rem; }
+        .gap-lg { gap: 0.75rem; }
+        .m-0 { margin: 0; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 1.5rem; }
+        .mt-3 { margin-top: 2rem; }
+        .p-1 { padding: 1rem; }
+
+        /* Components */
+        .btn-sm { width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0; }
+    </style>
+</head>
+<body hx-boost="true" hx-target="#content" hx-swap="innerHTML">
+
+    <!-- Navigation -->
+    <nav class="site-nav container-fluid">
+        <ul>
+            <li>
+                <a href="{{ url_for('core.index') }}" class="brand"
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">Watchtower</a>
+            </li>
+
+            <li>
+                <button class="nav-toggle" onclick="wtToggleNav()" aria-label="Toggle navigation">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+            </li>
+
+            <span class="nav-items">
+            {% for group_name, items in nav_groups %}
+            <li>
+                {%- set ns = namespace(active=false) -%}
+                {%- for label, endpoint, icon in items -%}
+                    {%- if endpoint == active_endpoint -%}{%- set ns.active = true -%}{%- endif -%}
+                {%- endfor -%}
+                <details class="dropdown{% if ns.active %} active-group{% endif %}">
+                    <summary>{{ group_name }}</summary>
+                    <ul dir="ltr">
+                        {% for label, endpoint, icon in items %}
+                        <li>
+                            <a href="{{ url_for(endpoint) }}"
+                               {% if endpoint == active_endpoint %}aria-current="page"{% endif %}
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                                {{ label }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </li>
+            {% endfor %}
+
+            <li class="spacer"></li>
+
+            <li class="nav-docs">
+                <a href="{{ url_for('core.project') }}"
+                   {% if active_endpoint == 'core.project' %}aria-current="page"{% endif %}
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Docs</a>
+            </li>
+
+            <li class="nav-search">
+                <a href="{{ url_for('discovery.search_view') }}" title="Search"
+                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}
+                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
+                    </svg>
+                </a>
+            </li>
+
+            <li>
+                <button class="theme-toggle" onclick="wtToggleTheme()" aria-label="Toggle dark mode"
+                        title="Toggle dark mode" style="background:none;border:none;padding:0.4rem;cursor:pointer;color:var(--pico-color);line-height:1;font-size:1.1rem;">
+                    <span class="theme-icon-light" style="display:none;">&#9790;</span>
+                    <span class="theme-icon-dark" style="display:none;">&#9728;</span>
+                </button>
+            </li>
+            </span>
+
+        </ul>
+    </nav>
+
+    <!-- Ambient Status Strip -->
+    {% if ambient %}
+    <div class="ambient-strip container-fluid">
+        <span>{{ ambient.focus_task or 'No focus' }}</span>
+        <span class="sep">|</span>
+        <span>Session: {{ ambient.session_age or 'unknown' }}</span>
+        <span class="sep">|</span>
+        <span>Audit:
+            {% if ambient.audit_status == 'PASS' %}<span class="audit-pass">PASS</span>
+            {% elif ambient.audit_status == 'WARN' %}<span class="audit-warn">WARN</span>
+            {% elif ambient.audit_status == 'FAIL' %}<span class="audit-fail">FAIL</span>
+            {% else %}{{ ambient.audit_status or 'unknown' }}{% endif %}
+        </span>
+        <span class="sep">|</span>
+        <span><strong>{{ ambient.attention_count or 0 }}</strong> items need attention</span>
+        <span style="flex:1"></span>
+        <span title="{{ project_root }}" style="opacity:0.7"><strong>{{ project_root.split('/')[-1] }}</strong></span>
+    </div>
+    {% endif %}
+
+    <!-- Toast container -->
+    <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
+
+    <!-- Main Content -->
+    <main class="container" id="content">
+        {% if yaml_errors %}
+        <div style="background: var(--pico-del-color, #c62828); color: #fff; padding: 0.5rem 1rem; border-radius: 4px; margin-bottom: 1rem; font-size: 0.85rem;">
+            <strong>YAML parse error{{ 's' if yaml_errors|length > 1 }}:</strong>
+            {% for err in yaml_errors %}
+            <div>{{ err }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer container">
+        Watchtower {{ fw_version }} &mdash; Agentic Engineering Framework
+        <br><span style="font-size:0.8rem">Found a framework bug? <code style="font-size:0.75rem;user-select:all">fw upstream report --title "..." --attach-doctor</code></span>
+    </footer>
+
+    <style>
+        /* ── Toast notifications ──────────────────────────────── */
+        .wt-toast {
+            pointer-events: auto;
+            padding: 0.5rem 1rem;
+            border-radius: var(--pico-border-radius);
+            font-size: 0.85rem;
+            max-width: 22rem;
+            animation: toast-in 0.2s ease-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .wt-toast.success { background: #1b5e20; color: #fff; }
+        .wt-toast.error   { background: #c62828; color: #fff; }
+        .wt-toast.info    { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(1rem); } to { opacity: 1; transform: none; } }
+        @keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateX(1rem); } }
+        /* ── Saving indicator ─────────────────────────────────── */
+        .wt-saving { opacity: 0.5; pointer-events: none; }
+        .wt-saving::after {
+            content: " ...";
+            animation: blink 1s steps(3, end) infinite;
+        }
+        @keyframes blink { to { opacity: 0.3; } }
+    </style>
+
+    <script>
+        /* ── UI helpers (T-429/H3) ───────────────────────────── */
+        function wtShowAll(el) {
+            var section = el.closest('.wt-section') || el.parentElement;
+            section.querySelectorAll('.wt-card-hidden, .docs-overflow').forEach(function(e) { e.style.display = 'block'; });
+            el.style.display = 'none';
+        }
+        function wtDismissCard(el) { var card = el.closest('.wt-card'); if (card) card.style.display = 'none'; }
+        function wtToggleNav() { document.querySelector('.nav-items').classList.toggle('open'); }
+
+        /* ── Toast notification helper ────────────────────────── */
+        function showToast(msg, type) {
+            type = type || 'info';
+            var container = document.getElementById('toast-container');
+            var toast = document.createElement('div');
+            toast.className = 'wt-toast ' + type;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.style.animation = 'toast-out 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        /* ── htmx error handling → toast ─────────────────────── */
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            var msg = 'Save failed';
+            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
+            showToast(msg, 'error');
+        });
+        document.body.addEventListener('htmx:sendError', function() {
+            showToast('Network error — check server', 'error');
+        });
+
+        /* ── Loading state on htmx forms ─────────────────────── */
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.add('wt-saving');
+            }
+        });
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            var el = evt.detail.elt;
+            if (el && el.closest && el.closest('form')) {
+                el.closest('form').classList.remove('wt-saving');
+            }
+        });
+
+        // CSRF token for htmx requests
+        document.body.addEventListener('htmx:configRequest', function(event) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                event.detail.headers['X-CSRF-Token'] = csrfToken.getAttribute('content');
+            }
+        });
+
+        // Update active nav after htmx navigation
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            document.querySelectorAll('nav.site-nav [aria-current]').forEach(function(el) {
+                el.removeAttribute('aria-current');
+            });
+            document.querySelectorAll('nav.site-nav .active-group').forEach(function(el) {
+                el.classList.remove('active-group');
+            });
+
+            var path = window.location.pathname;
+            document.querySelectorAll('nav.site-nav a').forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (href === path || (path === '/' && href === '/')) {
+                    link.setAttribute('aria-current', 'page');
+                    var dropdown = link.closest('details.dropdown');
+                    if (dropdown) dropdown.classList.add('active-group');
+                }
+            });
+
+            // Close open dropdowns after navigation
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                d.removeAttribute('open');
+            });
+
+            // Update page title
+            var h1 = document.querySelector('.page-header h1, .wt-header h1');
+            if (h1) document.title = h1.textContent.trim() + ' — Agentic Engineering Framework';
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('nav.site-nav details[open]').forEach(function(d) {
+                if (!d.contains(event.target)) d.removeAttribute('open');
+            });
+        });
+
+        // Close mobile nav after clicking a link
+        document.querySelectorAll('.nav-items a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                var navItems = document.querySelector('.nav-items');
+                if (navItems) navItems.classList.remove('open');
+            });
+        });
+
+        // Wrap bare tables in .table-responsive for horizontal scroll
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('#content table:not(.table-responsive table)').forEach(function(table) {
+                if (!table.parentElement.classList.contains('table-responsive')) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'table-responsive';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                }
+            });
+        });
+        // Initial wrap on page load
+        document.querySelectorAll('#content table').forEach(function(table) {
+            if (!table.parentElement.classList.contains('table-responsive')) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'table-responsive';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
+        });
+
+        // Highlight.js: initial highlight + re-highlight after htmx swaps
+        hljs.highlightAll();
+        document.body.addEventListener('htmx:afterSwap', function() {
+            document.querySelectorAll('pre code.hljs, pre code[class*="language-"]').forEach(function(block) {
+                delete block.dataset.highlighted;
+                hljs.highlightElement(block);
+            });
+        });
+
+        // Theme toggle
+        function wtUpdateThemeIcons() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            var lightIcon = document.querySelector('.theme-icon-light');
+            var darkIcon = document.querySelector('.theme-icon-dark');
+            if (lightIcon) lightIcon.style.display = isDark ? 'none' : 'inline';
+            if (darkIcon) darkIcon.style.display = isDark ? 'inline' : 'none';
+        }
+        function wtToggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('wt-theme', next);
+            wtUpdateThemeIcons();
+        }
+        wtUpdateThemeIcons();
+    </script>
+</body>
+</html>

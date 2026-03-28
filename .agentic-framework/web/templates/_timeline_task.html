@@ -1,0 +1,22 @@
+<div style="margin-left: 2rem; padding: 0.5rem; border-left: 3px solid var(--pico-primary);">
+    <p><strong>{{ task.task_name }}</strong> ({{ task.workflow_type }})</p>
+    {% if task.summary %}<p>{{ task.summary }}</p>{% endif %}
+    {% if task.outcomes %}
+    <details>
+        <summary>Outcomes ({{ task.outcomes|length }})</summary>
+        <ul>{% for o in task.outcomes %}<li>{{ o }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+    {% if task.challenges %}
+    <details>
+        <summary>Challenges ({{ task.challenges|length }})</summary>
+        <ul>{% for c in task.challenges %}<li>{{ c.description }}{% if c.resolution %} — <em>{{ c.resolution }}</em>{% endif %}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+    {% if task.decisions %}
+    <details>
+        <summary>Decisions ({{ task.decisions|length }})</summary>
+        <ul>{% for d in task.decisions %}<li>{{ d.decision }}{% if d.rationale %} — <em>{{ d.rationale }}</em>{% endif %}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+</div>

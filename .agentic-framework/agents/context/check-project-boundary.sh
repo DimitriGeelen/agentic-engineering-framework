@@ -110,6 +110,14 @@ except:
         exit 0
     fi
 
+    # TermLink exception: commands routed through termlink interact/pty/dispatch
+    # execute in a separate process, not in our shell. The cd inside the
+    # quoted argument targets the TermLink session, not the framework session.
+    # T-679: Boundary hook was blocking all TermLink cross-project operations.
+    if echo "$COMMAND" | grep -qE '^\s*(termlink|bin/fw termlink|fw termlink)\s'; then
+        exit 0
+    fi
+
     # Detailed analysis: detect cd to another project + write operations
     export _BOUNDARY_CMD="$COMMAND"
     MATCH_RESULT=$(python3 << 'PYEOF'

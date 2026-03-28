@@ -1,0 +1,14 @@
+{# Inline select form macro (T-429/H4) — replaces 12+ duplicated htmx select patterns #}
+{% macro inline_select(task_id, field, options, current, select_class='inline-status-select', hx_target=None, hx_swap='innerHTML', form_class='') %}
+<form hx-post="/api/task/{{ task_id }}/{{ field }}"
+      {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+      hx-swap="{{ hx_swap }}"
+      {% if form_class %}class="{{ form_class }}"{% endif %}>
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <select name="{{ field }}" class="{{ select_class }}" onchange="this.form.requestSubmit()">
+        {% for val in options %}
+        <option value="{{ val }}" {% if current == val %}selected{% endif %}>{{ val }}</option>
+        {% endfor %}
+    </select>
+</form>
+{% endmacro %}

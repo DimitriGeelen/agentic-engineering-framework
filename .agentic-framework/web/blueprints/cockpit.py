@@ -124,7 +124,6 @@ def get_action_summary() -> dict:
             text = fn.read_text(errors="replace")
             if "workflow_type: inception" not in text:
                 continue
-            # Check for pending decision
             has_decision = False
             for line in text.split("\n"):
                 stripped = line.strip()
@@ -136,7 +135,6 @@ def get_action_summary() -> dict:
             if not has_decision:
                 go_count += 1
 
-    # Top 3 tasks by unchecked AC count
     top_tasks = sorted(human_verify, key=lambda t: t["total"] - t["checked"], reverse=True)[:3]
 
     return {
@@ -284,7 +282,7 @@ def scan_apply(rec_id):
 @bp.route("/api/scan/focus/<task_id>", methods=["POST"])
 def scan_focus(task_id):
     """Set focus to a task from the work queue."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         return '<p style="color:var(--pico-del-color)">Invalid task ID.</p>', 400
     stdout, stderr, ok = run_fw_command(["context", "focus", task_id])
     if ok:

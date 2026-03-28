@@ -1,0 +1,512 @@
+{% from '_partials/inline_select.html' import inline_select %}
+<style>
+/* ── Inline name editing ──────────────────────────────── */
+.editable-name {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--pico-muted-border-color);
+    transition: border-color 0.15s;
+}
+.editable-name:hover {
+    border-bottom-color: var(--pico-primary);
+}
+.name-edit-input {
+    font-size: inherit;
+    font-weight: inherit;
+    padding: 0.1rem 0.3rem;
+    margin: 0;
+    width: 100%;
+    border: 1px solid var(--pico-primary);
+    border-radius: var(--pico-border-radius);
+    background: var(--pico-background-color);
+}
+/* ── AC checkboxes ────────────────────────────────────── */
+.ac-list {
+    list-style: none;
+    padding-left: 0;
+}
+.ac-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+}
+.ac-list li input[type="checkbox"] {
+    margin-top: 0.2rem;
+    cursor: pointer;
+}
+.ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+/* ── AC section headers ──────────────────────────────── */
+.ac-section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pico-muted-color);
+    margin: 0.75rem 0 0.25rem;
+    padding-bottom: 0.15rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+.ac-section-label:first-child { margin-top: 0; }
+/* ── Human AC cards ──────────────────────────────────── */
+.human-ac-card {
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 0.75rem;
+    margin: 0.5rem 0;
+    background: var(--pico-card-background-color);
+}
+.human-ac-card summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.human-ac-card summary::-webkit-details-marker { display: none; }
+.human-ac-card summary::before { content: "▸ "; font-size: 0.7rem; }
+.human-ac-card[open] summary::before { content: "▾ "; }
+.confidence-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.badge-review {
+    background: #f59e0b22;
+    color: #b45309;
+    border: 1px solid #f59e0b55;
+}
+.badge-rubber-stamp {
+    background: #10b98122;
+    color: #047857;
+    border: 1px solid #10b98155;
+}
+.human-ac-body {
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+    font-size: 0.85rem;
+    border-left: 2px solid var(--pico-muted-border-color);
+}
+.human-ac-body h6 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--pico-muted-color);
+    margin: 0.5rem 0 0.15rem;
+}
+.human-ac-body h6:first-child { margin-top: 0; }
+.human-ac-body ol, .human-ac-body ul {
+    margin: 0.15rem 0;
+    padding-left: 1.25rem;
+    font-size: 0.85rem;
+}
+.human-ac-body p {
+    margin: 0.15rem 0;
+}
+/* ── Description editing ──────────────────────────────── */
+.editable-desc {
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--pico-border-radius);
+    transition: background 0.15s;
+}
+.editable-desc:hover {
+    background: var(--pico-primary-focus);
+}
+.desc-edit-textarea {
+    width: 100%;
+    min-height: 4rem;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    margin: 0;
+}
+/* ── Detail page inline selects ──────────────────────── */
+.detail-meta-table { max-width: 32rem; }
+.detail-meta-table th { width: 8rem; font-weight: 600; font-size: 0.9rem; }
+.detail-meta-table td { font-size: 0.9rem; }
+.inline-status-select {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.85rem;
+    margin: 0;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: 3px;
+    background: transparent;
+    min-width: 0;
+    width: auto;
+    cursor: pointer;
+}
+.detail-inline-result {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+</style>
+
+<div class="page-header">
+    <h1 id="task-title">
+        {{ task.id }}:
+        <span class="editable-name" role="button" tabindex="0"
+              onclick="startNameEdit(this, '{{ task_id }}')"
+              onkeydown="if(event.key==='Enter')startNameEdit(this,'{{ task_id }}')"
+              title="Click to edit">{{ task.name }}</span>
+    </h1>
+</div>
+
+<!-- Task metadata — all fields are inline-editable -->
+<table class="detail-meta-table">
+    <tbody>
+        <tr><th>Status</th><td>
+            {{ inline_select(task_id, 'status', status_options, task.status, hx_target='#status-result', form_class='inline-flex-center gap-md') }}
+            <span id="status-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Owner</th><td>
+            {{ inline_select(task_id, 'owner', ['human','claude-code'], task.owner, hx_target='#owner-result', form_class='inline-flex-center gap-md') }}
+            <span id="owner-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Horizon</th><td>
+            {{ inline_select(task_id, 'horizon', ['now','next','later'], task.horizon, hx_target='#horizon-result', form_class='inline-flex-center gap-md') }}
+            <span id="horizon-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Workflow Type</th><td>
+            {{ inline_select(task_id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, hx_target='#type-result', form_class='inline-flex-center gap-md') }}
+            <span id="type-result" class="detail-inline-result"></span>
+        </td></tr>
+        <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
+        <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
+        {% if task.date_finished %}
+        <tr><th>Finished</th><td>{{ task.date_finished }}</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<!-- Research Artifacts (T-632) -->
+{% if artifacts %}
+<details open>
+    <summary><strong>Research Artifacts</strong> <small>({{ artifacts|length }})</small></summary>
+    <ul>
+    {% for a in artifacts %}
+        <li><a href="/file/{{ a.path }}">{{ a.name }}</a></li>
+    {% endfor %}
+    </ul>
+</details>
+{% endif %}
+
+<!-- Description (click to edit) -->
+{% if task.description %}
+<details open>
+    <summary><strong>Description</strong></summary>
+    <div id="desc-display">
+        <p class="editable-desc" role="button" tabindex="0"
+           onclick="startDescEdit('{{ task_id }}')"
+           onkeydown="if(event.key==='Enter')startDescEdit('{{ task_id }}')"
+           title="Click to edit">{{ task.description }}</p>
+    </div>
+    <div id="desc-edit" style="display:none;">
+        <form hx-post="/api/task/{{ task_id }}/description" hx-target="#desc-result" hx-swap="innerHTML">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <textarea name="description" class="desc-edit-textarea">{{ task.description }}</textarea>
+            <div style="display:flex;gap:0.5rem;margin-top:0.25rem;">
+                <button type="submit" style="padding:0.3rem 0.75rem;font-size:0.8rem;">Save</button>
+                <button type="button" onclick="cancelDescEdit()" class="outline" style="padding:0.3rem 0.75rem;font-size:0.8rem;">Cancel</button>
+            </div>
+        </form>
+        <div id="desc-result"></div>
+    </div>
+</details>
+{% endif %}
+
+<!-- Acceptance Criteria (interactive checkboxes) -->
+{% if ac_items %}
+{% set checked_count = ac_items | selectattr('checked') | list | length %}
+{% set agent_acs = ac_items | selectattr('section', 'equalto', 'agent') | list %}
+{% set human_acs = ac_items | selectattr('section', 'equalto', 'human') | list %}
+{% set general_acs = ac_items | selectattr('section', 'equalto', 'general') | list %}
+{% set has_sections = (agent_acs | length > 0) or (human_acs | length > 0) %}
+<details open>
+    <summary><strong>Acceptance Criteria</strong> <small>({{ checked_count }}/{{ ac_items|length }})</small></summary>
+
+    {% if has_sections %}
+
+    {# ── Agent ACs (toggleable checkboxes) ─────────────── #}
+    {% if agent_acs %}
+    {% set agent_checked = agent_acs | selectattr('checked') | list | length %}
+    <div class="ac-section-label">Agent <small>({{ agent_checked }}/{{ agent_acs|length }})</small></div>
+    <ul class="ac-list">
+        {% for ac in agent_acs %}
+        <li>
+            <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input" hx-swap="outerHTML"
+                  class="inline-reset">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {# ── Human ACs (structured cards) ──────────────────── #}
+    {% if human_acs %}
+    {% set human_checked = human_acs | selectattr('checked') | list | length %}
+    <div id="human-ac" class="ac-section-label">Human <small>({{ human_checked }}/{{ human_acs|length }})</small></div>
+    {% for ac in human_acs %}
+    <details class="human-ac-card" {% if not ac.checked %}open{% endif %}>
+        <summary>
+            <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input[type=checkbox]" hx-swap="outerHTML"
+                  class="inline-reset" onclick="event.stopPropagation();">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
+            {% if ac.confidence == 'review' %}
+            <span class="confidence-badge badge-review">Review</span>
+            {% elif ac.confidence == 'rubber-stamp' %}
+            <span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>
+            {% endif %}
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+        </summary>
+        {% if ac.steps or ac.expected or ac.if_not %}
+        <div class="human-ac-body">
+            {% if ac.steps %}
+            <h6>Steps</h6>
+            <ol>
+                {% for step in ac.steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+            {% endif %}
+            {% if ac.expected %}
+            <h6>Expected</h6>
+            <p>{{ ac.expected }}</p>
+            {% endif %}
+            {% if ac.if_not %}
+            <h6>If not</h6>
+            <p>{{ ac.if_not }}</p>
+            {% endif %}
+        </div>
+        {% elif ac.body %}
+        <div class="human-ac-body">
+            <pre style="font-size:0.8rem; margin:0; white-space:pre-wrap;">{{ ac.body }}</pre>
+        </div>
+        {% endif %}
+    </details>
+    {% endfor %}
+    {% endif %}
+
+    {% else %}
+
+    {# ── No sections: flat list (backward compatible) ──── #}
+    <ul class="ac-list">
+        {% for ac in ac_items %}
+        <li>
+            <form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input" hx-swap="outerHTML"
+                  class="inline-reset">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0;">
+            </form>
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% endif %}
+</details>
+{% endif %}
+
+<!-- Complete Task button (T-640) -->
+<div id="complete-button">
+{% if can_complete %}
+<form hx-post="/api/task/{{ task_id }}/complete" hx-target="#complete-result" hx-swap="innerHTML"
+      style="margin: 1rem 0;">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="primary"
+            style="background:#10b981; border-color:#10b981; padding:0.5rem 1.5rem;">
+        Complete Task
+    </button>
+</form>
+<div id="complete-result"></div>
+{% endif %}
+</div>
+
+<!-- Episodic Summary -->
+{% if episodic %}
+<details open>
+    <summary><strong>Episodic Summary</strong></summary>
+    {% if episodic.summary %}
+    <p>{{ episodic.summary }}</p>
+    {% endif %}
+
+    {% if episodic.outcomes %}
+    <h5>Outcomes</h5>
+    <ul>
+        {% for o in episodic.outcomes %}
+        <li>{{ o }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.decisions %}
+    <h5>Decisions</h5>
+    <ul>
+        {% for d in episodic.decisions %}
+        <li><strong>{{ d.decision }}</strong> — {{ d.rationale or '' }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.challenges %}
+    <h5>Challenges</h5>
+    <ul>
+        {% for c in episodic.challenges %}
+        <li><strong>{{ c.description }}</strong>{% if c.resolution %} — {{ c.resolution }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.artifacts %}
+    <h5>Artifacts</h5>
+    {% if episodic.artifacts.created %}
+    <p><small>Created:</small></p>
+    <ul>
+        {% for a in episodic.artifacts.created %}
+        <li><code>{{ a }}</code></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if episodic.artifacts.modified %}
+    <p><small>Modified:</small></p>
+    <ul>
+        {% for a in episodic.artifacts.modified %}
+        <li><code>{{ a }}</code></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endif %}
+
+    {% if episodic.related_tasks %}
+    <h5>Related Tasks</h5>
+    <ul>
+        {% for edge_type, tasks_list in episodic.related_tasks.items() %}
+            {% if tasks_list %}
+            <li><em>{{ edge_type }}:</em>
+                {% if tasks_list is string %}
+                    {% set task_id = tasks_list.split(' ')[0].split('(')[0].strip() %}
+                    <a href="/tasks/{{ task_id }}">{{ tasks_list }}</a>
+                {% else %}
+                    {% for rt in tasks_list %}
+                    <a href="/tasks/{{ rt }}">{{ rt }}</a>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if episodic.tags %}
+    <h5>Tags</h5>
+    <p>
+        {% for tag in episodic.tags %}
+        <kbd>{{ tag }}</kbd>
+        {% endfor %}
+    </p>
+    {% endif %}
+</details>
+{% endif %}
+
+<!-- Raw task content -->
+{% if task_content %}
+<details>
+    <summary><strong>Task Body</strong></summary>
+    <pre><code>{{ task_content }}</code></pre>
+</details>
+{% endif %}
+
+<script>
+/* ── Inline name editing ──────────────────────────────── */
+function startNameEdit(span, taskId) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'name-edit-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
+
+    function save() {
+        if (done) return;
+        var newName = input.value.trim();
+        if (!newName || newName === current) {
+            finish(current);
+            return;
+        }
+        input.classList.add('wt-saving');
+        var fd = new FormData();
+        fd.append('name', newName);
+        fd.append('_csrf_token', '{{ csrf_token() }}');
+        fetch('/api/task/' + taskId + '/name', { method: 'POST', body: fd })
+            .then(function(r) {
+                if (r.ok) { finish(newName); showToast('Name saved', 'success'); }
+                else { r.text().then(function(t) { showToast(t.replace(/<[^>]*>/g,'').trim() || 'Save failed', 'error'); }); finish(current); }
+            })
+            .catch(function() { showToast('Network error', 'error'); finish(current); });
+    }
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { finish(current); }
+    });
+
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+
+/* ── Description editing ──────────────────────────────── */
+function startDescEdit(taskId) {
+    document.getElementById('desc-display').style.display = 'none';
+    document.getElementById('desc-edit').style.display = 'block';
+}
+function cancelDescEdit() {
+    document.getElementById('desc-edit').style.display = 'none';
+    document.getElementById('desc-display').style.display = 'block';
+}
+
+/* ── Auto-clear result spans after a delay ───────────── */
+document.addEventListener('htmx:afterRequest', function(evt) {
+    var target = evt.detail.target;
+    if (target && target.classList && target.classList.contains('detail-inline-result')) {
+        if (evt.detail.successful) {
+            showToast('Saved', 'success');
+        }
+        setTimeout(function() { target.textContent = ''; }, 3000);
+    }
+    // After description save, swap display back
+    if (target && target.id === 'desc-result' && evt.detail.successful) {
+        showToast('Description saved', 'success');
+        setTimeout(function() {
+            cancelDescEdit();
+            // Reload to show updated description
+            htmx.ajax('GET', window.location.pathname, {target: '#content', swap: 'innerHTML'});
+        }, 500);
+    }
+});
+</script>

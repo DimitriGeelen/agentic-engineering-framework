@@ -1,0 +1,197 @@
+{% from '_partials/badge.html' import badge %}
+<style>
+    .assumption-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .assumption-stat {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .assumption-stat .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .assumption-stat .stat-label {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 0.25rem;
+    }
+    .filter-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .filter-row a {
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .filter-row a.active {
+        background: var(--pico-primary-background);
+        color: var(--pico-primary-inverse);
+        border-color: var(--pico-primary-background);
+    }
+    /* status-badge styles replaced by badge macro (T-421) */
+    .action-btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        border-radius: 4px;
+        cursor: pointer;
+        border: 1px solid;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .btn-validate { background: transparent; color: #2e7d32; border-color: #2e7d32; }
+    .btn-validate:hover { background: #2e7d32; color: white; }
+    .btn-invalidate { background: transparent; color: #c62828; border-color: #c62828; }
+    .btn-invalidate:hover { background: #c62828; color: white; }
+    .evidence-form {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .evidence-form input[type="text"] {
+        margin-bottom: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        flex: 1;
+    }
+    .evidence-form button {
+        margin-bottom: 0;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+    .health-bar {
+        display: flex;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: var(--pico-muted-border-color);
+        margin-bottom: 2rem;
+    }
+    .health-bar .bar-validated { background: #2e7d32; }
+    .health-bar .bar-invalidated { background: #c62828; }
+    .health-bar .bar-untested { background: #f9a825; }
+</style>
+
+<div class="page-header">
+    <h1>{{ page_title }}</h1>
+    <p>{{ summary.total }} assumption{% if summary.total != 1 %}s{% endif %} tracked across inception tasks. Lifecycle: untested &rarr; validated | invalidated.</p>
+</div>
+
+<div class="assumption-summary">
+    <div class="assumption-stat">
+        <div class="stat-value">{{ summary.total }}</div>
+        <div class="stat-label">Total</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value" style="color: #2e7d32;">{{ summary.validated }}</div>
+        <div class="stat-label">Validated</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value" style="color: #f9a825;">{{ summary.untested }}</div>
+        <div class="stat-label">Untested</div>
+    </div>
+    <div class="assumption-stat">
+        <div class="stat-value text-danger">{{ summary.invalidated }}</div>
+        <div class="stat-label">Invalidated</div>
+    </div>
+</div>
+
+{% if summary.total > 0 %}
+<div class="health-bar">
+    <div class="bar-validated" style="width: {{ (summary.validated / summary.total * 100) | round }}%;"></div>
+    <div class="bar-invalidated" style="width: {{ (summary.invalidated / summary.total * 100) | round }}%;"></div>
+    <div class="bar-untested" style="width: {{ (summary.untested / summary.total * 100) | round }}%;"></div>
+</div>
+{% endif %}
+
+<div class="filter-row">
+    <a href="/assumptions" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if not status_filter and not task_filter %}active{% endif %}">All</a>
+    <a href="/assumptions?status=untested" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'untested' %}active{% endif %}">Untested</a>
+    <a href="/assumptions?status=validated" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'validated' %}active{% endif %}">Validated</a>
+    <a href="/assumptions?status=invalidated" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       class="{% if status_filter == 'invalidated' %}active{% endif %}">Invalidated</a>
+</div>
+
+{% if assumptions %}
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Statement</th>
+            <th scope="col">Status</th>
+            <th scope="col">Task</th>
+            <th scope="col">Created</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in assumptions %}
+        <tr>
+            <td><code>{{ a.id }}</code></td>
+            <td>
+                {{ a.statement }}
+                {% if a.evidence %}
+                <details style="margin-top: 0.25rem;">
+                    <summary class="text-xs">{{ a.evidence | length }} evidence record{% if a.evidence | length != 1 %}s{% endif %}</summary>
+                    {% for e in a.evidence %}
+                    <p style="font-size: 0.8rem; color: var(--pico-muted-color); margin: 0.25rem 0;">
+                        {{ e.outcome }} <small>({{ e.date }})</small>
+                    </p>
+                    {% endfor %}
+                </details>
+                {% endif %}
+            </td>
+            <td>
+                {{ badge(a.status | default('untested')) }}
+            </td>
+            <td>
+                {% if a.linked_task %}
+                <a href="/inception/{{ a.linked_task }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                    <code>{{ a.linked_task }}</code>
+                </a>
+                {% endif %}
+            </td>
+            <td><small>{{ a.created | default('') }}</small></td>
+            <td>
+                {% if a.status == 'untested' %}
+                <details>
+                    <summary style="font-size: 0.75rem; cursor: pointer;">Resolve</summary>
+                    <form action="/assumptions/{{ a.id }}/resolve" method="post" class="evidence-form">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="redirect" value="/assumptions">
+                        <input type="text" name="evidence" placeholder="Evidence..." required>
+                        <button type="submit" name="action" value="validate" class="action-btn btn-validate">Validate</button>
+                        <button type="submit" name="action" value="invalidate" class="action-btn btn-invalidate">Invalidate</button>
+                    </form>
+                </details>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="coming-soon">
+    <h3>No Assumptions Found</h3>
+    <p>No assumptions registered{% if status_filter %} with status "{{ status_filter }}"{% endif %}. Register one with <code>fw assumption add "Statement" --task T-XXX</code></p>
+</div>
+{% endif %}

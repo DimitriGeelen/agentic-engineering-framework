@@ -1,0 +1,157 @@
+"""Metrics blueprint — project health dashboard."""
+
+import re as re_mod
+import subprocess
+from datetime import datetime, timezone
+
+import yaml
+from flask import Blueprint
+
+from web.context_loader import load_decisions, load_learnings, load_patterns, load_practices
+from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, parse_frontmatter
+from web.subprocess_utils import run_git_command
+
+bp = Blueprint("metrics", __name__)
+
+
+def _task_counts():
+    """Count active and completed tasks."""
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    completed_dir = PROJECT_ROOT / ".tasks" / "completed"
+    active = len(list(active_dir.glob("T-*.md"))) if active_dir.exists() else 0
+    completed = len(list(completed_dir.glob("T-*.md"))) if completed_dir.exists() else 0
+    return active, completed
+
+
+def _traceability():
+    """Percentage of recent commits referencing T-XXX."""
+    output, ok = run_git_command(["log", "--oneline", "-200", "--format=%s"])
+    if not ok or not output:
+        return 0
+    lines = [l for l in output.split("\n") if l.strip()]
+    if not lines:
+        return 0
+    total = len(lines)
+    traced = sum(1 for l in lines if re_mod.search(r"T-\d+", l))
+    return int(round(traced / total * 100))
+
+
+def _quality_scores():
+    """Compute description quality % and acceptance criteria coverage %."""
+    desc_ok = 0
+    ac_ok = 0
+    total = 0
+
+    for d in [PROJECT_ROOT / ".tasks" / "active", PROJECT_ROOT / ".tasks" / "completed"]:
+        if not d.exists():
+            continue
+        for f in d.glob("T-*.md"):
+            total += 1
+            content = f.read_text(errors="replace")
+            fm, _ = parse_frontmatter(content)
+            if fm:
+                desc = fm.get("description", "")
+                if isinstance(desc, str) and len(desc.strip()) >= 50:
+                    desc_ok += 1
+            if re_mod.search(r"(?i)(acceptance.criteria|## AC|## Acceptance)", content):
+                ac_ok += 1
+
+    if total == 0:
+        return 0, 0
+    return int(round(desc_ok / total * 100)), int(round(ac_ok / total * 100))
+
+
+def _knowledge_counts():
+    """Count learnings, patterns, decisions, practices."""
+    pdata = load_patterns()
+    patterns = (
+        len(pdata.get("failure_patterns", []))
+        + len(pdata.get("success_patterns", []))
+        + len(pdata.get("antifragile_patterns", []))
+        + len(pdata.get("workflow_patterns", []))
+    )
+
+    return {
+        "learnings": len(load_learnings()),
+        "patterns": patterns,
+        "decisions": len(load_decisions()),
+        "practices": len(load_practices()),
+    }
+
+
+def _recent_commits():
+    """Get last 10 commits as (hash, message, has_task_ref) tuples."""
+    output, ok = run_git_command(["log", "--oneline", "-10"])
+    if not ok or not output:
+        return []
+    commits = []
+    for line in output.split("\n"):
+        if not line.strip():
+            continue
+        parts = line.split(" ", 1)
+        h = parts[0]
+        msg = parts[1] if len(parts) > 1 else ""
+        has_ref = bool(re_mod.search(r"T-\d+", msg))
+        commits.append({"hash": h, "message": msg, "traced": has_ref})
+    return commits
+
+
+def _stale_tasks():
+    """Find active tasks with issues or no update in >7 days."""
+    stale = []
+    active_dir = PROJECT_ROOT / ".tasks" / "active"
+    if not active_dir.exists():
+        return stale
+
+    now = datetime.now(timezone.utc)
+    for f in active_dir.glob("T-*.md"):
+        content = f.read_text(errors="replace")
+        fm, _ = parse_frontmatter(content)
+        if not fm:
+            continue
+
+        tid = fm.get("id", f.stem[:5])
+        name = fm.get("name", "")[:40]
+        status = fm.get("status", "")
+
+        if status == "issues":
+            stale.append({"id": tid, "name": name, "reason": "has issues"})
+            continue
+
+        last_update = fm.get("last_update")
+        if last_update:
+            try:
+                ts = last_update if isinstance(last_update, datetime) else datetime.fromisoformat(str(last_update).replace("Z", "+00:00"))
+                if hasattr(ts, "tzinfo") and ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=timezone.utc)
+                days = (now - ts).days
+                if days > 7:
+                    stale.append({"id": tid, "name": name, "reason": f"no update in {days}d"})
+            except (ValueError, TypeError):
+                pass
+
+    return stale
+
+
+@bp.route("/metrics")
+def project_metrics():
+    """Project health dashboard."""
+    active, completed = _task_counts()
+    traceability = _traceability()
+    desc_quality, ac_coverage = _quality_scores()
+    knowledge = _knowledge_counts()
+    commits = _recent_commits()
+    stale = _stale_tasks()
+
+    return render_page(
+        "metrics.html",
+        page_title="Project Metrics",
+        active_count=active,
+        completed_count=completed,
+        traceability=traceability,
+        desc_quality=desc_quality,
+        ac_coverage=ac_coverage,
+        knowledge=knowledge,
+        commits=commits,
+        stale_tasks=stale,
+    )
