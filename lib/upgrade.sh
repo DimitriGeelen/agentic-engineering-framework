@@ -523,6 +523,7 @@ def extract_hooks(path):
 
 def check_stale_paths(path):
     stale = 0
+    non_framework = 0
     try:
         with open(path) as f:
             data = json.load(f)
@@ -532,9 +533,13 @@ def check_stale_paths(path):
                     cmd = hook.get('command', '')
                     if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
                         stale += 1
+                    # T-679: Detect non-framework hooks (e.g., pre-existing project hooks)
+                    # Framework hooks always contain 'fw hook' or '.agentic-framework'
+                    elif cmd and 'fw hook' not in cmd and '.agentic-framework' not in cmd:
+                        non_framework += 1
     except (json.JSONDecodeError, FileNotFoundError):
         pass
-    return stale
+    return stale + non_framework
 
 fw_hooks = extract_hooks(os.environ['FW_FILE'])
 consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
