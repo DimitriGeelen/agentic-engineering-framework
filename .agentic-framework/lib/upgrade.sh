@@ -379,9 +379,39 @@ CRONREGEOF
         echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
     fi
 
-    # ── 4c. Global install sync ($HOME/.agentic-framework/) ──
-    echo -e "${YELLOW}[4c/9] Global install sync${NC}"
+    # ── 4c. Shim migration + global install sync ──
+    echo -e "${YELLOW}[4c/9] Shim migration + global install sync${NC}"
 
+    # T-665: Migrate ~/.local/bin/fw from global symlink to project-detecting shim
+    local local_bin="$HOME/.local/bin"
+    local shim_src="$FRAMEWORK_ROOT/bin/fw-shim"
+    if [ -f "$shim_src" ] && [ -d "$local_bin" ]; then
+        local current_fw="$local_bin/fw"
+        if [ -L "$current_fw" ]; then
+            # Current fw is a symlink (old style) — replace with shim
+            local link_target
+            link_target=$(readlink -f "$current_fw" 2>/dev/null || echo "")
+            if [[ "$link_target" == *".agentic-framework/bin/fw"* ]] || [[ "$link_target" == *"/bin/fw" ]]; then
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD MIGRATE${NC}  Replace symlink with project-detecting shim"
+                else
+                    cp "$shim_src" "$current_fw"
+                    chmod +x "$current_fw"
+                    changes=$((changes + 1))
+                    echo -e "  ${GREEN}MIGRATED${NC}  Replaced global symlink with project-detecting shim"
+                    echo -e "  ${CYAN}INFO${NC}  Shim migration: fw now routes to the project you're standing in"
+                    echo -e "  ${CYAN}INFO${NC}  Each project uses its own framework version (no global install dependency)"
+                fi
+            fi
+        elif [ -f "$current_fw" ] && ! grep -q 'find_fw' "$current_fw" 2>/dev/null; then
+            # fw exists but isn't the shim — leave it alone (manual install)
+            echo -e "  ${CYAN}SKIP${NC}  $current_fw exists but is not a symlink or shim"
+        else
+            echo -e "  ${GREEN}OK${NC}  fw shim already installed"
+        fi
+    fi
+
+    # T-660: Global install sync (fallback for users who still use global install)
     local global_dir="$HOME/.agentic-framework"
     if [ -d "$global_dir/agents/context" ]; then
         local global_updated=0
