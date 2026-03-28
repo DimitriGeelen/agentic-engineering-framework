@@ -1,12 +1,14 @@
 #!/bin/bash
-# Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools
+# Task-First Enforcement Hook — PreToolUse gate for Write/Edit/Bash tools
 # Blocks file modifications when no active task is set in focus.yaml.
 #
 # Exit codes (Claude Code PreToolUse semantics):
 #   0 — Allow tool execution
 #   2 — Block tool execution (stderr shown to agent)
 #
-# Receives JSON on stdin with tool_name and tool_input.file_path.
+# Receives JSON on stdin with tool_name and tool_input.
+# For Write/Edit: checks tool_input.file_path
+# For Bash: checks tool_input.command against safe-command allowlist (T-650)
 #
 # Exempt paths (framework operations that don't need task context):
 #   .context/   — Context fabric management
@@ -17,6 +19,13 @@
 
 set -uo pipefail
 
+# --- FW_SAFE_MODE escape hatch (T-650) ---
+# Disables task gate only. Tier 0 and boundary check remain active.
+if [ "${FW_SAFE_MODE:-0}" = "1" ]; then
+    echo "SAFE MODE: Task gate bypassed (FW_SAFE_MODE=1)" >&2
+    exit 0
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
@@ -24,6 +33,51 @@ FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
+
+# Extract tool name and inputs
+TOOL_NAME=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('tool_name', ''))
+except:
+    print('')
+" 2>/dev/null)
+
+# --- Bash tool: safe-command fast path (T-650) ---
+if [ "$TOOL_NAME" = "Bash" ]; then
+    BASH_CMD=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('tool_input', {}).get('command', ''))
+except:
+    print('')
+" 2>/dev/null)
+
+    # fw hook commands are always allowed (hooks calling hooks)
+    case "$BASH_CMD" in
+        "fw hook "*|"bin/fw hook "*)
+            exit 0
+            ;;
+    esac
+
+    # Source safe-command allowlist
+    source "$SCRIPT_DIR/lib/safe-commands.sh" 2>/dev/null || true
+
+    # Check write patterns FIRST — even "safe" commands with redirects are writes
+    if type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$BASH_CMD"; then
+        # Command has write patterns — fall through to active-task check
+        :
+    elif type is_bash_safe_command &>/dev/null && is_bash_safe_command "$BASH_CMD"; then
+        # Safe command with no write patterns — allow without task
+        exit 0
+    fi
+
+    # Non-safe or write-pattern Bash commands: fall through to active-task check.
+    # FILE_PATH stays empty for Bash — exempt-path check won't match,
+    # so we go straight to the task-exists check.
+fi
 
 # Extract file path from tool input (supports file_path and notebook_path for NotebookEdit)
 FILE_PATH=$(echo "$INPUT" | python3 -c "
