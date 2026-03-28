@@ -203,19 +203,13 @@ def _load_pending_human_acs():
     return results
 
 
-@bp.route("/approvals")
-def approvals():
-    # Tier 0 (existing)
+def _build_approvals_context():
+    """Build template context for approvals page."""
     pending_tier0 = _load_pending_approvals()
     resolved_tier0 = _load_resolved_approvals()
-
-    # GO/NO-GO decisions
     pending_go = _load_pending_go_decisions()
-
-    # Human ACs
     pending_acs = _load_pending_human_acs()
 
-    # Counts
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
     ac_count = sum(
@@ -224,9 +218,7 @@ def approvals():
     )
     total = tier0_count + go_count + len(pending_acs)
 
-    return render_page(
-        "approvals.html",
-        page_title="Approvals",
+    return dict(
         pending_tier0=pending_tier0,
         resolved_tier0=resolved_tier0,
         pending_go=pending_go,
@@ -238,6 +230,21 @@ def approvals():
         total_count=total,
         active_count=tier0_count,
     )
+
+
+@bp.route("/approvals")
+def approvals():
+    ctx = _build_approvals_context()
+    return render_page("approvals.html", page_title="Approvals", **ctx)
+
+
+@bp.route("/approvals/content")
+def approvals_content():
+    """htmx polling fragment — returns approvals content without page wrapper (T-669)."""
+    from flask import render_template
+
+    ctx = _build_approvals_context()
+    return render_template("_approvals_content.html", **ctx)
 
 
 @bp.route("/api/approvals/decide", methods=["POST"])

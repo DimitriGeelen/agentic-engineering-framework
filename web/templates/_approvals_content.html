@@ -1,0 +1,208 @@
+<!-- Approvals content fragment — served by /approvals/content for htmx polling (T-669) -->
+
+<!-- Summary counts bar -->
+<div class="approvals-summary">
+    <div class="approval-stat {{ 'tier0-active' if tier0_count else '' }}">
+        <span class="stat-value">{{ tier0_count }}</span>
+        <span class="stat-label">Tier 0</span>
+    </div>
+    <div class="approval-stat {{ 'go-active' if go_count else '' }}">
+        <span class="stat-value">{{ go_count }}</span>
+        <span class="stat-label">GO Decisions</span>
+    </div>
+    <div class="approval-stat {{ 'ac-active' if ac_count else '' }}">
+        <span class="stat-value">{{ ac_count }}</span>
+        <span class="stat-label">Human ACs</span>
+    </div>
+    <div class="approval-stat total">
+        <span class="stat-value">{{ total_count }}</span>
+        <span class="stat-label">Total</span>
+    </div>
+</div>
+
+<!-- Section A: Tier 0 Approvals -->
+{% if pending_tier0 %}
+<div class="section-header">
+    <h3>Tier 0 Approvals</h3>
+    <small>Agent blocked — requires your decision</small>
+</div>
+{% for item in pending_tier0 %}
+<div class="approval-card {{ item.status }}">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="approval-risk">{{ item.risk }}</div>
+        <span class="status-badge badge-{{ item.status }}">{{ item.status }}</span>
+    </div>
+    <div class="approval-meta">{{ item.timestamp or '' }}</div>
+    <div class="approval-command">{{ item.command_preview }}</div>
+
+    {% if item.status == 'pending' %}
+    <form hx-post="/api/approvals/decide" hx-target="#result-{{ loop.index }}" hx-swap="innerHTML">
+        <input type="hidden" name="command_hash" value="{{ item.command_hash }}">
+        <textarea name="feedback" class="approval-feedback" placeholder="Optional feedback..."></textarea>
+        <div class="approval-actions">
+            <button type="submit" name="decision" value="approved" class="btn-approve">Approve</button>
+            <button type="submit" name="decision" value="rejected" class="btn-reject outline">Reject</button>
+        </div>
+    </form>
+    <div id="result-{{ loop.index }}"></div>
+    {% elif item.status == 'expired' %}
+    <p style="font-size:0.8rem; color:var(--pico-muted-color); margin:0.5rem 0 0;">
+        Expired — agent must retry the command to generate a new request.
+    </p>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Section B: GO/NO-GO Decisions -->
+{% if pending_go %}
+<div class="section-header">
+    <h3>Inception Decisions</h3>
+    <small>{{ go_count }} pending GO/NO-GO</small>
+</div>
+{% for t in pending_go %}
+<div class="approval-card go-decision">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
+            {{ t.name }}
+        </div>
+        <span class="status-badge badge-pending">Pending</span>
+    </div>
+    {% if t.problem_excerpt %}
+    <p class="approval-meta" style="margin-top:0.4rem;">{{ t.problem_excerpt }}</p>
+    {% endif %}
+    {% if t.artifacts %}
+    <div style="font-size:0.8rem; margin:0.25rem 0;">
+        Research: {% for a in t.artifacts %}
+        <a href="/file/{{ a.path }}">{{ a.name }}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if t.assumption_counts.total %}
+    <div class="approval-meta">
+        Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated
+    </div>
+    {% endif %}
+    <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
+          style="margin-top:0.5rem;">
+        <div class="decision-inline">
+            <label><input type="radio" name="decision" value="go" required>
+                <span class="dec-go">GO</span></label>
+            <label><input type="radio" name="decision" value="no-go">
+                <span class="dec-nogo">NO-GO</span></label>
+            <label><input type="radio" name="decision" value="defer">
+                <span class="dec-defer">DEFER</span></label>
+        </div>
+        <textarea name="rationale" placeholder="Rationale (required)..." required
+                  class="approval-feedback" style="margin-top:0.4rem;">{{ t.rationale_hint or '' }}</textarea>
+        <div class="approval-actions">
+            <button type="submit" style="font-size:0.85rem; padding:0.4rem 1rem;">
+                Record Decision
+            </button>
+        </div>
+    </form>
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Section C: Human Acceptance Criteria -->
+{% if pending_acs %}
+<div class="section-header">
+    <h3>Human Acceptance Criteria</h3>
+    <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
+</div>
+{% for t in pending_acs %}
+<div class="approval-card human-ac-group">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <div>
+            <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
+            {{ t.name }}
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <a href="/review/{{ t.task_id }}" title="Mobile review" style="font-size:0.75rem; text-decoration:none; padding:0.15rem 0.4rem; border:1px solid var(--pico-muted-border-color); border-radius:3px;">&#128241;</a>
+            <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
+        </div>
+    </div>
+    {% set unchecked_count = t.human_acs | rejectattr('checked') | list | length %}
+    {% for ac in t.human_acs %}
+    <details class="human-ac-card" {% if not ac.checked %}open{% endif %}
+             style="margin:0.3rem 0; padding:0.4rem 0.6rem; border-radius:4px; background:var(--pico-code-background-color);">
+        <summary style="display:flex; align-items:flex-start; gap:0.4rem; cursor:pointer; font-size:0.85rem;">
+            <form hx-post="/api/task/{{ t.task_id }}/toggle-ac"
+                  hx-target="find input[type=checkbox]" hx-swap="outerHTML"
+                  style="display:inline;" onclick="event.stopPropagation();">
+                <input type="hidden" name="line" value="{{ ac.line_idx }}">
+                <input type="checkbox" {% if ac.checked %}checked{% endif %}
+                       onchange="this.form.requestSubmit()"
+                       style="margin:0.15rem 0 0;">
+            </form>
+            {% if ac.confidence == 'review' %}
+            <span class="confidence-badge badge-review">Review</span>
+            {% elif ac.confidence == 'rubber-stamp' %}
+            <span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>
+            {% endif %}
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+        </summary>
+        {% if ac.steps or ac.expected or ac.if_not %}
+        <div style="padding:0.3rem 0 0 1.5rem; font-size:0.8rem;">
+            {% if ac.steps %}
+            <div style="margin-bottom:0.3rem;"><strong>Steps:</strong></div>
+            <ol style="margin:0 0 0.3rem 1rem; padding:0;">
+                {% for step in ac.steps %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+            {% endif %}
+            {% if ac.expected %}
+            <div><strong>Expected:</strong> {{ ac.expected }}</div>
+            {% endif %}
+            {% if ac.if_not %}
+            <div style="color:var(--pico-muted-color);"><strong>If not:</strong> {{ ac.if_not }}</div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </details>
+    {% endfor %}
+    {% if unchecked_count == 0 %}
+    <div style="margin-top:0.5rem;">
+        <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
+            <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
+                Complete Task
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- Empty state -->
+{% if not pending_tier0 and not pending_go and not pending_acs %}
+<div class="empty-state">
+    <p>Nothing needs your attention.</p>
+    <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>
+</div>
+{% endif %}
+
+<!-- Recently Resolved -->
+{% if resolved_tier0 %}
+<details style="margin-top:2rem;">
+    <summary><h3 style="display:inline;">Recent</h3></summary>
+    {% for item in resolved_tier0 %}
+    <div class="approval-card {{ item.status }}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="approval-risk" style="font-weight:400;">{{ item.risk }}</div>
+            <span class="status-badge badge-{{ item.status }}">{{ item.status }}</span>
+        </div>
+        <div class="approval-meta">
+            {{ item.get('response', {}).get('responded_at', '') }}
+            {% if item.get('response', {}).get('feedback') %}
+             — {{ item.response.feedback }}
+            {% endif %}
+        </div>
+        <div class="approval-command">{{ item.command_preview }}</div>
+    </div>
+    {% endfor %}
+</details>
+{% endif %}
