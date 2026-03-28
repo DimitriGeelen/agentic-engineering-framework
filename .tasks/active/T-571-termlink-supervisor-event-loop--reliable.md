@@ -107,3 +107,6 @@ Current `fw termlink dispatch` is fire-and-forget with file-based polling. Worke
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-28 — artifact-reference [audit-fix]
+- **Research artifact:** docs/reports/T-571-termlink-supervisor-event-loop.md
