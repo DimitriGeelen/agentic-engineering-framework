@@ -13,7 +13,7 @@
 # Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-released.
 
 # Guard against double-sourcing
-[ -n "$_KEYLOCK_LOADED" ] && return 0
+[ -n "${_KEYLOCK_LOADED:-}" ] && return 0
 _KEYLOCK_LOADED=1
 
 # Configuration
@@ -21,7 +21,11 @@ KEYLOCK_DIR="${PROJECT_ROOT:-.}/.context/locks"
 KEYLOCK_TIMEOUT="${KEYLOCK_TIMEOUT:-300}"  # seconds before stale lock cleanup
 
 # Track file descriptors per key for release
-declare -A _KEYLOCK_FDS 2>/dev/null || true
+# declare -A requires bash 4+; fail gracefully
+if ! declare -A _KEYLOCK_FDS 2>/dev/null; then
+    echo "keylock: bash 4+ required for associative arrays" >&2
+    return 1 2>/dev/null || exit 1
+fi
 _KEYLOCK_FD_COUNTER=200  # Start FDs at 200 to avoid collisions
 
 # Sanitize key name for filesystem use

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-587: Keyed async queue — per-key serialization primitive for concurrent operations
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T12:27:44Z
+# ============================================================================
+
+task_id: T-587
+task_name: "Keyed async queue — per-key serialization primitive for concurrent operations"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T21:35:21Z
+completed: 2026-03-28T12:27:42Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-03-28T13:26:47+01:00
+last_commit: 2026-03-28T13:26:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add lib/keylock.sh — per-key serialization with flock, integrate with update-task.sh
+
+# Key outcomes
+outcomes:
+  - "A shell library `lib/keylock.sh` exists providing `keylock_acquire <key>` and `keylock_release <key>` functions that serialize operations per key using `flock` on files in `$PROJECT_ROOT/.context/locks/`"
+  - "Cross-key parallelism works: two concurrent processes holding locks on different keys (e.g., `T-001` and `T-002`) do not block each other — verified by a test that acquires both in parallel and checks both complete within 2 seconds"
+  - "Same-key serialization works: two concurrent processes acquiring the same key execute sequentially — verified by a test that writes timestamps from two parallel workers to a shared file and confirms non-overlapping execution windows"
+  - "Stale lock cleanup: locks older than a configurable timeout (default 5 minutes) are automatically released on next acquisition attempt, preventing deadlocks from crashed processes"
+  - "`update-task.sh` uses `keylock_acquire $TASK_ID` / `keylock_release $TASK_ID` around the task file read-modify-write sequence to prevent concurrent task updates from corrupting YAML frontmatter"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".context/locks/key-A.lock"
+  - ".context/locks/key-B.lock"
+  - ".context/locks/same-key.lock"
+  - ".context/locks/stale-test.lock"
+  - ".context/locks/test-verify.lock"
+  - ".fabric/components/lib-keylock.yaml"
+  - "lib/keylock.sh"
+  - ".tasks/active/T-587-keyed-async-queue--per-key-serialization.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T13:26:47"
+    action: "T-587: Add lib/keylock.sh — per-key serialization with flock, integrate with update-task.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6652 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6652
+  commits: 1
+  files_changed: 9
+  lines_added: 135
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-587-keyed-async-queue--per-key-serialization.md
+generated_by: context-agent-hybrid
