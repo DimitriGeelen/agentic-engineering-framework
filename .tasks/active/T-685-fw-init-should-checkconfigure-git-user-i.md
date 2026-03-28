@@ -4,7 +4,7 @@ name: "fw init should check/configure git user identity"
 description: >
   F-9: fw init does not check or configure git user identity. Fresh environments fail on first governed commit with 'Author identity unknown'. fw doctor could check for this, or fw init could set a default. Discovered during T-679 vnx experiment.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T22:03:52Z
-last_update: 2026-03-28T22:03:52Z
+last_update: 2026-03-28T22:07:46Z
 date_finished: null
 ---
 
@@ -25,18 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
+- [x] Add git user.email/user.name check to `fw doctor` — WARN if not configured
+- [x] Shows fix instructions: `git config user.email/user.name`
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
          3. Check browser console for errors
@@ -72,3 +62,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-685-fw-init-should-checkconfigure-git-user-i.md
 - **Context:** Initial task creation
+
+### 2026-03-28T22:07:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -575,6 +575,16 @@ do_doctor() {
         warnings=$((warnings + 1))
     fi
 
+    # Check 5b: Git user identity (T-685)
+    local git_email git_name
+    git_email=$(git -C "$PROJECT_ROOT" config user.email 2>/dev/null || true)
+    git_name=$(git -C "$PROJECT_ROOT" config user.name 2>/dev/null || true)
+    if [ -z "$git_email" ] || [ -z "$git_name" ]; then
+        echo -e "  ${YELLOW}WARN${NC}  Git user identity not configured (commits will fail)"
+        echo -e "         Run: git config user.email 'you@example.com' && git config user.name 'Your Name'"
+        warnings=$((warnings + 1))
+    fi
+
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
     local settings_file="$PROJECT_ROOT/.claude/settings.json"
     if [ -f "$settings_file" ]; then
