@@ -1731,12 +1731,107 @@ for j in jobs:
     print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
 "
                 ;;
+            list)
+                # Alias for status
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo "No cron registry at $_cron_registry"
+                    exit 0
+                fi
+                python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+jobs = data.get('jobs', [])
+active = sum(1 for j in jobs if j.get('status') == 'active')
+paused = sum(1 for j in jobs if j.get('status') == 'paused')
+print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
+for j in jobs:
+    s = j.get('status', 'active')
+    icon = '  ✓' if s == 'active' else '  ‖'
+    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                ;;
+            run)
+                # Run a job immediately (T-654)
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                _job_id="${1:-}"
+                if [ -z "$_job_id" ] || [ ! -f "$_cron_registry" ]; then
+                    if [ ! -f "$_cron_registry" ]; then
+                        echo -e "${RED}ERROR:${NC} No cron registry at $_cron_registry"
+                        exit 1
+                    fi
+                    echo -e "${RED}Usage:${NC} fw cron run <job-id>"
+                    echo ""
+                    echo "Available jobs:"
+                    python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+for j in data.get('jobs', []):
+    print(f'  {j[\"id\"]:25s} {j.get(\"name\",\"\")}')
+"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, subprocess, time, sys, os
+
+data = yaml.safe_load(open('$_cron_registry'))
+job = None
+for j in data.get('jobs', []):
+    if j.get('id') == '$_job_id':
+        job = j
+        break
+
+if not job:
+    print(f'ERROR: Job \"$_job_id\" not found in registry', file=sys.stderr)
+    sys.exit(1)
+
+command = job.get('command', '')
+if not command:
+    print('ERROR: Job has no command', file=sys.stderr)
+    sys.exit(1)
+
+# Resolve fw commands
+if command.startswith('fw '):
+    command = f'$FRAMEWORK_ROOT/bin/fw {command[3:]}'
+elif command.startswith('find '):
+    command = f'cd \"$PROJECT_ROOT\" && {command}'
+
+print(f'Running: {job.get(\"name\", \"\")} ({job[\"id\"]})')
+print(f'Command: {command}')
+print()
+
+start = time.time()
+try:
+    result = subprocess.run(
+        command, shell=True, capture_output=True, text=True,
+        timeout=120, cwd='$PROJECT_ROOT',
+        env={**os.environ, 'PROJECT_ROOT': '$PROJECT_ROOT'}
+    )
+    elapsed = time.time() - start
+    if result.stdout:
+        # Show last 10 lines of output
+        lines = result.stdout.strip().split('\n')
+        for line in lines[-10:]:
+            print(f'  {line}')
+    if result.stderr and result.returncode != 0:
+        for line in result.stderr.strip().split('\n')[-5:]:
+            print(f'  STDERR: {line}')
+    print()
+    print(f'Exit: {result.returncode} ({elapsed:.1f}s)')
+    sys.exit(result.returncode)
+except subprocess.TimeoutExpired:
+    print('ERROR: Command timed out after 120s', file=sys.stderr)
+    sys.exit(124)
+"
+                ;;
             ""|help|-h|--help)
                 echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
                 echo ""
                 echo "Subcommands:"
                 echo "  generate    Regenerate crontab from registry YAML"
                 echo "  status      Show registry status (jobs, active/paused)"
+                echo "  list        Alias for status"
+                echo "  run <id>    Run a job immediately"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
                 echo "Web UI:   http://localhost:3000/cron"
