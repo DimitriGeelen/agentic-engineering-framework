@@ -278,6 +278,14 @@
 </article>
 {% endif %}
 
+<!-- Agent Recommendation (T-679) -->
+{% if sections.recommendation %}
+<article class="section-card">
+    <header>Agent Recommendation</header>
+    <div class="section-content">{{ sections.recommendation }}</div>
+</article>
+{% endif %}
+
 <!-- Decision Details -->
 {% if sections.decision and dec != 'pending' %}
 <article class="section-card">
@@ -295,7 +303,7 @@
             <label><input type="radio" name="decision" value="defer"><span class="dec-defer">DEFER</span></label>
         </div>
         <textarea name="rationale" placeholder="Rationale for this decision..." required
-                  style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;"></textarea>
+                  style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;">{{ rationale_hint or '' }}</textarea>
         <button type="submit" class="text-sm">Record Decision</button>
     </form>
 </article>

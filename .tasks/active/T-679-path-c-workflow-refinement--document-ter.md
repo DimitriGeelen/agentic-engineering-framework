@@ -4,7 +4,7 @@ name: "Path C workflow refinement — document TermLink-based external ingestion
 description: >
   Inception: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [path-c, termlink, ingestion, process-improvement]
 components: []
 related_tasks: [T-678, T-677, T-549, T-559]
 created: 2026-03-28T21:30:03Z
-last_update: 2026-03-28T21:31:52Z
-date_finished: null
+last_update: 2026-03-28T21:55:27Z
+date_finished: 2026-03-28T21:55:27Z
 ---
 
 # T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
@@ -112,15 +112,15 @@ See `.context/episodic/T-678-dialogue.yaml` for full log. Key corrections:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Path C workflow documented in `docs/reports/T-679-path-c-workflow.md`
-- [ ] Boundary hook TermLink exception implemented (F-1/F-7 fix)
-- [ ] fw upgrade hook content validation implemented (F-2 fix)
-- [ ] vnx experiment redone from scratch — full workflow executed
-- [ ] Friction points logged with severity and category
-- [ ] TermLink product learnings documented (for TermLink creator)
-- [ ] Framework improvement tasks created for each fixable friction point
-- [ ] Research artifact committed
+- [x] Problem statement validated
+- [x] Path C workflow documented in `docs/reports/T-679-path-c-workflow.md`
+- [x] Boundary hook TermLink exception implemented (F-1/F-7 fix) — `check-project-boundary.sh`
+- [x] fw upgrade hook content validation implemented (F-2 fix) — `lib/upgrade.sh`
+- [x] vnx experiment redone from scratch — fw init + doctor + audit all pass
+- [x] Friction points logged with severity and category (7 items in task + research artifact)
+- [x] TermLink product learnings documented (for TermLink creator) — T-682
+- [x] Framework improvement tasks created: T-680 (vendor self-ref), T-681 (MCP seeding), T-682 (TermLink feedback)
+- [x] Research artifact committed — `docs/reports/T-679-path-c-workflow.md`
 
 ### Human
 - [ ] [REVIEW] Review Path C workflow document — is it clear enough for a fresh agent?
@@ -154,18 +154,46 @@ See `.context/episodic/T-678-dialogue.yaml` for full log. Key corrections:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: GO
+
+Rationale: Path C workflow was broken — two sessions failed with 5 course corrections. This inception fixed the two structural blockers (boundary hook blocking TermLink, upgrade ignoring non-framework hooks), documented the workflow, proved it end-to-end on a clean vnx experiment (fw doctor 0 failures, fw audit 47 pass), and created 3 improvement tasks for remaining issues. The workflow is now reproducible without tribal knowledge.
+
+Evidence:
+- F-1/F-7 FIXED: `check-project-boundary.sh` n...
+
+**Date**: 2026-03-28T21:55:26Z
+
+## Recommendation
+
+**GO**
+
+**Rationale:** Path C workflow was broken — two sessions failed with 5 course corrections. This inception fixed the two structural blockers (boundary hook blocking TermLink, upgrade ignoring non-framework hooks), documented the workflow, proved it end-to-end on a clean vnx experiment (fw doctor 0 failures, fw audit 47 pass), and created 3 improvement tasks for remaining issues. The workflow is now reproducible without tribal knowledge.
+
+**Evidence:**
+- F-1/F-7 FIXED: `check-project-boundary.sh` now whitelists TermLink commands
+- F-2 FIXED: `lib/upgrade.sh` detects non-framework hooks and replaces them
+- Clean experiment: `/opt/051-Vinix24` — fresh init → doctor all green → audit passes
+- Workflow doc: `docs/reports/T-679-path-c-workflow.md`
+- Improvement tasks: T-680 (vendor self-ref), T-681 (MCP seeding), T-682 (TermLink feedback)
+- L-122: Path C L-117 exception recorded
+- CLAUDE.md: "Presenting Work for Human Review" rule added
+
+**Remaining (non-blocking):** T-680/T-681/T-682 are follow-up tasks, not blockers for this decision.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO
+
+Rationale: Path C workflow was broken — two sessions failed with 5 course corrections. This inception fixed the two structural blockers (boundary hook blocking TermLink, upgrade ignoring non-framework hooks), documented the workflow, proved it end-to-end on a clean vnx experiment (fw doctor 0 failures, fw audit 47 pass), and created 3 improvement tasks for remaining issues. The workflow is now reproducible without tribal knowledge.
+
+Evidence:
+- F-1/F-7 FIXED: `check-project-boundary.sh` n...
+
+**Date**: 2026-03-28T21:55:26Z
 
 ## Updates
 
@@ -174,3 +202,17 @@ See `.context/episodic/T-678-dialogue.yaml` for full log. Key corrections:
 
 ### 2026-03-28T21:31:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T21:55:26Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO
+
+Rationale: Path C workflow was broken — two sessions failed with 5 course corrections. This inception fixed the two structural blockers (boundary hook blocking TermLink, upgrade ignoring non-framework hooks), documented the workflow, proved it end-to-end on a clean vnx experiment (fw doctor 0 failures, fw audit 47 pass), and created 3 improvement tasks for remaining issues. The workflow is now reproducible without tribal knowledge.
+
+Evidence:
+- F-1/F-7 FIXED: `check-project-boundary.sh` n...
+
+### 2026-03-28T21:55:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

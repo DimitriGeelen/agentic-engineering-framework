@@ -168,9 +168,17 @@ def inception_detail(task_id):
         "constraints": _md(_extract_section(task_body, "Technical Constraints")),
         "scope": _md(_extract_section(task_body, "Scope Fence")),
         "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
+        "recommendation": _md(_extract_section(task_body, "Recommendation")),
         "decision": _md(_extract_section(task_body, "Decision")),
         "updates": _md(_extract_section(task_body, "Updates")),
     }
+
+    # T-679: Pre-populate rationale from ## Recommendation section
+    rec_raw = _extract_section(task_body, "Recommendation") or ""
+    # Strip markdown formatting for the textarea hint
+    rationale_hint = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_raw).strip()
+    if len(rationale_hint) > 500:
+        rationale_hint = rationale_hint[:497] + "..."
 
     decision_state = _extract_decision(task_body)
 
@@ -194,6 +202,7 @@ def inception_detail(task_id):
         linked_assumptions=linked_assumptions,
         episodic=episodic,
         task_id=task_id,
+        rationale_hint=rationale_hint,
     )
 
 

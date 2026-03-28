@@ -147,6 +147,22 @@ check_acceptance_criteria() {
     fi
 }
 
+# T-679: Auto-emit review on partial-complete transition
+# Called after work-completed transition when human ACs remain.
+# Also available standalone: fw task review T-XXX
+auto_emit_review_if_partial() {
+    if [ "${PARTIAL_COMPLETE:-false}" = true ]; then
+        echo ""
+        echo -e "${BOLD}Present this to the human for review:${NC}"
+        if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/review.sh"
+            emit_review "$TASK_ID" "$TASK_FILE"
+        else
+            echo "  fw task review $TASK_ID"
+        fi
+    fi
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {

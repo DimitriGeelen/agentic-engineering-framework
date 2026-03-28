@@ -765,6 +765,23 @@ Before setting any task to `work-completed`:
 5. Do NOT call `fw task update --status work-completed` until all agent ACs pass
 6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
 
+### Presenting Work for Human Review (T-679)
+When agent ACs are complete and human ACs remain:
+
+1. **Write your recommendation into the task file** — Add a `## Recommendation` section (Watchtower reads this) with:
+   - **Recommendation:** GO / NO-GO / DEFER
+   - **Rationale:** Why (cite evidence: what was fixed, what was proven, what remains)
+   - **Evidence:** Bullet list of concrete proof (test results, file paths, metrics)
+   You are the advisory. The human is the decision-maker. Never present a blank decision for them to fill in — always tell them what you recommend and why.
+
+2. **Present via the standardized review command:**
+   ```bash
+   fw task review T-XXX
+   ```
+   This emits the Watchtower URL, QR code, and links to research artifacts. **NEVER** give raw CLI commands (`fw inception decide`, `fw task update --status work-completed --force`) for human approvals.
+
+**Why this rule exists:** The agent defaults to (a) pasting CLI commands instead of using Watchtower, and (b) leaving the rationale blank for the human to figure out. Both were corrected 3 times in the same session (T-679). The agent has all the evidence — the human needs a recommendation to confirm or override, not a blank form.
+
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
 1. **State the symptom** in one sentence
