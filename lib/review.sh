@@ -55,7 +55,7 @@ emit_review() {
         review_url="${base_url}/inception/${task_id}"
         review_label="Inception Review"
     else
-        review_url="${base_url}/tasks/${task_id}#human-ac"
+        review_url="${base_url}/review/${task_id}"
         review_label="Human AC Review"
     fi
 

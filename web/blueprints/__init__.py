@@ -24,11 +24,12 @@ def register_blueprints(app):
     from web.blueprints.cron import bp as cron_bp
     from web.blueprints.api import bp as api_bp
     from web.blueprints.approvals import bp as approvals_bp
+    from web.blueprints.review import bp as review_bp
 
     for bp in (
         core_bp, tasks_bp, timeline_bp, discovery_bp, quality_bp,
         session_bp, metrics_bp, cockpit_bp, inception_bp, enforcement_bp,
         risks_bp, fabric_bp, discoveries_bp, docs_bp, settings_bp, cron_bp, api_bp,
-        approvals_bp,
+        approvals_bp, review_bp,
     ):
         app.register_blueprint(bp)

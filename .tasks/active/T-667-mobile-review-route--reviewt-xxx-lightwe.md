@@ -1,0 +1,68 @@
+---
+id: T-667
+name: "Mobile review route — /review/T-XXX lightweight approval card for QR scan"
+description: >
+  Mobile review route — /review/T-XXX lightweight approval card for QR scan
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-28T17:39:16Z
+last_update: 2026-03-28T17:39:16Z
+date_finished: null
+---
+
+# T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
+
+## Context
+
+Phase 2 of T-636 unified approval experience. Creates a lightweight `/review/T-XXX` route optimized for mobile QR scan — standalone template (no base.html), Human ACs only, large touch targets, htmx polling for live updates. Design: docs/reports/fw-agent-t636-05-mobile-qr.md
+
+## Acceptance Criteria
+
+### Agent
+- [x] `web/blueprints/review.py` blueprint registered and serving `/review/T-XXX`
+- [x] `web/templates/review.html` standalone template (no base.html inheritance)
+- [x] Only Human ACs shown (Agent ACs hidden)
+- [x] AC checkboxes toggle via existing `/api/task/T-XXX/toggle-ac` endpoint
+- [x] Pending Tier 0 approvals shown above ACs with approve/reject buttons
+- [x] "Complete Task" button appears when all Human ACs checked
+- [x] `lib/review.sh` QR URL updated from `/tasks/T-XXX#human-ac` to `/review/T-XXX`
+- [x] Auto-refresh via htmx polling (`hx-trigger="every 5s"`) for AC state changes
+
+### Human
+- [ ] [REVIEW] Mobile layout is usable on phone-sized screen
+  **Steps:**
+  1. Start Watchtower: `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve`
+  2. Open `/review/T-667` in a mobile browser (or use Chrome DevTools mobile emulation, 375px)
+  3. Check: task header visible, Human ACs have large tap targets, no horizontal scrolling
+  **Expected:** Clean single-column layout, checkboxes are easy to tap, no desktop chrome
+  **If not:** Note which elements overflow or are too small to tap
+
+## Verification
+
+python3 -c "from web.blueprints.review import bp; print('review blueprint importable')"
+curl -sf http://localhost:3000/review/T-667 | grep -q 'review-page'
+grep -q '/review/' lib/review.sh
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-28T17:39:16Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-667-mobile-review-route--reviewt-xxx-lightwe.md
+- **Context:** Initial task creation
