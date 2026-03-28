@@ -4,7 +4,7 @@ name: "vnx-orchestration deep-dive — ingest, build fabric, analyze architectur
 description: >
   Inception: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T20:49:43Z
-last_update: 2026-03-28T21:01:59Z
-date_finished: null
+last_update: 2026-03-28T22:06:24Z
+date_finished: 2026-03-28T22:06:24Z
 ---
 
 # T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
@@ -90,14 +90,18 @@ Research artifact: docs/reports/T-678-vnx-orchestration-deep-dive.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: GO
+
+Rationale: vnx-orchestration ingestion succeeded. Framework governance fully initialized — fw doctor 0 failures, 6/6 seed tasks completed, fabric with 6 registered components. The project is ready for deep-dive spikes 2-5 (component fabric build, architecture mapping, pattern analysis, value extraction). Path C workflow proven end-to-end via T-679 fixes.
+
+Evidence:
+- fw doctor: 0 failures, 1 warning (enforcement baseline)
+- fw audit: 47 pass, 8 warn, 2 fail (baseline for fresh project)
+- ...
+
+**Date**: 2026-03-28T22:06:23Z
 
 ## Recommendation
 
@@ -117,7 +121,18 @@ Research artifact: docs/reports/T-678-vnx-orchestration-deep-dive.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO
+
+Rationale: vnx-orchestration ingestion succeeded. Framework governance fully initialized — fw doctor 0 failures, 6/6 seed tasks completed, fabric with 6 registered components. The project is ready for deep-dive spikes 2-5 (component fabric build, architecture mapping, pattern analysis, value extraction). Path C workflow proven end-to-end via T-679 fixes.
+
+Evidence:
+- fw doctor: 0 failures, 1 warning (enforcement baseline)
+- fw audit: 47 pass, 8 warn, 2 fail (baseline for fresh project)
+- ...
+
+**Date**: 2026-03-28T22:06:23Z
 
 ## Updates
 
@@ -126,3 +141,19 @@ Research artifact: docs/reports/T-678-vnx-orchestration-deep-dive.md
 
 ### 2026-03-28T21:01:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T22:06:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO
+
+Rationale: vnx-orchestration ingestion succeeded. Framework governance fully initialized — fw doctor 0 failures, 6/6 seed tasks completed, fabric with 6 registered components. The project is ready for deep-dive spikes 2-5 (component fabric build, architecture mapping, pattern analysis, value extraction). Path C workflow proven end-to-end via T-679 fixes.
+
+Evidence:
+- fw doctor: 0 failures, 1 warning (enforcement baseline)
+- fw audit: 47 pass, 8 warn, 2 fail (baseline for fresh project)
+- ...
+
+### 2026-03-28T22:06:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

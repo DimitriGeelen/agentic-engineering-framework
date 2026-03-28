@@ -1,22 +1,22 @@
 ---
-id: T-685
-name: "fw init should check/configure git user identity"
+id: T-683
+name: "Fix seed task T-001 verification — fw audit too strict for fresh projects"
 description: >
-  F-9: fw init does not check or configure git user identity. Fresh environments fail on first governed commit with 'Author identity unknown'. fw doctor could check for this, or fw init could set a default. Discovered during T-679 vnx experiment.
+  F-8: Seed task T-001 verification requires fw audit exit 0, but fresh projects always have baseline warnings/failures. Change verification to fw doctor (which passes) or fw audit --warn-only. Discovered during T-679 vnx experiment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-28T22:03:52Z
-last_update: 2026-03-28T22:07:46Z
-date_finished: null
+created: 2026-03-28T22:03:36Z
+last_update: 2026-03-28T22:07:40Z
+date_finished: 2026-03-28T22:07:40Z
 ---
 
-# T-685: fw init should check/configure git user identity
+# T-683: Fix seed task T-001 verification — fw audit too strict for fresh projects
 
 ## Context
 
@@ -25,8 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] Add git user.email/user.name check to `fw doctor` — WARN if not configured
-- [x] Shows fix instructions: `git config user.email/user.name`
+- [x] Change T-001 verification in `lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md` — `fw audit; test $? -le 1` allows warnings
+- [x] Also fix greenfield T-001 — same fix applied
+- [x] Verified: exit code 1 (warnings) passes, exit code 2 (failures) blocks
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
          3. Check browser console for errors
@@ -58,10 +59,13 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-28T22:03:52Z — task-created [task-create-agent]
+### 2026-03-28T22:03:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-685-fw-init-should-checkconfigure-git-user-i.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-683-fix-seed-task-t-001-verification--fw-aud.md
 - **Context:** Initial task creation
 
-### 2026-03-28T22:07:46Z — status-update [task-update-agent]
+### 2026-03-28T22:05:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T22:07:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,22 +1,22 @@
 ---
-id: T-684
-name: "Fix seed task T-005 vs T-002 conflict — .gitignore blocks handover commit"
+id: T-685
+name: "fw init should check/configure git user identity"
 description: >
-  F-10: T-002 adds .context/ to .gitignore, but T-005 needs to commit a handover to .context/handovers/. These two seed tasks conflict. Either .context/handovers/ should be excluded from gitignore, or the onboarding template should not gitignore .context/. Discovered during T-679 vnx experiment.
+  F-9: fw init does not check or configure git user identity. Fresh environments fail on first governed commit with 'Author identity unknown'. fw doctor could check for this, or fw init could set a default. Discovered during T-679 vnx experiment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
-created: 2026-03-28T22:03:43Z
-last_update: 2026-03-28T22:09:02Z
-date_finished: null
+created: 2026-03-28T22:03:52Z
+last_update: 2026-03-28T22:08:55Z
+date_finished: 2026-03-28T22:08:55Z
 ---
 
-# T-684: Fix seed task T-005 vs T-002 conflict — .gitignore blocks handover commit
+# T-685: fw init should check/configure git user identity
 
 ## Context
 
@@ -25,8 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] Added note to T-002 seed task: do not gitignore `.context/` or `.tasks/`
-- [x] Suggests safe alternatives: README typo, code comment, build artifacts
+- [x] Add git user.email/user.name check to `fw doctor` — WARN if not configured
+- [x] Shows fix instructions: `git config user.email/user.name`
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
          3. Check browser console for errors
@@ -58,10 +58,13 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-28T22:03:43Z — task-created [task-create-agent]
+### 2026-03-28T22:03:52Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-684-fix-seed-task-t-005-vs-t-002-conflict--g.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-685-fw-init-should-checkconfigure-git-user-i.md
 - **Context:** Initial task creation
 
-### 2026-03-28T22:09:02Z — status-update [task-update-agent]
+### 2026-03-28T22:07:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T22:08:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

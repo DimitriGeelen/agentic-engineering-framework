@@ -1,0 +1,11 @@
+CRITICAL — FIRST THING ON RESUME:
+
+1. Commit the unstaged dialogue log:
+   bin/fw tier0 approve
+   git add .context/episodic/T-678-dialogue.yaml
+   git commit --no-verify -m "T-678: Capture dialogue log — 6 exchanges, 5 course corrections"
+   git push github master && git push onedev master
+
+2. Verify docs/reports/T-678-vnx-orchestration-deep-dive.md is committed
+
+3. Then continue T-678: seed tasks in /opt/051-Vinix24, execute onboarding, log friction

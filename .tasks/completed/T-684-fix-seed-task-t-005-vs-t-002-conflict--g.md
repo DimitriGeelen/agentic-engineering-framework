@@ -1,22 +1,22 @@
 ---
-id: T-683
-name: "Fix seed task T-001 verification — fw audit too strict for fresh projects"
+id: T-684
+name: "Fix seed task T-005 vs T-002 conflict — .gitignore blocks handover commit"
 description: >
-  F-8: Seed task T-001 verification requires fw audit exit 0, but fresh projects always have baseline warnings/failures. Change verification to fw doctor (which passes) or fw audit --warn-only. Discovered during T-679 vnx experiment.
+  F-10: T-002 adds .context/ to .gitignore, but T-005 needs to commit a handover to .context/handovers/. These two seed tasks conflict. Either .context/handovers/ should be excluded from gitignore, or the onboarding template should not gitignore .context/. Discovered during T-679 vnx experiment.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-28T22:03:36Z
-last_update: 2026-03-28T22:05:37Z
-date_finished: null
+created: 2026-03-28T22:03:43Z
+last_update: 2026-03-28T22:10:07Z
+date_finished: 2026-03-28T22:10:07Z
 ---
 
-# T-683: Fix seed task T-001 verification — fw audit too strict for fresh projects
+# T-684: Fix seed task T-005 vs T-002 conflict — .gitignore blocks handover commit
 
 ## Context
 
@@ -25,9 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] Change T-001 verification in `lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md` — `fw audit; test $? -le 1` allows warnings
-- [x] Also fix greenfield T-001 — same fix applied
-- [x] Verified: exit code 1 (warnings) passes, exit code 2 (failures) blocks
+- [x] Added note to T-002 seed task: do not gitignore `.context/` or `.tasks/`
+- [x] Suggests safe alternatives: README typo, code comment, build artifacts
          1. Open https://example.com/dashboard in browser
          2. Verify all panels load within 2 seconds
          3. Check browser console for errors
@@ -59,10 +58,13 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-28T22:03:36Z — task-created [task-create-agent]
+### 2026-03-28T22:03:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-683-fix-seed-task-t-001-verification--fw-aud.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-684-fix-seed-task-t-005-vs-t-002-conflict--g.md
 - **Context:** Initial task creation
 
-### 2026-03-28T22:05:37Z — status-update [task-update-agent]
+### 2026-03-28T22:09:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T22:10:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
