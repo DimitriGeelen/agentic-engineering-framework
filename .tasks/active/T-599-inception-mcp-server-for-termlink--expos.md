@@ -4,7 +4,7 @@ name: "Inception: MCP server for TermLink — expose session/file/remote/hub com
 description: >
   Evaluate building an MCP (Model Context Protocol) server that wraps TermLink commands as discoverable tools. Any MCP-capable agent (Claude Code, etc.) could then spawn sessions, transfer files, exec remote commands, and manage the hub without bash wrappers. Consider integration with the framework MCP server being built separately. Key question: which TermLink commands have the most value as MCP tools?
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:05:57Z
-last_update: 2026-03-24T09:09:48Z
+last_update: 2026-03-28T10:41:10Z
 date_finished: null
 ---
 
@@ -20,43 +20,60 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+TermLink commands are invoked via bash wrappers — opaque to MCP tool catalogs. **Key finding:** TermLink already has `termlink mcp serve` built in (stdio transport). Question shifts from "build" to "wire existing into .mcp.json."
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: TermLink MCP server exposes useful tools (NOT YET TESTED)
+- A2: MCP provides value beyond bash wrappers (PARTIALLY VALID — for non-Claude Code agents yes)
+- A3: Security model is adequate (NOT VALIDATED — MCP tools bypass PreToolUse hooks)
+- A4: Framework should manage TermLink MCP config (VALID — T-646 seeds .mcp.json)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Audit TermLink MCP server (done — exists as `termlink mcp serve`)
+2. Evaluate value vs bash wrappers (done — low for Claude Code, medium for other agents)
+3. Assess security implications (done — MCP bypasses hook system)
+4. Make recommendation (done — CONDITIONAL GO for minimal wiring)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- MCP tools bypass framework PreToolUse hooks (no task gate, no tier-0)
+- TermLink must be installed (optional dependency)
+- stdio transport only
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Whether to wire existing `termlink mcp serve` into .mcp.json.
+**OUT:** Building custom MCP server. Hub management via MCP.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated (TermLink already has MCP server)
+- [x] Assumptions tested (4 — 1 valid, 1 partial, 2 untested)
+- [x] Go/No-Go recommendation made (CONDITIONAL GO for minimal wiring)
+
+### Human
+- [ ] [REVIEW] Review findings and approve minimal wiring
+  **Steps:**
+  1. Read `docs/reports/T-599-termlink-mcp-server.md`
+  2. Consider: MCP tools bypass hooks — acceptable?
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-599 go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Discuss security concerns
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- TermLink MCP server works reliably (needs testing)
+- Minimal wiring is low-risk (one-line .mcp.json addition)
+- D4 (Portability) justifies it
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- MCP server unstable
+- Security bypass unacceptable for write operations
+- No non-Claude Code agent will use it
 
 ## Verification
 
@@ -88,3 +105,11 @@ date_finished: null
 
 ### 2026-03-24T09:09:48Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-03-28 — inception-research [agent]
+- **Research artifact:** docs/reports/T-599-termlink-mcp-server.md
+- **Key finding:** TermLink already has `termlink mcp serve` built in — no need to build from scratch
+- **Recommendation:** CONDITIONAL GO for minimal wiring (add to .mcp.json + test)
+
+### 2026-03-28T10:41:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
