@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-655: Add fw cron pause/resume CLI commands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T15:43:37Z
+# ============================================================================
+
+task_id: T-655
+task_name: "Add fw cron pause/resume CLI commands"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T15:40:52Z
+completed: 2026-03-28T15:43:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T16:43:30+01:00
+last_commit: 2026-03-28T16:43:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw cron pause/resume CLI commands
+
+# Key outcomes
+outcomes:
+  - "`fw cron pause <job-id>` sets status to paused in registry and regenerates crontab"
+  - "`fw cron resume <job-id>` sets status to active in registry and regenerates crontab"
+  - "Both commands print confirmation message with job name"
+  - "Invalid job-id prints error with available IDs"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-655-add-fw-cron-pauseresume-cli-commands.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T16:43:30"
+    action: "T-655: Add fw cron pause/resume CLI commands"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 116
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-655-add-fw-cron-pauseresume-cli-commands.md
+generated_by: context-agent-hybrid

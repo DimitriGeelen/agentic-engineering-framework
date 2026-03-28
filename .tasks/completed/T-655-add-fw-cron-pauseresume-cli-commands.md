@@ -4,16 +4,16 @@ name: "Add fw cron pause/resume CLI commands"
 description: >
   Add fw cron pause/resume CLI commands
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-28T15:40:52Z
-last_update: 2026-03-28T15:40:52Z
-date_finished: null
+last_update: 2026-03-28T15:43:35Z
+date_finished: 2026-03-28T15:43:35Z
 ---
 
 # T-655: Add fw cron pause/resume CLI commands
@@ -58,3 +58,6 @@ CLI equivalents of the Watchtower Pause/Resume buttons. Updates registry YAML st
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-655-add-fw-cron-pauseresume-cli-commands.md
 - **Context:** Initial task creation
+
+### 2026-03-28T15:43:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
