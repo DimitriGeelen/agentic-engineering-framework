@@ -4,7 +4,7 @@ name: "Inception: Bash task gate with bootstrap allowlist"
 description: >
   check-active-task only gates Write|Edit, not Bash. Agent can bypass task gate via echo/cat/sed to write files. Bootstrap problem: fw context init and fw task create need Bash before any task exists. Investigate allowlist approach. From T-614 investigation.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: [governance, enforcement, inception]
 components: []
 related_tasks: []
 created: 2026-03-25T20:17:29Z
-last_update: 2026-03-27T17:48:41Z
+last_update: 2026-03-28T09:36:33Z
 date_finished: null
 ---
 
@@ -20,34 +20,30 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+**Superseded by T-630.** check-active-task only gates Write/Edit, not Bash. T-630 already completed comprehensive inception research covering Bash + Agent/TaskCreate + TermLink bypass paths. 5 spikes, 7920 Bash invocations analyzed, GO recommendation. Research artifact: `docs/reports/T-619-bash-task-gate.md` (references T-630).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+Validated by T-630: Safe-command allowlist (27 patterns) achieves <0.5% FP rate against real session data.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+Covered by T-630's 5 spikes. See `docs/reports/T-630-universal-task-gate.md`.
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+Covered by T-630 research.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**Superseded.** T-630 covers Bash + Agent/Task + TermLink — strictly superset of T-619.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (superseded by T-630)
+- [x] Assumptions tested (T-630: 7920 invocations, <0.5% FP)
+- [x] Recommendation written with rationale (T-630 GO, 3 build tasks)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -60,13 +56,9 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** T-630 research validates the approach (validated — GO with 3 build tasks)
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**NO-GO if:** T-630 found insurmountable issues (not the case)
 
 ## Verification
 
@@ -98,3 +90,6 @@ date_finished: null
 
 ### 2026-03-27T17:48:41Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-28T09:36:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
