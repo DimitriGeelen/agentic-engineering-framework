@@ -1,0 +1,60 @@
+---
+id: T-655
+name: "Add fw cron pause/resume CLI commands"
+description: >
+  Add fw cron pause/resume CLI commands
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-28T15:40:52Z
+last_update: 2026-03-28T15:40:52Z
+date_finished: null
+---
+
+# T-655: Add fw cron pause/resume CLI commands
+
+## Context
+
+CLI equivalents of the Watchtower Pause/Resume buttons. Updates registry YAML status field and regenerates the crontab.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `fw cron pause <job-id>` sets status to paused in registry and regenerates crontab
+- [x] `fw cron resume <job-id>` sets status to active in registry and regenerates crontab
+- [x] Both commands print confirmation message with job name
+- [x] Invalid job-id prints error with available IDs
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     Examples:
+       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
+       curl -sf http://localhost:3000/page
+       grep -q "expected_string" output_file.txt
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-28T15:40:52Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-655-add-fw-cron-pauseresume-cli-commands.md
+- **Context:** Initial task creation

@@ -1824,6 +1824,60 @@ except subprocess.TimeoutExpired:
     sys.exit(124)
 "
                 ;;
+            pause|resume)
+                # Pause or resume a job (T-655)
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                _job_id="${1:-}"
+                _action="$cron_subcmd"
+                _new_status="paused"
+                [ "$_action" = "resume" ] && _new_status="active"
+
+                if [ -z "$_job_id" ] || [ ! -f "$_cron_registry" ]; then
+                    if [ ! -f "$_cron_registry" ]; then
+                        echo -e "${RED}ERROR:${NC} No cron registry at $_cron_registry"
+                        exit 1
+                    fi
+                    echo -e "${RED}Usage:${NC} fw cron $_action <job-id>"
+                    echo ""
+                    echo "Available jobs:"
+                    python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+for j in data.get('jobs', []):
+    s = j.get('status', 'active')
+    print(f'  {j[\"id\"]:25s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, sys
+
+data = yaml.safe_load(open('$_cron_registry'))
+job = None
+for j in data.get('jobs', []):
+    if j.get('id') == '$_job_id':
+        job = j
+        break
+
+if not job:
+    print(f'ERROR: Job \"$_job_id\" not found', file=sys.stderr)
+    sys.exit(1)
+
+old_status = job.get('status', 'active')
+new_status = '$_new_status'
+if old_status == new_status:
+    print(f'Job \"{job[\"id\"]}\" is already {new_status}')
+    sys.exit(0)
+
+job['status'] = new_status
+with open('$_cron_registry', 'w') as f:
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+print(f'{\"Paused\" if new_status == \"paused\" else \"Resumed\"}: {job.get(\"name\", job[\"id\"])}')
+print(f'  Status: {old_status} → {new_status}')
+print(f'  Run \"fw cron generate\" to update the crontab file')
+"
+                ;;
             ""|help|-h|--help)
                 echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
                 echo ""
@@ -1832,6 +1886,8 @@ except subprocess.TimeoutExpired:
                 echo "  status      Show registry status (jobs, active/paused)"
                 echo "  list        Alias for status"
                 echo "  run <id>    Run a job immediately"
+                echo "  pause <id>  Pause a job (comments out in crontab)"
+                echo "  resume <id> Resume a paused job"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
                 echo "Web UI:   http://localhost:3000/cron"
