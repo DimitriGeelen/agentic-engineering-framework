@@ -713,10 +713,14 @@ SJSON
   "playwright": {
     "command": "npx",
     "args": ["@playwright/mcp@latest", "--no-sandbox"]
+  },
+  "termlink": {
+    "command": "termlink",
+    "args": ["mcp", "serve"]
   }
 }
 MCPJSON
-        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright)"
+        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright, termlink)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .mcp.json already exists"
     fi

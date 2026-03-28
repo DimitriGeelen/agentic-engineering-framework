@@ -609,7 +609,7 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
 
     local mcp_file="$target_dir/.mcp.json"
     # Framework-recommended MCP servers
-    local recommended_servers='{"context7":1,"playwright":1}'
+    local recommended_servers='{"context7":1,"playwright":1,"termlink":1}'
 
     if [ -f "$mcp_file" ]; then
         # Check for missing recommended servers
@@ -645,6 +645,7 @@ with open(mcp_file) as f:
 defaults = {
     'context7': {'command': 'npx', 'args': ['-y', '@upstash/context7-mcp']},
     'playwright': {'command': 'npx', 'args': ['@playwright/mcp@latest', '--no-sandbox']},
+    'termlink': {'command': 'termlink', 'args': ['mcp', 'serve']},
 }
 for key in recommended_keys:
     if key not in existing and key in defaults:
@@ -661,7 +662,7 @@ with open(mcp_file, 'w') as f:
     else
         changes=$((changes + 1))
         if [ "$dry_run" = true ]; then
-            echo -e "  ${CYAN}WOULD CREATE${NC}  .mcp.json (context7, playwright)"
+            echo -e "  ${CYAN}WOULD CREATE${NC}  .mcp.json (context7, playwright, termlink)"
         else
             cat > "$mcp_file" << 'MCPJSON'
 {
@@ -672,10 +673,14 @@ with open(mcp_file, 'w') as f:
   "playwright": {
     "command": "npx",
     "args": ["@playwright/mcp@latest", "--no-sandbox"]
+  },
+  "termlink": {
+    "command": "termlink",
+    "args": ["mcp", "serve"]
   }
 }
 MCPJSON
-            echo -e "  ${GREEN}CREATED${NC}  .mcp.json (MCP servers: context7, playwright)"
+            echo -e "  ${GREEN}CREATED${NC}  .mcp.json (MCP servers: context7, playwright, termlink)"
         fi
     fi
 
