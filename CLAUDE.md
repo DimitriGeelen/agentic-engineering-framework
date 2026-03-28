@@ -895,6 +895,10 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | List SSH hosts | `fw dispatch hosts` | |
 | Cron generate | `fw cron generate` | Regenerate crontab from registry YAML |
 | Cron status | `fw cron status` | Show registry status (jobs, active/paused) |
+| Cron list | `fw cron list` | Alias for status |
+| Cron run | `fw cron run <job-id>` | Run a job immediately |
+| Cron pause | `fw cron pause <job-id>` | Pause a job (comment out in crontab) |
+| Cron resume | `fw cron resume <job-id>` | Resume a paused job |
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |
