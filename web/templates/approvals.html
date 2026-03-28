@@ -319,7 +319,10 @@
             <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
-        <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+            <a href="/review/{{ t.task_id }}" title="Mobile review" style="font-size:0.75rem; text-decoration:none; padding:0.15rem 0.4rem; border:1px solid var(--pico-muted-border-color); border-radius:3px;">&#128241;</a>
+            <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
+        </div>
     </div>
     {% set unchecked_count = t.human_acs | rejectattr('checked') | list | length %}
     {% for ac in t.human_acs %}
