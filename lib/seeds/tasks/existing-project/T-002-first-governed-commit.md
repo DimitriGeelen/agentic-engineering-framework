@@ -23,6 +23,8 @@ date_finished: null
 
 Make any small change and commit it through the framework. The commit-msg hook will validate the task reference. This proves the governance loop works end to end.
 
+**Note:** Do not add `.context/` or `.tasks/` to `.gitignore` — these are managed by the framework and may need to be committed (e.g., handovers). Safe changes: fix a typo in README, add a code comment, or add build artifacts to `.gitignore`.
+
 ## Acceptance Criteria
 
 ### Agent
