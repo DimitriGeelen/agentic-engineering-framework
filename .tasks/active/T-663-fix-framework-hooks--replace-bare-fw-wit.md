@@ -4,16 +4,16 @@ name: "Fix framework hooks — replace bare fw with bin/fw in settings.json"
 description: >
   Phase 1 of T-662: Change the framework project's own .claude/settings.json hooks from bare fw (PATH-dependent, resolves to global install) to bin/fw (project-relative). Consumer projects already use .agentic-framework/bin/fw. This is the only project using bare fw. Related: T-662, T-625.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [T-662, hooks, isolation]
 components: []
 related_tasks: []
 created: 2026-03-28T17:06:45Z
-last_update: 2026-03-28T17:06:45Z
-date_finished: null
+last_update: 2026-03-28T17:11:36Z
+date_finished: 2026-03-28T17:11:36Z
 ---
 
 # T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
@@ -61,3 +61,6 @@ grep -q 'fw_prefix="bin/fw"' lib/init.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-663-fix-framework-hooks--replace-bare-fw-wit.md
 - **Context:** Initial task creation
+
+### 2026-03-28T17:11:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,7 +4,7 @@ name: "Eliminate global HOME/.agentic-framework dependency — full project isol
 description: >
   Inception: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-625, T-660, T-559, T-614]
 created: 2026-03-28T16:44:24Z
-last_update: 2026-03-28T16:58:12Z
-date_finished: null
+last_update: 2026-03-28T17:06:18Z
+date_finished: 2026-03-28T17:06:18Z
 ---
 
 # T-662: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution
@@ -116,19 +116,18 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 
 ## Decisions
 
-### 2026-03-28 — Terminal UX approach for bare `fw` command
-- **Chose:** Project-detecting shim in `~/.local/bin/fw` (Option A)
-- **Why:** Walks up from CWD to find project-local `fw`, always runs project's own code, no global install needed, works on any platform
-- **Rejected:** Shell alias (Option B — not portable to scripts/subshells), symlink to one repo (Option C — ties all projects to one version), no global `fw` (Option D — unacceptable terminal UX)
+**Decision**: GO
 
-### 2026-03-28 — T-660 disposition
-- **Chose:** Replace-with-shim during upgrade (Option 3)
-- **Why:** Auto-migrates users during `fw upgrade`, backward-compatible, eliminates dependency in one step
-- **Rejected:** Full revert (Option 1 — leaves users with stale global until they find the shim), keep as bridge (Option 2 — extends the anti-pattern lifecycle)
+**Rationale**: A path format exists that eliminates the global install for both framework and consumer projects; The migration is backward-compatible (existing users aren't broken immediately); Terminal UX has a ...
 
+**Date**: 2026-03-28T17:06:18Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: A path format exists that eliminates the global install for both framework and consumer projects; The migration is backward-compatible (existing users aren't broken immediately); Terminal UX has a ...
+
+**Date**: 2026-03-28T17:06:18Z
 
 ## Updates
 
@@ -137,3 +136,12 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 
 ### 2026-03-28T16:58:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T17:06:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** A path format exists that eliminates the global install for both framework and consumer projects; The migration is backward-compatible (existing users aren't broken immediately); Terminal UX has a ...
+
+### 2026-03-28T17:06:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

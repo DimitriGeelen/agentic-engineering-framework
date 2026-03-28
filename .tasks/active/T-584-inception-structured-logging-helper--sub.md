@@ -4,16 +4,16 @@ name: "Inception: Structured logging helper — subsystem-tagged log function fo
 description: >
   Every framework shell script currently does echo message to stderr. No subsystem tags, severity levels, timestamps, or filtering. Debugging requires reading undifferentiated wall of text. OpenClaw has per-module loggers with color coding and dual-sink (console + file). Investigate: log.sh sourced by all agents providing log_info/log_warn/log_error with subsystem tag and timestamp. Writes to .context/working/framework.log. Enables grep subsystem framework.log for targeted debugging. Low effort, high debugging value. Research source: /opt/openclaw-evaluation/.context/working/round2-T-019.md (structured logging section). OpenClaw source: src/util/logger.ts (subsystem logger with color + dual sink). Related framework: lib/compat.sh (existing shared utilities), agents/context/*.sh (all hook scripts — consumers of logging).
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:21:55Z
-last_update: 2026-03-28T10:33:21Z
-date_finished: null
+last_update: 2026-03-28T17:08:13Z
+date_finished: 2026-03-28T17:08:13Z
 ---
 
 # T-584: Inception: Structured logging helper — subsystem-tagged log function for framework scripts
@@ -87,18 +87,18 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Clear debugging benefit from structured output (true — 339 unstructured calls); Implementation is simple and incremental (true — one new file, compatible migration); Builds on existing infrastructu...
+
+**Date**: 2026-03-28T17:08:13Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Clear debugging benefit from structured output (true — 339 unstructured calls); Implementation is simple and incremental (true — one new file, compatible migration); Builds on existing infrastructu...
+
+**Date**: 2026-03-28T17:08:13Z
 
 ## Updates
 
@@ -110,3 +110,12 @@ date_finished: null
 
 ### 2026-03-28T10:31:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T17:08:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Clear debugging benefit from structured output (true — 339 unstructured calls); Implementation is simple and incremental (true — one new file, compatible migration); Builds on existing infrastructu...
+
+### 2026-03-28T17:08:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

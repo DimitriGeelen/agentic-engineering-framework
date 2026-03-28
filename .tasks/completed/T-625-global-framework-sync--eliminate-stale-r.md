@@ -4,16 +4,16 @@ name: "Global framework sync — eliminate stale /root/.agentic-framework deadlo
 description: >
   Recurring deadlock: Claude Code hooks use bare `fw` → resolves to global /root/.agentic-framework/bin/fw → global has stale/missing scripts → all Bash/Write/Edit blocked. Happened 2+ times. Investigate: symlink, upgrade propagation, relative hook paths, or combination. Multi-agent exploration.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
 tags: [governance, hooks, deadlock]
-components: [lib/upgrade.sh, bin/fw, .claude/settings.json]
+components: [lib/upgrade.sh]
 related_tasks: [T-622, T-614, T-481]
 created: 2026-03-26T13:41:33Z
-last_update: 2026-03-27T17:34:08Z
-date_finished: null
+last_update: 2026-03-28T17:06:36Z
+date_finished: 2026-03-28T17:06:36Z
 ---
 
 # T-625: Global framework sync — eliminate stale /root/.agentic-framework deadlock
@@ -110,18 +110,18 @@ A6: Consumer projects on other machines (Mac .107) have the same vulnerability
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Root cause is confirmed and reproducible; Proposed fix eliminates the deadlock class (not just the current instance); Fix works for both framework repo AND consumer projects; No breaking changes to...
+
+**Date**: 2026-03-28T17:06:36Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Root cause is confirmed and reproducible; Proposed fix eliminates the deadlock class (not just the current instance); Fix works for both framework repo AND consumer projects; No breaking changes to...
+
+**Date**: 2026-03-28T17:06:36Z
 
 ## Updates
 
@@ -130,3 +130,12 @@ A6: Consumer projects on other machines (Mac .107) have the same vulnerability
 
 ### 2026-03-27T17:34:08Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-28T17:06:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Root cause is confirmed and reproducible; Proposed fix eliminates the deadlock class (not just the current instance); Fix works for both framework repo AND consumer projects; No breaking changes to...
+
+### 2026-03-28T17:06:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

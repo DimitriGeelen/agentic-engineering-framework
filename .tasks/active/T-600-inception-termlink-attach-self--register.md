@@ -4,7 +4,7 @@ name: "Inception: TermLink attach-self — register an existing shell session as
 description: >
   Use case: agent on remote machine (SSH) needs to be reachable by local agent. Currently TermLink sessions can connect outward but not be connected to. Need a command like 'termlink attach-self' or 'fw termlink attach' that wraps the current shell/console in a TermLink session, making it discoverable via hub. This enables bidirectional agent-to-agent communication across machines: remote agent registers itself, local agent connects via hub, both can send/receive. Explore TermLink register + hub start as building blocks.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: later
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:06:05Z
-last_update: 2026-03-28T10:43:47Z
-date_finished: null
+last_update: 2026-03-28T17:07:13Z
+date_finished: 2026-03-28T17:07:13Z
 ---
 
 # T-600: Inception: TermLink attach-self — register an existing shell session as a TermLink endpoint for bidirectional cross-machine agent communication
@@ -77,18 +77,18 @@ Remote agents need to be reachable via TermLink. **Key finding:** `termlink regi
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: wan this
+
+**Date**: 2026-03-28T17:07:13Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: wan this
+
+**Date**: 2026-03-28T17:07:13Z
 
 ## Updates
 
@@ -105,3 +105,12 @@ Remote agents need to be reachable via TermLink. **Key finding:** `termlink regi
 
 ### 2026-03-28T10:43:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T17:07:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** wan this
+
+### 2026-03-28T17:07:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

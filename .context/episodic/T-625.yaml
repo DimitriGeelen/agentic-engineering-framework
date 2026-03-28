@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-625: Global framework sync — eliminate stale /root/.agentic-framework deadlock
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:06:38Z
+# ============================================================================
+
+task_id: T-625
+task_name: "Global framework sync — eliminate stale /root/.agentic-framework deadlock"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-26T13:41:33Z
+completed: 2026-03-28T17:06:36Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-03-26T14:45:54+01:00
+last_commit: 2026-03-26T16:26:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Global framework sync inception — 5-agent investigation complete. Correct Spike 4 findings — all projects already use relative hook paths
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with evidence (3 incidents, 2+ affected consumer projects, 3 vulnerable hook configs)"
+  - "All 5 investigation spikes completed with findings"
+  - "Assumptions A1-A6 validated or invalidated (4 confirmed, 1 partial, 1 unknown)"
+  - "Recommendation written with rationale and rejected alternatives"
+  - "Research artifact committed: `docs/reports/T-625-global-framework-sync.md`"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-625-global-framework-sync.md"
+  - ".tasks/active/T-625-global-framework-sync--eliminate-stale-r.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-26T14:45:54"
+    action: "T-625: Global framework sync inception — 5-agent investigation complete"
+  - time: "2026-03-26T16:26:07"
+    action: "T-625: Correct Spike 4 findings — all projects already use relative hook paths"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3085 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, hooks, deadlock]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3085
+  commits: 2
+  files_changed: 2
+  lines_added: 316
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-625-global-framework-sync--eliminate-stale-r.md
+generated_by: context-agent-hybrid

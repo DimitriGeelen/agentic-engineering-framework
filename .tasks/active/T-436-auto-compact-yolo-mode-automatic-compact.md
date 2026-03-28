@@ -11,7 +11,7 @@ description: >
   continues work without human intervention unless human validation is strictly required.
   Human-gated work is deferred; everything else proceeds.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: later
@@ -19,8 +19,8 @@ tags: [governance, context-budget, autonomy, session-management]
 components: [agents/context/checkpoint.sh, agents/context/budget-gate.sh, agents/context/pre-compact.sh, agents/context/post-compact-resume.sh, .claude/settings.json]
 related_tasks: [T-139, T-145, T-148, T-179]
 created: 2026-03-10T21:45:04Z
-last_update: 2026-03-28T10:36:37Z
-date_finished: null
+last_update: 2026-03-28T17:07:30Z
+date_finished: 2026-03-28T17:07:30Z
 ---
 
 # T-436: Auto-compact YOLO mode: automatic compact → resume → autonomous proceed
@@ -152,11 +152,18 @@ test -f docs/reports/T-436-yolo-mode-inception.md
 
 ## Decisions
 
-<!-- Pending exploration -->
+**Decision**: GO
 
+**Rationale**: PreCompact and SessionStart hooks fire reliably on auto-compact (A2, A3 confirmed); Budget reset works after auto-compact (no L-049 deadlock); D-027 concerns are addressed or no longer apply; Auton...
+
+**Date**: 2026-03-28T17:07:30Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-436 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: PreCompact and SessionStart hooks fire reliably on auto-compact (A2, A3 confirmed); Budget reset works after auto-compact (no L-049 deadlock); D-027 concerns are addressed or no longer apply; Auton...
+
+**Date**: 2026-03-28T17:07:30Z
 
 ## Updates
 
@@ -179,3 +186,12 @@ test -f docs/reports/T-436-yolo-mode-inception.md
 - **Completed:** Spikes 2, 4, 5, 6, 7 (handover quality, continuation design, deferral mechanism, risk analysis, implementation options)
 - **Blocked:** Spikes 1, 3 (require enabling autoCompactEnabled in test session to verify hook behavior)
 - **Recommendation:** CONDITIONAL GO for YOLO-Lite (Option A) pending Spike 1 verification
+
+### 2026-03-28T17:07:30Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** PreCompact and SessionStart hooks fire reliably on auto-compact (A2, A3 confirmed); Budget reset works after auto-compact (no L-049 deadlock); D-027 concerns are addressed or no longer apply; Auton...
+
+### 2026-03-28T17:07:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

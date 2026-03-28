@@ -4,7 +4,7 @@ name: "Primary development platform: GitHub vs OneDev — source of truth, CI, i
 description: >
   Inception: Primary development platform: GitHub vs OneDev — source of truth, CI, issues, community interaction for post-launch
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: [infrastructure, launch, portability]
 components: []
 related_tasks: [T-334, T-442, T-443, T-476]
 created: 2026-03-14T12:51:19Z
-last_update: 2026-03-27T17:34:07Z
-date_finished: null
+last_update: 2026-03-28T17:08:00Z
+date_finished: 2026-03-28T17:07:53Z
 ---
 
 # T-479: Primary development platform: GitHub vs OneDev — source of truth, CI, issues, community interaction for post-launch
@@ -133,18 +133,18 @@ test -f docs/reports/T-479-platform-decision.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: want this see how we do it with termlink
+
+**Date**: 2026-03-28T17:08:00Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: want this see how we do it with termlink
+
+**Date**: 2026-03-28T17:08:00Z
 
 ## Updates
 
@@ -153,3 +153,17 @@ test -f docs/reports/T-479-platform-decision.md
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-03-28T17:07:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** want this see how we do it with termlink
+
+### 2026-03-28T17:07:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-03-28T17:08:00Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** want this see how we do it with termlink

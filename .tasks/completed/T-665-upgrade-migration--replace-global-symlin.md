@@ -4,7 +4,7 @@ name: "Upgrade migration — replace global symlink with shim during fw upgrade"
 description: >
   Phase 3 of T-662: Modify lib/upgrade.sh step 4c to detect global install symlinks and replace them with the fw-shim. Print one-time migration notice. Keep T-660 sync as fallback for users who haven't upgraded yet. Related: T-662, T-663, T-664.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [T-662, upgrade, shim]
 components: []
 related_tasks: []
 created: 2026-03-28T17:14:38Z
-last_update: 2026-03-28T17:14:38Z
-date_finished: null
+last_update: 2026-03-28T17:16:05Z
+date_finished: 2026-03-28T17:16:05Z
 ---
 
 # T-665: Upgrade migration — replace global symlink with shim during fw upgrade
@@ -52,3 +52,6 @@ grep -q 'Shim migration' lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-665-upgrade-migration--replace-global-symlin.md
 - **Context:** Initial task creation
+
+### 2026-03-28T17:16:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

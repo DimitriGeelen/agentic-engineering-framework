@@ -4,7 +4,7 @@ name: "Inception: Bridge fw dispatch to TermLink file/remote — replace SSH tex
 description: >
   TermLink already has file send/receive, hub server, and remote commands. But fw dispatch only sends JSON text over SSH. Bridge the gap: wire fw bus/dispatch to use termlink file send, termlink remote send-file, and termlink hub for cross-machine communication. Research why the previous attempt failed, what TermLink capabilities exist, and design the integration.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:05:48Z
-last_update: 2026-03-24T09:13:06Z
-date_finished: null
+last_update: 2026-03-28T17:08:25Z
+date_finished: 2026-03-28T17:08:25Z
 ---
 
 # T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer
@@ -87,18 +87,18 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 3+ machines need to communicate regularly; SSH dispatch has hit concrete limitations (payload size, latency, reliability); T-600 (attach-self) is complete and TermLink deployed on remote machines; ...
+
+**Date**: 2026-03-28T17:08:25Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 3+ machines need to communicate regularly; SSH dispatch has hit concrete limitations (payload size, latency, reliability); T-600 (attach-self) is complete and TermLink deployed on remote machines; ...
+
+**Date**: 2026-03-28T17:08:25Z
 
 ## Updates
 
@@ -123,3 +123,12 @@ date_finished: null
 
 ### 2026-03-27 — artifact-reference [audit-fix]
 - **Research artifact:** docs/reports/T-598-dispatch-termlink-bridge.md
+
+### 2026-03-28T17:08:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 3+ machines need to communicate regularly; SSH dispatch has hit concrete limitations (payload size, latency, reliability); T-600 (attach-self) is complete and TermLink deployed on remote machines; ...
+
+### 2026-03-28T17:08:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4,7 +4,7 @@ name: "TermLink supervisor event loop — reliable bidirectional signaling betwe
 description: >
   Inception: TermLink supervisor event loop — reliable bidirectional signaling between supervisor and dispatched agents
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T20:56:23Z
-last_update: 2026-03-27T17:34:07Z
-date_finished: null
+last_update: 2026-03-28T17:09:43Z
+date_finished: 2026-03-28T17:09:43Z
 ---
 
 # T-571: TermLink supervisor event loop — reliable bidirectional signaling between supervisor and dispatched agents
@@ -87,18 +87,18 @@ Current `fw termlink dispatch` is fire-and-forget with file-based polling. Worke
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Crash detection can use existing TermLink primitives (discover, status) — no new infrastructure; Phase 1 fits in one build session (<4 hours); Current dispatch reliability is insufficient for >3 pa...
+
+**Date**: 2026-03-28T17:09:43Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Crash detection can use existing TermLink primitives (discover, status) — no new infrastructure; Phase 1 fits in one build session (<4 hours); Current dispatch reliability is insufficient for >3 pa...
+
+**Date**: 2026-03-28T17:09:43Z
 
 ## Updates
 
@@ -110,3 +110,12 @@ Current `fw termlink dispatch` is fire-and-forget with file-based polling. Worke
 
 ### 2026-03-28 — artifact-reference [audit-fix]
 - **Research artifact:** docs/reports/T-571-termlink-supervisor-event-loop.md
+
+### 2026-03-28T17:09:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Crash detection can use existing TermLink primitives (discover, status) — no new infrastructure; Phase 1 fits in one build session (<4 hours); Current dispatch reliability is insufficient for >3 pa...
+
+### 2026-03-28T17:09:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-436: Auto-compact YOLO mode: automatic compact → resume → autonomous proceed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:07:32Z
+# ============================================================================
+
+task_id: T-436
+task_name: "Auto-compact YOLO mode: automatic compact → resume → autonomous proceed"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-10T21:45:04Z
+completed: 2026-03-28T17:07:30Z
+duration_days: 18
+updates_count: 6
+first_commit: 2026-03-10T22:46:47+01:00
+last_commit: 2026-03-28T11:36:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create inception task — YOLO mode (auto-compact + auto-resume + autonomous proceed). Inception research — YOLO mode (CONDITIONAL GO, 5/7 spikes, Spike 1 blocked on testing)
+
+# Key outcomes
+outcomes:
+  - "D-027 concerns explicitly addressed (2 resolved, 2 partially, 1 mitigated — see artifact)"
+  - "Risk analysis with mitigations for each identified risk"
+  - "Research artifact at `docs/reports/T-436-yolo-mode-inception.md`"
+  - "Go/No-Go recommendation with rationale (CONDITIONAL GO for YOLO-Lite)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-436-yolo-mode-inception.md"
+  - ".tasks/active/T-436-auto-compact-yolo-mode-automatic-compact.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-10T22:46:47"
+    action: "T-436: Create inception task — YOLO mode (auto-compact + auto-resume + autonomous proceed)"
+  - time: "2026-03-28T11:36:37"
+    action: "T-436: Inception research — YOLO mode (CONDITIONAL GO, 5/7 spikes, Spike 1 blocked on testing)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 25642 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, context-budget, autonomy, session-management]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25642
+  commits: 2
+  files_changed: 2
+  lines_added: 326
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-436-auto-compact-yolo-mode-automatic-compact.md
+generated_by: context-agent-hybrid

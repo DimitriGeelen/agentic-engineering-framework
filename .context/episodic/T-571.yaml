@@ -1,0 +1,68 @@
+# ============================================================================
+# EPISODIC MEMORY - T-571: TermLink supervisor event loop — reliable bidirectional signaling between supervisor and dispatched agents
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:09:45Z
+# ============================================================================
+
+task_id: T-571
+task_name: "TermLink supervisor event loop — reliable bidirectional signaling between supervisor and dispatched agents"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T20:56:23Z
+completed: 2026-03-28T17:09:43Z
+duration_days: 5
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (4 assumptions — 2 validated, 1 partial, 1 not validated)"
+  - "Go/No-Go recommendation made (CONDITIONAL GO — Phase 1 lightweight)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6973 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6973
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-571-termlink-supervisor-event-loop--reliable.md
+generated_by: context-agent-hybrid

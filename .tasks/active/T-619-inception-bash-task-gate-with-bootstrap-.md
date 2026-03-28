@@ -4,7 +4,7 @@ name: "Inception: Bash task gate with bootstrap allowlist"
 description: >
   check-active-task only gates Write|Edit, not Bash. Agent can bypass task gate via echo/cat/sed to write files. Bootstrap problem: fw context init and fw task create need Bash before any task exists. Investigate allowlist approach. From T-614 investigation.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: [governance, enforcement, inception]
 components: []
 related_tasks: []
 created: 2026-03-25T20:17:29Z
-last_update: 2026-03-28T09:38:47Z
-date_finished: null
+last_update: 2026-03-28T17:09:07Z
+date_finished: 2026-03-28T17:09:07Z
 ---
 
 # T-619: Inception: Bash task gate with bootstrap allowlist
@@ -70,18 +70,18 @@ Covered by T-630 research.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: cjheck still needed
+
+**Date**: 2026-03-28T17:09:07Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: cjheck still needed
+
+**Date**: 2026-03-28T17:09:07Z
 
 ## Updates
 
@@ -93,3 +93,12 @@ Covered by T-630 research.
 
 ### 2026-03-28T09:36:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T17:09:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** cjheck still needed
+
+### 2026-03-28T17:09:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

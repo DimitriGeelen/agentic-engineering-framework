@@ -1,0 +1,68 @@
+# ============================================================================
+# EPISODIC MEMORY - T-599: Inception: MCP server for TermLink — expose session/file/remote/hub commands as structured tools for agent discovery
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:07:00Z
+# ============================================================================
+
+task_id: T-599
+task_name: "Inception: MCP server for TermLink — expose session/file/remote/hub commands as structured tools for agent discovery"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-24T09:05:57Z
+completed: 2026-03-28T17:06:57Z
+duration_days: 4
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (TermLink already has MCP server)"
+  - "Assumptions tested (4 — 1 valid, 1 partial, 2 untested)"
+  - "Go/No-Go recommendation made (CONDITIONAL GO for minimal wiring)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6241 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6241
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-599-inception-mcp-server-for-termlink--expos.md
+generated_by: context-agent-hybrid

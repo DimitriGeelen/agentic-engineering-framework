@@ -4,16 +4,16 @@ name: "Project-detecting fw shim — replace global install symlink"
 description: >
   Phase 2 of T-662: Create bin/fw-shim that walks up from CWD to find project-local fw. Replace install.sh symlink creation with shim installation. Add fw install --shim command. Related: T-662, T-663.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [T-662, isolation, shim]
 components: []
 related_tasks: []
 created: 2026-03-28T17:11:52Z
-last_update: 2026-03-28T17:11:52Z
-date_finished: null
+last_update: 2026-03-28T17:14:19Z
+date_finished: 2026-03-28T17:14:19Z
 ---
 
 # T-664: Project-detecting fw shim — replace global install symlink
@@ -43,7 +43,7 @@ Phase 2 of T-662 (GO). Create a lightweight shim script that replaces the symlin
 ## Verification
 
 test -x bin/fw-shim
-grep -q 'exec.*bin/fw' bin/fw-shim
+grep -q 'exec "$fw_path"' bin/fw-shim
 grep -q 'fw-shim' install.sh
 
 ## Decisions
@@ -63,3 +63,6 @@ grep -q 'fw-shim' install.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-664-project-detecting-fw-shim--replace-globa.md
 - **Context:** Initial task creation
+
+### 2026-03-28T17:14:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,7 +4,7 @@ name: "Inception: MCP server for TermLink — expose session/file/remote/hub com
 description: >
   Evaluate building an MCP (Model Context Protocol) server that wraps TermLink commands as discoverable tools. Any MCP-capable agent (Claude Code, etc.) could then spawn sessions, transfer files, exec remote commands, and manage the hub without bash wrappers. Consider integration with the framework MCP server being built separately. Key question: which TermLink commands have the most value as MCP tools?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: later
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:05:57Z
-last_update: 2026-03-28T10:41:10Z
-date_finished: null
+last_update: 2026-03-28T17:06:57Z
+date_finished: 2026-03-28T17:06:57Z
 ---
 
 # T-599: Inception: MCP server for TermLink — expose session/file/remote/hub commands as structured tools for agent discovery
@@ -85,18 +85,18 @@ TermLink commands are invoked via bash wrappers — opaque to MCP tool catalogs.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: TermLink MCP server works reliably (needs testing); Minimal wiring is low-risk (one-line .mcp.json addition); D4 (Portability) justifies it
+
+**Date**: 2026-03-28T17:06:57Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: TermLink MCP server works reliably (needs testing); Minimal wiring is low-risk (one-line .mcp.json addition); D4 (Portability) justifies it
+
+**Date**: 2026-03-28T17:06:57Z
 
 ## Updates
 
@@ -113,3 +113,12 @@ TermLink commands are invoked via bash wrappers — opaque to MCP tool catalogs.
 
 ### 2026-03-28T10:41:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T17:06:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** TermLink MCP server works reliably (needs testing); Minimal wiring is low-risk (one-line .mcp.json addition); D4 (Portability) justifies it
+
+### 2026-03-28T17:06:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

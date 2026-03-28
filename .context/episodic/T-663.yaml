@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:18:21Z
+# ============================================================================
+
+task_id: T-663
+task_name: "Fix framework hooks — replace bare fw with bin/fw in settings.json"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T17:06:45Z
+completed: 2026-03-28T17:11:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T18:10:08+01:00
+last_commit: 2026-03-28T18:11:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Framework-aware hook paths — init.sh detects framework vs consumer mode. Replace bare fw with bin/fw in framework settings.json
+
+# Key outcomes
+outcomes:
+  - "All hook commands in `.claude/settings.json` use `bin/fw hook` instead of bare `fw hook`"
+  - "`bin/fw hook check-active-task` responds correctly when piped test JSON"
+  - "`lib/init.sh` template for framework-mode hooks uses `bin/fw` (not bare `fw`)"
+  - "Vendored copy `.agentic-framework/lib/init.sh` synced"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/init.sh"
+  - ".claude/settings.json"
+  - "lib/init.sh"
+  - ".tasks/active/T-662-eliminate-global-homeagentic-framework-d.md"
+  - ".tasks/active/T-663-fix-framework-hooks--replace-bare-fw-wit.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T18:10:08"
+    action: "T-663: Framework-aware hook paths — init.sh detects framework vs consumer mode"
+  - time: "2026-03-28T18:11:19"
+    action: "T-663: Replace bare fw with bin/fw in framework settings.json"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-662, hooks, isolation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 5
+  lines_added: 160
+  lines_removed: 53
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-663-fix-framework-hooks--replace-bare-fw-wit.md
+generated_by: context-agent-hybrid

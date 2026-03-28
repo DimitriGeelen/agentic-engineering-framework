@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:08:27Z
+# ============================================================================
+
+task_id: T-598
+task_name: "Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-24T09:05:48Z
+completed: 2026-03-28T17:08:25Z
+duration_days: 4
+updates_count: 8
+first_commit: 2026-03-24T10:10:43+01:00
+last_commit: 2026-03-24T10:10:43+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create 3 TermLink inception tasks — pivot T-599/T-600 to pickup prompts
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (4 assumptions — 1 validated, 1 partial, 2 not validated)"
+  - "Go/No-Go recommendation made (DEFER)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - "docs/reports/T-598-dispatch-termlink-bridge.md"
+  - ".tasks/active/T-598-inception-bridge-fw-dispatch-to-termlink.md"
+  - ".tasks/active/T-599-inception-mcp-server-for-termlink--expos.md"
+  - ".tasks/active/T-600-inception-termlink-attach-self--register.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T10:10:43"
+    action: "T-598: Create 3 TermLink inception tasks — pivot T-599/T-600 to pickup prompts"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6242 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6242
+  commits: 1
+  files_changed: 10
+  lines_added: 54
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-598-inception-bridge-fw-dispatch-to-termlink.md
+generated_by: context-agent-hybrid
