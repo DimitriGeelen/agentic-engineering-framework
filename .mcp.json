@@ -14,7 +14,7 @@
     ]
   },
   "termlink": {
-    "command": "/root/.local/bin/termlink",
+    "command": "termlink",
     "args": [
       "mcp",
       "serve"
