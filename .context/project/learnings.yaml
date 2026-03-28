@@ -983,4 +983,11 @@ learnings:
   date: 2026-03-28
   context: Added via context agent
   application: TBD
+- id: L-123
+  learning: "Bash YAML writer must escape backslashes then double quotes in order — raw string substitution is fragile when values pass through shell array storage"
+  source: P-001
+  task: T-687
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
 candidates: []

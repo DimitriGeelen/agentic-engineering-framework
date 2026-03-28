@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-687: Fix audit YAML writer — escape quotes in findings to prevent parse errors
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T22:56:17Z
+# ============================================================================
+
+task_id: T-687
+task_name: "Fix audit YAML writer — escape quotes in findings to prevent parse errors"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T22:55:10Z
+completed: 2026-03-28T22:56:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T23:56:09+01:00
+last_commit: 2026-03-28T23:56:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix audit YAML writer — escape quotes in findings, fix broken 2026-03-09 audit
+
+# Key outcomes
+outcomes:
+  - "Fixed broken YAML in `.context/audits/2026-03-09.yaml` (unescaped quotes)"
+  - "Changed `warn()` argument to use single quotes instead of embedded double quotes"
+  - "Hardened YAML writer to escape backslashes then double quotes in finding strings"
+  - "All existing audit YAML files parse without errors"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix audit YAML writer — escape quotes in findings, fix broken 2026-03-09 audit"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - ".context/audits/2026-03-09.yaml"
+  - ".tasks/active/T-687-fix-audit-yaml-writer--escape-quotes-in-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T23:56:09"
+    action: "T-687: Fix audit YAML writer — escape quotes in findings, fix broken 2026-03-09 audit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 65
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-687-fix-audit-yaml-writer--escape-quotes-in-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-688: Update Path C friction points status — mark T-680/T-681/T-683/T-684/T-685 as FIXED
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T23:03:35Z
+# ============================================================================
+
+task_id: T-688
+task_name: "Update Path C friction points status — mark T-680/T-681/T-683/T-684/T-685 as FIXED"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T23:01:42Z
+completed: 2026-03-28T23:03:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T00:03:27+01:00
+last_commit: 2026-03-29T00:03:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Update Path C friction points — 8/10 now FIXED (T-680 through T-685)
+
+# Key outcomes
+outcomes:
+  - "Friction point table in `docs/reports/T-679-path-c-workflow.md` updated — 7/9 rows now FIXED (8/10 friction points)"
+  - "Only F-4 (low priority) and F-6 (TermLink product feedback) remain open"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Update Path C friction points — 8/10 now FIXED (T-680 through T-685)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-679-path-c-workflow.md"
+  - ".tasks/active/T-688-update-path-c-friction-points-status--ma.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T00:03:27"
+    action: "T-688: Update Path C friction points — 8/10 now FIXED (T-680 through T-685)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 57
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-688-update-path-c-friction-points-status--ma.md
+generated_by: context-agent-hybrid
