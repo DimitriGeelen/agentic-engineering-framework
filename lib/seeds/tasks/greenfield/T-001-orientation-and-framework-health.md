@@ -33,7 +33,8 @@ First task for __PROJECT_NAME__. Read CLAUDE.md to understand the framework, ver
 ## Verification
 
 fw doctor
-fw audit
+# fw audit exits 1 for warnings (expected on fresh projects) — only block on exit 2 (failures)
+fw audit; test $? -le 1
 
 ## Updates
 
