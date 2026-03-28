@@ -267,6 +267,33 @@ plus Claude Code-specific integration notes.
         echo -e "  ${GREEN}OK${NC}  All seeds current"
     fi
 
+    # ── 3b. Cron registry (T-448/T-653) ──
+    local cron_seeded=0
+    if [ ! -d "$target_dir/.context/cron" ]; then
+        cron_seeded=$((cron_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$target_dir/.context/cron"
+        fi
+    fi
+    if [ ! -f "$target_dir/.context/cron-registry.yaml" ]; then
+        cron_seeded=$((cron_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            cat > "$target_dir/.context/cron-registry.yaml" << 'CRONREGEOF'
+# Cron Registry — Structured source of truth for scheduled jobs (T-448)
+# Read by web/blueprints/cron.py and fw cron generate.
+jobs: []
+CRONREGEOF
+        fi
+    fi
+    if [ "$cron_seeded" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD SEED${NC}  Cron registry + directory"
+        else
+            echo -e "  ${GREEN}SEEDED${NC}  Cron registry + directory"
+        fi
+    fi
+
     # ── 4. Git hooks ──
     echo -e "${YELLOW}[4/10] Git hooks${NC}"
 
@@ -358,6 +385,36 @@ plus Claude Code-specific integration notes.
     local global_dir="$HOME/.agentic-framework"
     if [ -d "$global_dir/agents/context" ]; then
         local global_updated=0
+        # Sync bin/fw (T-660: main CLI entry point — stale global fw causes deadlock)
+        local src_fw="$FRAMEWORK_ROOT/bin/fw"
+        local dst_fw="$global_dir/bin/fw"
+        if [ -f "$src_fw" ]; then
+            if [ ! -f "$dst_fw" ] || ! diff -q "$src_fw" "$dst_fw" > /dev/null 2>&1; then
+                global_updated=$((global_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    mkdir -p "$global_dir/bin"
+                    cp "$src_fw" "$dst_fw"
+                    chmod +x "$dst_fw"
+                fi
+            fi
+        fi
+        # Sync lib/*.sh (T-660: subcommand implementations invoked by bin/fw)
+        if [ -d "$FRAMEWORK_ROOT/lib" ]; then
+            for src_lib_file in "$FRAMEWORK_ROOT/lib/"*.sh; do
+                [ -f "$src_lib_file" ] || continue
+                local lib_name
+                lib_name=$(basename "$src_lib_file")
+                local dst_lib_file="$global_dir/lib/$lib_name"
+                if [ ! -f "$dst_lib_file" ] || ! diff -q "$src_lib_file" "$dst_lib_file" > /dev/null 2>&1; then
+                    global_updated=$((global_updated + 1))
+                    if [ "$dry_run" != true ]; then
+                        mkdir -p "$global_dir/lib"
+                        cp "$src_lib_file" "$dst_lib_file"
+                        [ -x "$src_lib_file" ] && chmod +x "$dst_lib_file"
+                    fi
+                fi
+            done
+        fi
         # Sync agents/context/*.sh
         for src_script in "$FRAMEWORK_ROOT/agents/context/"*.sh; do
             [ -f "$src_script" ] || continue
