@@ -532,9 +532,15 @@ generate_claude_code_config() {
     mkdir -p "$dir/.claude/commands"
 
     if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
-        # Use quoted heredoc to prevent variable expansion — all paths resolved at runtime
-        # via `fw hook` (T-496/G-021: path isolation)
-        cat > "$dir/.claude/settings.json" << 'SJSON'
+        # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
+        # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
+        local fw_prefix=".agentic-framework/bin/fw"
+        if [ -f "$dir/FRAMEWORK.md" ] && [ -d "$dir/agents" ] && [ ! -d "$dir/.agentic-framework" ]; then
+            fw_prefix="bin/fw"
+        fi
+
+        # Use unquoted heredoc so $fw_prefix expands (T-663: framework-aware hook paths)
+        cat > "$dir/.claude/settings.json" << SJSON
 {
   "hooks": {
     "PreCompact": [
@@ -543,7 +549,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook pre-compact"
+            "command": "$fw_prefix hook pre-compact"
           }
         ]
       }
@@ -554,7 +560,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook post-compact-resume"
+            "command": "$fw_prefix hook post-compact-resume"
           }
         ]
       },
@@ -563,7 +569,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook post-compact-resume"
+            "command": "$fw_prefix hook post-compact-resume"
           }
         ]
       }
@@ -574,7 +580,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook block-plan-mode"
+            "command": "$fw_prefix hook block-plan-mode"
           }
         ]
       },
@@ -583,7 +589,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-active-task"
+            "command": "$fw_prefix hook check-active-task"
           }
         ]
       },
@@ -592,7 +598,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-tier0"
+            "command": "$fw_prefix hook check-tier0"
           }
         ]
       },
@@ -601,7 +607,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-agent-dispatch"
+            "command": "$fw_prefix hook check-agent-dispatch"
           }
         ]
       },
@@ -610,7 +616,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-project-boundary"
+            "command": "$fw_prefix hook check-project-boundary"
           }
         ]
       },
@@ -619,7 +625,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook budget-gate"
+            "command": "$fw_prefix hook budget-gate"
           }
         ]
       }
@@ -630,7 +636,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook checkpoint post-tool"
+            "command": "$fw_prefix hook checkpoint post-tool"
           }
         ]
       },
@@ -639,7 +645,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook error-watchdog"
+            "command": "$fw_prefix hook error-watchdog"
           }
         ]
       },
@@ -648,7 +654,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-dispatch"
+            "command": "$fw_prefix hook check-dispatch"
           }
         ]
       },
@@ -657,7 +663,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook loop-detect"
+            "command": "$fw_prefix hook loop-detect"
           }
         ]
       },
@@ -666,7 +672,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook check-fabric-new-file"
+            "command": "$fw_prefix hook check-fabric-new-file"
           }
         ]
       },
@@ -675,7 +681,7 @@ generate_claude_code_config() {
         "hooks": [
           {
             "type": "command",
-            "command": ".agentic-framework/bin/fw hook commit-cadence"
+            "command": "$fw_prefix hook commit-cadence"
           }
         ]
       }

@@ -82,7 +82,7 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 - [x] All 6 spikes completed with findings
 - [x] Assumptions A1-A6 validated or invalidated
 - [x] Recommendation written with rationale and migration path
-- [ ] Research artifact committed: `docs/reports/T-662-eliminate-global-install.md`
+- [x] Research artifact committed: `docs/reports/T-662-eliminate-global-install.md`
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
