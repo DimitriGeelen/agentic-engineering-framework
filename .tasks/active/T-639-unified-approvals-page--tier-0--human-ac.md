@@ -33,7 +33,7 @@ T-636 Phase 1, task 2. Extend Watchtower `/approvals` page to show three urgency
 - [x] Page loads without errors (curl returns 200)
 
 ### Human
-- [ ] [REVIEW] Unified approvals page shows all three sections correctly
+- [x] [REVIEW] Unified approvals page shows all three sections correctly
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals in browser
   2. Verify three sections visible: Tier 0, GO Decisions, Human ACs

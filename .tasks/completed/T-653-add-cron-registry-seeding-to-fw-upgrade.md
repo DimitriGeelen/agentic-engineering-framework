@@ -4,16 +4,16 @@ name: "Add cron registry seeding to fw upgrade"
 description: >
   Add cron registry seeding to fw upgrade
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-28T15:35:55Z
-last_update: 2026-03-28T15:35:55Z
-date_finished: null
+last_update: 2026-03-28T15:37:42Z
+date_finished: 2026-03-28T15:37:42Z
 ---
 
 # T-653: Add cron registry seeding to fw upgrade
@@ -51,3 +51,6 @@ grep -q 'CRONREGEOF' lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-653-add-cron-registry-seeding-to-fw-upgrade.md
 - **Context:** Initial task creation
+
+### 2026-03-28T15:37:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

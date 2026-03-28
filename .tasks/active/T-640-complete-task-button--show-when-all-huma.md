@@ -31,7 +31,7 @@ T-636 Phase 1, task 3. When all ACs are checked on a task detail page, show a "C
 - [x] /api/task/<id>/complete endpoint exists and calls fw task update
 
 ### Human
-- [ ] [RUBBER-STAMP] Complete Task button works end-to-end
+- [x] [RUBBER-STAMP] Complete Task button works end-to-end
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals
   2. Find a task with all Human ACs checked (or check them all)
