@@ -1685,10 +1685,9 @@ for job in jobs:
 
     if command.startswith('fw '):
         resolved = f'PROJECT_ROOT=\"{project_root}\" \"{fw_path}\" {command[3:]}'
-    elif command.startswith('find '):
-        resolved = f'cd \"{project_root}\" && {command}'
     else:
-        resolved = command
+        # All non-fw commands run from project root (relative paths need it)
+        resolved = f'cd \"{project_root}\" && {command}'
 
     if '2>/dev/null' not in resolved:
         resolved += ' 2>/dev/null'

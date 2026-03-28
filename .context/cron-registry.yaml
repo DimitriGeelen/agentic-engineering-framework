@@ -91,8 +91,8 @@ jobs:
   - id: retention-daily
     name: "Cron audit file retention (daily)"
     schedule: "0 9 * * *"
-    command: 'find ".context/audits/cron" -name "*.yaml" -mtime +7 -delete'
+    command: "python3 -c \"import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]\""
     source_file: agentic-audit.crontab
-    origin_task: T-184
+    origin_task: T-658
     status: active
-    description: "Prunes cron audit output files older than 7 days to prevent disk bloat."
+    description: "Prunes cron audit files older than 7 days using filename date (not mtime which gets reset by git)."

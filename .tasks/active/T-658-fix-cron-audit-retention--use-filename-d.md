@@ -1,0 +1,62 @@
+---
+id: T-658
+name: "Fix cron audit retention — use filename date parsing instead of mtime"
+description: >
+  Fix cron audit retention — use filename date parsing instead of mtime
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-28T16:05:19Z
+last_update: 2026-03-28T16:05:19Z
+date_finished: null
+---
+
+# T-658: Fix cron audit retention — use filename date parsing instead of mtime
+
+## Context
+
+Cron audit retention uses `find -mtime +7 -delete` but file mtimes get reset by git operations (checkout, merge, etc.), so files from 24 days ago have mtime of 6 days. Retention never fires. Fix: parse the date from filenames (format: `YYYY-MM-DD-HHMM.yaml`) instead of relying on filesystem mtime. Affects cron-registry.yaml, /etc/cron.d/ installed crontab, and `fw cron generate`.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Retention command in cron-registry.yaml uses filename-based date parsing
+- [x] `fw cron generate` produces updated retention command in crontab
+- [x] Stale files (>7 days by filename) cleaned up (669 files removed)
+- [x] LATEST-CRON.yaml preserved (not deleted by retention)
+
+## Verification
+
+# Registry has updated retention command (not -mtime)
+grep -q 'date_str' .context/cron-registry.yaml || grep -q 'YYYY-MM-DD' .context/cron-registry.yaml || grep -q 'cutoff' .context/cron-registry.yaml
+# No files older than 7 days remain (by filename)
+python3 -c "
+import os, datetime
+cutoff = datetime.date.today() - datetime.timedelta(days=7)
+old = [f for f in os.listdir('.context/audits/cron') if f[:10] >= '2026-' and f[:10] < str(cutoff) and f.endswith('.yaml') and f != 'LATEST-CRON.yaml']
+assert len(old) == 0, f'{len(old)} stale files remain'
+print('OK — no stale files')
+"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-28T16:05:19Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-658-fix-cron-audit-retention--use-filename-d.md
+- **Context:** Initial task creation
