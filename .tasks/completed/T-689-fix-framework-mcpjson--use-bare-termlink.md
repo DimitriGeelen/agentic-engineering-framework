@@ -4,7 +4,7 @@ name: "Fix framework .mcp.json — use bare termlink instead of hardcoded /root 
 description: >
   Fix framework .mcp.json — use bare termlink instead of hardcoded /root path
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T23:04:25Z
-last_update: 2026-03-28T23:04:25Z
-date_finished: null
+last_update: 2026-03-28T23:05:52Z
+date_finished: 2026-03-28T23:05:52Z
 ---
 
 # T-689: Fix framework .mcp.json — use bare termlink instead of hardcoded /root path
@@ -71,3 +71,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-689-fix-framework-mcpjson--use-bare-termlink.md
 - **Context:** Initial task creation
+
+### 2026-03-28T23:05:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
