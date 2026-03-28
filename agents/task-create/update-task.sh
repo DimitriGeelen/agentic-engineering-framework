@@ -765,8 +765,8 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
     # === Learning capture check for bugfix tasks (T-692, G-016) ===
     # 72% of bugfix tasks produce zero learnings. This structural nudge
     # prompts the agent when completing a fix task without a learning entry.
-    TASK_NAME_LOWER=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | tr '[:upper:]' '[:lower:]')
-    if echo "$TASK_NAME_LOWER" | grep -qi '\bfix\b\|bugfix\|hotfix'; then
+    TASK_NAME_RAW=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+    if echo "$TASK_NAME_RAW" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b'; then
         LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
         HAS_LEARNING=false
         if [ -f "$LEARNINGS_FILE" ] && grep -q "$TASK_ID" "$LEARNINGS_FILE" 2>/dev/null; then
