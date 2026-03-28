@@ -4,7 +4,7 @@ name: "Inception: TermLink attach-self — register an existing shell session as
 description: >
   Use case: agent on remote machine (SSH) needs to be reachable by local agent. Currently TermLink sessions can connect outward but not be connected to. Need a command like 'termlink attach-self' or 'fw termlink attach' that wraps the current shell/console in a TermLink session, making it discoverable via hub. This enables bidirectional agent-to-agent communication across machines: remote agent registers itself, local agent connects via hub, both can send/receive. Explore TermLink register + hub start as building blocks.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:06:05Z
-last_update: 2026-03-24T09:09:48Z
+last_update: 2026-03-28T10:43:47Z
 date_finished: null
 ---
 
@@ -20,43 +20,52 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Remote agents need to be reachable via TermLink. **Key finding:** `termlink register --self` already exists. Cross-machine requires hub (T-598, deferred).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: TermLink can register existing shells (VALIDATED — --self and --shell flags exist)
+- A2: Cross-machine discovery works (NOT VALIDATED — requires hub)
+- A3: Event communication works across sessions (VALIDATED — same-machine proven)
+- A4: Auto-cleanup on exit needed (VALID — orphaned registrations pollute discovery)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Check attach-self capability (done — --self flag exists)
+2. Evaluate cross-machine needs (done — hub needed, not deployed)
+3. Assess integration needs (done — fw wrapper, cleanup, SSH)
+4. Make recommendation (done — DEFER)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Cross-machine requires hub deployment (T-598 prerequisite)
+- Remote machine must have TermLink installed
+- Self-registered sessions need deregistration trap
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Whether attach-self is feasible and valuable.
+**OUT:** Building wrapper. Hub deployment. Cross-machine testing.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated (primitives exist, hub missing)
+- [x] Assumptions tested (4 — 2 validated, 1 not validated, 1 valid)
+- [x] Go/No-Go recommendation made (DEFER)
+
+### Human
+- [ ] [REVIEW] Review and confirm defer
+  **Steps:**
+  1. Read `docs/reports/T-600-termlink-attach-self.md`
+  2. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-600 no-go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Discuss concerns
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** Hub deployed, 3+ machines, proven use case
+**NO-GO/DEFER if:** Hub not deployed, limited value, only 2 machines
 
 ## Verification
 
@@ -88,3 +97,11 @@ date_finished: null
 
 ### 2026-03-24T09:09:48Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-03-28 — inception-research [agent]
+- **Research artifact:** docs/reports/T-600-termlink-attach-self.md
+- **Key finding:** `termlink register --self` already exists — no TermLink code needed
+- **Recommendation:** DEFER — blocked on hub deployment (T-598)
+
+### 2026-03-28T10:43:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
