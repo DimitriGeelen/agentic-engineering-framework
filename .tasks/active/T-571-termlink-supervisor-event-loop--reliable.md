@@ -20,43 +20,62 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Current `fw termlink dispatch` is fire-and-forget with file-based polling. Workers can crash, hang, or orphan without the dispatcher knowing until a hard timeout (600s). No heartbeat, no graceful shutdown, no crash recovery. As TermLink dispatch becomes the preferred mechanism for heavy parallel work (T-630), these reliability gaps become blocking.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: TermLink event primitives are reliable enough for supervision (VALIDATED — <10ms latency, used in current dispatch)
+- A2: Session disappearance is detectable via discover/status (VALIDATED — both report session state)
+- A3: Worker-side heartbeat is feasible (PARTIALLY VALIDATED — background process works, CPU starvation under heavy claude -p load untested)
+- A4: The supervisor loop is needed now (NOT VALIDATED — current dispatch handles 1-3 workers adequately, no data loss incidents yet)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Audit TermLink event primitives (done — emit/wait/poll/broadcast available)
+2. Evaluate 3 supervisor architecture options (done — bash loop vs heartbeat vs Rust-native)
+3. Assess crash detection strategies (done — session-gone via discover is simplest)
+4. Design graceful shutdown protocol (done — broadcast + SIGTERM + SIGKILL escalation)
+5. Make recommendation (done — Conditional GO for Phase 1 lightweight approach)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- TermLink event system is pub-sub, session-scoped
+- Bash supervisor loops are coarse (sleep-based polling)
+- `claude -p` workers consume significant CPU — heartbeat processes may starve
+- Max 5 parallel workers per CLAUDE.md dispatch protocol
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Whether to build a supervisor event loop, which architecture, what phases.
+**OUT:** Implementing the supervisor (separate build task). TermLink Rust-level changes. Cross-machine supervision.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested (4 assumptions — 2 validated, 1 partial, 1 not validated)
+- [x] Go/No-Go recommendation made (CONDITIONAL GO — Phase 1 lightweight)
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Read `docs/reports/T-571-termlink-supervisor-event-loop.md`
+  2. Evaluate whether Phase 1 (crash detection + graceful shutdown) is worth building now vs deferring entirely
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-571 go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Crash detection can use existing TermLink primitives (discover, status) — no new infrastructure
+- Phase 1 fits in one build session (<4 hours)
+- Current dispatch reliability is insufficient for >3 parallel workers
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Current dispatch with cleanup is adequate (no data loss incidents)
+- Phase 1 adds complexity without proportional reliability gain
+- TermLink dispatch is not yet the primary dispatch mechanism
 
 ## Verification
 
