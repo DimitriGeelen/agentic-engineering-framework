@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T17:52:23Z
+# ============================================================================
+
+task_id: T-667
+task_name: "Mobile review route — /review/T-XXX lightweight approval card for QR scan"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T17:39:16Z
+completed: 2026-03-28T17:46:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T18:45:09+01:00
+last_commit: 2026-03-28T18:46:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Mobile review route — /review/T-XXX lightweight approval card. Sync vendored review.sh + register fabric components
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/review.py` blueprint registered and serving `/review/T-XXX`"
+  - "`web/templates/review.html` standalone template (no base.html inheritance)"
+  - "Only Human ACs shown (Agent ACs hidden)"
+  - "AC checkboxes toggle via existing `/api/task/T-XXX/toggle-ac` endpoint"
+  - "Pending Tier 0 approvals shown above ACs with approve/reject buttons"
+  - "\"Complete Task\" button appears when all Human ACs checked"
+  - "`lib/review.sh` QR URL updated from `/tasks/T-XXX#human-ac` to `/review/T-XXX`"
+  - "Auto-refresh via htmx polling (`hx-trigger=\"every 5s\"`) for AC state changes"
+  - "[REVIEW] Mobile layout is usable on phone-sized screen"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/review.sh"
+  - ".fabric/components/agents-context-commit-cadence.yaml"
+  - ".fabric/components/agents-context-loop-detect.yaml"
+  - ".fabric/components/lib-build.yaml"
+  - ".fabric/components/lib-review.yaml"
+  - ".fabric/components/lib-runtime.yaml"
+  - ".fabric/components/lib-version.yaml"
+  - ".fabric/components/web-blueprints-approvals.yaml"
+  - ".fabric/components/web-templates-approvals.yaml"
+  - "lib/review.sh"
+  - ".tasks/active/T-667-mobile-review-route--reviewt-xxx-lightwe.md"
+  - "web/blueprints/__init__.py"
+  - "web/blueprints/review.py"
+  - "web/templates/_review_acs.html"
+  - "web/templates/review.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T18:45:09"
+    action: "T-667: Mobile review route — /review/T-XXX lightweight approval card"
+  - time: "2026-03-28T18:46:20"
+    action: "T-667: Sync vendored review.sh + register fabric components"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 15
+  lines_added: 854
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-667-mobile-review-route--reviewt-xxx-lightwe.md
+generated_by: context-agent-hybrid
