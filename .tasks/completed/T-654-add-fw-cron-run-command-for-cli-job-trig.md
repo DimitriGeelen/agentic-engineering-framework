@@ -4,16 +4,16 @@ name: "Add fw cron run command for CLI job triggering"
 description: >
   Add fw cron run command for CLI job triggering
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-28T15:38:18Z
-last_update: 2026-03-28T15:38:18Z
-date_finished: null
+last_update: 2026-03-28T15:40:26Z
+date_finished: 2026-03-28T15:40:26Z
 ---
 
 # T-654: Add fw cron run command for CLI job triggering
@@ -52,3 +52,6 @@ bin/fw cron help 2>&1 | grep -q 'run'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-654-add-fw-cron-run-command-for-cli-job-trig.md
 - **Context:** Initial task creation
+
+### 2026-03-28T15:40:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

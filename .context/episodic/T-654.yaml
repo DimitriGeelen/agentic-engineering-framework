@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-654: Add fw cron run command for CLI job triggering
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T15:40:27Z
+# ============================================================================
+
+task_id: T-654
+task_name: "Add fw cron run command for CLI job triggering"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T15:38:18Z
+completed: 2026-03-28T15:40:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T16:40:20+01:00
+last_commit: 2026-03-28T16:40:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw cron run and list commands
+
+# Key outcomes
+outcomes:
+  - "`fw cron run <job-id>` resolves the command from registry and executes it"
+  - "Exit code, stdout snippet, and duration are printed"
+  - "`fw cron run` with no args or invalid id prints error with available job IDs"
+  - "`fw cron list` aliases `fw cron status` for discoverability"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-654-add-fw-cron-run-command-for-cli-job-trig.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T16:40:20"
+    action: "T-654: Add fw cron run and list commands"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 149
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-654-add-fw-cron-run-command-for-cli-job-trig.md
+generated_by: context-agent-hybrid
