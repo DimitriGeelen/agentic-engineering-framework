@@ -990,4 +990,25 @@ learnings:
   date: 2026-03-28
   context: Added via context agent
   application: TBD
+- id: L-124
+  learning: "Test"
+  source: unknown
+  task: unknown
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
+- id: L-125
+  learning: "Test"
+  source: unknown
+  task: unknown
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
+- id: L-126
+  learning: "When adding pattern-matching detection (like task name matching), start with anchored patterns (^fix) not contains patterns (fix anywhere). Self-application catches false positives immediately."
+  source: P-001
+  task: T-693
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
 candidates: []

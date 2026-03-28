@@ -380,10 +380,13 @@ concerns:
   - 'Behavioral: Bug-Fix Learning Checkpoint practice in CLAUDE.md (DONE)'
   - 'Detective: Audit section 5 checks bugfix-learning coverage ratio'
   - 'Preventive: fw fix-learned shortcut for fast capture during fix cycles'
-  - 'Structural: update-task.sh prompts for learning when completing bugfix tasks'
-  status: watching
+  - 'Structural: update-task.sh prompts for learning when completing bugfix tasks (DONE — T-692, T-693)'
+  status: mitigated
+  mitigation: 'T-692/T-693: update-task.sh now emits a visible learning prompt when completing tasks starting
+    with "Fix" that have no learning entry. Advisory (non-blocking). Remaining: no audit check for
+    bugfix-to-learning ratio, no fw fix-learned shortcut.'
   created: 2026-03-08
-  last_reviewed: 2026-03-08
+  last_reviewed: 2026-03-29
   related_task: T-345
 - id: G-017
   type: gap
