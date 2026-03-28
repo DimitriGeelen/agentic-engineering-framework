@@ -1,0 +1,50 @@
+#!/bin/bash
+# fw-shim — Project-detecting wrapper for the Agentic Engineering Framework CLI
+#
+# This shim replaces the symlink to $HOME/.agentic-framework/bin/fw.
+# Instead of routing all `fw` calls to a global install, it walks up from
+# CWD to find the project-local fw and execs it.
+#
+# Resolution order:
+#   1. bin/fw          — framework repo (has FRAMEWORK.md at root)
+#   2. .agentic-framework/bin/fw — consumer project (vendored framework)
+#
+# Install: copy to ~/.local/bin/fw (or anywhere on PATH)
+# Origin: T-664 (Phase 2 of T-662: eliminate global install dependency)
+
+set -euo pipefail
+
+# Walk up from CWD looking for a framework project
+find_fw() {
+    local dir="$PWD"
+    while [ "$dir" != "/" ]; do
+        # Framework repo: has bin/fw + FRAMEWORK.md
+        if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
+            echo "$dir/bin/fw"
+            return 0
+        fi
+        # Consumer project: has vendored .agentic-framework/bin/fw
+        if [ -x "$dir/.agentic-framework/bin/fw" ]; then
+            echo "$dir/.agentic-framework/bin/fw"
+            return 0
+        fi
+        dir="$(dirname "$dir")"
+    done
+    return 1
+}
+
+fw_path=$(find_fw) || {
+    echo "fw: No framework project detected in this directory tree." >&2
+    echo "" >&2
+    echo "  Run from a project directory that has either:" >&2
+    echo "    - bin/fw + FRAMEWORK.md  (framework repo)" >&2
+    echo "    - .agentic-framework/    (consumer project)" >&2
+    echo "" >&2
+    echo "  To initialize a new project:" >&2
+    echo "    cd /path/to/your/project" >&2
+    echo "    /path/to/framework/bin/fw init" >&2
+    echo "" >&2
+    exit 1
+}
+
+exec "$fw_path" "$@"

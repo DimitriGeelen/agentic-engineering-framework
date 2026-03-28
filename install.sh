@@ -176,21 +176,39 @@ do_install() {
     fi
 }
 
-# --- Symlink ---
+# --- Install Shim (T-664: project-detecting fw, replaces global symlinks) ---
 link_fw() {
-    local fw_path="$INSTALL_DIR/bin/fw"
+    local shim_src="$INSTALL_DIR/bin/fw-shim"
     local local_bin="$HOME/.local/bin"
 
-    if [[ ! -x "$fw_path" ]]; then
-        fatal "bin/fw not found in ${INSTALL_DIR} — clone may be corrupted"
-    fi
+    if [[ ! -x "$shim_src" ]]; then
+        # Fallback for older installs that don't have fw-shim yet
+        local fw_path="$INSTALL_DIR/bin/fw"
+        if [[ ! -x "$fw_path" ]]; then
+            fatal "bin/fw not found in ${INSTALL_DIR} — clone may be corrupted"
+        fi
+        mkdir -p "$local_bin"
+        ln -sf "$fw_path" "$local_bin/fw"
+        ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
+        info "Linked fw → ${local_bin}/fw (legacy — upgrade for project-local routing)"
+        info "Linked claude-fw → ${local_bin}/claude-fw"
+    else
+        # Install the shim: copies fw-shim as ~/.local/bin/fw
+        # The shim walks up from CWD to find the project-local fw (bin/fw or .agentic-framework/bin/fw)
+        # This means every project uses its own framework version — no global install dependency
+        mkdir -p "$local_bin"
+        cp "$shim_src" "$local_bin/fw"
+        chmod +x "$local_bin/fw"
+        # claude-fw still symlinks (it's a wrapper, not project-specific)
+        ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
+        info "Installed fw shim → ${local_bin}/fw (project-detecting)"
+        info "Linked claude-fw → ${local_bin}/claude-fw"
 
-    # Always use ~/.local/bin (no sudo required)
-    mkdir -p "$local_bin"
-    ln -sf "$fw_path" "$local_bin/fw"
-    ln -sf "$INSTALL_DIR/bin/claude-fw" "$local_bin/claude-fw"
-    info "Linked fw → ${local_bin}/fw"
-    info "Linked claude-fw → ${local_bin}/claude-fw"
+        # Migrate notice if old symlink existed
+        if [[ -L "$local_bin/fw.bak" ]] 2>/dev/null; then
+            rm -f "$local_bin/fw.bak"
+        fi
+    fi
 
     # Check if ~/.local/bin is in PATH
     if [[ ":$PATH:" != *":${local_bin}:"* ]]; then
