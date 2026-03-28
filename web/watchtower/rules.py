@@ -174,7 +174,7 @@ def check_traceability_drift(inputs: dict) -> list:
     if not git_log:
         return []
 
-    task_pattern = re.compile(r"T-\d{3}")
+    task_pattern = re.compile(r"T-\d{3,}")
 
     # Check last 5 commits for drift
     recent = git_log[:5]

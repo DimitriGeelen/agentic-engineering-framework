@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-670: Update enforcement baseline + upgrade 7 consumer projects
+# ============================================================================
+# STATUS: ENRICHED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T20:00:19Z
+# Enriched: 2026-03-28
+# ============================================================================
+
+task_id: T-670
+task_name: "Update enforcement baseline + upgrade 7 consumer projects"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-03-28T19:35:57Z
+completed: 2026-03-28T19:37:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T20:37:54+01:00
+last_commit: 2026-03-28T20:38:05+01:00
+
+# Summary
+summary: |
+  Fixed stale enforcement baseline (broken after T-663/T-666 hook changes) and upgraded
+  all 7 consumer projects from v1.4.86 to v1.4.109 with 14/14 hooks each.
+  Resolved fw doctor FAIL on enforcement baseline and WARN on consumer versions.
+
+# Key outcomes
+outcomes:
+  - "Enforcement baseline SHA256 regenerated and passing"
+  - "All 7 consumer projects upgraded to v1.4.109 with 14/14 hooks"
+  - "`fw doctor` shows no FAIL on enforcement baseline"
+
+# Challenges
+challenges:
+  # No challenges detected — routine maintenance task
+
+# Decisions
+decisions: []
+  # No alternatives considered — straightforward baseline regeneration and version bump
+
+# Artifacts (source files changed)
+artifacts:
+  - ".context/project/enforcement-baseline.sha256"
+
+# Timeline (from git log)
+git_timeline:
+  - time: "2026-03-28T20:37:54"
+    action: "T-670: Update enforcement baseline + upgrade 7 consumer projects to v1.4.109"
+  - time: "2026-03-28T20:38:05"
+    action: "T-670: Complete — enforcement baseline + consumer upgrades + episodic"
+
+# What worked well
+successes:
+  - "Quick turnaround — 2 minutes wall clock for baseline + 7 project upgrades"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [enforcement, baseline, consumer-upgrade, fw-doctor, maintenance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 3
+  lines_added: 59
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-670-update-enforcement-baseline--upgrade-7-c.md
+generated_by: context-agent-hybrid

@@ -282,7 +282,7 @@ def scan_apply(rec_id):
 @bp.route("/api/scan/focus/<task_id>", methods=["POST"])
 def scan_focus(task_id):
     """Set focus to a task from the work queue."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         return '<p style="color:var(--pico-del-color)">Invalid task ID.</p>', 400
     stdout, stderr, ok = run_fw_command(["context", "focus", task_id])
     if ok:

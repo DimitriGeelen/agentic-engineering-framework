@@ -105,7 +105,7 @@ def _render_review_404(task_id, reason="not_found"):
 @bp.route("/review/<task_id>")
 def review(task_id):
     """Mobile-first review page for a single task."""
-    if not re.match(r"^T-\d{3}$", task_id):
+    if not re.match(r"^T-\d{3,}$", task_id):
         return _render_review_404(task_id, "invalid")
 
     task_file = _find_task_file(task_id)
@@ -149,7 +149,7 @@ def review(task_id):
 @bp.route("/review/<task_id>/acs")
 def review_acs_fragment(task_id):
     """htmx polling endpoint — returns just the AC list fragment."""
-    if not re.match(r"^T-\d{3}$", task_id):
+    if not re.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     task_file = _find_task_file(task_id)

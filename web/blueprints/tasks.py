@@ -364,7 +364,7 @@ def tasks():
 
 @bp.route("/tasks/<task_id>")
 def task_detail(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     task_data = None
@@ -462,7 +462,7 @@ def create_task():
 
     stdout, stderr, ok = run_fw_command(cmd)
     if ok:
-        id_match = re_mod.search(r"(T-\d{3})", stdout)
+        id_match = re_mod.search(r"(T-\d{3,})", stdout)
         task_id = id_match.group(1) if id_match else "new task"
         return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
     else:
@@ -474,7 +474,7 @@ def create_task():
 
 @bp.route("/api/task/<task_id>/horizon", methods=["POST"])
 def update_task_horizon(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     horizon = request.form.get("horizon", "")
@@ -489,7 +489,7 @@ def update_task_horizon(task_id):
 
 @bp.route("/api/task/<task_id>/owner", methods=["POST"])
 def update_task_owner(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     owner = request.form.get("owner", "")
@@ -504,7 +504,7 @@ def update_task_owner(task_id):
 
 @bp.route("/api/task/<task_id>/type", methods=["POST"])
 def update_task_type(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     wtype = request.form.get("type", "")
@@ -521,7 +521,7 @@ def update_task_type(task_id):
 @bp.route("/api/task/<task_id>/complete", methods=["POST"])
 def complete_task(task_id):
     """Complete a task from the browser — passes --force since human clicked it (T-640)."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     stdout, stderr, ok = run_fw_command([
@@ -538,7 +538,7 @@ def complete_task(task_id):
 
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
 def update_task_status(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     status = request.form.get("status", "")
@@ -559,7 +559,7 @@ def update_task_status(task_id):
 @bp.route("/api/task/<task_id>/name", methods=["POST"])
 def update_task_name(task_id):
     """Update task name via regex frontmatter editing."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     name = request.form.get("name", "").strip()
@@ -581,7 +581,7 @@ def update_task_name(task_id):
 @bp.route("/api/task/<task_id>/toggle-ac", methods=["POST"])
 def toggle_ac(task_id):
     """Toggle an acceptance criteria checkbox."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     try:
@@ -603,7 +603,7 @@ def toggle_ac(task_id):
 @bp.route("/api/task/<task_id>/description", methods=["POST"])
 def update_task_description(task_id):
     """Update task description (single-line only for now)."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     desc = request.form.get("description", "").strip()

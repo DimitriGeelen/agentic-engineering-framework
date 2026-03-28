@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-669: Approvals page auto-refresh — htmx polling for live Tier 0 and Human AC updates
+# ============================================================================
+# STATUS: ENRICHED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T20:00:17Z
+# Enriched: 2026-03-28
+# ============================================================================
+
+task_id: T-669
+task_name: "Approvals page auto-refresh — htmx polling for live Tier 0 and Human AC updates"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-03-28T18:01:21Z
+completed: 2026-03-28T18:06:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T19:05:54+01:00
+last_commit: 2026-03-28T19:06:06+01:00
+
+# Summary
+summary: |
+  Added htmx polling to the /approvals page so Tier 0, GO decisions, and Human AC
+  status updates appear automatically every 10 seconds without manual page refresh.
+  Extracted dynamic content into a _approvals_content.html partial served by a new
+  /approvals/content endpoint.
+
+# Key outcomes
+outcomes:
+  - "Approvals page wraps dynamic content in a polling div with hx-trigger"
+  - "Polling interval is 10 seconds"
+  - "`/approvals/content` endpoint returns HTML fragment without page wrapper"
+  - "Page updates show new Tier 0 approvals and AC state changes without full reload"
+
+# Challenges
+challenges:
+  # No challenges detected — clean two-commit implementation
+
+# Decisions
+decisions: []
+  # No meaningful alternatives considered — followed established htmx polling pattern from T-667
+
+# Artifacts (source files changed)
+artifacts:
+  - "web/blueprints/approvals.py"
+  - "web/templates/_approvals_content.html"
+  - "web/templates/approvals.html"
+
+# Timeline (from git log)
+git_timeline:
+  - time: "2026-03-28T19:05:54"
+    action: "T-669: Approvals page auto-refresh — htmx polling every 10s"
+  - time: "2026-03-28T19:06:06"
+    action: "T-669: Complete — approvals auto-refresh + episodic"
+
+# What worked well
+successes:
+  - "Reused htmx polling pattern from T-667 (review page) — fast implementation"
+  - "Clean partial extraction kept template logic simple"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, approvals, htmx, auto-refresh, polling]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 5
+  lines_added: 293
+  lines_removed: 224
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-669-approvals-page-auto-refresh--htmx-pollin.md
+generated_by: context-agent-hybrid

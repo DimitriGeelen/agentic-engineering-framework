@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-672: Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last
+# ============================================================================
+# STATUS: ENRICHED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T20:00:20Z
+# Enriched: 2026-03-28
+# ============================================================================
+
+task_id: T-672
+task_name: "Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last"
+workflow_type: build
+enrichment_status: complete
+
+# Timeline
+created: 2026-03-28T19:47:59Z
+completed: 2026-03-28T19:50:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T20:49:56+01:00
+last_commit: 2026-03-28T20:50:08+01:00
+
+# Summary
+summary: |
+  Added priority-based sorting to the /approvals Human AC section so that [REVIEW]
+  items needing judgment appear first, followed by stale items (>7 days, highlighted
+  with orange warning icon), then [RUBBER-STAMP] items. Each task card now shows an
+  age indicator (e.g., "15d ago").
+
+# Key outcomes
+outcomes:
+  - "Human AC tasks sorted: REVIEW first, then by age (oldest first), then RUBBER-STAMP"
+  - "Each task card shows relative age indicator (e.g., '15d ago')"
+  - "Stale tasks (>7 days) visually highlighted with orange warning icon"
+
+# Challenges
+challenges:
+  # No challenges detected — clean implementation
+
+# Decisions
+decisions: []
+  # No alternatives considered — sorting order (REVIEW > age > RUBBER-STAMP) was specified in requirements
+
+# Artifacts (source files changed)
+artifacts:
+  - "web/blueprints/approvals.py"
+  - "web/templates/_approvals_content.html"
+
+# Timeline (from git log)
+git_timeline:
+  - time: "2026-03-28T20:49:56"
+    action: "T-672: Priority sorting + age indicators on approvals page"
+  - time: "2026-03-28T20:50:08"
+    action: "T-672: Complete — priority sorting on approvals + episodic"
+
+# What worked well
+successes:
+  - "Built on existing approvals infrastructure from T-669 — minimal changes needed"
+  - "Sort logic and age calculation added server-side in approvals.py, template changes minimal"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, approvals, sorting, priority, ux, stale-detection]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 94
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-672-add-priority-sorting-to-approvals-page--.md
+generated_by: context-agent-hybrid

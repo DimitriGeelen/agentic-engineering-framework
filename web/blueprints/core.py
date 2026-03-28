@@ -81,7 +81,7 @@ def _get_traceability():
     if ok and output:
         lines = output.split("\n")
         total = len(lines)
-        traced = sum(1 for l in lines if re_mod.search(r"T-\d{3}", l))
+        traced = sum(1 for l in lines if re_mod.search(r"T-\d{3,}", l))
         return int(traced * 100 / total) if total > 0 else 0
     return 0
 

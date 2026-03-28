@@ -131,7 +131,7 @@ def timeline():
 
 @bp.route("/api/timeline/task/<task_id>")
 def timeline_task_detail(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     episodic_file = PROJECT_ROOT / ".context" / "episodic" / f"{task_id}.yaml"

@@ -140,7 +140,7 @@ def inception_list():
 
 @bp.route("/inception/<task_id>")
 def inception_detail(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
 
     task_data = None
@@ -199,7 +199,7 @@ def inception_detail(task_id):
 
 @bp.route("/inception/<task_id>/add-assumption", methods=["POST"])
 def add_assumption(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
     statement = request.form.get("statement", "").strip()
     if not statement:
@@ -226,7 +226,7 @@ def resolve_assumption(assumption_id):
 
 @bp.route("/inception/<task_id>/decide", methods=["POST"])
 def record_decision(task_id):
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         abort(404)
     decision = request.form.get("decision", "").strip().lower()
     rationale = request.form.get("rationale", "").strip()

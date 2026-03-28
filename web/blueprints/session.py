@@ -180,7 +180,7 @@ def session_init():
 @bp.route("/api/healing/<task_id>", methods=["POST"])
 def healing_diagnose(task_id):
     """Run healing diagnosis via fw healing diagnose."""
-    if not re_mod.match(r"^T-\d{3}$", task_id):
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
         return '<p style="color: var(--pico-del-color);">Invalid task ID format.</p>', 400
 
     stdout, stderr, ok = _fw(["healing", "diagnose", task_id], timeout=60)

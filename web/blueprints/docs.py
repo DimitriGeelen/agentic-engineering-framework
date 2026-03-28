@@ -9,9 +9,9 @@ import markdown2
 import yaml
 from flask import Blueprint, abort, request
 
-from web.shared import FRAMEWORK_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
-# Safe directories for file viewer (relative to FRAMEWORK_ROOT)
+# Safe directories for file viewer (relative to PROJECT_ROOT)
 _VIEWABLE_DIRS = ("docs/", ".tasks/", ".context/handovers/", ".context/episodic/")
 
 # Regex for file references that should become clickable links (T-633)
@@ -30,7 +30,7 @@ def _auto_link_files(html):
     def _replace(m):
         tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
         # Verify file exists before linking
-        if (FRAMEWORK_ROOT / path).exists():
+        if (PROJECT_ROOT / path).exists():
             return f'<a href="/file/{path}">{tick1}{path}{tick2}</a>'
         return m.group(0)
     return _FILE_REF_RE.sub(_replace, html)
@@ -143,13 +143,13 @@ def file_viewer(filepath):
     if not filepath.endswith(".md"):
         abort(404)
 
-    file_path = FRAMEWORK_ROOT / filepath
+    file_path = PROJECT_ROOT / filepath
     if not file_path.exists() or not file_path.is_file():
         abort(404)
 
-    # Resolve and verify still under FRAMEWORK_ROOT (symlink protection)
+    # Resolve and verify still under PROJECT_ROOT (symlink protection)
     resolved = file_path.resolve()
-    if not str(resolved).startswith(str(FRAMEWORK_ROOT.resolve())):
+    if not str(resolved).startswith(str(PROJECT_ROOT.resolve())):
         abort(404)
 
     content_md = file_path.read_text()

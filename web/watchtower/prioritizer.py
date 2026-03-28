@@ -85,7 +85,7 @@ def _extract_handover_tasks(handover: str | None) -> set:
     """Extract task IDs mentioned in the handover."""
     if not handover:
         return set()
-    return set(re.findall(r"T-\d{3}", handover))
+    return set(re.findall(r"T-\d{3,}", handover))
 
 
 def _parse_datetime(value) -> datetime | None:

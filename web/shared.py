@@ -81,7 +81,7 @@ def build_ambient():
         if active_tasks:
             # Use the first active task as focus
             stem = active_tasks[0].stem
-            match = re_mod.match(r"(T-\d{3})", stem)
+            match = re_mod.match(r"(T-\d{3,})", stem)
             if match:
                 ambient["focus_task"] = match.group(1)
             ambient["attention_count"] = len(active_tasks)
