@@ -1638,6 +1638,115 @@ case "$cmd" in
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
         ;;
+    cron)
+        # T-448: Cron registry management
+        cron_subcmd="${1:-}"
+        shift || true
+        case "$cron_subcmd" in
+            generate)
+                # Regenerate crontab from registry YAML
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo -e "${RED}ERROR:${NC} No cron registry found at $_cron_registry"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, os, re, sys
+
+project_root = '$PROJECT_ROOT'
+fw_path = '$FRAMEWORK_ROOT/bin/fw'
+registry_file = '$_cron_registry'
+
+data = yaml.safe_load(open(registry_file))
+jobs = data.get('jobs', [])
+
+slug = os.path.basename(project_root).lower()
+slug = re.sub(r'[^a-z0-9_-]', '-', slug)
+cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')
+cron_install = f'/etc/cron.d/agentic-audit-{slug}'
+
+lines = [
+    f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',
+    f'# Source of truth: {cron_source} (git-tracked)',
+    f'# Installed to: {cron_install}',
+    f'# Project: {project_root}',
+    'SHELL=/bin/bash',
+    'PATH=/usr/local/bin:/usr/bin:/bin',
+    '',
+]
+
+active = paused = 0
+for job in jobs:
+    schedule = job.get('schedule', '')
+    command = job.get('command', '')
+    name = job.get('name', '')
+    status = job.get('status', 'active')
+
+    if command.startswith('fw '):
+        resolved = f'PROJECT_ROOT=\"{project_root}\" \"{fw_path}\" {command[3:]}'
+    elif command.startswith('find '):
+        resolved = f'cd \"{project_root}\" && {command}'
+    else:
+        resolved = command
+
+    if '2>/dev/null' not in resolved:
+        resolved += ' 2>/dev/null'
+
+    lines.append(f'# {name}')
+    if status == 'paused':
+        lines.append(f'# PAUSED: {schedule} root {resolved}')
+        paused += 1
+    else:
+        lines.append(f'{schedule} root {resolved}')
+        active += 1
+    lines.append('')
+
+os.makedirs(os.path.dirname(cron_source), exist_ok=True)
+with open(cron_source, 'w') as f:
+    f.write('\n'.join(lines))
+
+print(f'Generated {cron_source}')
+print(f'  {active} active, {paused} paused ({len(jobs)} total)')
+print(f'  Install with: fw audit schedule install')
+"
+                ;;
+            status)
+                # Show registry status
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo "No cron registry at $_cron_registry"
+                    exit 0
+                fi
+                python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+jobs = data.get('jobs', [])
+active = sum(1 for j in jobs if j.get('status') == 'active')
+paused = sum(1 for j in jobs if j.get('status') == 'paused')
+print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
+for j in jobs:
+    s = j.get('status', 'active')
+    icon = '  ✓' if s == 'active' else '  ‖'
+    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                ;;
+            ""|help|-h|--help)
+                echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
+                echo ""
+                echo "Subcommands:"
+                echo "  generate    Regenerate crontab from registry YAML"
+                echo "  status      Show registry status (jobs, active/paused)"
+                echo ""
+                echo "Registry: .context/cron-registry.yaml"
+                echo "Web UI:   http://localhost:3000/cron"
+                ;;
+            *)
+                echo -e "${RED}Unknown cron subcommand:${NC} $cron_subcmd"
+                echo "Run 'fw cron help' for usage."
+                exit 1
+                ;;
+        esac
+        ;;
     docs)
         if [ "${1:-}" = "article" ]; then
             shift

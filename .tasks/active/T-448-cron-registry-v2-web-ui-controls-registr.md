@@ -4,7 +4,7 @@ name: "Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)"
 description: >
   Follow-up to T-433/T-447: add web-based start/stop/frequency controls, .context/cron-registry.yaml as source of truth, LLM-generated job documentation via Ollama. See docs/reports/T-433-cron-registry-inception.md Option B.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: [watchtower, cron]
 components: []
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-03-12T06:14:02Z
+last_update: 2026-03-28T15:14:09Z
 date_finished: null
 ---
 
@@ -25,11 +25,11 @@ Follow-up to T-433 (inception GO) and T-447 (read-only page, completed). Impleme
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (active/paused), description. `cron.py` reads from registry YAML instead of parsing `/etc/cron.d/` directly.
-- [ ] `fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped naming (`agentic-audit-{project-slug}`).
-- [ ] API endpoints exist under `/api/v1/cron/`: POST `jobs/<id>/pause` (comments out in cron file), POST `jobs/<id>/resume` (uncomments), POST `jobs/<id>/run` (triggers manual execution). Each returns JSON with updated job state. Pause/resume regenerate the cron file from registry.
-- [ ] Web UI cron page (`/cron`) shows pause/resume toggle and "Run Now" button per job. Controls use confirmation dialogs before executing (Tier B safety model from T-433 Spike 2). Page updates after action without full reload (fetch + DOM update or page refresh).
-- [ ] LLM-generated job descriptions: API endpoint GET `/api/v1/cron/jobs/<id>/describe` calls Ollama to generate a human-readable description from the job's command, schedule, and cron file comments. Result is cached in `cron-registry.yaml` under the job's `description` field. Falls back to static description if Ollama is unavailable.
+- [x] `.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (active/paused), description. `cron.py` reads from registry YAML instead of parsing `/etc/cron.d/` directly.
+- [x] `fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped naming (`agentic-audit-{project-slug}`).
+- [x] API endpoints exist under `/api/v1/cron/`: POST `jobs/<id>/pause` (comments out in cron file), POST `jobs/<id>/resume` (uncomments), POST `jobs/<id>/run` (triggers manual execution). Each returns JSON with updated job state. Pause/resume regenerate the cron file from registry.
+- [x] Web UI cron page (`/cron`) shows pause/resume toggle and "Run Now" button per job. Controls use confirmation dialogs before executing (Tier B safety model from T-433 Spike 2). Page updates after action without full reload (fetch + DOM update or page refresh).
+- [x] LLM-generated job descriptions: API endpoint GET `/api/v1/cron/jobs/<id>/describe` calls Ollama to generate a human-readable description from the job's command, schedule, and cron file comments. Result is cached in `cron-registry.yaml` under the job's `description` field. Falls back to static description if Ollama is unavailable.
 
 ### Human
 - [ ] [REVIEW] Cron controls work correctly and feel safe
@@ -76,3 +76,6 @@ grep -q "cron/jobs" web/blueprints/cron.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-448-cron-registry-v2-web-ui-controls-registr.md
 - **Context:** Initial task creation
+
+### 2026-03-28T15:14:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
