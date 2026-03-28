@@ -345,6 +345,22 @@
     </ul>
 </article>
 
+{# --- Mobile Approvals QR (T-671) ------------------------------ #}
+{% if approval_summary and approval_summary.total > 0 and qr_approvals_data %}
+<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+    <img src="{{ qr_approvals_data }}" width="80" height="80" alt="QR: /approvals"
+         title="{{ qr_approvals_url }}" style="flex-shrink: 0; border-radius: 4px;">
+    <div>
+        <h4 class="wt-section-title" style="margin-bottom: 0.25rem;">Mobile Approvals</h4>
+        <p style="font-size: 0.85rem; margin: 0; color: var(--pico-muted-color);">
+            Scan to review <strong>{{ approval_summary.total }}</strong> pending item{{ 's' if approval_summary.total != 1 }} on your phone
+        </p>
+        <a href="/approvals" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           style="font-size: 0.8rem;">View approvals &rarr;</a>
+    </div>
+</article>
+{% endif %}
+
 {# --- System Health (T-398) --------------------------------- #}
 <div class="wt-columns">
     <article>

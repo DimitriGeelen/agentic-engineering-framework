@@ -213,6 +213,51 @@ def _get_pattern_summary():
     }
 
 
+def _get_approval_qr():
+    """Build approval summary and QR data URL for mobile access (T-671)."""
+    try:
+        from web.blueprints.approvals import _build_approvals_context
+        ctx = _build_approvals_context()
+        total = ctx.get("total_count", 0)
+        if total == 0:
+            return None, None, None
+        summary = {"total": total, "tier0": ctx.get("tier0_count", 0),
+                   "go": ctx.get("go_count", 0), "acs": ctx.get("ac_task_count", 0)}
+    except Exception:
+        return None, None, None
+
+    # Generate QR code as data URL
+    try:
+        import base64
+        import io
+        import socket
+
+        import qrcode
+
+        # Use LAN IP for cross-device access
+        hostname = socket.gethostname()
+        try:
+            lan_ip = socket.gethostbyname(hostname)
+        except socket.gaierror:
+            lan_ip = "127.0.0.1"
+        # Detect port from Flask request context
+        from flask import request
+        port = request.host.split(":")[-1] if ":" in request.host else "3000"
+        url = f"http://{lan_ip}:{port}/approvals"
+
+        qr = qrcode.QRCode(version=1, box_size=4, border=2,
+                            error_correction=qrcode.constants.ERROR_CORRECT_L)
+        qr.add_data(url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        data_url = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+        return summary, data_url, url
+    except Exception:
+        return summary, None, None
+
+
 @bp.route("/")
 def index():
     active_dir = PROJECT_ROOT / ".tasks" / "active"
@@ -240,6 +285,11 @@ def index():
         ctx["concerns_summary"] = _get_concerns_summary()
         ctx["focus_task"] = _get_focus_task()
         ctx["stale_tasks"] = _get_stale_tasks()
+        # T-671: QR code for mobile approvals
+        approval_summary, qr_data, qr_url = _get_approval_qr()
+        ctx["approval_summary"] = approval_summary
+        ctx["qr_approvals_data"] = qr_data
+        ctx["qr_approvals_url"] = qr_url
         return render_page("cockpit.html", page_title="Watchtower", **ctx)
 
     # Fallback: existing dashboard (no scan data)
@@ -253,6 +303,9 @@ def index():
             last_session = sessions[0].stem
 
     audit_status, audit_pass, audit_warn, audit_fail = _get_audit_status()
+
+    # T-671: Approval summary + QR code for mobile access
+    approval_summary, qr_data, qr_url = _get_approval_qr()
 
     return render_page(
         "index.html",
@@ -275,6 +328,9 @@ def index():
         traceability=_get_traceability(),
         inception_checklist=_get_inception_checklist(),
         pattern_summary=_get_pattern_summary(),
+        approval_summary=approval_summary,
+        qr_approvals_data=qr_data,
+        qr_approvals_url=qr_url,
     )
 
 
