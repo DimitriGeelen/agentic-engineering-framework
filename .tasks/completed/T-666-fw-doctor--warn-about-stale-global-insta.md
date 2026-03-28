@@ -4,7 +4,7 @@ name: "fw doctor — warn about stale global install at HOME/.agentic-framework"
 description: >
   Phase 4 of T-662: Add a warning to fw doctor when HOME/.agentic-framework exists and ~/.local/bin/fw is still a symlink (not the shim). Guides users to run install.sh or fw upgrade to migrate.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: [T-662, doctor, cleanup]
 components: []
 related_tasks: []
 created: 2026-03-28T17:26:25Z
-last_update: 2026-03-28T17:26:25Z
-date_finished: null
+last_update: 2026-03-28T17:28:28Z
+date_finished: 2026-03-28T17:28:28Z
 ---
 
 # T-666: fw doctor — warn about stale global install at HOME/.agentic-framework
@@ -58,3 +58,6 @@ Phase 4 of T-662 (GO). Add a check to `fw doctor` that warns when `$HOME/.agenti
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-666-fw-doctor--warn-about-stale-global-insta.md
 - **Context:** Initial task creation
+
+### 2026-03-28T17:28:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
