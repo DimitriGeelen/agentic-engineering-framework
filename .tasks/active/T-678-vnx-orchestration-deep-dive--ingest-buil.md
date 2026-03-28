@@ -99,6 +99,22 @@ Research artifact: docs/reports/T-678-vnx-orchestration-deep-dive.md
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**GO**
+
+**Rationale:** vnx-orchestration ingestion succeeded. Framework governance fully initialized — fw doctor 0 failures, 6/6 seed tasks completed, fabric with 6 registered components. The project is ready for deep-dive spikes 2-5 (component fabric build, architecture mapping, pattern analysis, value extraction). Path C workflow proven end-to-end via T-679 fixes.
+
+**Evidence:**
+- fw doctor: 0 failures, 1 warning (enforcement baseline)
+- fw audit: 47 pass, 8 warn, 2 fail (baseline for fresh project)
+- Seed tasks: T-001 through T-006 all completed
+- Fabric: 6 components registered (bin/vnx, hooks/sessionstart.sh, hooks/vnx_rotate.sh, ledger/t0_ledger_interface.py, configs/gate_agent_mapping.yaml, lib/session_resolver.sh)
+- Handover: generated at .context/handovers/LATEST.md
+- 10 friction points captured → 6 framework improvement tasks created
+
+**Next steps after GO:** Create build tasks for spikes 2-5 (architecture mapping, pattern analysis, value extraction). Work happens inside /opt/051-Vinix24 via TermLink.
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->

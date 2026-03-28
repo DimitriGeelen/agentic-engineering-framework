@@ -1,6 +1,6 @@
 # T-679: Path C Workflow — External Codebase Ingestion via TermLink
 
-## Status: Draft (pre-spike)
+## Status: Complete (GO decision 2026-03-28)
 
 ## What is Path C?
 
@@ -60,6 +60,33 @@ Path C is the framework's workflow for analyzing an external codebase. Unlike Pa
 | F-5 | TermLink MCP not in default MCP config | Framework | Medium | Add to fw init MCP seeding |
 | F-6 | No `termlink spawn --working-dir` flag | TermLink | Medium | Feature request |
 | F-7 | TermLink interact also blocked by boundary hook | Framework | HIGH | Same root cause as F-1 |
+| F-8 | Seed task T-001 verification too strict (`fw audit` exits non-zero on fresh project) | Framework | Medium | T-683: Use `fw doctor` instead |
+| F-9 | `fw init` doesn't check git user identity | Framework | Medium | T-685: Add git identity check |
+| F-10 | Seed T-002 gitignores `.context/`, T-005 can't commit handover there | Framework | Medium | T-684: Exclude `.context/handovers/` from gitignore |
+
+### Fix Status
+
+| Friction | Status | Task |
+|----------|--------|------|
+| F-1/F-7 | **FIXED** | `check-project-boundary.sh` — TermLink exception |
+| F-2 | **FIXED** | `lib/upgrade.sh` — non-framework hook detection |
+| F-3 | Open | T-680 |
+| F-4 | Open | Low priority |
+| F-5 | Open | T-681 |
+| F-6 | Open | T-682 (TermLink product) |
+| F-8 | Open | T-683 |
+| F-9 | Open | T-685 |
+| F-10 | Open | T-684 |
+
+### Seed Task Execution Results
+
+All 6 seed tasks completed successfully in `/opt/051-Vinix24`:
+- **T-001**: Orientation + doctor/audit — PASS (needed `--force` for audit, friction F-8)
+- **T-002**: First governed commit — PASS (needed git identity config, friction F-9)
+- **T-003**: Register 6 key components — PASS (clean)
+- **T-004**: Complete task lifecycle — PASS (clean, satisfied by T-001-T-003)
+- **T-005**: Generate handover — PASS (handover created, commit failed due to gitignore, friction F-10)
+- **T-006**: Add project learning — PASS (clean)
 
 ## TermLink Product Feedback
 
