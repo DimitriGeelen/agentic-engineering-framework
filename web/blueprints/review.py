@@ -89,20 +89,37 @@ def _find_research_artifacts(task_id):
     return artifacts
 
 
+def _render_review_404(task_id, reason="not_found"):
+    """Render a mobile-friendly error page for review routes."""
+    messages = {
+        "not_found": ("Task Not Found", f"{task_id} does not exist or has no task file."),
+        "invalid": ("Invalid Task ID", f"'{task_id}' is not a valid task identifier. Expected format: T-001"),
+        "completed": ("Task Completed", f"{task_id} has been completed. No pending Human ACs."),
+    }
+    title, detail = messages.get(reason, messages["not_found"])
+    return render_template("_review_error.html",
+                           task_id=task_id, error_title=title, error_detail=detail,
+                           reason=reason), 404 if reason != "completed" else 200
+
+
 @bp.route("/review/<task_id>")
 def review(task_id):
     """Mobile-first review page for a single task."""
     if not re.match(r"^T-\d{3}$", task_id):
-        abort(404)
+        return _render_review_404(task_id, "invalid")
 
     task_file = _find_task_file(task_id)
     if not task_file:
-        abort(404)
+        # Check if it's in completed/
+        completed_dir = PROJECT_ROOT / ".tasks" / "completed"
+        if completed_dir.exists() and list(completed_dir.glob(f"{task_id}-*.md")):
+            return _render_review_404(task_id, "completed")
+        return _render_review_404(task_id, "not_found")
 
     content = task_file.read_text()
     fm, body = parse_frontmatter(content)
     if not fm:
-        abort(404)
+        return _render_review_404(task_id, "not_found")
 
     human_acs = _parse_human_acs(body)
     checked_count = sum(1 for ac in human_acs if ac["checked"])
