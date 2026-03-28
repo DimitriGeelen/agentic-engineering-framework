@@ -267,6 +267,33 @@ plus Claude Code-specific integration notes.
         echo -e "  ${GREEN}OK${NC}  All seeds current"
     fi
 
+    # ── 3b. Cron registry (T-448/T-653) ──
+    local cron_seeded=0
+    if [ ! -d "$target_dir/.context/cron" ]; then
+        cron_seeded=$((cron_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$target_dir/.context/cron"
+        fi
+    fi
+    if [ ! -f "$target_dir/.context/cron-registry.yaml" ]; then
+        cron_seeded=$((cron_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            cat > "$target_dir/.context/cron-registry.yaml" << 'CRONREGEOF'
+# Cron Registry — Structured source of truth for scheduled jobs (T-448)
+# Read by web/blueprints/cron.py and fw cron generate.
+jobs: []
+CRONREGEOF
+        fi
+    fi
+    if [ "$cron_seeded" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD SEED${NC}  Cron registry + directory"
+        else
+            echo -e "  ${GREEN}SEEDED${NC}  Cron registry + directory"
+        fi
+    fi
+
     # ── 4. Git hooks ──
     echo -e "${YELLOW}[4/10] Git hooks${NC}"
 
