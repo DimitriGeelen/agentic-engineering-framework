@@ -8,6 +8,13 @@ purpose: Pre-Compaction Hook — Save structured context before lossy compaction
 depends_on:
 - target: agents/handover/handover.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
+depended_by:
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: C-009
+  type: triggers_by

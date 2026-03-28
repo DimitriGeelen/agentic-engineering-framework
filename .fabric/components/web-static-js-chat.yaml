@@ -3,21 +3,25 @@ name: chat
 type: script
 subsystem: watchtower
 location: web/static/js/chat.js
-tags: [chat, rag, llm, streaming]
-
-purpose: "Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model switching"
-
+tags:
+- chat
+- rag
+- llm
+- streaming
+purpose: Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model
+  switching
 depends_on:
-  - target: web/static/js/utils.js
-    type: calls
-  - target: web/static/js/markdown-render.js
-    type: calls
-  - target: web/blueprints/discovery.py
-    type: calls
-
+- target: web/static/js/utils.js
+  type: calls
+- target: web/static/js/markdown-render.js
+  type: calls
+- target: web/blueprints/discovery.py
+  type: calls
 depended_by:
-  - target: web/templates/_partials/chat_tab.html
-    type: renders
-
+- target: web/templates/_partials/chat_tab.html
+  type: renders
+- target: web/templates/_partials/chat_tab.html
+  type: rendered_by
 last_verified: 2026-03-10
 created_by: T-409
+last_enriched: '2026-03-28'

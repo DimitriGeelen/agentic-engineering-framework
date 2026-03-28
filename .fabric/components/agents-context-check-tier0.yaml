@@ -5,13 +5,21 @@ subsystem: context-fabric
 location: agents/context/check-tier0.sh
 tags: []
 purpose: Tier 0 Enforcement Hook — PreToolUse gate for Bash tool
-depends_on: []
+depends_on:
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
 - target: C-004
   type: called_by
-last_enriched: '2026-02-21'
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: agents/context/check-project-boundary.sh
+  type: related_by
+- target: C-009
+  type: triggers_by
+last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

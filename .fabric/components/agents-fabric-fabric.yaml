@@ -18,13 +18,17 @@ depends_on:
   type: calls
 - target: agents/fabric/lib/summary.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: agents/context/post-compact-resume.sh
   type: called_by
 - target: bin/fw
+  type: called_by
+- target: agents/context/check-fabric-new-file.sh
   type: called_by
 docs:
 - path: docs/articles/deep-dives/07-component-fabric.md

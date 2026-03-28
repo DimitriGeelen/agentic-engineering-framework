@@ -3,11 +3,18 @@ name: generate-component
 type: script
 subsystem: watchtower
 location: agents/docgen/generate-component.sh
-tags: [docs, docgen]
-purpose: "Generates component reference documentation from fabric cards"
+tags:
+- docs
+- docgen
+purpose: Generates component reference documentation from fabric cards
 depends_on:
 - target: agents/docgen/generate_component.py
   type: calls
-depended_by: []
+- target: lib/paths.sh
+  type: calls
+depended_by:
+- target: bin/fw
+  type: called_by
 last_verified: 2026-03-11
 created_by: T-364
+last_enriched: '2026-03-28'

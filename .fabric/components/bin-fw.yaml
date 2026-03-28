@@ -4,9 +4,8 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: Single entry point for all framework operations. Reads .framework.yaml from
-  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
-  agent. Supports both in-repo and shared tooling modes.
+purpose: Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT,
+  then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -50,9 +49,41 @@ depends_on:
   type: calls
 - target: web/app.py
   type: calls
+- target: agents/audit/self-audit.sh
+  type: calls
+- target: agents/onboarding-test/test-onboarding.sh
+  type: calls
+- target: agents/docgen/generate-article.sh
+  type: calls
+- target: agents/docgen/generate-component.sh
+  type: calls
+- target: agents/termlink/termlink.sh
+  type: calls
+- target: lib/compat.sh
+  type: calls
+- target: lib/review.sh
+  type: calls
+- target: lib/ask.sh
+  type: calls
+- target: lib/tasks.sh
+  type: calls
+- target: lib/dispatch.sh
+  type: calls
+- target: lib/upstream.sh
+  type: calls
+- target: lib/preflight.sh
+  type: calls
+- target: lib/validate-init.sh
+  type: calls
+- target: lib/update.sh
+  type: calls
+- target: bin/watchtower.sh
+  type: calls
+- target: lib/build.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -60,3 +91,10 @@ docs:
 - path: docs/articles/deep-dives/06-authority-model.md
   title: 'Deep Dive: The Authority Model'
   type: deep-dive
+depended_by:
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: lib/upstream.sh
+  type: called_by
+- target: web/subprocess_utils.py
+  type: called_by

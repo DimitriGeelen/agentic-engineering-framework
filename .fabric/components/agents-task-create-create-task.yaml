@@ -5,7 +5,11 @@ subsystem: task-management
 location: agents/task-create/create-task.sh
 tags: []
 purpose: Task Creation Agent - Mechanical Operations
-depends_on: []
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: lib/enums.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -17,7 +21,7 @@ depended_by:
   type: called_by
 - target: lib/setup.sh
   type: called_by
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

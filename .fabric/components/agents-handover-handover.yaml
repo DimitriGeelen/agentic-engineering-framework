@@ -12,15 +12,19 @@ depends_on:
   type: calls
 - target: agents/git/git.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
 - target: bin/fw
   type: called_by
 - target: C-008
+  type: called_by
+- target: agents/onboarding-test/test-onboarding.sh
   type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md

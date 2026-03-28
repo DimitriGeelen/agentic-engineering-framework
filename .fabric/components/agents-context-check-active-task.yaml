@@ -5,7 +5,11 @@ subsystem: context-fabric
 location: agents/context/check-active-task.sh
 tags: []
 purpose: Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools
-depends_on: []
+depends_on:
+- target: agents/context/lib/safe-commands.sh
+  type: calls
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggered_by
@@ -13,9 +17,18 @@ depended_by:
 - target: agents/audit/self-audit.sh
   type: verified_by
   note: self-audit checks existence and executable bit
+- target: agents/onboarding-test/test-onboarding.sh
+  type: called_by
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: agents/context/check-project-boundary.sh
+  type: related_by
+- target: C-009
+  type: triggers_by
 last_verified: 2026-03-01
 created_by: unknown
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'
   type: deep-dive
+last_enriched: '2026-03-28'

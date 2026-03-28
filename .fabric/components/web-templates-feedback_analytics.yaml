@@ -7,8 +7,7 @@ tags:
 - web
 - template
 - watchtower
-purpose: Jinja2 template for feedback analytics page. Displays handover quality feedback
-  trends and session statistics.
+purpose: Jinja2 template for feedback analytics page. Displays handover quality feedback trends and session statistics.
 depends_on:
 - target: web/templates/_wrapper.html
   type: wrapped_by
@@ -17,3 +16,6 @@ created_by: T-322
 depended_by:
 - target: web/blueprints/discovery.py
   type: rendered_by
+- target: C-003
+  type: rendered_by
+last_enriched: '2026-03-28'

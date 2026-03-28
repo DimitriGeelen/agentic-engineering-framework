@@ -14,11 +14,21 @@ depends_on:
   type: renders
 - target: web/templates/assumptions.html
   type: renders
+- target: web/subprocess_utils.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: web/app.py
   type: called_by
 - target: web/app.py
+  type: registered_by
+- target: web/blueprints/__init__.py
+  type: called_by
+- target: web/blueprints/__init__.py
+  type: registered_by
+- target: web/blueprints/approvals.py
+  type: called_by
+- target: web/blueprints/approvals.py
   type: registered_by

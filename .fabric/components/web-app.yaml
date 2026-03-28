@@ -59,9 +59,15 @@ depends_on:
   type: registers
 - target: web/blueprints/fabric.py
   type: registers
+- target: web/search_utils.py
+  type: calls
+- target: web/blueprints/__init__.py
+  type: calls
+- target: web/embeddings.py
+  type: calls
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: bin/fw
   type: called_by

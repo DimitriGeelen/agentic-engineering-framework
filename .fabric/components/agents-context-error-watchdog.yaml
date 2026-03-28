@@ -11,4 +11,8 @@ created_by: unknown
 depended_by:
 - target: C-004
   type: called_by
-last_enriched: '2026-02-21'
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: C-009
+  type: triggers_by
+last_enriched: '2026-03-28'

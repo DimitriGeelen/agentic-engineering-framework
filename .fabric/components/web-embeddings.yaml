@@ -3,13 +3,28 @@ name: embeddings
 type: script
 subsystem: watchtower
 location: web/embeddings.py
-tags: [search, embeddings, semantic]
-
-purpose: "sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search"
-
+tags:
+- search
+- embeddings
+- semantic
+purpose: sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic
+  + hybrid (RRF) search
 depends_on:
-  - web/search.py
-  - web/shared.py
-
+- web/search.py
+- web/shared.py
+- target: web/search_utils.py
+  type: calls
+- target: web/shared.py
+  type: calls
+- target: web/search.py
+  type: calls
 last_verified: 2026-02-22
 created_by: unknown
+last_enriched: '2026-03-28'
+depended_by:
+- target: C-003
+  type: called_by
+- target: web/app.py
+  type: called_by
+- target: web/blueprints/api.py
+  type: called_by

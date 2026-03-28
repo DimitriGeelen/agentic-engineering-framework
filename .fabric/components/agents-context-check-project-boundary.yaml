@@ -3,19 +3,23 @@ name: check-project-boundary
 type: script
 subsystem: hook-enforcement
 location: agents/context/check-project-boundary.sh
-tags: [hook, enforcement, tier0, boundary]
-
-purpose: "PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project edits. Part of the project boundary enforcement gate (T-559)."
-
+tags:
+- hook
+- enforcement
+- tier0
+- boundary
+purpose: PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project
+  edits. Part of the project boundary enforcement gate (T-559).
 depends_on:
-  - target: agents/context/check-tier0.sh
-    type: related
-  - target: agents/context/check-active-task.sh
-    type: related
-
+- target: agents/context/check-tier0.sh
+  type: related
+- target: agents/context/check-active-task.sh
+  type: related
+- target: lib/paths.sh
+  type: calls
 depended_by:
-  - target: .claude/settings.json
-    type: triggers
-
+- target: .claude/settings.json
+  type: triggers
 last_verified: 2026-03-28
 created_by: T-559
+last_enriched: '2026-03-28'

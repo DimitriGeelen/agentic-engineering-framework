@@ -5,10 +5,14 @@ subsystem: framework-core
 location: lib/bus.sh
 tags: []
 purpose: fw bus - Task-scoped result ledger for sub-agent communication
-depends_on: []
+depends_on:
+- target: lib/dispatch.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
 - target: bin/fw
   type: called_by
-last_enriched: '2026-02-21'
+- target: agents/context/bus-handler.sh
+  type: read_by
+last_enriched: '2026-03-28'

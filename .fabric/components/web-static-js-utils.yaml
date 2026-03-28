@@ -3,17 +3,18 @@ name: utils
 type: script
 subsystem: watchtower
 location: web/static/js/utils.js
-tags: [js, utilities]
-
-purpose: "Shared JS utilities — StreamFetcher for SSE streaming, showToast for notifications, CSRF helpers"
-
+tags:
+- js
+- utilities
+purpose: Shared JS utilities — StreamFetcher for SSE streaming, showToast for notifications, CSRF helpers
 depends_on: []
-
 depended_by:
-  - target: web/static/js/chat.js
-    type: calls
-  - target: web/static/js/search.js
-    type: calls
-
+- target: web/static/js/chat.js
+  type: calls
+- target: web/static/js/search.js
+  type: calls
+- target: web/static/js/chat.js
+  type: called_by
 last_verified: 2026-03-11
 created_by: unknown
+last_enriched: '2026-03-28'

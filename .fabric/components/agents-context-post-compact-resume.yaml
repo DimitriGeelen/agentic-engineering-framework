@@ -8,6 +8,13 @@ purpose: Session Resume Hook — Reinject structured context on session recovery
 depends_on:
 - target: agents/fabric/fabric.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
+depended_by:
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: C-009
+  type: triggers_by

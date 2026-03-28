@@ -3,15 +3,16 @@ name: generate_article
 type: script
 subsystem: watchtower
 location: agents/docgen/generate_article.py
-tags: [docs, docgen]
-
-purpose: "Python implementation for AI-assisted subsystem article generation from fabric cards"
-
+tags:
+- docs
+- docgen
+purpose: Python implementation for AI-assisted subsystem article generation from fabric cards
 depends_on: []
-
 depended_by:
-  - target: agents/docgen/generate-article.sh
-    type: calls
-
+- target: agents/docgen/generate-article.sh
+  type: calls
+- target: agents/docgen/generate-article.sh
+  type: called_by
 last_verified: 2026-03-12
 created_by: T-366
+last_enriched: '2026-03-28'

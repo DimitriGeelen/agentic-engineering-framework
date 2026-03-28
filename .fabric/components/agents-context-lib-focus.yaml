@@ -11,7 +11,9 @@ created_by: unknown
 depended_by:
 - target: C-001
   type: called_by
-last_enriched: '2026-02-21'
+- target: capture-skill
+  type: read_by
+last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'

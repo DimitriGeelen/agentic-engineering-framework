@@ -5,10 +5,12 @@ subsystem: framework-core
 location: lib/inception.sh
 tags: []
 purpose: fw inception - Inception phase workflow
-depends_on: []
+depends_on:
+- target: lib/review.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
 - target: bin/fw
   type: called_by
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'

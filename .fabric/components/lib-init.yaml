@@ -10,10 +10,14 @@ depends_on:
   type: calls
 - target: lib/validate-init.sh
   type: calls
-  description: "Post-init validation at end of fw init"
+  description: Post-init validation at end of fw init
+- target: lib/preflight.sh
+  type: calls
+- target: C-001
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -21,4 +25,8 @@ depended_by:
   type: called_by
 - target: lib/validate-init.sh
   type: reads_tags
-  description: "Parses #@init: tags to determine validation checks"
+  description: 'Parses #@init: tags to determine validation checks'
+- target: lib/upstream.sh
+  type: read_by
+- target: lib/validate-init.sh
+  type: read_by

@@ -10,8 +10,8 @@ tags:
 - hook
 - PostToolUse
 - auto-handover
-purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover
-  at critical, detects compaction, manages inception checkpoints.
+purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages
+  inception checkpoints.
 interfaces:
   input: 'Invoked as PostToolUse hook or CLI: checkpoint.sh {post-tool|reset|status}'
   output: Warnings to stderr, writes state files
@@ -26,6 +26,8 @@ depends_on:
   contract: Same JSON format — updates when re-reading transcript
 - target: agents/handover/handover.sh
   type: calls
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
@@ -35,6 +37,12 @@ depended_by:
   type: called_by
 - target: C-004
   type: called_by
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: bin/claude-fw
+  type: read_by
+- target: C-009
+  type: triggers_by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call
@@ -51,7 +59,7 @@ shared_constants:
   note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

@@ -8,11 +8,17 @@ purpose: 'Flask blueprint: Session'
 depends_on:
 - target: web/shared.py
   type: calls
+- target: web/subprocess_utils.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-02-21'
+last_enriched: '2026-03-28'
 depended_by:
 - target: web/app.py
   type: called_by
 - target: web/app.py
+  type: registered_by
+- target: web/blueprints/__init__.py
+  type: called_by
+- target: web/blueprints/__init__.py
   type: registered_by

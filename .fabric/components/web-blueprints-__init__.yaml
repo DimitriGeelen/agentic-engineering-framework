@@ -5,10 +5,89 @@ subsystem: watchtower
 location: web/blueprints/__init__.py
 tags: []
 purpose: 'Flask blueprint:   Init  '
-depends_on: []
+depends_on:
+- target: web/blueprints/core.py
+  type: calls
+- target: web/blueprints/tasks.py
+  type: calls
+- target: web/blueprints/timeline.py
+  type: calls
+- target: C-003
+  type: calls
+- target: web/blueprints/quality.py
+  type: calls
+- target: web/blueprints/session.py
+  type: calls
+- target: web/blueprints/metrics.py
+  type: calls
+- target: web/blueprints/cockpit.py
+  type: calls
+- target: web/blueprints/inception.py
+  type: calls
+- target: web/blueprints/enforcement.py
+  type: calls
+- target: web/blueprints/risks.py
+  type: calls
+- target: web/blueprints/fabric.py
+  type: calls
+- target: web/blueprints/discoveries.py
+  type: calls
+- target: web/blueprints/docs.py
+  type: calls
+- target: web/blueprints/settings.py
+  type: calls
+- target: web/blueprints/cron.py
+  type: calls
+- target: web/blueprints/api.py
+  type: calls
+- target: web/blueprints/approvals.py
+  type: calls
+- target: web/blueprints/review.py
+  type: calls
+- target: web/blueprints/core.py
+  type: registers
+- target: web/blueprints/tasks.py
+  type: registers
+- target: web/blueprints/timeline.py
+  type: registers
+- target: C-003
+  type: registers
+- target: web/blueprints/quality.py
+  type: registers
+- target: web/blueprints/session.py
+  type: registers
+- target: web/blueprints/metrics.py
+  type: registers
+- target: web/blueprints/cockpit.py
+  type: registers
+- target: web/blueprints/inception.py
+  type: registers
+- target: web/blueprints/enforcement.py
+  type: registers
+- target: web/blueprints/risks.py
+  type: registers
+- target: web/blueprints/fabric.py
+  type: registers
+- target: web/blueprints/discoveries.py
+  type: registers
+- target: web/blueprints/docs.py
+  type: registers
+- target: web/blueprints/settings.py
+  type: registers
+- target: web/blueprints/cron.py
+  type: registers
+- target: web/blueprints/api.py
+  type: registers
+- target: web/blueprints/approvals.py
+  type: registers
+- target: web/blueprints/review.py
+  type: registers
 depended_by:
 - target: web/app.py
   type: imported_by
   note: Python package init; implicitly loaded when app.py imports from web.blueprints.*
+- target: web/app.py
+  type: called_by
 last_verified: 2026-03-01
 created_by: unknown
+last_enriched: '2026-03-28'

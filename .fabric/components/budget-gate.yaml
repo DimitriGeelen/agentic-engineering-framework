@@ -9,8 +9,8 @@ tags:
 - context
 - hook
 - PreToolUse
-purpose: Block Write/Edit/Bash tool execution when context budget reaches critical
-  level (>=170K tokens). Primary enforcement for P-009.
+purpose: Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement
+  for P-009.
 interfaces:
   input: 'stdin JSON from Claude Code PreToolUse hook: {tool_name, tool_input}'
   output: exit 0 (allow) or exit 2 (block)
@@ -23,11 +23,19 @@ depends_on:
   type: reads
   location: agents/context/budget-gate.sh:148
   contract: Text integer — invocation counter for recheck interval
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
   location: .claude/settings.json:54-60
   contract: PreToolUse hook on Write|Edit|Bash
+- target: agents/onboarding-test/test-onboarding.sh
+  type: called_by
+- target: agents/audit/self-audit.sh
+  type: read_by
+- target: C-009
+  type: triggers_by
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
@@ -39,3 +47,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
+last_enriched: '2026-03-28'

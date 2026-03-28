@@ -1,0 +1,14 @@
+id: web/templates/_review_acs.html
+name: _review_acs
+type: fragment
+subsystem: watchtower
+location: web/templates/_review_acs.html
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: web/templates/review.html
+  type: included_by
+last_verified: 2026-03-28
+created_by: unknown
+last_enriched: '2026-03-28'

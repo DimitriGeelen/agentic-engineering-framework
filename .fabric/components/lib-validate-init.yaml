@@ -3,14 +3,21 @@ name: validate-init
 type: script
 subsystem: framework-core
 location: lib/validate-init.sh
-tags: [init, validation, governance]
-
-purpose: "Post-init validation — reads #@init: tags from init.sh and validates each creation unit exists and is correct. Called automatically at end of fw init and available as fw validate-init."
-
+tags:
+- init
+- validation
+- governance
+purpose: 'Post-init validation — reads #@init: tags from init.sh and validates each creation unit exists and is correct. Called
+  automatically at end of fw init and available as fw validate-init.'
 depends_on:
-  - target: lib/init.sh
-    type: reads
-    description: "Parses #@init: tags to determine what to validate"
-
+- target: lib/init.sh
+  type: reads
+  description: 'Parses #@init: tags to determine what to validate'
 last_verified: 2026-03-08
 created_by: unknown
+depended_by:
+- target: bin/fw
+  type: called_by
+- target: lib/init.sh
+  type: called_by
+last_enriched: '2026-03-28'
