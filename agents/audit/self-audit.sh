@@ -249,11 +249,13 @@ if [ ! -f "$SETTINGS_FILE" ]; then
 else
     pass "settings.json exists"
 
-    # Validate JSON
+    # Validate JSON — T-690: use exit code directly, not captured output
     if command -v node >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js" ]; then
-        _json_valid=$(node "$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js" json-get "$SETTINGS_FILE" __validate 2>/dev/null; echo $?)
+        node "$FRAMEWORK_ROOT/lib/ts/dist/fw-util.js" json-get "$SETTINGS_FILE" __validate >/dev/null 2>&1
+        _json_valid=$?
     else
-        _json_valid=$(python3 -c "import json; json.load(open('$SETTINGS_FILE'))" 2>/dev/null; echo $?)
+        python3 -c "import json; json.load(open('$SETTINGS_FILE'))" >/dev/null 2>&1
+        _json_valid=$?
     fi
     if [ "$_json_valid" != "0" ]; then
         fail "settings.json is not valid JSON"
@@ -389,7 +391,13 @@ echo "=== LAYER 5: VERSION CONSISTENCY ==="
 echo ""
 
 # 5.1 FW_VERSION matches root VERSION file
+# T-690: Since T-648, FW_VERSION may be dynamic ($(_derive_version)).
+# Source the relevant functions to evaluate it properly.
 fw_version=$(grep '^FW_VERSION=' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null | sed 's/FW_VERSION="//;s/"//')
+if [[ "$fw_version" == *'$('* ]]; then
+    # Dynamic version — evaluate by running fw version
+    fw_version=$("$FRAMEWORK_ROOT/bin/fw" version 2>/dev/null | grep -oP 'v\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+fi
 if [ -f "$FRAMEWORK_ROOT/VERSION" ]; then
     root_ver=$(cat "$FRAMEWORK_ROOT/VERSION" | tr -d '[:space:]')
     if [ "$root_ver" = "$fw_version" ]; then

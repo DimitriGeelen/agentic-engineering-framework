@@ -35,7 +35,7 @@ _derive_version() {
         echo "dev"
     fi
 }
-FW_VERSION="$(_derive_version)"
+FW_VERSION="1.4.151"
 
 # Colors
 RED='\033[0;31m'
