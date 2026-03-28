@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-448: Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T15:22:15Z
+# ============================================================================
+
+task_id: T-448
+task_name: "Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-12T06:14:02Z
+completed: 2026-03-28T15:22:13Z
+duration_days: 16
+updates_count: 3
+first_commit: 2026-03-28T16:21:45+01:00
+last_commit: 2026-03-28T16:22:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Cron registry v2 — structured YAML, web controls, LLM descriptions. Fix verification commands — check template files instead of hardcoded port
+
+# Key outcomes
+outcomes:
+  - "`.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (active/paused), description. `cron.py` reads from registry YAML instead of parsing `/etc/cron.d/` directly."
+  - "`fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped naming (`agentic-audit-{project-slug}`)."
+  - "API endpoints exist under `/api/v1/cron/`: POST `jobs/<id>/pause` (comments out in cron file), POST `jobs/<id>/resume` (uncomments), POST `jobs/<id>/run` (triggers manual execution). Each returns JSON with updated job state. Pause/resume regenerate the cron file from registry."
+  - "Web UI cron page (`/cron`) shows pause/resume toggle and \"Run Now\" button per job. Controls use confirmation dialogs before executing (Tier B safety model from T-433 Spike 2). Page updates after action without full reload (fetch + DOM update or page refresh)."
+  - "LLM-generated job descriptions: API endpoint GET `/api/v1/cron/jobs/<id>/describe` calls Ollama to generate a human-readable description from the job's command, schedule, and cron file comments. Result is cached in `cron-registry.yaml` under the job's `description` field. Falls back to static description if Ollama is unavailable."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification commands — check template files instead of hardcoded port"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/cron-registry.yaml"
+  - ".tasks/active/T-448-cron-registry-v2-web-ui-controls-registr.md"
+  - "web/blueprints/cron.py"
+  - "web/templates/cron.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T16:21:45"
+    action: "T-448: Cron registry v2 — structured YAML, web controls, LLM descriptions"
+  - time: "2026-03-28T16:22:09"
+    action: "T-448: Fix verification commands — check template files instead of hardcoded port"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23588 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23588
+  commits: 2
+  files_changed: 5
+  lines_added: 594
+  lines_removed: 114
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-448-cron-registry-v2-web-ui-controls-registr.md
+generated_by: context-agent-hybrid

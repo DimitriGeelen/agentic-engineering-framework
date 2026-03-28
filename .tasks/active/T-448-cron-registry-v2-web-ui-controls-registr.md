@@ -4,16 +4,16 @@ name: "Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)"
 description: >
   Follow-up to T-433/T-447: add web-based start/stop/frequency controls, .context/cron-registry.yaml as source of truth, LLM-generated job documentation via Ollama. See docs/reports/T-433-cron-registry-inception.md Option B.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: later
 tags: [watchtower, cron]
-components: []
+components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, web/templates/cron.html]
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-03-28T15:14:09Z
-date_finished: null
+last_update: 2026-03-28T15:22:13Z
+date_finished: 2026-03-28T15:22:13Z
 ---
 
 # T-448: Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)
@@ -81,3 +81,6 @@ grep -q "cron/jobs" web/blueprints/cron.py
 
 ### 2026-03-28T15:14:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T15:22:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
