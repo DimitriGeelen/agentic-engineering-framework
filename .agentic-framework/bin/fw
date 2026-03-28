@@ -422,6 +422,7 @@ show_help() {
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
+    echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
@@ -734,6 +735,47 @@ print(f'{total}|{\",\".join(missing)}')
     else
         echo -e "  ${YELLOW}WARN${NC}  No .mcp.json found (run: fw upgrade to create)"
         warnings=$((warnings + 1))
+    fi
+
+    # Check: status-transitions.yaml integrity (T-588)
+    local transitions_yaml="$FRAMEWORK_ROOT/status-transitions.yaml"
+    if [ -f "$transitions_yaml" ]; then
+        local trans_check
+        trans_check=$(python3 -c "
+import yaml, sys
+d = yaml.safe_load(open('$transitions_yaml'))
+active = set(d.get('statuses', {}).get('active', []))
+legacy = set(d.get('statuses', {}).get('legacy', []))
+all_statuses = active | legacy
+transitions = d.get('transitions', [])
+issues = []
+for t in transitions:
+    if t['from'] not in all_statuses:
+        issues.append('orphaned from: %s' % t['from'])
+    if t['to'] not in all_statuses:
+        issues.append('orphaned to: %s' % t['to'])
+# Check unreachable: statuses with no inbound AND no outbound
+froms = {t['from'] for t in transitions}
+tos = {t['to'] for t in transitions}
+for s in all_statuses:
+    if s not in froms and s not in tos:
+        issues.append('unreachable: %s' % s)
+if issues:
+    print('|'.join(issues))
+else:
+    print('OK|%d' % len(transitions))
+" 2>/dev/null || echo "parse-error")
+        if [ "$trans_check" = "parse-error" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  status-transitions.yaml failed to parse"
+            warnings=$((warnings + 1))
+        elif [[ "$trans_check" == OK* ]]; then
+            local trans_count
+            trans_count=$(echo "$trans_check" | cut -d'|' -f2)
+            echo -e "  ${GREEN}OK${NC}  status-transitions.yaml ($trans_count transitions, no orphaned/unreachable states)"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  status-transitions.yaml integrity: $trans_check"
+            warnings=$((warnings + 1))
+        fi
     fi
 
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
@@ -1596,6 +1638,265 @@ case "$cmd" in
         ;;
     context)
         exec "$AGENTS_DIR/context/context.sh" "$@"
+        ;;
+    cron)
+        # T-448: Cron registry management
+        cron_subcmd="${1:-}"
+        shift || true
+        case "$cron_subcmd" in
+            generate)
+                # Regenerate crontab from registry YAML
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo -e "${RED}ERROR:${NC} No cron registry found at $_cron_registry"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, os, re, sys
+
+project_root = '$PROJECT_ROOT'
+fw_path = '$FRAMEWORK_ROOT/bin/fw'
+registry_file = '$_cron_registry'
+
+data = yaml.safe_load(open(registry_file))
+jobs = data.get('jobs', [])
+
+slug = os.path.basename(project_root).lower()
+slug = re.sub(r'[^a-z0-9_-]', '-', slug)
+cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.crontab')
+cron_install = f'/etc/cron.d/agentic-audit-{slug}'
+
+lines = [
+    f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',
+    f'# Source of truth: {cron_source} (git-tracked)',
+    f'# Installed to: {cron_install}',
+    f'# Project: {project_root}',
+    'SHELL=/bin/bash',
+    'PATH=/usr/local/bin:/usr/bin:/bin',
+    '',
+]
+
+active = paused = 0
+for job in jobs:
+    schedule = job.get('schedule', '')
+    command = job.get('command', '')
+    name = job.get('name', '')
+    status = job.get('status', 'active')
+
+    if command.startswith('fw '):
+        resolved = f'PROJECT_ROOT=\"{project_root}\" \"{fw_path}\" {command[3:]}'
+    else:
+        # All non-fw commands run from project root (relative paths need it)
+        resolved = f'cd \"{project_root}\" && {command}'
+
+    if '2>/dev/null' not in resolved:
+        resolved += ' 2>/dev/null'
+
+    lines.append(f'# {name}')
+    if status == 'paused':
+        lines.append(f'# PAUSED: {schedule} root {resolved}')
+        paused += 1
+    else:
+        lines.append(f'{schedule} root {resolved}')
+        active += 1
+    lines.append('')
+
+os.makedirs(os.path.dirname(cron_source), exist_ok=True)
+with open(cron_source, 'w') as f:
+    f.write('\n'.join(lines))
+
+print(f'Generated {cron_source}')
+print(f'  {active} active, {paused} paused ({len(jobs)} total)')
+print(f'  Install with: fw audit schedule install')
+"
+                ;;
+            status)
+                # Show registry status
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo "No cron registry at $_cron_registry"
+                    exit 0
+                fi
+                python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+jobs = data.get('jobs', [])
+active = sum(1 for j in jobs if j.get('status') == 'active')
+paused = sum(1 for j in jobs if j.get('status') == 'paused')
+print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
+for j in jobs:
+    s = j.get('status', 'active')
+    icon = '  ✓' if s == 'active' else '  ‖'
+    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                ;;
+            list)
+                # Alias for status
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo "No cron registry at $_cron_registry"
+                    exit 0
+                fi
+                python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+jobs = data.get('jobs', [])
+active = sum(1 for j in jobs if j.get('status') == 'active')
+paused = sum(1 for j in jobs if j.get('status') == 'paused')
+print(f'Cron registry: {len(jobs)} jobs ({active} active, {paused} paused)')
+for j in jobs:
+    s = j.get('status', 'active')
+    icon = '  ✓' if s == 'active' else '  ‖'
+    print(f'{icon} {j[\"id\"]:25s} {j[\"schedule\"]:20s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                ;;
+            run)
+                # Run a job immediately (T-654)
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                _job_id="${1:-}"
+                if [ -z "$_job_id" ] || [ ! -f "$_cron_registry" ]; then
+                    if [ ! -f "$_cron_registry" ]; then
+                        echo -e "${RED}ERROR:${NC} No cron registry at $_cron_registry"
+                        exit 1
+                    fi
+                    echo -e "${RED}Usage:${NC} fw cron run <job-id>"
+                    echo ""
+                    echo "Available jobs:"
+                    python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+for j in data.get('jobs', []):
+    print(f'  {j[\"id\"]:25s} {j.get(\"name\",\"\")}')
+"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, subprocess, time, sys, os
+
+data = yaml.safe_load(open('$_cron_registry'))
+job = None
+for j in data.get('jobs', []):
+    if j.get('id') == '$_job_id':
+        job = j
+        break
+
+if not job:
+    print(f'ERROR: Job \"$_job_id\" not found in registry', file=sys.stderr)
+    sys.exit(1)
+
+command = job.get('command', '')
+if not command:
+    print('ERROR: Job has no command', file=sys.stderr)
+    sys.exit(1)
+
+# Resolve fw commands
+if command.startswith('fw '):
+    command = f'$FRAMEWORK_ROOT/bin/fw {command[3:]}'
+elif command.startswith('find '):
+    command = f'cd \"$PROJECT_ROOT\" && {command}'
+
+print(f'Running: {job.get(\"name\", \"\")} ({job[\"id\"]})')
+print(f'Command: {command}')
+print()
+
+start = time.time()
+try:
+    result = subprocess.run(
+        command, shell=True, capture_output=True, text=True,
+        timeout=120, cwd='$PROJECT_ROOT',
+        env={**os.environ, 'PROJECT_ROOT': '$PROJECT_ROOT'}
+    )
+    elapsed = time.time() - start
+    if result.stdout:
+        # Show last 10 lines of output
+        lines = result.stdout.strip().split('\n')
+        for line in lines[-10:]:
+            print(f'  {line}')
+    if result.stderr and result.returncode != 0:
+        for line in result.stderr.strip().split('\n')[-5:]:
+            print(f'  STDERR: {line}')
+    print()
+    print(f'Exit: {result.returncode} ({elapsed:.1f}s)')
+    sys.exit(result.returncode)
+except subprocess.TimeoutExpired:
+    print('ERROR: Command timed out after 120s', file=sys.stderr)
+    sys.exit(124)
+"
+                ;;
+            pause|resume)
+                # Pause or resume a job (T-655)
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                _job_id="${1:-}"
+                _action="$cron_subcmd"
+                _new_status="paused"
+                [ "$_action" = "resume" ] && _new_status="active"
+
+                if [ -z "$_job_id" ] || [ ! -f "$_cron_registry" ]; then
+                    if [ ! -f "$_cron_registry" ]; then
+                        echo -e "${RED}ERROR:${NC} No cron registry at $_cron_registry"
+                        exit 1
+                    fi
+                    echo -e "${RED}Usage:${NC} fw cron $_action <job-id>"
+                    echo ""
+                    echo "Available jobs:"
+                    python3 -c "
+import yaml
+data = yaml.safe_load(open('$_cron_registry'))
+for j in data.get('jobs', []):
+    s = j.get('status', 'active')
+    print(f'  {j[\"id\"]:25s} [{s}]  {j.get(\"name\",\"\")}')
+"
+                    exit 1
+                fi
+                python3 -c "
+import yaml, sys
+
+data = yaml.safe_load(open('$_cron_registry'))
+job = None
+for j in data.get('jobs', []):
+    if j.get('id') == '$_job_id':
+        job = j
+        break
+
+if not job:
+    print(f'ERROR: Job \"$_job_id\" not found', file=sys.stderr)
+    sys.exit(1)
+
+old_status = job.get('status', 'active')
+new_status = '$_new_status'
+if old_status == new_status:
+    print(f'Job \"{job[\"id\"]}\" is already {new_status}')
+    sys.exit(0)
+
+job['status'] = new_status
+with open('$_cron_registry', 'w') as f:
+    yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+print(f'{\"Paused\" if new_status == \"paused\" else \"Resumed\"}: {job.get(\"name\", job[\"id\"])}')
+print(f'  Status: {old_status} → {new_status}')
+print(f'  Run \"fw cron generate\" to update the crontab file')
+"
+                ;;
+            ""|help|-h|--help)
+                echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
+                echo ""
+                echo "Subcommands:"
+                echo "  generate    Regenerate crontab from registry YAML"
+                echo "  status      Show registry status (jobs, active/paused)"
+                echo "  list        Alias for status"
+                echo "  run <id>    Run a job immediately"
+                echo "  pause <id>  Pause a job (comments out in crontab)"
+                echo "  resume <id> Resume a paused job"
+                echo ""
+                echo "Registry: .context/cron-registry.yaml"
+                echo "Web UI:   http://localhost:3000/cron"
+                ;;
+            *)
+                echo -e "${RED}Unknown cron subcommand:${NC} $cron_subcmd"
+                echo "Run 'fw cron help' for usage."
+                exit 1
+                ;;
+        esac
         ;;
     docs)
         if [ "${1:-}" = "article" ]; then
