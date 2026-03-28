@@ -4,16 +4,16 @@ name: "Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.a
 description: >
   Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.agentic-framework
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-28T16:25:21Z
-last_update: 2026-03-28T16:25:21Z
-date_finished: null
+last_update: 2026-03-28T16:27:51Z
+date_finished: 2026-03-28T16:27:51Z
 ---
 
 # T-660: Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.agentic-framework
@@ -73,3 +73,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-660-fix-global-install-sync--upgrade-also-sy.md
 - **Context:** Initial task creation
+
+### 2026-03-28T16:27:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
