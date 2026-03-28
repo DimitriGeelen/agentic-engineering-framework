@@ -737,6 +737,29 @@ print(f'{total}|{\",\".join(missing)}')
         warnings=$((warnings + 1))
     fi
 
+    # Check: Global install deprecation (T-666/T-662)
+    local global_dir="$HOME/.agentic-framework"
+    local local_fw="$HOME/.local/bin/fw"
+    if [ -d "$global_dir" ]; then
+        if [ -L "$local_fw" ]; then
+            local link_target
+            link_target=$(readlink -f "$local_fw" 2>/dev/null || echo "")
+            if [[ "$link_target" == *".agentic-framework/bin/fw"* ]]; then
+                echo -e "  ${YELLOW}WARN${NC}  Global install: ~/.local/bin/fw symlinks to stale $global_dir"
+                echo -e "        Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
+                warnings=$((warnings + 1))
+            else
+                echo -e "  ${GREEN}OK${NC}  fw shim installed (global install at $global_dir is unused)"
+            fi
+        elif [ -f "$local_fw" ] && grep -q 'find_fw' "$local_fw" 2>/dev/null; then
+            echo -e "  ${GREEN}OK${NC}  fw shim installed (global install at $global_dir can be removed)"
+        else
+            echo -e "  ${GREEN}OK${NC}  No global install dependency detected"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  No global install at $global_dir"
+    fi
+
     # Check: status-transitions.yaml integrity (T-588)
     local transitions_yaml="$FRAMEWORK_ROOT/status-transitions.yaml"
     if [ -f "$transitions_yaml" ]; then
