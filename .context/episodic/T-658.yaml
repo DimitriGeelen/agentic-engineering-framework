@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-658: Fix cron audit retention — use filename date parsing instead of mtime
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T16:09:07Z
+# ============================================================================
+
+task_id: T-658
+task_name: "Fix cron audit retention — use filename date parsing instead of mtime"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T16:05:19Z
+completed: 2026-03-28T16:09:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T17:08:38+01:00
+last_commit: 2026-03-28T17:08:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix cron retention — filename-based date parsing replaces unreliable mtime
+
+# Key outcomes
+outcomes:
+  - "Retention command in cron-registry.yaml uses filename-based date parsing"
+  - "`fw cron generate` produces updated retention command in crontab"
+  - "Stale files (>7 days by filename) cleaned up (669 files removed)"
+  - "LATEST-CRON.yaml preserved (not deleted by retention)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix cron retention — filename-based date parsing replaces unreliable mtime"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".tasks/active/T-658-fix-cron-audit-retention--use-filename-d.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T17:08:38"
+    action: "T-658: Fix cron retention — filename-based date parsing replaces unreliable mtime"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 76
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-658-fix-cron-audit-retention--use-filename-d.md
+generated_by: context-agent-hybrid
