@@ -4,16 +4,16 @@ name: "Bash task gate — safe-command allowlist + write-pattern detection in ch
 description: >
   T-630 GO build task 1: Add Bash to check-active-task.sh PreToolUse matcher. Implement safe-command allowlist (27 patterns, 6 categories), write-pattern detection, FW_SAFE_MODE escape hatch. ~28 lines added to check-active-task.sh + new lib/safe-commands.sh (~80 lines). Evidence: 7920 Bash invocations analyzed, <0.5% FP rate. Related: T-630, T-619.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T09:39:20Z
-last_update: 2026-03-28T09:39:20Z
-date_finished: null
+last_update: 2026-03-28T09:44:32Z
+date_finished: 2026-03-28T09:44:32Z
 ---
 
 # T-650: Bash task gate — safe-command allowlist + write-pattern detection in check-active-task.sh
@@ -71,3 +71,6 @@ The code is built, but `.claude/settings.json` needs the matcher updated from `W
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-650-bash-task-gate--safe-command-allowlist--.md
 - **Context:** Initial task creation
+
+### 2026-03-28T09:44:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
