@@ -243,6 +243,7 @@ cmd_dispatch() {
     done
 
     [ -z "$name" ] && die "Missing --name"
+    [ -z "$task" ] && die "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)"
     [ -z "$prompt" ] && [ -z "$prompt_file" ] && die "Missing --prompt or --prompt-file"
 
     if [ -n "$prompt_file" ]; then
