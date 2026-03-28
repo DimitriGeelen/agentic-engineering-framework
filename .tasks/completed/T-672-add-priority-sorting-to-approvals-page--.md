@@ -4,7 +4,7 @@ name: "Add priority sorting to approvals page — urgent/stale items first, rubb
 description: >
   Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T19:47:59Z
-last_update: 2026-03-28T19:47:59Z
-date_finished: null
+last_update: 2026-03-28T19:50:01Z
+date_finished: 2026-03-28T19:50:01Z
 ---
 
 # T-672: Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last
@@ -50,3 +50,6 @@ grep -q 'sort_key\|priority' web/blueprints/approvals.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-672-add-priority-sorting-to-approvals-page--.md
 - **Context:** Initial task creation
+
+### 2026-03-28T19:50:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
