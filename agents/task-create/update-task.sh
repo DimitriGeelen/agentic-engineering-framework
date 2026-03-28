@@ -22,6 +22,9 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Source enumerations (single source of truth)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
 
+# Per-key locking for concurrent task updates (T-587)
+source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
+
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, FORCE, colors
 
@@ -281,6 +284,12 @@ fi
 if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
     echo -e "${RED}ERROR: Task $TASK_ID not found${NC}" >&2
     exit 1
+fi
+
+# Acquire per-task lock to prevent concurrent modifications (T-587)
+if type keylock_acquire &>/dev/null; then
+    keylock_acquire "$TASK_ID"
+    trap 'keylock_release "$TASK_ID" 2>/dev/null' EXIT
 fi
 
 # Read current state
