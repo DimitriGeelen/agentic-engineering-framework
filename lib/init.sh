@@ -129,6 +129,20 @@ do_init() {
     #@init: dir-3yn .context/audits/cron
     # Cron audit results
     mkdir -p "$target_dir/.context/audits/cron"
+    #@init: dir-7cr .context/cron
+    # Git-tracked cron definitions
+    mkdir -p "$target_dir/.context/cron"
+
+    #@init: yaml-8cr .context/cron-registry.yaml jobs
+    # Cron registry — structured source of truth for scheduled jobs (T-448)
+    if [ ! -f "$target_dir/.context/cron-registry.yaml" ]; then
+        cat > "$target_dir/.context/cron-registry.yaml" << 'CRONREGEOF'
+# Cron Registry — Structured source of truth for scheduled jobs (T-448)
+# Read by web/blueprints/cron.py and fw cron generate.
+# Editable by humans, controllable via Watchtower web UI.
+jobs: []
+CRONREGEOF
+    fi
 
     #@init: yaml-5rc .context/bypass-log.yaml bypasses
     # Git hook bypass log
