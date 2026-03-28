@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-681: Add TermLink MCP server to fw init default MCP config
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T22:38:29Z
+# ============================================================================
+
+task_id: T-681
+task_name: "Add TermLink MCP server to fw init default MCP config"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T21:37:36Z
+completed: 2026-03-28T22:38:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-28T23:38:22+01:00
+last_commit: 2026-03-28T23:38:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add TermLink MCP server to fw init and upgrade default config
+
+# Key outcomes
+outcomes:
+  - "`init.sh` seeds `.mcp.json` with termlink MCP entry using bare `termlink` (PATH-based)"
+  - "`upgrade.sh` recommended_servers includes termlink"
+  - "`upgrade.sh` defaults dict includes termlink config"
+  - "`upgrade.sh` create-from-scratch MCP JSON includes termlink"
+  - "Existing projects get termlink added on `fw upgrade` (reconciliation)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/init.sh"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-681-add-termlink-mcp-server-to-fw-init-defau.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T23:38:22"
+    action: "T-681: Add TermLink MCP server to fw init and upgrade default config"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 60 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 60
+  commits: 1
+  files_changed: 3
+  lines_added: 28
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-681-add-termlink-mcp-server-to-fw-init-defau.md
+generated_by: context-agent-hybrid

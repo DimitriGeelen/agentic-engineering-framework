@@ -4,16 +4,16 @@ name: "Add TermLink MCP server to fw init default MCP config"
 description: >
   F-5: fw init seeds .mcp.json with context7 and playwright but not TermLink. TermLink MCP is the primary tool for cross-project isolation (Path C). Add termlink mcp serve to default MCP config during init. Discovered during T-679.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-28T21:37:36Z
-last_update: 2026-03-28T22:36:58Z
-date_finished: null
+last_update: 2026-03-28T22:38:28Z
+date_finished: 2026-03-28T22:38:28Z
 ---
 
 # T-681: Add TermLink MCP server to fw init default MCP config
@@ -58,3 +58,6 @@ grep -q "termlink" lib/upgrade.sh
 
 ### 2026-03-28T22:36:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-28T22:38:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
