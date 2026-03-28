@@ -20,7 +20,7 @@ date_finished: 2026-03-15T22:32:34Z
 
 ## Context
 
-Research artifact: `docs/claude-code-settings.md`. Prior NO-GO — revisiting with current state (portable hooks, vendored model). Question: which of the 6 recommendations are actionable, and what settings does `fw init` need to handle for new adopters?
+Research artifact: `docs/claude-code-settings.md`, `docs/reports/T-435-claude-code-settings-inception.md`. Prior NO-GO — revisiting with current state (portable hooks, vendored model). Question: which of the 6 recommendations are actionable, and what settings does `fw init` need to handle for new adopters?
 
 ## Acceptance Criteria
 
