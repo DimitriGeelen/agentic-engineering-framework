@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-656: Update CLAUDE.md cron reference with full command set
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T15:55:55Z
+# ============================================================================
+
+task_id: T-656
+task_name: "Update CLAUDE.md cron reference with full command set"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T15:47:23Z
+completed: 2026-03-28T15:48:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T16:48:38+01:00
+last_commit: 2026-03-28T16:48:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add full fw cron command set to CLAUDE.md Quick Reference. Complete — CLAUDE.md cron reference updated
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md Quick Reference includes all 6 fw cron subcommands"
+  - "Brief cron registry documentation added to relevant section"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-656-update-claudemd-cron-reference-with-full.md"
+  - ".tasks/completed/T-656-update-claudemd-cron-reference-with-full.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T16:48:38"
+    action: "T-656: Add full fw cron command set to CLAUDE.md Quick Reference"
+  - time: "2026-03-28T16:48:52"
+    action: "T-656: Complete — CLAUDE.md cron reference updated"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 3
+  lines_added: 83
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-656-update-claudemd-cron-reference-with-full.md
+generated_by: context-agent-hybrid
