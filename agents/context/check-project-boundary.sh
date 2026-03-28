@@ -106,7 +106,7 @@ except:
     [ -z "$COMMAND" ] && exit 0
 
     # Quick pre-filter: if no absolute path reference, skip Python analysis
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/)'; then
+    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|>+\s*/|tee\s+/|\.agentic-framework/bin/fw)'; then
         exit 0
     fi
 
