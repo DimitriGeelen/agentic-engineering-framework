@@ -1,0 +1,176 @@
+<h1>Scheduled Jobs</h1>
+
+<p class="muted">
+    {{ total }} job{{ 's' if total != 1 else '' }}
+    &middot; {{ active_count }} active
+    {% if paused_count %}&middot; <span style="color: var(--pico-mark-background-color);">{{ paused_count }} paused</span>{% endif %}
+</p>
+
+<table role="grid">
+    <thead>
+        <tr>
+            <th>Job</th>
+            <th>Schedule</th>
+            <th>Status</th>
+            <th>Last Run</th>
+            <th>Result</th>
+            <th>Next</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr id="row-{{ job.id }}" {% if job.status == 'paused' %}style="opacity: 0.6;"{% endif %}>
+            <td>
+                <strong>{{ job.name }}</strong>
+                {% if job.description %}
+                    <br><small class="muted">{{ job.description }}</small>
+                {% endif %}
+            </td>
+            <td>
+                <code>{{ job.schedule_human }}</code>
+                <br><small class="muted">{{ job.schedule }}</small>
+            </td>
+            <td>
+                {% if job.status == 'active' %}
+                    <span style="color: var(--pico-ins-color);">active</span>
+                {% else %}
+                    <span style="color: var(--pico-mark-background-color);">paused</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.has_output %}
+                    {{ job.last_run }}
+                {% else %}
+                    <span class="muted">no data</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.has_output %}
+                    <span style="color: var(--pico-ins-color);">{{ job.last_pass }} pass</span>
+                    {% if job.last_warn %}
+                        &middot; <span style="color: var(--pico-mark-background-color);">{{ job.last_warn }} warn</span>
+                    {% endif %}
+                    {% if job.last_fail %}
+                        &middot; <span style="color: var(--pico-del-color);">{{ job.last_fail }} fail</span>
+                    {% endif %}
+                {% else %}
+                    <span class="muted">&mdash;</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.status == 'active' and job.next_run %}
+                    {{ job.next_run }}
+                {% elif job.status == 'paused' %}
+                    <span class="muted">paused</span>
+                {% else %}
+                    <span class="muted">&mdash;</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if job.status == 'active' %}
+                    <button class="outline secondary" style="padding: 0.2em 0.6em; font-size: 0.85em;"
+                            onclick="cronAction('{{ job.id }}', 'pause')">Pause</button>
+                {% else %}
+                    <button class="outline" style="padding: 0.2em 0.6em; font-size: 0.85em; color: var(--pico-ins-color); border-color: var(--pico-ins-color);"
+                            onclick="cronAction('{{ job.id }}', 'resume')">Resume</button>
+                {% endif %}
+                <button class="outline contrast" style="padding: 0.2em 0.6em; font-size: 0.85em;"
+                        onclick="cronAction('{{ job.id }}', 'run')">Run Now</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if not jobs %}
+<p class="muted">No jobs in cron registry. Create <code>.context/cron-registry.yaml</code> or run <code>fw cron generate</code>.</p>
+{% endif %}
+
+<!-- Confirmation dialog -->
+<dialog id="cron-confirm-dialog">
+    <article>
+        <header>
+            <h3 id="cron-dialog-title">Confirm Action</h3>
+        </header>
+        <p id="cron-dialog-body"></p>
+        <footer>
+            <button class="secondary" onclick="document.getElementById('cron-confirm-dialog').close()">Cancel</button>
+            <button id="cron-dialog-confirm" onclick="cronConfirmed()">Confirm</button>
+        </footer>
+    </article>
+</dialog>
+
+<!-- Result toast -->
+<div id="cron-toast" style="display:none; position:fixed; bottom:1em; right:1em; padding:0.8em 1.2em; border-radius:0.5em; background:var(--pico-card-background-color); border:1px solid var(--pico-muted-border-color); z-index:100; max-width:400px;">
+    <span id="cron-toast-msg"></span>
+</div>
+
+<details>
+    <summary>How this works</summary>
+    <p>
+        This page reads from <code>.context/cron-registry.yaml</code> — the structured source of truth for scheduled jobs.
+        <strong>Pause</strong> comments out the job in the crontab. <strong>Resume</strong> re-enables it.
+        <strong>Run Now</strong> triggers the job immediately. Changes are written to the registry and synced to <code>/etc/cron.d/</code>.
+    </p>
+    <p>
+        CLI: <code>fw cron generate</code> regenerates crontab from registry.
+        <code>fw audit schedule install</code> copies the crontab to <code>/etc/cron.d/</code>.
+    </p>
+</details>
+
+<script>
+let pendingAction = null;
+
+function cronAction(jobId, action) {
+    const labels = {pause: 'Pause', resume: 'Resume', run: 'Run Now'};
+    const messages = {
+        pause: `Pause job "${jobId}"? The job will be commented out in the crontab.`,
+        resume: `Resume job "${jobId}"? The job will be re-enabled in the crontab.`,
+        run: `Run job "${jobId}" now? This will execute the command immediately.`
+    };
+
+    pendingAction = {jobId, action};
+    document.getElementById('cron-dialog-title').textContent = labels[action] + ' Job';
+    document.getElementById('cron-dialog-body').textContent = messages[action];
+    document.getElementById('cron-confirm-dialog').showModal();
+}
+
+function cronConfirmed() {
+    if (!pendingAction) return;
+    const {jobId, action} = pendingAction;
+    pendingAction = null;
+    document.getElementById('cron-confirm-dialog').close();
+
+    const btn = event.target;
+    btn.setAttribute('aria-busy', 'true');
+
+    fetch(`/api/v1/cron/jobs/${jobId}/${action}`, {method: 'POST'})
+        .then(r => r.json())
+        .then(data => {
+            btn.removeAttribute('aria-busy');
+            if (data.error) {
+                showToast('Error: ' + data.error, true);
+            } else if (action === 'run') {
+                const code = data.exit_code === 0 ? 'OK' : `exit ${data.exit_code}`;
+                showToast(`Job ran: ${code}`, data.exit_code !== 0);
+            } else {
+                showToast(`Job ${action}d successfully`);
+                setTimeout(() => location.reload(), 500);
+            }
+        })
+        .catch(err => {
+            btn.removeAttribute('aria-busy');
+            showToast('Request failed: ' + err, true);
+        });
+}
+
+function showToast(msg, isError) {
+    const el = document.getElementById('cron-toast');
+    const msgEl = document.getElementById('cron-toast-msg');
+    msgEl.textContent = msg;
+    el.style.display = 'block';
+    el.style.borderColor = isError ? 'var(--pico-del-color)' : 'var(--pico-ins-color)';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+</script>
