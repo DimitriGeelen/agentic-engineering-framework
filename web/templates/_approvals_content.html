@@ -120,6 +120,12 @@
             {{ t.name }}
         </div>
         <div style="display:flex; align-items:center; gap:0.5rem;">
+            {% if t.age_days is defined %}
+            <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
+                  {% if t.is_stale %}title="Stale: waiting >7 days"{% endif %}>
+                {{ t.age_days }}d{% if t.is_stale %} &#9888;{% endif %}
+            </span>
+            {% endif %}
             <a href="/review/{{ t.task_id }}" title="Mobile review" style="font-size:0.75rem; text-decoration:none; padding:0.15rem 0.4rem; border:1px solid var(--pico-muted-border-color); border-radius:3px;">&#128241;</a>
             <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
         </div>

@@ -166,9 +166,12 @@ def _load_pending_go_decisions():
 def _load_pending_human_acs():
     """Scan active tasks for unchecked Human ACs.
 
-    Returns list of dicts with: task_id, name, status, human_acs list.
-    Only includes tasks where at least one Human AC is unchecked.
+    Returns list of dicts with: task_id, name, status, human_acs list, age_days, is_stale, sort_priority.
+    Sorted by priority: REVIEW first, then stale (>7d), then RUBBER-STAMP.
     """
+    import time
+    from datetime import datetime
+
     from web.blueprints.tasks import _parse_acceptance_criteria
 
     task_dir = PROJECT_ROOT / ".tasks" / "active"
@@ -176,6 +179,7 @@ def _load_pending_human_acs():
         return []
 
     results = []
+    now = time.time()
 
     for f in sorted(task_dir.glob("T-*.md")):
         try:
@@ -193,13 +197,37 @@ def _load_pending_human_acs():
         if not unchecked:
             continue
 
+        # Calculate age from date_finished or last_update
+        age_days = 0
+        for date_field in ("date_finished", "last_update", "created"):
+            ts = fm.get(date_field, "")
+            if ts:
+                try:
+                    dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+                    age_days = int((now - dt.timestamp()) / 86400)
+                    break
+                except (ValueError, OSError):
+                    pass
+
+        is_stale = age_days > 7
+
+        # Priority: has REVIEW AC unchecked → 0, stale → 1, RUBBER-STAMP only → 2
+        has_review = any(ac.get("confidence") == "review" and not ac["checked"]
+                        for ac in human_acs)
+        sort_priority = 0 if has_review else (1 if is_stale else 2)
+
         results.append({
             "task_id": fm.get("id", ""),
             "name": fm.get("name", ""),
             "status": fm.get("status", ""),
             "human_acs": human_acs,
+            "age_days": age_days,
+            "is_stale": is_stale,
+            "sort_priority": sort_priority,
         })
 
+    # Sort: priority ascending, then age descending (oldest first within group)
+    results.sort(key=lambda t: (t["sort_priority"], -t["age_days"]))
     return results
 
 
