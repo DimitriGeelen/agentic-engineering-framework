@@ -292,6 +292,17 @@ case "${1:-}" in
                         rm -f "$pending"
                     fi
                 done
+
+                # --- Stale resolved cleanup (T-694) ---
+                # Remove resolved files older than 7 days (bypass-log.yaml is the permanent record)
+                STALE_RESOLVED_AGE=604800
+                for resolved_old in "$APPROVALS_DIR"/resolved-*.yaml; do
+                    [ -f "$resolved_old" ] || continue
+                    file_age=$(( $(date +%s) - $(stat -c %Y "$resolved_old" 2>/dev/null || echo 0) ))
+                    if [ "$file_age" -gt "$STALE_RESOLVED_AGE" ]; then
+                        rm -f "$resolved_old"
+                    fi
+                done
             fi
         fi
 
@@ -345,6 +356,7 @@ case "${1:-}" in
         echo "0" > "$COUNTER_FILE"
         rm -f "$PREV_TOKENS_FILE"
         rm -f "$CONTEXT_DIR/working/.restart-requested"  # T-186: clean up restart signal
+        rm -f "$CONTEXT_DIR/working/.approval-notified"  # T-694: reset approval notification tracker
         echo "Counter reset."
         ;;
     status)
