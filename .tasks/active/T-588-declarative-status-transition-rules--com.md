@@ -4,7 +4,7 @@ name: "Declarative status transition rules — compiled ACL pattern for task sta
 description: >
   Currently update-task.sh has inline case/esac logic for allowed status transitions. OpenClaw compiles declarative scope groups to O(1) Map lookup at startup (method-scopes.ts, 20 LOC compilation). Adopt: declare allowed transitions in status-transitions.yaml, compile to lookup, validate in update-task.sh. Benefits: visible rules (anyone can read YAML), verifiable (fw doctor validates no orphaned states), extensible (edit YAML not bash), auditable (Watchtower displays state machine). Connects to T-511 governance.yaml (another governance declaration). Implementation language pending T-586. Research source: /opt/openclaw-evaluation/.context/working/round2-T-022.md (Pattern 4, rated 5 stars directly adoptable). OpenClaw source: src/gateway/method-scopes.ts. Related: T-586 (language strategy), T-511 (governance.yaml), agents/task-create/update-task.sh (current inline logic).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: later
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:35:28Z
-last_update: 2026-03-23T21:35:28Z
+last_update: 2026-03-28T12:28:15Z
 date_finished: null
 ---
 
@@ -30,11 +30,11 @@ Key files:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A `status-transitions.yaml` file exists declaring all valid statuses, legacy statuses, and allowed transitions in human-readable YAML (no bash syntax)
-- [ ] `lib/enums.sh` reads `status-transitions.yaml` at source-time and populates an associative array for O(1) transition lookup (replaces the linear `VALID_TRANSITIONS` array scan)
-- [ ] `is_valid_transition()`, `valid_transitions_for()`, `is_valid_status()`, and `is_recognized_status()` continue to work with identical behavior (backward compatible — no callers need changes)
-- [ ] `fw doctor` includes a check that `status-transitions.yaml` has no orphaned states (states in transitions not in the statuses list) and no unreachable states (statuses with no inbound or outbound transition)
-- [ ] All 8 existing transitions from `lib/enums.sh` are faithfully represented in the YAML file (including the 2 legacy-compat transitions)
+- [x] A `status-transitions.yaml` file exists declaring all valid statuses, legacy statuses, and allowed transitions in human-readable YAML (no bash syntax)
+- [x] `lib/enums.sh` reads `status-transitions.yaml` at source-time and populates an associative array for O(1) transition lookup (replaces the linear `VALID_TRANSITIONS` array scan)
+- [x] `is_valid_transition()`, `valid_transitions_for()`, `is_valid_status()`, and `is_recognized_status()` continue to work with identical behavior (backward compatible — no callers need changes)
+- [x] `fw doctor` includes a check that `status-transitions.yaml` has no orphaned states (states in transitions not in the statuses list) and no unreachable states (statuses with no inbound or outbound transition)
+- [x] All 8 existing transitions from `lib/enums.sh` are faithfully represented in the YAML file (including the 2 legacy-compat transitions)
 
 ## Verification
 
@@ -64,3 +64,6 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-588-declarative-status-transition-rules--com.md
 - **Context:** Initial task creation
+
+### 2026-03-28T12:28:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

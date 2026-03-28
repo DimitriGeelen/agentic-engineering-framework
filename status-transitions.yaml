@@ -1,0 +1,58 @@
+# status-transitions.yaml — Declarative task state machine
+# T-588: Machine-readable status transitions for framework governance
+#
+# Read by lib/enums.sh at source-time. Compiled to O(1) associative array lookup.
+# Editable by humans, verifiable by fw doctor, displayable in Watchtower.
+
+statuses:
+  active:
+    - captured
+    - started-work
+    - issues
+    - work-completed
+  legacy:
+    - refined
+    - blocked
+
+workflow_types:
+  - specification
+  - design
+  - build
+  - test
+  - refactor
+  - decommission
+  - inception
+
+horizons:
+  - now
+  - next
+  - later
+
+transitions:
+  # from → to (each entry is an allowed state transition)
+  - from: captured
+    to: started-work
+
+  - from: started-work
+    to: captured
+
+  - from: started-work
+    to: issues
+
+  - from: started-work
+    to: work-completed
+
+  - from: issues
+    to: started-work
+
+  - from: issues
+    to: work-completed
+
+  # Legacy compatibility (accepted on read, not settable via update-task)
+  - from: refined
+    to: started-work
+    legacy: true
+
+  - from: blocked
+    to: started-work
+    legacy: true

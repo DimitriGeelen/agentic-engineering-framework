@@ -736,6 +736,47 @@ print(f'{total}|{\",\".join(missing)}')
         warnings=$((warnings + 1))
     fi
 
+    # Check: status-transitions.yaml integrity (T-588)
+    local transitions_yaml="$FRAMEWORK_ROOT/status-transitions.yaml"
+    if [ -f "$transitions_yaml" ]; then
+        local trans_check
+        trans_check=$(python3 -c "
+import yaml, sys
+d = yaml.safe_load(open('$transitions_yaml'))
+active = set(d.get('statuses', {}).get('active', []))
+legacy = set(d.get('statuses', {}).get('legacy', []))
+all_statuses = active | legacy
+transitions = d.get('transitions', [])
+issues = []
+for t in transitions:
+    if t['from'] not in all_statuses:
+        issues.append('orphaned from: %s' % t['from'])
+    if t['to'] not in all_statuses:
+        issues.append('orphaned to: %s' % t['to'])
+# Check unreachable: statuses with no inbound AND no outbound
+froms = {t['from'] for t in transitions}
+tos = {t['to'] for t in transitions}
+for s in all_statuses:
+    if s not in froms and s not in tos:
+        issues.append('unreachable: %s' % s)
+if issues:
+    print('|'.join(issues))
+else:
+    print('OK|%d' % len(transitions))
+" 2>/dev/null || echo "parse-error")
+        if [ "$trans_check" = "parse-error" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  status-transitions.yaml failed to parse"
+            warnings=$((warnings + 1))
+        elif [[ "$trans_check" == OK* ]]; then
+            local trans_count
+            trans_count=$(echo "$trans_check" | cut -d'|' -f2)
+            echo -e "  ${GREEN}OK${NC}  status-transitions.yaml ($trans_count transitions, no orphaned/unreachable states)"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  status-transitions.yaml integrity: $trans_check"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
     if [ -f "$settings_file" ]; then
         local hook_result
