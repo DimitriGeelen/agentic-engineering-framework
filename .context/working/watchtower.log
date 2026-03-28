@@ -10,9 +10,7 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-192.168.10.119 - - [28/Mar/2026 21:17:23] "GET /review/T-667/acs HTTP/1.1" 200 -
-127.0.0.1 - - [28/Mar/2026 21:17:24] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [28/Mar/2026 21:17:24] "GET /health HTTP/1.1" 200 -
-127.0.0.1 - - [28/Mar/2026 21:17:31] "GET /tasks/T-674 HTTP/1.1" 200 -
-127.0.0.1 - - [28/Mar/2026 21:17:31] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [28/Mar/2026 21:17:44] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [28/Mar/2026 21:21:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Mar/2026 21:21:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Mar/2026 21:21:19] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Mar/2026 21:21:26] "GET /review/T-671 HTTP/1.1" 200 -

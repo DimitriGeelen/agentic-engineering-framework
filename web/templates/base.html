@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ page_title | default("Watchtower") }} — Agentic Engineering Framework</title>
+    <script>
+        (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
@@ -298,6 +301,14 @@
                     </svg>
                 </a>
             </li>
+
+            <li>
+                <button class="theme-toggle" onclick="wtToggleTheme()" aria-label="Toggle dark mode"
+                        title="Toggle dark mode" style="background:none;border:none;padding:0.4rem;cursor:pointer;color:var(--pico-color);line-height:1;font-size:1.1rem;">
+                    <span class="theme-icon-light" style="display:none;">&#9790;</span>
+                    <span class="theme-icon-dark" style="display:none;">&#9728;</span>
+                </button>
+            </li>
             </span>
 
         </ul>
@@ -499,6 +510,23 @@
                 hljs.highlightElement(block);
             });
         });
+
+        // Theme toggle
+        function wtUpdateThemeIcons() {
+            var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            var lightIcon = document.querySelector('.theme-icon-light');
+            var darkIcon = document.querySelector('.theme-icon-dark');
+            if (lightIcon) lightIcon.style.display = isDark ? 'none' : 'inline';
+            if (darkIcon) darkIcon.style.display = isDark ? 'inline' : 'none';
+        }
+        function wtToggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('wt-theme', next);
+            wtUpdateThemeIcons();
+        }
+        wtUpdateThemeIcons();
     </script>
 </body>
 </html>

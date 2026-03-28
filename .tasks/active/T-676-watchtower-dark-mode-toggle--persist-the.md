@@ -1,0 +1,70 @@
+---
+id: T-676
+name: "Watchtower dark mode toggle — persist theme preference"
+description: >
+  Watchtower dark mode toggle — persist theme preference
+
+status: work-completed
+workflow_type: build
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-28T20:18:56Z
+last_update: 2026-03-28T20:21:39Z
+date_finished: 2026-03-28T20:21:39Z
+---
+
+# T-676: Watchtower dark mode toggle — persist theme preference
+
+## Context
+
+Pico CSS supports dark mode natively via `data-theme="dark"` on `<html>`. Add a toggle button to the nav bar, persist choice in localStorage.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Theme toggle button in base.html nav bar
+- [x] Theme persisted in localStorage across page loads
+- [x] Standalone templates (review.html) also respect theme preference
+- [x] No flash of wrong theme on page load (script in `<head>`)
+
+### Human
+- [ ] [RUBBER-STAMP] Toggle dark mode and verify it persists across pages
+  **Steps:**
+  1. Open `http://localhost:3000/` in browser
+  2. Click the theme toggle in the nav bar
+  3. Navigate to /approvals, /tasks, /review/T-671
+  **Expected:** Dark mode persists across all pages, no flash of light mode
+  **If not:** Check browser console for localStorage errors
+
+## Verification
+
+# Theme toggle exists in base template
+grep -q 'theme-toggle' web/templates/base.html
+# Theme script in head for flash prevention
+grep -q 'localStorage.*theme' web/templates/base.html
+# Standalone review template also has theme support
+grep -q 'localStorage.*theme' web/templates/review.html
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-28T20:18:56Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-676-watchtower-dark-mode-toggle--persist-the.md
+- **Context:** Initial task creation
+
+### 2026-03-28T20:21:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
