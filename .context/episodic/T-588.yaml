@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-588: Declarative status transition rules — compiled ACL pattern for task state machine
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T15:12:01Z
+# ============================================================================
+
+task_id: T-588
+task_name: "Declarative status transition rules — compiled ACL pattern for task state machine"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T21:35:28Z
+completed: 2026-03-28T12:30:26Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-03-28T13:30:20+01:00
+last_commit: 2026-03-28T13:30:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Declarative status transitions — YAML-driven state machine with O(1) lookup and fw doctor check. Complete — declarative status transitions with YAML source
+
+# Key outcomes
+outcomes:
+  - "A `status-transitions.yaml` file exists declaring all valid statuses, legacy statuses, and allowed transitions in human-readable YAML (no bash syntax)"
+  - "`lib/enums.sh` reads `status-transitions.yaml` at source-time and populates an associative array for O(1) transition lookup (replaces the linear `VALID_TRANSITIONS` array scan)"
+  - "`is_valid_transition()`, `valid_transitions_for()`, `is_valid_status()`, and `is_recognized_status()` continue to work with identical behavior (backward compatible — no callers need changes)"
+  - "`fw doctor` includes a check that `status-transitions.yaml` has no orphaned states (states in transitions not in the statuses list) and no unreachable states (statuses with no inbound or outbound transition)"
+  - "All 8 existing transitions from `lib/enums.sh` are faithfully represented in the YAML file (including the 2 legacy-compat transitions)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/observations/openclaw-pickup-20260327.md"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval.pending"
+  - "lib/enums.sh"
+  - "status-transitions.yaml"
+  - ".tasks/active/T-588-declarative-status-transition-rules--com.md"
+  - ".tasks/completed/T-588-declarative-status-transition-rules--com.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T13:30:20"
+    action: "T-588: Declarative status transitions — YAML-driven state machine with O(1) lookup and fw doctor check"
+  - time: "2026-03-28T13:30:39"
+    action: "T-588: Complete — declarative status transitions with YAML source"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 6654 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6654
+  commits: 3
+  files_changed: 26
+  lines_added: 863
+  lines_removed: 177
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-588-declarative-status-transition-rules--com.md
+generated_by: context-agent-hybrid
