@@ -20,40 +20,33 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Research the AI coding agent governance landscape to position the framework for launch. Understand who the neighbors are (agent runtimes, agent frameworks, dev guardrails, AI safety tools) and where this framework sits relative to them. Research artifact: `docs/reports/T-686-landscape-differentiation.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Research artifact created with landscape categories (A-D)
+- [x] 20+ tools catalogued across categories
+- [x] Competitive positioning matrix (structural vs prompt-based)
+- [x] Evidence-backed vs speculative claims separated
+- [x] GO/NO-GO recommendation with rationale
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Positioning angles resonate — pick preferred angle for launch content
+  **Steps:**
+  1. Read `docs/reports/T-686-landscape-differentiation.md` sections "Positioning Angles" and "Key Differentiation Claims"
+  2. Consider which angle best matches your voice and audience
+  **Expected:** One angle selected (or hybrid), notes on claims to emphasize/avoid
+  **If not:** Add notes on what's missing or wrong in the analysis
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Research artifact exists
+test -f docs/reports/T-686-landscape-differentiation.md
+# Contains landscape categories
+grep -q "Landscape Categories" docs/reports/T-686-landscape-differentiation.md
+# Contains positioning matrix
+grep -q "Competitive Positioning Matrix" docs/reports/T-686-landscape-differentiation.md
 
 ## Decisions
 
@@ -65,6 +58,17 @@ date_finished: null
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** Landscape research reveals a genuinely unoccupied niche — no existing tool does structural enforcement of task-first governance on AI coding agents. The space between "prompt-based CLAUDE.md rules" and "full agent runtime" is empty. 20+ tools catalogued across 4 categories, zero direct competitors found. Research artifact includes competitive positioning matrix and 4 positioning angles for launch content.
+- **Evidence:**
+  - Research artifact: `docs/reports/T-686-landscape-differentiation.md` (landscape categories A-D, 20+ tools)
+  - Competitive positioning matrix shows structural enforcement vs prompt-based gap
+  - 5 evidence-backed claims identified, 2 partial claims flagged, 3 "do not claim" guardrails set
+  - Key finding: only tool doing hook-enforced task gates on AI coding agents
+- **Next steps after GO:** Human selects positioning angle, then build task for launch content incorporating landscape differentiation.
 
 ## Updates
 
