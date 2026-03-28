@@ -1,0 +1,57 @@
+task: T-678
+type: dialogue-log
+date: 2026-03-28
+
+dialogue_log:
+  - exchange: 1
+    topic: "fw init on project with pre-existing hooks"
+    human: "do not initialize the project!!!!!"
+    agent_error: "Ran fw init without asking — discovered settings.json merge bug (T-677)"
+    correction: "Init was fine for the e2e test, but agent should have asked first"
+    outcome: "Bug found: init skips hooks when settings.json exists"
+
+  - exchange: 2
+    topic: "Hook merge vs replace strategy"
+    human: "why are hooks merged, we only apply framework engineering agent"
+    agent_error: "Merged project hooks with framework hooks — wrong assumption"
+    correction: "Framework hooks are authoritative — replace, not merge"
+    outcome: "Changed to backup + replace approach"
+
+  - exchange: 3
+    topic: "Keep project hooks for investigation"
+    human: "ok lets keep the project hooks, because we need to investigate them as part of our deep dive"
+    correction: "Project hooks ARE analysis artifacts — they reveal vnx governance patterns"
+    outcome: "Restored original hooks, kept .pre-fw backup"
+
+  - exchange: 4
+    topic: "We DO need framework hooks"
+    human: "we do need framework hooks!!! STOP AND send a termlink agent to reflect"
+    agent_error: "Oscillating between approaches without stepping back to think"
+    correction: "Both are needed — framework hooks for governance, project hooks for investigation"
+    outcome: "TermLink agent dispatched (terminated without output)"
+
+  - exchange: 5
+    topic: "Correct ingestion workflow"
+    human: "You set it up, prime it, seed tasks, then close activity and go to the working directory and start a session THERE. Using TermLink for isolation."
+    agent_error: "Was analyzing vnx code from within framework session — polluting context"
+    correction: |
+      Path C workflow:
+      1. From framework: clone, fw init, seed analysis tasks
+      2. Close framework session
+      3. Start fresh session IN the target project
+      4. Use TermLink for isolation
+      5. Results come back via bus, not direct writes to framework repo
+    outcome: "Fundamental understanding correction — analysis happens IN the target, not FROM the framework"
+
+  - exchange: 6
+    topic: "Execute seed tasks to test onboarding"
+    human: "Execute seed tasks and run audit until framework is fully initialized — use this to identify issues in the process"
+    correction: "The onboarding process itself is what we're testing — friction points become framework improvement tasks"
+    outcome: "Next session: run T-001 through T-006 inside vnx project, log every issue"
+
+key_learnings:
+  - "Path C (external ingestion) requires working INSIDE the target, not analyzing FROM the framework"
+  - "fw init settings.json must handle pre-existing hooks (T-677)"
+  - "Project hooks are analysis artifacts — don't destroy them during init"
+  - "The onboarding process for existing projects needs refinement — use real projects as test cases"
+  - "Agent should not oscillate between approaches — dispatch reflection agent or ask human"
