@@ -116,11 +116,13 @@ fi
 do_vendor() {
     local dry_run=false
     local target="${PROJECT_ROOT:-.}"
+    local source_override=""
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --target) target="$2"; shift 2 ;;
+            --source) source_override="$2"; shift 2 ;;
             -h|--help)
                 echo -e "${BOLD}fw vendor${NC} — Copy framework into project for full isolation"
                 echo ""
@@ -129,6 +131,7 @@ do_vendor() {
                 echo "Options:"
                 echo "  --dry-run   Show what would be copied without copying"
                 echo "  --target    Target project directory (default: current project)"
+                echo "  --source    Framework source directory (default: auto-resolved)"
                 echo "  -h, --help  Show this help"
                 echo ""
                 echo "Copies the complete framework (~7MB) into PROJECT/.agentic-framework/"
@@ -140,6 +143,36 @@ do_vendor() {
     done
 
     local dest="$target/.agentic-framework"
+
+    # T-680: Resolve vendor source — explicit override, or FW_BIN_DIR origin, or FRAMEWORK_ROOT
+    local vendor_source="${source_override:-$FRAMEWORK_ROOT}"
+    if [ -n "$source_override" ]; then
+        if [ ! -f "$source_override/FRAMEWORK.md" ]; then
+            echo -e "${RED}ERROR${NC}  --source '$source_override' is not a valid framework directory" >&2
+            return 1
+        fi
+        vendor_source="$source_override"
+    fi
+
+    # T-680: Detect self-referencing — source and target are the same directory
+    local canon_source canon_dest
+    canon_source=$(cd "$vendor_source" 2>/dev/null && pwd -P) || canon_source="$vendor_source"
+    canon_dest=$(cd "$dest" 2>/dev/null && pwd -P) || canon_dest="$dest"
+    if [ "$canon_source" = "$canon_dest" ]; then
+        # Source is the vendored copy itself — try to find the real upstream
+        # The fw binary's own location reveals the original framework
+        local upstream_candidate="$(cd "$FW_BIN_DIR/.." && pwd -P)"
+        if [ "$upstream_candidate" != "$canon_source" ] && [ -f "$upstream_candidate/FRAMEWORK.md" ]; then
+            echo -e "  ${YELLOW}NOTE${NC}  Source and target are the same directory — using upstream: $upstream_candidate"
+            vendor_source="$upstream_candidate"
+        else
+            echo -e "${RED}ERROR${NC}  Source and target resolve to the same directory:" >&2
+            echo -e "         Source: $canon_source" >&2
+            echo -e "         Target: $canon_dest" >&2
+            echo -e "         Use ${BOLD}fw vendor --source /path/to/framework${NC} to specify a different source" >&2
+            return 1
+        fi
+    fi
 
     # What to copy (everything needed for development)
     local includes=(
@@ -167,14 +200,14 @@ do_vendor() {
 
     if [ "$dry_run" = true ]; then
         echo -e "${BOLD}fw vendor --dry-run${NC}"
-        echo -e "Source:  ${GREEN}$FRAMEWORK_ROOT${NC}"
+        echo -e "Source:  ${GREEN}$vendor_source${NC}"
         echo -e "Target:  ${GREEN}$dest${NC}"
         echo ""
         echo "Would copy:"
         for item in "${includes[@]}"; do
-            if [ -e "$FRAMEWORK_ROOT/$item" ]; then
+            if [ -e "$vendor_source/$item" ]; then
                 local size
-                size=$(du -sh "$FRAMEWORK_ROOT/$item" 2>/dev/null | cut -f1)
+                size=$(du -sh "$vendor_source/$item" 2>/dev/null | cut -f1)
                 echo -e "  ${GREEN}+${NC} $item ($size)"
             fi
         done
@@ -189,7 +222,7 @@ do_vendor() {
     mkdir -p "$dest"
 
     echo -e "${BOLD}fw vendor${NC} — vendoring framework into project"
-    echo -e "Source:  $FRAMEWORK_ROOT"
+    echo -e "Source:  $vendor_source"
     echo -e "Target:  $dest"
     echo ""
 
@@ -201,23 +234,23 @@ do_vendor() {
 
     # Copy each include
     for item in "${includes[@]}"; do
-        if [ -e "$FRAMEWORK_ROOT/$item" ]; then
+        if [ -e "$vendor_source/$item" ]; then
             local dest_dir
             dest_dir=$(dirname "$dest/$item")
             mkdir -p "$dest_dir"
 
-            if [ -d "$FRAMEWORK_ROOT/$item" ]; then
+            if [ -d "$vendor_source/$item" ]; then
                 if command -v rsync &>/dev/null; then
-                    rsync -a --delete $rsync_excludes "$FRAMEWORK_ROOT/$item/" "$dest/$item/"
+                    rsync -a --delete $rsync_excludes "$vendor_source/$item/" "$dest/$item/"
                 else
                     rm -rf "$dest/$item"
-                    cp -r "$FRAMEWORK_ROOT/$item" "$dest/$item"
+                    cp -r "$vendor_source/$item" "$dest/$item"
                     find "$dest/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
                     find "$dest/$item" -name "*.pyc" -delete 2>/dev/null || true
                     find "$dest/$item" -name ".DS_Store" -delete 2>/dev/null || true
                 fi
             else
-                cp "$FRAMEWORK_ROOT/$item" "$dest/$item"
+                cp "$vendor_source/$item" "$dest/$item"
             fi
             echo -e "  ${GREEN}✓${NC} $item"
         else
