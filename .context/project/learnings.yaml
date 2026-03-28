@@ -969,4 +969,11 @@ learnings:
   date: 2026-03-28
   context: Added via context agent
   application: TBD
+- id: L-121
+  learning: "fw init silently skips settings.json when file exists — projects with pre-existing Claude Code hooks get zero framework governance. Fixed in T-677: backup + overwrite."
+  source: P-001
+  task: T-677
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
 candidates: []

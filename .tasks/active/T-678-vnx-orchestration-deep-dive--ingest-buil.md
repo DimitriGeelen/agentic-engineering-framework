@@ -4,7 +4,7 @@ name: "vnx-orchestration deep-dive — ingest, build fabric, analyze architectur
 description: >
   Inception: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T20:49:43Z
-last_update: 2026-03-28T20:50:37Z
+last_update: 2026-03-28T21:01:45Z
 date_finished: null
 ---
 
@@ -107,3 +107,6 @@ Research artifact: docs/reports/T-678-vnx-orchestration-deep-dive.md
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-28T21:01:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
