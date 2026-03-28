@@ -893,6 +893,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Dispatch to remote | `fw dispatch send --host HOST --task T-XXX --agent TYPE --summary "..."` | |
 | Bus post remote | `fw bus post --remote HOST --task T-XXX --agent TYPE --summary "..."` | |
 | List SSH hosts | `fw dispatch hosts` | |
+| Cron generate | `fw cron generate` | Regenerate crontab from registry YAML |
+| Cron status | `fw cron status` | Show registry status (jobs, active/paused) |
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |
