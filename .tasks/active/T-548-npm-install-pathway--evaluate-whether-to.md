@@ -20,43 +20,42 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Should the framework offer `npm install` as an installation pathway? The framework is bash + Python, not JavaScript, but T-586 GO on TypeScript adoption raises the question. Research artifact: `docs/reports/T-548-npm-install-pathway.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: Node.js developers would benefit from npm-based installation (NOT VALIDATED — no user requests, no Node.js consumer projects)
+- A2: npm packaging would be straightforward for a bash framework (INVALID — requires runtime dependency, complex packaging)
+- A3: Dual install paths are maintainable (INVALID — two upgrade paths, two bug surfaces)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Audit current installation methods (done — 4 methods exist)
+2. Analyze npm packaging for non-JS CLI tools (done — wrong distribution channel)
+3. Check user demand evidence (done — zero requests)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Framework is bash + Python, not JavaScript
+- npm would add Node.js as a runtime dependency
+- bin entries pointing to shell scripts require platform-specific handling
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Whether to add npm as an install pathway.
+**OUT:** Changing existing install methods, npm for TermLink only.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Assumptions tested (3 assumptions — 1 not validated, 2 invalid)
+- [x] Go/No-Go decision made (NO-GO recommended)
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** User demand exists AND Node.js runtime is already required AND dual-path maintenance is justified
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**NO-GO if:** No user demand, framework is not JavaScript, runtime dependency is incoherent (all true)
 
 ## Verification
 
