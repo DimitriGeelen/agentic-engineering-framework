@@ -976,4 +976,11 @@ learnings:
   date: 2026-03-28
   context: Added via context agent
   application: TBD
+- id: L-122
+  learning: "Path C (external codebase ingestion) is an explicit exception to L-117 (no edits outside PROJECT_ROOT). Writes to external projects require human approval but are necessary for fw init, seed tasks, and fabric. Use TermLink for isolation — the TermLink session cd's into the consumer project."
+  source: T-678
+  task: T-679
+  date: 2026-03-28
+  context: Added via context agent
+  application: TBD
 candidates: []

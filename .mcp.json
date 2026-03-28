@@ -6,5 +6,9 @@
   "playwright": {
     "command": "npx",
     "args": ["@playwright/mcp@latest", "--no-sandbox"]
+  },
+  "termlink": {
+    "command": "/root/.local/bin/termlink",
+    "args": ["mcp", "serve"]
   }
 }
