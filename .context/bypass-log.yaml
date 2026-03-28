@@ -655,3 +655,43 @@ bypasses:
   command_hash: d04e9e3d3f326dc9ad1507672472b26baf39adbfc152f7bad94feaec6380d833
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-27T09:37:28Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: bin/fw inception decide T-629 go --rationale "12-agent audit confirmed
+    5 structural flaws, 27% real work unacceptable"
+  command_hash: d0e205c3226533692e8933624160659dbeda408281a8fddd3870db92eced55a9
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-27T09:45:07Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: 'bin/fw inception decide T-630 go --rationale "D-016 overturned
+    by D-059, 40 days evidence, safe-command allowlist under '
+  command_hash: 7e41f47ea45537785b7b08007f6e9dbad2bc0842b97df4f352e689b547d8b1d7
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-27T09:48:39Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: bin/fw inception decide T-635 go --rationale "3+ bypasses this
+    session, all 3 deliverables feasible under 50 lines each"
+  command_hash: 960295c6b26a58db551a1fbf4f6a7b406dc27a327792ed1371130b78e9224424
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-27T10:21:27Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: bin/fw inception decide T-636 go --rationale "5-agent research
+    complete, Phase 1 fits 3 build tasks, Human AC toggle alr
+  command_hash: 29ceba3311f7e600f27bf53184364a2ec552d4bb6509166461abab207c096bc6
+  authorized_by: human
+  mechanism: fw tier0 approve

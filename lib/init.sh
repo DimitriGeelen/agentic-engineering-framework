@@ -531,14 +531,14 @@ generate_claude_code_config() {
     # --- .claude/settings.json (PostToolUse hook for context protection) ---
     mkdir -p "$dir/.claude/commands"
 
-    if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
-        # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
-        # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
-        local fw_prefix=".agentic-framework/bin/fw"
-        if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
-            fw_prefix="bin/fw"
-        fi
+    # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
+    # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
+    local fw_prefix=".agentic-framework/bin/fw"
+    if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
+        fw_prefix="bin/fw"
+    fi
 
+    if [ ! -f "$dir/.claude/settings.json" ] || [ "${force:-false}" = true ]; then
         # Use unquoted heredoc so $fw_prefix expands (T-663: framework-aware hook paths)
         cat > "$dir/.claude/settings.json" << SJSON
 {
@@ -691,7 +691,15 @@ generate_claude_code_config() {
 SJSON
         echo -e "  ${GREEN}OK${NC}  .claude/settings.json (all hooks: task gate, tier0, budget, plan blocker, agent dispatch, compact, resume, checkpoint, error-watchdog, dispatch guard, loop-detect, fabric new-file, project-boundary, commit-cadence)"
     else
-        echo -e "  ${YELLOW}SKIP${NC}  .claude/settings.json already exists"
+        # T-677: Pre-existing settings.json — back up and overwrite with framework hooks
+        # The framework's governance hooks are authoritative; project-specific hooks from
+        # other systems (vnx, etc.) are not compatible and reference non-local paths.
+        cp "$dir/.claude/settings.json" "$dir/.claude/settings.json.pre-fw"
+        local save_force="${force:-false}"
+        force=true
+        generate_claude_code_config "$dir"
+        force="$save_force"
+        echo -e "  ${GREEN}REPLACED${NC}  .claude/settings.json — framework hooks applied (original backed up to settings.json.pre-fw)"
     fi
 
     # --- .mcp.json (MCP server configuration for Claude Code) ---

@@ -1,0 +1,11 @@
+command_hash: 29ceba3311f7e600f27bf53184364a2ec552d4bb6509166461abab207c096bc6
+command_preview: bin/fw inception decide T-636 go
+risk: 'INCEPTION DECISION: GO/NO-GO for T-636 (unified approval experience)'
+status: approved
+timestamp: '2026-03-27T10:20:52Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-03-27T10:21:19Z'
+  mechanism: watchtower

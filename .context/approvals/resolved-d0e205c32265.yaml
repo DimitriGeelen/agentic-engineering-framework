@@ -1,0 +1,12 @@
+command_hash: d0e205c3226533692e8933624160659dbeda408281a8fddd3870db92eced55a9
+command_preview: bin/fw inception decide T-629 go --rationale "12-agent audit confirmed
+  5 structural flaws, 27% real work unacceptable"
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority.'
+status: approved
+timestamp: '2026-03-27T09:03:34Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-03-27T09:37:16Z'
+  mechanism: watchtower

@@ -448,3 +448,17 @@ decisions:
     date: 2026-03-12
     task: T-442
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-059
+    decision: "Overturn D-016: Bash MUST be gated by task gate. D-016 (2026-02-15) excluded Bash from PreToolUse task enforcement. 40 days of evidence proves this wrong: L-002 (structural > behavioral), L-013 (code gates > markdown), L-016 (removing hooks drops traceability 97%→88%), L-020 (compliance > non-compliance), L-042 (behavioral rules fail even when agent knows them). Plus 6 gaps (G-001/G-014/G-015/G-017/G-020/G-023) and 5 investigations (T-061/T-228/T-469/T-614/T-629). Overturned by T-630."
+    scope: project
+    date: 2026-03-26
+    task: T-630
+    rationale: "Not specified"
+
+  - id: D-060
+    decision: "Test"
+    scope: project
+    date: 2026-03-28
+    task: unknown
+    rationale: "Not specified"
