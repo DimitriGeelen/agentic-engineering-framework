@@ -4,16 +4,16 @@ name: "Fix focus.yaml test failure — include default fields when creating from
 description: >
   Fix focus.yaml test failure — include default fields when creating from scratch
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-28T16:19:55Z
-last_update: 2026-03-28T16:19:55Z
-date_finished: null
+last_update: 2026-03-28T16:22:09Z
+date_finished: 2026-03-28T16:22:09Z
 ---
 
 # T-659: Fix focus.yaml test failure — include default fields when creating from scratch
@@ -72,3 +72,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-659-fix-focusyaml-test-failure--include-defa.md
 - **Context:** Initial task creation
+
+### 2026-03-28T16:22:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
