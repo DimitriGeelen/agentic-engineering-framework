@@ -54,7 +54,7 @@ findings:
     check: "All practice origins resolve to actual tasks"
   - level: WARN
     check: "Bugfix-learning coverage: 25% (14/56)"
-    mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX "description""
+    mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS

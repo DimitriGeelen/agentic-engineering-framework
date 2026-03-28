@@ -1028,7 +1028,7 @@ if [ "$bugfix_total" -gt 0 ]; then
     else
         warn "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
              "Only ${coverage}% of bugfixes have associated learnings (target: 40%)" \
-             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX \"description\""
+             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
     fi
 else
     pass "Bugfix-learning coverage: no completed bugfix tasks found"
@@ -2950,10 +2950,15 @@ fi
         level=$(echo "$finding" | cut -d'|' -f1)
         check=$(echo "$finding" | cut -d'|' -f2)
         mitigation=$(echo "$finding" | cut -d'|' -f3)
+        # T-687: Properly escape YAML strings — replace " with \" inside quoted values
+        check="${check//\\/\\\\}"   # escape backslashes first
+        check="${check//\"/\\\"}"   # then escape quotes
+        mitigation="${mitigation//\\/\\\\}"
+        mitigation="${mitigation//\"/\\\"}"
         echo "  - level: $level"
-        echo "    check: \"${check//\"/\\\"}\""
+        echo "    check: \"$check\""
         if [ -n "$mitigation" ]; then
-            echo "    mitigation: \"${mitigation//\"/\\\"}\""
+            echo "    mitigation: \"$mitigation\""
         fi
     done
 } > "$AUDIT_FILE"
