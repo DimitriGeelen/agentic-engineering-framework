@@ -104,10 +104,10 @@ T-602 fixed the multi-project collision symptom, but the boundary exception itse
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Complete inventory of all framework writes outside PROJECT_ROOT
-- [ ] Evaluate 3+ exception mechanism options with pros/cons
-- [ ] Document current audit scope (what cron checks cover for consumer projects)
-- [ ] Research artifact created at `docs/reports/T-603-boundary-exceptions.md`
+- [x] Complete inventory of all framework writes outside PROJECT_ROOT
+- [x] Evaluate 3+ exception mechanism options with pros/cons
+- [x] Document current audit scope (what cron checks cover for consumer projects)
+- [x] Research artifact created at `docs/reports/T-603-boundary-exceptions.md`
 
 ### Human
 - [ ] [REVIEW] Review exception mechanism recommendation and approve direction

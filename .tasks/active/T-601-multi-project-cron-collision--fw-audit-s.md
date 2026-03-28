@@ -49,9 +49,9 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Options evaluated (see research artifact)
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated
+- [x] Options evaluated (see research artifact)
+- [x] Go/No-Go decision made
 
 ## Go/No-Go Criteria
 
