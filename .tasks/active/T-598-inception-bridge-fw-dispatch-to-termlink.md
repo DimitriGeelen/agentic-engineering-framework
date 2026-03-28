@@ -20,43 +20,62 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`fw dispatch send` uses raw SSH pipes with inline JSON envelopes. TermLink already has `file send`, `remote send-file`, `hub` routing, and `remote exec` — but these are completely disconnected from the framework dispatch layer. Two parallel communication systems exist for the same purpose. Should we bridge them?
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: TermLink file/remote commands work reliably (NOT VALIDATED — never used in framework, only TermLink test suite)
+- A2: Hub deployment is feasible (NOT VALIDATED — never attempted, requires process lifecycle management)
+- A3: Bridge provides value over SSH dispatch (PARTIALLY VALIDATED — TermLink transport is superior but SSH works for current 2-machine topology)
+- A4: Both sides need TermLink installed (VALIDATED — currently only on .112)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Audit current fw dispatch implementation (done — SSH pipe with JSON envelopes)
+2. Audit TermLink file/remote/hub capabilities (done — all exist, none wired to framework)
+3. Evaluate 3 bridging options (done — file send, hub+remote, hybrid)
+4. Assess infrastructure reality (done — hub never deployed, only 2 machines)
+5. Make recommendation (done — DEFER)
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- TermLink hub requires a persistent process with lifecycle management
+- Both communicating machines must have TermLink installed
+- T-600 (attach-self) is prerequisite for remote session registration — still at inception
+- Current topology is only 2 machines (.112 server, .107 Mac)
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Whether to bridge fw dispatch to TermLink's native transport.
+**OUT:** Building the bridge (separate build task). TermLink Rust changes. Hub deployment.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] Problem statement validated
+- [x] Assumptions tested (4 assumptions — 1 validated, 1 partial, 2 not validated)
+- [x] Go/No-Go recommendation made (DEFER)
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve defer decision
+  **Steps:**
+  1. Read `docs/reports/T-598-dispatch-termlink-bridge.md`
+  2. Evaluate whether SSH dispatch limitations warrant the infrastructure cost of hub deployment
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-598 no-go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Discuss specific concerns about the recommendation
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- 3+ machines need to communicate regularly
+- SSH dispatch has hit concrete limitations (payload size, latency, reliability)
+- T-600 (attach-self) is complete and TermLink deployed on remote machines
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**NO-GO/DEFER if:**
+- SSH dispatch works for current 2-machine topology (true)
+- Hub infrastructure adds operational complexity without proportional benefit (true)
+- Prerequisites (T-600 attach-self) are not ready (true)
 
 ## Verification
 
