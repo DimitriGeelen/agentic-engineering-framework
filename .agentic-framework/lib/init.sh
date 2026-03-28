@@ -535,7 +535,7 @@ generate_claude_code_config() {
         # T-663/T-662: Detect framework-mode vs consumer-mode for fw path
         # Framework repo uses bin/fw (project-relative), consumers use .agentic-framework/bin/fw (vendored)
         local fw_prefix=".agentic-framework/bin/fw"
-        if [ -f "$dir/FRAMEWORK.md" ] && [ -d "$dir/agents" ] && [ ! -d "$dir/.agentic-framework" ]; then
+        if [ -x "$dir/bin/fw" ] && [ -f "$dir/FRAMEWORK.md" ]; then
             fw_prefix="bin/fw"
         fi
 

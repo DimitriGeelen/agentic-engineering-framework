@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook pre-compact"
+            "command": "bin/fw hook pre-compact"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook post-compact-resume"
+            "command": "bin/fw hook post-compact-resume"
           }
         ]
       },
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook post-compact-resume"
+            "command": "bin/fw hook post-compact-resume"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook block-plan-mode"
+            "command": "bin/fw hook block-plan-mode"
           }
         ]
       },
@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-active-task"
+            "command": "bin/fw hook check-active-task"
           }
         ]
       },
@@ -55,7 +55,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-tier0"
+            "command": "bin/fw hook check-tier0"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/fw hook check-agent-dispatch"
           }
         ]
       },
@@ -64,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-project-boundary"
+            "command": "bin/fw hook check-project-boundary"
           }
         ]
       },
@@ -73,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook budget-gate"
+            "command": "bin/fw hook budget-gate"
           }
         ]
       }
@@ -84,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook checkpoint post-tool"
+            "command": "bin/fw hook checkpoint post-tool"
           }
         ]
       },
@@ -93,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook error-watchdog"
+            "command": "bin/fw hook error-watchdog"
           }
         ]
       },
@@ -102,7 +111,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-dispatch"
+            "command": "bin/fw hook check-dispatch"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/fw hook loop-detect"
           }
         ]
       },
@@ -111,7 +129,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook check-fabric-new-file"
+            "command": "bin/fw hook check-fabric-new-file"
           }
         ]
       },
@@ -120,7 +138,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "fw hook commit-cadence"
+            "command": "bin/fw hook commit-cadence"
           }
         ]
       }

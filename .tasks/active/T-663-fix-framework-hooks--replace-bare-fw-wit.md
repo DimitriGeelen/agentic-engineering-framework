@@ -25,7 +25,7 @@ Phase 1 of T-662 (GO). Framework's `.claude/settings.json` uses bare `fw` for al
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All hook commands in `.claude/settings.json` use `bin/fw hook` instead of bare `fw hook` (needs user to regenerate)
+- [x] All hook commands in `.claude/settings.json` use `bin/fw hook` instead of bare `fw hook`
 - [x] `bin/fw hook check-active-task` responds correctly when piped test JSON
 - [x] `lib/init.sh` template for framework-mode hooks uses `bin/fw` (not bare `fw`)
 - [x] Vendored copy `.agentic-framework/lib/init.sh` synced
