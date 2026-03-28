@@ -761,6 +761,27 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
         echo -e "${YELLOW}Context agent not found${NC}"
         echo "Run manually: fw context generate-episodic $TASK_ID"
     fi
+
+    # === Learning capture check for bugfix tasks (T-692, G-016) ===
+    # 72% of bugfix tasks produce zero learnings. This structural nudge
+    # prompts the agent when completing a fix task without a learning entry.
+    TASK_NAME_LOWER=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | tr '[:upper:]' '[:lower:]')
+    if echo "$TASK_NAME_LOWER" | grep -qi '\bfix\b\|bugfix\|hotfix'; then
+        LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
+        HAS_LEARNING=false
+        if [ -f "$LEARNINGS_FILE" ] && grep -q "$TASK_ID" "$LEARNINGS_FILE" 2>/dev/null; then
+            HAS_LEARNING=true
+        fi
+        if [ "$HAS_LEARNING" = false ]; then
+            echo ""
+            echo -e "${YELLOW}────────────────────────────────────────────${NC}"
+            echo -e "${YELLOW}  LEARNING PROMPT — This looks like a bugfix task${NC}"
+            echo -e "${YELLOW}  No learning entry references $TASK_ID.${NC}"
+            echo -e "${YELLOW}  Consider: fw context add-learning \"what was learned\" --task $TASK_ID${NC}"
+            echo -e "${YELLOW}  Ask: Would a future agent benefit from knowing about this fix?${NC}"
+            echo -e "${YELLOW}────────────────────────────────────────────${NC}"
+        fi
+    fi
 fi
 
 echo ""
