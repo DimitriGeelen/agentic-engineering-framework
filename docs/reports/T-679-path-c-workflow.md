@@ -70,13 +70,13 @@ Path C is the framework's workflow for analyzing an external codebase. Unlike Pa
 |----------|--------|------|
 | F-1/F-7 | **FIXED** | `check-project-boundary.sh` — TermLink exception |
 | F-2 | **FIXED** | `lib/upgrade.sh` — non-framework hook detection |
-| F-3 | Open | T-680 |
+| F-3 | **FIXED** | T-680 — vendor self-ref detection + `--source` flag |
 | F-4 | Open | Low priority |
-| F-5 | Open | T-681 |
+| F-5 | **FIXED** | T-681 — TermLink MCP in init/upgrade defaults |
 | F-6 | Open | T-682 (TermLink product) |
-| F-8 | Open | T-683 |
-| F-9 | Open | T-685 |
-| F-10 | Open | T-684 |
+| F-8 | **FIXED** | T-683 — `fw audit; test $? -le 1` |
+| F-9 | **FIXED** | T-685 — git identity check in `fw doctor` |
+| F-10 | **FIXED** | T-684 — gitignore warning in seed T-002 |
 
 ### Seed Task Execution Results
 
