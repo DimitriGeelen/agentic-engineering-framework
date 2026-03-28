@@ -4,7 +4,7 @@ name: "Eliminate global HOME/.agentic-framework dependency — full project isol
 description: >
   Inception: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-625, T-660, T-559, T-614]
 created: 2026-03-28T16:44:24Z
-last_update: 2026-03-28T16:44:24Z
+last_update: 2026-03-28T16:58:12Z
 date_finished: null
 ---
 
@@ -78,10 +78,10 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated with evidence (deadlock incidents, portability violation, isolation violation)
-- [ ] All 6 spikes completed with findings
-- [ ] Assumptions A1-A6 validated or invalidated
-- [ ] Recommendation written with rationale and migration path
+- [x] Problem statement validated with evidence (deadlock incidents, portability violation, isolation violation)
+- [x] All 6 spikes completed with findings
+- [x] Assumptions A1-A6 validated or invalidated
+- [x] Recommendation written with rationale and migration path
 - [ ] Research artifact committed: `docs/reports/T-662-eliminate-global-install.md`
 
 ### Human
@@ -116,14 +116,15 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-28 — Terminal UX approach for bare `fw` command
+- **Chose:** Project-detecting shim in `~/.local/bin/fw` (Option A)
+- **Why:** Walks up from CWD to find project-local `fw`, always runs project's own code, no global install needed, works on any platform
+- **Rejected:** Shell alias (Option B — not portable to scripts/subshells), symlink to one repo (Option C — ties all projects to one version), no global `fw` (Option D — unacceptable terminal UX)
+
+### 2026-03-28 — T-660 disposition
+- **Chose:** Replace-with-shim during upgrade (Option 3)
+- **Why:** Auto-migrates users during `fw upgrade`, backward-compatible, eliminates dependency in one step
+- **Rejected:** Full revert (Option 1 — leaves users with stale global until they find the shim), keep as bridge (Option 2 — extends the anti-pattern lifecycle)
 
 ## Decision
 
@@ -133,3 +134,6 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-28T16:58:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
