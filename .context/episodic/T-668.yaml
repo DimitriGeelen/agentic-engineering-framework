@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-668: Add /review/T-XXX mobile link to approvals page Human AC cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T18:00:13Z
+# ============================================================================
+
+task_id: T-668
+task_name: "Add /review/T-XXX mobile link to approvals page Human AC cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T17:56:55Z
+completed: 2026-03-28T18:00:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-28T18:58:54+01:00
+last_commit: 2026-03-28T18:58:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add mobile review link to approvals page Human AC cards
+
+# Key outcomes
+outcomes:
+  - "Each Human AC task card in approvals.html has a `/review/T-XXX` link"
+  - "Link uses a phone/mobile icon to indicate \"mobile review\""
+  - "Link renders correctly on the approvals page"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-668-add-reviewt-xxx-mobile-link-to-approvals.md"
+  - "web/templates/approvals.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T18:58:54"
+    action: "T-668: Add mobile review link to approvals page Human AC cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 56
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-668-add-reviewt-xxx-mobile-link-to-approvals.md
+generated_by: context-agent-hybrid
