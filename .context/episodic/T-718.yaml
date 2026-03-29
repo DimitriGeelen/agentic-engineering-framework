@@ -1,7 +1,7 @@
 # ============================================================================
 # EPISODIC MEMORY - T-718: Enrich fabric component cards for notify subsystem
 # ============================================================================
-# STATUS: AUTO-GENERATED
+# STATUS: ENRICHED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
 # Generated: 2026-03-29T18:12:44Z
 # ============================================================================
@@ -9,7 +9,7 @@
 task_id: T-718
 task_name: "Enrich fabric component cards for notify subsystem"
 workflow_type: refactor
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: complete
 
 # Timeline
 created: 2026-03-29T18:11:46Z
@@ -19,9 +19,9 @@ updates_count: 2
 first_commit: 2026-03-29T20:12:38+02:00
 last_commit: 2026-03-29T20:12:38+02:00
 
-# Summary (auto-generated from git commit messages)
+# Summary
 summary: |
-  Enrich lib/notify.sh fabric card — purpose, deps, tags
+  Enriched the lib/notify.sh fabric component card with proper purpose, dependency relationships, and tags. Also enriched episodic files for T-710, T-715, and T-717.
 
 # Key outcomes
 outcomes:
@@ -30,40 +30,37 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  # No challenges — straightforward metadata enrichment
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  # No decisions recorded — no meaningful alternatives
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
+  - ".fabric/components/lib-notify.yaml"
   - ".context/episodic/T-710.yaml"
   - ".context/episodic/T-715.yaml"
   - ".context/episodic/T-717.yaml"
-  - ".fabric/components/lib-notify.yaml"
-  - ".tasks/active/T-718-enrich-fabric-component-cards-for-notify.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-29T20:12:38"
     action: "T-718: Enrich lib/notify.sh fabric card — purpose, deps, tags"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well
 successes:
-  # Completed successfully in 1 commit(s), 0 min
+  - "Batch enrichment of related episodics alongside the fabric card update"
 
 # Related tasks
 related_tasks:
   blocked: []
   absorbed: []
-  spawned: []
+  spawned:
+    - T-719  # broader fabric card enrichment for remaining TODO descriptions
 
 # Tags for retrieval
-tags: []
+tags: [fabric, component-cards, notify, enrichment]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:

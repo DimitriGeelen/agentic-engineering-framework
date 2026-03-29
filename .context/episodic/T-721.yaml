@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-721: Enrich fw_notify test fabric card
+# ============================================================================
+# STATUS: ENRICHED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T18:28:15Z
+# ============================================================================
+
+task_id: T-721
+task_name: "Enrich fw_notify test fabric card"
+workflow_type: refactor
+enrichment_status: complete
+
+# Timeline
+created: 2026-03-29T18:22:53Z
+completed: 2026-03-29T18:28:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T20:28:09+02:00
+last_commit: 2026-03-29T20:28:09+02:00
+
+# Summary
+summary: |
+  Enriched the fabric component card for tests/integration/fw_notify.bats with purpose, type, subsystem, and dependency metadata. Also performed session housekeeping (stale cron audits, approval cleanup, episodic generation for T-718/T-719/T-720).
+
+# Key outcomes
+outcomes:
+  - "Fabric card has purpose, type, subsystem, deps"
+  - "YAML parses correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges — metadata enrichment + housekeeping
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded — straightforward enrichment
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-integration-fw_notify.yaml"
+  - ".context/episodic/T-718.yaml"
+  - ".context/episodic/T-719.yaml"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T20:28:09"
+    action: "T-721: Enrich fw_notify test fabric card + session housekeeping"
+
+# What worked well
+successes:
+  - "Combined fabric card enrichment with session housekeeping in a single commit"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, component-cards, testing, notify, housekeeping]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 46
+  lines_added: 1022
+  lines_removed: 482
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-721-enrich-fwnotify-test-fabric-card.md
+generated_by: context-agent-hybrid

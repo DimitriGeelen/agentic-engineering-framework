@@ -1,7 +1,7 @@
 # ============================================================================
 # EPISODIC MEMORY - T-715: Add fw notify to CLAUDE.md quick reference
 # ============================================================================
-# STATUS: AUTO-GENERATED
+# STATUS: ENRICHED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
 # Generated: 2026-03-29T18:11:16Z
 # ============================================================================
@@ -9,7 +9,7 @@
 task_id: T-715
 task_name: "Add fw notify to CLAUDE.md quick reference"
 workflow_type: refactor
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: complete
 
 # Timeline
 created: 2026-03-29T14:20:12Z
@@ -19,9 +19,9 @@ updates_count: 2
 first_commit: 2026-03-29T16:21:10+02:00
 last_commit: 2026-03-29T16:21:10+02:00
 
-# Summary (auto-generated from git commit messages)
+# Summary
 summary: |
-  Add fw notify to CLAUDE.md quick reference, close OpenClaw sub-tasks as superseded
+  Added fw notify commands (status, enable, disable, test) to the CLAUDE.md Quick Reference table and closed OpenClaw sub-tasks as superseded by the notify subsystem.
 
 # Key outcomes
 outcomes:
@@ -30,29 +30,25 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  # No challenges — straightforward documentation addition
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  # No decisions recorded — no meaningful alternatives to choose between
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
   - "CLAUDE.md"
   - ".gitignore"
-  - ".tasks/active/T-715-add-fw-notify-to-claudemd-quick-referenc.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-29T16:21:10"
     action: "T-715: Add fw notify to CLAUDE.md quick reference, close OpenClaw sub-tasks as superseded"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well
 successes:
-  # Completed successfully in 1 commit(s), 1 min
+  - "Clean documentation update following consistent table format"
 
 # Related tasks
 related_tasks:
@@ -61,7 +57,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags: [notify, documentation, claude-md, quick-reference]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:

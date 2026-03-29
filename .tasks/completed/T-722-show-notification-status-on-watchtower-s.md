@@ -4,16 +4,16 @@ name: "Show notification status on Watchtower settings page"
 description: >
   Show notification status on Watchtower settings page
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/settings.py, web/templates/settings.html]
 related_tasks: []
 created: 2026-03-29T18:31:40Z
-last_update: 2026-03-29T18:31:40Z
-date_finished: null
+last_update: 2026-03-29T18:33:28Z
+date_finished: 2026-03-29T18:33:28Z
 ---
 
 # T-722: Show notification status on Watchtower settings page
@@ -72,3 +72,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-722-show-notification-status-on-watchtower-s.md
 - **Context:** Initial task creation
+
+### 2026-03-29T18:33:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

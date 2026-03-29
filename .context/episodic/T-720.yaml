@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-720: Add integration test for fw notify CLI
+# ============================================================================
+# STATUS: ENRICHED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T18:30:56Z
+# ============================================================================
+
+task_id: T-720
+task_name: "Add integration test for fw notify CLI"
+workflow_type: test
+enrichment_status: complete
+
+# Timeline
+created: 2026-03-29T18:18:16Z
+completed: 2026-03-29T18:20:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T20:20:13+02:00
+last_commit: 2026-03-29T20:20:13+02:00
+
+# Summary
+summary: |
+  Created a Bats integration test suite for the fw notify CLI with 10 tests covering help, status, enable, disable, toggle, test-disabled, invalid subcommand, and setup scenarios.
+
+# Key outcomes
+outcomes:
+  - "Bats test file exists at `tests/integration/fw_notify.bats`"
+  - "Tests cover: help, status, enable, disable, invalid subcommand (10 tests)"
+  - "All tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges — clean test creation
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded — standard Bats test structure used
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "tests/integration/fw_notify.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T20:20:13"
+    action: "T-720: Add 10 integration tests for fw notify CLI — help, status, enable, disable, toggle, test-disabled, invalid, setup"
+
+# What worked well
+successes:
+  - "Comprehensive test coverage (10 tests) for the full notify CLI surface area"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned:
+    - T-721  # fabric card enrichment for the new test file
+
+# Tags for retrieval
+tags: [notify, testing, bats, integration-tests, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 187
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-720-add-integration-test-for-fw-notify-cli.md
+generated_by: context-agent-hybrid

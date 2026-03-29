@@ -1,7 +1,7 @@
 # ============================================================================
 # EPISODIC MEMORY - T-719: Enrich fabric cards — fill TODO descriptions for core components
 # ============================================================================
-# STATUS: AUTO-GENERATED
+# STATUS: ENRICHED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
 # Generated: 2026-03-29T18:15:38Z
 # ============================================================================
@@ -9,7 +9,7 @@
 task_id: T-719
 task_name: "Enrich fabric cards — fill TODO descriptions for core components"
 workflow_type: refactor
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: complete
 
 # Timeline
 created: 2026-03-29T18:13:03Z
@@ -19,9 +19,9 @@ updates_count: 2
 first_commit: 2026-03-29T20:15:32+02:00
 last_commit: 2026-03-29T20:15:32+02:00
 
-# Summary (auto-generated from git commit messages)
+# Summary
 summary: |
-  Enrich 36 fabric component cards — replace all TODO descriptions with real purposes
+  Replaced all 36 TODO placeholder descriptions across .fabric/components/ with real purpose descriptions. Covered core lib components, web blueprints, templates, agent hooks, and utility scripts.
 
 # Key outcomes
 outcomes:
@@ -30,14 +30,11 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  # No challenges — bulk but mechanical enrichment
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  # No decisions recorded — descriptions derived from reading source files
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
@@ -76,17 +73,15 @@ artifacts:
   - ".fabric/components/web-templates-_review_error.yaml"
   - ".fabric/components/web-templates-review.yaml"
   - ".fabric/components/web-templates-settings.yaml"
-  - ".fabric/components/.yaml"
-  - ".tasks/active/T-719-enrich-fabric-cards--fill-todo-descripti.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-29T20:15:32"
     action: "T-719: Enrich 36 fabric component cards — replace all TODO descriptions with real purposes"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well
 successes:
-  # Completed successfully in 1 commit(s), 2 min
+  - "Bulk enrichment of 36 cards in a single commit, all YAML valid"
 
 # Related tasks
 related_tasks:
@@ -95,7 +90,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags: [fabric, component-cards, enrichment, bulk-update, documentation]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:

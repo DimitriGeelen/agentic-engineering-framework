@@ -1,7 +1,7 @@
 # ============================================================================
 # EPISODIC MEMORY - T-717: Sync vendor copy of lib/notify.sh with config file support
 # ============================================================================
-# STATUS: AUTO-GENERATED
+# STATUS: ENRICHED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
 # Generated: 2026-03-29T18:11:16Z
 # ============================================================================
@@ -9,7 +9,7 @@
 task_id: T-717
 task_name: "Sync vendor copy of lib/notify.sh with config file support"
 workflow_type: refactor
-enrichment_status: complete  # AC checked + decisions recorded
+enrichment_status: complete
 
 # Timeline
 created: 2026-03-29T14:23:12Z
@@ -19,9 +19,9 @@ updates_count: 2
 first_commit: 2026-03-29T16:24:05+02:00
 last_commit: 2026-03-29T16:24:05+02:00
 
-# Summary (auto-generated from git commit messages)
+# Summary
 summary: |
-  Sync vendor copy of lib/notify.sh with config file support (T-710)
+  Synced the vendored copy of lib/notify.sh (in .agentic-framework/) with the source version that includes config file support added by T-710. Also synced post-compact-resume.sh.
 
 # Key outcomes
 outcomes:
@@ -30,28 +30,24 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  # No challenges — straightforward file sync
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+  # No decisions recorded — mechanical sync operation
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
   - ".agentic-framework/lib/notify.sh"
-  - ".tasks/active/T-717-sync-vendor-copy-of-libnotifysh-with-con.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-29T16:24:05"
     action: "T-717: Sync vendor copy of lib/notify.sh with config file support (T-710)"
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+# What worked well
 successes:
-  # Completed successfully in 1 commit(s), 0 min
+  - "Vendor copy kept in sync after T-710 config file support was added"
 
 # Related tasks
 related_tasks:
@@ -60,7 +56,7 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: []
+tags: [notify, vendor-sync, agentic-framework, lib-notify]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
