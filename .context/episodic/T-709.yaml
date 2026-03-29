@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T11:18:57Z
+# ============================================================================
+
+task_id: T-709
+task_name: "Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T11:14:18Z
+completed: 2026-03-29T11:18:56Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-29T13:18:52+02:00
+last_commit: 2026-03-29T13:18:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Wire ntfy notifications into 4 framework hooks — Tier 0, task complete, audit, handover
+
+# Key outcomes
+outcomes:
+  - "`check-tier0.sh` — notifies on Tier 0 block (task_blocked trigger)"
+  - "`update-task.sh` — notifies on work-completed transition"
+  - "`update-task.sh` — notifies on partial-complete (human AC ready)"
+  - "`audit.sh` — notifies on FAIL_COUNT > 0"
+  - "`handover.sh` — notifies on handover creation"
+  - "All notifications are fire-and-forget (backgrounded)"
+  - "All notifications respect NTFY_ENABLED flag"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/context/check-tier0.sh"
+  - "agents/handover/handover.sh"
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-709-wire-ntfy-notifications-into-framework-h.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T13:18:52"
+    action: "T-709: Wire ntfy notifications into 4 framework hooks — Tier 0, task complete, audit, handover"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ntfy, notifications]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 5
+  lines_added: 97
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-709-wire-ntfy-notifications-into-framework-h.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,44 @@
+# Audit Results - 2026-03-29-0930
+timestamp: 2026-03-29T07:30:01Z
+sections: "structure,compliance,quality,discovery"
+summary:
+  pass: 15
+  warn: 2
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "All 10 project YAML files parse correctly"
+  - level: PASS
+    check: "Fabric: 179 registered, 0 unregistered"
+  - level: PASS
+    check: "Fabric edges: 170/179 cards enriched (9 without edges)"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (179 cards)"
+  - level: PASS
+    check: "All 75 active tasks are valid"
+  - level: PASS
+    check: "All active tasks meet quality thresholds"
+  - level: PASS
+    check: "D1: Episodic quality — 2% [TODO] (14/656)"
+  - level: WARN
+    check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(14d) T-460(15d) T-470(16d) T-476(15d) T-481(14d) T-483(14d) T-493(14d)"
+    mitigation: "Review with: fw task verify"
+  - level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - level: PASS
+    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
+  - level: WARN
+    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
+    mitigation: "Review flagged tasks — human dialogue may have been skipped"
+  - level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"

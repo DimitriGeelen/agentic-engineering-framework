@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-711: Write ntfy deep-dive post — third Path C experiment, cross-project coordination
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T11:21:14Z
+# ============================================================================
+
+task_id: T-711
+task_name: "Write ntfy deep-dive post — third Path C experiment, cross-project coordination"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T11:19:19Z
+completed: 2026-03-29T11:21:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T13:21:09+02:00
+last_commit: 2026-03-29T13:21:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ntfy deep-dive post — third Path C experiment, cross-project coordination
+
+# Key outcomes
+outcomes:
+  - "Post written at `docs/articles/ntfy-deep-dive-post.md`"
+  - "Covers: Path C experiment #3, 49 patterns scored, cross-project coordination discovery, MCP integration path"
+  - "Follows style guide voice (principle-first, quiet authority, no hype)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/ntfy-deep-dive-post.md"
+  - ".tasks/active/T-711-write-ntfy-deep-dive-post--third-path-c-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T13:21:09"
+    action: "T-711: ntfy deep-dive post — third Path C experiment, cross-project coordination"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 143
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-711-write-ntfy-deep-dive-post--third-path-c-.md
+generated_by: context-agent-hybrid

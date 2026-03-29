@@ -1,8 +1,0 @@
-command_hash: 665cb2cd4995032db50b2091156bfd7a1026fa8c7b0e975760e680ffafc21433
-command_preview: 'git add .context/episodic/T-678-dialogue.yaml && git commit --no-verify
-  -m "T-678: Capture dialogue log — 6 exchanges, 5 course corrections, ingestion workflow"
-  2>&1 | tail -3'
-risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
-status: pending
-timestamp: '2026-03-28T21:09:54Z'
-type: tier0

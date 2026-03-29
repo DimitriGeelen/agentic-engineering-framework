@@ -1,0 +1,10 @@
+command_hash: 3ae94bf0ca77d0c49744ff3f9792c739fbe7ebca389c4217f64580499f766e7e
+command_preview: bin/fw inception decide T-707 go --rationale "Deep-dive complete
+  — 49 patterns harvested, skills-manager already has ntfy infrastructure, MCP integration
+  path confirmed" 2>&1
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: pending
+timestamp: '2026-03-29T11:13:23Z'
+type: tier0

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-639: Unified /approvals page — Tier 0 + Human ACs + GO decisions in urgency-ordered sections
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T23:38:50Z
+# ============================================================================
+
+task_id: T-639
+task_name: "Unified /approvals page — Tier 0 + Human ACs + GO decisions in urgency-ordered sections"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-27T11:24:36Z
+completed: 2026-03-27T11:32:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-27T12:31:51+01:00
+last_commit: 2026-03-27T12:31:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Unified /approvals page — Tier 0 + Human ACs + GO decisions
+
+# Key outcomes
+outcomes:
+  - "/approvals page shows summary counts bar (Tier 0, GO decisions, Human ACs, total)"
+  - "Section A: Tier 0 approvals displayed (existing cards preserved)"
+  - "Section B: Pending inception GO/NO-GO decisions listed with task link and research artifacts"
+  - "Section C: Tasks with unchecked Human ACs shown with interactive checkboxes"
+  - "Empty state shown when nothing needs attention"
+  - "Page loads without errors (curl returns 200)"
+  - "[REVIEW] Unified approvals page shows all three sections correctly"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-639-unified-approvals-page--tier-0--human-ac.md"
+  - "web/blueprints/approvals.py"
+  - "web/templates/approvals.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T12:31:51"
+    action: "T-639: Unified /approvals page — Tier 0 + Human ACs + GO decisions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 46
+  lines_added: 810
+  lines_removed: 111
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-639-unified-approvals-page--tier-0--human-ac.md
+generated_by: context-agent-hybrid

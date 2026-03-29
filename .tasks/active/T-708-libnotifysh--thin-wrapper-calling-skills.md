@@ -4,16 +4,16 @@ name: "lib/notify.sh — thin wrapper calling skills-manager alert dispatcher"
 description: >
   Build lib/notify.sh that wraps skills-manager dispatch_alert. Fire-and-forget, NTFY_ENABLED opt-in, backgrounded. Related: T-707 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [ntfy, notifications]
-components: []
+components: [lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:11Z
-last_update: 2026-03-29T11:14:31Z
-date_finished: null
+last_update: 2026-03-29T11:16:12Z
+date_finished: 2026-03-29T11:16:12Z
 ---
 
 # T-708: lib/notify.sh — thin wrapper calling skills-manager alert dispatcher
@@ -66,3 +66,6 @@ grep -q "NTFY_ENABLED" lib/notify.sh
 
 ### 2026-03-29T11:14:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T11:16:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

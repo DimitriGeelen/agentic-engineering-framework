@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-636: Unified human approval experience — merge Watchtower approvals page with fw task review QR/link/command into one rich flow
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-28T23:38:50Z
+# ============================================================================
+
+task_id: T-636
+task_name: "Unified human approval experience — merge Watchtower approvals page with fw task review QR/link/command into one rich flow"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-27T10:06:21Z
+completed: 2026-03-28T23:38:49Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-27T11:20:26+01:00
+last_commit: 2026-03-27T11:20:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception complete — 5-agent unified approval experience research
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (5 spikes, 1337 lines of research)"
+  - "Recommendation written with rationale (docs/reports/T-636-unified-approval-experience.md)"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/fw-agent-t636-01-flow-audit.md"
+  - "docs/reports/fw-agent-t636-02-unified-page.md"
+  - "docs/reports/fw-agent-t636-03-bridge.md"
+  - "docs/reports/fw-agent-t636-04-ac-checkboxes.md"
+  - "docs/reports/fw-agent-t636-05-mobile-qr.md"
+  - "docs/reports/T-636-unified-approval-experience.md"
+  - ".tasks/active/T-636-unified-human-approval-experience--merge.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T11:20:26"
+    action: "T-636: Inception complete — 5-agent unified approval experience research"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2252 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2252
+  commits: 1
+  files_changed: 7
+  lines_added: 1519
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-636-unified-human-approval-experience--merge.md
+generated_by: context-agent-hybrid
