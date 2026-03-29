@@ -171,9 +171,9 @@ def component_detail(name):
     source_size = ""
     location = component.get("location", "")
     if location:
-        source_path = os.path.join(PROJECT_ROOT, location)
+        source_path = os.path.join(ACTUAL_PROJECT_ROOT, location)
         real_source = os.path.realpath(source_path)
-        real_root = os.path.realpath(PROJECT_ROOT)
+        real_root = os.path.realpath(ACTUAL_PROJECT_ROOT)
         if real_source.startswith(real_root + os.sep) and os.path.isfile(real_source):
             ext_map = {
                 ".py": "python", ".sh": "bash", ".bash": "bash",
