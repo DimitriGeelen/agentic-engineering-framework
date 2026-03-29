@@ -3,18 +3,21 @@ name: notify
 type: script
 subsystem: framework-core
 location: lib/notify.sh
-tags: []
+tags: [ntfy, notifications, alerts]
 
-purpose: "TODO: describe what this component does"
+purpose: "Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+  - target: ../agents/context/check-tier0.sh
+    type: calls
+  - target: ../agents/task-create/update-task.sh
+    type: calls
+  - target: ../agents/audit/audit.sh
+    type: calls
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: ../bin/fw
+    type: calls
 
 last_verified: 2026-03-29
-created_by: unknown
+created_by: agent
