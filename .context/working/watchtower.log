@@ -10,30 +10,5 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [29/Mar/2026 22:33:48] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:33:54] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:33:59] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:34:00] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:34:00] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:34:02] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:34:08] "GET /api/fabric/source/bin/fw HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:34:09] "GET /fabric/component/fw HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:34:10] "GET /api/fabric/report/T-726-fabric-explorer-integration.md HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:24] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:24] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:24] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:24] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:35:24] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:35:30] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:51] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:59] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:59] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:59] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:35:59] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:36:00] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:36:12] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:36:30] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:36:30] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:36:30] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:36:30] "GET /api/etc/passwd HTTP/1.1" 404 -
-127.0.0.1 - - [29/Mar/2026 22:36:30] "GET /api/etc/passwd HTTP/1.1" 404 -
+127.0.0.1 - - [29/Mar/2026 22:47:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Mar/2026 22:47:18] "GET /fabric/graph HTTP/1.1" 200 -

@@ -1,11 +1,11 @@
-timestamp: 2026-03-29T20:30:01Z
+timestamp: 2026-03-29T20:41:36Z
 findings:
   - id: D1
     level: PASS
     check: "D1: Episodic quality — 2% [TODO] (15/689)"
   - id: D2
     level: WARN
-    check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(14d) T-460(16d) T-470(16d) T-476(16d) T-481(15d) T-483(15d) T-493(15d)"
+    check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(14d) T-460(16d) T-470(17d) T-476(16d) T-481(15d) T-483(15d) T-493(15d)"
     mitigation: "Review with: fw task verify"
   - id: D8
     level: PASS
@@ -17,9 +17,32 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 16 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) (+6 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: WARN
+    check: "D3: Commit velocity — WARN spike today=99 avg=47 ratio=2.1x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 122_commits_24h)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=27.3 earlier=7.1)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 3
-  warn: 2
+  pass: 8
+  warn: 4
   fail: 0
-  total: 5
+  total: 12
