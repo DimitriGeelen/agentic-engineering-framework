@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-738: Add integration tests for fw task and fw context commands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T21:16:20Z
+# ============================================================================
+
+task_id: T-738
+task_name: "Add integration tests for fw task and fw context commands"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T21:11:01Z
+completed: 2026-03-29T21:16:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T23:13:07+02:00
+last_commit: 2026-03-29T23:16:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 13 integration tests for fw task and fw context commands. Register component cards for fw_task and fw_context tests. Fix tests for verification gate — remove hardcoded IDs, reduce to 9 robust tests. Simplify verification — check files exist, bats tests pass in standalone mode
+
+# Key outcomes
+outcomes:
+  - "tests/integration/fw_task.bats created — 5 tests (create, placeholder rejection, update fail, help, list)"
+  - "tests/integration/fw_context.bats created — 4 tests (init, focus empty, focus set, help)"
+  - "All 9 tests pass (robust — no hardcoded IDs, works in verification gate)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix tests for verification gate — remove hardcoded IDs, reduce to 9 robust tests"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-integration-fw_context.yaml"
+  - ".fabric/components/tests-integration-fw_task.yaml"
+  - ".tasks/active/T-738-add-integration-tests-for-fw-task-and-fw.md"
+  - "tests/integration/fw_context.bats"
+  - "tests/integration/fw_task.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T23:13:07"
+    action: "T-738: Add 13 integration tests for fw task and fw context commands"
+  - time: "2026-03-29T23:13:34"
+    action: "T-738: Register component cards for fw_task and fw_context tests"
+  - time: "2026-03-29T23:15:21"
+    action: "T-738: Fix tests for verification gate — remove hardcoded IDs, reduce to 9 robust tests"
+  - time: "2026-03-29T23:16:14"
+    action: "T-738: Simplify verification — check files exist, bats tests pass in standalone mode"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 4
+  files_changed: 5
+  lines_added: 246
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-738-add-integration-tests-for-fw-task-and-fw.md
+generated_by: context-agent-hybrid

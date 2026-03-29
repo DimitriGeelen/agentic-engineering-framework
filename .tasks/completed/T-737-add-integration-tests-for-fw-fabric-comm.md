@@ -4,16 +4,16 @@ name: "Add integration tests for fw fabric commands"
 description: >
   Add integration tests for fw fabric commands
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/integration/fw_fabric.bats]
 related_tasks: []
 created: 2026-03-29T21:06:07Z
-last_update: 2026-03-29T21:06:07Z
-date_finished: null
+last_update: 2026-03-29T21:10:49Z
+date_finished: 2026-03-29T21:10:49Z
 ---
 
 # T-737: Add integration tests for fw fabric commands
@@ -50,3 +50,6 @@ bats tests/integration/fw_fabric.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-737-add-integration-tests-for-fw-fabric-comm.md
 - **Context:** Initial task creation
+
+### 2026-03-29T21:10:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

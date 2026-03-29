@@ -4,16 +4,16 @@ name: "Add integration tests for fw task and fw context commands"
 description: >
   Add integration tests for fw task and fw context commands
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/integration/fw_context.bats, tests/integration/fw_task.bats]
 related_tasks: []
 created: 2026-03-29T21:11:01Z
-last_update: 2026-03-29T21:11:01Z
-date_finished: null
+last_update: 2026-03-29T21:16:19Z
+date_finished: 2026-03-29T21:16:19Z
 ---
 
 # T-738: Add integration tests for fw task and fw context commands
@@ -51,3 +51,6 @@ test -f tests/integration/fw_context.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-738-add-integration-tests-for-fw-task-and-fw.md
 - **Context:** Initial task creation
+
+### 2026-03-29T21:16:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
