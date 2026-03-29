@@ -4,7 +4,7 @@ name: "Incremental adoption levels — fw init --level 1|2|3"
 description: >
   Level 1 = tasks only, Level 2 = + context fabric, Level 3 = full governance. Reduces onboarding friction. Score: 18/20 (D1:4 D2:5 D3:5 D4:4). Source: T-697 pattern harvest #16.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: [onboarding, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:55Z
-last_update: 2026-03-29T08:57:55Z
+last_update: 2026-03-29T13:02:21Z
 date_finished: null
 ---
 
@@ -20,78 +20,85 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`fw init` is all-or-nothing: 13 directories, 10+ YAML files, 14 hooks, 1024-line CLAUDE.md. Hypothesis: tiered adoption (Level 1=tasks, Level 2=+context, Level 3=full) would reduce onboarding friction.
+
+**For whom:** New framework users.
+**Why now:** Launch approaching (T-334), onboarding friction directly affects adoption. Scored 18/20 in KCP pattern harvest.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+A-1: File count is the onboarding barrier — TESTED: false. Onboarding cycles (T-104, T-107) showed zero file-count complaints. Friction is cognitive/mental-model
+A-2: Levels reduce complexity — TESTED: false. Adds 3 CLAUDE.md variants, 12 test paths, upgrade-between-levels logic. Net complexity increase
+A-3: Users want partial governance — UNTESTED: no evidence either way, but the value of governance is in the combination of hooks, not individual ones
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Evaluate whether `fw init --level 1|2|3` should be built
+**OUT:** Actually building the tiered init, modifying existing init flow
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read the research artifact and recommendation in this task
   2. Evaluate go/no-go criteria against findings
-  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-XXX go|no-go --rationale "your rationale"`
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-703 no-go --rationale "your rationale"`
   **Expected:** Decision recorded, task completed
   **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Evidence that file count is the actual onboarding barrier (not cognitive load)
+- Levels can be implemented without 3 CLAUDE.md variants
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Onboarding friction is primarily cognitive/mental-model, not file count
+- Implementation complexity (3 templates, 12 test paths, upgrade logic) exceeds benefit
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+# Research artifact exists
+test -f docs/reports/T-703-incremental-adoption.md
+# Contains analysis
+grep -q "Recommendation" docs/reports/T-703-incremental-adoption.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-29 — Levels vs UX improvements
+- **Chose:** NO-GO on levels. Recommend targeted UX improvements instead (tutorial, shorter consumer CLAUDE.md, explain-on-block)
+- **Why:** Onboarding friction is cognitive load, not file count. Levels triple testing surface and require 3 CLAUDE.md variants with no include mechanism (T-316 NO-GO). The actual barrier is understanding task-first governance, which levels don't address
+- **Rejected:** 3-level tiered init — high implementation cost (3 templates × 2 providers × 2 modes = 12 paths), maintenance burden of 3 CLAUDE.md variants, no evidence file count is the problem
+
+## Recommendation
+
+- **Recommendation:** NO-GO
+- **Rationale:** The hypothesis "too many files = onboarding friction" is not supported by evidence. Onboarding cycles (T-104, T-107, T-356) showed zero complaints about file count. All friction was about understanding hooks, task requirements, and the mental model. Implementing 3 levels would triple the testing surface, require 3 CLAUDE.md variants (no include mechanism, per T-316), and add upgrade-between-levels logic — all to solve a problem that doesn't exist.
+- **Evidence:**
+  - Research artifact: `docs/reports/T-703-incremental-adoption.md`
+  - Current init creates ~35 files in <2 seconds — user never sees most of them
+  - Onboarding observations: zero file-count complaints across 4 onboarding cycles
+  - T-316 NO-GO: no CLAUDE.md include mechanism — 3 variants would drift
+  - Consumer CLAUDE.md is already a subset (~300 lines vs 1024)
+- **Next steps after NO-GO:**
+  - Consider: `fw tutorial` — interactive walkthrough of first task+edit+complete
+  - Consider: shorter consumer CLAUDE.md template review
+  - Consider: improve task-gate error messages with inline explanations
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+<!-- Filled at completion via: fw inception decide T-703 no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T13:02:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
