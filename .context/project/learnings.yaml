@@ -1039,4 +1039,11 @@ learnings:
   date: 2026-03-29
   context: Added via context agent
   application: TBD
+- id: L-130
+  learning: "Test"
+  source: unknown
+  task: unknown
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
 candidates: []

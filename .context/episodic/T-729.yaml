@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-729: Final session commit — untracked files, cron audits
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T20:09:52Z
+# ============================================================================
+
+task_id: T-729
+task_name: "Final session commit — untracked files, cron audits"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:08:55Z
+completed: 2026-03-29T20:09:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:09:46+02:00
+last_commit: 2026-03-29T22:09:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session housekeeping — commit untracked files, clean stale locks
+
+# Key outcomes
+outcomes:
+  - "All untracked files committed or cleaned up"
+  - "Cron audit files committed"
+  - "Handover generated"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-728.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-729-final-session-commit--untracked-files-cr.md"
+  - ".tasks/completed/T-728-commit-session-state-and-generate-episod.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:09:46"
+    action: "T-729: Session housekeeping — commit untracked files, clean stale locks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 7
+  lines_added: 189
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-729-final-session-commit--untracked-files-cr.md
+generated_by: context-agent-hybrid
