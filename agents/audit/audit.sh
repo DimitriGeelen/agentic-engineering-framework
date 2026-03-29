@@ -3245,6 +3245,12 @@ if [ "$QUIET" = true ]; then
     exec 1>&3
 fi
 
+# T-709: Push notification on audit failures
+if [ $FAIL_COUNT -gt 0 ] && [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/notify.sh"
+    fw_notify "Audit Failures: $FAIL_COUNT" "Pass: $PASS_COUNT | Warn: $WARN_COUNT | Fail: $FAIL_COUNT" "health_check_failed" "audit"
+fi
+
 # Exit code based on findings
 if [ $FAIL_COUNT -gt 0 ]; then
     exit 2

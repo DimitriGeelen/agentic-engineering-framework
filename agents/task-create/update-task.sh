@@ -606,6 +606,12 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             emit_review "$TASK_ID" "$TASK_FILE"
         fi
 
+        # T-709: Push notification — human review needed
+        if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/notify.sh"
+            fw_notify "Review Needed: $TASK_ID" "$TASK_NAME" "manual" "framework"
+        fi
+
         # T-325: Check human AC quality — warn if Steps blocks are missing
         HUMAN_AC_SECTION=$(sed -n '/^### Human/,/^## \|^### [^H]/p' "$TASK_FILE" 2>/dev/null | head -n -1)
         HUMAN_AC_COUNT=$(echo "$HUMAN_AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
@@ -623,6 +629,12 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             mv "$TASK_FILE" "$DEST"
             TASK_FILE="$DEST"
             echo -e "${GREEN}Moved to completed/${NC}"
+
+            # T-709: Push notification — task completed
+            if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+                source "$FRAMEWORK_ROOT/lib/notify.sh"
+                fw_notify "Task Complete: $TASK_ID" "$TASK_NAME" "manual" "framework"
+            fi
         fi
     fi
 
