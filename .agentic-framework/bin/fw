@@ -67,7 +67,8 @@ find_project_root() {
 # Resolve FRAMEWORK_ROOT
 resolve_framework() {
     # If fw is inside the framework repo (bin/fw), use that
-    local candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
+    local candidate
+    candidate="$(cd "$FW_BIN_DIR/.." && pwd)"
     if [ -f "$candidate/FRAMEWORK.md" ] && [ -d "$candidate/agents" ]; then
         # T-355/T-359: If inside Homebrew Cellar, use opt symlink (survives brew upgrade)
         # Cellar paths are versioned (/usr/local/Cellar/agentic-fw/1.2.6/libexec) and break on upgrade.
@@ -161,7 +162,8 @@ do_vendor() {
     if [ "$canon_source" = "$canon_dest" ]; then
         # Source is the vendored copy itself — try to find the real upstream
         # The fw binary's own location reveals the original framework
-        local upstream_candidate="$(cd "$FW_BIN_DIR/.." && pwd -P)"
+        local upstream_candidate
+        upstream_candidate="$(cd "$FW_BIN_DIR/.." && pwd -P)"
         if [ "$upstream_candidate" != "$canon_source" ] && [ -f "$upstream_candidate/FRAMEWORK.md" ]; then
             echo -e "  ${YELLOW}NOTE${NC}  Source and target are the same directory — using upstream: $upstream_candidate"
             vendor_source="$upstream_candidate"
@@ -226,10 +228,10 @@ do_vendor() {
     echo -e "Target:  $dest"
     echo ""
 
-    # Build rsync exclude args
-    local rsync_excludes=""
+    # Build rsync exclude args as array (SC2086)
+    local -a rsync_args=()
     for item in "${excludes[@]}"; do
-        rsync_excludes="$rsync_excludes --exclude=$item"
+        rsync_args+=(--exclude="$item")
     done
 
     # Copy each include
@@ -241,9 +243,9 @@ do_vendor() {
 
             if [ -d "$vendor_source/$item" ]; then
                 if command -v rsync &>/dev/null; then
-                    rsync -a --delete $rsync_excludes "$vendor_source/$item/" "$dest/$item/"
+                    rsync -a --delete "${rsync_args[@]}" "$vendor_source/$item/" "$dest/$item/"
                 else
-                    rm -rf "$dest/$item"
+                    rm -rf "${dest:?}/${item:?}"
                     cp -r "$vendor_source/$item" "$dest/$item"
                     find "$dest/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
                     find "$dest/$item" -name "*.pyc" -delete 2>/dev/null || true
@@ -1010,7 +1012,8 @@ for e in d.get('errors',[])[:3]:
         elif command -v node >/dev/null 2>&1; then
             local _ts_stale=0
             for _ts_src in "${_ts_files[@]}"; do
-                local _ts_out="$FRAMEWORK_ROOT/lib/ts/dist/$(basename "${_ts_src%.ts}.js")"
+                local _ts_out
+                _ts_out="$FRAMEWORK_ROOT/lib/ts/dist/$(basename "${_ts_src%.ts}.js")"
                 if [ ! -f "$_ts_out" ] || [ "$_ts_src" -nt "$_ts_out" ]; then
                     _ts_stale=1
                     break
@@ -1465,11 +1468,12 @@ PYTASK_SHOW
                 fi
 
                 # Extract ## Verification block
-                local verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
-                                   grep -v "^##" | \
-                                   grep -v '^\`\`\`' | \
-                                   grep -v "^#" | \
-                                   grep -v "^$")
+                local verification
+                verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
+                              grep -v "^##" | \
+                              grep -v '^\`\`\`' | \
+                              grep -v "^#" | \
+                              grep -v "^$")
 
                 if [ -z "$verification" ]; then
                     echo -e "${YELLOW}No verification commands found in task $task_id${NC}"
