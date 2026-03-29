@@ -4,16 +4,16 @@ name: "fw notify CLI — setup, test, enable, disable commands"
 description: >
   Add fw notify subcommand for managing notification configuration. fw notify test sends a test push. fw notify enable/disable toggles NTFY_ENABLED. Related: T-708, T-709, T-707 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: [ntfy, notifications, cli]
-components: []
+components: [bin/fw, lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:24Z
-last_update: 2026-03-29T13:58:09Z
-date_finished: null
+last_update: 2026-03-29T14:01:10Z
+date_finished: 2026-03-29T14:01:10Z
 ---
 
 # T-710: fw notify CLI — setup, test, enable, disable commands
@@ -69,3 +69,6 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw notify status
 
 ### 2026-03-29T13:58:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T14:01:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

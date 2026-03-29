@@ -4,16 +4,16 @@ name: "fw stats — observability instrumentation via SQLite event logging"
 description: >
   Log framework operations to local SQLite, expose fw stats command. Pattern from KCP (RFC-0017). Answers 'what do agents actually use?' No equivalent exists today. Score: 18/20 (D1:4 D2:5 D3:4 D4:5). Source: T-697 pattern harvest #10.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: [observability, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:13Z
-last_update: 2026-03-29T14:01:50Z
-date_finished: null
+last_update: 2026-03-29T14:04:54Z
+date_finished: 2026-03-29T14:04:54Z
 ---
 
 # T-699: fw stats — observability instrumentation via SQLite event logging
@@ -65,3 +65,6 @@ grep -q "Recommendation" .tasks/active/T-699-fw-stats--observability-instrumenta
 
 ### 2026-03-29T14:01:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T14:04:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

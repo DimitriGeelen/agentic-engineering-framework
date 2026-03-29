@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-710: fw notify CLI — setup, test, enable, disable commands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T14:01:12Z
+# ============================================================================
+
+task_id: T-710
+task_name: "fw notify CLI — setup, test, enable, disable commands"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T11:14:24Z
+completed: 2026-03-29T14:01:10Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-29T16:01:06+02:00
+last_commit: 2026-03-29T16:01:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw notify CLI — setup, test, enable, disable, status commands
+
+# Key outcomes
+outcomes:
+  - "`fw notify status` shows current NTFY_ENABLED state and dispatcher path"
+  - "`fw notify test` sends a test notification (requires NTFY_ENABLED=true)"
+  - "`fw notify enable` sets NTFY_ENABLED=true in project config"
+  - "`fw notify disable` sets NTFY_ENABLED=false in project config"
+  - "`fw notify setup` guides through initial configuration"
+  - "`fw notify` (no subcommand) shows help text with available subcommands"
+  - "Notify route added to `bin/fw` case statement"
+  - "Config persisted in `.context/notify-config.yaml`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/notify-config.yaml"
+  - "lib/notify.sh"
+  - ".tasks/active/T-710-fw-notify-cli--setup-test-enable-disable.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T16:01:06"
+    action: "T-710: fw notify CLI — setup, test, enable, disable, status commands"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 166 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ntfy, notifications, cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 166
+  commits: 1
+  files_changed: 4
+  lines_added: 203
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-710-fw-notify-cli--setup-test-enable-disable.md
+generated_by: context-agent-hybrid

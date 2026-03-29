@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-699: fw stats — observability instrumentation via SQLite event logging
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T14:04:56Z
+# ============================================================================
+
+task_id: T-699
+task_name: "fw stats — observability instrumentation via SQLite event logging"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-29T08:57:13Z
+completed: 2026-03-29T14:04:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-29T16:04:45+02:00
+last_commit: 2026-03-29T16:04:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw stats inception — DEFER, existing observability sufficient (5 stores, 2400+ data points)
+
+# Key outcomes
+outcomes:
+  - "Current observability gaps inventoried"
+  - "Alternatives evaluated (SQLite vs YAML append vs structured log)"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-699-fw-stats.md"
+  - ".tasks/active/T-699-fw-stats--observability-instrumentation-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T16:04:45"
+    action: "T-699: fw stats inception — DEFER, existing observability sufficient (5 stores, 2400+ data points)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 307 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [observability, kcp-pattern]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 307
+  commits: 2
+  files_changed: 9
+  lines_added: 826
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-699-fw-stats--observability-instrumentation-.md
+generated_by: context-agent-hybrid
