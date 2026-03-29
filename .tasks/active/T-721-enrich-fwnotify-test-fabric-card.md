@@ -1,8 +1,8 @@
 ---
-id: T-719
-name: "Enrich fabric cards — fill TODO descriptions for core components"
+id: T-721
+name: "Enrich fw_notify test fabric card"
 description: >
-  Enrich fabric cards — fill TODO descriptions for core components
+  Enrich fw_notify test fabric card
 
 status: started-work
 workflow_type: refactor
@@ -11,12 +11,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-29T18:13:03Z
-last_update: 2026-03-29T18:13:03Z
+created: 2026-03-29T18:22:53Z
+last_update: 2026-03-29T18:22:53Z
 date_finished: null
 ---
 
-# T-719: Enrich fabric cards — fill TODO descriptions for core components
+# T-721: Enrich fw_notify test fabric card
 
 ## Context
 
@@ -25,8 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] All TODO descriptions in .fabric/components/ replaced with real descriptions (36 cards)
-- [x] All YAML files parse correctly (0 errors)
+- [x] Fabric card has purpose, type, subsystem, deps
+- [x] YAML parses correctly
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,7 +67,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-29T18:13:03Z — task-created [task-create-agent]
+### 2026-03-29T18:22:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-719-enrich-fabric-cards--fill-todo-descripti.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-721-enrich-fwnotify-test-fabric-card.md
 - **Context:** Initial task creation

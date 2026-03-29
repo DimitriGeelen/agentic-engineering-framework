@@ -4,7 +4,7 @@ name: "Add integration test for fw notify CLI"
 description: >
   Add integration test for fw notify CLI
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T18:18:16Z
-last_update: 2026-03-29T18:18:16Z
-date_finished: null
+last_update: 2026-03-29T18:20:54Z
+date_finished: 2026-03-29T18:20:54Z
 ---
 
 # T-720: Add integration test for fw notify CLI
@@ -72,3 +72,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-720-add-integration-test-for-fw-notify-cli.md
 - **Context:** Initial task creation
+
+### 2026-03-29T18:20:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

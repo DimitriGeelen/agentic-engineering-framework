@@ -1,0 +1,17 @@
+id: tests/integration/fw_notify.bats
+name: fw_notify
+type: test
+subsystem: framework-core
+location: tests/integration/fw_notify.bats
+tags: [bats, integration-test, ntfy, notifications]
+
+purpose: "Integration tests for fw notify CLI — 10 tests covering help, status, enable, disable, toggle, test-disabled, invalid subcommand, setup."
+
+depends_on:
+  - target: ../../bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-29
+created_by: agent
