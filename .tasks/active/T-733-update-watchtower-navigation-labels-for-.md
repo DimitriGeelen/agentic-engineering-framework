@@ -32,7 +32,7 @@ T-730 replaced Cytoscape graph with D3 Fabric Explorer. Nav label "Graph" and fa
 ## Verification
 
 grep -q "Explorer" web/shared.py
-grep -q "explorer" web/templates/fabric.html
+grep -q "Explorer" web/templates/fabric.html
 
 ## Decisions
 
