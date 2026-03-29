@@ -15,6 +15,12 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
+# T-712: Clear stale budget state from previous session/pre-compact.
+# Without this, the budget gate reads cached .budget-status with old token
+# counts and immediately warns/blocks in the fresh post-compact session.
+rm -f "$PROJECT_ROOT/.context/working/.budget-status" 2>/dev/null
+rm -f "$PROJECT_ROOT/.context/working/.budget-gate-counter" 2>/dev/null
+
 # Build context string
 CONTEXT=""
 
