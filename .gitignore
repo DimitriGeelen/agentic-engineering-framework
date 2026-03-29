@@ -18,3 +18,4 @@ lib/ts/node_modules/
 *.png
 # But track documentation screenshots
 !docs/screenshots/*.png
+datetime

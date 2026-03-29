@@ -910,6 +910,11 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Dispatch to remote | `fw dispatch send --host HOST --task T-XXX --agent TYPE --summary "..."` | |
 | Bus post remote | `fw bus post --remote HOST --task T-XXX --agent TYPE --summary "..."` | |
 | List SSH hosts | `fw dispatch hosts` | |
+| Notify status | `fw notify status` | Show notification configuration |
+| Notify enable | `fw notify enable` | Enable push notifications |
+| Notify disable | `fw notify disable` | Disable push notifications |
+| Notify test | `fw notify test` | Send a test notification |
+| Notify setup | `fw notify setup` | Setup guide and prerequisite check |
 | Cron generate | `fw cron generate` | Regenerate crontab from registry YAML |
 | Cron status | `fw cron status` | Show registry status (jobs, active/paused) |
 | Cron list | `fw cron list` | Alias for status |
