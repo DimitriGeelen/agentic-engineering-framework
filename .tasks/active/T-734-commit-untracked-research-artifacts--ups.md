@@ -25,9 +25,9 @@ Untracked research artifacts from T-549 (OpenClaw deep-dive) and T-586 (language
 ## Acceptance Criteria
 
 ### Agent
-- [ ] docs/upstream-patterns/openclaw/ committed
-- [ ] docs/spikes/ committed
-- [ ] No untracked docs/ files remain
+- [x] docs/upstream-patterns/openclaw/ committed
+- [x] docs/spikes/ committed
+- [x] No untracked docs/ files remain
 
 ## Verification
 
