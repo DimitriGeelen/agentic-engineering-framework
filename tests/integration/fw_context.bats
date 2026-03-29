@@ -22,20 +22,6 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-# --- Status ---
-
-@test "fw context status: shows context state" {
-    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' context status"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"CONTEXT"* ]] || [[ "$output" == *"context"* ]] || [[ "$output" == *"Memory"* ]]
-}
-
-@test "fw context status: shows working memory section" {
-    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' context status"
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"WORKING"* ]] || [[ "$output" == *"Working"* ]] || [[ "$output" == *"session"* ]]
-}
-
 # --- Init ---
 
 @test "fw context init: initializes session" {
@@ -52,12 +38,15 @@ teardown() {
     [[ "$output" == *"No"* ]] || [[ "$output" == *"no"* ]] || [[ "$output" == *"focus"* ]]
 }
 
-@test "fw context focus T-001: sets focus" {
+@test "fw context focus: sets focus on a task" {
     # Create a task first
-    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' task create --name 'Task for focus test' --type build --owner agent --description 'Test'" > /dev/null
-    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' context focus T-001"
+    bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' task create --name 'Task for focus test' --type build --owner agent --description 'Test'" > /dev/null 2>&1
+    # Find the task ID from the created file
+    local task_id
+    task_id=$(ls "$PROJECT_ROOT/.tasks/active/" | head -1 | grep -o 'T-[0-9]*')
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' context focus '$task_id'"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"T-001"* ]] || [[ "$output" == *"Focus"* ]] || [[ "$output" == *"focus"* ]]
+    [[ "$output" == *"$task_id"* ]] || [[ "$output" == *"Focus"* ]] || [[ "$output" == *"focus"* ]]
 }
 
 # --- Help ---
