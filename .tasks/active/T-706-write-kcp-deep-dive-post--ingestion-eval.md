@@ -4,16 +4,16 @@ name: "Write KCP deep-dive post — ingestion, evaluation, scoring, decision rat
 description: >
   Write KCP deep-dive post — ingestion, evaluation, scoring, decision rationale
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T09:10:50Z
-last_update: 2026-03-29T09:10:50Z
-date_finished: null
+last_update: 2026-03-29T09:52:44Z
+date_finished: 2026-03-29T09:52:44Z
 ---
 
 # T-706: Write KCP deep-dive post — ingestion, evaluation, scoring, decision rationale
@@ -25,9 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Post written at `docs/articles/kcp-deep-dive-post.md`
-- [ ] Covers: ingestion process, 5-agent evaluation, D1-D4 scoring, pattern tiers, decision rationale
-- [ ] Follows style guide voice (principle-first, quiet authority, no hype)
+- [x] Post written at `docs/articles/kcp-deep-dive-post.md`
+- [x] Covers: ingestion process, 5-agent evaluation, D1-D4 scoring, pattern tiers, decision rationale
+- [x] Follows style guide voice (principle-first, quiet authority, no hype)
 
 ### Human
 - [ ] [REVIEW] Voice and tone match writing style
@@ -65,3 +65,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-706-write-kcp-deep-dive-post--ingestion-eval.md
 - **Context:** Initial task creation
+
+### 2026-03-29T09:52:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

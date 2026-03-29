@@ -44,23 +44,23 @@ ntfy (`github.com/binwiederhier/ntfy`) is a simple HTTP-based pub/sub notificati
 
 ## Phase 1: Setup (FROM framework project)
 
-- [ ] Pick directory number: `ls -d /opt/0*/ | sort`
-- [ ] Verify clone target doesn't exist
-- [ ] Verify TermLink installed: `fw termlink check`
-- [ ] Clone target repo to /opt/053-ntfy
-- [ ] Spawn TermLink session: `termlink spawn --name ntfy-dive --backend background --shell --wait --tags "path-c,deep-dive,T-707"`
-- [ ] cd into target inside TermLink
-- [ ] Set git identity in TermLink session
-- [ ] Init framework governance: `fw init --force`
-- [ ] Verify doctor passes
-- [ ] Verify framework hooks
-- [ ] Verify seed tasks created
+- [x] Pick directory number: 053
+- [x] Verify clone target doesn't exist
+- [x] Verify TermLink installed: termlink 0.9.33
+- [x] Clone target repo to /opt/053-ntfy
+- [x] Spawn TermLink session: ntfy-dive
+- [x] cd into target inside TermLink
+- [x] Set git identity in TermLink session
+- [x] Init framework governance: 36/40 checks OK
+- [x] Verify doctor: 0 failures, 3 warnings
+- [x] Verify framework hooks: configured
+- [x] Verify seed tasks: 6 tasks (existing project mode, T-001 through T-006)
 
 ## Phase 2: Execute (INSIDE target project via TermLink)
 
-- [ ] Dispatch worker for seed task execution
-- [ ] Start mirror terminal for human observation
-- [ ] Seed tasks completed
+- [x] Dispatch worker: `fw termlink dispatch --name ntfy-worker --task T-707`
+- [ ] Worker completed but result.md was 0 bytes — check /tmp/tl-dispatch/ntfy-worker/ and /tmp/fw-agent-ntfy-worker.md next session
+- [ ] Seed tasks NOT completed — all 6 still in .tasks/active/
 - [ ] Run `fw doctor` — expect 0 failures
 - [ ] Run `fw audit` — expect majority PASS
 
