@@ -1046,4 +1046,11 @@ learnings:
   date: 2026-03-29
   context: Added via context agent
   application: TBD
+- id: L-131
+  learning: "Verification gate env leak: exported TASKS_DIR/CONTEXT_DIR survives into child processes even when PROJECT_ROOT is overridden. paths.sh uses ${TASKS_DIR:-...} which preserves stale inherited values. Fix: run verification commands in subshell with (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval cmd). General pattern: when exporting derived variables (TASKS_DIR from PROJECT_ROOT), child processes that override the base variable silently get stale derivatives."
+  source: P-011
+  task: T-739
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
 candidates: []
