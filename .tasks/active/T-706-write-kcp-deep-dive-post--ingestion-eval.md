@@ -1,0 +1,67 @@
+---
+id: T-706
+name: "Write KCP deep-dive post — ingestion, evaluation, scoring, decision rationale"
+description: >
+  Write KCP deep-dive post — ingestion, evaluation, scoring, decision rationale
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-29T09:10:50Z
+last_update: 2026-03-29T09:10:50Z
+date_finished: null
+---
+
+# T-706: Write KCP deep-dive post — ingestion, evaluation, scoring, decision rationale
+
+## Context
+
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Post written at `docs/articles/kcp-deep-dive-post.md`
+- [ ] Covers: ingestion process, 5-agent evaluation, D1-D4 scoring, pattern tiers, decision rationale
+- [ ] Follows style guide voice (principle-first, quiet authority, no hype)
+
+### Human
+- [ ] [REVIEW] Voice and tone match writing style
+  **Steps:**
+  1. Read the article at `docs/articles/kcp-deep-dive-post.md`
+  2. Check for anti-patterns: hype vocabulary, "we", hedging, emojis
+  **Expected:** Reads like a peer-to-peer governance discussion
+  **If not:** Note specific paragraphs for revision
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     Examples:
+       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
+       curl -sf http://localhost:3000/page
+       grep -q "expected_string" output_file.txt
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-29T09:10:50Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-706-write-kcp-deep-dive-post--ingestion-eval.md
+- **Context:** Initial task creation
