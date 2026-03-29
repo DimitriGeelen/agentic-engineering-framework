@@ -1008,9 +1008,11 @@ bugfix_total=0
 bugfix_with_learning=0
 
 if [ -d "$TASKS_DIR/completed" ]; then
-    # Find completed tasks with "fix" or "bug" in name (case-insensitive)
+    # Find completed tasks whose name starts with "Fix", "Bugfix", or "Hotfix" (T-693: anchored match)
     while IFS= read -r task_file; do
         [ -z "$task_file" ] && continue
+        task_name=$(grep "^name:" "$task_file" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+        echo "$task_name" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b' || continue
         task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
         [ -z "$task_id" ] && continue
         bugfix_total=$((bugfix_total + 1))
@@ -1018,7 +1020,7 @@ if [ -d "$TASKS_DIR/completed" ]; then
         if [ -f "$LEARNINGS_FILE" ] && grep -q "task: ${task_id}" "$LEARNINGS_FILE" 2>/dev/null; then
             bugfix_with_learning=$((bugfix_with_learning + 1))
         fi
-    done < <(grep -rli "^name:.*\(fix\|bug\)" "$TASKS_DIR/completed" 2>/dev/null || true)
+    done < <(find "$TASKS_DIR/completed" -name "T-*.md" -type f 2>/dev/null)
 fi
 
 if [ "$bugfix_total" -gt 0 ]; then
