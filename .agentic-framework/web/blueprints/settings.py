@@ -45,6 +45,19 @@ def settings_page():
     keys = list_configured_keys()
     settings = _load_settings()
 
+    # T-722: Notification status
+    notify_config_path = PROJECT_ROOT / ".context" / "notify-config.yaml"
+    notify_enabled = False
+    if notify_config_path.exists():
+        try:
+            nc = yaml.safe_load(notify_config_path.read_text()) or {}
+            notify_enabled = nc.get("enabled", False)
+        except Exception:
+            pass
+    from pathlib import Path as _P
+    dispatcher_path = "/opt/150-skills-manager/skills/alerts/alert_dispatcher.py"
+    dispatcher_available = _P(dispatcher_path).exists()
+
     return render_page(
         "settings.html",
         page_title="Settings",
@@ -56,6 +69,8 @@ def settings_page():
         primary_model=settings.get("primary_model", Config.PRIMARY_MODEL),
         fallback_model=settings.get("fallback_model", Config.FALLBACK_MODEL),
         ollama_host=settings.get("ollama_host", Config.OLLAMA_HOST),
+        notify_enabled=notify_enabled,
+        dispatcher_available=dispatcher_available,
     )
 
 

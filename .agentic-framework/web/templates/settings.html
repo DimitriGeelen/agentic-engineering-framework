@@ -145,6 +145,38 @@ if (providerSelect) providerSelect.addEventListener('change', function() {
 });
 </script>
 
+<!-- T-722: Notification Status -->
+<article>
+    <header><strong>Notifications</strong></header>
+    <table>
+        <tbody>
+            <tr>
+                <td><strong>Push Notifications</strong></td>
+                <td>
+                    {% if notify_enabled %}
+                    <mark style="background:var(--pico-ins-color);color:#fff;padding:0.15rem 0.5rem;border-radius:4px">Enabled</mark>
+                    {% else %}
+                    <mark style="background:var(--pico-secondary);color:#fff;padding:0.15rem 0.5rem;border-radius:4px">Disabled</mark>
+                    {% endif %}
+                </td>
+                <td><small>Toggle via <code>fw notify enable|disable</code></small></td>
+            </tr>
+            <tr>
+                <td><strong>Alert Dispatcher</strong></td>
+                <td>
+                    {% if dispatcher_available %}
+                    <mark style="background:var(--pico-ins-color);color:#fff;padding:0.15rem 0.5rem;border-radius:4px">Found</mark>
+                    {% else %}
+                    <mark style="background:var(--pico-del-color);color:#fff;padding:0.15rem 0.5rem;border-radius:4px">Missing</mark>
+                    {% endif %}
+                </td>
+                <td><small>skills-manager alert dispatcher</small></td>
+            </tr>
+        </tbody>
+    </table>
+    <p><small>Notifications alert the human when the agent is blocked (Tier 0), tasks need review, or audits fail. Run <code>fw notify setup</code> for prerequisites.</small></p>
+</article>
+
 <!-- Info -->
 <article>
     <header><strong>How it works</strong></header>

@@ -355,7 +355,9 @@ do_version_sync() {
 # --- Internal helpers ---
 
 _read_fw_version() {
-    grep '^FW_VERSION=' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null | sed 's/FW_VERSION="//;s/"//'
+    # T-690: Since T-648, FW_VERSION is dynamic ($(_derive_version)), not a literal.
+    # Use the already-evaluated FW_VERSION variable instead of grep from file.
+    echo "${FW_VERSION:-}"
 }
 
 _version_bump_help() {

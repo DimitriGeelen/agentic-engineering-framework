@@ -236,6 +236,76 @@ case "${1:-}" in
             fi
         fi
 
+        # --- Approval Notification (T-691, Gap 1 from T-636 research) ---
+        # Check for resolved Watchtower approvals the agent hasn't seen yet.
+        # When a human approves in Watchtower, the agent has no way to know
+        # unless it retries the command. This closes the feedback loop.
+        APPROVAL_CHECK_INTERVAL=3
+        if [ $((count % APPROVAL_CHECK_INTERVAL)) -eq 0 ]; then
+            APPROVALS_DIR="$PROJECT_ROOT/.context/approvals"
+            NOTIFIED_FILE="$CONTEXT_DIR/working/.approval-notified"
+            touch "$NOTIFIED_FILE" 2>/dev/null || true
+
+            if [ -d "$APPROVALS_DIR" ]; then
+                for resolved in "$APPROVALS_DIR"/resolved-*.yaml; do
+                    [ -f "$resolved" ] || continue
+                    basename_f=$(basename "$resolved")
+
+                    # Skip if already notified
+                    grep -qF "$basename_f" "$NOTIFIED_FILE" 2>/dev/null && continue
+
+                    # Check if approved (not consumed/expired/rejected)
+                    file_status=$(grep '^status:' "$resolved" 2>/dev/null | head -1 | sed 's/status: *//')
+                    [ "$file_status" = "approved" ] || continue
+
+                    # Check age — only notify for approvals < 1 hour old
+                    responded_at=$(grep 'responded_at:' "$resolved" 2>/dev/null | head -1 | sed "s/.*responded_at: *'\\{0,1\\}//;s/'.*//")
+                    if [ -n "$responded_at" ]; then
+                        resp_epoch=$(date -d "$responded_at" +%s 2>/dev/null) || resp_epoch=0
+                        now_epoch=$(date +%s)
+                        age=$(( now_epoch - resp_epoch ))
+                        [ "$age" -gt 3600 ] && continue
+                    fi
+
+                    # Extract command preview for the notification
+                    cmd_preview=$(grep 'command_preview:' "$resolved" 2>/dev/null | head -1 | sed 's/command_preview: *//')
+
+                    echo "" >&2
+                    echo "────────────────────────────────────────────" >&2
+                    echo "  APPROVAL READY — Human approved in Watchtower" >&2
+                    echo "  Command: ${cmd_preview:0:120}" >&2
+                    echo "  Action: Retry the blocked command now." >&2
+                    echo "────────────────────────────────────────────" >&2
+                    echo "" >&2
+
+                    # Mark as notified
+                    echo "$basename_f" >> "$NOTIFIED_FILE"
+                done
+
+                # --- Stale pending cleanup (Gap 3 from T-636 research) ---
+                # Remove pending files older than 2 hours
+                STALE_AGE=7200
+                for pending in "$APPROVALS_DIR"/pending-*.yaml; do
+                    [ -f "$pending" ] || continue
+                    file_age=$(( $(date +%s) - $(stat -c %Y "$pending" 2>/dev/null || echo 0) ))
+                    if [ "$file_age" -gt "$STALE_AGE" ]; then
+                        rm -f "$pending"
+                    fi
+                done
+
+                # --- Stale resolved cleanup (T-694) ---
+                # Remove resolved files older than 7 days (bypass-log.yaml is the permanent record)
+                STALE_RESOLVED_AGE=604800
+                for resolved_old in "$APPROVALS_DIR"/resolved-*.yaml; do
+                    [ -f "$resolved_old" ] || continue
+                    file_age=$(( $(date +%s) - $(stat -c %Y "$resolved_old" 2>/dev/null || echo 0) ))
+                    if [ "$file_age" -gt "$STALE_RESOLVED_AGE" ]; then
+                        rm -f "$resolved_old"
+                    fi
+                done
+            fi
+        fi
+
         # --- Research Capture Checkpoint (C-003, T-194) ---
         # Every 20 tool calls, check if focused inception task has uncommitted research
         INCEPTION_RESEARCH_INTERVAL=20
@@ -286,6 +356,7 @@ case "${1:-}" in
         echo "0" > "$COUNTER_FILE"
         rm -f "$PREV_TOKENS_FILE"
         rm -f "$CONTEXT_DIR/working/.restart-requested"  # T-186: clean up restart signal
+        rm -f "$CONTEXT_DIR/working/.approval-notified"  # T-694: reset approval notification tracker
         echo "Counter reset."
         ;;
     status)

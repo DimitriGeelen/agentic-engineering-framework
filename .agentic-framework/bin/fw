@@ -35,7 +35,7 @@ _derive_version() {
         echo "dev"
     fi
 }
-FW_VERSION="1.4.151"
+FW_VERSION="$(_derive_version)"
 
 # Colors
 RED='\033[0;31m'
@@ -455,6 +455,7 @@ show_help() {
     echo -e "  ${GREEN}mcp${NC} <cmd>            MCP server process management (reap orphans)"
     echo -e "  ${GREEN}fix-learned${NC} T-XXX \"text\"  Capture bugfix learning (G-016 shortcut)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
+    echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
@@ -3556,6 +3557,178 @@ PYPREDICT
                 ;;
         esac
         exit $_test_exit
+        ;;
+    notify)
+        # T-710: Push notification management
+        _notify_sub="${1:-}"
+        shift || true
+        _notify_config="$PROJECT_ROOT/.context/notify-config.yaml"
+
+        _notify_status() {
+            local enabled="false"
+            if [ -f "$_notify_config" ]; then
+                enabled=$(python3 -c "import yaml; d=yaml.safe_load(open('$_notify_config')); print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
+            fi
+            local dispatcher="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/alert_dispatcher.py}"
+            local dispatcher_ok="missing"
+            [ -f "$dispatcher" ] && dispatcher_ok="found"
+
+            echo -e "${BOLD}Notification Status${NC}"
+            echo ""
+            if [ "$enabled" = "true" ]; then
+                echo -e "  Enabled:    ${GREEN}true${NC}"
+            else
+                echo -e "  Enabled:    ${YELLOW}false${NC}"
+            fi
+            echo -e "  Config:     $_notify_config"
+            echo -e "  Dispatcher: $dispatcher ($dispatcher_ok)"
+            echo ""
+            if [ "$enabled" != "true" ]; then
+                echo -e "  Run ${CYAN}fw notify enable${NC} to activate notifications"
+            fi
+        }
+
+        _notify_enable() {
+            mkdir -p "$(dirname "$_notify_config")"
+            if [ -f "$_notify_config" ]; then
+                python3 -c "
+import yaml
+with open('$_notify_config') as f:
+    d = yaml.safe_load(f) or {}
+d['enabled'] = True
+with open('$_notify_config', 'w') as f:
+    yaml.dump(d, f, default_flow_style=False)
+"
+            else
+                cat > "$_notify_config" << 'YAMLEOF'
+# Notification configuration (T-710)
+# Managed by: fw notify enable/disable
+enabled: true
+YAMLEOF
+            fi
+            echo -e "${GREEN}Notifications enabled${NC}"
+            echo "  Config: $_notify_config"
+        }
+
+        _notify_disable() {
+            if [ -f "$_notify_config" ]; then
+                python3 -c "
+import yaml
+with open('$_notify_config') as f:
+    d = yaml.safe_load(f) or {}
+d['enabled'] = False
+with open('$_notify_config', 'w') as f:
+    yaml.dump(d, f, default_flow_style=False)
+"
+            else
+                mkdir -p "$(dirname "$_notify_config")"
+                cat > "$_notify_config" << 'YAMLEOF'
+# Notification configuration (T-710)
+# Managed by: fw notify enable/disable
+enabled: false
+YAMLEOF
+            fi
+            echo -e "${YELLOW}Notifications disabled${NC}"
+        }
+
+        _notify_test() {
+            # Check if enabled
+            local enabled="false"
+            if [ -f "$_notify_config" ]; then
+                enabled=$(python3 -c "import yaml; d=yaml.safe_load(open('$_notify_config')); print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
+            fi
+            if [ "$enabled" != "true" ]; then
+                echo -e "${YELLOW}Notifications are disabled.${NC} Enable first:"
+                echo -e "  ${CYAN}fw notify enable${NC}"
+                exit 1
+            fi
+
+            source "$FRAMEWORK_ROOT/lib/notify.sh"
+            echo -e "Sending test notification..."
+            NTFY_ENABLED=true fw_notify \
+                "Framework Test" \
+                "Test notification from $(basename "$PROJECT_ROOT") at $(date '+%H:%M:%S')" \
+                "manual" \
+                "framework"
+            # Wait briefly for background process
+            sleep 1
+            echo -e "${GREEN}Test notification sent${NC}"
+            echo "  Check your ntfy app for the notification"
+        }
+
+        _notify_setup() {
+            echo -e "${BOLD}Notification Setup${NC}"
+            echo ""
+            echo "The framework uses ntfy push notifications via the skills-manager"
+            echo "alert dispatcher. Notifications are opt-in and fire-and-forget."
+            echo ""
+            echo -e "${BOLD}Prerequisites:${NC}"
+            local dispatcher="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/alert_dispatcher.py}"
+            if [ -f "$dispatcher" ]; then
+                echo -e "  ${GREEN}OK${NC}  Skills-manager alert dispatcher found"
+            else
+                echo -e "  ${RED}MISSING${NC}  Alert dispatcher not found at:"
+                echo "         $dispatcher"
+                echo ""
+                echo "  The alert dispatcher routes notifications to ntfy topics."
+                echo "  Set SKILLS_DISPATCHER env var to override the default path."
+                exit 1
+            fi
+            echo ""
+            echo -e "${BOLD}Steps:${NC}"
+            echo "  1. fw notify enable     — activate notifications for this project"
+            echo "  2. fw notify test       — send a test push to verify delivery"
+            echo "  3. fw notify status     — check current configuration"
+            echo ""
+            if [ -f "$_notify_config" ]; then
+                local enabled
+                enabled=$(python3 -c "import yaml; d=yaml.safe_load(open('$_notify_config')); print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
+                if [ "$enabled" = "true" ]; then
+                    echo -e "  ${GREEN}Already configured and enabled.${NC}"
+                else
+                    echo -e "  Config exists but notifications are ${YELLOW}disabled${NC}."
+                    echo -e "  Run ${CYAN}fw notify enable${NC} to activate."
+                fi
+            else
+                echo -e "  No config file yet. Run ${CYAN}fw notify enable${NC} to create one."
+            fi
+        }
+
+        case "$_notify_sub" in
+            status)
+                _notify_status
+                ;;
+            enable)
+                _notify_enable
+                ;;
+            disable)
+                _notify_disable
+                ;;
+            test)
+                _notify_test
+                ;;
+            setup)
+                _notify_setup
+                ;;
+            ""|--help|-h)
+                echo -e "${BOLD}Usage:${NC} fw notify <command>"
+                echo ""
+                echo -e "${BOLD}Commands:${NC}"
+                echo "  status    Show notification configuration"
+                echo "  enable    Enable push notifications"
+                echo "  disable   Disable push notifications"
+                echo "  test      Send a test notification"
+                echo "  setup     Setup guide and prerequisite check"
+                echo ""
+                echo "Notifications use ntfy via the skills-manager alert dispatcher."
+                echo "Disabled by default — run 'fw notify enable' to activate."
+                ;;
+            *)
+                echo -e "${RED}Unknown notify subcommand: $_notify_sub${NC}" >&2
+                echo "Usage: fw notify {status|enable|disable|test|setup}" >&2
+                exit 1
+                ;;
+        esac
         ;;
     version|-v|--version)
         _ver_sub="${1:-}"
