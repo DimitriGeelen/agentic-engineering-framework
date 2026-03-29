@@ -1,0 +1,17 @@
+id: web/static/d3.v7.min.js
+name: d3.v7.min
+type: vendor-lib
+subsystem: watchtower
+location: web/static/d3.v7.min.js
+tags: [d3, vendor, javascript, visualization]
+
+purpose: "Vendored D3.js v7 library — force-directed graph, SVG rendering, zoom/pan. Used by fabric_explorer.html. No CDN dependency."
+
+depends_on: []
+
+depended_by:
+  - target: web/templates/fabric_explorer.html
+    type: called_by
+
+last_verified: 2026-03-29
+created_by: agent
