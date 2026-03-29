@@ -15,11 +15,28 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
-# T-712: Clear stale budget state from previous session/pre-compact.
-# Without this, the budget gate reads cached .budget-status with old token
-# counts and immediately warns/blocks in the fresh post-compact session.
-rm -f "$PROJECT_ROOT/.context/working/.budget-status" 2>/dev/null
-rm -f "$PROJECT_ROOT/.context/working/.budget-gate-counter" 2>/dev/null
+# T-712/T-713: Clear ALL session-scoped volatile state on session recovery.
+# These files are counters, caches, and flags that are valid only within a
+# single session. Carrying them across compact/resume causes stale-state bugs:
+# - .budget-status: stale token count blocks new session (T-712 root cause)
+# - .agent-dispatch-counter: old count blocks agent dispatch
+# - .handover-cooldown: old cooldown prevents handover in new session
+# - .loop-detect.json: old patterns cause false loop detection
+VOLATILE_FILES=(
+    .budget-status
+    .budget-gate-counter
+    .agent-dispatch-counter
+    .edit-counter
+    .tool-counter
+    .prev-token-reading
+    .handover-cooldown
+    .loop-detect.json
+    .new-file-counter
+    .approval-notified
+)
+for vf in "${VOLATILE_FILES[@]}"; do
+    rm -f "$PROJECT_ROOT/.context/working/$vf" 2>/dev/null
+done
 
 # Build context string
 CONTEXT=""
