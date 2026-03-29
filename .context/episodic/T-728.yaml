@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-728: Commit session state and generate episodics for completed tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T20:07:58Z
+# ============================================================================
+
+task_id: T-728
+task_name: "Commit session state and generate episodics for completed tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:06:44Z
+completed: 2026-03-29T20:07:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:07:52+02:00
+last_commit: 2026-03-29T22:07:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session housekeeping — episodics for T-723/T-724/T-725/T-727, state files
+
+# Key outcomes
+outcomes:
+  - "Episodics generated for T-723, T-724, T-725, T-727"
+  - "Session state committed"
+  - "Handover generated"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-29.yaml"
+  - ".context/audits/cron/2026-03-21-2000.yaml"
+  - ".context/audits/cron/2026-03-21-2030.yaml"
+  - ".context/audits/cron/2026-03-21-2100.yaml"
+  - ".context/audits/cron/2026-03-29-2045.yaml"
+  - ".context/audits/cron/2026-03-29-2100.yaml"
+  - ".context/audits/cron/2026-03-29-2115.yaml"
+  - ".context/audits/cron/2026-03-29-2130.yaml"
+  - ".context/audits/cron/2026-03-29-2145.yaml"
+  - ".context/audits/cron/2026-03-29-2200.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-723.yaml"
+  - ".context/episodic/T-724.yaml"
+  - ".context/episodic/T-725.yaml"
+  - ".context/episodic/T-727.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-728-commit-session-state-and-generate-episod.md"
+  - ".tasks/completed/T-723-session-housekeeping--fix-audit-warnings.md"
+  - ".tasks/completed/T-724-sync-vendor-copies--t-722-settings-chang.md"
+  - ".tasks/completed/T-725-integration-tests-for-fw-version-and-fw-.md"
+  - ".tasks/completed/T-727-register-fabric-cards-for-new-test-files.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:07:52"
+    action: "T-728: Session housekeeping — episodics for T-723/T-724/T-725/T-727, state files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 27
+  lines_added: 631
+  lines_removed: 219
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-728-commit-session-state-and-generate-episod.md
+generated_by: context-agent-hybrid

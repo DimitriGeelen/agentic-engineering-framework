@@ -1,8 +1,8 @@
 ---
-id: T-728
-name: "Commit session state and generate episodics for completed tasks"
+id: T-729
+name: "Final session commit — untracked files, cron audits"
 description: >
-  Commit session state and generate episodics for completed tasks
+  Final session commit — untracked files, cron audits
 
 status: started-work
 workflow_type: build
@@ -11,12 +11,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-29T20:06:44Z
-last_update: 2026-03-29T20:06:44Z
+created: 2026-03-29T20:08:55Z
+last_update: 2026-03-29T20:08:55Z
 date_finished: null
 ---
 
-# T-728: Commit session state and generate episodics for completed tasks
+# T-729: Final session commit — untracked files, cron audits
 
 ## Context
 
@@ -26,8 +26,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Episodics generated for T-723, T-724, T-725, T-727
-- [x] Session state committed
+- [x] All untracked files committed or cleaned up
+- [x] Cron audit files committed
 - [x] Handover generated
 
 ### Human
@@ -69,7 +69,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-29T20:06:44Z — task-created [task-create-agent]
+### 2026-03-29T20:08:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-728-commit-session-state-and-generate-episod.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-729-final-session-commit--untracked-files-cr.md
 - **Context:** Initial task creation
