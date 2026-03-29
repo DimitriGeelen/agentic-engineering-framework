@@ -1,0 +1,17 @@
+id: tests/integration/fw_handover.bats
+name: fw_handover
+type: test
+subsystem: framework-core
+location: tests/integration/fw_handover.bats
+tags: [bats, integration-test, handover, cli]
+
+purpose: "Integration tests for fw handover CLI — 4 tests covering help, file creation, sections, and output."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
