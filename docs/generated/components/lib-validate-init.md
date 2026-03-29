@@ -22,10 +22,17 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 |--------|-------------|
 | `lib/init.sh` | reads |
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
+| `lib/init.sh` | called_by |
+
 ## Related
 
 ### Tasks
-- T-357: Implement post-init validation with #@init: tags
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-validate-init.yaml`*

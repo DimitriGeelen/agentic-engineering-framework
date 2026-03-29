@@ -8,6 +8,13 @@
 
 ## What It Does
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/audit.sh` | read_by |
+| `lib/promote.sh` | read_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `context-project-practices.yaml`*
 *Last verified: 2026-03-04*

@@ -11,10 +11,13 @@ Source this file to get portable shell functions that work on
 both GNU (Linux) and BSD (macOS) systems.
 Usage: source "$FRAMEWORK_ROOT/lib/compat.sh"
 
-## Related
+## Used By (3)
 
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | sourced_by |
+| `bin/fw` | called_by |
+| `lib/paths.sh` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-compat.yaml`*

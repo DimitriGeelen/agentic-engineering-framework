@@ -19,17 +19,24 @@ agents/onboarding-test/test-onboarding.sh --quiet       # Machine-readable outpu
 Exit codes: 0=all pass, 1=warnings, 2=failures
 From T-307 inception GO → T-317 build task.
 
-## Dependencies (2)
+## Dependencies (8)
 
 | Target | Relationship |
 |--------|-------------|
 | `?` | uses |
 | `?` | uses |
+| `lib/paths.sh` | calls |
+| `agents/context/check-active-task.sh` | calls |
+| `C-007` | calls |
+| `C-004` | calls |
+| `agents/audit/self-audit.sh` | calls |
+| `agents/handover/handover.sh` | calls |
 
-## Related
+## Used By (1)
 
-### Tasks
-- T-317: Build fw test-onboarding CLI script (8 checkpoints)
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-onboarding-test-test-onboarding.yaml`*

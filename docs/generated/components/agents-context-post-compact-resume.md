@@ -14,16 +14,24 @@ Triggers:
 - After claude -c (session continuation, including auto-restart via T-179)
 Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/fabric/fabric.sh` | calls |
+| `lib/paths.sh` | calls |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/self-audit.sh` | read_by |
+| `C-009` | triggers_by |
 
 ## Related
 
 ### Tasks
-- T-241: Wire discovery findings into session-start and Watchtower
+- T-535: Build onboarding gate — tag-based PreToolUse enforcement + SessionStart injection
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-post-compact-resume.yaml`*

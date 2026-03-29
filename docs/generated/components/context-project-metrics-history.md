@@ -12,14 +12,18 @@ Time-series metrics history
 Auto-appended by audit.sh on each run
 30-day rolling retention
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/audit.sh` | read_by |
+| `metrics.sh` | read_by |
+
 ## Related
 
 ### Tasks
-- T-238: Build time-series storage for audit metrics
-- T-277: First deployment — Watchtower to Ring20 production
-- T-290: Session housekeeping — fill stale handover, commit cron rotation
-- T-293: Fill stale handover and commit audit rotation
-- T-324: Fix OneDev-to-GitHub cascade and exclude buildspec from GitHub
+- T-546: Continue fixing TermLink release builds
+- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-metrics-history.yaml`*

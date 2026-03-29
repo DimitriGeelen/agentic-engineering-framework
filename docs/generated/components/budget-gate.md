@@ -19,18 +19,22 @@ Architecture (T-138 hybrid):
 - Optional cron job can write .budget-status externally (future)
 Performance target: <100ms per invocation
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `F-003` | reads |
 | `budget-gate-counter` | reads |
+| `lib/paths.sh` | calls |
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-009` | triggers |
+| `agents/onboarding-test/test-onboarding.sh` | called_by |
+| `agents/audit/self-audit.sh` | read_by |
+| `C-009` | triggers_by |
 
 ## Documentation
 
@@ -39,7 +43,7 @@ Performance target: <100ms per invocation
 ## Related
 
 ### Tasks
-- T-271: Fix budget-gate stale critical status trap
+- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-gate.yaml`*

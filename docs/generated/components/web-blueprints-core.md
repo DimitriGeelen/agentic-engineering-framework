@@ -12,7 +12,7 @@ Active tasks with no recent update
 
 **Nothing gets done without a task.** This is enforced structurally by the framework, not by agent discipline.
 
-## Dependencies (8)
+## Dependencies (12)
 
 | Target | Relationship |
 |--------|-------------|
@@ -24,13 +24,19 @@ Active tasks with no recent update
 | `web/templates/project_doc.html` | renders |
 | `web/templates/directives.html` | renders |
 | `web/blueprints/cockpit.py` | registers |
+| `web/context_loader.py` | calls |
+| `web/subprocess_utils.py` | calls |
+| `web/blueprints/approvals.py` | calls |
+| `web/blueprints/approvals.py` | registers |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-core.yaml`*

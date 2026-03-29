@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (5)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
@@ -28,23 +28,24 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `agents/context/check-tier0.sh` | calls |
 | `agents/context/error-watchdog.sh` | calls |
 | `agents/task-create/update-task.sh` | calls |
+| `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `cron-audit` | triggers |
 | `agents/git/lib/hooks.sh` | called_by |
 | `bin/fw` | called_by |
+| `agents/onboarding-test/test-onboarding.sh` | called_by |
 
 ## Related
 
 ### Tasks
-- T-301: Add audit grace period for new projects
-- T-346: Add bugfix-learning coverage ratio to audit section 5
-- T-347: Build fw fix-learned shortcut for fast learning capture
-- T-368: Add fabric drift check to fw audit
-- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
+- T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
+- T-590: Traceability baseline — audit ignores pre-ingestion commits on imported projects
+- T-687: Fix audit YAML writer — escape quotes in findings to prevent parse errors
+- T-695: Audit check for bugfix learning coverage — detect completed fix tasks without learning entries
 
 ---
 *Auto-generated from Component Fabric. Card: `audit-yaml-validator.yaml`*

@@ -695,3 +695,33 @@ bypasses:
   command_hash: 29ceba3311f7e600f27bf53184364a2ec552d4bb6509166461abab207c096bc6
   authorized_by: human
   mechanism: fw tier0 approve
+- timestamp: '2026-03-29T07:58:45Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: "bin/fw inception decide T-696 go --rationale \"Template approach\
+    \ approved \u2014 codify Path C as repeatable pattern, run seco"
+  command_hash: 3c965f3d7938d13b73c31d379842e23d625f88510dde058acec441df80fb2ac6
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-29T08:56:52Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: "bin/fw inception decide T-697 go --rationale \"Deep-dive complete\
+    \ \u2014 33 patterns harvested and scored, 4 Tier A directly a"
+  command_hash: 3d391ddc9a2b6ef386eb1fc052ca16bb7a9b83dacd6deeec73ed93ef49d1db5a
+  authorized_by: human
+  mechanism: fw tier0 approve
+- timestamp: '2026-03-29T11:13:43Z'
+  tier: 0
+  risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+    recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+    go|no-go --rationale "..."'
+  command_preview: "bin/fw inception decide T-707 go --rationale \"Deep-dive complete\
+    \ \u2014 49 patterns harvested, skills-manager already has ntf"
+  command_hash: 3ae94bf0ca77d0c49744ff3f9792c739fbe7ebca389c4217f64580499f766e7e
+  authorized_by: human
+  mechanism: fw tier0 approve

@@ -24,12 +24,6 @@ Add a learning to project memory
 | `C-001` | calls |
 | `C-001` | called_by |
 
-## Related
-
-### Tasks
-- T-206: Fix add-learning YAML indentation + ID bug
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-
 ---
 *Auto-generated from Component Fabric. Card: `add-learning.yaml`*
 *Last verified: 2026-02-20*

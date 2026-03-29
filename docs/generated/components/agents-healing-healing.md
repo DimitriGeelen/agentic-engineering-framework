@@ -23,7 +23,7 @@ Usage:
 
 **When to use:** When a task encounters issues (status = `issues`). Implements the antifragile healing loop.
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
@@ -31,6 +31,7 @@ Usage:
 | `agents/healing/lib/resolve.sh` | calls |
 | `agents/healing/lib/patterns.sh` | calls |
 | `agents/healing/lib/suggest.sh` | calls |
+| `lib/paths.sh` | calls |
 
 ## Used By (2)
 

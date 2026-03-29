@@ -19,7 +19,7 @@ generate-episodic  Generate episodic summary for completed task
 focus         Set or show current focus
 Usage:
 
-## Dependencies (9)
+## Dependencies (10)
 
 | Target | Relationship |
 |--------|-------------|
@@ -32,8 +32,9 @@ Usage:
 | `agents/context/lib/decision.sh` | calls |
 | `agents/context/lib/episodic.sh` | calls |
 | `agents/context/lib/focus.sh` | calls |
+| `lib/paths.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -41,11 +42,7 @@ Usage:
 | `agents/task-create/update-task.sh` | called_by |
 | `bin/fw` | called_by |
 | `lib/setup.sh` | called_by |
-
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
+| `lib/init.sh` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-dispatcher.yaml`*

@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (9)
+## Dependencies (14)
 
 | Target | Relationship |
 |--------|-------------|
@@ -21,8 +21,13 @@
 | `web/templates/search.html` | renders |
 | `web/templates/patterns.html` | renders |
 | `web/templates/graduation.html` | renders |
+| `web/context_loader.py` | calls |
+| `web/embeddings.py` | calls |
+| `web/search.py` | calls |
+| `web/search_utils.py` | calls |
+| `web/templates/feedback_analytics.html` | renders |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,15 +35,8 @@
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
 | `C-006` | rendered_by |
-
-## Related
-
-### Tasks
-- T-265: Saved answers — curated Q&A for retrieval flywheel
-- T-267: User feedback — thumbs up/down on Q&A answers
-- T-268: Multi-turn Q&A conversation
-- T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
-- T-389: Save inferred question title instead of raw input in Q&A
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-route.yaml`*

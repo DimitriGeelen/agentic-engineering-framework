@@ -17,11 +17,13 @@ Detection strategy (conservative to avoid false positives):
 3. For exit code 1: only warns on high-confidence stderr patterns
 4. For exit codes 126, 127, 137, 139: always warns (never benign)
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
+| `agents/audit/self-audit.sh` | read_by |
+| `C-009` | triggers_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-error-watchdog.yaml`*

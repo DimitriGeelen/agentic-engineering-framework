@@ -1,0 +1,16 @@
+# loop-detect
+
+> TODO: describe what this component does
+
+**Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/loop-detect.sh`
+
+## What It Does
+
+PostToolUse loop detector — shell wrapper for TypeScript implementation
+Called via: fw hook loop-detect
+Reads PostToolUse JSON from stdin, outputs additionalContext on stderr
+Exit: 0=ok/warning, 2=block
+
+---
+*Auto-generated from Component Fabric. Card: `agents-context-loop-detect.yaml`*
+*Last verified: 2026-03-27*

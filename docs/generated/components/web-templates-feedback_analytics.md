@@ -8,10 +8,18 @@
 
 ## What It Does
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-267: User feedback — thumbs up/down on Q&A answers
+| Target | Relationship |
+|--------|-------------|
+| `web/templates/_wrapper.html` | wrapped_by |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/discovery.py` | rendered_by |
+| `C-003` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-feedback_analytics.yaml`*

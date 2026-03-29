@@ -17,11 +17,6 @@ Use /plan skill instead (requires active task, writes to docs/plans/)
 |--------|-------------|
 | `?` | uses |
 
-## Related
-
-### Tasks
-- T-242: Block built-in EnterPlanMode from bypassing framework governance
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-plan-mode.yaml`*
 *Last verified: 2026-03-04*

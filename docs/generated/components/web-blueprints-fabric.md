@@ -32,21 +32,19 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/templates/fabric_detail.html` | renders |
 | `web/templates/fabric_graph.html` | renders |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ## Related
 
 ### Tasks
-- T-215: Component Fabric — Watchtower UI page (visual browser + graph)
-- T-220: Fabric component detail — inline source code viewer
-- T-233: Improve fabric graph layout
-- T-251: Fix C-XXX display in fabric detail page
-- T-252: Fix unresolved C-XXX/F-XXX IDs in filtered fabric graph
+- T-506: Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-fabric.yaml`*

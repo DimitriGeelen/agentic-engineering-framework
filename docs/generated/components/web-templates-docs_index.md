@@ -6,10 +6,17 @@
 
 ## What It Does
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-365: Watchtower /docs route for generated documentation
+| Target | Relationship |
+|--------|-------------|
+| `web/templates/_wrapper.html` | wrapped_by |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/docs.py` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-docs_index.yaml`*

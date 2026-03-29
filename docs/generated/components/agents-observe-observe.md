@@ -17,22 +17,18 @@ Usage:
 ./agents/observe/observe.sh dismiss OBS-001 --reason "..." # Dismiss
 ./agents/observe/observe.sh triage                       # Interactive review
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/create-task.sh` | calls |
+| `lib/paths.sh` | calls |
 
 ## Used By (1)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
-
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-observe-observe.yaml`*

@@ -6,11 +6,20 @@
 
 ## What It Does
 
-## Related
+## Dependencies (3)
 
-### Tasks
-- T-379: Settings page with engine selector and config persistence
-- T-390: Settings page: Ollama host/port config and model dropdown
+| Target | Relationship |
+|--------|-------------|
+| `web/shared.py` | imports |
+| `web/shared.py` | calls |
+| `web/templates/settings.html` | renders |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-settings.yaml`*

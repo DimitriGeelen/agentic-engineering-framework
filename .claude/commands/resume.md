@@ -49,7 +49,7 @@ Then ask: "What would you like to work on?"
 
 ## Rules
 
-- Do NOT use AskUserQuestion (blocked in dontAsk mode) — use plain text
-- Keep output concise — no "Why this matters" commentary
+- Do NOT use AskUserQuestion (may be blocked in dontAsk mode) — use plain text
+- Keep output concise — no commentary
 - If LATEST.md has unfilled `[TODO]` sections, warn about stale handover
 - If tool counter > 0 at session start, the PostToolUse hook is working

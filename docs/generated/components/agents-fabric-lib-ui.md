@@ -19,11 +19,6 @@ The Watchtower web UI at `/fabric` provides: subsystem overview, component table
 |-----------|-------------|
 | `agents/fabric/fabric.sh` | called_by |
 
-## Related
-
-### Tasks
-- T-208: Component Fabric — agent structure and fw routing
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-ui.yaml`*
 *Last verified: 2026-02-20*

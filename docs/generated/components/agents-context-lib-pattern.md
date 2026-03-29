@@ -19,6 +19,8 @@ Add a pattern to project memory
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between.
 
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (1)
 
 | Component | Relationship |
@@ -28,11 +30,6 @@ Add a pattern to project memory
 ## Documentation
 
 - [Deep Dive: Three-Layer Memory](docs/articles/deep-dives/04-three-layer-memory.md) (deep-dive)
-
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-pattern.yaml`*

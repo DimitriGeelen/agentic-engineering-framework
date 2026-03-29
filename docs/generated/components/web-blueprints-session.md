@@ -20,18 +20,21 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 - All learnings are captured as practices
 - All open questions are tracked
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
+| `web/subprocess_utils.py` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-session.yaml`*

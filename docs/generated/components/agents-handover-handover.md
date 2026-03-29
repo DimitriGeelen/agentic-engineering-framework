@@ -15,21 +15,23 @@ Creates handover documents for session continuity
 
 **When to use:** MANDATORY at end of every session.
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/task-create/create-task.sh` | calls |
 | `C-008` | calls |
 | `agents/git/git.sh` | calls |
+| `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/pre-compact.sh` | called_by |
 | `bin/fw` | called_by |
 | `C-008` | called_by |
+| `agents/onboarding-test/test-onboarding.sh` | called_by |
 
 ## Documentation
 
@@ -38,9 +40,8 @@ Creates handover documents for session continuity
 ## Related
 
 ### Tasks
-- T-260: Fix LATEST.md handover sync — symlink instead of copy
-- T-372: Investigate blind task-completion suggestion pattern + mitigate
-- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
+- T-556: Handover commit attribution — use session ID not active task ID
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-handover.yaml`*

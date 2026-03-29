@@ -20,20 +20,34 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/tasks.html` | renders |
 | `web/templates/task_detail.html` | renders |
+| `web/subprocess_utils.py` | calls |
 
-## Used By (2)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+| `web/blueprints/approvals.py` | called_by |
+| `web/blueprints/approvals.py` | registered_by |
+| `web/blueprints/review.py` | called_by |
+| `web/blueprints/review.py` | registered_by |
+
+## Related
+
+### Tasks
+- T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
+- T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI
+- T-640: "Complete Task" button — show when all Human ACs checked, auto-complete via Watchtower
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*

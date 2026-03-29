@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (13)
+## Used By (34)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,13 +27,32 @@ Path resolution
 | `web/blueprints/session.py` | called_by |
 | `web/blueprints/tasks.py` | called_by |
 | `web/blueprints/timeline.py` | called_by |
+| `web/blueprints/api.py` | imported_by |
+| `web/blueprints/docs.py` | imported_by |
+| `web/blueprints/settings.py` | imported_by |
+| `web/search_utils.py` | imported_by |
+| `web/blueprints/api.py` | called_by |
+| `web/blueprints/approvals.py` | called_by |
+| `web/blueprints/cron.py` | called_by |
+| `web/blueprints/discoveries.py` | called_by |
+| `web/blueprints/docs.py` | called_by |
+| `web/blueprints/review.py` | called_by |
+| `web/blueprints/settings.py` | called_by |
+| `web/embeddings.py` | called_by |
+| `web/search.py` | called_by |
+| `web/search_utils.py` | called_by |
+| `web/blueprints/api.py` | imports_by |
+| `web/blueprints/docs.py` | imports_by |
+| `web/blueprints/settings.py` | imports_by |
+| `web/context_loader.py` | called_by |
+| `web/search.py` | imports_by |
+| `web/search_utils.py` | imports_by |
+| `web/subprocess_utils.py` | called_by |
 
 ## Related
 
 ### Tasks
-- T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
-- T-215: Component Fabric — Watchtower UI page (visual browser + graph)
-- T-241: Wire discovery findings into session-start and Watchtower
+- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
 
 ---
 *Auto-generated from Component Fabric. Card: `web-shared.yaml`*

@@ -1,0 +1,22 @@
+# check-dispatch-pre
+
+> TODO: describe what this component does
+
+**Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-dispatch-pre.sh`
+
+## What It Does
+
+Dispatch Pre-Gate — PreToolUse hook for Task tool calls
+Validates preamble inclusion before sub-agent dispatch (G-008 enforcement)
+Three incidents (T-073: 177K spike, T-158, T-170) proved that unbounded
+sub-agent output crashes sessions. PostToolUse advisory (check-dispatch.sh)
+warns AFTER the damage. This hook prevents dispatch WITHOUT preamble.
+Detection:
+1. Only fires for Task tool calls (not TaskOutput)
+2. Checks if prompt contains preamble markers
+3. Blocks if markers are absent (exit code 2)
+Exempt dispatches:
+
+---
+*Auto-generated from Component Fabric. Card: `agents-context-check-dispatch-pre.yaml`*
+*Last verified: 2026-03-23*

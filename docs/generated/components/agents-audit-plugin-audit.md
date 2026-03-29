@@ -14,6 +14,12 @@ TASK-SILENT   — No task references, no authority claims (informational)
 TASK-BYPASSING — Authority-claiming language without task gates
 Exit codes: 0 = all clear, 1 = bypassing skills found
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/paths.sh` | calls |
+
 ## Used By (1)
 
 | Component | Relationship |

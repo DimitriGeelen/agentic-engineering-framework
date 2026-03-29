@@ -6,26 +6,24 @@
 
 ## What It Does
 
-Compute summary stats
+Split by type
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/risks.html` | renders |
+| `web/context_loader.py` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
-
-## Related
-
-### Tasks
-- T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-risks.yaml`*

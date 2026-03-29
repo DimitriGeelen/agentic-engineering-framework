@@ -22,7 +22,7 @@ Analyze task issues and suggest recovery actions
 ## Related
 
 ### Tasks
-- T-270: Healing agent integration — semantic pattern matching via fw ask
+- T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-healing-lib-diagnose.yaml`*

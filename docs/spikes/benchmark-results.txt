@@ -1,0 +1,40 @@
+========================================
+T-586 Phase 2: Prototype Benchmark
+2026-03-23T23:37:58+01:00
+========================================
+
+### Test 1: Cold Start (single invocation)
+  TypeScript (node):  25ms
+  Bash+Python:        54ms
+
+### Test 2: 10 Sequential Invocations (warm)
+  TypeScript (10x):   279ms  (27ms/call)
+  Bash+Python (10x):  553ms  (55ms/call)
+
+### Test 3: Loop Detection (6 identical calls)
+  TypeScript detected loop: yes (call 6)
+  Bash+Python detected loop: yes (call 6)
+
+### Test 4: Shell Escaping (quotes in tool input)
+  TypeScript:   PASS
+  Bash+Python:  PASS
+
+### Test 5: Special Characters (newlines, backslashes)
+  TypeScript:   PASS
+  Bash+Python:  PASS
+
+### Test 6: State File Integrity
+  TypeScript state:   valid JSON, 1 entries
+  Bash+Python state:  valid JSON, 1 entries
+
+### Test 7: Compilation (esbuild)
+  esbuild compile:  440ms
+  Bash+Python:      0ms (no compilation)
+
+### LOC Comparison
+  TypeScript source: 261 lines
+  Compiled JS:       180 lines
+  Bash+Python:       218 lines
+
+========================================
+Benchmark complete. Results: /opt/999-Agentic-Engineering-Framework/docs/spikes/benchmark-results.txt

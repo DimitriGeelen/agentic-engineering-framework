@@ -8,16 +8,20 @@
 
 ## What It Does
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `?` | uses |
+| `web/shared.py` | calls |
+| `web/templates/discoveries.html` | renders |
 
-## Related
+## Used By (2)
 
-### Tasks
-- T-241: Wire discovery findings into session-start and Watchtower
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-discoveries.yaml`*

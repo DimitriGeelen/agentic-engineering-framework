@@ -17,11 +17,20 @@ Flow:
 3. If keywords found, Python detailed pattern matching
 4. If destructive pattern matched:
 
-## Used By (1)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/paths.sh` | calls |
+
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
+| `agents/audit/self-audit.sh` | read_by |
+| `agents/context/check-project-boundary.sh` | related_by |
+| `C-009` | triggers_by |
 
 ## Documentation
 
@@ -31,7 +40,11 @@ Flow:
 ## Related
 
 ### Tasks
-- T-229: Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 (hook config)
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+- T-612: Agent approval pickup — hook/cron scanning Watchtower approval ledger
+- T-635: Deterministic human-facing action routing — structural enforcement that agent always routes through Watchtower/fw-task-review instead of pasting raw commands
+- T-638: check-tier0 Watchtower link — emit approval page URL in Tier 0 block message
+- T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-tier0.yaml`*

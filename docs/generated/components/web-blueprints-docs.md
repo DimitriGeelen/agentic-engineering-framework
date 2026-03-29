@@ -6,12 +6,28 @@
 
 ## What It Does
 
-Load card data for subsystem grouping
+Safe directories for file viewer (relative to PROJECT_ROOT)
+
+## Dependencies (4)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/shared.py` | imports |
+| `web/shared.py` | calls |
+| `web/templates/docs_index.html` | renders |
+| `web/templates/docs_detail.html` | renders |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ## Related
 
 ### Tasks
-- T-365: Watchtower /docs route for generated documentation
+- T-633: Auto-link file references — fw commands and Watchtower markdown emit clickable URLs
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-docs.yaml`*

@@ -6,20 +6,18 @@
 
 ## What It Does
 
-## Used By (1)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/templates/_partials/chat_tab.html` | includes |
+
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-003` | rendered_by |
-
-## Related
-
-### Tasks
-- T-265: Saved answers — curated Q&A for retrieval flywheel
-- T-266: Streaming UX — marked.js, syntax highlighting, copy buttons
-- T-267: User feedback — thumbs up/down on Q&A answers
-- T-268: Multi-turn Q&A conversation
-- T-380: Search UX redesign: unified input, elevated Q&A, relevance bars
+| `web/templates/_partials/chat_tab.html` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-search.yaml`*

@@ -1,0 +1,27 @@
+# commit-cadence
+
+> TODO: describe what this component does
+
+**Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/commit-cadence.sh`
+
+## What It Does
+
+Commit Cadence Warning — PostToolUse hook for Write/Edit
+Counts source file edits since last commit, warns when count is high.
+Thresholds:
+10 edits → soft warning (consider committing)
+20 edits → strong warning (commit now, risk of context exhaustion)
+Exempt paths (not counted):
+.context/, .tasks/, .claude/, .agentic-framework/
+Counter reset: post-commit git hook resets .edit-counter to 0
+Exit code: always 0 (PostToolUse hooks are advisory, cannot block)
+Output: JSON with additionalContext when warning threshold reached
+
+## Related
+
+### Tasks
+- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
+
+---
+*Auto-generated from Component Fabric. Card: `agents-context-commit-cadence.yaml`*
+*Last verified: 2026-03-27*

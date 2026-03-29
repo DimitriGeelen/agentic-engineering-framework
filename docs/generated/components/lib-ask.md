@@ -39,16 +39,18 @@ The `horizon` field controls when a task should be considered for work:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `?` | uses |
+| `lib/paths.sh` | calls |
 
-## Related
+## Used By (1)
 
-### Tasks
-- T-264: fw ask CLI — synchronous RAG+LLM wrapper
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ask.yaml`*

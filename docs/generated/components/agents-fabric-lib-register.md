@@ -22,9 +22,8 @@ Implements: fw fabric register, fw fabric scan
 ## Related
 
 ### Tasks
-- T-208: Component Fabric — agent structure and fw routing
-- T-369: Make fabric subsystem inference configurable
-- T-370: Document depends_on edge format in fabric skeleton card
+- T-484: fw fabric register: accept directories and recursively register files
+- T-551: Fabric register scan-then-confirm — preview before bulk registration, three-layer codification
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-register.yaml`*

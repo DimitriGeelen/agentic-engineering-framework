@@ -25,25 +25,29 @@ When fixing a bug discovered through real-world usage (user testing, production 
 1. **Classify the bug** — Is this a new failure class, or a repeat of a known pattern?
 2. **Check learnings.yaml** — Does a learning already exist for this class?
 3. If new class: `fw context add-learning "description" --task T-XXX --source P-001`
-4. If systemic (same class hit 2+ times): register in `gaps.yaml`, consider tooling fix (Level C/D)
+4. If systemic (same class hit 2+ times): register in `concerns.yaml`, consider tooling fix (Level C/D)
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `F-003` | reads |
 | `F-003` | writes |
 | `agents/handover/handover.sh` | calls |
+| `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-009` | triggers |
 | `agents/handover/handover.sh` | called_by |
 | `C-004` | called_by |
+| `agents/audit/self-audit.sh` | read_by |
+| `bin/claude-fw` | read_by |
+| `C-009` | triggers_by |
 
 ## Documentation
 
@@ -52,7 +56,9 @@ When fixing a bug discovered through real-world usage (user testing, production 
 ## Related
 
 ### Tasks
-- T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
+- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
+- T-691: Agent approval notification — PostToolUse hook detects resolved Watchtower approvals and tells agent to retry
+- T-694: Approval file lifecycle — cleanup resolved files older than 7 days, reset notified tracker on session init
 
 ---
 *Auto-generated from Component Fabric. Card: `checkpoint.yaml`*

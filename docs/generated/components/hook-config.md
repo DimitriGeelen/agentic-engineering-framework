@@ -21,10 +21,19 @@
 | `agents/context/pre-compact.sh` | triggers |
 | `agents/context/post-compact-resume.sh` | triggers |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/self-audit.sh` | read_by |
+
 ## Related
 
 ### Tasks
-- T-242: Block built-in EnterPlanMode from bypassing framework governance
+- T-496: Implement path isolation — fw hook subcommand + portable settings.json + doctor validation
+- T-559: Project boundary gate — PreToolUse hook blocking writes outside PROJECT_ROOT
+- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
+- T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
 
 ---
 *Auto-generated from Component Fabric. Card: `hook-config.yaml`*

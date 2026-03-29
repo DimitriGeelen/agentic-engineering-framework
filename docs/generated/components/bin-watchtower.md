@@ -16,16 +16,23 @@ bin/watchtower.sh stop
 bin/watchtower.sh restart [--port N] [--debug]
 bin/watchtower.sh status
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `?` | uses |
+| `lib/paths.sh` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
 
 ## Related
 
 ### Tasks
-- T-250: Reliable Watchtower startup script
+- T-621: fw serve — add UFW firewall check to watchtower.sh startup
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-watchtower.yaml`*

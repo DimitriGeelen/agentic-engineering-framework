@@ -22,11 +22,6 @@ Steps:
 |--------|-------------|
 | `?` | uses |
 
-## Related
-
-### Tasks
-- T-304: Build opt-out first-run experience after fw init
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-first-run.yaml`*
 *Last verified: 2026-03-04*

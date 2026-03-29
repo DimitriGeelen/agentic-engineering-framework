@@ -8,11 +8,12 @@
 
 Git Agent - Hook installation subcommand
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `C-004` | calls |
+| `lib/tasks.sh` | calls |
 
 ## Used By (1)
 
@@ -23,9 +24,11 @@ Git Agent - Hook installation subcommand
 ## Related
 
 ### Tasks
-- T-231: Update git hook messages and register enforcement gaps
-- T-236: Wire agent fabric awareness — blast-radius in git hooks, auto-capture learnings on completion
-- T-247: Dispatch fabric context + auto-registration — close agent blind spots
+- T-519: Fix do_vendor not found during fw doctor interactive init
+- T-520: Fix commit-msg hook FRAMEWORK_ROOT resolution for vendored installs
+- T-521: fw init should git init when not in a git repo
+- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
+- T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-hooks.yaml`*

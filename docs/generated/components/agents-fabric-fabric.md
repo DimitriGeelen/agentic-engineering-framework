@@ -32,7 +32,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -42,22 +42,19 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `agents/fabric/lib/ui.sh` | calls |
 | `agents/fabric/lib/drift.sh` | calls |
 | `agents/fabric/lib/summary.sh` | calls |
+| `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/post-compact-resume.sh` | called_by |
 | `bin/fw` | called_by |
+| `agents/context/check-fabric-new-file.sh` | called_by |
 
 ## Documentation
 
 - [Deep Dive: Component Fabric](docs/articles/deep-dives/07-component-fabric.md) (deep-dive)
-
-## Related
-
-### Tasks
-- T-208: Component Fabric — agent structure and fw routing
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-fabric.yaml`*

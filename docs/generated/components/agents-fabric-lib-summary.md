@@ -18,8 +18,7 @@ Implements: fw fabric overview, fw fabric subsystem, fw fabric stats
 ## Related
 
 ### Tasks
-- T-208: Component Fabric — agent structure and fw routing
-- T-214: Component Fabric — batch-register all AEF components
+- T-506: Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-summary.yaml`*

@@ -10,19 +10,26 @@
 
 Configuration (T-273: config-driven, no hardcoded paths)
 
-## Dependencies (2)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
+| `web/search_utils.py` | calls |
+| `web/shared.py` | calls |
+| `web/search.py` | calls |
+
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `C-003` | called_by |
+| `web/app.py` | called_by |
+| `web/blueprints/api.py` | called_by |
 
 ## Related
 
 ### Tasks
-- T-245: sqlite-vec embedding layer — semantic search for project knowledge
-- T-263: RAG quick wins — prompt, embeddings, chunking
-- T-265: Saved answers — curated Q&A for retrieval flywheel
-- T-273: Production readiness — WSGI, health endpoint, config, error handling
-- T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
+- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
 
 ---
 *Auto-generated from Component Fabric. Card: `web-embeddings.yaml`*

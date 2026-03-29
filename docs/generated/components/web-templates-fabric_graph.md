@@ -15,7 +15,7 @@
 ## Related
 
 ### Tasks
-- T-233: Improve fabric graph layout
+- T-507: Fix fabric graph not rendering on htmx navigation (requires reload)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fabric_graph.yaml`*

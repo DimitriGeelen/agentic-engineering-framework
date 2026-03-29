@@ -19,11 +19,6 @@ Implements: fw fabric drift, fw fabric validate
 
 - [Deep Dive: Component Fabric](docs/articles/deep-dives/07-component-fabric.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-208: Component Fabric — agent structure and fw routing
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-drift.yaml`*
 *Last verified: 2026-02-20*

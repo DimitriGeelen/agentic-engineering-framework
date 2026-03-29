@@ -16,6 +16,8 @@
 
 **Sequential TDD** (T-058): Fresh agent per implementation task with review between.
 
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (1)
 
 | Component | Relationship |

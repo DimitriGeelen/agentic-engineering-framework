@@ -12,11 +12,12 @@ Project Memory - Decisions
 Key decisions made during the project with rationale.
 Referenced when similar decisions come up.
 
-## Related
+## Used By (2)
 
-### Tasks
-- T-277: First deployment — Watchtower to Ring20 production
-- T-290: Session housekeeping — fill stale handover, commit cron rotation
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/context.sh` | read_by |
+| `agents/audit/audit.sh` | read_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-decisions.yaml`*
