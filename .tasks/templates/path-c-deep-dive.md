@@ -72,6 +72,7 @@ Pick the next unused number in the sequence.
 **Context:** Dispatch a Claude Code worker or use interactive TermLink session. The worker operates inside the target project — NOT from the framework.
 
 - [ ] Dispatch worker or attach session inside target project
+- [ ] Start mirror terminal for human observation: `termlink spawn --name {project}-mirror --backend tmux --shell --wait && termlink pty inject {project}-mirror "termlink attach {project}-worker" --enter` — human attaches via `termlink attach {project}-mirror`
 - [ ] Execute T-001: Orientation (read codebase, run doctor/audit)
 - [ ] Execute T-002: First governed commit
 - [ ] Execute T-003: Register key components in fabric

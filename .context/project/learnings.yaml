@@ -1011,4 +1011,11 @@ learnings:
   date: 2026-03-28
   context: Added via context agent
   application: TBD
+- id: L-127
+  learning: "Path C template (path-c-deep-dive.md) validated on KCP repo — cold-start agent followed template successfully, 4/5 seed tasks passed. Key gap: worker observability (headless claude -p gives zero live visibility). Template improvements: directory numbering, pre-flight checks, mirror terminal step."
+  source: P-001
+  task: T-697
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
 candidates: []
