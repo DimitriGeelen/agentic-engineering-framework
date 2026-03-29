@@ -46,9 +46,9 @@ Integrate D3.js Fabric Explorer from OpenClaw evaluation into upstream Watchtowe
 
 ## Verification
 
-curl -sf http://localhost:3000/fabric | grep -q "Component Fabric"
-curl -sf http://localhost:3000/fabric/graph | grep -q "Fabric Explorer"
-curl -sf http://localhost:3000/fabric/graph | grep -q "componentData"
+curl -s http://localhost:3000/fabric | grep -qm1 "Component Fabric"
+curl -s http://localhost:3000/fabric/graph | grep -qm1 "Fabric Explorer"
+curl -s http://localhost:3000/fabric/graph | grep -qm1 "componentData"
 # Source API — path traversal blocked
 test "$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:3000/api/fabric/source/../../etc/passwd')" = "403" -o "$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:3000/api/fabric/source/../../etc/passwd')" = "404"
 
