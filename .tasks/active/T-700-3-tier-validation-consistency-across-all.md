@@ -4,15 +4,15 @@ name: "3-tier validation consistency across all fw tools"
 description: >
   Codify error/warn/clean pattern across ALL fw tools. We do this inconsistently — doctor uses it, audit uses it, but other commands don't. One standard. Score: 19/20 (D1:5 D2:5 D3:5 D4:4). Source: T-697 pattern harvest #6.
 
-status: captured
-workflow_type: build
+status: started-work
+workflow_type: inception
 owner: agent
 horizon: next
 tags: [dx, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:21Z
-last_update: 2026-03-29T08:57:21Z
+last_update: 2026-03-29T13:18:46Z
 date_finished: null
 ---
 
@@ -20,51 +20,45 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Framework uses OK/FAIL/WARN output inconsistently: audit.sh has structured pass/warn/fail functions, doctor/preflight/init use inline echo with different formats. KCP pattern harvest scored this 19/20.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Current validation patterns inventoried across all fw commands
+- [x] Alternatives evaluated (shared library vs exit code contract vs defer)
+- [x] Recommendation written with rationale
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Review findings and approve go/no-go decision
+  **Steps:**
+  1. Read `docs/reports/T-700-validation-consistency.md`
+  2. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-700 defer --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Ask for clarification
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f docs/reports/T-700-validation-consistency.md
+grep -q "Recommendation" docs/reports/T-700-validation-consistency.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-29 — Shared library vs exit code contract vs defer
+- **Chose:** DEFER — low pain, low frequency, zero user complaints
+- **Why:** Audit (the high-frequency validator) already has structured output. Doctor/preflight run occasionally. Full library approach is over-engineered for the actual friction
+- **Rejected:** Shared validate.sh library — audit's functions have audit-specific features (FINDINGS, YAML, history) that don't generalize. Exit code standardization — useful but too small to justify its own task
+
+## Recommendation
+
+- **Recommendation:** DEFER
+- **Rationale:** Inconsistency is real but painless. Zero user complaints across 4 onboarding cycles. Audit (the only high-frequency validator) already has structured output. Doctor/preflight are human-read, occasional commands. If CI needs machine-readable doctor output, add `--json` flag — don't restructure text output.
+- **Evidence:**
+  - Research artifact: `docs/reports/T-700-validation-consistency.md`
+  - 3 commands with structured validation, 3 with partial, 7+ without
+  - 83 OK/FAIL/WARN instances in bin/fw, 83 in audit.sh, 16 in preflight.sh
+  - Zero user complaints about output inconsistency
+- **Next steps after DEFER:** Revisit when CI/automation needs to parse doctor/preflight output
 
 ## Updates
 
@@ -72,3 +66,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-700-3-tier-validation-consistency-across-all.md
 - **Context:** Initial task creation
+
+### 2026-03-29T13:18:46Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
+
+### 2026-03-29T13:18:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
