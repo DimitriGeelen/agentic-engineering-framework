@@ -1,72 +1,34 @@
 # ============================================================================
-# EPISODIC MEMORY - T-452: PR #5: T-003: Auto-create onboarding tasks after fw init
+# EPISODIC MEMORY - T-452: PR #5: T-003: Auto-create onboarding tasks
 # ============================================================================
-# STATUS: AUTO-GENERATED
-# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T16:12:08Z
-# ============================================================================
+# STATUS: ENRICHED
+# Tracked OneDev PR #5 which replaces the static onboarding menu with auto-detected tasks.
 
 task_id: T-452
 task_name: "PR #5: T-003: Auto-create onboarding tasks after fw init"
+completed: "2026-03-12T13:00:47Z"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
 
-# Timeline
-created: 2026-03-12T10:15:01Z
-completed: 2026-03-12T10:15:01Z
-duration_days: 0
-updates_count: 1
-
-# Summary (auto-generated from git commit messages)
 summary: |
-  >
+  PR #5 merged — replaced static onboarding menu with auto-detection of existing vs new projects, creating appropriate tasks automatically.
 
-# Key outcomes
-outcomes:
-  - "[First criterion]"
-  - "[Second criterion]"
-  - "[REVIEW] Dashboard renders correctly"
+what_happened: |
+  Reviewed and merged OneDev PR #5 (branch: fix/T-003-auto-onboarding-tasks).
+  The PR replaced the static "Choose your path" menu in fw init with auto-detection:
+  existing projects (detected via package.json, requirements.txt, src/, etc.) get 3
+  onboarding tasks (ingest, fabric register, handover), while new projects get an
+  inception task for goals/architecture. The implementation is idempotent — safe
+  for --force re-init. Changed 69 lines added / 16 removed in lib/init.sh.
 
-# Challenges (auto-detected from git: commits with fix/revert/bug/error)
-challenges:
-  # No challenges detected in commit messages
+key_decisions: []
 
-# Decisions (from task file Decisions section)
-decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+patterns_observed:
+  - "Auto-detection of project type (existing vs new) is more user-friendly than interactive menus for CLI onboarding"
+  - "Idempotency on re-init prevents duplicate task creation"
 
-# Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - "lib/init.sh"
 
-# Timeline (auto-mined from git log)
-git_timeline:
-  # No git timeline available
+lessons: []
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
-successes:
-  # Completed successfully in 0 commit(s), 0 min
-
-# Related tasks
-related_tasks:
-  blocked: []
-  absorbed: []
-  spawned: []
-
-# Tags for retrieval
-tags: [onedev, pr]
-
-# Passive metrics (derived automatically — do not edit)
-metrics:
-  wall_clock_minutes: 0
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
-
-# Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-452-pr-5-t-003-auto-create-onboarding-tasks-.md
-generated_by: context-agent-hybrid
+reuse_value: "medium — the auto-detection onboarding pattern (existing project vs greenfield) is reusable for any CLI tool with diverse entry points"

@@ -1,80 +1,34 @@
 # ============================================================================
 # EPISODIC MEMORY - T-519: Fix do_vendor not found during fw doctor interactive init
 # ============================================================================
-# STATUS: AUTO-GENERATED
-# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T16:12:07Z
-# ============================================================================
+# STATUS: ENRICHED
+# Fixed function ordering bug — do_vendor defined after interactive init block that called it.
 
 task_id: T-519
 task_name: "Fix do_vendor not found during fw doctor interactive init"
+completed: "2026-03-17T22:45:34Z"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
 
-# Timeline
-created: 2026-03-17T22:38:57Z
-completed: 2026-03-17T22:45:34Z
-duration_days: 0
-updates_count: 2
-first_commit: 2026-03-17T23:45:27+01:00
-last_commit: 2026-03-17T23:45:27+01:00
-
-# Summary (auto-generated from git commit messages)
 summary: |
-  T-519, T-520, T-521: Fix install test findings — vendor ordering, hook paths, git init
+  Fixed bash function ordering bug — do_vendor was defined at line 1173 after the interactive init block at lines 100-200.
 
-# Key outcomes
-outcomes:
-  - "`do_vendor` is available when `do_init` is called from the interactive init path"
-  - "`bash -n bin/fw` passes"
+what_happened: |
+  fw doctor's interactive init path called do_init → do_vendor, but do_vendor was defined
+  later in bin/fw. This caused exit 127 (command not found). Fixed by reordering function
+  definitions. Discovered during TermLink install testing alongside T-520 and T-521.
 
-# Challenges (auto-detected from git: commits with fix/revert/bug/error)
-challenges:
-  - description: "T-519, T-520, T-521: Fix install test findings — vendor ordering, hook paths, git init"
-    source: git-mined
+key_decisions: []
 
-# Decisions (from task file Decisions section)
-decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+patterns_observed:
+  - "Bash function ordering matters — functions must be defined before call sites in linear execution paths"
+  - "TermLink install testing revealed 3 bugs (T-519/520/521) that manual testing missed"
 
-# Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "agents/git/lib/hooks.sh"
   - "bin/fw"
   - "lib/init.sh"
-  - ".tasks/active/T-519-fix-dovendor-not-found-during-fw-doctor-.md"
-  - ".tasks/active/T-520-fix-commit-msg-hook-frameworkroot-resolu.md"
-  - ".tasks/active/T-521-fw-init-should-git-init-when-not-in-a-gi.md"
 
-# Timeline (auto-mined from git log)
-git_timeline:
-  - time: "2026-03-17T23:45:27"
-    action: "T-519, T-520, T-521: Fix install test findings — vendor ordering, hook paths, git init"
-
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
-successes:
-  # Completed successfully in 1 commit(s), 6 min
-
-# Related tasks
-related_tasks:
-  blocked: []
-  absorbed: []
-  spawned: []
-
-# Tags for retrieval
 tags: [bug, install, D2]
 
-# Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 6
   commits: 1
-  files_changed: 6
-  lines_added: 294
-  lines_removed: 126
-
-# Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-519-fix-dovendor-not-found-during-fw-doctor-.md
-generated_by: context-agent-hybrid

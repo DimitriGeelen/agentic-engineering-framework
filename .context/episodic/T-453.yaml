@@ -1,72 +1,34 @@
 # ============================================================================
-# EPISODIC MEMORY - T-453: PR #4: T-002: Fix governance activation gap in fw init
+# EPISODIC MEMORY - T-453: PR #4: T-002: Fix governance activation gap
 # ============================================================================
-# STATUS: AUTO-GENERATED
-# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T16:12:08Z
-# ============================================================================
+# STATUS: ENRICHED
+# Tracked OneDev PR #4 which fixes governance not being active after fw init.
 
 task_id: T-453
 task_name: "PR #4: T-002: Fix governance activation gap in fw init"
+completed: "2026-03-12T13:00:47Z"
 workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
 
-# Timeline
-created: 2026-03-12T10:15:03Z
-completed: 2026-03-12T10:15:03Z
-duration_days: 0
-updates_count: 1
-
-# Summary (auto-generated from git commit messages)
 summary: |
-  >
+  PR #4 merged — added fw context init to do_init() for immediate governance activation after fw init, hardened check-active-task.sh.
 
-# Key outcomes
-outcomes:
-  - "[First criterion]"
-  - "[Second criterion]"
-  - "[REVIEW] Dashboard renders correctly"
+what_happened: |
+  Reviewed and merged OneDev PR #4 (branch: fix/T-002-governance-activation-gap).
+  The PR added a call to fw context init at the end of do_init() so that governance
+  (focus.yaml, session.yaml) is active immediately after fw init. It also hardened
+  check-active-task.sh to block when .framework.yaml exists but focus.yaml is missing,
+  distinguishing initialized projects from true bootstrap. An integration test was added.
 
-# Challenges (auto-detected from git: commits with fix/revert/bug/error)
-challenges:
-  # No challenges detected in commit messages
+key_decisions: []
 
-# Decisions (from task file Decisions section)
-decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+patterns_observed:
+  - "PR-tracking tasks created from OneDev have minimal local commit history since work happened on feature branches"
 
-# Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - "agents/context/check-active-task.sh"
+  - "lib/init.sh"
+  - "tests/integration/check_active_task.bats"
 
-# Timeline (auto-mined from git log)
-git_timeline:
-  # No git timeline available
+lessons: []
 
-# What worked well (requires judgment — [TODO] if enrichment_status is pending)
-successes:
-  # Completed successfully in 0 commit(s), 0 min
-
-# Related tasks
-related_tasks:
-  blocked: []
-  absorbed: []
-  spawned: []
-
-# Tags for retrieval
-tags: [onedev, pr]
-
-# Passive metrics (derived automatically — do not edit)
-metrics:
-  wall_clock_minutes: 0
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
-
-# Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-453-pr-4-t-002-fix-governance-activation-gap.md
-generated_by: context-agent-hybrid
+reuse_value: "medium — demonstrates the pattern of closing governance gaps where init leaves the project in a partially-governed state"

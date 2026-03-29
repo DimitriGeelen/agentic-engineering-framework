@@ -8,7 +8,7 @@ tags: [bats, integration-test, ntfy, notifications]
 purpose: "Integration tests for fw notify CLI — 10 tests covering help, status, enable, disable, toggle, test-disabled, invalid subcommand, setup."
 
 depends_on:
-  - target: ../../bin/fw
+  - target: bin/fw
     type: calls
 
 depended_by: []
