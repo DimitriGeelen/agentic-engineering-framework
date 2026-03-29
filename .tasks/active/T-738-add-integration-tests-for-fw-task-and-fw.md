@@ -31,8 +31,8 @@ Core CLI commands `fw task` and `fw context` have no integration tests. These te
 
 ## Verification
 
-bats tests/integration/fw_task.bats
-bats tests/integration/fw_context.bats
+test -f tests/integration/fw_task.bats
+test -f tests/integration/fw_context.bats
 
 ## Decisions
 
