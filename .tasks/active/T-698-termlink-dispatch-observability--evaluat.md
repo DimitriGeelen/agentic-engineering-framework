@@ -4,7 +4,7 @@ name: "TermLink dispatch observability — evaluate interactive vs headless work
 description: >
   Inception: TermLink dispatch observability — evaluate interactive vs headless worker mode for human observation
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-697, T-696, T-679, T-577]
 created: 2026-03-29T08:18:33Z
-last_update: 2026-03-29T08:18:33Z
+last_update: 2026-03-29T12:55:34Z
 date_finished: null
 ---
 
@@ -26,14 +26,14 @@ date_finished: null
 
 **Why now:** Path C workflow (T-696) requires human trust in an autonomous worker operating in an external project. Observability is a UX requirement, not a nice-to-have.
 
-**Why headless may have been chosen:** There may be good reasons — `claude -p` is simpler than interactive mode, output capture is reliable, and TermLink PTY session management for interactive Claude may be complex. This inception explores the tradeoffs.
+**Why headless was chosen:** Traced to T-143 (tl-dispatch.sh). Practical reasons: reliable output capture (no ANSI codes), macOS compat, clean kill-watchdog lifecycle. See research artifact.
 
 ## Assumptions
 
 A-1: Interactive `claude` in a TermLink PTY session is technically feasible (vs. `claude -p`)
 A-2: The human wants to see tool calls and reasoning, not just final output
 A-3: There's a middle ground (e.g., `claude -p` with streaming + tee) that preserves reliability while adding observability
-A-4: The current headless approach was an engineering convenience, not a deliberate design choice
+A-4: ~~The current headless approach was an engineering convenience, not a deliberate design choice~~ INVALIDATED — traced to deliberate choices in T-143 for output reliability
 
 ## Exploration Plan
 
@@ -49,10 +49,10 @@ A-4: The current headless approach was an engineering convenience, not a deliber
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Current headless design rationale documented
-- [ ] At least 2 alternatives evaluated with tradeoffs
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Current headless design rationale documented
+- [x] At least 2 alternatives evaluated with tradeoffs
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -75,28 +75,39 @@ A-4: The current headless approach was an engineering convenience, not a deliber
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+# Research artifact exists
+test -f docs/reports/T-698-dispatch-observability.md
+# Contains alternatives evaluation
+grep -q "Tradeoff Matrix" docs/reports/T-698-dispatch-observability.md
+# Contains recommendation
+grep -q "Recommendation" docs/reports/T-698-dispatch-observability.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+<!-- Record decisions ONLY when choosing between alternatives. -->
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** 4 alternatives evaluated (tee, stream-json, interactive, hybrid). Option A (tee) is a 1-line change that eliminates the complete-blackout problem. Option D (hybrid stream-json parse) is the full solution but warrants a separate build task. Option C (interactive claude) is NO-GO — output capture becomes unreliable. All options work with current TermLink (no upstream changes needed).
+- **Evidence:**
+  - Research artifact: `docs/reports/T-698-dispatch-observability.md`
+  - Current implementation traced: `agents/termlink/termlink.sh:283` — `claude -p --output-format text > result.md`
+  - Headless rationale documented from T-143, T-503, T-577
+  - 4 alternatives with tradeoff matrix (effort, observability, reliability, macOS compat)
+  - L-128 (KCP learnings) confirms "worker observability (headless claude -p gives zero live visibility)" as known gap
+- **Next steps after GO:**
+  - Phase 1 build task: change `>` to `| tee` in run.sh (1 line, bounded)
+  - Phase 2 build task: stream-json parse loop for tool-call visibility (separate task)
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+<!-- Filled at completion via: fw inception decide T-698 go|no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T12:55:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
