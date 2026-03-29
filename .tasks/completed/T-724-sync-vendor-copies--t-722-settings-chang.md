@@ -1,22 +1,22 @@
 ---
-id: T-725
-name: "Integration tests for fw version and fw cron CLI commands"
+id: T-724
+name: "Sync vendor copies — T-722 settings changes to .agentic-framework"
 description: >
-  Integration tests for fw version and fw cron CLI commands
+  Sync vendor copies — T-722 settings changes to .agentic-framework
 
-status: started-work
-workflow_type: test
+status: work-completed
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-29T19:43:03Z
-last_update: 2026-03-29T19:59:24Z
-date_finished: null
+created: 2026-03-29T19:40:55Z
+last_update: 2026-03-29T19:42:31Z
+date_finished: 2026-03-29T19:42:31Z
 ---
 
-# T-725: Integration tests for fw version and fw cron CLI commands
+# T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 
 ## Context
 
@@ -25,10 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] tests/integration/fw_version.bats exists with 6 tests covering version output, aliases, semver format
-- [x] tests/integration/fw_cron.bats exists with 9 tests covering help, status, list, badcmd, run, pause/resume
-- [x] All 15 new tests pass: `bats tests/integration/fw_version.bats tests/integration/fw_cron.bats`
-- [x] Full test suite passes: 161 tests, 0 failures
+- [x] .agentic-framework/web/blueprints/settings.py matches source web/blueprints/settings.py
+- [x] .agentic-framework/web/templates/settings.html matches source web/templates/settings.html
+- [x] Additional out-of-sync vendor files synced: lib/version.sh, agents/audit/self-audit.sh, agents/context/checkpoint.sh, bin/fw
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -69,14 +68,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-29T19:43:03Z — task-created [task-create-agent]
+### 2026-03-29T19:40:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-725-integration-tests-for-fw-version-and-fw-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-724-sync-vendor-copies--t-722-settings-chang.md
 - **Context:** Initial task creation
 
-### 2026-03-29T19:55:36Z — status-update [task-update-agent]
-- **Change:** status: started-work → issues
-- **Reason:** Paused — pivoting to fabric explorer integration per user request
-
-### 2026-03-29T19:59:24Z — status-update [task-update-agent]
-- **Change:** status: issues → started-work
+### 2026-03-29T19:42:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,11 +1,11 @@
 # Working Memory - Current Focus
-# Session: S-2026-0329-1355
+# Session: S-2026-0329-1906
 
-current_task: null
+current_task: T-728
 priorities: []
 blockers: []
 pending_decisions: []
 reminders:
 - Run audit before pushing
 - Create handover before ending session
-focus_session: S-2026-0329-1355
+focus_session: S-2026-0329-1906

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-723: Session housekeeping — fix audit warnings, episodic gaps, fabric edges
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T20:07:37Z
+# ============================================================================
+
+task_id: T-723
+task_name: "Session housekeeping — fix audit warnings, episodic gaps, fabric edges"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T19:11:03Z
+completed: 2026-03-29T19:30:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T21:30:20+02:00
+last_commit: 2026-03-29T21:30:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fabric stale edges + enrich 9 skeleton episodic summaries
+
+# Key outcomes
+outcomes:
+  - "lib-notify.yaml fabric card has correct dependency direction and project-root-relative paths"
+  - "`fw fabric drift` reports 0 stale edges for notify"
+  - "Skeleton episodic summaries enriched with real content (9 tasks: T-444,452,453,519,520,521,592,593,596)"
+  - "C-001 inception artifact references — current audit passes (historical trends only)"
+  - "`fw audit` shows no new FAIL items"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fabric stale edges + enrich 9 skeleton episodic summaries"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-444.yaml"
+  - ".context/episodic/T-452.yaml"
+  - ".context/episodic/T-453.yaml"
+  - ".context/episodic/T-519.yaml"
+  - ".context/episodic/T-520.yaml"
+  - ".context/episodic/T-521.yaml"
+  - ".context/episodic/T-592.yaml"
+  - ".context/episodic/T-593.yaml"
+  - ".context/episodic/T-596.yaml"
+  - ".fabric/components/lib-notify.yaml"
+  - ".fabric/components/tests-integration-fw_notify.yaml"
+  - ".tasks/active/T-723-session-housekeeping--fix-audit-warnings.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T21:30:20"
+    action: "T-723: Fix fabric stale edges + enrich 9 skeleton episodic summaries"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 12
+  lines_added: 238
+  lines_removed: 1206
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-723-session-housekeeping--fix-audit-warnings.md
+generated_by: context-agent-hybrid

@@ -1,8 +1,8 @@
 ---
-id: T-727
-name: "Register fabric cards for new test files + session housekeeping"
+id: T-728
+name: "Commit session state and generate episodics for completed tasks"
 description: >
-  Register fabric cards for new test files + session housekeeping
+  Commit session state and generate episodics for completed tasks
 
 status: started-work
 workflow_type: build
@@ -11,12 +11,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-29T20:03:11Z
-last_update: 2026-03-29T20:03:11Z
+created: 2026-03-29T20:06:44Z
+last_update: 2026-03-29T20:06:44Z
 date_finished: null
 ---
 
-# T-727: Register fabric cards for new test files + session housekeeping
+# T-728: Commit session state and generate episodics for completed tasks
 
 ## Context
 
@@ -26,8 +26,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Fabric cards created for tests/integration/fw_version.bats and tests/integration/fw_cron.bats
-- [x] `fw fabric drift` reports 0 unregistered, 0 orphaned, 0 stale
+- [x] Episodics generated for T-723, T-724, T-725, T-727
+- [x] Session state committed
+- [x] Handover generated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,7 +69,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-29T20:03:11Z — task-created [task-create-agent]
+### 2026-03-29T20:06:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-727-register-fabric-cards-for-new-test-files.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-728-commit-session-state-and-generate-episod.md
 - **Context:** Initial task creation

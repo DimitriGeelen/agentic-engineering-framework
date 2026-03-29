@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T20:07:38Z
+# ============================================================================
+
+task_id: T-724
+task_name: "Sync vendor copies — T-722 settings changes to .agentic-framework"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T19:40:55Z
+completed: 2026-03-29T19:42:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T21:42:26+02:00
+last_commit: 2026-03-29T21:42:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Sync vendor copies — settings, version, self-audit, checkpoint, bin/fw
+
+# Key outcomes
+outcomes:
+  - ".agentic-framework/web/blueprints/settings.py matches source web/blueprints/settings.py"
+  - ".agentic-framework/web/templates/settings.html matches source web/templates/settings.html"
+  - "Additional out-of-sync vendor files synced: lib/version.sh, agents/audit/self-audit.sh, agents/context/checkpoint.sh, bin/fw"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/audit/self-audit.sh"
+  - ".agentic-framework/agents/context/checkpoint.sh"
+  - ".agentic-framework/bin/fw"
+  - ".agentic-framework/lib/version.sh"
+  - ".agentic-framework/web/blueprints/settings.py"
+  - ".agentic-framework/web/templates/settings.html"
+  - ".tasks/active/T-724-sync-vendor-copies--t-722-settings-chang.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T21:42:26"
+    action: "T-724: Sync vendor copies — settings, version, self-audit, checkpoint, bin/fw"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 7
+  lines_added: 380
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-724-sync-vendor-copies--t-722-settings-chang.md
+generated_by: context-agent-hybrid
