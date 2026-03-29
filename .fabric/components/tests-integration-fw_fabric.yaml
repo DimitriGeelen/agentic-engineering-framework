@@ -1,0 +1,17 @@
+id: tests/integration/fw_fabric.bats
+name: fw_fabric
+type: test
+subsystem: framework-core
+location: tests/integration/fw_fabric.bats
+tags: [bats, integration-test, fabric, cli]
+
+purpose: "Integration tests for fw fabric CLI — 10 tests covering help, overview, stats, deps, search, and get."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-29
+created_by: agent
