@@ -10,6 +10,5 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [29/Mar/2026 22:47:14] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:47:18] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [29/Mar/2026 22:54:45] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [29/Mar/2026 22:59:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [29/Mar/2026 23:00:25] "GET /fabric/component/fw HTTP/1.1" 200 -

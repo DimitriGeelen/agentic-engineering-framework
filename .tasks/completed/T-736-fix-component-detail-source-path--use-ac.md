@@ -4,7 +4,7 @@ name: "Fix component detail source path — use ACTUAL_PROJECT_ROOT"
 description: >
   Fix component detail source path — use ACTUAL_PROJECT_ROOT
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T20:56:04Z
-last_update: 2026-03-29T20:56:04Z
-date_finished: null
+last_update: 2026-03-29T21:00:24Z
+date_finished: 2026-03-29T21:00:24Z
 ---
 
 # T-736: Fix component detail source path — use ACTUAL_PROJECT_ROOT
@@ -53,3 +53,6 @@ grep -qm1 "Component:" <(curl -s http://localhost:3000/fabric/component/fw)
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-736-fix-component-detail-source-path--use-ac.md
 - **Context:** Initial task creation
+
+### 2026-03-29T21:00:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
