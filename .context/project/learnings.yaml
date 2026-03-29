@@ -1018,4 +1018,18 @@ learnings:
   date: 2026-03-29
   context: Added via context agent
   application: TBD
+- id: PL-005
+  learning: "ntfy uses in-memory topic map with SQLite/PostgreSQL message cache; notifications dispatch asynchronously to WebSocket, SSE, Firebase FCM, Web Push, and SMTP after HTTP 200 response — delivery failures do not affect publish response"
+  source: unknown
+  task: T-006
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
+- id: L-128
+  learning: "Before building new infrastructure (notifications, monitoring, auth), check if the skills-manager project (150) already provides it via MCP. The skills MCP server is configured in .mcp.json and exposes 126 operations including dispatch_alert. Discovered during T-707 ntfy deep-dive — was about to build lib/notify.sh when skills-manager already had ntfy deployed, alert dispatcher, and MCP tools."
+  source: T-707 coordination
+  task: T-707
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
 candidates: []

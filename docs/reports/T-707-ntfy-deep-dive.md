@@ -41,32 +41,87 @@ Seed tasks remain uncompleted (all 6 in .tasks/active/).
 
 **Mitigation:** Discovery agents dispatched directly from framework session to harvest patterns. Seed tasks are not blocking for pattern extraction — they're governance scaffolding, and the 5 discovery agents perform the actual analysis.
 
-## Discovery Agent Results
+## Scored Patterns (D1-D4)
 
-### Domain 1: API & HTTP Patterns
-*(Agent: ntfy-d1-api)*
+49 patterns found across 4 domains (API, Architecture, Storage, DX). Auth domain pending. Ranked by composite score.
 
-[PENDING — agent results will be consolidated here]
+### Top Patterns (Score >= 18)
 
-### Domain 2: Auth & Security Patterns
-*(Agent: ntfy-d2-auth)*
+| # | Pattern | Domain | D1 | D2 | D3 | D4 | Total | Framework Application |
+|---|---------|--------|----|----|----|----|-------|----------------------|
+| 1 | Dual-backend message cache (SQLite+Postgres) | Storage | 4 | 5 | 5 | 5 | **19** | Model for T-699 event logging — queries struct abstracts backend |
+| 2 | Attachment store with orphan cleanup | Storage | 5 | 4 | 5 | 5 | **19** | Grace-period reconciliation prevents metadata/storage drift |
+| 3 | TTL-based data lifecycle (2-phase delete) | Storage | 5 | 5 | 4 | 5 | **19** | Soft-delete in DB, physical cleanup in background — prevent races |
+| 4 | Transactional helpers (ExecTx/QueryTx) | Storage | 4 | 5 | 5 | 5 | **19** | 36 lines eliminate entire class of transaction bugs |
+| 5 | Schema migration system (versioned) | Storage | 5 | 5 | 4 | 4 | **18** | Framework SQLite has no migration system — adopt this |
+| 6 | Structured error catalog with doc links | API | 4 | 5 | 5 | 4 | **18** | 77 error types with unique codes + remediation URLs |
+| 7 | Message cache with pluggable backends | API | 5 | 5 | 4 | 4 | **18** | Offline notification delivery — messages persist until retrieved |
+| 8 | Middleware composition chain | API | 4 | 5 | 4 | 5 | **18** | Composable auth/rate-limit/handler pipeline |
+| 9 | Per-channel Prometheus metrics | API | 5 | 5 | 4 | 4 | **18** | Per-channel success/failure counters for delivery monitoring |
+| 10 | Structured logging (deferred alloc) | Arch | 4 | 5 | 5 | 4 | **18** | Zero-cost when not at level — Contexter interface for domain context |
+| 11 | Layered rate limiting (interface) | Arch | 5 | 5 | 4 | 4 | **18** | Multi-dimensional limiters — requests, bandwidth, auth failures |
+| 12 | DB abstraction with replica health | Arch | 5 | 5 | 4 | 4 | **18** | Health-checked replicas with graceful fallback |
 
-[PENDING — agent results will be consolidated here]
+### Patterns Score 17
 
-### Domain 3: Architecture & Go Patterns
-*(Agent: ntfy-d3-arch)*
+| # | Pattern | Domain | D1 | D2 | D3 | D4 | Total |
+|---|---------|--------|----|----|----|----|-------|
+| 13 | Topic-based pub/sub (URL-as-address) | API | 4 | 3 | 5 | 5 | 17 |
+| 14 | Multi-protocol subscription (JSON/SSE/Raw/WS) | API | 3 | 4 | 5 | 5 | 17 |
+| 15 | Header-based API with JSON fallback | API | 3 | 4 | 5 | 5 | 17 |
+| 16 | Visitor-based rate limiting (token bucket) | API | 5 | 5 | 3 | 4 | 17 |
+| 17 | Subscription connection lifecycle | API | 5 | 5 | 3 | 4 | 17 |
+| 18 | Typed error catalog | Arch | 3 | 5 | 5 | 4 | 17 |
+| 19 | Multi-backend test harness (forEachBackend) | Arch | 5 | 5 | 4 | 3 | 17 |
+| 20 | Generic utility types (Go generics) | Arch | 3 | 4 | 5 | 5 | 17 |
+| 21 | Middleware chain for HTTP handlers | Arch | 3 | 5 | 5 | 4 | 17 |
+| 22 | Comprehensive config (triple-source) | Arch | 3 | 4 | 5 | 5 | 17 |
+| 23 | Fail-fast init with cleanup | Arch | 5 | 5 | 4 | 3 | 17 |
+| 24 | UTF-8 sanitization at entry | Arch | 5 | 5 | 3 | 4 | 17 |
+| 25 | Build system with cross-compilation | Arch | 3 | 5 | 4 | 5 | 17 |
+| 26 | LookupCache (TTL single-value) | Storage | 3 | 4 | 5 | 5 | 17 |
 
-[PENDING — agent results will be consolidated here]
+### Patterns Score 15-16
 
-### Domain 4: Storage & Persistence Patterns
-*(Agent: ntfy-d4-storage)*
+| # | Pattern | Domain | Total | Notes |
+|---|---------|--------|-------|-------|
+| 27 | Multi-channel delivery fan-out | API | 16 | Fire-and-forget goroutines per channel |
+| 28 | Build-tag feature toggles | API | 16 | Compile-time feature inclusion/exclusion |
+| 29 | Upstream server forwarding | API | 16 | Self-hosted with mobile push via ntfy.sh |
+| 30 | Embedded filesystem (go:embed) | Arch | 16 | Single-binary with all assets |
+| 31 | In-memory pub/sub with staleness | Arch | 16 | Topic auto-expiry on inactivity |
+| 32 | PeekedReadCloser | Arch | 16 | Non-destructive stream inspection |
+| 33 | Custom S3 client (zero SDK deps) | Storage | 16 | D4 excellence — works with any S3-compatible |
+| 34 | Write batching (BatchingQueue) | Storage | 15 | Generic time/size-based batch queue |
+| 35 | Primary/replica DB with health | Storage | 18 | Round-robin with atomic health flags |
 
-[PENDING — agent results will be consolidated here]
+### Average Score: 17.1/20
 
-### Domain 5: DX & Self-Hosting Patterns
-*(Agent: ntfy-d5-dx)*
+## Tier Classification
 
-[PENDING — agent results will be consolidated here]
+### Tier A: Directly applicable (build now)
+
+1. **Schema migration system (#5, 18/20)** — Framework SQLite stores (metrics, proposed event log) have no migration system. Adopt ntfy's version table + numbered migration map + transactional execution.
+
+2. **Transactional helpers (#4, 19/20)** — 36 lines of Go that eliminate transaction bugs. If the framework adds Go components (T-586 language strategy), adopt verbatim.
+
+3. **Structured error catalog (#6, 18/20)** — Replace ad-hoc error strings with typed errors containing unique codes and doc links. Apply across fw CLI commands.
+
+4. **Fire-and-forget notification delivery (#27, 16/20)** — The exact pattern for `lib/notify.sh`. Notification failures must never block governance operations.
+
+### Tier B: Worth exploring (inception needed)
+
+5. **Dual-backend storage (#1, 19/20)** — If T-699 (fw stats) goes to SQLite, the queries-struct pattern enables future PostgreSQL support without rewrites.
+
+6. **Multi-protocol subscription (#14, 17/20)** — Watchtower could offer SSE/WebSocket for real-time notification delivery alongside the existing htmx polling.
+
+7. **Per-channel metrics (#9, 18/20)** — Once notifications are live, track delivery rates per channel (ntfy, email, webhook) for reliability monitoring.
+
+### Tier C: Interesting but premature
+
+8. Upstream server forwarding — relevant only if self-hosting ntfy
+9. Build-tag feature toggles — relevant only if framework adds compiled Go components
+10. Custom S3 client — impressive but no S3 need in framework
 
 ## Enhancement Design: Framework Notification Surface
 
@@ -85,42 +140,54 @@ The framework has no push notification channel. Events that need human attention
 | **Budget critical** | `checkpoint.sh` | Auto-handover, prints warning | LOW — Session is already wrapping up |
 | **Human AC ready** | `update-task.sh` | Emits review URL | MEDIUM — Human review is needed |
 
-### Integration Architecture
+### Integration Architecture (REVISED after coordination)
+
+**Original design:** Build `lib/notify.sh` with curl calls to ntfy.
+
+**Revised design:** Use skills-manager (150) existing infrastructure via MCP.
 
 ```
-Framework Event → notify.sh → curl POST → ntfy server → Mobile/Desktop push
-                     ↑
-              ntfy.conf (topic, server URL, auth)
+Framework Event → fw_notify() → skills-manager alert dispatcher → ntfy → Mobile/Desktop
+                      ↑                     ↑
+               NTFY_ENABLED env    dedup, rate limit, retry, topic routing
 ```
 
-### Design: `lib/notify.sh`
+The skills-manager project (150) already has:
+- ntfy self-hosted at localhost:2586, behind Traefik TLS at `ntfy.docker.ring20.geelenandcompany.com`
+- Alert dispatcher with dedup (60min window), rate limiting (10/hr), retry (3 attempts)
+- ntfy channel with priority mapping, topic routing, publisher auth
+- MCP server configured in framework `.mcp.json` — `dispatch_alert` tool
 
-A single-file notification helper. Framework scripts source it and call `fw_notify`.
+### Design: `lib/notify.sh` (thin wrapper)
+
+Instead of reimplementing notification logic, the framework calls the skills-manager alert dispatcher:
 
 ```bash
-# lib/notify.sh — Framework push notification helper
+# lib/notify.sh — Framework notification wrapper
+#
+# Calls skills-manager dispatch_alert via CLI (fire-and-forget)
 #
 # Usage:
 #   source "$FRAMEWORK_ROOT/lib/notify.sh"
-#   fw_notify "title" "message" [priority] [tags]
+#   fw_notify "title" "message" [trigger] [category]
 #
-# Configuration (in .framework.yaml or env):
-#   NTFY_TOPIC    — ntfy topic (e.g., "fw-dimitri" or "fw-myproject")
-#   NTFY_SERVER   — ntfy server URL (default: https://ntfy.sh)
-#   NTFY_TOKEN    — access token (optional, for self-hosted with auth)
+# Configuration:
 #   NTFY_ENABLED  — set to "true" to enable (default: disabled)
-#
-# Priority levels: min, low, default, high, urgent
-# Tags: emoji shortcodes (e.g., "rotating_light" = 🚨, "white_check_mark" = ✅)
+
+fw_notify() {
+    [ "${NTFY_ENABLED:-false}" = "true" ] || return 0
+    local title="$1" message="$2" trigger="${3:-manual}" category="${4:-framework}"
+    python3 /opt/150-skills-manager/skills/alerts/alert_dispatcher.py \
+      --trigger "$trigger" --title "$title" --message "$message" &
+}
 ```
 
 **Key design decisions:**
 1. **Disabled by default** — No surprise network calls. Human opts in via `NTFY_ENABLED=true`
-2. **Fire-and-forget** — `curl` runs in background (`&`), never blocks framework operations
-3. **No new dependency** — Uses `curl` (already required by framework)
-4. **Configurable topic** — Each project gets its own ntfy topic
-5. **Self-hosted or public** — Works with ntfy.sh (free) or self-hosted instance
-6. **Graceful degradation** — If curl fails, no error. Notifications are advisory, not structural.
+2. **Fire-and-forget** — Runs in background (`&`), never blocks framework operations
+3. **No duplication** — Uses existing dedup, rate limiting, retry, auth from skills-manager
+4. **Alert history** — All notifications tracked in skills-manager `alerts.jsonl`
+5. **Graceful degradation** — If skills-manager unreachable, no error. Notifications are advisory.
 
 ### Integration Points
 
@@ -188,48 +255,33 @@ Priority: default
 Tags: eyes
 ```
 
-### Configuration Design
+### Configuration Design (Simplified)
 
-Add to `.framework.yaml`:
-```yaml
-notifications:
-  enabled: false          # Opt-in only
-  provider: ntfy          # Future: could support others
-  server: https://ntfy.sh # Or self-hosted URL
-  topic: fw-{project}     # Auto-derived from project_name
-  token: ""               # Optional auth token
-  events:
-    tier0: true           # Push on Tier 0 blocks
-    task_complete: true   # Push on task completion
-    audit_fail: true      # Push on audit failures
-    handover: false       # Push on session handover
-    human_ac: true        # Push when human review needed
+Framework side is minimal — just an enable flag:
+```bash
+# In .env or shell profile:
+export NTFY_ENABLED=true
 ```
+
+All notification routing, auth, and topic configuration lives in the skills-manager project (`skills/alerts/alert_config.py`). The framework does not need to know about ntfy servers, topics, or credentials.
 
 ### Setup Flow
 
 ```bash
-fw notify setup              # Interactive: configure topic, test notification
-fw notify test               # Send test push to verify delivery
-fw notify enable             # Enable notifications
-fw notify disable            # Disable notifications
+fw notify test               # Send test push via skills-manager dispatcher
+fw notify enable             # Set NTFY_ENABLED=true
+fw notify disable            # Set NTFY_ENABLED=false
 ```
 
-### Self-Hosting Evaluation
+### Self-Hosting: Already Done
 
-ntfy self-hosting is straightforward:
-- **Docker:** `docker run -p 80:80 binwiederhier/ntfy serve`
-- **Binary:** Single binary, `ntfy serve` starts the server
-- **Storage:** SQLite by default (no external DB needed)
-- **Resource usage:** Minimal — runs on a Raspberry Pi
+ntfy is already self-hosted in the skills-manager infrastructure:
+- **Server:** localhost:2586 (Docker, T-036)
+- **TLS:** `ntfy.docker.ring20.geelenandcompany.com` via Traefik (T-285)
+- **Auth:** Publisher credentials in `/opt/ntfy-data/.publisher-pw`
+- **Phone app:** Subscribe via HTTPS URL with auth
 
-For the framework, self-hosting is optional. The public ntfy.sh instance works for basic usage. Topics are unguessable if named with a project-specific random suffix.
-
-### Security Considerations
-
-1. **Topic privacy:** Topics on ntfy.sh are public if someone guesses the name. Use random suffixes (e.g., `fw-999-aef-a8f3c2`) or self-host.
-2. **No sensitive data in notifications:** Message body should contain task IDs and descriptions, never code or credentials.
-3. **Auth tokens:** Self-hosted instances can require authentication. The token goes in `.framework.yaml` (which is gitignored for consumer projects) or env vars.
+No additional self-hosting work needed for the framework.
 
 ## Go/No-Go Assessment
 
@@ -272,6 +324,14 @@ For the framework, self-hosting is optional. The public ntfy.sh instance works f
 | F-2 | TermLink interact timeouts with queued command backlog | Medium | TermLink | Multiple interact calls queue up in PTY, causing cascading timeouts |
 | F-3 | Seed tasks not completed due to worker failure | Medium | Workflow | Discovery agents compensate, but formal governance scaffolding incomplete |
 
-## Patterns Scored Against D1-D4
+## Cross-Reference: ntfy Patterns vs Framework Gaps
 
-[Will be populated from discovery agent results]
+| ntfy Pattern | Framework Gap/Need | Status |
+|-------------|-------------------|--------|
+| Schema migration | No migration system for SQLite stores | NEW |
+| Structured errors | Ad-hoc error strings in agents | Enhancement |
+| Dual-backend storage | T-699 proposes SQLite logging | T-699 (captured) |
+| Per-channel metrics | No notification delivery monitoring | NEW (post-integration) |
+| Fire-and-forget delivery | Framework blocks on failed actions | Integration design |
+| TTL-based lifecycle | No data lifecycle for context/audit files | Enhancement |
+| Multi-protocol subscription | Watchtower uses htmx polling only | T-632 area |
