@@ -20,7 +20,7 @@ date_finished: null
 
 ## Context
 
-KCP pattern harvest (T-697 #15) proposed adding `token_estimate`, `load_strategy`, `priority` to 180 fabric component cards. Would enhance P-009 budget management with per-file context cost data.
+KCP pattern harvest (T-697 #15) proposed adding `token_estimate`, `load_strategy`, `priority` to 180 fabric component cards. Would enhance P-009 budget management with per-file context cost data. Research artifact: `docs/reports/T-701-context-budgeting-hints.md`.
 
 ## Acceptance Criteria
 
