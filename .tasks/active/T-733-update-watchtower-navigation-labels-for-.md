@@ -1,0 +1,53 @@
+---
+id: T-733
+name: "Update Watchtower navigation labels for Fabric Explorer"
+description: >
+  Update Watchtower navigation labels for Fabric Explorer
+
+status: started-work
+workflow_type: refactor
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-29T20:49:36Z
+last_update: 2026-03-29T20:49:36Z
+date_finished: null
+---
+
+# T-733: Update Watchtower navigation labels for Fabric Explorer
+
+## Context
+
+T-730 replaced Cytoscape graph with D3 Fabric Explorer. Nav label "Graph" and fabric.html link text still say "dependency graph" — should reflect the new interactive explorer.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Nav label updated from "Graph" to "Explorer" in shared.py
+- [x] fabric.html link text updated to reference explorer
+- [x] Vendor copies synced
+
+## Verification
+
+grep -q "Explorer" web/shared.py
+grep -q "explorer" web/templates/fabric.html
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-29T20:49:36Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-733-update-watchtower-navigation-labels-for-.md
+- **Context:** Initial task creation

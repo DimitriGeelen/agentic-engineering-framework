@@ -40,7 +40,7 @@ NAV_GROUPS = [
     ]),
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
-        ("Graph",       "fabric.fabric_graph",      None),
+        ("Explorer",    "fabric.fabric_graph",      None),
     ]),
     ("Govern", [
         ("Approvals",     "approvals.approvals",                   None),
