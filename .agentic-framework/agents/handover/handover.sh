@@ -615,6 +615,13 @@ echo -e "${GREEN}=== Handover Created ===${NC}"
 echo "File: $HANDOVER_FILE"
 echo "Latest: $HANDOVER_DIR/LATEST.md"
 
+# T-709: Push notification — session ended
+if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/notify.sh"
+    ACTIVE_COUNT=$(ls "$PROJECT_ROOT/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    fw_notify "Session Ended: $SESSION_ID" "Handover created. Active tasks: $ACTIVE_COUNT" "manual" "framework"
+fi
+
 # Handle auto-commit
 if [ "$AUTO_COMMIT" = true ]; then
     _resolve_commit_task

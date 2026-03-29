@@ -606,6 +606,12 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             emit_review "$TASK_ID" "$TASK_FILE"
         fi
 
+        # T-709: Push notification — human review needed
+        if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/notify.sh"
+            fw_notify "Review Needed: $TASK_ID" "$TASK_NAME" "manual" "framework"
+        fi
+
         # T-325: Check human AC quality — warn if Steps blocks are missing
         HUMAN_AC_SECTION=$(sed -n '/^### Human/,/^## \|^### [^H]/p' "$TASK_FILE" 2>/dev/null | head -n -1)
         HUMAN_AC_COUNT=$(echo "$HUMAN_AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
@@ -623,6 +629,12 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             mv "$TASK_FILE" "$DEST"
             TASK_FILE="$DEST"
             echo -e "${GREEN}Moved to completed/${NC}"
+
+            # T-709: Push notification — task completed
+            if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+                source "$FRAMEWORK_ROOT/lib/notify.sh"
+                fw_notify "Task Complete: $TASK_ID" "$TASK_NAME" "manual" "framework"
+            fi
         fi
     fi
 
@@ -760,6 +772,27 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
     else
         echo -e "${YELLOW}Context agent not found${NC}"
         echo "Run manually: fw context generate-episodic $TASK_ID"
+    fi
+
+    # === Learning capture check for bugfix tasks (T-692, G-016) ===
+    # 72% of bugfix tasks produce zero learnings. This structural nudge
+    # prompts the agent when completing a fix task without a learning entry.
+    TASK_NAME_RAW=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+    if echo "$TASK_NAME_RAW" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b'; then
+        LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
+        HAS_LEARNING=false
+        if [ -f "$LEARNINGS_FILE" ] && grep -q "$TASK_ID" "$LEARNINGS_FILE" 2>/dev/null; then
+            HAS_LEARNING=true
+        fi
+        if [ "$HAS_LEARNING" = false ]; then
+            echo ""
+            echo -e "${YELLOW}────────────────────────────────────────────${NC}"
+            echo -e "${YELLOW}  LEARNING PROMPT — This looks like a bugfix task${NC}"
+            echo -e "${YELLOW}  No learning entry references $TASK_ID.${NC}"
+            echo -e "${YELLOW}  Consider: fw context add-learning \"what was learned\" --task $TASK_ID${NC}"
+            echo -e "${YELLOW}  Ask: Would a future agent benefit from knowing about this fix?${NC}"
+            echo -e "${YELLOW}────────────────────────────────────────────${NC}"
+        fi
     fi
 fi
 

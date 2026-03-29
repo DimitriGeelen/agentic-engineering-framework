@@ -1008,9 +1008,11 @@ bugfix_total=0
 bugfix_with_learning=0
 
 if [ -d "$TASKS_DIR/completed" ]; then
-    # Find completed tasks with "fix" or "bug" in name (case-insensitive)
+    # Find completed tasks whose name starts with "Fix", "Bugfix", or "Hotfix" (T-693: anchored match)
     while IFS= read -r task_file; do
         [ -z "$task_file" ] && continue
+        task_name=$(grep "^name:" "$task_file" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
+        echo "$task_name" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b' || continue
         task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
         [ -z "$task_id" ] && continue
         bugfix_total=$((bugfix_total + 1))
@@ -1018,7 +1020,7 @@ if [ -d "$TASKS_DIR/completed" ]; then
         if [ -f "$LEARNINGS_FILE" ] && grep -q "task: ${task_id}" "$LEARNINGS_FILE" 2>/dev/null; then
             bugfix_with_learning=$((bugfix_with_learning + 1))
         fi
-    done < <(grep -rli "^name:.*\(fix\|bug\)" "$TASKS_DIR/completed" 2>/dev/null || true)
+    done < <(find "$TASKS_DIR/completed" -name "T-*.md" -type f 2>/dev/null)
 fi
 
 if [ "$bugfix_total" -gt 0 ]; then
@@ -1028,7 +1030,7 @@ if [ "$bugfix_total" -gt 0 ]; then
     else
         warn "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
              "Only ${coverage}% of bugfixes have associated learnings (target: 40%)" \
-             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX \"description\""
+             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
     fi
 else
     pass "Bugfix-learning coverage: no completed bugfix tasks found"
@@ -2950,10 +2952,15 @@ fi
         level=$(echo "$finding" | cut -d'|' -f1)
         check=$(echo "$finding" | cut -d'|' -f2)
         mitigation=$(echo "$finding" | cut -d'|' -f3)
+        # T-687: Properly escape YAML strings — replace " with \" inside quoted values
+        check="${check//\\/\\\\}"   # escape backslashes first
+        check="${check//\"/\\\"}"   # then escape quotes
+        mitigation="${mitigation//\\/\\\\}"
+        mitigation="${mitigation//\"/\\\"}"
         echo "  - level: $level"
-        echo "    check: \"${check//\"/\\\"}\""
+        echo "    check: \"$check\""
         if [ -n "$mitigation" ]; then
-            echo "    mitigation: \"${mitigation//\"/\\\"}\""
+            echo "    mitigation: \"$mitigation\""
         fi
     done
 } > "$AUDIT_FILE"
@@ -3236,6 +3243,12 @@ echo "=== END AUDIT ==="
 # Restore stdout if quiet mode was active
 if [ "$QUIET" = true ]; then
     exec 1>&3
+fi
+
+# T-709: Push notification on audit failures
+if [ $FAIL_COUNT -gt 0 ] && [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/notify.sh"
+    fw_notify "Audit Failures: $FAIL_COUNT" "Pass: $PASS_COUNT | Warn: $WARN_COUNT | Fail: $FAIL_COUNT" "health_check_failed" "audit"
 fi
 
 # Exit code based on findings

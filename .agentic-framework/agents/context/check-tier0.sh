@@ -399,4 +399,10 @@ with open(sys.argv[1], 'w') as f:
     yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
 " "$APPROVAL_YAML" 2>/dev/null || true
 
+# Push notification for Tier 0 block (T-709)
+if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/notify.sh"
+    fw_notify "Tier 0 Approval Needed" "$DESCRIPTION — Approve: ${WT_URL}/approvals" "task_blocked" "framework"
+fi
+
 exit 2
