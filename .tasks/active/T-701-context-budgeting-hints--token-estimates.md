@@ -12,7 +12,7 @@ tags: [context-budget, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:27Z
-last_update: 2026-03-29T13:21:47Z
+last_update: 2026-03-29T13:23:18Z
 date_finished: null
 ---
 
@@ -43,10 +43,12 @@ grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-esti
 
 ## Decisions
 
-### 2026-03-29 — Token hints in fabric cards vs defer
-- **Chose:** DEFER — the agent doesn't use fabric cards for context loading decisions
-- **Why:** Budget management (P-009) reads actual token usage from the JSONL transcript, not fabric cards. Token estimates in cards would be metadata that nothing consumes. 180 cards to update for zero current consumers.
-- **Rejected:** Adding fields now — high effort (180 cards × ~3 fields), zero consumers, estimates would go stale
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: Token budgeting hints are a KCP-inspired pattern that solves a problem the framework doesn't have. P-009 budget management reads actual token usage from the Cla...
+
+**Date**: 2026-03-29T13:33:11Z
 
 ## Recommendation
 
@@ -72,3 +74,9 @@ grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-esti
 
 ### 2026-03-29T13:21:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:33:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** - Recommendation: DEFER
+- Rationale: Token budgeting hints are a KCP-inspired pattern that solves a problem the framework doesn't have. P-009 budget management reads actual token usage from the Cla...

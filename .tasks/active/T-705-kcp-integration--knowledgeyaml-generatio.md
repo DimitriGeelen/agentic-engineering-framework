@@ -12,7 +12,7 @@ tags: [kcp, integration, mcp]
 components: []
 related_tasks: []
 created: 2026-03-29T08:58:11Z
-last_update: 2026-03-29T13:05:12Z
+last_update: 2026-03-29T13:07:21Z
 date_finished: null
 ---
 
@@ -73,10 +73,12 @@ grep -q "Recommendation" docs/reports/T-705-kcp-integration.md
 
 ## Decisions
 
-### 2026-03-29 — Adopt now vs defer
-- **Chose:** DEFER — valuable pattern, wrong timing
-- **Why:** KCP v0.14 with 17 active RFCs = spec instability. No current external agent scenario. CLAUDE.md + fabric already serve primary agent. kcp-mcp bridge adds npm dependency (violates D4 Portability)
-- **Rejected:** Adopt now — generator maintenance burden, spec churn risk, no immediate consumer
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: KCP is a good standard but too early to adopt. The framework already provides rich context to its primary agent via CLAUDE.md, handovers, and fabric cards. Know...
+
+**Date**: 2026-03-29T13:32:37Z
 
 ## Recommendation
 
@@ -95,7 +97,12 @@ grep -q "Recommendation" docs/reports/T-705-kcp-integration.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-705 defer --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: KCP is a good standard but too early to adopt. The framework already provides rich context to its primary agent via CLAUDE.md, handovers, and fabric cards. Know...
+
+**Date**: 2026-03-29T13:32:37Z
 
 ## Updates
 
@@ -104,3 +111,9 @@ grep -q "Recommendation" docs/reports/T-705-kcp-integration.md
 
 ### 2026-03-29T13:05:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:32:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** - Recommendation: DEFER
+- Rationale: KCP is a good standard but too early to adopt. The framework already provides rich context to its primary agent via CLAUDE.md, handovers, and fabric cards. Know...

@@ -4,7 +4,7 @@ name: "Incremental adoption levels — fw init --level 1|2|3"
 description: >
   Level 1 = tasks only, Level 2 = + context fabric, Level 3 = full governance. Reduces onboarding friction. Score: 18/20 (D1:4 D2:5 D3:5 D4:4). Source: T-697 pattern harvest #16.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: next
@@ -12,8 +12,8 @@ tags: [onboarding, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:55Z
-last_update: 2026-03-29T13:02:21Z
-date_finished: null
+last_update: 2026-03-29T13:33:24Z
+date_finished: 2026-03-29T13:32:45Z
 ---
 
 # T-703: Incremental adoption levels — fw init --level 1|2|3
@@ -71,10 +71,12 @@ grep -q "Recommendation" docs/reports/T-703-incremental-adoption.md
 
 ## Decisions
 
-### 2026-03-29 — Levels vs UX improvements
-- **Chose:** NO-GO on levels. Recommend targeted UX improvements instead (tutorial, shorter consumer CLAUDE.md, explain-on-block)
-- **Why:** Onboarding friction is cognitive load, not file count. Levels triple testing surface and require 3 CLAUDE.md variants with no include mechanism (T-316 NO-GO). The actual barrier is understanding task-first governance, which levels don't address
-- **Rejected:** 3-level tiered init — high implementation cost (3 templates × 2 providers × 2 modes = 12 paths), maintenance burden of 3 CLAUDE.md variants, no evidence file count is the problem
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: The hypothesis "too many files = onboarding friction" is not supported by evidence. Onboarding cycles (T-104, T-107, T-356) showed zero complaints about file co...
+
+**Date**: 2026-03-29T13:33:23Z
 
 ## Recommendation
 
@@ -93,7 +95,12 @@ grep -q "Recommendation" docs/reports/T-703-incremental-adoption.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-703 no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: The hypothesis "too many files = onboarding friction" is not supported by evidence. Onboarding cycles (T-104, T-107, T-356) showed zero complaints about file co...
+
+**Date**: 2026-03-29T13:33:23Z
 
 ## Updates
 
@@ -102,3 +109,19 @@ grep -q "Recommendation" docs/reports/T-703-incremental-adoption.md
 
 ### 2026-03-29T13:02:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:32:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO
+- Rationale: The hypothesis "too many files = onboarding friction" is not supported by evidence. Onboarding cycles (T-104, T-107, T-356) showed zero complaints about file co...
+
+### 2026-03-29T13:32:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
+
+### 2026-03-29T13:33:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO
+- Rationale: The hypothesis "too many files = onboarding friction" is not supported by evidence. Onboarding cycles (T-104, T-107, T-356) showed zero complaints about file co...

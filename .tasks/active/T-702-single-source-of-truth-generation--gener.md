@@ -4,7 +4,7 @@ name: "Single-source-of-truth generation — generate CLAUDE.md and hooks from s
 description: >
   Inception: Single-source-of-truth generation — generate CLAUDE.md and hooks from structured manifest
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:35Z
-last_update: 2026-03-29T12:59:02Z
-date_finished: null
+last_update: 2026-03-29T13:33:17Z
+date_finished: 2026-03-29T13:32:56Z
 ---
 
 # T-702: Single-source-of-truth generation — generate CLAUDE.md and hooks from structured manifest
@@ -77,10 +77,12 @@ grep -q "Recommendation" docs/reports/T-702-single-source-of-truth.md
 
 ## Decisions
 
-### 2026-03-29 — Manifest vs targeted fixes
-- **Chose:** NO-GO on manifest, recommend two targeted build tasks instead
-- **Why:** 60% of CLAUDE.md is hand-authored prose. Manifest+generator infrastructure (~300 lines) has poor ROI vs copy+sed for init.sh (~5 lines) + audit hook-doc check (~20 lines)
-- **Rejected:** Full manifest system — over-engineered for ~5 hook changes/year
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: The problem is real (3-file sync on hook changes) but the proposed solution (structured manifest + generators) is over-engineered. CLAUDE.md is 60% hand-authore...
+
+**Date**: 2026-03-29T13:33:17Z
 
 ## Recommendation
 
@@ -98,7 +100,12 @@ grep -q "Recommendation" docs/reports/T-702-single-source-of-truth.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-702 no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: The problem is real (3-file sync on hook changes) but the proposed solution (structured manifest + generators) is over-engineered. CLAUDE.md is 60% hand-authore...
+
+**Date**: 2026-03-29T13:33:17Z
 
 ## Updates
 
@@ -107,3 +114,19 @@ grep -q "Recommendation" docs/reports/T-702-single-source-of-truth.md
 
 ### 2026-03-29T12:59:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:32:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO
+- Rationale: The problem is real (3-file sync on hook changes) but the proposed solution (structured manifest + generators) is over-engineered. CLAUDE.md is 60% hand-authore...
+
+### 2026-03-29T13:32:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
+
+### 2026-03-29T13:33:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO
+- Rationale: The problem is real (3-file sync on hook changes) but the proposed solution (structured manifest + generators) is over-engineered. CLAUDE.md is 60% hand-authore...

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-686: Article angle 3 — landscape differentiation research
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T13:34:20Z
+# ============================================================================
+
+task_id: T-686
+task_name: "Article angle 3 — landscape differentiation research"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T22:19:38Z
+completed: 2026-03-29T13:34:18Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-03-28T23:52:20+01:00
+last_commit: 2026-03-28T23:52:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Landscape differentiation research — 20+ tools catalogued, positioning matrix, 4 angles
+
+# Key outcomes
+outcomes:
+  - "Research artifact created with landscape categories (A-D)"
+  - "20+ tools catalogued across categories"
+  - "Competitive positioning matrix (structural vs prompt-based)"
+  - "Evidence-backed vs speculative claims separated"
+  - "GO/NO-GO recommendation with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-686-landscape-differentiation.md"
+  - ".tasks/active/T-686-article-angle-3--landscape-differentiati.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T23:52:20"
+    action: "T-686: Landscape differentiation research — 20+ tools catalogued, positioning matrix, 4 angles"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 914 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 914
+  commits: 1
+  files_changed: 2
+  lines_added: 151
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-686-article-angle-3--landscape-differentiati.md
+generated_by: context-agent-hybrid

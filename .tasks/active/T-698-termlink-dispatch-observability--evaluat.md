@@ -4,7 +4,7 @@ name: "TermLink dispatch observability — evaluate interactive vs headless work
 description: >
   Inception: TermLink dispatch observability — evaluate interactive vs headless worker mode for human observation
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-697, T-696, T-679, T-577]
 created: 2026-03-29T08:18:33Z
-last_update: 2026-03-29T12:55:34Z
-date_finished: null
+last_update: 2026-03-29T13:34:02Z
+date_finished: 2026-03-29T13:34:02Z
 ---
 
 # T-698: TermLink dispatch observability — evaluate interactive vs headless worker mode for human observation
@@ -84,7 +84,12 @@ grep -q "Recommendation" docs/reports/T-698-dispatch-observability.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives. -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 4 alternatives evaluated (tee, stream-json, interactive, hybrid). Option A (tee) is a 1-line change that eliminates the complete-blackout problem. Option D (hybrid...
+
+**Date**: 2026-03-29T13:34:02Z
 
 ## Recommendation
 
@@ -102,7 +107,12 @@ grep -q "Recommendation" docs/reports/T-698-dispatch-observability.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-698 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 4 alternatives evaluated (tee, stream-json, interactive, hybrid). Option A (tee) is a 1-line change that eliminates the complete-blackout problem. Option D (hybrid...
+
+**Date**: 2026-03-29T13:34:02Z
 
 ## Updates
 
@@ -111,3 +121,13 @@ grep -q "Recommendation" docs/reports/T-698-dispatch-observability.md
 
 ### 2026-03-29T12:55:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:34:02Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: 4 alternatives evaluated (tee, stream-json, interactive, hybrid). Option A (tee) is a 1-line change that eliminates the complete-blackout problem. Option D (hybrid...
+
+### 2026-03-29T13:34:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

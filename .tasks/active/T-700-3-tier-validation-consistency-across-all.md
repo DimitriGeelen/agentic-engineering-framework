@@ -12,7 +12,7 @@ tags: [dx, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:21Z
-last_update: 2026-03-29T13:18:46Z
+last_update: 2026-03-29T13:21:30Z
 date_finished: null
 ---
 
@@ -44,10 +44,12 @@ grep -q "Recommendation" docs/reports/T-700-validation-consistency.md
 
 ## Decisions
 
-### 2026-03-29 — Shared library vs exit code contract vs defer
-- **Chose:** DEFER — low pain, low frequency, zero user complaints
-- **Why:** Audit (the high-frequency validator) already has structured output. Doctor/preflight run occasionally. Full library approach is over-engineered for the actual friction
-- **Rejected:** Shared validate.sh library — audit's functions have audit-specific features (FINDINGS, YAML, history) that don't generalize. Exit code standardization — useful but too small to justify its own task
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: Inconsistency is real but painless. Zero user complaints across 4 onboarding cycles. Audit (the only high-frequency validator) already has structured output. Do...
+
+**Date**: 2026-03-29T13:33:39Z
 
 ## Recommendation
 
@@ -72,3 +74,9 @@ grep -q "Recommendation" docs/reports/T-700-validation-consistency.md
 
 ### 2026-03-29T13:18:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T13:33:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** - Recommendation: DEFER
+- Rationale: Inconsistency is real but painless. Zero user complaints across 4 onboarding cycles. Audit (the only high-frequency validator) already has structured output. Do...
