@@ -1032,4 +1032,11 @@ learnings:
   date: 2026-03-29
   context: Added via context agent
   application: TBD
+- id: L-129
+  learning: "Session-scoped volatile files in .context/working/ must be explicitly cleared in post-compact-resume.sh. Without this, stale counters/caches from pre-compact sessions cause false warnings, blocks, and incorrect state. The VOLATILE_FILES array in post-compact-resume.sh is the authoritative list — add new volatile files there when creating new counters/caches."
+  source: P-001
+  task: T-713
+  date: 2026-03-29
+  context: Added via context agent
+  application: TBD
 candidates: []
