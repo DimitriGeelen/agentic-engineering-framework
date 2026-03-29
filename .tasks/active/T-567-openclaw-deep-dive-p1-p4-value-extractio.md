@@ -20,43 +20,30 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
-
-## Assumptions
-
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
-
-## Exploration Plan
-
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
-
-## Scope Fence
-
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+Superseded by parent evaluation T-549/T-678. All P1-P4 patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md`. Extracted code: `docs/upstream-patterns/openclaw/session-key-utils.ts`, `config-diff.ts`, `skills-budget.ts`.
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+### Agent
+- [x] P1-P4 patterns evaluated (via parent T-549 evaluation)
 
-## Go/No-Go Criteria
+### Human
+- [ ] [REVIEW] Review decision to close as superseded
+  **Steps:**
+  1. Read `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md`
+  2. Confirm P1-P4 coverage
+  **Expected:** All patterns covered
+  **If not:** Reopen with specific gap
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
+## Recommendation
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- **Recommendation:** NO-GO (superseded)
+- **Rationale:** Parent evaluation T-549 already analyzed all P1-P4 patterns and extracted Tier 1 code. Standalone files in `docs/upstream-patterns/openclaw/` cover session keys, config diff, skills budget, and tool loop detection. Reopening this task would duplicate completed work.
+- **Evidence:**
+  - `docs/upstream-patterns/openclaw/session-key-utils.ts` — P2 extracted
+  - `docs/upstream-patterns/openclaw/config-diff.ts` — P3 extracted
+  - `docs/upstream-patterns/openclaw/skills-budget.ts` — P4 extracted
+  - Evaluation summary covers P1 request-scoped context analysis
 
 ## Verification
 

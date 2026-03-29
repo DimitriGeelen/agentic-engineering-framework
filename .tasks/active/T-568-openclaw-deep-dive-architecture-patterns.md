@@ -20,7 +20,12 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Superseded by parent evaluation T-549/T-678. Architecture patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md` — RPC registry, ACLs, plugin system, config hot-reload all covered.
+
+## Recommendation
+
+- **Recommendation:** NO-GO (superseded)
+- **Rationale:** Parent evaluation analyzed 154 components across 28 subsystems. RPC registry (Gateway subsystem, 22 cards), ACLs (`dm-access-policy.ts` extracted), plugin hooks (Plugin SDK pattern documented), queue-based chat (Agents subsystem). ACP not relevant to our framework.
 
 ## Assumptions
 
@@ -44,9 +49,9 @@ date_finished: null
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made
+- [x] Problem statement validated (superseded by parent T-549)
+- [x] Assumptions tested (covered in evaluation summary)
+- [x] Go/No-Go decision made (NO-GO — superseded)
 
 ## Go/No-Go Criteria
 
