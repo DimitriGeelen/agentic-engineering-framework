@@ -4,7 +4,7 @@ name: "Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
 description: >
   Path C deep-dive on github.com/Cantara/knowledge-context-protocol. T-487 researched the spec; this ingests the actual codebase under framework governance. Also serves as second Path C experiment validating the path-c-deep-dive.md template (T-696 GO).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [path-c, deep-dive, external]
 components: []
 related_tasks: [T-487, T-477, T-696]
 created: 2026-03-29T08:06:51Z
-last_update: 2026-03-29T08:06:51Z
-date_finished: null
+last_update: 2026-03-29T08:56:52Z
+date_finished: 2026-03-29T08:56:52Z
 ---
 
 # T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
@@ -124,14 +124,11 @@ This deep-dive serves two purposes:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: Deep-dive complete — 33 patterns harvested and scored, 4 Tier A directly applicable, Path C template validated, KCP integration worth exploring as separate inception
+
+**Date**: 2026-03-29T08:56:52Z
 
 ## Recommendation
 
@@ -146,9 +143,22 @@ This deep-dive serves two purposes:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Deep-dive complete — 33 patterns harvested and scored, 4 Tier A directly applicable, Path C template validated, KCP integration worth exploring as separate inception
+
+**Date**: 2026-03-29T08:56:52Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T08:56:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Deep-dive complete — 33 patterns harvested and scored, 4 Tier A directly applicable, Path C template validated, KCP integration worth exploring as separate inception
+
+### 2026-03-29T08:56:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

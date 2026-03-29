@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T08:56:54Z
+# ============================================================================
+
+task_id: T-697
+task_name: "Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T08:06:51Z
+completed: 2026-03-29T08:56:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T10:10:55+02:00
+last_commit: 2026-03-29T10:21:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Phase 1 complete — KCP cloned to /opt/052-KCP, framework initialized. KCP deep-dive complete — Path C template validated, 4/5 seed tasks PASS
+
+# Key outcomes
+outcomes:
+  - "Phase 1 complete — framework governance initialized in KCP project"
+  - "Phase 2 complete — seed tasks executed (4/5 PASS, 1 PARTIAL), friction points logged"
+  - "Phase 3 complete — research artifact written, T-698 created for worker observability"
+  - "Template validation — 8 friction points logged, 3 template improvements made"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-697-kcp-deep-dive.md"
+  - ".tasks/active/T-697-deep-dive-kcp-knowledge-context-protocol.md"
+  - ".tasks/active/T-698-termlink-dispatch-observability--evaluat.md"
+  - ".tasks/templates/path-c-deep-dive.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T10:10:55"
+    action: "T-697: Phase 1 complete — KCP cloned to /opt/052-KCP, framework initialized"
+  - time: "2026-03-29T10:21:42"
+    action: "T-697: KCP deep-dive complete — Path C template validated, 4/5 seed tasks PASS"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [path-c, deep-dive, external]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 5
+  lines_added: 391
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-697-deep-dive-kcp-knowledge-context-protocol.md
+generated_by: context-agent-hybrid
