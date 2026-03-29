@@ -4,16 +4,16 @@ name: "Context budgeting hints — token estimates and load priority in componen
 description: >
   Add token_estimate, load_strategy, priority fields to fabric component cards. Enhances P-009 budget management with structured per-unit cost data. Score: 17/20 (D1:4 D2:4 D3:4 D4:5). Source: T-697 pattern harvest #15.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: [context-budget, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:27Z
-last_update: 2026-03-29T13:23:18Z
-date_finished: null
+last_update: 2026-03-29T14:16:01Z
+date_finished: 2026-03-29T14:16:01Z
 ---
 
 # T-701: Context budgeting hints — token estimates and load priority in component cards
@@ -80,3 +80,6 @@ grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-esti
 - **Decision:** DEFER
 - **Rationale:** - Recommendation: DEFER
 - Rationale: Token budgeting hints are a KCP-inspired pattern that solves a problem the framework doesn't have. P-009 budget management reads actual token usage from the Cla...
+
+### 2026-03-29T14:16:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

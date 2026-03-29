@@ -4,16 +4,16 @@ name: "3-tier validation consistency across all fw tools"
 description: >
   Codify error/warn/clean pattern across ALL fw tools. We do this inconsistently — doctor uses it, audit uses it, but other commands don't. One standard. Score: 19/20 (D1:5 D2:5 D3:5 D4:4). Source: T-697 pattern harvest #6.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: [dx, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:21Z
-last_update: 2026-03-29T13:21:30Z
-date_finished: null
+last_update: 2026-03-29T14:15:55Z
+date_finished: 2026-03-29T14:15:55Z
 ---
 
 # T-700: 3-tier validation consistency across all fw tools
@@ -80,3 +80,6 @@ grep -q "Recommendation" docs/reports/T-700-validation-consistency.md
 - **Decision:** DEFER
 - **Rationale:** - Recommendation: DEFER
 - Rationale: Inconsistency is real but painless. Zero user complaints across 4 onboarding cycles. Audit (the only high-frequency validator) already has structured output. Do...
+
+### 2026-03-29T14:15:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

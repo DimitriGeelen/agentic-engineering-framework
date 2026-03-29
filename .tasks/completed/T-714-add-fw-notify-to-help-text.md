@@ -4,16 +4,16 @@ name: "Add fw notify to help text"
 description: >
   Add fw notify to help text
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-03-29T14:14:14Z
-last_update: 2026-03-29T14:14:14Z
-date_finished: null
+last_update: 2026-03-29T14:15:05Z
+date_finished: 2026-03-29T14:15:05Z
 ---
 
 # T-714: Add fw notify to help text
@@ -71,3 +71,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-714-add-fw-notify-to-help-text.md
 - **Context:** Initial task creation
+
+### 2026-03-29T14:15:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
