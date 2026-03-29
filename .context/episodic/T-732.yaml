@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-732: Remove unused Cytoscape.js vendor files from base.html
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T21:16:59Z
+# ============================================================================
+
+task_id: T-732
+task_name: "Remove unused Cytoscape.js vendor files from base.html"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:45:23Z
+completed: 2026-03-29T20:47:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:47:04+02:00
+last_commit: 2026-03-29T22:47:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove unused Cytoscape.js + dagre vendor files from base.html
+
+# Key outcomes
+outcomes:
+  - "Cytoscape script tags removed from base.html"
+  - "cytoscape.min.js and cytoscape-dagre.js deleted from web/static/"
+  - "Cytoscape fabric component cards removed (none existed)"
+  - "Vendor copies synced"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/static/cytoscape-dagre.js"
+  - ".agentic-framework/web/static/cytoscape.min.js"
+  - ".agentic-framework/web/static/dagre.min.js"
+  - ".agentic-framework/web/templates/base.html"
+  - ".tasks/active/T-732-remove-unused-cytoscapejs-vendor-files-f.md"
+  - "web/static/cytoscape-dagre.js"
+  - "web/static/cytoscape.min.js"
+  - "web/static/dagre.min.js"
+  - "web/templates/base.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:47:04"
+    action: "T-732: Remove unused Cytoscape.js + dagre vendor files from base.html"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 9
+  lines_added: 56
+  lines_removed: 8482
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-732-remove-unused-cytoscapejs-vendor-files-f.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-731: Clean up old Cytoscape fabric_graph.html after D3 explorer integration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T21:16:58Z
+# ============================================================================
+
+task_id: T-731
+task_name: "Clean up old Cytoscape fabric_graph.html after D3 explorer integration"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:43:09Z
+completed: 2026-03-29T20:45:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:44:57+02:00
+last_commit: 2026-03-29T22:44:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove old Cytoscape fabric_graph.html, update fabric card references
+
+# Key outcomes
+outcomes:
+  - "`web/templates/fabric_graph.html` deleted"
+  - "`.fabric/components/web-templates-fabric_graph.yaml` deleted"
+  - "`.fabric/components/web-blueprints-fabric.yaml` updated to reference `fabric_explorer.html`"
+  - "Vendor copies synced"
+  - "Watchtower still works after cleanup"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/templates/fabric_graph.html"
+  - ".fabric/components/web-blueprints-fabric.yaml"
+  - ".fabric/components/web-templates-fabric_graph.yaml"
+  - ".tasks/active/T-731-clean-up-old-cytoscape-fabricgraphhtml-a.md"
+  - "web/templates/fabric_graph.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:44:57"
+    action: "T-731: Remove old Cytoscape fabric_graph.html, update fabric card references"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 5
+  lines_added: 58
+  lines_removed: 931
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-731-clean-up-old-cytoscape-fabricgraphhtml-a.md
+generated_by: context-agent-hybrid

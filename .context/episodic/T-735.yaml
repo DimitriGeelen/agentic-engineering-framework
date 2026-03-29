@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-735: Remove dead _build_graph function from fabric.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T21:16:59Z
+# ============================================================================
+
+task_id: T-735
+task_name: "Remove dead _build_graph function from fabric.py"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:53:20Z
+completed: 2026-03-29T20:54:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:54:40+02:00
+last_commit: 2026-03-29T22:54:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove dead _build_graph function from fabric.py (-82 lines)
+
+# Key outcomes
+outcomes:
+  - "`_build_graph` function removed from fabric.py"
+  - "fabric.py still passes syntax check"
+  - "Vendor copy synced"
+  - "All fabric routes still work"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/blueprints/fabric.py"
+  - ".tasks/active/T-735-remove-dead-buildgraph-function-from-fab.md"
+  - "web/blueprints/fabric.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:54:40"
+    action: "T-735: Remove dead _build_graph function from fabric.py (-82 lines)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 55
+  lines_removed: 174
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-735-remove-dead-buildgraph-function-from-fab.md
+generated_by: context-agent-hybrid

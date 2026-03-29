@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-733: Update Watchtower navigation labels for Fabric Explorer
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T21:16:59Z
+# ============================================================================
+
+task_id: T-733
+task_name: "Update Watchtower navigation labels for Fabric Explorer"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:49:36Z
+completed: 2026-03-29T20:51:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-29T22:50:48+02:00
+last_commit: 2026-03-29T22:51:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Update nav labels — Graph → Explorer, link text reflects D3 explorer. Fix verification — case-sensitive grep for Explorer
+
+# Key outcomes
+outcomes:
+  - "Nav label updated from \"Graph\" to \"Explorer\" in shared.py"
+  - "fabric.html link text updated to reference explorer"
+  - "Vendor copies synced"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — case-sensitive grep for Explorer"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/shared.py"
+  - ".agentic-framework/web/templates/fabric.html"
+  - ".tasks/active/T-733-update-watchtower-navigation-labels-for-.md"
+  - "web/shared.py"
+  - "web/templates/fabric.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:50:48"
+    action: "T-733: Update nav labels — Graph → Explorer, link text reflects D3 explorer"
+  - time: "2026-03-29T22:51:02"
+    action: "T-733: Fix verification — case-sensitive grep for Explorer"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 58
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-733-update-watchtower-navigation-labels-for-.md
+generated_by: context-agent-hybrid
