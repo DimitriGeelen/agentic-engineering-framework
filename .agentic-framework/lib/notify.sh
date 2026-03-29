@@ -40,7 +40,12 @@ _SKILLS_DISPATCHER="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/a
 #   infrastructure  → ring20-infrastructure topic
 fw_notify() {
     # Disabled by default — opt-in only
-    [ "${NTFY_ENABLED:-false}" = "true" ] || return 0
+    # Check env var first, then config file (T-710)
+    local _ntfy_enabled="${NTFY_ENABLED:-}"
+    if [ -z "$_ntfy_enabled" ] && [ -n "${PROJECT_ROOT:-}" ] && [ -f "$PROJECT_ROOT/.context/notify-config.yaml" ]; then
+        _ntfy_enabled=$(python3 -c "import yaml; d=yaml.safe_load(open('$PROJECT_ROOT/.context/notify-config.yaml')); print(str(d.get('enabled','false')).lower())" 2>/dev/null || echo "false")
+    fi
+    [ "${_ntfy_enabled:-false}" = "true" ] || return 0
 
     local title="${1:-}"
     local message="${2:-}"
