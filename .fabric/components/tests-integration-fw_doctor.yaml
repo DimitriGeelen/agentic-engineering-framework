@@ -1,0 +1,17 @@
+id: tests/integration/fw_doctor.bats
+name: fw_doctor
+type: test
+subsystem: framework-core
+location: tests/integration/fw_doctor.bats
+tags: [bats, integration-test, doctor, cli]
+
+purpose: "Integration tests for fw doctor CLI — 4 tests covering health check, installation, config, and status markers."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent

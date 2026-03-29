@@ -1,0 +1,17 @@
+id: tests/integration/fw_audit.bats
+name: fw_audit
+type: test
+subsystem: framework-core
+location: tests/integration/fw_audit.bats
+tags: [bats, integration-test, audit, cli]
+
+purpose: "Integration tests for fw audit CLI — 3 tests covering help, section run, and YAML output."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
