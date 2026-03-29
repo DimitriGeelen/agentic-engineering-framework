@@ -55,20 +55,28 @@ Superseded by parent evaluation T-549/T-678. All P1-P4 patterns analyzed in `doc
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation T-549 already analyzed all P1-P4 patterns and extracted Tier 1 code. Standalone files in `docs/upstream-patterns/openclaw/` cover...
+
+**Date**: 2026-03-29T20:27:52Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation T-549 already analyzed all P1-P4 patterns and extracted Tier 1 code. Standalone files in `docs/upstream-patterns/openclaw/` cover...
+
+**Date**: 2026-03-29T20:27:52Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T20:27:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation T-549 already analyzed all P1-P4 patterns and extracted Tier 1 code. Standalone files in `docs/upstream-patterns/openclaw/` cover...

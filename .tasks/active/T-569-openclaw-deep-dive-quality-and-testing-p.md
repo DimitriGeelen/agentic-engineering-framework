@@ -73,20 +73,28 @@ Superseded by parent evaluation T-549/T-678. Security fuzzing patterns analyzed 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation covers security testing (6 fuzz attack categories: Unicode, prototype pollution, path traversal, SSRF, injection, DoS) and suite ...
+
+**Date**: 2026-03-29T20:27:32Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation covers security testing (6 fuzz attack categories: Unicode, prototype pollution, path traversal, SSRF, injection, DoS) and suite ...
+
+**Date**: 2026-03-29T20:27:32Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T20:27:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation covers security testing (6 fuzz attack categories: Unicode, prototype pollution, path traversal, SSRF, injection, DoS) and suite ...

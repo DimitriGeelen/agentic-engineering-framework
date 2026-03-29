@@ -56,6 +56,13 @@ grep -q "Recommendation" .tasks/active/T-699-fw-stats--observability-instrumenta
 
 ## Decisions
 
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: The framework already has 5 observability stores with 2,400+ data points (607 metrics snapshots, 578 audit YAMLs, 666 episodic summaries, 426 handovers, 132 lea...
+
+**Date**: 2026-03-29T20:27:12Z
+
 ## Updates
 
 ### 2026-03-29T08:57:13Z — task-created [task-create-agent]
@@ -68,3 +75,9 @@ grep -q "Recommendation" .tasks/active/T-699-fw-stats--observability-instrumenta
 
 ### 2026-03-29T14:04:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-03-29T20:27:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** - Recommendation: DEFER
+- Rationale: The framework already has 5 observability stores with 2,400+ data points (607 metrics snapshots, 578 audit YAMLs, 666 episodic summaries, 426 handovers, 132 lea...

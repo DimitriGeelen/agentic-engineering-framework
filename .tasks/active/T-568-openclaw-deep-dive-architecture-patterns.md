@@ -73,20 +73,28 @@ Superseded by parent evaluation T-549/T-678. Architecture patterns analyzed in `
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation analyzed 154 components across 28 subsystems. RPC registry (Gateway subsystem, 22 cards), ACLs (`dm-access-policy.ts` extracted),...
+
+**Date**: 2026-03-29T20:27:45Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation analyzed 154 components across 28 subsystems. RPC registry (Gateway subsystem, 22 cards), ACLs (`dm-access-policy.ts` extracted),...
+
+**Date**: 2026-03-29T20:27:45Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-29T20:27:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO (superseded)
+- Rationale: Parent evaluation analyzed 154 components across 28 subsystems. RPC registry (Gateway subsystem, 22 cards), ACLs (`dm-access-policy.ts` extracted),...
