@@ -1,0 +1,17 @@
+id: tests/integration/fw_version.bats
+name: fw_version
+type: test
+subsystem: framework-core
+location: tests/integration/fw_version.bats
+tags: [bats, integration-test, version, cli]
+
+purpose: "Integration tests for fw version CLI — 6 tests covering version output, semver format, --version and -v aliases."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-29
+created_by: agent

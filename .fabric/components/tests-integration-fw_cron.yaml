@@ -1,0 +1,17 @@
+id: tests/integration/fw_cron.bats
+name: fw_cron
+type: test
+subsystem: framework-core
+location: tests/integration/fw_cron.bats
+tags: [bats, integration-test, cron, cli]
+
+purpose: "Integration tests for fw cron CLI — 9 tests covering help, status, list, invalid subcommand, run/pause/resume without job-id."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-29
+created_by: agent
