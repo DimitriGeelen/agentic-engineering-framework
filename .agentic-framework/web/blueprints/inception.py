@@ -1,5 +1,6 @@
 """Inception blueprint — inception task tracking and assumption registry."""
 
+import logging
 import re as re_mod
 
 import markdown2
@@ -8,6 +9,8 @@ from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+
+logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
 
 
@@ -76,8 +79,12 @@ def _load_assumptions():
     af = PROJECT_ROOT / ".context" / "project" / "assumptions.yaml"
     if not af.exists():
         return []
-    with open(af) as f:
-        data = yaml.safe_load(f)
+    try:
+        with open(af) as f:
+            data = yaml.safe_load(f)
+    except Exception as e:
+        logger.warning("Failed to parse %s: %s", af, e)
+        return []
     if not data:
         return []
     return data.get("assumptions", [])
@@ -190,8 +197,11 @@ def inception_detail(task_id):
     episodic = None
     episodic_file = PROJECT_ROOT / ".context" / "episodic" / f"{task_id}.yaml"
     if episodic_file.exists():
-        with open(episodic_file) as f:
-            episodic = yaml.safe_load(f)
+        try:
+            with open(episodic_file) as f:
+                episodic = yaml.safe_load(f)
+        except Exception as e:
+            logger.warning("Failed to parse %s: %s", episodic_file, e)
 
     return render_page(
         "inception_detail.html",

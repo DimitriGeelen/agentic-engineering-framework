@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-745: Fix YAML parse crash risk in Watchtower — add try/except to unprotected yaml.safe_load calls
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T23:46:21Z
+# ============================================================================
+
+task_id: T-745
+task_name: "Fix YAML parse crash risk in Watchtower — add try/except to unprotected yaml.safe_load calls"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T23:37:54Z
+completed: 2026-03-29T23:46:20Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "fabric.py `_load_subsystems()` has try/except around yaml.safe_load"
+  - "inception.py `_load_assumptions()` has try/except around yaml.safe_load"
+  - "inception.py `inception_detail()` has try/except around yaml.safe_load"
+  - "timeline.py `_timeline_task_content()` has try/except around yaml.safe_load"
+  - "All protected sites log warnings on parse failure"
+  - "Watchtower smoke test passes (30/30)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-745-fix-yaml-parse-crash-risk-in-watchtower-.md
+generated_by: context-agent-hybrid

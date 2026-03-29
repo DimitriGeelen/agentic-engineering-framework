@@ -1,11 +1,14 @@
 """Timeline blueprint — session timeline with progressive disclosure."""
 
+import logging
 import re as re_mod
 
 import yaml
 from flask import Blueprint, abort, render_template
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint("timeline", __name__)
 
@@ -138,7 +141,11 @@ def timeline_task_detail(task_id):
     if not episodic_file.exists():
         return f"<p><em>No episodic data for {task_id}</em></p>"
 
-    with open(episodic_file) as ef:
-        data = yaml.safe_load(ef)
+    try:
+        with open(episodic_file) as ef:
+            data = yaml.safe_load(ef)
+    except Exception as e:
+        logger.warning("Failed to parse %s: %s", episodic_file, e)
+        return f"<p><em>Error reading episodic data for {task_id}</em></p>"
 
     return render_template("_timeline_task.html", task=data, task_id=task_id)

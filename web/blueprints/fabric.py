@@ -1,12 +1,15 @@
 """Watchtower – Component Fabric browser."""
 
 import glob
+import logging
 import os
 
 import yaml
 from flask import Blueprint, request
 
 from web.shared import PROJECT_ROOT, render_page
+
+logger = logging.getLogger(__name__)
 
 bp = Blueprint("fabric", __name__)
 
@@ -56,8 +59,14 @@ def _load_subsystems():
     path = os.path.join(FABRIC_DIR, "subsystems.yaml")
     if not os.path.exists(path):
         return []
-    with open(path) as f:
-        data = yaml.safe_load(f)
+    try:
+        with open(path) as f:
+            data = yaml.safe_load(f)
+    except Exception as e:
+        logger.warning("Failed to parse %s: %s", path, e)
+        return []
+    if not isinstance(data, dict):
+        return []
     raw = data.get("subsystems", [])
     if isinstance(raw, dict):
         return [{"id": k, **v} for k, v in raw.items() if isinstance(v, dict)]
