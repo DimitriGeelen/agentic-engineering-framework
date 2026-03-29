@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-29T08:56:54Z
+# Generated: 2026-03-29T14:22:14Z
 # ============================================================================
 
 task_id: T-697
@@ -17,11 +17,11 @@ completed: 2026-03-29T08:56:52Z
 duration_days: 0
 updates_count: 2
 first_commit: 2026-03-29T10:10:55+02:00
-last_commit: 2026-03-29T10:21:42+02:00
+last_commit: 2026-03-29T10:58:36+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Phase 1 complete — KCP cloned to /opt/052-KCP, framework initialized. KCP deep-dive complete — Path C template validated, 4/5 seed tasks PASS
+  Phase 1 complete — KCP cloned to /opt/052-KCP, framework initialized. KCP deep-dive complete — Path C template validated, 4/5 seed tasks PASS. KCP pattern harvest — 33 patterns scored against D1-D4. Create follow-up tasks from KCP pattern harvest
 
 # Key outcomes
 outcomes:
@@ -40,10 +40,20 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
+  - ".context/episodic/T-697.yaml"
   - ".context/project/learnings.yaml"
   - "docs/reports/T-697-kcp-deep-dive.md"
+  - "docs/reports/T-697-kcp-pattern-harvest.md"
+  - ".tasks/active/T-696-qualify-path-c-as-repeatable-pattern--te.md"
   - ".tasks/active/T-697-deep-dive-kcp-knowledge-context-protocol.md"
   - ".tasks/active/T-698-termlink-dispatch-observability--evaluat.md"
+  - ".tasks/active/T-699-fw-stats--observability-instrumentation-.md"
+  - ".tasks/active/T-700-3-tier-validation-consistency-across-all.md"
+  - ".tasks/active/T-701-context-budgeting-hints--token-estimates.md"
+  - ".tasks/active/T-702-single-source-of-truth-generation--gener.md"
+  - ".tasks/active/T-703-incremental-adoption-levels--fw-init---l.md"
+  - ".tasks/active/T-704-dag-federation-for-cross-machine-knowled.md"
+  - ".tasks/active/T-705-kcp-integration--knowledgeyaml-generatio.md"
   - ".tasks/templates/path-c-deep-dive.md"
 
 # Timeline (auto-mined from git log)
@@ -52,10 +62,14 @@ git_timeline:
     action: "T-697: Phase 1 complete — KCP cloned to /opt/052-KCP, framework initialized"
   - time: "2026-03-29T10:21:42"
     action: "T-697: KCP deep-dive complete — Path C template validated, 4/5 seed tasks PASS"
+  - time: "2026-03-29T10:57:05"
+    action: "T-697: KCP pattern harvest — 33 patterns scored against D1-D4"
+  - time: "2026-03-29T10:58:36"
+    action: "T-697: Create follow-up tasks from KCP pattern harvest"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 2 commit(s), 50 min
+  # Completed successfully in 4 commit(s), 50 min
 
 # Related tasks
 related_tasks:
@@ -69,10 +83,10 @@ tags: [path-c, deep-dive, external]
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 50
-  commits: 2
-  files_changed: 5
-  lines_added: 391
-  lines_removed: 31
+  commits: 4
+  files_changed: 15
+  lines_added: 1225
+  lines_removed: 55
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-697-deep-dive-kcp-knowledge-context-protocol.md

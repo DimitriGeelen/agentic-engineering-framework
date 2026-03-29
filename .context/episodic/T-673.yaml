@@ -1,62 +1,62 @@
 # ============================================================================
 # EPISODIC MEMORY - T-673: Review page 404 handler — show friendly message when task not found
 # ============================================================================
-# STATUS: ENRICHED
+# STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T20:00:21Z
-# Enriched: 2026-03-28
+# Generated: 2026-03-29T14:22:06Z
 # ============================================================================
 
 task_id: T-673
 task_name: "Review page 404 handler — show friendly message when task not found"
 workflow_type: build
-enrichment_status: complete
+enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-03-28T19:50:28Z
-completed: 2026-03-28T19:52:25Z
+completed: 2026-03-28T22:35:54Z
 duration_days: 0
 updates_count: 2
 first_commit: 2026-03-28T20:52:18+01:00
 last_commit: 2026-03-28T20:52:31+01:00
 
-# Summary
+# Summary (auto-generated from git commit messages)
 summary: |
-  Replaced Flask's default 404 for /review/T-XXX with styled, mobile-friendly error
-  pages. Nonexistent task IDs get a "not found" page; completed tasks get an "already
-  completed" message with a link to the full task view. Both are standalone templates
-  matching the review.html style.
+  Friendly 404/completed handlers for /review/T-XXX. Complete — review 404 handlers + episodic
 
 # Key outcomes
 outcomes:
   - "`/review/T-999` (nonexistent) returns a styled mobile-friendly 404 page"
-  - "`/review/T-XXX` for completed tasks shows 'task completed' message with link to view"
-  - "Both error pages are standalone (no base.html dependency), matching review.html style"
+  - "`/review/T-XXX` for completed tasks shows \"task completed\" message"
+  - "Both error pages are standalone (no base.html), matching review.html style"
 
-# Challenges
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected — straightforward error handling addition
+  # No challenges detected in commit messages
 
-# Decisions
-decisions: []
-  # No alternatives considered — standalone templates were the natural choice to match review.html pattern
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
 
-# Artifacts (source files changed)
+# Artifacts (auto-mined from git --name-only)
 artifacts:
+  - ".tasks/active/T-673-review-page-404-handler--show-friendly-m.md"
+  - ".tasks/completed/T-673-review-page-404-handler--show-friendly-m.md"
   - "web/blueprints/review.py"
   - "web/templates/_review_error.html"
 
-# Timeline (from git log)
+# Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-28T20:52:18"
     action: "T-673: Friendly 404/completed handlers for /review/T-XXX"
   - time: "2026-03-28T20:52:31"
     action: "T-673: Complete — review 404 handlers + episodic"
 
-# What worked well
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  - "Shared error template (_review_error.html) handles both 404 and completed cases"
-  - "Standalone template approach avoids base.html dependency, consistent with review page"
+  # Completed successfully in 2 commit(s), 165 min
 
 # Related tasks
 related_tasks:
@@ -65,11 +65,11 @@ related_tasks:
   spawned: []
 
 # Tags for retrieval
-tags: [watchtower, review, error-handling, 404, ux, mobile]
+tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 1
+  wall_clock_minutes: 165
   commits: 2
   files_changed: 4
   lines_added: 137

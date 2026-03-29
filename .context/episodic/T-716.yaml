@@ -1,37 +1,39 @@
 # ============================================================================
-# EPISODIC MEMORY - T-689: Fix framework .mcp.json — use bare termlink instead of hardcoded /root path
+# EPISODIC MEMORY - T-716: Wire Tier 0 block notification into check-tier0.sh
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-29T14:22:12Z
+# Generated: 2026-03-29T14:22:50Z
 # ============================================================================
 
-task_id: T-689
-task_name: "Fix framework .mcp.json — use bare termlink instead of hardcoded /root path"
+task_id: T-716
+task_name: "Wire Tier 0 block notification into check-tier0.sh"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
-created: 2026-03-28T23:04:25Z
-completed: 2026-03-28T23:05:52Z
+created: 2026-03-29T14:21:36Z
+completed: 2026-03-29T14:22:48Z
 duration_days: 0
 updates_count: 2
-first_commit: 2026-03-29T00:05:45+01:00
-last_commit: 2026-03-29T00:05:45+01:00
+first_commit: 2026-03-29T16:22:43+02:00
+last_commit: 2026-03-29T16:22:43+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Fix framework .mcp.json — use bare termlink instead of hardcoded /root path
+  Verify notification integration already complete — all 3 hooks wired by T-709
 
 # Key outcomes
 outcomes:
-  - "`.mcp.json` uses bare `termlink` command (not hardcoded path)"
-  - "JSON parses correctly"
+  - "`check-tier0.sh` sources `lib/notify.sh` and calls `fw_notify` on Tier 0 block (already wired by T-709)"
+  - "Notification includes blocked command description and approval instructions (already in check-tier0.sh:405)"
+  - "Notification fires only when actually blocked (not on pass-through) (exit 2 path only)"
+  - "`update-task.sh` sends notification on human-AC partial-complete (already in update-task.sh:612)"
+  - "`audit.sh` sends notification on FAIL results (already in audit.sh:3251)"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Fix framework .mcp.json — use bare termlink instead of hardcoded /root path"
-    source: git-mined
+  # No challenges detected in commit messages
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -42,13 +44,12 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - ".mcp.json"
-  - ".tasks/active/T-689-fix-framework-mcpjson--use-bare-termlink.md"
+  - ".tasks/active/T-716-wire-tier-0-block-notification-into-chec.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-03-29T00:05:45"
-    action: "T-689: Fix framework .mcp.json — use bare termlink instead of hardcoded /root path"
+  - time: "2026-03-29T16:22:43"
+    action: "T-716: Verify notification integration already complete — all 3 hooks wired by T-709"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
@@ -67,10 +68,10 @@ tags: []
 metrics:
   wall_clock_minutes: 1
   commits: 1
-  files_changed: 2
-  lines_added: 74
-  lines_removed: 1
+  files_changed: 1
+  lines_added: 76
+  lines_removed: 0
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-689-fix-framework-mcpjson--use-bare-termlink.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-716-wire-tier-0-block-notification-into-chec.md
 generated_by: context-agent-hybrid

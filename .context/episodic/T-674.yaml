@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T20:06:37Z
+# Generated: 2026-03-29T14:22:07Z
 # ============================================================================
 
 task_id: T-674
@@ -16,10 +16,12 @@ created: 2026-03-28T20:04:52Z
 completed: 2026-03-28T20:06:34Z
 duration_days: 0
 updates_count: 2
+first_commit: 2026-03-28T21:06:51+01:00
+last_commit: 2026-03-28T21:11:48+01:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Upgrade 7 consumer projects v1.4.109 → v1.4.118. Register 6 new fabric components + enrich edges
 
 # Key outcomes
 outcomes:
@@ -40,15 +42,127 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - ".context/episodic/T-674.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/.restart-requested"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".fabric/components/agents-audit-plugin-audit.yaml"
+  - ".fabric/components/agents-audit-self-audit.yaml"
+  - ".fabric/components/agents-context-bus-handler.yaml"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-agent-dispatch.yaml"
+  - ".fabric/components/agents-context-check-dispatch.yaml"
+  - ".fabric/components/agents-context-check-project-boundary.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-error-watchdog.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-safe-commands.yaml"
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-dispatch-preamble.yaml"
+  - ".fabric/components/agents-docgen-generate-article.yaml"
+  - ".fabric/components/agents-docgen-generate_article.yaml"
+  - ".fabric/components/agents-docgen-generate-component.yaml"
+  - ".fabric/components/agents-docgen-generate_component.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-git-lib-hooks.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-observe-observe.yaml"
+  - ".fabric/components/agents-onboarding-test-test-onboarding.yaml"
+  - ".fabric/components/agents-resume-resume.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/agents-termlink-termlink.yaml"
+  - ".fabric/components/audit-yaml-validator.yaml"
+  - ".fabric/components/bin-fw-shim.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/bin-watchtower.yaml"
+  - ".fabric/components/budget-gate.yaml"
+  - ".fabric/components/checkpoint.yaml"
+  - ".fabric/components/context-dispatcher.yaml"
+  - ".fabric/components/hook-config.yaml"
+  - ".fabric/components/learnings-route.yaml"
+  - ".fabric/components/lib-ask.yaml"
+  - ".fabric/components/lib-build.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-compat.yaml"
+  - ".fabric/components/lib-dispatch.yaml"
+  - ".fabric/components/lib-enums.yaml"
+  - ".fabric/components/lib-errors.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-keylock.yaml"
+  - ".fabric/components/lib-paths.yaml"
+  - ".fabric/components/lib-preflight.yaml"
+  - ".fabric/components/lib-review.yaml"
+  - ".fabric/components/lib-tasks.yaml"
+  - ".fabric/components/lib-update.yaml"
+  - ".fabric/components/lib-upstream.yaml"
+  - ".fabric/components/lib-validate-init.yaml"
+  - ".fabric/components/lib-yaml.yaml"
+  - ".fabric/components/web-app.yaml"
+  - ".fabric/components/web-blueprints-api.yaml"
+  - ".fabric/components/web-blueprints-approvals.yaml"
+  - ".fabric/components/web-blueprints-cockpit.yaml"
+  - ".fabric/components/web-blueprints-core.yaml"
+  - ".fabric/components/web-blueprints-cron.yaml"
+  - ".fabric/components/web-blueprints-discoveries.yaml"
+  - ".fabric/components/web-blueprints-docs.yaml"
+  - ".fabric/components/web-blueprints-enforcement.yaml"
+  - ".fabric/components/web-blueprints-fabric.yaml"
+  - ".fabric/components/web-blueprints-inception.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-metrics.yaml"
+  - ".fabric/components/web-blueprints-quality.yaml"
+  - ".fabric/components/web-blueprints-review.yaml"
+  - ".fabric/components/web-blueprints-risks.yaml"
+  - ".fabric/components/web-blueprints-session.yaml"
+  - ".fabric/components/web-blueprints-settings.yaml"
+  - ".fabric/components/web-blueprints-tasks.yaml"
+  - ".fabric/components/web-blueprints-timeline.yaml"
+  - ".fabric/components/web-context_loader.yaml"
+  - ".fabric/components/web-embeddings.yaml"
+  - ".fabric/components/web-search_utils.yaml"
+  - ".fabric/components/web-search.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-static-js-chat.yaml"
+  - ".fabric/components/web-static-js-markdown-render.yaml"
+  - ".fabric/components/web-static-js-utils.yaml"
+  - ".fabric/components/web-subprocess_utils.yaml"
+  - ".fabric/components/web-templates-_approvals_content.yaml"
+  - ".fabric/components/web-templates-approvals.yaml"
+  - ".fabric/components/web-templates-cron.yaml"
+  - ".fabric/components/web-templates-discoveries.yaml"
+  - ".fabric/components/web-templates-feedback_analytics.yaml"
+  - ".fabric/components/web-templates-_partials-chat_tab.yaml"
+  - ".fabric/components/web-templates-_review_acs.yaml"
+  - ".fabric/components/web-templates-_review_error.yaml"
+  - ".fabric/components/web-templates-review.yaml"
+  - ".fabric/components/web-templates-search.yaml"
+  - ".fabric/components/web-templates-_wrapper.yaml"
+  - ".tasks/completed/T-674-upgrade-7-consumer-projects-v14109--v141.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-03-28T21:06:51"
+    action: "T-674: Upgrade 7 consumer projects v1.4.109 → v1.4.118"
+  - time: "2026-03-28T21:11:48"
+    action: "T-674: Register 6 new fabric components + enrich edges"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 1 min
+  # Completed successfully in 2 commit(s), 1 min
 
 # Related tasks
 related_tasks:
@@ -62,10 +176,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 1
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 2
+  files_changed: 110
+  lines_added: 1452
+  lines_removed: 656
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-674-upgrade-7-consumer-projects-v14109--v141.md

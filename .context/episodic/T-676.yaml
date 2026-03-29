@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T20:21:41Z
+# Generated: 2026-03-29T14:22:07Z
 # ============================================================================
 
 task_id: T-676
@@ -13,13 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-03-28T20:18:56Z
-completed: 2026-03-28T20:21:39Z
+completed: 2026-03-28T20:21:48Z
 duration_days: 0
 updates_count: 2
+first_commit: 2026-03-28T21:21:47+01:00
+last_commit: 2026-03-28T21:21:47+01:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Dark mode toggle — localStorage-persisted theme with flash prevention
 
 # Key outcomes
 outcomes:
@@ -41,15 +43,27 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - ".context/episodic/T-676.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".tasks/active/T-676-watchtower-dark-mode-toggle--persist-the.md"
+  - "web/templates/base.html"
+  - "web/templates/_review_error.html"
+  - "web/templates/review.html"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-03-28T21:21:47"
+    action: "T-676: Dark mode toggle — localStorage-persisted theme with flash prevention"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 2 min
+  # Completed successfully in 1 commit(s), 2 min
 
 # Related tasks
 related_tasks:
@@ -63,10 +77,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 2
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 12
+  lines_added: 187
+  lines_removed: 12
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-676-watchtower-dark-mode-toggle--persist-the.md

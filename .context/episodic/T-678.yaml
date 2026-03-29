@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T14:22:08Z
+# ============================================================================
+
+task_id: T-678
+task_name: "vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-03-28T20:49:43Z
+completed: 2026-03-28T22:06:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-28T21:50:37+01:00
+last_commit: 2026-03-28T22:01:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create vnx-orchestration deep-dive inception + T-677 settings.json bug task. Research artifact + init test findings + dispatch reflection agent
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Create vnx-orchestration deep-dive inception + T-677 settings.json bug task"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/2026-03-28-2200.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.dispatch-approval"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/reports/T-678-vnx-orchestration-deep-dive.md"
+  - ".tasks/active/T-677-fix-fw-init-hook-merge--pre-existing-set.md"
+  - ".tasks/active/T-678-vnx-orchestration-deep-dive--ingest-buil.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T21:50:37"
+    action: "T-678: Create vnx-orchestration deep-dive inception + T-677 settings.json bug task"
+  - time: "2026-03-28T22:01:59"
+    action: "T-678: Research artifact + init test findings + dispatch reflection agent"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 76 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 76
+  commits: 2
+  files_changed: 15
+  lines_added: 353
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-678-vnx-orchestration-deep-dive--ingest-buil.md
+generated_by: context-agent-hybrid

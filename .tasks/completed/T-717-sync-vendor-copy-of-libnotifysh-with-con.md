@@ -1,22 +1,22 @@
 ---
-id: T-716
-name: "Wire Tier 0 block notification into check-tier0.sh"
+id: T-717
+name: "Sync vendor copy of lib/notify.sh with config file support"
 description: >
-  Wire Tier 0 block notification into check-tier0.sh
+  Sync vendor copy of lib/notify.sh with config file support
 
-status: started-work
-workflow_type: build
+status: work-completed
+workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-29T14:21:36Z
-last_update: 2026-03-29T14:21:36Z
-date_finished: null
+created: 2026-03-29T14:23:12Z
+last_update: 2026-03-29T14:24:09Z
+date_finished: 2026-03-29T14:24:09Z
 ---
 
-# T-716: Wire Tier 0 block notification into check-tier0.sh
+# T-717: Sync vendor copy of lib/notify.sh with config file support
 
 ## Context
 
@@ -25,11 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] `check-tier0.sh` sources `lib/notify.sh` and calls `fw_notify` on Tier 0 block (already wired by T-709)
-- [x] Notification includes blocked command description and approval instructions (already in check-tier0.sh:405)
-- [x] Notification fires only when actually blocked (not on pass-through) (exit 2 path only)
-- [x] `update-task.sh` sends notification on human-AC partial-complete (already in update-task.sh:612)
-- [x] `audit.sh` sends notification on FAIL results (already in audit.sh:3251)
+- [x] `.agentic-framework/lib/notify.sh` matches `lib/notify.sh`
+- [x] `.agentic-framework/agents/context/post-compact-resume.sh` matches source
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -70,7 +67,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-03-29T14:21:36Z — task-created [task-create-agent]
+### 2026-03-29T14:23:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-716-wire-tier-0-block-notification-into-chec.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-717-sync-vendor-copy-of-libnotifysh-with-con.md
 - **Context:** Initial task creation
+
+### 2026-03-29T14:24:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

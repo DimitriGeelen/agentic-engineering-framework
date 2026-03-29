@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T14:22:08Z
+# ============================================================================
+
+task_id: T-679
+task_name: "Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T21:30:03Z
+completed: 2026-03-28T21:57:32Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-28T22:33:01+01:00
+last_commit: 2026-03-28T22:57:31+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Path C workflow documentation + research artifact + friction points from T-678. Fix boundary hook for TermLink + upgrade hook validation for non-framework hooks. Complete — Path C workflow fixes, CLAUDE.md review rule, inception rationale pre-population
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Path C workflow documented in `docs/reports/T-679-path-c-workflow.md`"
+  - "Boundary hook TermLink exception implemented (F-1/F-7 fix) — `check-project-boundary.sh`"
+  - "fw upgrade hook content validation implemented (F-2 fix) — `lib/upgrade.sh`"
+  - "vnx experiment redone from scratch — fw init + doctor + audit all pass"
+  - "Friction points logged with severity and category (7 items in task + research artifact)"
+  - "TermLink product learnings documented (for TermLink creator) — T-682"
+  - "Framework improvement tasks created: T-680 (vendor self-ref), T-681 (MCP seeding), T-682 (TermLink feedback)"
+  - "Research artifact committed — `docs/reports/T-679-path-c-workflow.md`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — Path C workflow fixes, CLAUDE.md review rule, inception rationale pre-population"
+    source: git-mined
+  - description: "Fix boundary hook for TermLink + upgrade hook validation for non-framework hooks"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-project-boundary.sh"
+  - "agents/task-create/update-task.sh"
+  - "CLAUDE.md"
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-679-path-c-workflow.md"
+  - "lib/upgrade.sh"
+  - ".mcp.json"
+  - ".tasks/active/T-679-path-c-workflow-refinement--document-ter.md"
+  - ".tasks/active/T-680-fix-fw-vendor-self-referencing--detect-s.md"
+  - ".tasks/active/T-681-add-termlink-mcp-server-to-fw-init-defau.md"
+  - ".tasks/active/T-682-termlink-product-feedback----working-dir.md"
+  - "web/blueprints/inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T22:33:01"
+    action: "T-679: Path C workflow documentation + research artifact + friction points from T-678"
+  - time: "2026-03-28T22:35:57"
+    action: "T-679: Fix boundary hook for TermLink + upgrade hook validation for non-framework hooks"
+  - time: "2026-03-28T22:57:31"
+    action: "T-679: Complete — Path C workflow fixes, CLAUDE.md review rule, inception rationale pre-population"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [path-c, termlink, ingestion, process-improvement]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 27
+  commits: 3
+  files_changed: 13
+  lines_added: 639
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-679-path-c-workflow-refinement--document-ter.md
+generated_by: context-agent-hybrid

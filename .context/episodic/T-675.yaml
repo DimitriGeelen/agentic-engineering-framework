@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-28T20:17:46Z
+# Generated: 2026-03-29T14:22:07Z
 # ============================================================================
 
 task_id: T-675
@@ -16,10 +16,12 @@ created: 2026-03-28T20:14:27Z
 completed: 2026-03-28T20:17:44Z
 duration_days: 0
 updates_count: 2
+first_commit: 2026-03-28T21:17:52+01:00
+last_commit: 2026-03-28T21:17:52+01:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower
 
 # Key outcomes
 outcomes:
@@ -29,7 +31,8 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: "Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -40,15 +43,38 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - ".context/episodic/T-669.yaml"
+  - ".context/episodic/T-670.yaml"
+  - ".context/episodic/T-672.yaml"
+  - ".context/episodic/T-673.yaml"
+  - ".context/episodic/T-675.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.edit-counter"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - ".tasks/completed/T-675-fix-t-d3-regex--support-3-digit-task-ids.md"
+  - "web/blueprints/cockpit.py"
+  - "web/blueprints/core.py"
+  - "web/blueprints/docs.py"
+  - "web/blueprints/inception.py"
+  - "web/blueprints/review.py"
+  - "web/blueprints/session.py"
+  - "web/blueprints/tasks.py"
+  - "web/blueprints/timeline.py"
+  - "web/shared.py"
+  - "web/watchtower/prioritizer.py"
+  - "web/watchtower/rules.py"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-03-28T21:17:52"
+    action: "T-675: Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 3 min
+  # Completed successfully in 1 commit(s), 3 min
 
 # Related tasks
 related_tasks:
@@ -62,10 +88,10 @@ tags: []
 # Passive metrics (derived automatically — do not edit)
 metrics:
   wall_clock_minutes: 3
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  commits: 1
+  files_changed: 23
+  lines_added: 488
+  lines_removed: 84
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-675-fix-t-d3-regex--support-3-digit-task-ids.md
