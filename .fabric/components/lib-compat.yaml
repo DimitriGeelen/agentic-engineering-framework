@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/compat.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms."
 depends_on: []
 depended_by:
 - target: bin/fw

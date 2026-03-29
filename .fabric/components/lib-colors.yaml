@@ -5,7 +5,7 @@ subsystem: framework-core
 location: lib/colors.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output."
 
 depends_on:
   # Format: - target: <relative-path>

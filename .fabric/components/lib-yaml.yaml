@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/yaml.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh."
 depends_on: []
 depended_by:
 - target: lib/paths.sh

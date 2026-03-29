@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/keylock.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications."
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh

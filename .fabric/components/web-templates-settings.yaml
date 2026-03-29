@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/settings.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Full page template: settings — hook configuration, notification state, framework paths."
 depends_on:
 - target: web/templates/_wrapper.html
   type: wrapped_by

@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/approvals.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions."
 depends_on:
 - target: web/templates/_approvals_content.html
   type: includes

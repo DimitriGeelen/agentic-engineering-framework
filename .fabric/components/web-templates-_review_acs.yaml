@@ -4,7 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_review_acs.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "htmx partial: acceptance criteria list — renders agent/human AC sections with checkboxes for review page."
 depends_on: []
 depended_by:
 - target: web/templates/review.html

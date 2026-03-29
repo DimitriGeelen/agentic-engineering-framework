@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/dispatch.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive."
 depends_on: []
 depended_by:
 - target: bin/fw

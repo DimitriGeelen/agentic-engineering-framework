@@ -4,7 +4,7 @@ type: script
 subsystem: unknown
 location: agents/termlink/termlink.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary."
 depends_on: []
 depended_by:
 - target: bin/fw

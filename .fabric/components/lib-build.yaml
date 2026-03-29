@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/build.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw build subcommand: placeholder for future build orchestration. Currently unused."
 depends_on: []
 depended_by:
 - target: bin/fw

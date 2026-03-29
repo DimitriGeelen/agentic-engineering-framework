@@ -5,7 +5,7 @@ subsystem: framework-core
 location: bin/fw-shim
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Project-detecting fw shim: resolves framework root from .framework.yaml or bin/ location. Replaces global install symlink (T-664)."
 
 depends_on:
   # Format: - target: <relative-path>

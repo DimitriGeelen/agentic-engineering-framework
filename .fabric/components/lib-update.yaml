@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/update.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes."
 depends_on: []
 depended_by:
 - target: bin/fw

@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/cron.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Full page template: cron status — job table with schedule, last run, status indicators."
 depends_on: []
 depended_by:
 - target: web/blueprints/cron.py

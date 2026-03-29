@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/docs_detail.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Full page template: document detail — renders markdown file content with breadcrumbs and navigation."
 depends_on:
 - target: web/templates/_wrapper.html
   type: wrapped_by

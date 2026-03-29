@@ -5,7 +5,7 @@ subsystem: watchtower
 location: web/templates/_partials/badge.html
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "htmx partial: status badge component — renders colored badge for task status (captured, started-work, etc.)."
 
 depends_on:
   # Format: - target: <relative-path>

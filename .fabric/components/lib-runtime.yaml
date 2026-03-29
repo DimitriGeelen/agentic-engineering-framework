@@ -5,7 +5,7 @@ subsystem: framework-core
 location: lib/runtime.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution."
 
 depends_on:
   # Format: - target: <relative-path>

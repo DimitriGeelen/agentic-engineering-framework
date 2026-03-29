@@ -5,7 +5,7 @@ subsystem: watchtower
 location: web/templates/_review_error.html
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "htmx partial: review error message — displayed when task review action fails (task not found, validation error)."
 
 depends_on:
   # Format: - target: <relative-path>

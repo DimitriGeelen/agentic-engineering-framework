@@ -5,7 +5,7 @@ subsystem: framework-core
 location: lib/version.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection."
 
 depends_on:
   # Format: - target: <relative-path>

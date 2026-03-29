@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/lib/safe-commands.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task."
 depends_on: []
 depended_by:
 - target: agents/context/check-active-task.sh

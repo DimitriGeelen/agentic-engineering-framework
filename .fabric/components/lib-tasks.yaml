@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/tasks.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts."
 depends_on: []
 depended_by:
 - target: agents/git/lib/hooks.sh

@@ -5,7 +5,7 @@ subsystem: context-fabric
 location: agents/context/commit-cadence.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management)."
 
 depends_on:
   # Format: - target: <relative-path>

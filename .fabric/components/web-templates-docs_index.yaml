@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/docs_index.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Full page template: document index — lists docs/reports/ and docs/articles/ files with last-modified dates."
 depends_on:
 - target: web/templates/_wrapper.html
   type: wrapped_by

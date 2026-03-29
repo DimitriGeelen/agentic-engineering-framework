@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/review.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions."
 depends_on:
 - target: web/shared.py
   type: calls

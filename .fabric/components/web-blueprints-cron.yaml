@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/cron.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Watchtower cron blueprint: cron job status display — shows registered jobs, schedule, last run, active/paused state."
 depends_on:
 - target: web/shared.py
   type: calls

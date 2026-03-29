@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/search_utils.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page."
 depends_on:
 - target: web/shared.py
   type: imports

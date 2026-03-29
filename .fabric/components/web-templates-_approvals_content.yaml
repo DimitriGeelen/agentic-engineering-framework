@@ -4,7 +4,7 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_approvals_content.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: "htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page."
 depends_on: []
 depended_by:
 - target: web/templates/approvals.html
