@@ -25,13 +25,13 @@ Integrate D3.js Fabric Explorer from OpenClaw evaluation into upstream Watchtowe
 ## Acceptance Criteria
 
 ### Agent
-- [ ] fabric_explorer.html copied and adapted for framework paths
-- [ ] fabric.py merged — new graph route + 2 API routes + enhanced _load_subsystems
-- [ ] d3.v7.min.js vendored to web/static/
-- [ ] Existing routes still work: /fabric, /fabric/component/<name>
-- [ ] New routes work: /fabric/graph (explorer), /api/fabric/report, /api/fabric/source
-- [ ] Path traversal protection verified on source API
-- [ ] Vendor copies synced to .agentic-framework/
+- [x] fabric_explorer.html copied and adapted for framework paths
+- [x] fabric.py merged — new graph route + 2 API routes + enhanced _load_subsystems
+- [x] d3.v7.min.js vendored to web/static/
+- [x] Existing routes still work: /fabric, /fabric/component/<name>
+- [x] New routes work: /fabric/graph (explorer), /api/fabric/report, /api/fabric/source
+- [x] Path traversal protection verified on source API
+- [x] Vendor copies synced to .agentic-framework/
 
 ### Human
 - [ ] [REVIEW] Fabric Explorer renders correctly with interactive graph

@@ -10,7 +10,14 @@ from web.shared import PROJECT_ROOT, render_page
 
 bp = Blueprint("fabric", __name__)
 
-FABRIC_DIR = os.path.join(PROJECT_ROOT, ".fabric")
+# In consumer projects, PROJECT_ROOT is .agentic-framework/ — fabric data lives at the parent.
+# In the framework repo itself, PROJECT_ROOT is the actual root.
+if os.path.basename(os.path.normpath(PROJECT_ROOT)) == ".agentic-framework":
+    ACTUAL_PROJECT_ROOT = os.path.dirname(os.path.normpath(PROJECT_ROOT))
+else:
+    ACTUAL_PROJECT_ROOT = PROJECT_ROOT
+
+FABRIC_DIR = os.path.join(ACTUAL_PROJECT_ROOT, ".fabric")
 COMP_DIR = os.path.join(FABRIC_DIR, "components")
 
 # mtime-based cache for component loading
@@ -41,13 +48,20 @@ def _load_components():
 
 
 def _load_subsystems():
-    """Load subsystem registry."""
+    """Load subsystem registry.
+
+    Supports both list-of-dicts ([{id, name, ...}]) and dict-of-dicts
+    ({id: {name, ...}}) formats in subsystems.yaml.
+    """
     path = os.path.join(FABRIC_DIR, "subsystems.yaml")
     if not os.path.exists(path):
         return []
     with open(path) as f:
         data = yaml.safe_load(f)
-    return data.get("subsystems", [])
+    raw = data.get("subsystems", [])
+    if isinstance(raw, dict):
+        return [{"id": k, **v} for k, v in raw.items() if isinstance(v, dict)]
+    return raw
 
 
 def _build_graph(components, all_components=None):
@@ -313,46 +327,57 @@ def component_detail(name):
 
 @bp.route("/fabric/graph")
 def fabric_graph():
-    """Dependency graph visualization."""
+    """Interactive D3 fabric explorer."""
     all_components = _load_components()
-    subsystem_filter = request.args.get("subsystem", "")
 
-    components = all_components
-    if subsystem_filter:
-        components = [c for c in components if c.get("subsystem") == subsystem_filter]
-
-    # Only include components that have edges (enriched cards)
-    enriched = [c for c in components if
-                c.get("depends_on") or c.get("depended_by") or
-                c.get("writers") or c.get("readers")]
-
-    nodes, edges = _build_graph(enriched, all_components=all_components)
-    subsystems = _load_subsystems()
-
-    # Build subsystem color map for compound node backgrounds
-    subsystem_colors = {
-        "watchtower": "#2d4a7a",
-        "context-fabric": "#2a5a4a",
-        "framework-core": "#5a3a2a",
-        "git-traceability": "#4a2a5a",
-        "component-fabric": "#2a4a5a",
-        "healing": "#5a2a3a",
-        "learnings-pipeline": "#3a5a2a",
-        "budget-management": "#5a4a2a",
-        "task-management": "#2a3a5a",
-        "audit": "#4a5a2a",
-        "handover": "#3a2a5a",
-        "enforcement": "#5a2a4a",
-    }
+    # Pass all components to the D3 explorer — it handles subsystem grouping
+    # and drill-down internally via its force-directed graph
+    components = []
+    for c in all_components:
+        components.append({
+            "id": c.get("id", c.get("name", "")),
+            "name": c.get("name", c.get("id", "")),
+            "type": c.get("type", "unknown"),
+            "subsystem": c.get("subsystem", "unknown"),
+            "location": c.get("location", ""),
+            "purpose": c.get("purpose", ""),
+            "depends_on": c.get("depends_on", []),
+            "depended_by": c.get("depended_by", []),
+            "tags": c.get("tags", []),
+        })
 
     return render_page(
-        "fabric_graph.html",
-        page_title="Dependency Graph",
-        nodes=nodes,
-        edges=edges,
-        subsystems=subsystems,
-        subsystem_filter=subsystem_filter,
-        subsystem_colors=subsystem_colors,
-        total_nodes=len(nodes),
-        total_edges=len(edges),
+        "fabric_explorer.html",
+        page_title="Fabric Explorer",
+        components=components,
     )
+
+
+@bp.route("/api/fabric/report/<path:filename>")
+def fabric_report(filename):
+    """Serve report markdown content for the inline viewer."""
+    # Sanitize: only allow filenames within docs/reports/
+    safe_name = os.path.basename(filename)
+    if not safe_name.endswith(".md"):
+        return "Not found", 404
+    report_path = os.path.join(ACTUAL_PROJECT_ROOT, "docs", "reports", safe_name)
+    if not os.path.isfile(report_path):
+        return "Report not found", 404
+    with open(report_path) as f:
+        return f.read(), 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@bp.route("/api/fabric/source/<path:filepath>")
+def fabric_source(filepath):
+    """Serve source file content for inline viewing."""
+    # Resolve and verify the path stays within project root
+    resolved = os.path.realpath(os.path.join(ACTUAL_PROJECT_ROOT, filepath))
+    if not resolved.startswith(os.path.realpath(ACTUAL_PROJECT_ROOT) + os.sep):
+        return "Forbidden", 403
+    if not os.path.isfile(resolved):
+        return "File not found", 404
+    # Limit file size to 500KB
+    if os.path.getsize(resolved) > 500_000:
+        return "File too large", 413
+    with open(resolved, errors="replace") as f:
+        return f.read(), 200, {"Content-Type": "text/plain; charset=utf-8"}
