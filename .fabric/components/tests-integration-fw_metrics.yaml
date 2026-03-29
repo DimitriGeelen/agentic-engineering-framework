@@ -1,0 +1,17 @@
+id: tests/integration/fw_metrics.bats
+name: fw_metrics
+type: test
+subsystem: framework-core
+location: tests/integration/fw_metrics.bats
+tags: [bats, integration-test, metrics, cli]
+
+purpose: "Integration tests for fw metrics CLI — 4 tests covering dashboard, task counts, and predict."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
