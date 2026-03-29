@@ -4,15 +4,15 @@ name: "Context budgeting hints — token estimates and load priority in componen
 description: >
   Add token_estimate, load_strategy, priority fields to fabric component cards. Enhances P-009 budget management with structured per-unit cost data. Score: 17/20 (D1:4 D2:4 D3:4 D4:5). Source: T-697 pattern harvest #15.
 
-status: captured
-workflow_type: build
+status: started-work
+workflow_type: inception
 owner: agent
 horizon: next
 tags: [context-budget, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:27Z
-last_update: 2026-03-29T08:57:27Z
+last_update: 2026-03-29T13:21:47Z
 date_finished: null
 ---
 
@@ -20,51 +20,45 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+KCP pattern harvest (T-697 #15) proposed adding `token_estimate`, `load_strategy`, `priority` to 180 fabric component cards. Would enhance P-009 budget management with per-file context cost data.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Problem evaluated against current budget management
+- [x] Recommendation written with rationale
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Review findings and approve decision
+  **Steps:**
+  1. Read recommendation below
+  2. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-701 defer --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Ask for clarification
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Task file has recommendation
+grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-estimates.md 2>/dev/null || grep -q "Recommendation" .tasks/completed/T-701-context-budgeting-hints--token-estimates.md 2>/dev/null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-29 — Token hints in fabric cards vs defer
+- **Chose:** DEFER — the agent doesn't use fabric cards for context loading decisions
+- **Why:** Budget management (P-009) reads actual token usage from the JSONL transcript, not fabric cards. Token estimates in cards would be metadata that nothing consumes. 180 cards to update for zero current consumers.
+- **Rejected:** Adding fields now — high effort (180 cards × ~3 fields), zero consumers, estimates would go stale
+
+## Recommendation
+
+- **Recommendation:** DEFER
+- **Rationale:** Token budgeting hints are a KCP-inspired pattern that solves a problem the framework doesn't have. P-009 budget management reads **actual** token usage from the Claude Code JSONL transcript — it doesn't need estimates. The agent doesn't read fabric cards to decide what to load; it reads CLAUDE.md (auto-loaded), handovers, and task files. Adding `token_estimate` to 180 component cards would be metadata with zero consumers. If the framework later adopts KCP (T-705, deferred) or builds a context-aware loader that selectively loads files based on budget, revisit then.
+- **Evidence:**
+  - 180 fabric component cards would need updating
+  - budget-gate.sh reads JSONL transcript (actual usage), not fabric cards
+  - checkpoint.sh reads JSONL transcript, not fabric cards
+  - Agent reads CLAUDE.md, LATEST.md, focus.yaml at session start — not driven by fabric cards
+  - No code path exists that would consume token_estimate or load_priority from cards
+- **Next steps after DEFER:** Revisit if a context-aware selective loader is built, or if KCP integration (T-705) is approved
 
 ## Updates
 
@@ -72,3 +66,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-701-context-budgeting-hints--token-estimates.md
 - **Context:** Initial task creation
+
+### 2026-03-29T13:21:47Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
+
+### 2026-03-29T13:21:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
