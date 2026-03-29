@@ -4,7 +4,7 @@ name: "Qualify Path C as repeatable pattern — template + second experiment"
 description: >
   Inception: Qualify Path C as repeatable pattern — template + second experiment
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-679, T-678, T-549, T-124]
 created: 2026-03-29T07:51:25Z
-last_update: 2026-03-29T07:52:32Z
-date_finished: null
+last_update: 2026-03-29T07:58:45Z
+date_finished: 2026-03-29T07:58:45Z
 ---
 
 # T-696: Qualify Path C as repeatable pattern — template + second experiment
@@ -102,14 +102,11 @@ A-4: A second experiment on a different repo will validate the template without 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: Template approach approved — codify Path C as repeatable pattern, run second experiment to validate
+
+**Date**: 2026-03-29T07:58:45Z
 
 ## Recommendation
 
@@ -123,7 +120,11 @@ A-4: A second experiment on a different repo will validate the template without 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Template approach approved — codify Path C as repeatable pattern, run second experiment to validate
+
+**Date**: 2026-03-29T07:58:45Z
 
 ## Updates
 
@@ -132,3 +133,12 @@ A-4: A second experiment on a different repo will validate the template without 
 
 ### 2026-03-29T07:52:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-29T07:58:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Template approach approved — codify Path C as repeatable pattern, run second experiment to validate
+
+### 2026-03-29T07:58:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
