@@ -1,0 +1,17 @@
+id: tests/integration/fw_inception.bats
+name: fw_inception
+type: test
+subsystem: framework-core
+location: tests/integration/fw_inception.bats
+tags: [bats, integration-test, inception, cli]
+
+purpose: "Integration tests for fw inception CLI — 5 tests covering help, status, start, workflow type, and status listing."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
