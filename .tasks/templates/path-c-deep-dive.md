@@ -30,6 +30,14 @@ Analyze {PROJECT_NAME} under framework governance to:
 **Source:** {REPO_URL}
 **Clone target:** /opt/{NNN}-{ProjectName}
 
+### Directory numbering
+
+Projects live in `/opt/NNN-ProjectName`. To find the next available number:
+```bash
+ls -d /opt/0*/ 2>/dev/null | sort
+```
+Pick the next unused number in the sequence.
+
 ## Key Rules
 
 1. **Never cd into the target from framework session** — boundary hook blocks it (correctly)
@@ -45,6 +53,8 @@ Analyze {PROJECT_NAME} under framework governance to:
 
 **Context:** Run these steps from within the framework project. Human approval required before any writes to external project.
 
+- [ ] Pick next directory number: `ls -d /opt/0*/ 2>/dev/null | sort`
+- [ ] Verify clone target doesn't exist: `test ! -d /opt/{NNN}-{ProjectName} && echo "OK"`
 - [ ] Verify TermLink installed: `fw termlink check`
 - [ ] Clone target repo: `git clone {REPO_URL} /opt/{NNN}-{ProjectName}`
 - [ ] Spawn TermLink session: `termlink spawn --name {project}-dive --backend background --shell --wait --tags "path-c,deep-dive"`
