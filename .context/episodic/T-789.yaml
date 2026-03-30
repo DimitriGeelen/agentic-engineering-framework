@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-789: Add pickup CLI commands to CLAUDE.md quick reference
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:21:50Z
+# ============================================================================
+
+task_id: T-789
+task_name: "Add pickup CLI commands to CLAUDE.md quick reference"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T14:18:21Z
+completed: 2026-03-30T14:19:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T16:19:32+02:00
+last_commit: 2026-03-30T16:19:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add pickup CLI commands to CLAUDE.md quick reference. Complete — pickup commands in CLAUDE.md quick reference
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md Quick Reference table includes `fw pickup send`, `fw pickup process`, `fw pickup status`, `fw pickup list`"
+  - "grep confirms pickup commands in CLAUDE.md — 7 occurrences"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/locks/T-789.lock"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-789-add-pickup-cli-commands-to-claudemd-quic.md"
+  - ".tasks/completed/T-789-add-pickup-cli-commands-to-claudemd-quic.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:19:32"
+    action: "T-789: Add pickup CLI commands to CLAUDE.md quick reference"
+  - time: "2026-03-30T16:19:46"
+    action: "T-789: Complete — pickup commands in CLAUDE.md quick reference"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 7
+  lines_added: 71
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-789-add-pickup-cli-commands-to-claudemd-quic.md
+generated_by: context-agent-hybrid

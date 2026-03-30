@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-776: fw pickup process — cron-triggered inbox scanner
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:21:49Z
+# ============================================================================
+
+task_id: T-776
+task_name: "fw pickup process — cron-triggered inbox scanner"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:21:48Z
+completed: 2026-03-30T14:13:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-30T16:13:03+02:00
+last_commit: 2026-03-30T16:13:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw pickup process — add notification on pickup processing. Complete — fw pickup process cron-triggered scanner
+
+# Key outcomes
+outcomes:
+  - "`fw pickup process` subcommand registered in `bin/fw`"
+  - "Scans `.context/pickup/inbox/` for pending YAML envelopes"
+  - "For each: validate → dedup check → create inception task → notify → move to processed/"
+  - "Idempotent: running twice with no new pickups produces no side effects"
+  - "Exit 0 when no pending pickups (silent success for cron)"
+  - "Logs each processed pickup with pickup_id and created task_id"
+  - "`fw pickup list` shows inbox contents with status"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/locks/T-776.lock"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/session.yaml"
+  - "lib/pickup.sh"
+  - ".tasks/active/T-776-fw-pickup-process--cron-triggered-inbox-.md"
+  - ".tasks/completed/T-776-fw-pickup-process--cron-triggered-inbox-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:13:03"
+    action: "T-776: fw pickup process — add notification on pickup processing"
+  - time: "2026-03-30T16:13:14"
+    action: "T-776: Complete — fw pickup process cron-triggered scanner"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 2
+  files_changed: 7
+  lines_added: 28
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-776-fw-pickup-process--cron-triggered-inbox-.md
+generated_by: context-agent-hybrid

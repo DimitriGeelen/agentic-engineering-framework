@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:21:50Z
+# ============================================================================
+
+task_id: T-777
+task_name: "Observation inbox migration — process pickup-051-vinix24 through pipeline"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:21:55Z
+completed: 2026-03-30T14:16:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-30T16:16:29+02:00
+last_commit: 2026-03-30T16:16:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Process pickup-051-vinix24 observations through pipeline. Complete — observation inbox migration, 6 pickups processed
+
+# Key outcomes
+outcomes:
+  - "Each pickup-051-vinix24 observation converted to a pickup envelope YAML — 6 envelopes (2 bug-report, 4 feature-proposal)"
+  - "All envelopes placed in `.context/pickup/inbox/`"
+  - "`fw pickup process` runs and processes all 6 envelopes"
+  - "Processed envelopes moved to `.context/pickup/processed/`"
+  - "No duplicates created (dedup hash prevents re-processing — verified)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/2026-03-30-1615.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/locks/T-777.lock"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/processed/P-001-bug-report.yaml"
+  - ".context/pickup/processed/P-002-bug-report.yaml"
+  - ".context/pickup/processed/P-003-feature-proposal.yaml"
+  - ".context/pickup/processed/P-004-feature-proposal.yaml"
+  - ".context/pickup/processed/P-005-feature-proposal.yaml"
+  - ".context/pickup/processed/P-006-feature-proposal.yaml"
+  - ".context/pickup/rejected/P-001-bug-report.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/session.yaml"
+  - "lib/pickup.sh"
+  - ".tasks/active/T-777-observation-inbox-migration--process-pic.md"
+  - ".tasks/completed/T-777-observation-inbox-migration--process-pic.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:16:29"
+    action: "T-777: Process pickup-051-vinix24 observations through pipeline"
+  - time: "2026-03-30T16:16:41"
+    action: "T-777: Complete — observation inbox migration, 6 pickups processed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 2
+  files_changed: 18
+  lines_added: 134
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-777-observation-inbox-migration--process-pic.md
+generated_by: context-agent-hybrid

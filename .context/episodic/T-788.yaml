@@ -1,0 +1,124 @@
+# ============================================================================
+# EPISODIC MEMORY - T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:21:50Z
+# ============================================================================
+
+task_id: T-788
+task_name: "Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:55:50Z
+completed: 2026-03-30T14:04:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T16:03:54+02:00
+last_commit: 2026-03-30T16:05:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Unit tests for 6 lib files — first-run, harvest, init, promote, upgrade, validate-init. Complete — 55 unit tests for 6 lib files, 419 total suite, 0 failures
+
+# Key outcomes
+outcomes:
+  - "Unit tests for lib/first-run.sh (do_first_run output, structure) — 9 tests"
+  - "Unit tests for lib/harvest.sh (argument parsing, help, guards, sub-functions) — 11 tests"
+  - "Unit tests for lib/init.sh (argument parsing, help, guards, generator existence) — 10 tests"
+  - "Unit tests for lib/validate-init.sh (argument parsing, help, validation logic) — 8 tests"
+  - "Unit tests for lib/promote.sh (argument parsing, help, routing) — 8 tests"
+  - "Unit tests for lib/upgrade.sh (argument parsing, help, guards) — 9 tests"
+  - "All new tests pass: bats tests/unit/lib_*.bats exits 0 — 419 total, 0 failures"
+  - "No regressions in existing test suite"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-30.yaml"
+  - ".context/audits/cron/2026-03-22-1330.yaml"
+  - ".context/audits/cron/2026-03-22-1400.yaml"
+  - ".context/audits/cron/2026-03-22-1430.yaml"
+  - ".context/audits/cron/2026-03-22-1500.yaml"
+  - ".context/audits/cron/2026-03-30-1430.yaml"
+  - ".context/audits/cron/2026-03-30-1445.yaml"
+  - ".context/audits/cron/2026-03-30-1500.yaml"
+  - ".context/audits/cron/2026-03-30-1515.yaml"
+  - ".context/audits/cron/2026-03-30-1530.yaml"
+  - ".context/audits/cron/2026-03-30-1545.yaml"
+  - ".context/audits/cron/2026-03-30-1600.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-772.yaml"
+  - ".context/episodic/T-773.yaml"
+  - ".context/episodic/T-782.yaml"
+  - ".context/locks/T-772.lock"
+  - ".context/locks/T-773.lock"
+  - ".context/locks/T-780.lock"
+  - ".context/locks/T-782.lock"
+  - ".context/locks/T-788.lock"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-772-cross-project-pickup-channel--mcptermlin.md"
+  - ".tasks/active/T-782-deep-dive-article-fabric-explorer--from-.md"
+  - ".tasks/active/T-788-unit-tests-for-remaining-lib-files--ask-.md"
+  - ".tasks/completed/T-773-t-772-follow-up-update-research-artifact.md"
+  - ".tasks/completed/T-780-unit-tests-for-untested-lib-files--versi.md"
+  - ".tasks/completed/T-788-unit-tests-for-remaining-lib-files--ask-.md"
+  - "tests/unit/lib_first_run.bats"
+  - "tests/unit/lib_harvest.bats"
+  - "tests/unit/lib_init.bats"
+  - "tests/unit/lib_promote.bats"
+  - "tests/unit/lib_upgrade.bats"
+  - "tests/unit/lib_validate_init.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:03:54"
+    action: "T-788: Unit tests for 6 lib files — first-run, harvest, init, promote, upgrade, validate-init"
+  - time: "2026-03-30T16:05:08"
+    action: "T-788: Complete — 55 unit tests for 6 lib files, 419 total suite, 0 failures"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 42
+  lines_added: 1506
+  lines_removed: 315
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-788-unit-tests-for-remaining-lib-files--ask-.md
+generated_by: context-agent-hybrid
