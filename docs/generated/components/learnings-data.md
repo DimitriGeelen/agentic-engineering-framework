@@ -8,9 +8,8 @@
 
 ## What It Does
 
-Project Memory - Learnings
-Lessons learned from completed tasks.
-Used by agents to improve future work.
+Project Learnings - Knowledge gained during development
+Added via: fw context add-learning "description" --task T-XXX
 
 ## Used By (3)
 

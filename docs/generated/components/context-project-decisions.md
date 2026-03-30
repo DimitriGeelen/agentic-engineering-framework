@@ -8,9 +8,8 @@
 
 ## What It Does
 
-Project Memory - Decisions
-Key decisions made during the project with rationale.
-Referenced when similar decisions come up.
+Project Decisions - Architectural choices with rationale
+Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 
 ## Used By (2)
 

@@ -14,6 +14,11 @@ Variables: RED, GREEN, YELLOW, CYAN, BOLD, NC
 Automatically sourced via lib/errors.sh → lib/paths.sh chain.
 Scripts that source lib/paths.sh get colors for free.
 
+## Related
+
+### Tasks
+- T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-colors.yaml`*
 *Last verified: 2026-03-11*

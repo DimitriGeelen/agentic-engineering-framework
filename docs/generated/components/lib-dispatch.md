@@ -37,6 +37,11 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | `lib/bus.sh` | called_by |
 | `agents/context/check-agent-dispatch.sh` | called_by |
 
+## Related
+
+### Tasks
+- T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-dispatch.yaml`*
 *Last verified: 2026-03-23*

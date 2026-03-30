@@ -31,11 +31,6 @@ Exit codes:
 | `bin/fw` | called_by |
 | `lib/init.sh` | called_by |
 
-## Related
-
-### Tasks
-- T-528: Fix install.sh and FRAMEWORK.md stale claims
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*
 *Last verified: 2026-03-04*

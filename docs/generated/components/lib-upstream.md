@@ -26,6 +26,11 @@ Inception: T-451 | Build: T-454
 | `bin/fw` | calls |
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-upstream.yaml`*
 *Last verified: 2026-03-12*

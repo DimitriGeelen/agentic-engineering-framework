@@ -38,6 +38,7 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 
 ### Tasks
 - T-605: Fix bus.sh race condition — atomic ID generation for multi-agent safety
+- T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-bus.yaml`*

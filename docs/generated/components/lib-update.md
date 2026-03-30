@@ -24,6 +24,11 @@ to latest upstream (legacy path, pre-T-499).
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-update.yaml`*
 *Last verified: 2026-03-23*
