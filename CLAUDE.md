@@ -910,6 +910,10 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Dispatch to remote | `fw dispatch send --host HOST --task T-XXX --agent TYPE --summary "..."` | |
 | Bus post remote | `fw bus post --remote HOST --task T-XXX --agent TYPE --summary "..."` | |
 | List SSH hosts | `fw dispatch hosts` | |
+| Pickup send | `fw pickup send --type TYPE --summary "..."` | Create pickup envelope |
+| Pickup process | `fw pickup process` | Process inbox envelopes (validate, dedup, create inception) |
+| Pickup status | `fw pickup status` | Show inbox/processed/rejected counts |
+| Pickup list | `fw pickup list` | List inbox contents |
 | Notify status | `fw notify status` | Show notification configuration |
 | Notify enable | `fw notify enable` | Enable push notifications |
 | Notify disable | `fw notify disable` | Disable push notifications |
