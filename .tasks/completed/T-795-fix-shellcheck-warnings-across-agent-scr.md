@@ -4,16 +4,16 @@ name: "Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, 
 description: >
   Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [C-007, agents/handover/handover.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T16:28:06Z
-last_update: 2026-03-30T16:28:06Z
-date_finished: null
+last_update: 2026-03-30T16:31:31Z
+date_finished: 2026-03-30T16:31:31Z
 ---
 
 # T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
@@ -70,3 +70,6 @@ shellcheck -S warning agents/handover/handover.sh agents/task-create/update-task
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-795-fix-shellcheck-warnings-across-agent-scr.md
 - **Context:** Initial task creation
+
+### 2026-03-30T16:31:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
