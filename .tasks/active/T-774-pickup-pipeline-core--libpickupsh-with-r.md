@@ -4,7 +4,7 @@ name: "Pickup pipeline core — lib/pickup.sh with receive/process/dedup/log"
 description: >
   Core pickup library: parse YAML envelopes, validate schema, dedup via SHA256 hash, create inception tasks, move to processed. Directory setup: .context/pickup/{inbox,processed,rejected}.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-772, T-775, T-776, T-777, T-778]
 created: 2026-03-30T13:21:32Z
-last_update: 2026-03-30T13:21:32Z
+last_update: 2026-03-30T14:05:14Z
 date_finished: null
 ---
 
@@ -56,3 +56,6 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/lib_pickup.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-774-pickup-pipeline-core--libpickupsh-with-r.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:05:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
