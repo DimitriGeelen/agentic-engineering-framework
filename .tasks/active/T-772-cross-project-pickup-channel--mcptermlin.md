@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-469, T-598, T-682, T-704]
 created: 2026-03-30T12:45:22Z
-last_update: 2026-03-30T12:50:38Z
+last_update: 2026-03-30T12:51:27Z
 date_finished: null
 ---
 
@@ -100,18 +100,41 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-03-30 — Architecture: two transport layers, one pipeline
+- **Chose:** Single deterministic intake pipeline with two transport variants (local filesystem + TermLink remote)
+- **Why:** User directive: "decent, deterministic, reliable, repeatable — we are failing on this front." Current state has observations rotting in `.context/observations/` with no processing. Harvest is pull-only. fw bus was built and never used. The pipeline must work regardless of transport.
+- **Rejected:** "Pickup Lite" without TermLink path — user wants both, properly built. Also rejected: TermLink-only (excludes local/same-machine use).
+
+### 2026-03-30 — Steelman/strawman analysis
+- **Chose:** GO with scoped build tasks
+- **Why:** Three research agents analyzed demand, gaps, and risks. Steelman: real evidence (pickup-051-vinix24 has 6 unprocessed issues, harvest can't push, O(n)→O(1) learning multiplier). Strawman: valid concerns (fw bus was never used, TermLink remote untested in production, T-469 bypass risk). Resolution: deterministic pipeline design avoids bus v2 trap by processing existing observations immediately.
+- **Rejected:** NO-GO/DEFER — user explicitly rejected waiting ("we are failing on this front")
+
+## Recommendation
+
+**GO** — Build a deterministic cross-project pickup pipeline.
+
+**Rationale:**
+- pickup-051-vinix24 proves demand (6 issues, 2 HIGH bugs, zero processed)
+- Harvest is pull-only and reactive — fails when consumer finds urgent framework bug
+- fw bus was never used because it had no intake pipeline — T-772 IS the pipeline
+- Both transports (local + TermLink) share the same processing backend
+
+**Evidence:**
+- Steelman agent: T-549, T-679, pickup-051-vinix24 all show knowledge trapped in consumer projects
+- Strawman agent: Valid risk (bus v2 trap) — mitigated by processing existing observations on day 1
+- Patterns agent: Observation inbox exists but has zero automation; harvest works but is pull-only
+
+**Build tasks to create after GO:**
+1. `fw pickup receive` — intake pipeline (parse envelope, dedup, create inception, notify)
+2. `fw pickup send` — consumer-side CLI (serialize + write to inbox or termlink remote push)
+3. `fw pickup process` — cron-triggered inbox scanner (deterministic, idempotent)
+4. Observation inbox migration — process existing pickup-051-vinix24 through the pipeline
+5. TermLink transport variant — `fw pickup send --remote hub-addr` using `termlink remote push`
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+<!-- Filled at completion via: fw inception decide T-772 go --rationale "..." -->
 
 ## Updates
 
