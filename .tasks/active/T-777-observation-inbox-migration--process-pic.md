@@ -1,0 +1,56 @@
+---
+id: T-777
+name: "Observation inbox migration — process pickup-051-vinix24 through pipeline"
+description: >
+  Convert existing pickup-051-vinix24 observations (6 issues, 2 HIGH bugs) into pickup envelope YAML files and process through the pipeline. Day-1 validation that the pipeline works with real data.
+
+status: captured
+workflow_type: build
+owner: claude-code
+horizon: next
+tags: []
+components: []
+related_tasks: [T-772, T-774, T-776]
+created: 2026-03-30T13:21:55Z
+last_update: 2026-03-30T13:21:55Z
+date_finished: null
+---
+
+# T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
+
+## Context
+
+Day-1 validation of the pickup pipeline by processing real observations from pickup-051-vinix24. Depends on T-774 + T-776 being built. Design: `docs/reports/T-772-cross-project-pickup.md`
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Each pickup-051-vinix24 observation converted to a pickup envelope YAML
+- [ ] All envelopes placed in `.context/pickup/inbox/`
+- [ ] `fw pickup process` runs and creates inception tasks for each
+- [ ] Processed envelopes moved to `.context/pickup/processed/`
+- [ ] No duplicates created (dedup hash prevents re-processing)
+
+## Verification
+
+# All observations processed
+test -d .context/pickup/processed
+ls .context/pickup/processed/*.yaml 2>/dev/null | wc -l | grep -qv '^0$'
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-30T13:21:55Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-777-observation-inbox-migration--process-pic.md
+- **Context:** Initial task creation

@@ -1,0 +1,56 @@
+---
+id: T-773
+name: "T-772 follow-up: update research artifact + create build tasks"
+description: >
+  Update docs/reports/T-772-cross-project-pickup.md with full pipeline design from inception task. Create the 5 build tasks from the GO decision.
+
+status: started-work
+workflow_type: build
+owner: claude-code
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-30T13:19:08Z
+last_update: 2026-03-30T13:19:08Z
+date_finished: null
+---
+
+# T-773: T-772 follow-up: update research artifact + create build tasks
+
+## Context
+
+T-772 inception completed with GO decision. Research artifact needs the full pipeline design (was blocked by context budget). Build tasks need to be created from the recommendation.
+
+Related: T-772 task file, `docs/reports/T-772-cross-project-pickup.md`
+
+## Acceptance Criteria
+
+### Agent
+- [x] Research artifact updated with full pipeline design (schema, architecture, guarantees, CLI, cron, dedup)
+- [x] 5 build tasks created from T-772 GO recommendation (T-774, T-775, T-776, T-777, T-778)
+- [x] Build tasks have real ACs (not placeholders)
+- [ ] All files committed
+
+## Verification
+
+grep -q "Pipeline Design" docs/reports/T-772-cross-project-pickup.md
+grep -q "Pickup Envelope Schema" docs/reports/T-772-cross-project-pickup.md
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-30T13:19:08Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-773-t-772-follow-up-update-research-artifact.md
+- **Context:** Initial task creation

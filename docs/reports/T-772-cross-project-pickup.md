@@ -98,9 +98,129 @@ payload:
 
 The MCP tool would be a wrapper around the same intake flow — create inception, dedup, notify.
 
-## Open Questions
+## Open Questions (Resolved)
 
-- Q1: Should pickups queue to a file inbox when framework agent is offline? (Yes — `remote push` does this)
-- Q2: Should the consumer project get an acknowledgement with the created task ID? (Nice to have — `agent ask` enables this)
-- Q3: How to handle duplicate/spam pickups? (Dedup by summary similarity + cooldown window)
-- Q4: Should `fw pickup send` be a command on the consumer side? (Yes — thin wrapper around `termlink remote push`)
+- Q1: Should pickups queue to a file inbox when framework agent is offline? **Yes** — `remote push` does this, file-based inbox is the primary mechanism
+- Q2: Should the consumer project get an acknowledgement with the created task ID? **Nice to have** — `agent ask` enables this as upgrade path
+- Q3: How to handle duplicate/spam pickups? **Dedup by SHA256(type + summary_normalized + source_project) with 7-day cooldown window**
+- Q4: Should `fw pickup send` be a command on the consumer side? **Yes** — thin wrapper around `termlink remote push` for remote, direct write for local
+
+---
+
+## Pipeline Design (GO Decision — 2026-03-30)
+
+### Architecture: One Pipeline, Two Transports
+
+```
+Consumer Project                          Framework
+       |                                      |
+       |  [Local] fw pickup send              |
+       |  → writes YAML to .context/pickup/inbox/
+       |                                      |
+       |  [TermLink] fw pickup send --remote  |
+       |  → termlink remote push → inbox/     |
+       |                                      |
+       |         fw pickup process            |
+       |         (cron every 15 min)          |
+       |         ↓                            |
+       |   parse → validate → dedup →         |
+       |   create inception → notify →        |
+       |   move to processed/                 |
+```
+
+Both transports feed the same deterministic processing backend.
+
+### Pickup Envelope Schema
+
+```yaml
+# .context/pickup/inbox/P-001-bug-report.yaml
+---
+pickup_id: P-001
+version: 1
+type: bug-report          # bug-report | learning | feature-proposal | pattern
+source:
+  project: "vinix24"
+  task_id: "T-042"        # originating task (optional)
+  agent: "claude-code"
+  timestamp: "2026-03-30T12:00:00Z"
+payload:
+  summary: "fw audit false FAILs on JSON validation"
+  detail: |
+    The audit check for JSON files uses `python3 -c "import json; ..."`
+    but the exit code is not captured correctly. Affects fw audit when
+    consumer project has JSON config files.
+  evidence: "agents/audit/audit.sh:245"
+  priority: high
+  tags: [audit, json, validation]
+result:
+  status: pending          # pending | accepted | rejected | duplicate
+  task_created: ""         # T-XXX if accepted
+  processed_at: ""
+  dedup_hash: ""           # SHA256(type + summary_normalized + source_project)
+```
+
+### Directory Structure
+
+```
+.context/pickup/
+  inbox/          # Unprocessed pickups (YAML envelopes)
+  processed/      # Completed pickups (moved after processing)
+  rejected/       # Rejected or duplicate pickups
+```
+
+### Pipeline Guarantees
+
+| Property | How |
+|----------|-----|
+| **Idempotent** | SHA256 dedup hash, 7-day cooldown window |
+| **Deterministic** | Same input → same output, no randomness |
+| **Auditable** | Every pickup gets a result block, processed files preserved |
+| **Persistent** | File-based inbox survives agent restarts |
+| **Governance-safe** | Always creates inception task, never direct build (T-469 lesson) |
+| **Human-gated** | Inception requires human GO decision before any build work |
+
+### Dedup Strategy
+
+```
+hash = SHA256(type + lowercase(summary).strip() + source_project)
+```
+
+Check against all processed pickups within 7-day window. If hash matches → mark as `duplicate`, do not create task.
+
+### CLI Commands
+
+| Command | Purpose |
+|---------|---------|
+| `fw pickup send` | Consumer-side: serialize envelope + write to inbox (local) |
+| `fw pickup send --remote hub-addr` | Consumer-side: serialize + push via TermLink |
+| `fw pickup process` | Framework-side: scan inbox, process all pending envelopes |
+| `fw pickup list` | Show inbox contents with status |
+| `fw pickup reject P-NNN --reason "..."` | Manually reject a pickup |
+
+### Cron Integration
+
+```yaml
+# In cron registry
+pickup-process:
+  schedule: "*/15 * * * *"
+  command: "bin/fw pickup process"
+  description: "Process incoming pickup envelopes"
+```
+
+### Strawman Risk Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Bus v2 trap (building infra nobody uses) | Process existing pickup-051-vinix24 on day 1 — proves pipeline with real data |
+| Complexity creep | Strict scope: file I/O + YAML parse + task create. No message brokers, no databases |
+| TermLink dependency | Local transport works without TermLink. TermLink is upgrade path, not requirement |
+| Spam/flooding | Dedup hash + 7-day cooldown + rate limit (max 10 per source per day) |
+
+### Build Tasks (from GO decision)
+
+1. **Pickup pipeline core** — `lib/pickup.sh` with receive/process/dedup/log functions
+2. **`fw pickup send`** — consumer-side CLI (serialize + write to inbox or termlink remote push)
+3. **`fw pickup process`** — cron-triggered inbox scanner (deterministic, idempotent)
+4. **Observation inbox migration** — process existing pickup-051-vinix24 through the pipeline
+5. **TermLink transport** — `fw pickup send --remote hub-addr` using `termlink remote push`
+6. **Cron registration** — add pickup-process to cron registry
