@@ -1,0 +1,119 @@
+---
+id: T-772
+name: "Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals"
+description: >
+  Inception: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
+
+status: captured
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: [T-469, T-598, T-682, T-704]
+created: 2026-03-30T12:45:22Z
+last_update: 2026-03-30T12:45:22Z
+date_finished: null
+---
+
+# T-772: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
+
+## Problem Statement
+
+Cross-project knowledge sharing is currently pull-based: the framework agent runs `fw harvest` to extract learnings from consumer projects. There is no structured way for a consumer project's agent to **push** a bug fix, learning, or feature proposal back to the framework. Pickup messages exist but are unstructured text blobs with no schema, no intake flow, and governance gaps (T-469).
+
+**For whom:** Framework maintainer (Dimitri) and consumer project agents.
+**Why now:** TermLink + MCP infrastructure is in place. Multiple consumer projects exist. Cross-project learnings are being lost because harvest requires the framework agent to initiate.
+
+## Assumptions
+
+- A1: Consumer projects encounter framework bugs/patterns worth sharing back
+- A2: TermLink hub connectivity is reliable enough for structured message passing
+- A3: MCP tool exposure gives better discoverability than raw TermLink commands
+- A4: Incoming proposals should always create inception tasks (never direct builds — T-469 lesson)
+
+## Exploration Plan
+
+1. **TermLink feasibility spike** — Use TermLink hub to send a structured JSON payload from .107 consumer project to framework agent. Validate round-trip. (30 min)
+2. **Schema design** — Define pickup envelope types: `bug-report`, `learning`, `feature-proposal`, `pattern`. Map each to an intake flow (inception task, learning capture, etc.). (30 min)
+3. **MCP tool design** — Design `fw-pickup-receive` MCP tool signature. Evaluate if it should be a skill, an MCP tool, or a `fw pickup` CLI command (or all three). (20 min)
+4. **Governance model** — How incoming pickups are triaged. Auto-create inception? Require human approval? Dedup against existing tasks? (20 min)
+
+## Technical Constraints
+
+- TermLink hub must be reachable from consumer projects (currently .107 → .112 hub → framework)
+- MCP server must be running for MCP-based intake
+- Pickup payloads must be small enough for TermLink message passing (< 10KB)
+- Framework agent may not be running when pickup arrives — need persistent queue
+
+## Scope Fence
+
+**IN scope:**
+- Receive mechanism (how pickups arrive at the framework)
+- Pickup schema (what fields, what types)
+- Intake governance (what happens after arrival)
+- MCP tool exposure design
+
+**OUT of scope:**
+- Building the full implementation (that's a build task after GO)
+- Multi-hop routing (project A → project B → framework)
+- Bidirectional sync (framework → consumer push-back)
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Problem statement validated
+- [ ] Assumptions tested (especially A2 — TermLink round-trip)
+- [ ] Schema draft documented
+- [ ] MCP tool signature designed
+- [ ] Governance model proposed
+- [ ] Recommendation written with rationale
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Read the research artifact at `docs/reports/T-772-cross-project-pickup.md`
+  2. Evaluate go/no-go criteria against findings
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-772 go|no-go --rationale "your rationale"`
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+**GO if:**
+- TermLink round-trip works reliably for structured payloads
+- Schema covers the 3 primary use cases (bug, learning, feature)
+- Governance model prevents T-469-class bypass (pickup → build without scoping)
+
+**NO-GO if:**
+- TermLink connectivity too fragile for structured intake
+- Complexity exceeds value (fw harvest already covers most cases)
+- No real demand from consumer projects (assumption A1 fails)
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     For inception tasks, verification is often not needed (decisions, not code).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
