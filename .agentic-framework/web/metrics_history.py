@@ -5,10 +5,13 @@ Data file: .context/project/metrics-history.yaml
 Created by T-238.
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import yaml
+
+logger = logging.getLogger(__name__)
 
 _HISTORY_FILE = ".context/project/metrics-history.yaml"
 
@@ -46,7 +49,8 @@ def load_entries(project_root=None):
                 e["_ts"] = datetime.min.replace(tzinfo=timezone.utc)
         entries.sort(key=lambda x: x["_ts"], reverse=True)
         return entries
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to parse metrics history %s: %s", path, e)
         return []
 
 

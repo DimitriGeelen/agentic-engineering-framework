@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-477: Risk-based governance declaration layer — machine-readable predictability×blast-radius matrix that runtime maps to enforcement levels
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T06:51:33Z
+# ============================================================================
+
+task_id: T-477
+task_name: "Risk-based governance declaration layer — machine-readable predictability×blast-radius matrix that runtime maps to enforcement levels"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T11:20:55Z
+completed: 2026-03-30T00:03:35Z
+duration_days: 15
+updates_count: 3
+first_commit: 2026-03-14T13:00:29+01:00
+last_commit: 2026-03-17T12:34:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-477, T-478: Risk-based governance inception + update budget system for 1M context window. Governance declaration layer — 3 spikes complete, GO decision, 4 build tasks proposed. Create 4 build tasks from inception GO — dispatch hardening, force detection, governance.yaml, scope counter
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated — the 2×2 matrix captures governance gaps that impact-only tiers miss"
+  - "Current enforcement surface mapped to the matrix (Spike 1)"
+  - "Draft declaration format exists and can express both current Tier 0 and prose-only rules (Spike 2)"
+  - "Runtime mapping is feasible within Claude Code hook constraints (Spike 3)"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - "agents/context/checkpoint.sh"
+  - "CLAUDE.md"
+  - ".context/episodic/T-450.yaml"
+  - ".context/episodic/T-473.yaml"
+  - ".context/episodic/T-478.yaml"
+  - ".context/episodic/T-508.yaml"
+  - "docs/reports/T-477-governance-declaration-layer.md"
+  - ".tasks/active/T-477-risk-based-governance-declaration-layer-.md"
+  - ".tasks/active/T-509-harden-check-dispatchsh--promote-from-ad.md"
+  - ".tasks/active/T-510-add---force-and---no-verify-detection-to.md"
+  - ".tasks/active/T-511-write-governanceyaml--predictability-x-b.md"
+  - ".tasks/active/T-512-scope-escalation-counter--track-new-file.md"
+  - ".tasks/completed/T-450-deep-dive-articles-08-15-gut-rewrite--re.md"
+  - ".tasks/completed/T-473-unit-test-suite-for-bash-enforcement-lay.md"
+  - ".tasks/completed/T-478-update-context-budget-system-for-1m-toke.md"
+  - ".tasks/completed/T-508-fix-cmdspawn-abstraction-inversion--dele.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-14T13:00:29"
+    action: "T-477, T-478: Risk-based governance inception + update budget system for 1M context window"
+  - time: "2026-03-17T12:26:49"
+    action: "T-477: Governance declaration layer — 3 spikes complete, GO decision, 4 build tasks proposed"
+  - time: "2026-03-17T12:34:22"
+    action: "T-477: Create 4 build tasks from inception GO — dispatch hardening, force detection, governance.yaml, scope counter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 22362 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, enforcement, architecture]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 22362
+  commits: 3
+  files_changed: 17
+  lines_added: 1573
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-477-risk-based-governance-declaration-layer-.md
+generated_by: context-agent-hybrid

@@ -1,36 +1,33 @@
 ---
-id: T-761
-name: "Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh"
+id: T-776
+name: "Onboarding test task"
 description: >
-  Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+  Onboarding test task
 
 status: started-work
-workflow_type: refactor
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-30T07:33:52Z
-last_update: 2026-03-30T07:33:52Z
+created: 2026-03-30T11:15:13Z
+last_update: 2026-03-30T11:15:13Z
 date_finished: null
 ---
 
-# T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+# T-776: Onboarding test task
 
 ## Context
 
-Fix shellcheck warnings in 5 core lib scripts: trap quoting, unused variables, stdin swallowing.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] update.sh: Fix SC2064 trap quoting + SC2115 rm -rf safety
-- [x] upstream.sh: Remove unused BLUE variable (SC2034)
-- [x] init.sh: Suppress SC2034 for first_run + fix SC2155 separate declare/assign
-- [x] notify.sh: Suppress SC2034 for category (reserved parameter)
-- [x] setup.sh: Suppress SC2034 for force (used by sourced init.sh)
-- [x] All 5 files pass shellcheck with 0 warnings
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -71,7 +68,7 @@ Fix shellcheck warnings in 5 core lib scripts: trap quoting, unused variables, s
 
 ## Updates
 
-### 2026-03-30T07:33:52Z — task-created [task-create-agent]
+### 2026-03-30T11:15:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-761-fix-shellcheck-warnings-in-updatesh-upst.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-776-onboarding-test-task.md
 - **Context:** Initial task creation

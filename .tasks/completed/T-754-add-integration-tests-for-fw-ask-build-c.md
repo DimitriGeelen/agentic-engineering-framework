@@ -4,7 +4,7 @@ name: "Add integration tests for fw ask, build, consolidate, dispatch, docs (10 
 description: >
   Add integration tests for fw ask, build, consolidate, dispatch, docs (10 tests)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T06:52:13Z
-last_update: 2026-03-30T06:52:13Z
-date_finished: null
+last_update: 2026-03-30T07:04:17Z
+date_finished: 2026-03-30T07:04:17Z
 ---
 
 # T-754: Add integration tests for fw ask, build, consolidate, dispatch, docs (10 tests)
@@ -57,3 +57,6 @@ bats tests/integration/fw_docs.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-754-add-integration-tests-for-fw-ask-build-c.md
 - **Context:** Initial task creation
+
+### 2026-03-30T07:04:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

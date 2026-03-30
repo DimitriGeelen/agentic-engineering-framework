@@ -4,7 +4,7 @@ name: "Add integration tests for fw serve, setup, update, upgrade, scan, self-au
 description: >
   Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T07:10:55Z
-last_update: 2026-03-30T07:10:55Z
-date_finished: null
+last_update: 2026-03-30T07:13:29Z
+date_finished: 2026-03-30T07:13:29Z
 ---
 
 # T-756: Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)
@@ -59,3 +59,6 @@ bats tests/integration/fw_self_audit.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-756-add-integration-tests-for-fw-serve-setup.md
 - **Context:** Initial task creation
+
+### 2026-03-30T07:13:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

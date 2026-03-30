@@ -1,34 +1,33 @@
 ---
-id: T-759
-name: "Add integration tests for fw plugin-audit, test-onboarding, termlink (6 tests)"
+id: T-773
+name: "Onboarding test task"
 description: >
-  Add integration tests for fw plugin-audit, test-onboarding, termlink (6 tests)
+  Onboarding test task
 
 status: started-work
-workflow_type: test
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-30T07:23:37Z
-last_update: 2026-03-30T07:23:37Z
+created: 2026-03-30T11:07:17Z
+last_update: 2026-03-30T11:07:17Z
 date_finished: null
 ---
 
-# T-759: Add integration tests for fw plugin-audit, test-onboarding, termlink (6 tests)
+# T-773: Onboarding test task
 
 ## Context
 
-Final batch of integration tests for remaining untested fw CLI commands.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] fw_plugin_audit.bats created with 2 tests (runs audit, shows counts)
-- [x] fw_test_onboarding.bats created with 2 tests (runs test, checks scaffold)
-- [x] fw_termlink.bats created with 2 tests (help, check installation)
-- [x] All new tests pass: 6/6 passing
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -47,9 +46,14 @@ Final batch of integration tests for remaining untested fw CLI commands.
 
 ## Verification
 
-bats tests/integration/fw_plugin_audit.bats
-bats tests/integration/fw_test_onboarding.bats
-bats tests/integration/fw_termlink.bats
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     Examples:
+       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
+       curl -sf http://localhost:3000/page
+       grep -q "expected_string" output_file.txt
+-->
 
 ## Decisions
 
@@ -64,7 +68,7 @@ bats tests/integration/fw_termlink.bats
 
 ## Updates
 
-### 2026-03-30T07:23:37Z — task-created [task-create-agent]
+### 2026-03-30T11:07:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-759-add-integration-tests-for-fw-plugin-audi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-773-onboarding-test-task.md
 - **Context:** Initial task creation

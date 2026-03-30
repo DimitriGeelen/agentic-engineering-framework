@@ -100,8 +100,8 @@ def get_manager() -> ProviderManager:
             saved = yaml.safe_load(sf.read_text()) or {}
             if saved.get("ollama_host"):
                 ollama_host = saved["ollama_host"]
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Failed to parse settings %s: %s", sf, e)
     ollama_provider = OllamaProvider(host=ollama_host)
     _manager.register(ollama_provider)
 

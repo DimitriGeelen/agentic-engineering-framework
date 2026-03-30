@@ -4,7 +4,7 @@ name: "Add integration tests for fw enforcement, mcp, note, recall, test (12 tes
 description: >
   Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T07:07:21Z
-last_update: 2026-03-30T07:07:21Z
-date_finished: null
+last_update: 2026-03-30T07:10:34Z
+date_finished: 2026-03-30T07:10:34Z
 ---
 
 # T-755: Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)
@@ -57,3 +57,6 @@ bats tests/integration/fw_test_cmd.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-755-add-integration-tests-for-fw-enforcement.md
 - **Context:** Initial task creation
+
+### 2026-03-30T07:10:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

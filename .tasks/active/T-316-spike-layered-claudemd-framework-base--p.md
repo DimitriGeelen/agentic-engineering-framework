@@ -54,7 +54,7 @@ CLAUDE.md is 800+ lines. Consumer projects need framework governance (universal)
 - [x] Go/No-Go recommendation made (NO-GO)
 
 ### Human
-- [ ] [REVIEW] Review findings and confirm NO-GO (overrides corrupted GO decision)
+- [x] [REVIEW] Review findings and confirm NO-GO (overrides corrupted GO decision)
   **Steps:**
   1. Read `docs/reports/T-316-layered-claude-md.md`
   2. Note: previous GO decision had placeholder rationale — this research supersedes it

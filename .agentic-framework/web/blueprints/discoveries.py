@@ -1,7 +1,11 @@
 """Discoveries blueprint — audit discovery findings with trend sparklines."""
 
+import logging
+
 import yaml
 from flask import Blueprint
+
+logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT, render_page
 
@@ -16,7 +20,8 @@ def _load_discoveries():
     try:
         with open(path) as f:
             return yaml.safe_load(f)
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to parse discoveries %s: %s", path, e)
         return None
 
 

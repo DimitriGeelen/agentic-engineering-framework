@@ -1,34 +1,33 @@
 ---
-id: T-760
-name: "Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)"
+id: T-775
+name: "Onboarding test task"
 description: >
-  Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+  Onboarding test task
 
 status: started-work
-workflow_type: refactor
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-03-30T07:30:54Z
-last_update: 2026-03-30T07:30:54Z
+created: 2026-03-30T11:12:34Z
+last_update: 2026-03-30T11:12:34Z
 date_finished: null
 ---
 
-# T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+# T-775: Onboarding test task
 
 ## Context
 
-Fix shellcheck warnings in core lib scripts: unused variable in bus.sh, missing ssh -n in dispatch.sh, exported colors in colors.sh.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] bus.sh: Remove unused total_bytes variable (SC2034)
-- [x] dispatch.sh: Add -n flag to ssh to prevent stdin swallowing (SC2095)
-- [x] colors.sh: Add shellcheck disable directive for SC2034 (variables used by sourcing scripts)
-- [x] All existing tests still pass (bus + dispatch: 8/8)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -69,7 +68,7 @@ Fix shellcheck warnings in core lib scripts: unused variable in bus.sh, missing 
 
 ## Updates
 
-### 2026-03-30T07:30:54Z — task-created [task-create-agent]
+### 2026-03-30T11:12:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-760-fix-shellcheck-warnings-in-core-lib-scri.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-775-onboarding-test-task.md
 - **Context:** Initial task creation

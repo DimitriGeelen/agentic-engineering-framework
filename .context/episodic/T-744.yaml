@@ -1,0 +1,122 @@
+# ============================================================================
+# EPISODIC MEMORY - T-744: Commit untracked research artifacts and clean up git state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-29T23:59:37Z
+# ============================================================================
+
+task_id: T-744
+task_name: "Commit untracked research artifacts and clean up git state"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T23:32:59Z
+completed: 2026-03-29T23:34:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T01:34:16+02:00
+last_commit: 2026-03-30T01:34:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Clean up git state — cron rotation, vendor copies, working state. Complete — git state cleanup, cron rotation, vendor copies
+
+# Key outcomes
+outcomes:
+  - "Research artifacts already tracked (docs/upstream-patterns, docs/spikes)"
+  - "Cron audit rotation committed (deleted old, added new)"
+  - "Vendor copies synced (.agentic-framework/{.fabric,tests}/)"
+  - "Working state and VERSION committed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/.fabric/components/tests-integration-fw_git.yaml"
+  - ".agentic-framework/.fabric/components/tests-integration-fw_healing.yaml"
+  - ".agentic-framework/.fabric/components/tests-integration-fw_work_on.yaml"
+  - ".agentic-framework/tests/integration/fw_git.bats"
+  - ".agentic-framework/tests/integration/fw_healing.bats"
+  - ".agentic-framework/tests/integration/fw_work_on.bats"
+  - ".context/audits/2026-03-30.yaml"
+  - ".context/audits/cron/2026-03-21-2230.yaml"
+  - ".context/audits/cron/2026-03-21-2245.yaml"
+  - ".context/audits/cron/2026-03-21-2300.yaml"
+  - ".context/audits/cron/2026-03-21-2315.yaml"
+  - ".context/audits/cron/2026-03-21-2330.yaml"
+  - ".context/audits/cron/2026-03-22-0000.yaml"
+  - ".context/audits/cron/2026-03-22-0015.yaml"
+  - ".context/audits/cron/2026-03-22-0030.yaml"
+  - ".context/audits/cron/2026-03-29-2330.yaml"
+  - ".context/audits/cron/2026-03-29-2345.yaml"
+  - ".context/audits/cron/2026-03-30-0000.yaml"
+  - ".context/audits/cron/2026-03-30-0015.yaml"
+  - ".context/audits/cron/2026-03-30-0030.yaml"
+  - ".context/audits/cron/2026-03-30-0045.yaml"
+  - ".context/audits/cron/2026-03-30-0100.yaml"
+  - ".context/audits/cron/2026-03-30-0115.yaml"
+  - ".context/audits/cron/2026-03-30-0130.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/locks/T-001.lock"
+  - ".context/locks/T-739.lock"
+  - ".context/locks/T-740.lock"
+  - ".context/locks/T-741.lock"
+  - ".context/locks/T-742.lock"
+  - ".context/locks/T-743.lock"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "datetime"
+  - ".tasks/active/T-744-commit-untracked-research-artifacts-and-.md"
+  - ".tasks/completed/T-744-commit-untracked-research-artifacts-and-.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T01:34:16"
+    action: "T-744: Clean up git state — cron rotation, vendor copies, working state"
+  - time: "2026-03-30T01:34:47"
+    action: "T-744: Complete — git state cleanup, cron rotation, vendor copies"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 45
+  lines_added: 1642
+  lines_removed: 361160
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-744-commit-untracked-research-artifacts-and-.md
+generated_by: context-agent-hybrid

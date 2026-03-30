@@ -1,9 +1,12 @@
 """Session blueprint — session cockpit, git state, quick actions."""
 
+import logging
 import re as re_mod
 
 import yaml
 from flask import Blueprint, request, render_template
+
+logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT, render_page
 from web.subprocess_utils import run_fw_command, run_git_command
@@ -30,8 +33,8 @@ def _get_session_id():
                 data = yaml.safe_load(f)
             if isinstance(data, dict) and data.get("session_id"):
                 return data["session_id"]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to parse session file %s: %s", session_file, e)
 
     # Fall back to latest handover
     handovers_dir = PROJECT_ROOT / ".context" / "handovers"
@@ -52,8 +55,8 @@ def _get_focus_task():
                 data = yaml.safe_load(f)
             if isinstance(data, dict) and data.get("current_task"):
                 return data["current_task"]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to parse focus file %s: %s", focus_file, e)
     return None
 
 

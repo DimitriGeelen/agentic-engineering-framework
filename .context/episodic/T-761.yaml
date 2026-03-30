@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T07:37:51Z
+# ============================================================================
+
+task_id: T-761
+task_name: "Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T07:33:52Z
+completed: 2026-03-30T07:37:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T09:37:43+02:00
+last_commit: 2026-03-30T09:37:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+
+# Key outcomes
+outcomes:
+  - "update.sh: Fix SC2064 trap quoting + SC2115 rm -rf safety"
+  - "upstream.sh: Remove unused BLUE variable (SC2034)"
+  - "init.sh: Suppress SC2034 for first_run + fix SC2155 separate declare/assign"
+  - "notify.sh: Suppress SC2034 for category (reserved parameter)"
+  - "setup.sh: Suppress SC2034 for force (used by sourced init.sh)"
+  - "All 5 files pass shellcheck with 0 warnings"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/init.sh"
+  - "lib/notify.sh"
+  - "lib/setup.sh"
+  - "lib/update.sh"
+  - "lib/upstream.sh"
+  - ".tasks/active/T-761-fix-shellcheck-warnings-in-updatesh-upst.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T09:37:43"
+    action: "T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 6
+  lines_added: 85
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-761-fix-shellcheck-warnings-in-updatesh-upst.md
+generated_by: context-agent-hybrid

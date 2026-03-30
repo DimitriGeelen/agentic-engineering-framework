@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-30-0103
-timestamp: 2026-03-29T23:03:17Z
+# Audit Results - 2026-03-30-0913
+timestamp: 2026-03-30T07:13:50Z
 summary:
   pass: 206
-  warn: 9
+  warn: 11
   fail: 0
 findings:
   - level: PASS
@@ -18,17 +18,17 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 187 registered, 0 unregistered"
+    check: "Fabric: 219 registered, 0 unregistered"
   - level: PASS
-    check: "Fabric edges: 178/187 cards enriched (9 without edges)"
+    check: "Fabric edges: 210/219 cards enriched (9 without edges)"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (187 cards)"
+    check: "Fabric drift: All watched source files registered (219 cards)"
   - level: PASS
-    check: "All 91 active tasks are valid"
+    check: "All 90 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (1910/1929 commits reference tasks)"
+    check: "Git traceability: 99% (1936/1955 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -47,12 +47,19 @@ findings:
   - level: PASS
     check: "All practice origins resolve to actual tasks"
   - level: WARN
-    check: "Bugfix-learning coverage: 30% (28/92)"
+    check: "Bugfix-learning coverage: 30% (29/96)"
     mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
+  - level: WARN
+    check: "Completed task T-754 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-754"
+  - level: WARN
+    check: "Completed task T-755 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-755"
+  - level: WARN
+    check: "Completed task T-756 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-756"
   - level: PASS
-    check: "All completed tasks have episodic summaries"
-  - level: PASS
-    check: "All 697 episodic summaries have quality content"
+    check: "All 713 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -64,9 +71,9 @@ findings:
   - level: PASS
     check: "Graduation pipeline: 0 learnings (threshold: 20)"
   - level: PASS
-    check: "All 93 completed inceptions have research artifacts"
+    check: "All 94 completed inceptions have research artifacts"
   - level: PASS
-    check: "C-001: All 14 active inceptions have research artifacts"
+    check: "C-001: All 13 active inceptions have research artifacts"
   - level: PASS
     check: "C-002: commit-msg hook has research artifact check"
   - level: PASS
@@ -74,12 +81,12 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: WARN
-    check: "CTL-001: Focus file empty but 1 commit(s) in last 30min"
+    check: "CTL-001: Focus file empty but 4 commit(s) in last 30min"
     mitigation: "Check .claude/settings.json hook configuration for check-active-task"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 18 (last commit: 17 minutes ago)"
+    check: "CTL-004: Tool counter at 4 (last commit: 2 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -91,15 +98,13 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (438 handovers, 162 compactions)"
+    check: "CTL-006: Handover coverage for compactions (445 handovers, 164 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
     check: "CTL-009: Inception T-316 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-432 has decision (3 commits)"
-  - level: PASS
-    check: "CTL-009: Inception T-477 has decision (6 commits)"
   - level: PASS
     check: "CTL-009: Inception T-532 has decision (4 commits)"
   - level: PASS
@@ -235,6 +240,8 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-473 has decision (3 commits)"
   - level: PASS
+    check: "CTL-009: Inception T-477 has decision (6 commits)"
+  - level: PASS
     check: "CTL-009: Inception T-482 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-489 has decision (3 commits)"
@@ -275,11 +282,11 @@ findings:
     check: "CTL-012: Completed task T-534 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "CTL-013: T-738 verification re-run: 2/2 pass"
+    check: "CTL-013: T-756 verification re-run: 6/6 pass"
   - level: PASS
-    check: "CTL-013: T-737 verification re-run: 1/1 pass"
+    check: "CTL-013: T-755 verification re-run: 5/5 pass"
   - level: PASS
-    check: "CTL-013: T-736 verification re-run: 3/3 pass"
+    check: "CTL-013: T-754 verification re-run: 5/5 pass"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -413,7 +420,7 @@ findings:
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (15/697)"
+    check: "D1: Episodic quality — 2% [TODO] (15/713)"
   - level: WARN
     check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(15d) T-460(16d) T-470(17d) T-476(16d) T-481(15d) T-483(15d) T-493(15d)"
     mitigation: "Review with: fw task verify"
@@ -429,15 +436,14 @@ findings:
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "D5: Task lifecycle — 16 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) (+6 more)"
+    check: "D5: Task lifecycle — 15 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) (+5 more)"
     mitigation: "Review flagged tasks for process issues"
-  - level: WARN
-    check: "D3: Commit velocity — WARN drop today=1 avg=62 ratio=0.0x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 116_commits_24h)"
+    check: "D3: Commit velocity — normal (PASS today=28 avg=62 ratio=0.4x)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=30.0 earlier=7.1)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 130_commits_24h)"
+  - level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=32.0 earlier=9.1)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
