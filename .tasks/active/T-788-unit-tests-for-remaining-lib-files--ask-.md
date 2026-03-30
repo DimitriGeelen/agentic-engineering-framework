@@ -1,0 +1,63 @@
+---
+id: T-788
+name: "Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init"
+description: >
+  Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+
+status: started-work
+workflow_type: test
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-30T13:55:50Z
+last_update: 2026-03-30T13:55:50Z
+date_finished: null
+---
+
+# T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+
+## Context
+
+Continuing unit test coverage expansion from T-780 (10 test files, 105 tests). Remaining untested lib files: first-run, harvest, init, promote, upgrade, validate-init. Files with `set -euo pipefail` at top level (ask, build, upstream) are skipped — not safely sourceable in bats.
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Unit tests for lib/first-run.sh (do_first_run output, structure)
+- [ ] Unit tests for lib/harvest.sh (argument parsing, help, guards, sub-functions)
+- [ ] Unit tests for lib/init.sh (argument parsing, help, guards, generator existence)
+- [ ] Unit tests for lib/validate-init.sh (argument parsing, help, validation logic)
+- [ ] Unit tests for lib/promote.sh (argument parsing, help, routing)
+- [ ] Unit tests for lib/upgrade.sh (argument parsing, help, guards)
+- [ ] All new tests pass: bats tests/unit/lib_*.bats exits 0
+- [ ] No regressions in existing test suite
+
+## Verification
+
+bats tests/unit/lib_first_run.bats
+bats tests/unit/lib_harvest.bats
+bats tests/unit/lib_init.bats
+bats tests/unit/lib_validate_init.bats
+bats tests/unit/lib_promote.bats
+bats tests/unit/lib_upgrade.bats
+bats tests/unit/
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-30T13:55:50Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-788-unit-tests-for-remaining-lib-files--ask-.md
+- **Context:** Initial task creation
