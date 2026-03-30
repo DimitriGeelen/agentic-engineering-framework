@@ -116,6 +116,7 @@ _do_update_vendored() {
     tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/fw-update-XXXXXX")
 
     # Cleanup on exit
+    # shellcheck disable=SC2064  # tmpdir is set, we want it expanded now
     trap "rm -rf '$tmpdir'" EXIT
 
     echo -e "${YELLOW}Fetching upstream...${NC}"
@@ -213,7 +214,7 @@ _do_update_vendored() {
                 if command -v rsync &>/dev/null; then
                     rsync -a --delete $rsync_excludes "$tmpdir/upstream/$item/" "$vendored_dir/$item/"
                 else
-                    rm -rf "$vendored_dir/$item"
+                    rm -rf "${vendored_dir:?}/${item:?}"
                     cp -r "$tmpdir/upstream/$item" "$vendored_dir/$item"
                     find "$vendored_dir/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
                     find "$vendored_dir/$item" -name "*.pyc" -delete 2>/dev/null || true

@@ -216,6 +216,7 @@ setup_step_provider() {
 
     # Generate provider config (force=true to overwrite generic CLAUDE.md from Step 1)
     source "$FW_LIB_DIR/init.sh"
+    # shellcheck disable=SC2034  # used by sourced init.sh functions
     local force=true
     case "$provider" in
         claude)

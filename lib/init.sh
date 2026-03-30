@@ -8,6 +8,7 @@ do_init() {
     local target_dir=""
     local provider="generic"
     local force=false
+    # shellcheck disable=SC2034  # reserved for future use
     local first_run=true
 
     # Parse arguments
@@ -15,6 +16,7 @@ do_init() {
         case $1 in
             --provider) provider="$2"; shift 2 ;;
             --force) force=true; shift ;;
+            # shellcheck disable=SC2034
             --no-first-run) first_run=false; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw init${NC} - Bootstrap a new project"
@@ -429,7 +431,8 @@ CYAML
             init_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             for tmpl in "$seed_dir"/T-*.md; do
                 [ -f "$tmpl" ] || continue
-                local dest="$target_dir/.tasks/active/$(basename "$tmpl")"
+                local dest
+                dest="$target_dir/.tasks/active/$(basename "$tmpl")"
                 sed \
                     -e "s|__PROJECT_NAME__|$project_display|g" \
                     -e "s|__DATE__|$init_date|g" \
