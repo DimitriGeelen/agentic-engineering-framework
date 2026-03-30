@@ -688,7 +688,6 @@ MCPJSON
     echo -e "${YELLOW}[7/10] Claude Code commands${NC}"
 
     local resume_file="$target_dir/.claude/commands/resume.md"
-    local framework_resume="$FRAMEWORK_ROOT/lib/templates/resume-command.md"
 
     # Use the version from init.sh if no separate template exists
     if [ -f "$resume_file" ]; then
