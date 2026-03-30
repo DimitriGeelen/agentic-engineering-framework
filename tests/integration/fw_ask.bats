@@ -1,5 +1,8 @@
 #!/usr/bin/env bats
 # Integration tests for fw ask subcommand
+#
+# Tests help, option parsing, and guard behavior.
+# Actual LLM queries are not tested (require Ollama).
 
 load ../test_helper
 
@@ -18,15 +21,36 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-@test "fw ask: help shows usage" {
+@test "fw ask -h: shows usage" {
     run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' ask -h"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Usage"* ]]
     [[ "$output" == *"ask"* ]]
 }
 
-@test "fw ask: help shows options" {
+@test "fw ask --help: shows usage" {
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' ask --help"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Usage"* ]]
+}
+
+@test "fw ask: help shows all options" {
     run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' ask -h"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"--json"* ]] || [[ "$output" == *"--concise"* ]] || [[ "$output" == *"--limit"* ]]
+    [[ "$output" == *"--json"* ]]
+    [[ "$output" == *"--concise"* ]]
+    [[ "$output" == *"--think"* ]]
+    [[ "$output" == *"--limit"* ]]
+}
+
+@test "fw ask: help shows examples" {
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' ask -h"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Examples"* ]]
+}
+
+@test "fw ask: no arguments shows help" {
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' ask"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Usage"* ]]
 }
