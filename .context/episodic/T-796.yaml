@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-796: Fix remaining single-warning shellcheck issues in agent scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T16:35:10Z
+# ============================================================================
+
+task_id: T-796
+task_name: "Fix remaining single-warning shellcheck issues in agent scripts"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T16:32:29Z
+completed: 2026-03-30T16:35:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T18:34:56+02:00
+last_commit: 2026-03-30T18:34:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix shellcheck warnings in checkpoint.sh, healing.sh, self-audit.sh, init.sh
+
+# Key outcomes
+outcomes:
+  - "Fix shellcheck warnings in checkpoint.sh (SC2038), healing.sh (SC2034 unused PATTERNS_FILE), self-audit.sh (SC2034 unused BOLD), lib/init.sh (SC1124 directive placement)"
+  - "All 4 modified scripts pass shellcheck -S warning with 0 findings"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix shellcheck warnings in checkpoint.sh, healing.sh, self-audit.sh, init.sh"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/self-audit.sh"
+  - "agents/context/checkpoint.sh"
+  - "agents/healing/healing.sh"
+  - "lib/init.sh"
+  - ".tasks/active/T-796-fix-remaining-single-warning-shellcheck-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T18:34:56"
+    action: "T-796: Fix shellcheck warnings in checkpoint.sh, healing.sh, self-audit.sh, init.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 5
+  lines_added: 77
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-796-fix-remaining-single-warning-shellcheck-.md
+generated_by: context-agent-hybrid
