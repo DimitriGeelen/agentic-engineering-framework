@@ -182,17 +182,16 @@ ACTIVE_TASKS="${ACTIVE_TASKS%, }"  # Remove trailing comma
 
 # Get git info
 UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-LAST_COMMIT=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
 RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/null)
 
 # Get tasks touched recently (modified in last day)
 TASKS_TOUCHED=""
-for f in $(find "$TASKS_DIR" -name "*.md" -mmin -1440 -type f 2>/dev/null); do
+while IFS= read -r f; do
     task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         TASKS_TOUCHED="$TASKS_TOUCHED$task_id, "
     fi
-done
+done < <(find "$TASKS_DIR" -name "*.md" -mmin -1440 -type f 2>/dev/null)
 TASKS_TOUCHED="${TASKS_TOUCHED%, }"
 
 # Step 1.5: EPISODIC COMPLETENESS GATE

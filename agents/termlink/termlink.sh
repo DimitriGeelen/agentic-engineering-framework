@@ -394,7 +394,7 @@ cmd_update() {
     git fetch --quiet 2>/dev/null || die "Failed to fetch from remote"
     local local_head remote_head
     local_head=$(git rev-parse HEAD)
-    remote_head=$(git rev-parse @{u} 2>/dev/null || echo "unknown")
+    remote_head=$(git rev-parse '@{u}' 2>/dev/null || echo "unknown")
 
     if [ "$local_head" = "$remote_head" ]; then
         $quiet || echo -e "${GREEN}OK${NC}  TermLink is up to date ($(git log --oneline -1))"
@@ -404,7 +404,7 @@ cmd_update() {
     if $quiet; then
         echo -e "${YELLOW}UPDATE${NC}  TermLink update available"
         echo "  Local:  $(git log --oneline -1)"
-        echo "  Remote: $(git log --oneline -1 @{u})"
+        echo "  Remote: $(git log --oneline -1 '@{u}')"
         echo "  Run: fw termlink update"
         return 0
     fi

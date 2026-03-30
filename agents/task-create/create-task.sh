@@ -7,7 +7,6 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
-TEMPLATE="$TASKS_DIR/templates/default.md"
 
 # Source enumerations (single source of truth)
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
@@ -115,7 +114,8 @@ generate_id() {
     shopt -s nullglob
     for f in "$TASKS_DIR"/active/T-*.md "$TASKS_DIR"/completed/T-*.md; do
         [ -f "$f" ] || continue
-        local id=$(basename "$f" | grep -oE 'T-[0-9]+' | grep -oE '[0-9]+')
+        local id
+        id=$(basename "$f" | grep -oE 'T-[0-9]+' | grep -oE '[0-9]+')
         # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
         if [ -n "$id" ] && [ "$((10#$id))" -gt "$max_id" ]; then
             max_id=$((10#$id))

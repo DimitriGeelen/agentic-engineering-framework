@@ -294,9 +294,8 @@ fi
 
 # Find task file
 TASK_FILE=""
-if [ -f "$TASKS_DIR/active/${TASK_ID}-"*.md ] 2>/dev/null; then
-    TASK_FILE=$(ls "$TASKS_DIR/active/${TASK_ID}-"*.md 2>/dev/null | head -1)
-elif [ -f "$TASKS_DIR/completed/${TASK_ID}-"*.md ] 2>/dev/null; then
+TASK_FILE=$(ls "$TASKS_DIR/active/${TASK_ID}-"*.md 2>/dev/null | head -1)
+if [ -z "$TASK_FILE" ]; then
     TASK_FILE=$(ls "$TASKS_DIR/completed/${TASK_ID}-"*.md 2>/dev/null | head -1)
 fi
 

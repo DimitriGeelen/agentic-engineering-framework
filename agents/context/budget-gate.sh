@@ -93,6 +93,7 @@ print(f'{level} {tokens} {age} {tool_name} {\"allowed\" if (is_allowed_cmd or is
 STATUS_LEVEL=$(echo "$RESULT" | awk '{print $1}')
 STATUS_TOKENS=$(echo "$RESULT" | awk '{print $2}')
 STATUS_AGE=$(echo "$RESULT" | awk '{print $3}')
+# shellcheck disable=SC2034 # TOOL_NAME available for debug logging
 TOOL_NAME=$(echo "$RESULT" | awk '{print $4}')
 CMD_CLASS=$(echo "$RESULT" | awk '{print $5}')
 
@@ -173,7 +174,7 @@ PROJECT_DIR_NAME=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
 PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
 TRANSCRIPT=""
 if [ -d "$PROJECT_JSONL_DIR" ]; then
-    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
