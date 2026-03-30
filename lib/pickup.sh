@@ -226,6 +226,13 @@ pickup_process_one() {
     # Create inception task
     pickup_create_inception "$file"
 
+    # Notify human
+    if type fw_notify >/dev/null 2>&1; then
+        local source_project
+        source_project=$(grep "^  project:" "$file" | head -1 | sed 's/^  project:[[:space:]]*//' | tr -d '"' | tr -d "'")
+        fw_notify "Pickup: $summary" "From $source_project — inception task created" 2>/dev/null || true
+    fi
+
     # Record dedup hash
     pickup_record_dedup "$file"
 
