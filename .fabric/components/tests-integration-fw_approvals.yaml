@@ -1,0 +1,17 @@
+id: tests/integration/fw_approvals.bats
+name: fw_approvals
+type: test
+subsystem: framework-core
+location: tests/integration/fw_approvals.bats
+tags: [bats, integration-test, approvals, cli]
+
+purpose: "Integration tests for fw approvals CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
