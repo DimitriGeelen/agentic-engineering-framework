@@ -17,6 +17,7 @@ _FW_COLORS_LOADED=1
 
 # TTY-aware, NO_COLOR-aware color setup
 # Check both stdout and stderr — scripts may redirect one or the other
+# shellcheck disable=SC2034  # Variables used by sourcing scripts
 if [[ ( -t 1 || -t 2 ) && -z "${NO_COLOR:-}" ]]; then
     RED='\033[0;31m'
     GREEN='\033[0;32m'

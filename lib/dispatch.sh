@@ -144,7 +144,7 @@ do_dispatch_hosts() {
     grep -E "^Host\s+" "$ssh_config" | grep -v '\*' | awk '{print $2}' | while read -r host; do
         # Check if host has HostName (not just an alias)
         local hostname
-        hostname=$(ssh -G "$host" 2>/dev/null | grep "^hostname " | head -1 | awk '{print $2}')
+        hostname=$(ssh -n -G "$host" 2>/dev/null | grep "^hostname " | head -1 | awk '{print $2}')
         if [ -n "$hostname" ] && [ "$hostname" != "$host" ]; then
             echo -e "  ${GREEN}$host${NC} → $hostname"
         else

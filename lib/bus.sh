@@ -340,8 +340,6 @@ do_bus_manifest() {
     echo -e "${BOLD}Result Manifest: $task_id${NC} ($count results)"
     echo ""
 
-    local total_bytes=0
-
     for f in "$bus_dir"/R-*.yaml; do
         [ -f "$f" ] || continue
         python3 << PYEOF
