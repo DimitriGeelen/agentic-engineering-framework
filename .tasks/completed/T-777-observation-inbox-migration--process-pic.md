@@ -4,7 +4,7 @@ name: "Observation inbox migration — process pickup-051-vinix24 through pipeli
 description: >
   Convert existing pickup-051-vinix24 observations (6 issues, 2 HIGH bugs) into pickup envelope YAML files and process through the pipeline. Day-1 validation that the pipeline works with real data.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-772, T-774, T-776]
 created: 2026-03-30T13:21:55Z
-last_update: 2026-03-30T14:14:28Z
-date_finished: null
+last_update: 2026-03-30T14:16:35Z
+date_finished: 2026-03-30T14:16:35Z
 ---
 
 # T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
@@ -57,3 +57,6 @@ ls .context/pickup/processed/*.yaml 2>/dev/null | wc -l | grep -qv '^0$'
 
 ### 2026-03-30T14:14:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-30T14:16:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
