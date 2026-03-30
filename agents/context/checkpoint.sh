@@ -56,15 +56,20 @@ increment_counter() {
     echo "$count"
 }
 
-# Find current session JSONL transcript.
-# Always finds the most-recently-modified transcript (~23ms) to avoid stale
-# cache hits from previous sessions. The old caching approach checked file
-# existence but not recency, so it silently returned old transcripts.
+# Find current session JSONL transcript — scoped to THIS project.
+# Uses PROJECT_ROOT to derive the Claude Code project directory name,
+# matching the pattern in budget-gate.sh. Without project scoping,
+# find_transcript picks up transcripts from other projects (T-791).
 find_transcript() {
-    local transcript
-    transcript=$(find ~/.claude/projects -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
-    if [ -n "$transcript" ]; then
-        echo "$transcript"
+    local project_dir_name
+    project_dir_name=$(echo "${PROJECT_ROOT:-$FRAMEWORK_ROOT}" | sed 's|/|-|g')
+    local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
+    if [ -d "$project_jsonl_dir" ]; then
+        local transcript
+        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+        if [ -n "$transcript" ]; then
+            echo "$transcript"
+        fi
     fi
 }
 
