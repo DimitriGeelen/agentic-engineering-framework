@@ -1,8 +1,8 @@
-# Audit Results - 2026-03-30-1421
-timestamp: 2026-03-30T12:21:11Z
+# Audit Results - 2026-03-30-1409
+timestamp: 2026-03-30T12:09:48Z
 summary:
-  pass: 109
-  warn: 26
+  pass: 110
+  warn: 24
   fail: 0
 findings:
   - level: PASS
@@ -18,13 +18,10 @@ findings:
   - level: PASS
     check: "All 7 project YAML files parse correctly"
   - level: PASS
-    check: "All 93 active tasks are valid"
+    check: "All 92 active tasks are valid"
   - level: WARN
     check: "Task T-763 has short description (20 chars)"
     mitigation: "Expand description in T-763-onboarding-test-task.md"
-  - level: WARN
-    check: "Task T-765 has short description (20 chars)"
-    mitigation: "Expand description in T-765-onboarding-test-task.md"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -38,11 +35,10 @@ findings:
   - level: PASS
     check: "Practices documented: 10 practice(s) in practices.yaml"
   - level: WARN
-    check: "Bugfix-learning coverage: 0% (0/99)"
+    check: "Bugfix-learning coverage: 0% (0/98)"
     mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
-  - level: WARN
-    check: "Completed task T-762 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-762"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
   - level: PASS
     check: "All 723 episodic summaries have quality content"
   - level: WARN
@@ -108,11 +104,11 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-764)"
+    check: "CTL-001: Focus file has active task (T-762)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 1 (last commit: unknown)"
+    check: "CTL-004: Tool counter at 2 (last commit: unknown)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -139,7 +135,7 @@ findings:
     check: "CTL-012: Completed task T-534 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "CTL-013: T-762 verification re-run: 4/4 pass"
+    check: "CTL-013: T-759 verification re-run: 3/3 pass"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -290,9 +286,9 @@ findings:
   - level: PASS
     check: "D5: Task lifecycle — no anomalies"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=40 avg=62 ratio=0.6x)"
+    check: "D3: Commit velocity — normal (PASS today=41 avg=62 ratio=0.7x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 120_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 121_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS insufficient_data)"
   - level: PASS
