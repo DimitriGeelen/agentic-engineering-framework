@@ -141,6 +141,7 @@ cmd_status() {
         # Extract "Where We Are" section (first paragraph after header)
         local where_we_are
         where_we_are=$(sed -n '/^## Where We Are/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -5)
+        # shellcheck disable=SC2001 # multi-line prefix — can't use ${//}
         if [ -n "$where_we_are" ]; then
             echo "$where_we_are" | sed 's/^/  /'
         fi

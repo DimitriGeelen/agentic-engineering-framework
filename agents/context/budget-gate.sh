@@ -170,7 +170,7 @@ fi
 
 # Find transcript — scoped to THIS project's Claude Code directory
 # Claude Code encodes project paths: /opt/foo → -opt-foo in ~/.claude/projects/
-PROJECT_DIR_NAME=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+PROJECT_DIR_NAME="${PROJECT_ROOT//\//-}"
 PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
 TRANSCRIPT=""
 if [ -d "$PROJECT_JSONL_DIR" ]; then

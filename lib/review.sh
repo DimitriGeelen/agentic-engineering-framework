@@ -107,7 +107,7 @@ except ImportError:
                 echo -e "  ${BOLD}Research Artifacts:${NC}"
                 artifacts_found=true
             fi
-            local rel_path="${artifact#$PROJECT_ROOT/}"
+            local rel_path="${artifact#"$PROJECT_ROOT"/}"
             echo "  ${base_url}/file/${rel_path}"
         fi
     done

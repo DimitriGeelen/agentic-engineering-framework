@@ -22,6 +22,7 @@ KEYLOCK_TIMEOUT="${KEYLOCK_TIMEOUT:-300}"  # seconds before stale lock cleanup
 
 # Track file descriptors per key for release
 # declare -A requires bash 4+; fail gracefully
+# shellcheck disable=SC2317 # exit 1 is fallback when return fails (sourced vs executed)
 if ! declare -A _KEYLOCK_FDS 2>/dev/null; then
     echo "keylock: bash 4+ required for associative arrays" >&2
     return 1 2>/dev/null || exit 1
@@ -33,7 +34,7 @@ _keylock_path() {
     local key="$1"
     # Replace non-alphanumeric chars with dashes
     local safe_key
-    safe_key=$(echo "$key" | sed 's/[^a-zA-Z0-9_-]/-/g')
+    safe_key=$(echo "$key" | tr -c 'a-zA-Z0-9_-\n' '-')
     echo "${KEYLOCK_DIR}/${safe_key}.lock"
 }
 

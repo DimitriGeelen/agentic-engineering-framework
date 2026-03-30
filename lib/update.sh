@@ -212,6 +212,7 @@ _do_update_vendored() {
 
             if [ -d "$tmpdir/upstream/$item" ]; then
                 if command -v rsync &>/dev/null; then
+                    # shellcheck disable=SC2086 # rsync_excludes is intentionally word-split
                     rsync -a --delete $rsync_excludes "$tmpdir/upstream/$item/" "$vendored_dir/$item/"
                 else
                     rm -rf "${vendored_dir:?}/${item:?}"

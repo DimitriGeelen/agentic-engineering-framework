@@ -62,7 +62,8 @@ increment_counter() {
 # find_transcript picks up transcripts from other projects (T-791).
 find_transcript() {
     local project_dir_name
-    project_dir_name=$(echo "${PROJECT_ROOT:-$FRAMEWORK_ROOT}" | sed 's|/|-|g')
+    project_dir_name="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    project_dir_name="${project_dir_name//\//-}"
     local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
     if [ -d "$project_jsonl_dir" ]; then
         local transcript
@@ -128,7 +129,7 @@ warn_by_tokens() {
             should_fire=false
         elif [ -f "$handover_cooldown" ]; then
             local last_fired
-            last_fired=$(cat "$handover_cooldown" 2>/dev/null | tr -d '[:space:]')
+            last_fired=$(tr -d '[:space:]' < "$handover_cooldown" 2>/dev/null)
             local now
             now=$(date +%s)
             if [ -n "$last_fired" ] && [ $((now - last_fired)) -lt "$COOLDOWN_SECONDS" ]; then

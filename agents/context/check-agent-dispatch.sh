@@ -50,7 +50,7 @@ mkdir -p "$(dirname "$COUNTER_FILE")"
 
 # Read current count
 if [ -f "$COUNTER_FILE" ]; then
-    COUNT=$(cat "$COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+    COUNT=$(tr -d '[:space:]' < "$COUNTER_FILE" 2>/dev/null)
     COUNT=${COUNT:-0}
 else
     COUNT=0
@@ -74,7 +74,7 @@ fi
 
 # Check for approval token
 if [ -f "$APPROVAL_FILE" ]; then
-    APPROVAL_TS=$(cat "$APPROVAL_FILE" 2>/dev/null | tr -d '[:space:]')
+    APPROVAL_TS=$(tr -d '[:space:]' < "$APPROVAL_FILE" 2>/dev/null)
     NOW_TS=$(date +%s)
     AGE=$(( NOW_TS - APPROVAL_TS ))
     if [ "$AGE" -lt 300 ]; then

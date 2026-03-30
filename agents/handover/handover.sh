@@ -19,7 +19,7 @@ _resolve_commit_task() {
     fi
     # Look for any task with "handover" in its slug
     local handover_task
-    handover_task=$(ls "$TASKS_DIR/active/"*handover*.md "$TASKS_DIR/completed/"*handover*.md 2>/dev/null | head -1)
+    handover_task=$(find "$TASKS_DIR/active" "$TASKS_DIR/completed" -maxdepth 1 -name '*handover*.md' -type f 2>/dev/null | head -1)
     if [ -n "$handover_task" ]; then
         COMMIT_TASK=$(basename "$handover_task" | grep -oE "T-[0-9]+" | head -1)
         if [ -n "$COMMIT_TASK" ]; then return; fi
@@ -617,7 +617,7 @@ echo "Latest: $HANDOVER_DIR/LATEST.md"
 # T-709: Push notification — session ended
 if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/notify.sh"
-    ACTIVE_COUNT=$(ls "$PROJECT_ROOT/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    ACTIVE_COUNT=$(find "$PROJECT_ROOT/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)
     fw_notify "Session Ended: $SESSION_ID" "Handover created. Active tasks: $ACTIVE_COUNT" "manual" "framework"
 fi
 
