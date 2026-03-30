@@ -4,7 +4,7 @@ name: "Integration tests for fw upstream, fw build, and fw ask subcommands"
 description: >
   Integration tests for fw upstream, fw build, and fw ask subcommands
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T16:06:06Z
-last_update: 2026-03-30T16:06:06Z
-date_finished: null
+last_update: 2026-03-30T16:09:50Z
+date_finished: 2026-03-30T16:09:50Z
 ---
 
 # T-793: Integration tests for fw upstream, fw build, and fw ask subcommands
@@ -60,3 +60,6 @@ bats tests/integration/fw_pickup.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-793-integration-tests-for-fw-upstream-fw-bui.md
 - **Context:** Initial task creation
+
+### 2026-03-30T16:09:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

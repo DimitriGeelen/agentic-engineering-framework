@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-793: Integration tests for fw upstream, fw build, and fw ask subcommands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T16:10:03Z
+# ============================================================================
+
+task_id: T-793
+task_name: "Integration tests for fw upstream, fw build, and fw ask subcommands"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T16:06:06Z
+completed: 2026-03-30T16:09:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T18:09:43+02:00
+last_commit: 2026-03-30T18:09:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Integration tests for fw upstream, build, ask, pickup — 43 tests
+
+# Key outcomes
+outcomes:
+  - "Integration tests for `fw upstream` (19 tests: help, config, status, report guards, list)"
+  - "Integration tests for `fw build` (5 tests: help, build execution, dist output)"
+  - "Integration tests for `fw ask` (5 tests: help, options, examples, no-args guard)"
+  - "Integration tests for `fw pickup` (14 tests: help, status, list, send, process)"
+  - "All 43 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-793-integration-tests-for-fw-upstream-fw-bui.md"
+  - "tests/integration/fw_ask.bats"
+  - "tests/integration/fw_build.bats"
+  - "tests/integration/fw_pickup.bats"
+  - "tests/integration/fw_upstream.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T18:09:43"
+    action: "T-793: Integration tests for fw upstream, build, ask, pickup — 43 tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 393
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-793-integration-tests-for-fw-upstream-fw-bui.md
+generated_by: context-agent-hybrid
