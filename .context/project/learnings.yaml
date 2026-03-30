@@ -8,10 +8,3 @@ learnings:
   date: 2026-03-30
   context: Added via context agent
   application: TBD
-- id: L-002
-  learning: "checkpoint.sh find_transcript() searched ALL projects (~/.claude/projects) picking up wrong project transcripts. budget-gate.sh was fixed (T-149) to scope per-project but checkpoint.sh was missed. Always scope filesystem searches to PROJECT_ROOT-derived paths."
-  source: P-002
-  task: T-791
-  date: 2026-03-30
-  context: Added via context agent
-  application: TBD

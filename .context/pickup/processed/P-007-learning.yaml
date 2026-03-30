@@ -1,0 +1,13 @@
+pickup_id: P-007
+version: 1
+type: learning
+source:
+  project: "050-email-archive"
+  task_id: "T-400"
+  agent: "claude-code"
+  timestamp: "2026-03-30T14:51:22Z"
+payload:
+  summary: "TermLink agent dispatch pattern — cwd, timeout, worktree merge"
+  detail: "termlink_spawn doesn't support cwd. Pattern: spawn with bash, then interact with cd+claude. Sessions with tags sometimes fail to register. Need worktree merge protocol for parallel dispatch."
+  priority: medium
+  tags: [termlink, dispatch]

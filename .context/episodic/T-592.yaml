@@ -1,43 +1,99 @@
 # ============================================================================
-# EPISODIC MEMORY - T-592: Scaffold lib/ts/
+# EPISODIC MEMORY - T-592: Scaffold lib/ts/ — TypeScript build infrastructure for framework
 # ============================================================================
-# STATUS: ENRICHED
-# Created the TypeScript build infrastructure that all subsequent TS work depends on.
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T16:04:15Z
+# ============================================================================
 
 task_id: T-592
 task_name: "Scaffold lib/ts/ — TypeScript build infrastructure for framework"
-completed: "2026-03-24T06:24:33Z"
 workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
 
+# Timeline
+created: 2026-03-23T22:49:40Z
+completed: 2026-03-24T06:24:33Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-03-24T07:23:59+01:00
+last_commit: 2026-03-24T07:24:41+01:00
+
+# Summary (auto-generated from git commit messages)
 summary: |
-  Scaffolded lib/ts/ TypeScript infrastructure — package.json, tsconfig, esbuild, build.sh, runtime.sh with python fallback.
+  Scaffold lib/ts/ — TypeScript build infrastructure. Complete — scaffold task verified and closed
 
-what_happened: |
-  Set up the foundational TypeScript build infrastructure decided in T-586 (Language Strategy GO).
-  Created lib/ts/src/ and lib/ts/dist/ directories, package.json with dev-only deps (typescript,
-  @types/node, esbuild), tsconfig.json (ES2022, Node16, strict), and lib/build.sh with stale-guard.
-  Added fw build command, fw doctor TS health check, Node.js WARN in install.sh, .gitattributes
-  for linguist-generated dist/, vendoring rsync excludes, CI tsc --noEmit step, and lib/runtime.sh
-  with fw_run_ts() fallback pattern (tries node, falls back to python).
+# Key outcomes
+outcomes:
+  - "`lib/ts/src/` and `lib/ts/dist/` directories exist"
+  - "`lib/ts/package.json` with devDependencies: typescript, @types/node, esbuild (no runtime deps)"
+  - "`lib/ts/tsconfig.json` with target ES2022, module Node16, strict true"
+  - "`lib/build.sh` compiles all `.ts` in `lib/ts/src/` to `lib/ts/dist/` via esbuild with stale-guard"
+  - "`fw build` command routes to `lib/build.sh`"
+  - "`lib/runtime.sh` exports `fw_run_ts()` function (tries node, falls back to python)"
+  - "`.gitattributes` marks `lib/ts/dist/*.js` as `linguist-generated`"
+  - "`fw doctor` includes TypeScript build health check (stale detection, node presence)"
+  - "`install.sh` includes Node.js check (WARN level, not FAIL)"
+  - "Vendoring rsync excludes: `lib/ts/src`, `tsconfig.json`, `lib/ts/package.json`, `lib/ts/node_modules`"
 
-key_decisions: []
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
 
-patterns_observed:
-  - "Dev-only dependencies (no runtime deps in package.json) keeps the framework portable — Node.js is optional, with python fallback via fw_run_ts()."
-  - "Stale-guard in build.sh prevents unnecessary rebuilds, keeping fw build fast as a no-op when sources haven't changed."
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
 
+# Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "lib/ts/src/.gitkeep"
-  - "lib/ts/dist/.gitkeep"
-  - "lib/ts/package.json"
-  - "lib/ts/tsconfig.json"
-  - "lib/build.sh"
-  - "lib/runtime.sh"
+  - "bin/fw"
   - ".gitattributes"
   - ".github/workflows/test.yml"
+  - ".gitignore"
   - "install.sh"
-  - "bin/fw"
+  - "lib/build.sh"
+  - "lib/runtime.sh"
+  - "lib/ts/dist/.gitkeep"
+  - "lib/ts/package.json"
+  - "lib/ts/src/.gitkeep"
+  - "lib/ts/tsconfig.json"
+  - ".tasks/active/T-592-scaffold-libts--typescript-build-infrast.md"
+  - ".tasks/completed/T-508-drop-pyyaml-phantom-dependency.md"
+  - ".tasks/completed/T-510-fix-phantom-aef-binary-name.md"
+  - ".tasks/completed/T-512-implement-fw-dispatch-ssh-based-cross-ma.md"
+  - ".tasks/completed/T-592-scaffold-libts--typescript-build-infrast.md"
 
-lessons: []
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-24T07:23:59"
+    action: "T-592: Scaffold lib/ts/ — TypeScript build infrastructure"
+  - time: "2026-03-24T07:24:41"
+    action: "T-592: Complete — scaffold task verified and closed"
 
-reuse_value: "high — this is the build infrastructure foundation; T-593 (fw-util), T-594 (loop detector), and all future TypeScript work depends on this scaffold"
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 454 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [architecture, typescript, T-586]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 454
+  commits: 3
+  files_changed: 20
+  lines_added: 608
+  lines_removed: 315
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-592-scaffold-libts--typescript-build-infrast.md
+generated_by: context-agent-hybrid
