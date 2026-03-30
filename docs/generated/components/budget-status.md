@@ -19,11 +19,11 @@
 ## Related
 
 ### Tasks
-- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
-- T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
-- T-728: Commit session state and generate episodics for completed tasks
-- T-729: Final session commit — untracked files, cron audits
-- T-744: Commit untracked research artifacts and clean up git state
+- T-775: fw pickup send — consumer-side CLI for local and TermLink push
+- T-776: fw pickup process — cron-triggered inbox scanner
+- T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
+- T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+- T-789: Add pickup CLI commands to CLAUDE.md quick reference
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-status.yaml`*

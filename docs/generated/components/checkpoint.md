@@ -60,6 +60,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 - T-691: Agent approval notification — PostToolUse hook detects resolved Watchtower approvals and tells agent to retry
 - T-694: Approval file lifecycle — cleanup resolved files older than 7 days, reset notified tracker on session init
 - T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
+- T-791: Fix checkpoint.sh cross-project transcript leak — scope find_transcript to current project
 
 ---
 *Auto-generated from Component Fabric. Card: `checkpoint.yaml`*

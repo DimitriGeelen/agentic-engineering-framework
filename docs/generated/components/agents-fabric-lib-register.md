@@ -19,11 +19,6 @@ Implements: fw fabric register, fw fabric scan
 
 - [Deep Dive: Component Fabric](docs/articles/deep-dives/07-component-fabric.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-551: Fabric register scan-then-confirm — preview before bulk registration, three-layer codification
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-register.yaml`*
 *Last verified: 2026-02-20*

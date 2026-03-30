@@ -32,7 +32,6 @@ Creates properly structured tasks following the framework specification
 ## Related
 
 ### Tasks
-- T-555: Reject template placeholder task names in create-task.sh
 - T-595: Migrate highest-risk inline Python blocks to fw-util calls
 
 ---

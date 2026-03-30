@@ -42,7 +42,6 @@ Exempt paths (framework operations that don't need task context):
 ## Related
 
 ### Tasks
-- T-535: Build onboarding gate — tag-based PreToolUse enforcement + SessionStart injection
 - T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
 
 ---
