@@ -1,7 +1,7 @@
-# Audit Results - 2026-03-30-1651
-timestamp: 2026-03-30T14:51:38Z
+# Audit Results - 2026-03-30-2003
+timestamp: 2026-03-30T18:03:18Z
 summary:
-  pass: 206
+  pass: 207
   warn: 11
   fail: 0
 findings:
@@ -18,18 +18,18 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 228 registered, 0 unregistered"
+    check: "Fabric: 229 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 18/228 cards have no edges"
+    check: "Fabric: 19/229 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (228 cards)"
+    check: "Fabric drift: All watched source files registered (229 cards)"
   - level: PASS
-    check: "All 93 active tasks are valid"
+    check: "All 94 active tasks are valid"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (1991/2010 commits reference tasks)"
+    check: "Git traceability: 99% (2005/2024 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -48,12 +48,12 @@ findings:
   - level: PASS
     check: "All practice origins resolve to actual tasks"
   - level: WARN
-    check: "Bugfix-learning coverage: 0% (0/100)"
+    check: "Bugfix-learning coverage: 0% (0/103)"
     mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 740 episodic summaries have quality content"
+    check: "All 744 episodic summaries have quality content"
   - level: WARN
     check: "Orphaned episodic: T-779 has no matching task file"
     mitigation: "Remove orphaned episodic or create matching task"
@@ -78,15 +78,14 @@ findings:
     check: "C-002: No research warnings logged (clean or first run)"
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
-  - level: WARN
-    check: "CTL-001: Focus file empty but 4 commit(s) in last 30min"
-    mitigation: "Check .claude/settings.json hook configuration for check-active-task"
   - level: PASS
-    check: "CTL-003: Budget status file fresh (< 5min old)"
+    check: "CTL-001: Focus file empty (no recent activity — expected)"
   - level: PASS
-    check: "CTL-004: Tool counter at 18 (last commit: 6 minutes ago)"
+    check: "CTL-003: Budget status file absent (no active session)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: ok)"
+    check: "CTL-004: Tool counter at 0 (last commit: 31 minutes ago)"
+  - level: PASS
+    check: "CTL-018: Budget status absent (no active session — expected)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
@@ -96,7 +95,7 @@ findings:
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (455 handovers, 168 compactions)"
+    check: "CTL-006: Handover coverage for compactions (457 handovers, 169 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -282,7 +281,10 @@ findings:
     check: "CTL-012: Completed task T-534 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "CTL-013: T-791 verification re-run: 3/3 pass"
+    check: "CTL-013: T-795 verification re-run: 6/6 pass"
+  - level: WARN
+    check: "CTL-013: T-794 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-794 — environment may have changed"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -420,9 +422,9 @@ findings:
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (17/740)"
+    check: "D1: Episodic quality — 2% [TODO] (17/744)"
   - level: WARN
-    check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(15d) T-460(17d) T-470(17d) T-476(17d) T-481(16d) T-483(15d) T-493(15d)"
+    check: "D2: Human review queue — 7 task(s) waiting >14d: T-446(15d) T-460(17d) T-470(17d) T-476(17d) T-481(16d) T-483(16d) T-493(15d)"
     mitigation: "Review with: fw task verify"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -439,11 +441,11 @@ findings:
     check: "D5: Task lifecycle — 15 anomaly(s): T-407(4min,human) T-404(3min,human) T-289(5min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) (+5 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=82 avg=62 ratio=1.3x)"
+    check: "D3: Commit velocity — normal (PASS today=97 avg=62 ratio=1.6x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 133_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 148_commits_24h)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=38.3 earlier=9.1)"
+    check: "D6: Completion velocity — normal (PASS recent=39.7 earlier=9.1)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS

@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T18:54:42Z
+# ============================================================================
+
+task_id: T-797
+task_name: "Shellcheck cleanup: audit.sh and remaining framework scripts"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T17:52:22Z
+completed: 2026-03-30T18:54:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T20:06:07+02:00
+last_commit: 2026-03-30T20:52:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix shellcheck warnings in audit.sh (31→0) and errors.sh (1→0). Fix shellcheck warnings in 6 more files (all→0 excluding SC1091). Fix shellcheck warnings in 11 more framework files (all→0). Fix shellcheck warnings in bin/fw (11→0) and resume.sh (3→0). Fix shellcheck warnings in plugin-audit.sh (6→0)
+
+# Key outcomes
+outcomes:
+  - "audit.sh shellcheck warnings reduced (31→0 excluding SC1091)"
+  - "lib/errors.sh shellcheck warnings reduced (1→0 excluding SC1091)"
+  - "All existing bats tests still pass (464/464)"
+  - "audit.sh runs without errors"
+  - "All core framework scripts clean: bin/fw (11→0), lib/*.sh (all→0), agents/context/*.sh (all→0), agents/audit/*.sh (all→0), agents/handover/*.sh (all→0), agents/resume/*.sh (all→0), agents/task-create/*.sh (all→0)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix shellcheck warnings in plugin-audit.sh (6→0)"
+    source: git-mined
+  - description: "Fix shellcheck warnings in bin/fw (11→0) and resume.sh (3→0)"
+    source: git-mined
+  - description: "Fix shellcheck warnings in 11 more framework files (all→0)"
+    source: git-mined
+  - description: "Fix shellcheck warnings in 6 more files (all→0 excluding SC1091)"
+    source: git-mined
+  - description: "Fix shellcheck warnings in audit.sh (31→0) and errors.sh (1→0)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/audit/plugin-audit.sh"
+  - "agents/audit/self-audit.sh"
+  - "agents/context/budget-gate.sh"
+  - "agents/context/check-agent-dispatch.sh"
+  - "agents/context/checkpoint.sh"
+  - "agents/handover/handover.sh"
+  - "agents/resume/resume.sh"
+  - "agents/task-create/update-task.sh"
+  - "bin/fw"
+  - "lib/bus.sh"
+  - "lib/errors.sh"
+  - "lib/harvest.sh"
+  - "lib/init.sh"
+  - "lib/keylock.sh"
+  - "lib/review.sh"
+  - "lib/update.sh"
+  - "lib/upgrade.sh"
+  - "lib/upstream.sh"
+  - "lib/validate-init.sh"
+  - "lib/version.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T20:06:07"
+    action: "T-797: Fix shellcheck warnings in audit.sh (31→0) and errors.sh (1→0)"
+  - time: "2026-03-30T20:12:19"
+    action: "T-797: Fix shellcheck warnings in 6 more files (all→0 excluding SC1091)"
+  - time: "2026-03-30T20:18:31"
+    action: "T-797: Fix shellcheck warnings in 11 more framework files (all→0)"
+  - time: "2026-03-30T20:50:27"
+    action: "T-797: Fix shellcheck warnings in bin/fw (11→0) and resume.sh (3→0)"
+  - time: "2026-03-30T20:52:20"
+    action: "T-797: Fix shellcheck warnings in plugin-audit.sh (6→0)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62
+  commits: 5
+  files_changed: 21
+  lines_added: 92
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-797-shellcheck-cleanup-auditsh-and-remaining.md
+generated_by: context-agent-hybrid
