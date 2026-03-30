@@ -12,6 +12,8 @@
 # Exit codes: 0=all pass, 1=warnings, 2=failures
 #
 # From T-307 inception GO → T-317 build task.
+# shellcheck disable=SC2317 # trap handler and function defs appear unreachable to shellcheck
+# shellcheck disable=SC2034 # C*_OK checkpoint variables used for summary reporting
 
 set -uo pipefail
 
@@ -265,7 +267,7 @@ else
     fi
 
     # Check task file exists
-    task_file=$(ls "$TARGET_DIR/.tasks/active/"T-001*.md 2>/dev/null | head -1)
+    task_file=$(find "$TARGET_DIR/.tasks/active" -maxdepth 1 -name 'T-001*.md' -type f 2>/dev/null | head -1)
     if [ -n "$task_file" ]; then
         pass "Task file created: $(basename "$task_file")"
 
@@ -291,7 +293,7 @@ else
         if grep -q "T-001" "$focus_file"; then
             pass "Focus set to T-001"
         else
-            focus_content=$(cat "$focus_file" 2>/dev/null | head -3)
+            focus_content=$(head -3 "$focus_file" 2>/dev/null)
             warn "Focus file exists but doesn't reference T-001: $focus_content"
         fi
     else

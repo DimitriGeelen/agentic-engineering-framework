@@ -21,8 +21,6 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 GENERATOR="$SCRIPT_DIR/generate_article.py"
 
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
@@ -60,4 +58,5 @@ shift
 EXTRA_ARGS="$*"
 
 echo -e "${CYAN}Assembling context for subsystem: $SUBSYSTEM${NC}"
+# shellcheck disable=SC2086 # EXTRA_ARGS intentionally word-split
 python3 "$GENERATOR" "$SUBSYSTEM" "$FRAMEWORK_ROOT" $EXTRA_ARGS

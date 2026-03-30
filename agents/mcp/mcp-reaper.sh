@@ -20,6 +20,8 @@
 #
 # Research: docs/reports/experiment-zombie-mcp-orphan-reaper.md
 # Part of: Agentic Engineering Framework (T-180)
+# shellcheck disable=SC2009 # ps|grep needed for MCP process inspection
+# shellcheck disable=SC2162 # read -p without -r is fine for y/N prompts
 
 set -euo pipefail
 
@@ -30,7 +32,6 @@ AGE_THRESHOLD=30  # minutes
 QUIET=false
 
 # Colors
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BOLD='\033[1m'
@@ -73,10 +74,12 @@ warn() { echo -e "${YELLOW}WARNING:${NC} $*" >&2; }
 detect_orphans() {
     local age_seconds=$((AGE_THRESHOLD * 60))
     local -a orphan_pgids=()
+    # shellcheck disable=SC2034 # pgid_info populated but consumed externally
     local -A pgid_info=()  # pgid -> "count|rss_mb"
 
     # Find MCP-related processes with PPID=1 (orphaned)
     # Pattern: npm exec + mcp-related packages, or node running mcp servers
+    # shellcheck disable=SC2034 # pid/rss/args needed for positional parsing
     while IFS= read -r line; do
         local pid ppid pgid etimes rss args
         read -r pid ppid pgid etimes rss args <<< "$line"

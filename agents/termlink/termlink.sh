@@ -10,6 +10,8 @@
 # Install: cargo install --path crates/termlink-cli
 #
 # Part of: Agentic Engineering Framework (T-503, from T-502 inception)
+# shellcheck disable=SC2015 # A && B || true pattern is idiomatic for set -e safety
+# shellcheck disable=SC2009 # ps|grep is used for process inspection with context
 
 set -euo pipefail
 
