@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-773: T-772 follow-up: update research artifact + create build tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T13:24:09Z
+# ============================================================================
+
+task_id: T-773
+task_name: "T-772 follow-up: update research artifact + create build tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:19:08Z
+completed: 2026-03-30T13:24:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T15:23:57+02:00
+last_commit: 2026-03-30T15:23:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Update T-772 research artifact + create 5 pickup pipeline build tasks
+
+# Key outcomes
+outcomes:
+  - "Research artifact updated with full pipeline design (schema, architecture, guarantees, CLI, cron, dedup)"
+  - "5 build tasks created from T-772 GO recommendation (T-774, T-775, T-776, T-777, T-778)"
+  - "Build tasks have real ACs (not placeholders)"
+  - "All files committed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-772-cross-project-pickup.md"
+  - ".tasks/active/T-773-t-772-follow-up-update-research-artifact.md"
+  - ".tasks/active/T-774-pickup-pipeline-core--libpickupsh-with-r.md"
+  - ".tasks/active/T-775-fw-pickup-send--consumer-side-cli-for-lo.md"
+  - ".tasks/active/T-776-fw-pickup-process--cron-triggered-inbox-.md"
+  - ".tasks/active/T-777-observation-inbox-migration--process-pic.md"
+  - ".tasks/active/T-778-pickup-cron-registration--add-pickup-pro.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T15:23:57"
+    action: "T-773: Update T-772 research artifact + create 5 pickup pipeline build tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 7
+  lines_added: 460
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-773-t-772-follow-up-update-research-artifact.md
+generated_by: context-agent-hybrid

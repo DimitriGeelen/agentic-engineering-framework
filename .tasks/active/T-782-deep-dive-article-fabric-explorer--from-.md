@@ -4,16 +4,16 @@ name: "Deep-dive article: Fabric Explorer — from static DAG to interactive arc
 description: >
   Write a deep-dive article about the upgraded component browser (D3.js Fabric Explorer replacing Cytoscape). Covers architecture, interactions, path from evaluation to integration.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: [T-726, T-730]
 created: 2026-03-30T13:32:46Z
-last_update: 2026-03-30T13:32:46Z
-date_finished: null
+last_update: 2026-03-30T13:35:26Z
+date_finished: 2026-03-30T13:35:26Z
 ---
 
 # T-782: Deep-dive article: Fabric Explorer — from static DAG to interactive architecture browser
@@ -60,3 +60,6 @@ test -s docs/articles/deep-dives/19-fabric-explorer.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-782-deep-dive-article-fabric-explorer--from-.md
 - **Context:** Initial task creation
+
+### 2026-03-30T13:35:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

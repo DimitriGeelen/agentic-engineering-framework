@@ -4,7 +4,7 @@ name: "Cross-project pickup channel — MCP/TermLink-based push for learnings, b
 description: >
   Inception: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-469, T-598, T-682, T-704]
 created: 2026-03-30T12:45:22Z
-last_update: 2026-03-30T12:51:27Z
-date_finished: null
+last_update: 2026-03-30T13:08:54Z
+date_finished: 2026-03-30T13:08:54Z
 ---
 
 # T-772: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
@@ -100,15 +100,12 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 
 ## Decisions
 
-### 2026-03-30 — Architecture: two transport layers, one pipeline
-- **Chose:** Single deterministic intake pipeline with two transport variants (local filesystem + TermLink remote)
-- **Why:** User directive: "decent, deterministic, reliable, repeatable — we are failing on this front." Current state has observations rotting in `.context/observations/` with no processing. Harvest is pull-only. fw bus was built and never used. The pipeline must work regardless of transport.
-- **Rejected:** "Pickup Lite" without TermLink path — user wants both, properly built. Also rejected: TermLink-only (excludes local/same-machine use).
+**Decision**: GO
 
-### 2026-03-30 — Steelman/strawman analysis
-- **Chose:** GO with scoped build tasks
-- **Why:** Three research agents analyzed demand, gaps, and risks. Steelman: real evidence (pickup-051-vinix24 has 6 unprocessed issues, harvest can't push, O(n)→O(1) learning multiplier). Strawman: valid concerns (fw bus was never used, TermLink remote untested in production, T-469 bypass risk). Resolution: deterministic pipeline design avoids bus v2 trap by processing existing observations immediately.
-- **Rejected:** NO-GO/DEFER — user explicitly rejected waiting ("we are failing on this front")
+**Rationale**: Deterministic pipeline with local+TermLink transport. Evidence: pickup-051-vinix24 has 6 unprocessed issues.             
+  Steelman/strawman analysis completed by 3 research agents.
+
+**Date**: 2026-03-30T13:08:54Z
 
 ## Recommendation
 
@@ -134,7 +131,12 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-772 go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Deterministic pipeline with local+TermLink transport. Evidence: pickup-051-vinix24 has 6 unprocessed issues.             
+  Steelman/strawman analysis completed by 3 research agents.
+
+**Date**: 2026-03-30T13:08:54Z
 
 ## Updates
 
@@ -143,3 +145,13 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 
 ### 2026-03-30T12:50:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-30T13:08:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Deterministic pipeline with local+TermLink transport. Evidence: pickup-051-vinix24 has 6 unprocessed issues.             
+  Steelman/strawman analysis completed by 3 research agents.
+
+### 2026-03-30T13:08:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4,7 +4,7 @@ name: "Unit tests for remaining lib files — ask, build, harvest, init, promote
 description: >
   Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T13:55:50Z
-last_update: 2026-03-30T13:55:50Z
-date_finished: null
+last_update: 2026-03-30T14:04:15Z
+date_finished: 2026-03-30T14:04:15Z
 ---
 
 # T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
@@ -25,14 +25,14 @@ Continuing unit test coverage expansion from T-780 (10 test files, 105 tests). R
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Unit tests for lib/first-run.sh (do_first_run output, structure)
-- [ ] Unit tests for lib/harvest.sh (argument parsing, help, guards, sub-functions)
-- [ ] Unit tests for lib/init.sh (argument parsing, help, guards, generator existence)
-- [ ] Unit tests for lib/validate-init.sh (argument parsing, help, validation logic)
-- [ ] Unit tests for lib/promote.sh (argument parsing, help, routing)
-- [ ] Unit tests for lib/upgrade.sh (argument parsing, help, guards)
-- [ ] All new tests pass: bats tests/unit/lib_*.bats exits 0
-- [ ] No regressions in existing test suite
+- [x] Unit tests for lib/first-run.sh (do_first_run output, structure) — 9 tests
+- [x] Unit tests for lib/harvest.sh (argument parsing, help, guards, sub-functions) — 11 tests
+- [x] Unit tests for lib/init.sh (argument parsing, help, guards, generator existence) — 10 tests
+- [x] Unit tests for lib/validate-init.sh (argument parsing, help, validation logic) — 8 tests
+- [x] Unit tests for lib/promote.sh (argument parsing, help, routing) — 8 tests
+- [x] Unit tests for lib/upgrade.sh (argument parsing, help, guards) — 9 tests
+- [x] All new tests pass: bats tests/unit/lib_*.bats exits 0 — 419 total, 0 failures
+- [x] No regressions in existing test suite
 
 ## Verification
 
@@ -61,3 +61,6 @@ bats tests/unit/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-788-unit-tests-for-remaining-lib-files--ask-.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:04:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

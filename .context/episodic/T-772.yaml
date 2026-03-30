@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-772: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T13:08:56Z
+# ============================================================================
+
+task_id: T-772
+task_name: "Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-03-30T12:45:22Z
+completed: 2026-03-30T13:08:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-30T14:46:27+02:00
+last_commit: 2026-03-30T14:51:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — cross-project pickup channel via MCP/TermLink. Research — TermLink primitives for cross-project pickup (agent ask, remote push, events, request)
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/T-772-cross-project-pickup.md"
+  - ".tasks/active/T-772-cross-project-pickup-channel--mcptermlin.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T14:46:27"
+    action: "T-772: Inception — cross-project pickup channel via MCP/TermLink"
+  - time: "2026-03-30T14:51:27"
+    action: "T-772: Research — TermLink primitives for cross-project pickup (agent ask, remote push, events, request)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 7
+  lines_added: 244
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-772-cross-project-pickup-channel--mcptermlin.md
+generated_by: context-agent-hybrid

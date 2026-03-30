@@ -4,7 +4,7 @@ name: "T-772 follow-up: update research artifact + create build tasks"
 description: >
   Update docs/reports/T-772-cross-project-pickup.md with full pipeline design from inception task. Create the 5 build tasks from the GO decision.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T13:19:08Z
-last_update: 2026-03-30T13:19:08Z
-date_finished: null
+last_update: 2026-03-30T13:24:07Z
+date_finished: 2026-03-30T13:24:07Z
 ---
 
 # T-773: T-772 follow-up: update research artifact + create build tasks
@@ -30,7 +30,7 @@ Related: T-772 task file, `docs/reports/T-772-cross-project-pickup.md`
 - [x] Research artifact updated with full pipeline design (schema, architecture, guarantees, CLI, cron, dedup)
 - [x] 5 build tasks created from T-772 GO recommendation (T-774, T-775, T-776, T-777, T-778)
 - [x] Build tasks have real ACs (not placeholders)
-- [ ] All files committed
+- [x] All files committed
 
 ## Verification
 
@@ -54,3 +54,6 @@ grep -q "Pickup Envelope Schema" docs/reports/T-772-cross-project-pickup.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-773-t-772-follow-up-update-research-artifact.md
 - **Context:** Initial task creation
+
+### 2026-03-30T13:24:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

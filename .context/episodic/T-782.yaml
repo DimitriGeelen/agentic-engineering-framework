@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-782: Deep-dive article: Fabric Explorer — from static DAG to interactive architecture browser
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T13:35:27Z
+# ============================================================================
+
+task_id: T-782
+task_name: "Deep-dive article: Fabric Explorer — from static DAG to interactive architecture browser"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:32:46Z
+completed: 2026-03-30T13:35:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T15:35:13+02:00
+last_commit: 2026-03-30T15:35:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Deep-dive article #19 — Fabric Explorer upgrade
+
+# Key outcomes
+outcomes:
+  - "Article written at `docs/articles/deep-dives/19-fabric-explorer.md`"
+  - "Covers: problem, old vs new, architecture, key interactions, integration story"
+  - "Committed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/articles/deep-dives/19-fabric-explorer.md"
+  - ".tasks/active/T-782-deep-dive-article-fabric-explorer--from-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T15:35:13"
+    action: "T-782: Deep-dive article #19 — Fabric Explorer upgrade"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 141
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-782-deep-dive-article-fabric-explorer--from-.md
+generated_by: context-agent-hybrid
