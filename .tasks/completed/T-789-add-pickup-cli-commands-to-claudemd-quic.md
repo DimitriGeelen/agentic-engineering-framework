@@ -4,7 +4,7 @@ name: "Add pickup CLI commands to CLAUDE.md quick reference"
 description: >
   Add pickup CLI commands to CLAUDE.md quick reference
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T14:18:21Z
-last_update: 2026-03-30T14:18:21Z
-date_finished: null
+last_update: 2026-03-30T14:19:40Z
+date_finished: 2026-03-30T14:19:40Z
 ---
 
 # T-789: Add pickup CLI commands to CLAUDE.md quick reference
@@ -56,3 +56,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-789-add-pickup-cli-commands-to-claudemd-quic.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:19:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
