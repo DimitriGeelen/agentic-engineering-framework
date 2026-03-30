@@ -195,10 +195,10 @@ WGIT
     local upstream_repo=""
     if [ -d "$FRAMEWORK_ROOT/.git" ]; then
         local remote_url
-        remote_url=$(cd "$FRAMEWORK_ROOT" && git remote get-url origin 2>/dev/null || true)
+        remote_url=$(git -C "$FRAMEWORK_ROOT" remote get-url origin 2>/dev/null) || true
         # If no origin, try first available push remote
         if [ -z "$remote_url" ]; then
-            remote_url=$(cd "$FRAMEWORK_ROOT" && git remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}' || true)
+            remote_url=$(git -C "$FRAMEWORK_ROOT" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
         fi
         if [ -n "$remote_url" ]; then
             # GitHub URLs: extract owner/repo for compact display
@@ -206,7 +206,7 @@ WGIT
                 upstream_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]||;s|\.git$||')
             else
                 # Non-GitHub: store full URL (OneDev, GitLab, Gitea, etc.)
-                upstream_repo=$(echo "$remote_url" | sed 's|\.git$||')
+                upstream_repo="${remote_url%.git}"
             fi
         fi
     fi

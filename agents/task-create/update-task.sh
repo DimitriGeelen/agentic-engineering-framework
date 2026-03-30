@@ -122,6 +122,7 @@ check_acceptance_criteria() {
             else
                 placeholder_count=$(echo "$placeholder_acs" | wc -l)
                 echo -e "${RED}ERROR: Cannot complete — $placeholder_count $ac_label are skeleton placeholders:${NC}" >&2
+                # shellcheck disable=SC2001 # multi-line prefix — can't use ${//}
                 echo "$placeholder_acs" | sed 's/^/  /' >&2
                 echo "" >&2
                 echo "Replace placeholder text with real, specific acceptance criteria." >&2
@@ -294,9 +295,9 @@ fi
 
 # Find task file
 TASK_FILE=""
-TASK_FILE=$(ls "$TASKS_DIR/active/${TASK_ID}-"*.md 2>/dev/null | head -1)
+TASK_FILE=$(find "$TASKS_DIR/active" -maxdepth 1 -name "${TASK_ID}-*.md" -type f 2>/dev/null | head -1)
 if [ -z "$TASK_FILE" ]; then
-    TASK_FILE=$(ls "$TASKS_DIR/completed/${TASK_ID}-"*.md 2>/dev/null | head -1)
+    TASK_FILE=$(find "$TASKS_DIR/completed" -maxdepth 1 -name "${TASK_ID}-*.md" -type f 2>/dev/null | head -1)
 fi
 
 if [ -z "$TASK_FILE" ] || [ ! -f "$TASK_FILE" ]; then
@@ -744,6 +745,7 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             if [ "$IN_DECISIONS" = true ]; then
                 # Match "**Chose:**" or "**Decision**:" patterns
                 DECISION_TEXT=""
+                # shellcheck disable=SC2001 # complex regex — can't use ${//}
                 if echo "$line" | grep -qE '\*\*Chose:\*\*'; then
                     DECISION_TEXT=$(echo "$line" | sed 's/.*\*\*Chose:\*\*[[:space:]]*//')
                 elif echo "$line" | grep -qE '\*\*Decision\*\*:'; then
@@ -754,8 +756,9 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
                     *"[what was decided]"*|*"[topic]"*|*"[rationale]"*|*"TODO"*) DECISION_TEXT="" ;;
                 esac
                 if [ -n "$DECISION_TEXT" ] && [ ${#DECISION_TEXT} -gt 5 ]; then
-                    PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" add-decision "$DECISION_TEXT" --task "$TASK_ID" --rationale "Auto-captured from task file on completion" 2>/dev/null && \
-                        DECISION_COUNT=$((DECISION_COUNT + 1)) || true
+                    if PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" add-decision "$DECISION_TEXT" --task "$TASK_ID" --rationale "Auto-captured from task file on completion" 2>/dev/null; then
+                        DECISION_COUNT=$((DECISION_COUNT + 1))
+                    fi
                 fi
             fi
         done < "$TASK_FILE"

@@ -76,7 +76,7 @@ do_validate_init() {
         tag_line="${tag_line#*#@init: }"
         desc_line="${desc_line#*# }"
         # Trim leading spaces
-        desc_line="$(echo "$desc_line" | sed 's/^[[:space:]]*//')"
+        desc_line="${desc_line#"${desc_line%%[![:space:]]*}"}"
 
         # Parse: <type>-<key> <path> [args] [?condition]
         local type_key path check_args condition
@@ -408,7 +408,7 @@ print(','.join(broken))
 
     # 2d. Onboarding tasks have valid frontmatter
     local active_tasks
-    active_tasks=$(ls "$target_dir/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    active_tasks=$(find "$target_dir/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)
     if [ "$active_tasks" -gt 0 ] && [ "$has_python" = true ]; then
         total=$((total + 1))
         local bad_tasks
@@ -517,7 +517,7 @@ print(','.join(leaked))
         # 3d. Fabric is clean (no framework internals)
         total=$((total + 1))
         local fabric_count
-        fabric_count=$(ls "$target_dir/.fabric/components/"*.yaml 2>/dev/null | wc -l)
+        fabric_count=$(find "$target_dir/.fabric/components" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
         if [ "$fabric_count" -eq 0 ]; then
             passed=$((passed + 1))
             [ "$quiet" = false ] && echo -e "  ${GREEN}✓${NC} sem-fabric Fabric is clean (0 pre-registered components)"

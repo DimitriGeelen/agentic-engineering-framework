@@ -212,7 +212,7 @@ fi
 
 # 2.3 Component Fabric
 if [ -d "$PROJECT_ROOT/.fabric" ] && [ -d "$PROJECT_ROOT/.fabric/components" ]; then
-    comp_count=$(ls "$PROJECT_ROOT/.fabric/components/"*.yaml 2>/dev/null | wc -l)
+    comp_count=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
     pass "Component fabric: $comp_count components"
 elif [ -d "$PROJECT_ROOT/.fabric" ]; then
     warn "Component fabric exists but no components/ directory"
@@ -394,12 +394,13 @@ echo ""
 # T-690: Since T-648, FW_VERSION may be dynamic ($(_derive_version)).
 # Source the relevant functions to evaluate it properly.
 fw_version=$(grep '^FW_VERSION=' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null | sed 's/FW_VERSION="//;s/"//')
+# shellcheck disable=SC2016 # intentional — matching literal '$(' in string
 if [[ "$fw_version" == *'$('* ]]; then
     # Dynamic version — evaluate by running fw version
     fw_version=$("$FRAMEWORK_ROOT/bin/fw" version 2>/dev/null | grep -oP 'v\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 fi
 if [ -f "$FRAMEWORK_ROOT/VERSION" ]; then
-    root_ver=$(cat "$FRAMEWORK_ROOT/VERSION" | tr -d '[:space:]')
+    root_ver=$(tr -d '[:space:]' < "$FRAMEWORK_ROOT/VERSION")
     if [ "$root_ver" = "$fw_version" ]; then
         pass "VERSION file matches FW_VERSION ($fw_version)"
     else
@@ -411,7 +412,7 @@ fi
 
 # 5.2 Vendored VERSION matches (if exists)
 if [ -f "$FRAMEWORK_ROOT/.agentic-framework/VERSION" ]; then
-    vendored_ver=$(cat "$FRAMEWORK_ROOT/.agentic-framework/VERSION" | tr -d '[:space:]')
+    vendored_ver=$(tr -d '[:space:]' < "$FRAMEWORK_ROOT/.agentic-framework/VERSION")
     if [ "$vendored_ver" = "$fw_version" ]; then
         pass ".agentic-framework/VERSION matches FW_VERSION ($fw_version)"
     else
