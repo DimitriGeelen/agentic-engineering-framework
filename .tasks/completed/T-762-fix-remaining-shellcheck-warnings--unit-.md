@@ -4,7 +4,7 @@ name: "Fix remaining shellcheck warnings + unit tests for episodic, init, safe-c
 description: >
   Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T11:53:30Z
-last_update: 2026-03-30T11:53:30Z
-date_finished: null
+last_update: 2026-03-30T12:14:02Z
+date_finished: 2026-03-30T12:14:02Z
 ---
 
 # T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
@@ -35,7 +35,7 @@ Continuation of T-760/T-761 shellcheck cleanup and T-757/T-758 unit test expansi
 
 ## Verification
 
-shellcheck lib/colors.sh lib/upgrade.sh 2>&1 | grep -c 'warning' | grep -q '^0$'
+test "$(shellcheck lib/colors.sh lib/upgrade.sh 2>&1 | grep -c 'warning')" = "0"
 bats tests/unit/context_safe_commands.bats
 bats tests/unit/context_init.bats
 bats tests/unit/context_episodic.bats
@@ -57,3 +57,6 @@ bats tests/unit/context_episodic.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-762-fix-remaining-shellcheck-warnings--unit-.md
 - **Context:** Initial task creation
+
+### 2026-03-30T12:14:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
