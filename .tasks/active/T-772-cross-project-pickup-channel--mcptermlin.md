@@ -4,7 +4,7 @@ name: "Cross-project pickup channel — MCP/TermLink-based push for learnings, b
 description: >
   Inception: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-469, T-598, T-682, T-704]
 created: 2026-03-30T12:45:22Z
-last_update: 2026-03-30T12:45:22Z
+last_update: 2026-03-30T12:50:38Z
 date_finished: null
 ---
 
@@ -117,3 +117,6 @@ Cross-project knowledge sharing is currently pull-based: the framework agent run
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-03-30T12:50:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
