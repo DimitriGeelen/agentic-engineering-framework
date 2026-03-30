@@ -235,6 +235,113 @@ pickup_process_one() {
     return 0
 }
 
+# --- Send (create envelope) ---
+
+do_pickup_send() {
+    local pickup_type="" summary="" detail="" priority="medium"
+    local source_project="" task_id="" tags="" remote=""
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --type) pickup_type="$2"; shift 2 ;;
+            --summary) summary="$2"; shift 2 ;;
+            --detail) detail="$2"; shift 2 ;;
+            --priority) priority="$2"; shift 2 ;;
+            --source-project) source_project="$2"; shift 2 ;;
+            --task-id) task_id="$2"; shift 2 ;;
+            --tags) tags="$2"; shift 2 ;;
+            --remote) remote="$2"; shift 2 ;;
+            -h|--help)
+                echo -e "${BOLD}fw pickup send${NC} — Create and deliver a pickup envelope"
+                echo ""
+                echo "Usage: fw pickup send --type TYPE --summary TEXT [options]"
+                echo ""
+                echo "Required:"
+                echo "  --type TYPE           bug-report, learning, feature-proposal, or pattern"
+                echo "  --summary TEXT        One-line description"
+                echo ""
+                echo "Optional:"
+                echo "  --detail TEXT         Multi-line explanation"
+                echo "  --priority LEVEL      low, medium (default), or high"
+                echo "  --source-project NAME Project name (default: basename of PROJECT_ROOT)"
+                echo "  --task-id T-NNN       Originating task ID"
+                echo "  --tags TAG1,TAG2      Comma-separated tags"
+                echo "  --remote HOST         Push via termlink remote push to HOST"
+                echo "  -h, --help            Show this help"
+                return 0
+                ;;
+            -*) echo -e "${RED}Unknown option: $1${NC}" >&2; return 1 ;;
+            *) echo -e "${RED}Unexpected argument: $1${NC}" >&2; return 1 ;;
+        esac
+    done
+
+    # Validate required
+    if [ -z "$pickup_type" ]; then
+        echo -e "${RED}--type is required${NC}" >&2
+        return 1
+    fi
+    case "$pickup_type" in
+        bug-report|learning|feature-proposal|pattern) ;;
+        *) echo -e "${RED}Invalid type: $pickup_type (must be bug-report, learning, feature-proposal, or pattern)${NC}" >&2; return 1 ;;
+    esac
+    if [ -z "$summary" ]; then
+        echo -e "${RED}--summary is required${NC}" >&2
+        return 1
+    fi
+
+    # Defaults
+    source_project="${source_project:-$(basename "${PROJECT_ROOT:-.}")}"
+
+    pickup_ensure_dirs
+
+    local pickup_id
+    pickup_id=$(pickup_next_id)
+
+    local ts
+    ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+    # Build tag list
+    local tag_yaml="[]"
+    if [ -n "$tags" ]; then
+        tag_yaml="[${tags//,/, }]"
+    fi
+
+    local filename="${pickup_id}-${pickup_type}.yaml"
+    local filepath="$PICKUP_INBOX/$filename"
+
+    # Write envelope
+    cat > "$filepath" <<EOF
+pickup_id: $pickup_id
+version: 1
+type: $pickup_type
+source:
+  project: "$source_project"
+  task_id: "${task_id:-}"
+  agent: "claude-code"
+  timestamp: "$ts"
+payload:
+  summary: "$summary"
+  detail: "${detail:-}"
+  priority: $priority
+  tags: $tag_yaml
+EOF
+
+    echo -e "${GREEN}Created${NC} $filename"
+
+    # Remote push if requested
+    if [ -n "$remote" ]; then
+        if command -v termlink >/dev/null 2>&1; then
+            echo -e "Pushing to ${BOLD}$remote${NC} via termlink..."
+            termlink remote push "$remote" "$filepath" 2>&1
+        else
+            echo -e "${YELLOW}WARN: termlink not installed — envelope saved locally only${NC}" >&2
+            echo "  Install: brew install DimitriGeelen/termlink/termlink"
+        fi
+    fi
+
+    echo "$filepath"
+}
+
 # --- Main entry point ---
 
 do_pickup() {
@@ -246,6 +353,7 @@ do_pickup() {
             echo -e "${BOLD}fw pickup${NC} — Cross-project pickup pipeline"
             echo ""
             echo "Commands:"
+            echo "  send        Create and deliver a pickup envelope"
             echo "  process     Process all envelopes in the inbox"
             echo "  status      Show inbox/processed/rejected counts"
             echo "  list        List inbox contents"
@@ -254,6 +362,9 @@ do_pickup() {
             echo "  --dry-run   Show what would be processed without acting"
             echo "  -h, --help  Show this help"
             return 0
+            ;;
+        send)
+            do_pickup_send "$@"
             ;;
         process)
             local dry_run=false

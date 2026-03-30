@@ -333,3 +333,68 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"DEDUP"* ]]
 }
+
+# --- do_pickup_send ---
+
+@test "pickup: do_pickup_send --help shows usage" {
+    run do_pickup_send --help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"fw pickup send"* ]]
+    [[ "$output" == *"--type"* ]]
+    [[ "$output" == *"--summary"* ]]
+}
+
+@test "pickup: do_pickup_send requires --type" {
+    run do_pickup_send --summary "test"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"--type is required"* ]]
+}
+
+@test "pickup: do_pickup_send requires --summary" {
+    run do_pickup_send --type bug-report
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"--summary is required"* ]]
+}
+
+@test "pickup: do_pickup_send rejects invalid type" {
+    run do_pickup_send --type garbage --summary "test"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Invalid type"* ]]
+}
+
+@test "pickup: do_pickup_send rejects unknown option" {
+    run do_pickup_send --bogus
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Unknown option"* ]]
+}
+
+@test "pickup: do_pickup_send creates envelope file" {
+    run do_pickup_send --type bug-report --summary "Test bug" --source-project testproj
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Created"* ]]
+    [ -f "$PICKUP_INBOX/P-001-bug-report.yaml" ]
+}
+
+@test "pickup: do_pickup_send envelope has correct content" {
+    do_pickup_send --type learning --summary "Use X not Y" --source-project myproj --task-id T-099 --tags "perf,api"
+    local f="$PICKUP_INBOX/P-001-learning.yaml"
+    [ -f "$f" ]
+    grep -q "type: learning" "$f"
+    grep -q 'summary: "Use X not Y"' "$f"
+    grep -q 'project: "myproj"' "$f"
+    grep -q 'task_id: "T-099"' "$f"
+    grep -q "perf, api" "$f"
+}
+
+@test "pickup: do_pickup_send auto-increments ID" {
+    do_pickup_send --type bug-report --summary "First" --source-project p1
+    do_pickup_send --type bug-report --summary "Second" --source-project p1
+    [ -f "$PICKUP_INBOX/P-001-bug-report.yaml" ]
+    [ -f "$PICKUP_INBOX/P-002-bug-report.yaml" ]
+}
+
+@test "pickup: do_pickup send routes through do_pickup" {
+    run do_pickup send --help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"fw pickup send"* ]]
+}

@@ -4,7 +4,7 @@ name: "fw pickup send — consumer-side CLI for local and TermLink push"
 description: >
   Consumer-side CLI command: serialize pickup envelope YAML, write to local inbox or push via termlink remote push. Supports --type, --summary, --detail, --priority, --remote flags.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-772, T-774]
 created: 2026-03-30T13:21:40Z
-last_update: 2026-03-30T13:21:40Z
+last_update: 2026-03-30T14:08:15Z
 date_finished: null
 ---
 
@@ -25,13 +25,13 @@ Consumer-side CLI for the pickup pipeline (T-772 GO). Depends on T-774 (lib/pick
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw pickup send` subcommand registered in `bin/fw`
-- [ ] Accepts flags: `--type`, `--summary`, `--detail`, `--priority`, `--source-project`, `--task-id`, `--tags`
-- [ ] Local mode: writes YAML envelope to `.context/pickup/inbox/P-NNN-type.yaml`
-- [ ] `--remote` flag: pushes via `termlink remote push` (requires TermLink)
-- [ ] Auto-generates pickup_id (P-NNN) and dedup_hash
-- [ ] Validates required fields before writing
-- [ ] `fw pickup send --help` shows usage
+- [x] `fw pickup send` subcommand registered in `bin/fw`
+- [x] Accepts flags: `--type`, `--summary`, `--detail`, `--priority`, `--source-project`, `--task-id`, `--tags`
+- [x] Local mode: writes YAML envelope to `.context/pickup/inbox/P-NNN-type.yaml`
+- [x] `--remote` flag: pushes via `termlink remote push` (requires TermLink)
+- [x] Auto-generates pickup_id (P-NNN) and dedup_hash
+- [x] Validates required fields before writing
+- [x] `fw pickup send --help` shows usage — 9 new send tests, 37 total
 
 ## Verification
 
@@ -54,3 +54,6 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw pickup send --help
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-775-fw-pickup-send--consumer-side-cli-for-lo.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:08:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
