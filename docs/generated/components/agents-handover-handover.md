@@ -40,7 +40,6 @@ Creates handover documents for session continuity
 ## Related
 
 ### Tasks
-- T-556: Handover commit attribution — use session ID not active task ID
 - T-595: Migrate highest-risk inline Python blocks to fw-util calls
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 
