@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-790: Register pickup pipeline components in fabric
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:21:31Z
+# ============================================================================
+
+task_id: T-790
+task_name: "Register pickup pipeline components in fabric"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T14:19:59Z
+completed: 2026-03-30T14:21:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T16:21:05+02:00
+last_commit: 2026-03-30T16:21:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register pickup and test components in fabric — 8 new cards
+
+# Key outcomes
+outcomes:
+  - "lib/pickup.sh registered in fabric"
+  - "tests/unit/lib_pickup.bats registered in fabric"
+  - "6 additional test files from T-788 registered"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/tests-unit-lib_first_run.yaml"
+  - ".fabric/components/tests-unit-lib_harvest.yaml"
+  - ".fabric/components/tests-unit-lib_init.yaml"
+  - ".fabric/components/tests-unit-lib_pickup.yaml"
+  - ".fabric/components/tests-unit-lib_promote.yaml"
+  - ".fabric/components/tests-unit-lib_upgrade.yaml"
+  - ".fabric/components/tests-unit-lib_validate_init.yaml"
+  - ".tasks/active/T-790-register-pickup-pipeline-components-in-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:21:05"
+    action: "T-790: Register pickup and test components in fabric — 8 new cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 9
+  lines_added: 229
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-790-register-pickup-pipeline-components-in-f.md
+generated_by: context-agent-hybrid
