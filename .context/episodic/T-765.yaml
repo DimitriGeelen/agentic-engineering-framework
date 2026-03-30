@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-765: Add unit tests for lib/errors.sh and lib/colors.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T12:30:49Z
+# ============================================================================
+
+task_id: T-765
+task_name: "Add unit tests for lib/errors.sh and lib/colors.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T12:24:20Z
+completed: 2026-03-30T12:26:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T14:25:57+02:00
+last_commit: 2026-03-30T14:26:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 17 unit tests for lib/errors.sh and lib/colors.sh. Complete — 17 unit tests for errors.sh and colors.sh
+
+# Key outcomes
+outcomes:
+  - "Unit tests for lib/errors.sh — die, error, warn, info, success, block (11 tests)"
+  - "Unit tests for lib/colors.sh — color variable setup, NO_COLOR support (6 tests)"
+  - "All new tests pass (17/17)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — 17 unit tests for errors.sh and colors.sh"
+    source: git-mined
+  - description: "Add 17 unit tests for lib/errors.sh and lib/colors.sh"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-30.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/locks/T-765.lock"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-765-add-unit-tests-for-liberrorssh-and-libco.md"
+  - ".tasks/completed/T-765-add-unit-tests-for-liberrorssh-and-libco.md"
+  - "tests/unit/lib_colors.bats"
+  - "tests/unit/lib_errors.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T14:25:57"
+    action: "T-765: Add 17 unit tests for lib/errors.sh and lib/colors.sh"
+  - time: "2026-03-30T14:26:21"
+    action: "T-765: Complete — 17 unit tests for errors.sh and colors.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 12
+  lines_added: 285
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-765-add-unit-tests-for-liberrorssh-and-libco.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-766: Add unit tests for lib/compat.sh and lib/runtime.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T12:30:50Z
+# ============================================================================
+
+task_id: T-766
+task_name: "Add unit tests for lib/compat.sh and lib/runtime.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T12:26:41Z
+completed: 2026-03-30T12:28:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T14:28:52+02:00
+last_commit: 2026-03-30T14:29:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 12 unit tests for lib/compat.sh and lib/runtime.sh. Complete — 12 unit tests for compat.sh and runtime.sh
+
+# Key outcomes
+outcomes:
+  - "Unit tests for lib/compat.sh — _sed_i function (7 tests)"
+  - "Unit tests for lib/runtime.sh — fw_run_ts function (5 tests)"
+  - "All new tests pass (12/12)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-30.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/locks/T-766.lock"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-766-add-unit-tests-for-libcompatsh-and-libru.md"
+  - ".tasks/completed/T-766-add-unit-tests-for-libcompatsh-and-libru.md"
+  - "tests/unit/lib_compat.bats"
+  - "tests/unit/lib_runtime.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T14:28:52"
+    action: "T-766: Add 12 unit tests for lib/compat.sh and lib/runtime.sh"
+  - time: "2026-03-30T14:29:06"
+    action: "T-766: Complete — 12 unit tests for compat.sh and runtime.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 11
+  lines_added: 227
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-766-add-unit-tests-for-libcompatsh-and-libru.md
+generated_by: context-agent-hybrid

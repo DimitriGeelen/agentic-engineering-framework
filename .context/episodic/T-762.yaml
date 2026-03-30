@@ -1,0 +1,128 @@
+# ============================================================================
+# EPISODIC MEMORY - T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T12:30:45Z
+# ============================================================================
+
+task_id: T-762
+task_name: "Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T11:53:30Z
+completed: 2026-03-30T12:14:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T14:12:32+02:00
+last_commit: 2026-03-30T14:14:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix shellcheck warning in upgrade.sh + 62 unit tests for safe-commands, init, episodic libs. Complete — 62 unit tests, shellcheck fix, task artifact cleanup
+
+# Key outcomes
+outcomes:
+  - "Fix shellcheck SC2034 warning in lib/colors.sh (BOLD variable)"
+  - "Fix shellcheck SC2034 warning in lib/upgrade.sh (framework_resume variable)"
+  - "Unit tests for agents/context/lib/safe-commands.sh (5+ tests)"
+  - "Unit tests for agents/context/lib/init.sh (5+ tests)"
+  - "Unit tests for agents/context/lib/episodic.sh (5+ tests)"
+  - "All new tests pass"
+  - "Clean up 29 onboarding test task artifacts from active/"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — 62 unit tests, shellcheck fix, task artifact cleanup"
+    source: git-mined
+  - description: "Fix shellcheck warning in upgrade.sh + 62 unit tests for safe-commands, init, episodic libs"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/2026-03-22-1300.yaml"
+  - ".context/audits/cron/2026-03-30-1345.yaml"
+  - ".context/audits/cron/2026-03-30-1400.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-779.yaml"
+  - ".context/episodic/T-785.yaml"
+  - ".context/locks/T-762.lock"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-762-fix-remaining-shellcheck-warnings--unit-.md"
+  - ".tasks/active/T-762-onboarding-test-task.md"
+  - ".tasks/active/T-763-onboarding-test-task.md"
+  - ".tasks/active/T-764-onboarding-test-task.md"
+  - ".tasks/active/T-765-onboarding-test-task.md"
+  - ".tasks/active/T-766-onboarding-test-task.md"
+  - ".tasks/active/T-767-onboarding-test-task.md"
+  - ".tasks/active/T-768-onboarding-test-task.md"
+  - ".tasks/active/T-769-onboarding-test-task.md"
+  - ".tasks/active/T-770-onboarding-test-task.md"
+  - ".tasks/active/T-771-onboarding-test-task.md"
+  - ".tasks/active/T-772-onboarding-test-task.md"
+  - ".tasks/active/T-773-onboarding-test-task.md"
+  - ".tasks/active/T-774-onboarding-test-task.md"
+  - ".tasks/active/T-775-onboarding-test-task.md"
+  - ".tasks/active/T-776-onboarding-test-task.md"
+  - ".tasks/active/T-777-onboarding-test-task.md"
+  - ".tasks/active/T-778-onboarding-test-task.md"
+  - ".tasks/active/T-779-onboarding-test-task.md"
+  - ".tasks/active/T-780-onboarding-test-task.md"
+  - ".tasks/active/T-781-onboarding-test-task.md"
+  - ".tasks/active/T-782-onboarding-test-task.md"
+  - ".tasks/active/T-783-onboarding-test-task.md"
+  - ".tasks/active/T-784-onboarding-test-task.md"
+  - ".tasks/active/T-785-onboarding-test-task.md"
+  - ".tasks/completed/T-762-fix-remaining-shellcheck-warnings--unit-.md"
+  - "tests/unit/context_episodic.bats"
+  - "tests/unit/context_init.bats"
+  - "tests/unit/context_safe_commands.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T14:12:32"
+    action: "T-762: Fix shellcheck warning in upgrade.sh + 62 unit tests for safe-commands, init, episodic libs"
+  - time: "2026-03-30T14:14:31"
+    action: "T-762: Complete — 62 unit tests, shellcheck fix, task artifact cleanup"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 2
+  files_changed: 45
+  lines_added: 1086
+  lines_removed: 1783
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-762-fix-remaining-shellcheck-warnings--unit-.md
+generated_by: context-agent-hybrid

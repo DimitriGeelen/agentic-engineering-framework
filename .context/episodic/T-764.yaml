@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T12:30:47Z
+# ============================================================================
+
+task_id: T-764
+task_name: "Add unit tests for core libs — tasks, yaml, keylock, enums, paths"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T12:15:06Z
+completed: 2026-03-30T12:23:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T14:23:42+02:00
+last_commit: 2026-03-30T14:24:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 55 unit tests for core libs — tasks, yaml, enums, keylock, paths. Complete — 55 unit tests for tasks, yaml, enums, keylock, paths
+
+# Key outcomes
+outcomes:
+  - "Unit tests for lib/tasks.sh — find_task_file, task_exists, get_task_name (10 tests)"
+  - "Unit tests for lib/yaml.sh — get_yaml_field (8 tests)"
+  - "Unit tests for lib/enums.sh — is_valid_status, is_valid_type, is_valid_transition (23 tests)"
+  - "Unit tests for lib/keylock.sh — keylock_acquire, keylock_release (9 tests)"
+  - "Unit tests for lib/paths.sh — variable resolution (5 tests)"
+  - "All new tests pass (55/55)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-03-30.yaml"
+  - ".context/audits/cron/2026-03-30-1415.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/locks/T-764.lock"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/focus.yaml"
+  - ".context/working/.new-file-counter"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-763-onboarding-test-task.md"
+  - ".tasks/active/T-764-add-unit-tests-for-core-libs--tasks-yaml.md"
+  - ".tasks/completed/T-764-add-unit-tests-for-core-libs--tasks-yaml.md"
+  - "tests/unit/lib_enums.bats"
+  - "tests/unit/lib_keylock.bats"
+  - "tests/unit/lib_paths.bats"
+  - "tests/unit/lib_tasks.bats"
+  - "tests/unit/lib_yaml.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T14:23:42"
+    action: "T-764: Add 55 unit tests for core libs — tasks, yaml, enums, keylock, paths"
+  - time: "2026-03-30T14:24:03"
+    action: "T-764: Complete — 55 unit tests for tasks, yaml, enums, keylock, paths"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 19
+  lines_added: 711
+  lines_removed: 340
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-764-add-unit-tests-for-core-libs--tasks-yaml.md
+generated_by: context-agent-hybrid
