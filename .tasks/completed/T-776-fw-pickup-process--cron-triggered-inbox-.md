@@ -4,7 +4,7 @@ name: "fw pickup process — cron-triggered inbox scanner"
 description: >
   Deterministic, idempotent inbox scanner: read all pending envelopes from .context/pickup/inbox/, process each (validate, dedup, create inception task, notify), move to processed/. Exit 0 if no work.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-772, T-774, T-778]
 created: 2026-03-30T13:21:48Z
-last_update: 2026-03-30T14:11:57Z
-date_finished: null
+last_update: 2026-03-30T14:13:08Z
+date_finished: 2026-03-30T14:13:08Z
 ---
 
 # T-776: fw pickup process — cron-triggered inbox scanner
@@ -57,3 +57,6 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw pickup process
 
 ### 2026-03-30T14:11:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-30T14:13:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
