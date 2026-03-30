@@ -32,10 +32,10 @@ for a project to use the framework.
 ## Related
 
 ### Tasks
-- T-521: fw init should git init when not in a git repo
 - T-575: PICKUP-004: Init fails to detect upstream_repo for non-GitHub clones
 - T-615: Fix fw upgrade hook count bug — enumerate by type not count
 - T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
+- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
 - T-681: Add TermLink MCP server to fw init default MCP config
 
 ---

@@ -1,6 +1,6 @@
 # _approvals_content
 
-> TODO: describe what this component does
+> htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_approvals_content.html`
 

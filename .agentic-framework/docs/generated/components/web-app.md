@@ -18,7 +18,7 @@ When building a web application:
 3. **Report access options** — localhost, LAN IP (for other devices), internet (if applicable)
 4. Never leave a built web app unstarted without informing the user
 
-## Dependencies (25)
+## Dependencies (28)
 
 | Target | Relationship |
 |--------|-------------|
@@ -47,21 +47,15 @@ When building a web application:
 | `web/blueprints/enforcement.py` | registers |
 | `web/blueprints/risks.py` | registers |
 | `web/blueprints/fabric.py` | registers |
+| `web/search_utils.py` | calls |
+| `web/blueprints/__init__.py` | calls |
+| `web/embeddings.py` | calls |
 
 ## Used By (1)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
-
-## Related
-
-### Tasks
-- T-273: Production readiness — WSGI, health endpoint, config, error handling
-- T-277: First deployment — Watchtower to Ring20 production
-- T-365: Watchtower /docs route for generated documentation
-- T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
-- T-379: Settings page with engine selector and config persistence
 
 ---
 *Auto-generated from Component Fabric. Card: `web-app.yaml`*

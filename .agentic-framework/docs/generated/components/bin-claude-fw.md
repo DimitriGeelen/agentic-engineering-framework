@@ -13,15 +13,21 @@ If found (and fresh), auto-restarts with `claude -c` to continue.
 Usage:
 claude-fw [claude-args...]          # Run with auto-restart enabled
 claude-fw --no-restart [args...]    # Run without auto-restart
+claude-fw --termlink [args...]      # Register as TermLink session for remote access
+TL_CLAUDE_ENABLED=1 claude-fw      # Same via env var
 The restart signal file is .context/working/.restart-requested
-Written by: checkpoint.sh auto-handover at critical budget (T-186)
-Consumed by: this script on claude exit
 
 ## Dependencies (1)
 
 | Target | Relationship |
 |--------|-------------|
 | `C-008` | reads |
+
+## Related
+
+### Tasks
+- T-501: Add BASH_DEFAULT_TIMEOUT_MS to claude-fw wrapper
+- T-530: Port claude-fw --termlink flag from consumer project to upstream
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-claude-fw.yaml`*

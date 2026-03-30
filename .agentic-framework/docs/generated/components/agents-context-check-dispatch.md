@@ -23,12 +23,14 @@ Output: JSON with additionalContext when oversized results detected
 |--------|-------------|
 | `agents/dispatch/preamble.md` | references |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-009` | triggered_by |
 | `agents/audit/self-audit.sh` | verified_by |
+| `agents/audit/self-audit.sh` | read_by |
+| `C-009` | triggers_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-dispatch.yaml`*

@@ -1,6 +1,6 @@
 # loop-detect
 
-> TODO: describe what this component does
+> PostToolUse hook: detect repetitive tool call patterns — warns when agent appears stuck in a loop (same tool+args repeated).
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/loop-detect.sh`
 

@@ -1,6 +1,6 @@
 # update
 
-> TODO: describe what this component does
+> fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/update.sh`
 
@@ -23,13 +23,6 @@ to latest upstream (legacy path, pre-T-499).
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
-
-## Related
-
-### Tasks
-- T-493: fw update command — CLI wrapper for framework self-update
-- T-494: Expand fw upgrade — version tracking, context dir sync, E2E test
-- T-499: fw update for vendored projects — pull upstream into .agentic-framework/
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-update.yaml`*

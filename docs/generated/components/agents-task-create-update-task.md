@@ -41,11 +41,11 @@ Usage:
 ## Related
 
 ### Tasks
-- T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
-- T-535: Build onboarding gate — tag-based PreToolUse enforcement + SessionStart injection
 - T-587: Keyed async queue — per-key serialization primitive for concurrent operations
+- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
 - T-692: Learning capture prompt for bugfix tasks — structural nudge in update-task.sh when completing fix tasks without a learning entry
 - T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
+- T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-task-create-update-task.yaml`*

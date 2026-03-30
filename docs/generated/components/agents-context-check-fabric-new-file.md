@@ -1,6 +1,6 @@
 # check-fabric-new-file
 
-> TODO: describe what this component does
+> PostToolUse hook: detect new files created by Write tool — prompts fabric registration for structural tracking.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-fabric-new-file.sh`
 

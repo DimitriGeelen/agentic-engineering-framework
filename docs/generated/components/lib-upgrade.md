@@ -26,10 +26,10 @@ Project-specific content is preserved.
 ## Related
 
 ### Tasks
-- T-622: Fix fw upgrade — sync vendored hook scripts to consumers
 - T-653: Add cron registry seeding to fw upgrade
 - T-660: Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.agentic-framework
 - T-665: Upgrade migration — replace global symlink with shim during fw upgrade
+- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
 - T-681: Add TermLink MCP server to fw init default MCP config
 
 ---

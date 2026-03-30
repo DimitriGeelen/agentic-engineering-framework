@@ -14,10 +14,11 @@
 |--------|-------------|
 | `?` | uses |
 
-## Related
+## Used By (1)
 
-### Tasks
-- T-241: Wire discovery findings into session-start and Watchtower
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/discoveries.py` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-discoveries.yaml`*

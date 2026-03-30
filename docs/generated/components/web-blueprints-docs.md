@@ -1,6 +1,6 @@
 # docs
 
-> TODO: describe what this component does
+> Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/ — renders markdown with syntax highlighting.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/docs.py`
 

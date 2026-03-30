@@ -15,18 +15,17 @@ Synthesizes current state from handover, working memory, git, and tasks
 
 **When to use:** After context compaction, returning from breaks, or when feeling lost about current state.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/paths.sh` | calls |
+
 ## Used By (1)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
-
-## Related
-
-### Tasks
-- T-241: Wire discovery findings into session-start and Watchtower
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-resume-resume.yaml`*

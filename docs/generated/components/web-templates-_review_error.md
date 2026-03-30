@@ -1,6 +1,6 @@
 # _review_error
 
-> TODO: describe what this component does
+> htmx partial: review error message — displayed when task review action fails (task not found, validation error).
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_review_error.html`
 
@@ -10,6 +10,7 @@
 
 ### Tasks
 - T-673: Review page 404 handler — show friendly message when task not found
+- T-676: Watchtower dark mode toggle — persist theme preference
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_review_error.yaml`*

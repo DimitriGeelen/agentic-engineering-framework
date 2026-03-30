@@ -14,11 +14,19 @@ Part of: T-111 (Autonomous compact-resume lifecycle)
 Updated: T-175 (D-028 — single handover, no emergency distinction)
 Updated: T-177 (manual-only cleanup, D-027 documentation)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/handover/handover.sh` | calls |
+| `lib/paths.sh` | calls |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/self-audit.sh` | read_by |
+| `C-009` | triggers_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-pre-compact.yaml`*

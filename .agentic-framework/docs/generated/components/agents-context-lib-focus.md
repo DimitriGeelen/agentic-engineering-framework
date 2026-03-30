@@ -9,11 +9,12 @@
 Context Agent - focus command
 Set or show current task focus
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
+| `capture-skill` | read_by |
 
 ## Documentation
 
@@ -22,10 +23,8 @@ Set or show current task focus
 ## Related
 
 ### Tasks
-- T-246: Project memory read-path — query learnings/patterns/decisions at task start
-- T-270: Healing agent integration — semantic pattern matching via fw ask
-- T-323: Add timeout to focus.sh semantic search calls
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
+- T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
+- T-659: Fix focus.yaml test failure — include default fields when creating from scratch
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-focus.yaml`*

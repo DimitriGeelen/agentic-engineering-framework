@@ -59,6 +59,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 - T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
 - T-691: Agent approval notification — PostToolUse hook detects resolved Watchtower approvals and tells agent to retry
 - T-694: Approval file lifecycle — cleanup resolved files older than 7 days, reset notified tracker on session init
+- T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 
 ---
 *Auto-generated from Component Fabric. Card: `checkpoint.yaml`*

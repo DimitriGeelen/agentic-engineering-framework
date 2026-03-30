@@ -46,6 +46,7 @@ Exit codes: 0=pass, 1=warnings, 2=failures
 - T-595: Migrate highest-risk inline Python blocks to fw-util calls
 - T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
 - T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
+- T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-self-audit.yaml`*

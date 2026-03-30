@@ -1,6 +1,6 @@
 # keylock
 
-> TODO: describe what this component does
+> Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/keylock.sh`
 

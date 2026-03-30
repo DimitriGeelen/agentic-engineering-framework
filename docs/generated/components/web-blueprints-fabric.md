@@ -6,7 +6,8 @@
 
 ## What It Does
 
-mtime-based cache for component loading
+In consumer projects, PROJECT_ROOT is .agentic-framework/ — fabric data lives at the parent.
+In the framework repo itself, PROJECT_ROOT is the actual root.
 
 ### Framework Reference
 
@@ -30,7 +31,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/shared.py` | calls |
 | `web/templates/fabric.html` | renders |
 | `web/templates/fabric_detail.html` | renders |
-| `web/templates/fabric_graph.html` | renders |
+| `web/templates/fabric_explorer.html` | renders |
 
 ## Used By (4)
 
@@ -44,7 +45,8 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 ## Related
 
 ### Tasks
-- T-506: Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
+- T-735: Remove dead _build_graph function from fabric.py
+- T-736: Fix component detail source path — use ACTUAL_PROJECT_ROOT
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-fabric.yaml`*

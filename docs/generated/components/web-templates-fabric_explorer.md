@@ -1,0 +1,20 @@
+# fabric_explorer
+
+> Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding.
+
+**Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/fabric_explorer.html`
+
+**Tags:** `d3`, `graph`, `visualization`, `interactive`, `fabric-explorer`
+
+## What It Does
+
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/static/d3.v7.min.js` | calls |
+| `web/blueprints/fabric.py` | rendered_by |
+
+---
+*Auto-generated from Component Fabric. Card: `web-templates-fabric_explorer.yaml`*
+*Last verified: 2026-03-29*

@@ -1,6 +1,6 @@
 # colors
 
-> TODO: describe what this component does
+> Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/colors.sh`
 

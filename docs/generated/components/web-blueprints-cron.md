@@ -1,6 +1,6 @@
 # cron
 
-> TODO: describe what this component does
+> Watchtower cron blueprint: cron job status display — shows registered jobs, schedule, last run, active/paused state.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/cron.py`
 

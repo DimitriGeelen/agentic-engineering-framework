@@ -15,11 +15,7 @@
 ## Related
 
 ### Tasks
-- T-220: Fabric component detail — inline source code viewer
-- T-227: Fix fabric page — subsystem cards link to themselves, dropdown filters broken
-- T-237: Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer
-- T-266: Streaming UX — marked.js, syntax highlighting, copy buttons
-- T-379: Settings page with engine selector and config persistence
+- T-507: Fix fabric graph not rendering on htmx navigation (requires reload)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-base.yaml`*

@@ -9,6 +9,13 @@
 Task Creation Agent - Mechanical Operations
 Creates properly structured tasks following the framework specification
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/paths.sh` | calls |
+| `lib/enums.sh` | calls |
+
 ## Used By (4)
 
 | Component | Relationship |
@@ -25,7 +32,8 @@ Creates properly structured tasks following the framework specification
 ## Related
 
 ### Tasks
-- T-297: Fix --start flag not setting focus in create-task.sh
+- T-555: Reject template placeholder task names in create-task.sh
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-task-create-create-task.yaml`*

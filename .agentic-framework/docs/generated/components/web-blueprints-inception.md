@@ -20,7 +20,7 @@ When the active task has `workflow_type: inception`:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
@@ -28,13 +28,23 @@ When the active task has `workflow_type: inception`:
 | `web/templates/inception.html` | renders |
 | `web/templates/inception_detail.html` | renders |
 | `web/templates/assumptions.html` | renders |
+| `web/subprocess_utils.py` | calls |
 
-## Used By (2)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+| `web/blueprints/approvals.py` | called_by |
+| `web/blueprints/approvals.py` | registered_by |
+
+## Related
+
+### Tasks
+- T-643: Htmx-ify GO decision form — inline response on /approvals page
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-inception.yaml`*

@@ -1,8 +1,10 @@
 # generate-component
 
-> TODO: describe what this component does
+> Generates component reference documentation from fabric cards
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/docgen/generate-component.sh`
+**Type:** script | **Subsystem:** watchtower | **Location:** `agents/docgen/generate-component.sh`
+
+**Tags:** `docs`, `docgen`
 
 ## What It Does
 
@@ -13,11 +15,19 @@ fw docs [component-card.yaml]
 fw docs --all
 Output: docs/generated/components/{card-name}.md
 
-## Related
+## Dependencies (2)
 
-### Tasks
-- T-364: Layer 1: Component reference doc generator
+| Target | Relationship |
+|--------|-------------|
+| `agents/docgen/generate_component.py` | calls |
+| `lib/paths.sh` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-component.yaml`*
-*Last verified: 2026-03-09*
+*Last verified: 2026-03-11*

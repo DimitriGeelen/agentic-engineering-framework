@@ -1,6 +1,6 @@
 # yaml
 
-> TODO: describe what this component does
+> YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/yaml.sh`
 

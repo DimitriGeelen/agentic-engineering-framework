@@ -10,19 +10,27 @@
 
 Index lives in /tmp — ephemeral, rebuilt as needed
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | imports |
 | `web/blueprints/discovery.py` | imported_by |
+| `web/search_utils.py` | calls |
+| `web/shared.py` | calls |
+
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `C-003` | called_by |
+| `web/blueprints/api.py` | called_by |
+| `web/embeddings.py` | called_by |
 
 ## Related
 
 ### Tasks
-- T-237: Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer
-- T-265: Saved answers — curated Q&A for retrieval flywheel
-- T-376: Python dedup: extract search_utils.py from search.py/embeddings.py
+- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search.yaml`*

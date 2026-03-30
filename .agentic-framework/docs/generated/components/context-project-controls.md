@@ -16,14 +16,14 @@ name:         Short human name
 type:         pretooluse|posttooluse|sessionstart|git_hook|script_gate|behavioral|monitoring|infrastructure|auditor
 impl:         File path or CLAUDE.md §section
 blocking:     true = prevents action, false = warns/logs
-mitigates:    [R-XXX] references to risks.yaml
+mitigates:    [R-XXX] references to concerns.yaml or archived risks (T-397)
 status:       active|partial|planned|disabled
 
-## Related
+## Used By (1)
 
-### Tasks
-- T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign
-- T-207: Add YAML parse validation to audit — regression test for all project YAML files
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/audit.sh` | read_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-controls.yaml`*

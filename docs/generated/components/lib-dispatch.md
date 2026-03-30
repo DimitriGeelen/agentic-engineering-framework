@@ -1,6 +1,6 @@
 # dispatch
 
-> TODO: describe what this component does
+> fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/dispatch.sh`
 

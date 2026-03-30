@@ -13,10 +13,11 @@ Exit code: always 0 (advisory only, never blocks)
 Output: JSON with additionalContext when reminder needed
 Part of: Agentic Engineering Framework (T-371)
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-371: PostToolUse reminder for new source files without fabric cards
+| Target | Relationship |
+|--------|-------------|
+| `agents/fabric/fabric.sh` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-fabric-new-file.yaml`*

@@ -8,13 +8,14 @@
 
 web/blueprints/cockpit.py
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
+| `web/subprocess_utils.py` | calls |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -22,6 +23,8 @@ web/blueprints/cockpit.py
 | `web/app.py` | registered_by |
 | `web/blueprints/core.py` | called_by |
 | `web/blueprints/core.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-cockpit.yaml`*

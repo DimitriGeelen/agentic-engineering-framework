@@ -21,6 +21,12 @@ All architectural decisions must trace back to these directives:
 3. **Usability** — Joy to use/extend/debug; sensible defaults; actionable errors
 4. **Portability** — No provider/language/environment lock-in; prefer standards (MCP, LSP, OpenAPI)
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `lib/init.sh` | read_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `context-project-directives.yaml`*
 *Last verified: 2026-03-04*

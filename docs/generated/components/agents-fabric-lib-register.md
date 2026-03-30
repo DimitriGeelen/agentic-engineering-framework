@@ -22,7 +22,6 @@ Implements: fw fabric register, fw fabric scan
 ## Related
 
 ### Tasks
-- T-484: fw fabric register: accept directories and recursively register files
 - T-551: Fabric register scan-then-confirm — preview before bulk registration, three-layer codification
 
 ---

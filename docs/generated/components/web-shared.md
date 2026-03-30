@@ -52,7 +52,7 @@ Path resolution
 ## Related
 
 ### Tasks
-- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
+- T-733: Update Watchtower navigation labels for Fabric Explorer
 
 ---
 *Auto-generated from Component Fabric. Card: `web-shared.yaml`*

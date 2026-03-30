@@ -6,19 +6,23 @@
 
 ## What It Does
 
-## Dependencies (2)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/metrics.html` | renders |
+| `web/context_loader.py` | calls |
+| `web/subprocess_utils.py` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-metrics.yaml`*

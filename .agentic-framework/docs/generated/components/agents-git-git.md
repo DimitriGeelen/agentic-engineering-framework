@@ -15,7 +15,7 @@ Ensures every commit connects to a task (T-XXX pattern)
 
 **When to use:** For all git operations that involve code changes. Enforces task traceability (P-002).
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -25,6 +25,7 @@ Ensures every commit connects to a task (T-XXX pattern)
 | `agents/git/lib/hooks.sh` | calls |
 | `agents/git/lib/bypass.sh` | calls |
 | `agents/git/lib/log.sh` | calls |
+| `lib/paths.sh` | calls |
 
 ## Used By (5)
 
@@ -40,11 +41,6 @@ Ensures every commit connects to a task (T-XXX pattern)
 
 - [Deep Dive: The Task Gate](docs/articles/deep-dives/01-task-gate.md) (deep-dive)
 - [Deep Dive: The Authority Model](docs/articles/deep-dives/06-authority-model.md) (deep-dive)
-
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-git.yaml`*

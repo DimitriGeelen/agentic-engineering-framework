@@ -1,6 +1,6 @@
 # build
 
-> TODO: describe what this component does
+> fw build subcommand: placeholder for future build orchestration. Currently unused.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/build.sh`
 

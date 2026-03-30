@@ -17,11 +17,11 @@
 ## Related
 
 ### Tasks
-- T-546: Continue fixing TermLink release builds
-- T-588: Declarative status transition rules — compiled ACL pattern for task state machine
-- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
-- T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer
-- T-649: Horizon triage + automated Human AC validation across work-completed tasks
+- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
+- T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
+- T-728: Commit session state and generate episodics for completed tasks
+- T-729: Final session commit — untracked files, cron audits
+- T-744: Commit untracked research artifacts and clean up git state
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-gate-counter.yaml`*

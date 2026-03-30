@@ -1,8 +1,10 @@
 # generate-article
 
-> TODO: describe what this component does
+> Generates AI-assisted subsystem articles from component fabric cards
 
-**Type:** script | **Subsystem:** unknown | **Location:** `agents/docgen/generate-article.sh`
+**Type:** script | **Subsystem:** watchtower | **Location:** `agents/docgen/generate-article.sh`
+
+**Tags:** `docs`, `docgen`
 
 ## What It Does
 
@@ -17,11 +19,19 @@ Output:
 Prompt: docs/generated/articles/{subsystem}-prompt.md
 Article: docs/articles/deep-dives/{NN}-{subsystem}.md
 
-## Related
+## Dependencies (2)
 
-### Tasks
-- T-366: Layer 2: AI-assisted subsystem article generator
+| Target | Relationship |
+|--------|-------------|
+| `agents/docgen/generate_article.py` | calls |
+| `lib/paths.sh` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-article.yaml`*
-*Last verified: 2026-03-09*
+*Last verified: 2026-03-11*

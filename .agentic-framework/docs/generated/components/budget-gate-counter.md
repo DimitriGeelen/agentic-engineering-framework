@@ -17,11 +17,11 @@
 ## Related
 
 ### Tasks
-- T-247: Dispatch fabric context + auto-registration — close agent blind spots
-- T-277: First deployment — Watchtower to Ring20 production
-- T-290: Session housekeeping — fill stale handover, commit cron rotation
-- T-293: Fill stale handover and commit audit rotation
-- T-324: Fix OneDev-to-GitHub cascade and exclude buildspec from GitHub
+- T-546: Continue fixing TermLink release builds
+- T-588: Declarative status transition rules — compiled ACL pattern for task state machine
+- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
+- T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer
+- T-649: Horizon triage + automated Human AC validation across work-completed tasks
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-gate-counter.yaml`*

@@ -35,7 +35,7 @@ Steps:
 ## Related
 
 ### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
+- T-514: E2E test framework scaffolding — runner.sh, setup/teardown, assertion helpers
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-setup.yaml`*

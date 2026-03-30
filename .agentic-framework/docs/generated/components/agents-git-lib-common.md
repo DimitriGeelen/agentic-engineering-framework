@@ -14,11 +14,6 @@ Common utilities for git agent
 |-----------|-------------|
 | `agents/git/git.sh` | called_by |
 
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-common.yaml`*
 *Last verified: 2026-02-20*

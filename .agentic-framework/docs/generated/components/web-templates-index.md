@@ -12,6 +12,11 @@
 |-----------|-------------|
 | `web/blueprints/core.py` | rendered_by |
 
+## Related
+
+### Tasks
+- T-492: Build E2E onboarding test script — install → init → doctor → serve → smoke
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-index.yaml`*
 *Last verified: 2026-02-20*

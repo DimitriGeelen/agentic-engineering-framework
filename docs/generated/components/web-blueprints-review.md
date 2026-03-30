@@ -1,6 +1,6 @@
 # review
 
-> TODO: describe what this component does
+> Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/review.py`
 

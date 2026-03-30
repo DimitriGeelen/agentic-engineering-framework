@@ -1,6 +1,6 @@
 # runtime
 
-> TODO: describe what this component does
+> Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/runtime.sh`
 

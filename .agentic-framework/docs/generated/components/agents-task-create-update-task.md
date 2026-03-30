@@ -16,12 +16,16 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (2)
+## Dependencies (6)
 
 | Target | Relationship |
 |--------|-------------|
 | `C-001` | calls |
 | `agents/healing/healing.sh` | calls |
+| `lib/paths.sh` | calls |
+| `lib/enums.sh` | calls |
+| `lib/keylock.sh` | calls |
+| `lib/review.sh` | calls |
 
 ## Used By (2)
 
@@ -37,10 +41,11 @@ Usage:
 ## Related
 
 ### Tasks
-- T-236: Wire agent fabric awareness — blast-radius in git hooks, auto-capture learnings on completion
-- T-342: Implement human AC format requirements from T-325
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-- T-354: Tighten task gate: validate status + clear focus on completion
+- T-518: Fix bash 3.2 compat — replace declare -A with POSIX-safe lookups (macOS)
+- T-535: Build onboarding gate — tag-based PreToolUse enforcement + SessionStart injection
+- T-587: Keyed async queue — per-key serialization primitive for concurrent operations
+- T-692: Learning capture prompt for bugfix tasks — structural nudge in update-task.sh when completing fix tasks without a learning entry
+- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-task-create-update-task.yaml`*

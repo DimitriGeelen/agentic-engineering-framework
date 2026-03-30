@@ -1,6 +1,6 @@
 # approvals
 
-> TODO: describe what this component does
+> Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/approvals.html`
 

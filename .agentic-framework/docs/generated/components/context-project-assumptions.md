@@ -8,10 +8,12 @@
 
 ## What It Does
 
-## Related
+## Used By (2)
 
-### Tasks
-- T-191: Component Fabric — structural topology system for codebase self-awareness
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/audit.sh` | read_by |
+| `lib/assumption.sh` | read_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-assumptions.yaml`*

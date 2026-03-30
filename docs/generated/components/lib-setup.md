@@ -32,11 +32,6 @@ Steps:
 |-----------|-------------|
 | `bin/fw` | called_by |
 
-## Related
-
-### Tasks
-- T-514: E2E test framework scaffolding — runner.sh, setup/teardown, assertion helpers
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-setup.yaml`*
 *Last verified: 2026-02-20*

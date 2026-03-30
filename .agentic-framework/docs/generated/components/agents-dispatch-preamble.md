@@ -10,16 +10,12 @@
 
 Mandatory Dispatch Preamble
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/check-dispatch.sh` | referenced_by |
-
-## Related
-
-### Tasks
-- T-247: Dispatch fabric context + auto-registration — close agent blind spots
+| `agents/context/check-dispatch.sh` | references_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-dispatch-preamble.yaml`*

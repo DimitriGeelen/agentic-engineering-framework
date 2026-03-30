@@ -19,11 +19,6 @@ Add a decision to project memory
 
 - [Deep Dive: Three-Layer Memory](docs/articles/deep-dives/04-three-layer-memory.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-decision.yaml`*
 *Last verified: 2026-02-20*

@@ -1,6 +1,6 @@
 # approvals
 
-> TODO: describe what this component does
+> Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/approvals.py`
 

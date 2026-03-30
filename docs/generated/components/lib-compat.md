@@ -1,6 +1,6 @@
 # compat
 
-> TODO: describe what this component does
+> Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/compat.sh`
 

@@ -27,12 +27,6 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 |-----------|-------------|
 | `web/blueprints/fabric.py` | rendered_by |
 
-## Related
-
-### Tasks
-- T-215: Component Fabric — Watchtower UI page (visual browser + graph)
-- T-227: Fix fabric page — subsystem cards link to themselves, dropdown filters broken
-
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fabric.yaml`*
 *Last verified: 2026-02-20*

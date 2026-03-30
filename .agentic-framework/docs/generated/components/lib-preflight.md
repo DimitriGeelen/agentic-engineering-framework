@@ -24,12 +24,17 @@ Exit codes:
 |--------|-------------|
 | `?` | uses |
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `bin/fw` | called_by |
+| `lib/init.sh` | called_by |
+
 ## Related
 
 ### Tasks
-- T-303: Create fw preflight command and integrate into fw init
-- T-344: Interactive auto-init dialogue with directory and provider selection
-- T-349: Streamline fw init output for new users
+- T-528: Fix install.sh and FRAMEWORK.md stale claims
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

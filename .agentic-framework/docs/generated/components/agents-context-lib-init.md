@@ -19,12 +19,6 @@ Initializes working memory for a new session
 
 - [Deep Dive: Three-Layer Memory](docs/articles/deep-dives/04-three-layer-memory.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-298: Fix fw init suggested commands to recommend fw work-on
-- T-367: Auto-generate watch-patterns.yaml on fw context init
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-init.yaml`*
 *Last verified: 2026-02-20*

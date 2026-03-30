@@ -21,11 +21,23 @@ fw bus manifest T-XXX
 
 The result ledger formalizes the "write to disk, return path + summary" convention into a protocol with typed YAML envelopes and automatic size gating. Use it for sub-agent dispatch:
 
-## Used By (1)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/dispatch.sh` | calls |
+
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `agents/context/bus-handler.sh` | read_by |
+
+## Related
+
+### Tasks
+- T-605: Fix bus.sh race condition — atomic ID generation for multi-agent safety
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-bus.yaml`*

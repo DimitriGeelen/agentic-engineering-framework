@@ -10,11 +10,12 @@ bus-handler.sh — Process incoming bus messages from inbox
 Triggered by systemd.path when files appear in .context/bus/inbox/
 Part of: Agentic Engineering Framework (T-110 spike)
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/bus.sh` | reads |
+| `lib/paths.sh` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-bus-handler.yaml`*

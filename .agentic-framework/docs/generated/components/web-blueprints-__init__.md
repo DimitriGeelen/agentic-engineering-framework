@@ -7,12 +7,63 @@
 ## What It Does
 
 Flask blueprints for the Agentic Engineering Framework web UI
+Centralizes blueprint registration (T-431/A2).
+Adding a new blueprint: import it here and append to _BLUEPRINTS.
 
-## Used By (1)
+## Dependencies (38)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/core.py` | calls |
+| `web/blueprints/tasks.py` | calls |
+| `web/blueprints/timeline.py` | calls |
+| `C-003` | calls |
+| `web/blueprints/quality.py` | calls |
+| `web/blueprints/session.py` | calls |
+| `web/blueprints/metrics.py` | calls |
+| `web/blueprints/cockpit.py` | calls |
+| `web/blueprints/inception.py` | calls |
+| `web/blueprints/enforcement.py` | calls |
+| `web/blueprints/risks.py` | calls |
+| `web/blueprints/fabric.py` | calls |
+| `web/blueprints/discoveries.py` | calls |
+| `web/blueprints/docs.py` | calls |
+| `web/blueprints/settings.py` | calls |
+| `web/blueprints/cron.py` | calls |
+| `web/blueprints/api.py` | calls |
+| `web/blueprints/approvals.py` | calls |
+| `web/blueprints/review.py` | calls |
+| `web/blueprints/core.py` | registers |
+| `web/blueprints/tasks.py` | registers |
+| `web/blueprints/timeline.py` | registers |
+| `C-003` | registers |
+| `web/blueprints/quality.py` | registers |
+| `web/blueprints/session.py` | registers |
+| `web/blueprints/metrics.py` | registers |
+| `web/blueprints/cockpit.py` | registers |
+| `web/blueprints/inception.py` | registers |
+| `web/blueprints/enforcement.py` | registers |
+| `web/blueprints/risks.py` | registers |
+| `web/blueprints/fabric.py` | registers |
+| `web/blueprints/discoveries.py` | registers |
+| `web/blueprints/docs.py` | registers |
+| `web/blueprints/settings.py` | registers |
+| `web/blueprints/cron.py` | registers |
+| `web/blueprints/api.py` | registers |
+| `web/blueprints/approvals.py` | registers |
+| `web/blueprints/review.py` | registers |
+
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | imported_by |
+| `web/app.py` | called_by |
+
+## Related
+
+### Tasks
+- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-__init__.yaml`*

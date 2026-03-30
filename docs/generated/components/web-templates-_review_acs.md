@@ -1,6 +1,6 @@
 # _review_acs
 
-> TODO: describe what this component does
+> htmx partial: acceptance criteria list — renders agent/human AC sections with checkboxes for review page.
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_review_acs.html`
 

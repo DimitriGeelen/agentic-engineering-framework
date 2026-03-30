@@ -23,11 +23,9 @@ Used by agents to improve future work.
 ## Related
 
 ### Tasks
-- T-278: Harvest deployment learnings — templates to learnings.yaml
-- T-344: Interactive auto-init dialogue with directory and provider selection
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
-- T-372: Investigate blind task-completion suggestion pattern + mitigate
-- T-373: Investigate agent pattern: suggesting closure of untested Human ACs
+- T-495: Path isolation — eliminate hardcoded absolute paths from all committed files
+- T-546: Continue fixing TermLink release builds
+- T-614: TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-data.yaml`*

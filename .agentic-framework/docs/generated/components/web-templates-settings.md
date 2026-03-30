@@ -6,11 +6,17 @@
 
 ## What It Does
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-379: Settings page with engine selector and config persistence
-- T-390: Settings page: Ollama host/port config and model dropdown
+| Target | Relationship |
+|--------|-------------|
+| `web/templates/_wrapper.html` | wrapped_by |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/settings.py` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-settings.yaml`*

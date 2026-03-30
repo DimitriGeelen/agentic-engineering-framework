@@ -24,12 +24,14 @@
 | `web/shared.py` | calls |
 | `web/templates/enforcement.html` | renders |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/app.py` | called_by |
 | `web/app.py` | registered_by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-enforcement.yaml`*

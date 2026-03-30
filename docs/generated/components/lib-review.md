@@ -1,6 +1,6 @@
 # review
 
-> TODO: describe what this component does
+> fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/review.sh`
 

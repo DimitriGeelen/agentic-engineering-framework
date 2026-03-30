@@ -15,6 +15,11 @@ Manages project assumptions: register, validate, invalidate, list
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-assumption.yaml`*
 *Last verified: 2026-02-20*

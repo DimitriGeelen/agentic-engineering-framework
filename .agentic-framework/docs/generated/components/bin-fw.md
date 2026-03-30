@@ -31,7 +31,7 @@ fw task create --name "Fix bug" --type build --owner human
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (21)
+## Dependencies (37)
 
 | Target | Relationship |
 |--------|-------------|
@@ -56,6 +56,30 @@ fw task create --name "Fix bug" --type build --owner human
 | `lib/setup.sh` | calls |
 | `lib/harvest.sh` | calls |
 | `web/app.py` | calls |
+| `agents/audit/self-audit.sh` | calls |
+| `agents/onboarding-test/test-onboarding.sh` | calls |
+| `agents/docgen/generate-article.sh` | calls |
+| `agents/docgen/generate-component.sh` | calls |
+| `agents/termlink/termlink.sh` | calls |
+| `lib/compat.sh` | calls |
+| `lib/review.sh` | calls |
+| `lib/ask.sh` | calls |
+| `lib/tasks.sh` | calls |
+| `lib/dispatch.sh` | calls |
+| `lib/upstream.sh` | calls |
+| `lib/preflight.sh` | calls |
+| `lib/validate-init.sh` | calls |
+| `lib/update.sh` | calls |
+| `bin/watchtower.sh` | calls |
+| `lib/build.sh` | calls |
+
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/audit/self-audit.sh` | read_by |
+| `lib/upstream.sh` | called_by |
+| `web/subprocess_utils.py` | called_by |
 
 ## Documentation
 
@@ -65,11 +89,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-355: Fix Homebrew Cellar path hardcoding in fw init — use opt symlink
-- T-357: Implement post-init validation with #@init: tags
-- T-359: Rename Homebrew formula to avoid brocode/fw collision
-- T-364: Layer 1: Component reference doc generator
-- T-366: Layer 2: AI-assisted subsystem article generator
+- T-664: Project-detecting fw shim — replace global install symlink
+- T-666: fw doctor — warn about stale global install at HOME/.agentic-framework
+- T-680: Fix fw vendor self-referencing — detect source==target and pull from upstream
+- T-685: fw init should check/configure git user identity
+- T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

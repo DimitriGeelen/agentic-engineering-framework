@@ -23,7 +23,9 @@ Auto-appended by audit.sh on each run
 
 ### Tasks
 - T-546: Continue fixing TermLink release builds
-- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
+- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
+- T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
+- T-744: Commit untracked research artifacts and clean up git state
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-metrics-history.yaml`*

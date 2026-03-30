@@ -26,8 +26,11 @@ Project-specific content is preserved.
 ## Related
 
 ### Tasks
-- T-315: Build fw upgrade command (audit, propose, apply)
-- T-348: Fix update-task.sh sed failing on macOS BSD sed
+- T-622: Fix fw upgrade — sync vendored hook scripts to consumers
+- T-653: Add cron registry seeding to fw upgrade
+- T-660: Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.agentic-framework
+- T-665: Upgrade migration — replace global symlink with shim during fw upgrade
+- T-681: Add TermLink MCP server to fw init default MCP config
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-upgrade.yaml`*

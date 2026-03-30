@@ -17,7 +17,7 @@ agents/audit/self-audit.sh /path/to/project # Audit a specific project
 agents/audit/self-audit.sh --quiet          # Machine-readable (no color)
 Exit codes: 0=pass, 1=warnings, 2=failures
 
-## Dependencies (10)
+## Dependencies (11)
 
 | Target | Relationship |
 |--------|-------------|
@@ -31,11 +31,21 @@ Exit codes: 0=pass, 1=warnings, 2=failures
 | `agents/context/check-dispatch.sh` | reads |
 | `agents/context/pre-compact.sh` | reads |
 | `agents/context/post-compact-resume.sh` | reads |
+| `lib/paths.sh` | calls |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/onboarding-test/test-onboarding.sh` | called_by |
+| `bin/fw` | called_by |
 
 ## Related
 
 ### Tasks
-- T-286: Build fw self-audit CLI command and standalone script
+- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+- T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
+- T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-self-audit.yaml`*

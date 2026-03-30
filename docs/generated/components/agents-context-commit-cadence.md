@@ -1,6 +1,6 @@
 # commit-cadence
 
-> TODO: describe what this component does
+> PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management).
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/commit-cadence.sh`
 
