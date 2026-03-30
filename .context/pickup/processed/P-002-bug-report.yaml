@@ -1,0 +1,13 @@
+pickup_id: P-002
+version: 1
+type: bug-report
+source:
+  project: "051-vinix24"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-03-30T14:15:16Z"
+payload:
+  summary: "componentData defined AFTER it is referenced — graph renders empty"
+  detail: "JavaScript const hoisting: componentData referenced before initialization, D3 graph renders zero nodes."
+  priority: high
+  tags: [watchtower, fabric-explorer]

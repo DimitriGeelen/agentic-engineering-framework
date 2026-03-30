@@ -1,0 +1,13 @@
+pickup_id: P-003
+version: 1
+type: feature-proposal
+source:
+  project: "051-vinix24"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-03-30T14:15:16Z"
+payload:
+  summary: "fw upgrade should sync web/ directory"
+  detail: "fw upgrade does not sync web/ templates, so consumer projects miss Watchtower improvements."
+  priority: medium
+  tags: [upgrade, watchtower]

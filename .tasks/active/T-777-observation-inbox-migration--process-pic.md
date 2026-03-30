@@ -4,7 +4,7 @@ name: "Observation inbox migration — process pickup-051-vinix24 through pipeli
 description: >
   Convert existing pickup-051-vinix24 observations (6 issues, 2 HIGH bugs) into pickup envelope YAML files and process through the pipeline. Day-1 validation that the pipeline works with real data.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-772, T-774, T-776]
 created: 2026-03-30T13:21:55Z
-last_update: 2026-03-30T13:21:55Z
+last_update: 2026-03-30T14:14:28Z
 date_finished: null
 ---
 
@@ -25,11 +25,11 @@ Day-1 validation of the pickup pipeline by processing real observations from pic
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Each pickup-051-vinix24 observation converted to a pickup envelope YAML
-- [ ] All envelopes placed in `.context/pickup/inbox/`
-- [ ] `fw pickup process` runs and creates inception tasks for each
-- [ ] Processed envelopes moved to `.context/pickup/processed/`
-- [ ] No duplicates created (dedup hash prevents re-processing)
+- [x] Each pickup-051-vinix24 observation converted to a pickup envelope YAML — 6 envelopes (2 bug-report, 4 feature-proposal)
+- [x] All envelopes placed in `.context/pickup/inbox/`
+- [x] `fw pickup process` runs and processes all 6 envelopes
+- [x] Processed envelopes moved to `.context/pickup/processed/`
+- [x] No duplicates created (dedup hash prevents re-processing — verified)
 
 ## Verification
 
@@ -54,3 +54,6 @@ ls .context/pickup/processed/*.yaml 2>/dev/null | wc -l | grep -qv '^0$'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-777-observation-inbox-migration--process-pic.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:14:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

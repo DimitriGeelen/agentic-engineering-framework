@@ -1,0 +1,13 @@
+pickup_id: P-004
+version: 1
+type: feature-proposal
+source:
+  project: "051-vinix24"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-03-30T14:15:16Z"
+payload:
+  summary: "fw update fails for vendored installs — improve error message"
+  detail: "fw update on vendored project returns confusing error instead of suggesting fw upgrade."
+  priority: low
+  tags: [update, ux]

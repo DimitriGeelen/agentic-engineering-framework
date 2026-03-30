@@ -173,6 +173,7 @@ pickup_create_inception() {
         fw task create \
             --name "$task_name" \
             --type inception \
+            --owner agent \
             --description "Auto-created from pickup envelope. Source: ${source_project}${source_task:+, task ${source_task}}. Type: ${pickup_type}." \
             --horizon next \
             --tags "pickup,${pickup_type}" 2>&1

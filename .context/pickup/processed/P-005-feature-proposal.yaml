@@ -1,0 +1,13 @@
+pickup_id: P-005
+version: 1
+type: feature-proposal
+source:
+  project: "051-vinix24"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-03-30T14:15:16Z"
+payload:
+  summary: "Pass project_name to Watchtower templates"
+  detail: "render_page does not pass project_name. Templates derive it from path."
+  priority: low
+  tags: [watchtower, ux]
