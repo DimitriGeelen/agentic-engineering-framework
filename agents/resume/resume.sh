@@ -149,6 +149,7 @@ cmd_status() {
         # Extract suggested first action
         local suggested
         suggested=$(sed -n '/^## Suggested First Action/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -3)
+        # shellcheck disable=SC2001 # multi-line prefix — can't use ${//}
         if [ -n "$suggested" ]; then
             echo ""
             echo -e "${BOLD}Suggested Action:${NC}"
@@ -158,6 +159,7 @@ cmd_status() {
         # Check for untracked open questions (G-002)
         local open_questions
         open_questions=$(sed -n '/^## Open Questions/,/^## /p' "$HANDOVER_DIR/LATEST.md" | grep -E "^[0-9]+\.|^- " | grep -v "\[Question" | grep -v "\[TODO")
+        # shellcheck disable=SC2001
         if [ -n "$open_questions" ]; then
             local oq_count
             oq_count=$(echo "$open_questions" | wc -l | tr -d ' ')

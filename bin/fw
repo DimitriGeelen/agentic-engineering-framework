@@ -1038,7 +1038,7 @@ for e in d.get('errors',[])[:3]:
     local baseline_file="$PROJECT_ROOT/.context/project/enforcement-baseline.sha256"
     if [ -f "$baseline_file" ] && [ -f "$settings_file" ]; then
         local stored_hash current_hash
-        stored_hash=$(cat "$baseline_file" 2>/dev/null | tr -d '[:space:]')
+        stored_hash=$(tr -d '[:space:]' < "$baseline_file" 2>/dev/null)
         current_hash=$(python3 -c "
 import json, hashlib
 with open('$settings_file') as f:
@@ -1470,6 +1470,7 @@ PYTASK_SHOW
 
                 # Extract ## Verification block
                 local verification
+                # shellcheck disable=SC2016 # backtick pattern is literal
                 verification=$(sed -n '/^## Verification/,/^##/p' "$task_file" | \
                               grep -v "^##" | \
                               grep -v '^\`\`\`' | \
@@ -1648,7 +1649,7 @@ PYTASK_VERIFY
                         echo -e "${GREEN}All Human ACs checked (${human_checked}/${human_total})${NC}"
                         exit 0
                     fi
-                    printf "\r  Waiting... ${human_checked}/${human_total} checked (${elapsed}s)"
+                    printf "\r  Waiting... %s/%s checked (%ss)" "$human_checked" "$human_total" "$elapsed"
                 done
                 echo ""
                 echo -e "${YELLOW}Timeout — ${human_checked}/${human_total} Human ACs checked${NC}"
@@ -2322,7 +2323,8 @@ print()
                 # Show recent resolved
                 echo -e "  ${BOLD}Recent resolved:${NC}"
                 found=0
-                for f in $(ls -t "$APPROVAL_DIR"/resolved-*.yaml 2>/dev/null | head -10); do
+                while IFS= read -r f; do
+                    [ -n "$f" ] || continue
                     [ -f "$f" ] || continue
                     T0_FILE="$f" python3 -c "
 import yaml, os
@@ -2345,7 +2347,7 @@ print(f'    {c}{status.upper():10}{nc}  {chash}  via {mechanism}  at {responded}
 print(f'              {risk}')
 " 2>/dev/null
                     found=$((found + 1))
-                done
+                done < <(find "$APPROVAL_DIR" -maxdepth 1 -name 'resolved-*.yaml' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -10)
                 if [ "$found" -eq 0 ]; then
                     echo "    (none)"
                 fi
@@ -2448,11 +2450,9 @@ print('0')
             # Build default args, then let explicit args override
             wo_has_desc=false
             wo_has_owner=false
-            wo_has_horizon=false
             for wo_arg in "$@"; do
                 [ "$wo_arg" = "--description" ] && wo_has_desc=true
                 [ "$wo_arg" = "--owner" ] && wo_has_owner=true
-                [ "$wo_arg" = "--horizon" ] && wo_has_horizon=true
             done
             wo_defaults=()
             [ "$wo_has_desc" = false ] && wo_defaults+=(--description "$wo_target")
@@ -2642,7 +2642,7 @@ PYEOF
                 ;;
             status)
                 if [ -f "$BASELINE_FILE" ]; then
-                    baseline_sha=$(cat "$BASELINE_FILE" | tr -d '[:space:]')
+                    baseline_sha=$(tr -d '[:space:]' < "$BASELINE_FILE")
                     echo -e "${GREEN}Traceability baseline active${NC}"
                     echo "  Baseline: $baseline_sha"
                     after_count=$(git -C "$PROJECT_ROOT" log --oneline "${baseline_sha}..HEAD" 2>/dev/null | wc -l | tr -d ' ')
@@ -3279,7 +3279,7 @@ for event, entries in hooks.items():
                 echo ""
                 echo "Layer 3: Enforcement Baseline"
                 if [ -f "$EF_BASELINE" ]; then
-                    echo -e "  ${GREEN}✓${NC} Baseline set ($(cat "$EF_BASELINE" | cut -c1-16)...)"
+                    echo -e "  ${GREEN}✓${NC} Baseline set ($(cut -c1-16 < "$EF_BASELINE")...)"
                 else
                     echo -e "  ${YELLOW}!${NC} No baseline — run 'fw enforcement baseline'"
                 fi
@@ -3471,10 +3471,10 @@ PYPREDICT
                 _lint_pass=0
                 _lint_warn=0
                 for f in "${_lint_files[@]}"; do
-                    _rel="${f#$FRAMEWORK_ROOT/}"
-                    _sc_output=$(shellcheck -S warning "$f" 2>&1) && {
+                    _rel="${f#"$FRAMEWORK_ROOT"/}"
+                    if _sc_output=$(shellcheck -S warning "$f" 2>&1); then
                         _lint_pass=$((_lint_pass + 1))
-                    } || {
+                    else
                         _severity="warning"
                         echo "$_sc_output" | grep -q "error" && _severity="error"
                         if [ "$_severity" = "error" ]; then
@@ -3485,7 +3485,7 @@ PYPREDICT
                             _lint_warn=$((_lint_warn + 1))
                         fi
                         echo "$_sc_output" | head -5 | sed 's/^/       /'
-                    }
+                    fi
                 done
                 echo ""
                 echo -e "${BOLD}Lint:${NC} ${_lint_pass} pass, ${_lint_warn} warn, ${_lint_fail} fail (${#_lint_files[@]} files)"
