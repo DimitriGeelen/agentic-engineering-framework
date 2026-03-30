@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-778: Pickup cron registration — add pickup-process to cron registry
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T14:14:18Z
+# ============================================================================
+
+task_id: T-778
+task_name: "Pickup cron registration — add pickup-process to cron registry"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T13:22:03Z
+completed: 2026-03-30T14:14:16Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-03-30T16:14:11+02:00
+last_commit: 2026-03-30T16:14:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register pickup-process in cron registry — 15-minute inbox scan
+
+# Key outcomes
+outcomes:
+  - "`pickup-process` job added to cron registry YAML"
+  - "Schedule: `*/15 * * * *`"
+  - "`fw cron generate` includes the pickup-process job"
+  - "`fw cron status` shows pickup-process as active"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/cron-registry.yaml"
+  - ".tasks/active/T-778-pickup-cron-registration--add-pickup-pro.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T16:14:11"
+    action: "T-778: Register pickup-process in cron registry — 15-minute inbox scan"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 52 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 52
+  commits: 1
+  files_changed: 2
+  lines_added: 19
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-778-pickup-cron-registration--add-pickup-pro.md
+generated_by: context-agent-hybrid
