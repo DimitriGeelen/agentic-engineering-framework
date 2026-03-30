@@ -1,0 +1,61 @@
+---
+id: T-756
+name: "Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)"
+description: >
+  Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)
+
+status: started-work
+workflow_type: test
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-30T07:10:55Z
+last_update: 2026-03-30T07:10:55Z
+date_finished: null
+---
+
+# T-756: Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)
+
+## Context
+
+Continue expanding integration test coverage: serve, setup, update, upgrade, scan, self-audit.
+
+## Acceptance Criteria
+
+### Agent
+- [x] fw_serve.bats created with 1 test (status reporting)
+- [x] fw_setup.bats created with 2 tests (deprecation notice, task setup output)
+- [x] fw_update.bats created with 2 tests (help, --check version info)
+- [x] fw_upgrade.bats created with 2 tests (help, --dry-run shows changes)
+- [x] fw_scan.bats created with 2 tests (empty project scan, creates scan file)
+- [x] fw_self_audit.bats created with 2 tests (audit report, foundation layer)
+- [x] All new tests pass: 11/11 passing
+
+## Verification
+
+bats tests/integration/fw_serve.bats
+bats tests/integration/fw_setup.bats
+bats tests/integration/fw_update.bats
+bats tests/integration/fw_upgrade.bats
+bats tests/integration/fw_scan.bats
+bats tests/integration/fw_self_audit.bats
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-30T07:10:55Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-756-add-integration-tests-for-fw-serve-setup.md
+- **Context:** Initial task creation
