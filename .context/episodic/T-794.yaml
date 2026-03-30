@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-794: Fix shellcheck SC2155 warnings in resume.sh — split declare and assign
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T16:27:29Z
+# ============================================================================
+
+task_id: T-794
+task_name: "Fix shellcheck SC2155 warnings in resume.sh — split declare and assign"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T16:24:36Z
+completed: 2026-03-30T16:27:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T18:27:09+02:00
+last_commit: 2026-03-30T18:27:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix 17 shellcheck warnings in resume.sh — SC2155 + SC2144
+
+# Key outcomes
+outcomes:
+  - "All SC2155 warnings in resume.sh fixed (16 instances)"
+  - "Also fixed SC2144 (glob with -f) — total 17 shellcheck fixes"
+  - "`shellcheck -S warning agents/resume/resume.sh` reports 0 warnings"
+  - "Existing tests still pass (5/5 integration tests)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 17 shellcheck warnings in resume.sh — SC2155 + SC2144"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/resume/resume.sh"
+  - ".tasks/active/T-794-fix-shellcheck-sc2155-warnings-in-resume.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T18:27:09"
+    action: "T-794: Fix 17 shellcheck warnings in resume.sh — SC2155 + SC2144"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 105
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-794-fix-shellcheck-sc2155-warnings-in-resume.md
+generated_by: context-agent-hybrid
