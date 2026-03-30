@@ -4,10 +4,13 @@ All hardcoded values (model names, paths, timeouts) are centralised here
 and overridable via environment variables for production deployment.
 """
 
+import logging
 import os
 from pathlib import Path
 
 import yaml as _yaml
+
+_logger = logging.getLogger(__name__)
 
 # Resolve PROJECT_ROOT once (same logic as shared.py)
 _APP_DIR = Path(__file__).resolve().parent
@@ -20,8 +23,8 @@ _saved = {}
 try:
     if _SETTINGS_FILE.exists():
         _saved = _yaml.safe_load(_SETTINGS_FILE.read_text()) or {}
-except Exception:
-    pass
+except Exception as e:
+    _logger.warning("Failed to parse settings %s: %s", _SETTINGS_FILE, e)
 
 
 class Config:

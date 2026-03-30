@@ -7,9 +7,11 @@ T-376: Deduplicated from web/search.py and web/embeddings.py.
 """
 from __future__ import annotations
 
-
+import logging
 import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT
 
@@ -113,7 +115,8 @@ def aggregate_tags(limit: int = 30) -> list[dict]:
                         t = str(tag).strip()
                         if t:
                             counts[t] = counts.get(t, 0) + 1
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to parse episodic file %s: %s", f, e)
                 continue
 
     # Filter out noise: single-char, pure directive refs (D1, D2), policy refs (P-xxx)

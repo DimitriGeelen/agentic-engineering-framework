@@ -1,6 +1,7 @@
 """Generated documentation blueprint — serves auto-generated component reference docs
 and a general-purpose file viewer for project markdown files (T-632)."""
 
+import logging
 import os
 import re as re_mod
 from pathlib import Path
@@ -8,6 +9,8 @@ from pathlib import Path
 import markdown2
 import yaml
 from flask import Blueprint, abort, request
+
+logger = logging.getLogger(__name__)
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
@@ -56,7 +59,8 @@ def _load_docs():
                 if data:
                     card_name = card_file.stem
                     card_data[card_name] = data
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to parse component card %s: %s", card_file, e)
                 continue
 
     subsystems = {}

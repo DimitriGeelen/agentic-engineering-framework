@@ -1,0 +1,64 @@
+---
+id: T-748
+name: "Fix remaining YAML silent-failure instances in Watchtower"
+description: >
+  Add logging to ~13 yaml.safe_load calls that silently swallow parse errors. Addresses R-018 and R-024 concerns.
+
+status: work-completed
+workflow_type: refactor
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-03-30T00:00:16Z
+last_update: 2026-03-30T00:06:00Z
+date_finished: 2026-03-30T00:06:00Z
+---
+
+# T-748: Fix remaining YAML silent-failure instances in Watchtower
+
+## Context
+
+T-745 fixed 4 crash-risk yaml.safe_load calls (no try/except at all). This task addresses the remaining ~13 instances that have try/except but silently swallow errors without logging. Addresses R-018 and R-024 concerns.
+
+## Acceptance Criteria
+
+### Agent
+- [x] All yaml.safe_load except blocks in web/ log a warning with file path and error
+- [x] No new imports break existing functionality (Watchtower smoke test passes)
+- [x] Each modified file has `import logging` and a module-level logger
+
+## Verification
+
+python3 -c "from web.config import Config; print('config ok')"
+python3 -c "from web.blueprints.session import bp; print('session ok')"
+python3 -c "from web.blueprints.enforcement import bp; print('enforcement ok')"
+python3 -c "from web.blueprints.cron import bp; print('cron ok')"
+python3 -c "from web.blueprints.cockpit import bp; print('cockpit ok')"
+python3 -c "from web.blueprints.docs import bp; print('docs ok')"
+python3 -c "from web.blueprints.discoveries import bp; print('discoveries ok')"
+python3 -c "from web.search_utils import aggregate_tags; print('search_utils ok')"
+python3 -c "from web.metrics_history import load_entries; print('metrics_history ok')"
+curl -sf http://localhost:3000/ > /dev/null
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-03-30T00:00:16Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-748-fix-remaining-yaml-silent-failure-instan.md
+- **Context:** Initial task creation
+
+### 2026-03-30T00:06:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

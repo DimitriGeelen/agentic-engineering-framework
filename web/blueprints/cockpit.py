@@ -11,12 +11,15 @@ Renders the Watchtower cockpit when scan data exists, with:
 All control actions shell out to existing fw CLI commands.
 """
 
+import logging
 import re as re_mod
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 from flask import Blueprint, request, render_template
+
+logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT, render_page, load_scan
 from web.subprocess_utils import run_fw_command
@@ -64,8 +67,8 @@ def get_human_verify_tasks() -> list:
             try:
                 end = text.index("---", 3)
                 fm = yaml.safe_load(text[3:end]) or {}
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
 
         # Find AC section
         ac_match = re_mod.search(

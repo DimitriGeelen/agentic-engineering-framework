@@ -1,11 +1,14 @@
 """Enforcement blueprint — Tier 0-3 enforcement status dashboard."""
 
 import json
+import logging
 import os
 from pathlib import Path
 
 import yaml
 from flask import Blueprint
+
+logger = logging.getLogger(__name__)
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
 
@@ -69,7 +72,8 @@ def _bypass_log():
         # Sort newest first
         entries.sort(key=lambda e: e.get("timestamp", ""), reverse=True)
         return entries[:20]  # Cap at 20 most recent
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to parse bypass log %s: %s", log_file, e)
         return []
 
 
@@ -84,7 +88,8 @@ def _enforcement_config():
         text = config_file.read_text()
         data = yaml.safe_load(text)
         return data if isinstance(data, dict) else {}
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to parse enforcement config %s: %s", config_file, e)
         return {}
 
 

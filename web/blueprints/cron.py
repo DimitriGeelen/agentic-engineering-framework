@@ -2,6 +2,7 @@
 
 import glob
 import json
+import logging
 import os
 import re
 import subprocess
@@ -11,6 +12,8 @@ from typing import Optional
 
 import yaml
 from flask import Blueprint, jsonify, request
+
+logger = logging.getLogger(__name__)
 
 from web.shared import PROJECT_ROOT, render_page
 
@@ -44,7 +47,8 @@ def _load_registry() -> dict:
         if "jobs" not in data:
             data["jobs"] = []
         return data
-    except Exception:
+    except Exception as e:
+        logger.warning("Failed to parse cron registry %s: %s", REGISTRY_PATH, e)
         return {"jobs": []}
 
 
@@ -149,7 +153,8 @@ def _last_run_info() -> dict:
                 "fail": summary.get("fail", 0),
                 "file": f.name,
             }
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to parse cron audit file %s: %s", f, e)
             continue
 
     return info
@@ -180,7 +185,8 @@ def _match_job_to_output(job: dict, run_info: dict) -> Optional[dict]:
                     "warn": summary.get("warn", 0),
                     "fail": summary.get("fail", 0),
                 }
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to parse audit file %s: %s", af, e)
                 continue
 
     return None
