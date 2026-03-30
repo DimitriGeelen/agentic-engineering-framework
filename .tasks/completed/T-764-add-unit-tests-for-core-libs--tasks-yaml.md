@@ -4,7 +4,7 @@ name: "Add unit tests for core libs — tasks, yaml, keylock, enums, paths"
 description: >
   Add unit tests for core libs — tasks, yaml, keylock, enums, paths
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T12:15:06Z
-last_update: 2026-03-30T12:15:06Z
-date_finished: null
+last_update: 2026-03-30T12:23:52Z
+date_finished: 2026-03-30T12:23:52Z
 ---
 
 # T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
@@ -72,3 +72,6 @@ bats tests/unit/lib_tasks.bats tests/unit/lib_yaml.bats tests/unit/lib_enums.bat
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-764-add-unit-tests-for-core-libs--tasks-yaml.md
 - **Context:** Initial task creation
+
+### 2026-03-30T12:23:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
