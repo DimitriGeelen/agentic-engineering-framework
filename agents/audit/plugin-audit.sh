@@ -54,7 +54,7 @@ find_plugin_dir() {
     if [ -d "$PLUGINS_CACHE/$plugin_name" ]; then
         # Find the latest version dir (or hash dir)
         local latest
-        latest=$(ls -1t "$PLUGINS_CACHE/$plugin_name/" 2>/dev/null | head -1)
+        latest=$(find "$PLUGINS_CACHE/$plugin_name" -maxdepth 1 -mindepth 1 -type d -printf '%T@ %f\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
         if [ -n "$latest" ] && [ -d "$PLUGINS_CACHE/$plugin_name/$latest" ]; then
             echo "$PLUGINS_CACHE/$plugin_name/$latest"
             return 0
@@ -192,7 +192,6 @@ main() {
                     bypassing=$((bypassing + 1))
                     total_bypassing=$((total_bypassing + 1))
                     # Extract relative path for detail
-                    local rel_path="${filepath#$plugin_dir/}"
                     local skill_name
                     skill_name=$(basename "$(dirname "$filepath")")
                     [ "$skill_name" = "commands" ] || [ "$skill_name" = "agents" ] && skill_name=$(basename "$filepath" .md)
@@ -209,9 +208,6 @@ main() {
         if [ "$file_count" -eq 0 ]; then
             printf "  ${CYAN}%-24s${NC} no skills/agents/commands (MCP-only)\n" "$plugin_name"
         else
-            local status_color="$GREEN"
-            [ "$bypassing" -gt 0 ] && status_color="$RED"
-
             printf "  ${CYAN}%-24s${NC} %2d files  " "$plugin_name" "$file_count"
             [ "$aware" -gt 0 ] && printf "${GREEN}%d AWARE${NC}  " "$aware"
             [ "$silent" -gt 0 ] && printf "%d SILENT  " "$silent"
