@@ -4,7 +4,7 @@ name: "fw pickup send — consumer-side CLI for local and TermLink push"
 description: >
   Consumer-side CLI command: serialize pickup envelope YAML, write to local inbox or push via termlink remote push. Supports --type, --summary, --detail, --priority, --remote flags.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-772, T-774]
 created: 2026-03-30T13:21:40Z
-last_update: 2026-03-30T14:08:15Z
-date_finished: null
+last_update: 2026-03-30T14:11:45Z
+date_finished: 2026-03-30T14:11:45Z
 ---
 
 # T-775: fw pickup send — consumer-side CLI for local and TermLink push
@@ -57,3 +57,6 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw pickup send --help
 
 ### 2026-03-30T14:08:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-03-30T14:11:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
