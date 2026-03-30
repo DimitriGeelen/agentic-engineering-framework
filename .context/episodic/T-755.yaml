@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-755: Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T10:34:49Z
+# ============================================================================
+
+task_id: T-755
+task_name: "Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T07:07:21Z
+completed: 2026-03-30T07:10:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T09:10:23+02:00
+last_commit: 2026-03-30T09:10:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)
+
+# Key outcomes
+outcomes:
+  - "fw_enforcement.bats created with 3 tests (status, layer details, baseline missing)"
+  - "fw_mcp.bats created with 2 tests (help, reap dry-run)"
+  - "fw_note.bats created with 3 tests (usage, list empty, captures observation)"
+  - "fw_recall.bats created with 2 tests (usage, query no memory)"
+  - "fw_test_cmd.bats created with 2 tests (unit runner, lint shellcheck)"
+  - "All new tests pass: 12/12 passing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-755-add-integration-tests-for-fw-enforcement.md"
+  - "tests/integration/fw_enforcement.bats"
+  - "tests/integration/fw_mcp.bats"
+  - "tests/integration/fw_note.bats"
+  - "tests/integration/fw_recall.bats"
+  - "tests/integration/fw_test_cmd.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T09:10:23"
+    action: "T-755: Add integration tests for fw enforcement, mcp, note, recall, test (12 tests)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 6
+  lines_added: 222
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-755-add-integration-tests-for-fw-enforcement.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-756: Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-03-30T10:34:50Z
+# ============================================================================
+
+task_id: T-756
+task_name: "Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (12 tests)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T07:10:55Z
+completed: 2026-03-30T07:13:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-03-30T09:13:20+02:00
+last_commit: 2026-03-30T09:13:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (11 tests)
+
+# Key outcomes
+outcomes:
+  - "fw_serve.bats created with 1 test (status reporting)"
+  - "fw_setup.bats created with 2 tests (deprecation notice, task setup output)"
+  - "fw_update.bats created with 2 tests (help, --check version info)"
+  - "fw_upgrade.bats created with 2 tests (help, --dry-run shows changes)"
+  - "fw_scan.bats created with 2 tests (empty project scan, creates scan file)"
+  - "fw_self_audit.bats created with 2 tests (audit report, foundation layer)"
+  - "All new tests pass: 11/11 passing"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-756-add-integration-tests-for-fw-serve-setup.md"
+  - "tests/integration/fw_scan.bats"
+  - "tests/integration/fw_self_audit.bats"
+  - "tests/integration/fw_serve.bats"
+  - "tests/integration/fw_setup.bats"
+  - "tests/integration/fw_update.bats"
+  - "tests/integration/fw_upgrade.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-30T09:13:20"
+    action: "T-756: Add integration tests for fw serve, setup, update, upgrade, scan, self-audit (11 tests)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 7
+  lines_added: 239
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-756-add-integration-tests-for-fw-serve-setup.md
+generated_by: context-agent-hybrid
