@@ -1,0 +1,17 @@
+id: tests/integration/fw_tier0.bats
+name: fw_tier0
+type: test
+subsystem: framework-core
+location: tests/integration/fw_tier0.bats
+tags: [bats, integration-test, tier0, cli]
+
+purpose: "Integration tests for fw tier0 CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent

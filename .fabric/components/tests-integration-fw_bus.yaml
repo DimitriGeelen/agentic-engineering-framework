@@ -1,0 +1,17 @@
+id: tests/integration/fw_bus.bats
+name: fw_bus
+type: test
+subsystem: framework-core
+location: tests/integration/fw_bus.bats
+tags: [bats, integration-test, bus, cli]
+
+purpose: "Integration tests for fw bus CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent

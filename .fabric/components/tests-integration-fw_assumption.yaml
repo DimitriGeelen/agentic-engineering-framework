@@ -1,0 +1,17 @@
+id: tests/integration/fw_assumption.bats
+name: fw_assumption
+type: test
+subsystem: framework-core
+location: tests/integration/fw_assumption.bats
+tags: [bats, integration-test, assumption, cli]
+
+purpose: "Integration tests for fw assumption CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
