@@ -1,0 +1,17 @@
+id: tests/integration/fw_fix_learned.bats
+name: fw_fix_learned
+type: test
+subsystem: framework-core
+location: tests/integration/fw_fix_learned.bats
+tags: [bats, integration-test, fix_learned, cli]
+
+purpose: "Integration tests for fw fix_learned CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent

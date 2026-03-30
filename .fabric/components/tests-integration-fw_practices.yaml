@@ -1,0 +1,17 @@
+id: tests/integration/fw_practices.bats
+name: fw_practices
+type: test
+subsystem: framework-core
+location: tests/integration/fw_practices.bats
+tags: [bats, integration-test, practices, cli]
+
+purpose: "Integration tests for fw practices CLI."
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-03-30
+created_by: agent
