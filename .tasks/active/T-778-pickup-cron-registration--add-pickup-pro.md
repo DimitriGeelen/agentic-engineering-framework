@@ -4,7 +4,7 @@ name: "Pickup cron registration — add pickup-process to cron registry"
 description: >
   Register fw pickup process in the cron registry YAML for 15-minute scheduling. Integrate with fw cron generate.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: next
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-772, T-776]
 created: 2026-03-30T13:22:03Z
-last_update: 2026-03-30T13:22:03Z
+last_update: 2026-03-30T14:13:19Z
 date_finished: null
 ---
 
@@ -25,14 +25,14 @@ Register the pickup inbox processor in the cron registry for automated 15-minute
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `pickup-process` job added to cron registry YAML
-- [ ] Schedule: `*/15 * * * *`
-- [ ] `fw cron generate` includes the pickup-process job
-- [ ] `fw cron status` shows pickup-process as active
+- [x] `pickup-process` job added to cron registry YAML
+- [x] Schedule: `*/15 * * * *`
+- [x] `fw cron generate` includes the pickup-process job
+- [x] `fw cron status` shows pickup-process as active
 
 ## Verification
 
-cd /opt/999-Agentic-Engineering-Framework && grep -q "pickup-process" cron/registry.yaml
+cd /opt/999-Agentic-Engineering-Framework && grep -q "pickup-process" .context/cron-registry.yaml
 
 ## Decisions
 
@@ -51,3 +51,6 @@ cd /opt/999-Agentic-Engineering-Framework && grep -q "pickup-process" cron/regis
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-778-pickup-cron-registration--add-pickup-pro.md
 - **Context:** Initial task creation
+
+### 2026-03-30T14:13:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

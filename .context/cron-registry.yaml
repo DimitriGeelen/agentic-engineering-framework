@@ -96,3 +96,12 @@ jobs:
     origin_task: T-658
     status: active
     description: "Prunes cron audit files older than 7 days using filename date (not mtime which gets reset by git)."
+
+  - id: pickup-process
+    name: "Pickup inbox processor (15 min)"
+    schedule: "*/15 * * * *"
+    command: "fw pickup process"
+    source_file: agentic-audit.crontab
+    origin_task: T-778
+    status: active
+    description: "Scans pickup inbox for cross-project proposals, validates, dedup-checks, and creates inception tasks."
