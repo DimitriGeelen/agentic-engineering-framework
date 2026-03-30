@@ -31,7 +31,7 @@ fi
 # Colors provided by lib/colors.sh (via paths.sh chain)
 # Override to no-color in quiet mode
 if [ "$QUIET" = true ]; then
-    RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
+    RED="" GREEN="" YELLOW="" CYAN="" NC=""
 fi
 
 # --- Counters ---

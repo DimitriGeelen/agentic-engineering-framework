@@ -66,7 +66,7 @@ find_transcript() {
     local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
     if [ -d "$project_jsonl_dir" ]; then
         local transcript
-        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
         if [ -n "$transcript" ]; then
             echo "$transcript"
         fi

@@ -13,10 +13,10 @@ do_init() {
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
+        # shellcheck disable=SC2034
         case $1 in
             --provider) provider="$2"; shift 2 ;;
             --force) force=true; shift ;;
-            # shellcheck disable=SC2034
             --no-first-run) first_run=false; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw init${NC} - Bootstrap a new project"

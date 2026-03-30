@@ -18,7 +18,6 @@ VERSION="1.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
-PATTERNS_FILE="$CONTEXT_DIR/project/patterns.yaml"
 LIB_DIR="$SCRIPT_DIR/lib"
 
 # Colors provided by lib/colors.sh (via paths.sh chain)
