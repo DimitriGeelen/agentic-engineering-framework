@@ -7,7 +7,7 @@ description: >
   Portability). Quantify the framework's current token overhead, analyze historical usage patterns,
   and identify high-ROI optimizations. Depends on T-799 for cost tracking infrastructure.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,7 +15,7 @@ tags: [cost, tokens, efficiency, context-budget]
 components: [budget-gate, checkpoint, bin-fw, hook-config]
 related_tasks: [T-799, T-596, T-701, T-699, T-136, T-073]
 created: 2026-04-01T09:25:47Z
-last_update: 2026-04-01T09:25:47Z
+last_update: 2026-04-01T09:44:22Z
 date_finished: null
 ---
 
@@ -184,3 +184,6 @@ The framework governs token budget as a **session-survival concern** (P-009: don
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-01T09:44:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

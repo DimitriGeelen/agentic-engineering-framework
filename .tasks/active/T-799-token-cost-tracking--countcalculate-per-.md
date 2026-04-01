@@ -4,7 +4,7 @@ name: "Token cost tracking — count/calculate per-task and project-total token 
 description: >
   Inception: Token cost tracking — count/calculate per-task and project-total token usage and costs
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-31T19:05:13Z
-last_update: 2026-03-31T19:05:13Z
+last_update: 2026-04-01T09:41:06Z
 date_finished: null
 ---
 
@@ -141,3 +141,6 @@ The framework tracks task count, traceability, and session context budget — bu
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-01T09:41:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
