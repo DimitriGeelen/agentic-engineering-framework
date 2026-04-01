@@ -2,17 +2,19 @@
 id: T-799
 name: "Token cost tracking — count/calculate per-task and project-total token usage and costs"
 description: >
-  Inception: Token cost tracking — count/calculate per-task and project-total token usage and costs
+  Inception: Token usage tracking — count per-task and project-total token consumption.
+  Subscription model (flat rate) — cost declared in tokens, not dollars.
+  Data source: JSONL transcripts contain per-turn usage with cache breakdown.
 
 status: started-work
 workflow_type: inception
 owner: human
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [cost, tokens, observability]
+components: [budget-gate, checkpoint]
+related_tasks: [T-800, T-699, T-596]
 created: 2026-03-31T19:05:13Z
-last_update: 2026-04-01T09:41:06Z
+last_update: 2026-04-01T09:45:45Z
 date_finished: null
 ---
 

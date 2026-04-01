@@ -7,7 +7,7 @@ description: >
   Portability). Quantify the framework's current token overhead, analyze historical usage patterns,
   and identify high-ROI optimizations. Depends on T-799 for cost tracking infrastructure.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ tags: [cost, tokens, efficiency, context-budget]
 components: [budget-gate, checkpoint, bin-fw, hook-config]
 related_tasks: [T-799, T-596, T-701, T-699, T-136, T-073]
 created: 2026-04-01T09:25:47Z
-last_update: 2026-04-01T09:44:22Z
-date_finished: null
+last_update: 2026-04-01T11:24:07Z
+date_finished: 2026-04-01T11:24:07Z
 ---
 
 # T-800: Token efficiency strategies — reduce per-task and per-session cost through context management, output discipline, caching, and dispatch optimization
@@ -167,18 +167,18 @@ The framework governs token budget as a **session-survival concern** (P-009: don
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Reframed for subscription — token efficiency drives session lifetime and response quality
+
+**Date**: 2026-04-01T11:24:07Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Reframed for subscription — token efficiency drives session lifetime and response quality
+
+**Date**: 2026-04-01T11:24:07Z
 
 ## Updates
 
@@ -187,3 +187,12 @@ The framework governs token budget as a **session-survival concern** (P-009: don
 
 ### 2026-04-01T09:44:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-01T11:24:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Reframed for subscription — token efficiency drives session lifetime and response quality
+
+### 2026-04-01T11:24:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -1,8 +1,10 @@
-# Token Cost Analysis — Empirical Findings
+# Token Usage Analysis — Empirical Findings
 
-**Tasks:** T-799 (cost tracking), T-800 (efficiency strategies)
+**Tasks:** T-799 (usage tracking), T-800 (efficiency strategies)
 **Date:** 2026-04-01
 **Data source:** 6 JSONL session transcripts from `~/.claude/projects/`
+**Cost model:** Subscription (flat rate) — cost is measured in **tokens consumed**, not dollars.
+Token usage matters for: rate limits, context efficiency, session lifetime, and response quality.
 
 ## Key Findings
 
@@ -26,34 +28,32 @@ Every assistant turn in the JSONL transcript contains a `usage` object with:
 
 **T-799 feasibility: CONFIRMED.** Per-turn token data with cache breakdown is available for cost tracking.
 
-### 2. Total Costs Across 6 Sessions
+### 2. Total Token Usage Across 6 Sessions
 
-| Session | Turns | Cost |
-|---------|-------|------|
-| 28c3b0c9 | 6 | $1.40 |
-| 0eba9dc9 | 8,158 | $2,045.19 |
-| 82c8632b | 109 | $16.30 |
-| 73e2f1ed | 50 | $7.98 |
-| 670923d6 | 36 | $7.04 |
-| 048065d3 | 5,165 | $1,202.27 |
-| **TOTAL** | **13,524** | **$3,280.18** |
+| Session | Turns | Input (fresh) | Cache Read | Cache Create | Output | Total Tokens |
+|---------|-------|---------------|------------|--------------|--------|-------------|
+| 28c3b0c9 | 6 | 10 | 169K | 53K | 2K | 224K |
+| 0eba9dc9 | 8,158 | 39K | 1,011M | 22M | 1.5M | 1,035M |
+| 82c8632b | 109 | 2K | 6.9M | 255K | 15K | 7.2M |
+| 73e2f1ed | 50 | 64 | 2.4M | 202K | 8K | 2.6M |
+| 670923d6 | 36 | 5K | 1.8M | 204K | 6K | 2.0M |
+| 048065d3 | 5,165 | 50K | 620M | 11M | 863K | 632M |
+| **TOTAL** | **13,524** | **96K** | **1,643M** | **34M** | **2.3M** | **1,679M** |
 
-**Pricing used:** Opus 4 — $15/M input, $1.50/M cache read, $18.75/M cache create, $75/M output.
+### 3. Token Usage by Category
 
-### 3. Cost Breakdown by Category
+| Category | Tokens | % of Total |
+|----------|--------|------------|
+| Fresh input | 96K | 0.0% |
+| Cache read | 1,643M | 97.8% |
+| Cache create | 34M | 2.0% |
+| Output | 2.3M | 0.1% |
 
-| Category | Cost | % of Total |
-|----------|------|------------|
-| Fresh input | $1.43 | 0.0% |
-| Cache read | $2,464.31 | 75.1% |
-| Cache create | $638.56 | 19.5% |
-| Output | $175.88 | 5.4% |
+**Insight:** Cache reads are 97.8% of all token traffic. This is the context window being re-read on every turn. Each turn sends the full accumulated context as cache-read tokens. The total volume — 1.64 billion tokens across 6 sessions — reflects the cumulative cost of the O(n²) attention pattern: every turn processes every prior token.
 
-**Insight:** Cache reads dominate at 75% of cost. Even at a 90% discount vs fresh input, the sheer volume (1.64 billion cache-read tokens) makes it the biggest line item. Without caching, input would have cost $24,643 — caching saved $22,179.
+### 4. Output Is Tiny Relative to Input
 
-### 4. Output Is Cheap (Relatively)
-
-Output tokens are 50x more expensive per token than cache reads, but output is only 5.4% of total cost because output volume is small (avg 177 tokens/turn). **Context size, not output verbosity, is the primary cost lever.**
+Output is 0.1% of total token volume (avg 177 tokens/turn). **Context size, not output verbosity, drives token consumption.** Under a subscription, each turn's token cost is dominated by the context window being re-read — output is a rounding error.
 
 ### 5. Framework Overhead Per Session
 
@@ -73,60 +73,66 @@ In the largest session (8,158 turns, $2,045):
 
 ### 7. `/clear` vs Continue Simulation
 
-Simulating `/clear` at 200K context threshold (reset to 30K framework overhead):
-- **Actual cost:** $1,202.91
-- **Simulated with /clear@200K:** $1,007.93
-- **Savings:** $194.98 (16%)
+Simulating `/clear` at 200K context threshold (reset to 30K framework overhead) on the 048065d3 session:
+- **Actual total input tokens:** 631M
+- **Simulated with /clear@200K:** ~530M
+- **Reduction:** ~16% fewer tokens processed
 - **Resets needed:** 14
 
-**16% savings is meaningful but not transformative.** The bigger lever is the total number of turns — sessions with 5,000+ turns are expensive regardless of context management.
+**16% reduction is meaningful but not transformative.** The bigger lever is total turns — 8,158 turns means 8,158 context re-reads regardless. However, `/clear` also improves **context quality** — removing stale noise means better responses per token spent.
 
-### 8. Cost Per Turn at Different Context Levels
+### 8. Tokens Per Turn at Different Context Levels
 
-| Context | Cost/Turn | Per 100 Turns | Per 1000 Turns |
-|---------|-----------|---------------|----------------|
-| 30K | $0.045 | $4.50 | $45 |
-| 50K | $0.075 | $7.50 | $75 |
-| 100K | $0.150 | $15.00 | $150 |
-| 150K | $0.225 | $22.50 | $225 |
-| 200K | $0.300 | $30.00 | $300 |
-| 500K | $0.750 | $75.00 | $750 |
-| 1000K | $1.500 | $150.00 | $1,500 |
+| Context Size | Tokens/Turn (input) | Per 100 Turns | Per 1000 Turns |
+|-------------|---------------------|---------------|----------------|
+| 30K | 30K | 3M | 30M |
+| 50K | 50K | 5M | 50M |
+| 100K | 100K | 10M | 100M |
+| 150K | 150K | 15M | 150M |
+| 200K | 200K | 20M | 200M |
+| 500K | 500K | 50M | 500M |
+| 1000K | 1,000K | 100M | 1,000M |
 
-**Key insight:** With the 1M context window, a single turn at full context costs $1.50 — the same as 33 turns at 30K context. Context bloat is a 33x cost multiplier.
+**Key insight:** A single turn at full 1M context consumes 33x more tokens than a turn at 30K. Over 1,000 turns, that's 1 billion vs 30 million tokens. Under a subscription with rate limits, this directly affects how many turns you can execute per minute/day.
 
 ## Directive Mapping
 
-| Strategy | Cost Impact | Antifragility | Reliability | Usability | Portability |
+| Strategy | Token Impact | Antifragility | Reliability | Usability | Portability |
 |----------|-------------|---------------|-------------|-----------|-------------|
-| Prompt caching (already active) | -90% on repeats | Neutral | Neutral | Neutral | Provider-specific |
-| `/clear` at thresholds | -16% | Risk: lose context | Needs handover | Disrupts flow | Portable |
+| `/clear` at thresholds | -16% input tokens | Risk: lose context | Needs handover | Disrupts flow | Portable |
 | Shorter sessions (fresh starts) | -10-20% | Risk: lose learning | Depends on handover | Friction | Portable |
-| Reduce CLAUDE.md size | -$0.02/turn | **Negative**: less governance | Negative | Neutral | Neutral |
-| TermLink over Task agents | Variable | Neutral | Neutral | Neutral | Less portable |
-| Output discipline (already enforced) | -5% of 5% = marginal | Neutral | Neutral | Neutral | Portable |
-| Model selection (Haiku for sub-tasks) | -80% per sub-task | Risk: quality | Risk: quality | Neutral | Portable |
+| Context quality hygiene | Better signal/noise | **Positive**: focused context | Positive | Neutral | Portable |
+| Reduce CLAUDE.md size | -35K/turn base | **Negative**: less governance | Negative | Neutral | Neutral |
+| TermLink over Task agents | Isolates context | Neutral | Neutral | Neutral | Less portable |
+| Output discipline (already enforced) | Marginal (0.1% of volume) | Neutral | Neutral | Neutral | Portable |
+| Model selection (Haiku for sub-tasks) | Lower quality tokens | Risk: quality | Risk: quality | Neutral | Portable |
 
 ## Recommendations
 
-### For T-799 (Cost Tracking)
+### For T-799 (Token Usage Tracking)
 
-**GO.** The data exists, is structured, and is rich enough for per-turn cost calculation. Implementation is straightforward:
+**GO.** The data exists, is structured, and is rich enough for per-turn and per-session tracking. Implementation:
 1. Parse JSONL transcripts for `assistant` entries with `usage` fields
-2. Sum by category (fresh, cache_read, cache_create, output) x pricing
-3. Attribute to tasks via timestamps + focus.yaml correlation
-4. Store in SQLite (aligns with T-699 fw stats design)
+2. Sum by category: input, cache_read, cache_create, output
+3. Track per-task attribution via timestamps + focus.yaml correlation
+4. Report as: tokens per task, tokens per session, project totals
+5. Store in SQLite (aligns with T-699 fw stats design)
+6. CLI: `fw costs` showing token usage breakdowns (not dollar amounts)
 
 ### For T-800 (Efficiency Strategies)
 
 **Nuanced.** The findings challenge some assumptions:
-1. **Prompt caching is already active and saving 90%** — there's no "enable caching" optimization to capture
-2. **Output cost is negligible (5%)** — output discipline has low ROI as a cost strategy (still valuable for context management)
-3. **Context size is the lever** — but reducing it conflicts with Antifragility (rich context prevents failures)
-4. **`/clear` at thresholds saves ~16%** — meaningful, but the real question is whether context quality degrades enough to justify the disruption
-5. **The biggest cost driver is session length (total turns)** — 8,158 turns x $0.25/turn = $2,045. Fewer turns = less cost, but that means doing less work
+1. **Output volume is negligible (0.1%)** — output discipline has zero ROI as a token strategy (still valuable for context quality)
+2. **Context size is the lever** — each turn re-reads the full context window. 1,000 turns at 200K = 200M tokens. 1,000 turns at 50K = 50M tokens. 4x difference.
+3. **`/clear` at thresholds saves ~16%** — but the real value is context *quality*, not just quantity. A clean 50K context outperforms a noisy 200K context.
+4. **The biggest driver is total turns** — 8,158 turns consume tokens regardless of context management. Efficiency means doing the same work in fewer turns.
+5. **Context quality > context quantity** — under subscription, the goal isn't "spend fewer tokens" (it's flat rate), it's "spend tokens on high-quality context that produces better output." Stale debug output, abandoned approaches, and irrelevant tool results dilute context quality.
 
-**The honest answer:** The framework is already well-optimized by Anthropic's caching infrastructure. The remaining optimizations either conflict with governance quality or save modest amounts. The highest-ROI action is **cost visibility** (T-799), not cost reduction (T-800).
+**The reframing for subscription:** Token efficiency isn't about saving money — it's about:
+- **Rate limit headroom** — staying under tokens/minute caps during intensive work
+- **Session lifetime** — more useful turns before context fills up
+- **Response quality** — every token of noise in context competes with signal for attention weight
+- **Throughput** — smaller contexts = faster inference = more work per hour
 
 ## Dialogue Log
 
