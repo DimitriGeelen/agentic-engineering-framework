@@ -10,7 +10,7 @@
             {% if session.is_emergency %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; background: var(--pico-del-color); color: white; border-radius: 3px;">emergency</mark> {% endif %}
             <strong>{{ session.id }}</strong>
             <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
-            {% if session.token_usage %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; border-radius: 3px;">{{ session.token_usage }}</mark> {% endif %}
+            {% if session.session_tokens %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; border-radius: 3px;">{{ session.session_tokens }} tokens, {{ session.session_turns }} turns</mark> {% endif %}{% if session.token_usage %}<small style="opacity: 0.6;" title="Cumulative project total">({{ session.token_usage }})</small> {% endif %}
             — {% if session.narrative_short %}{{ session.narrative_short }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
         </summary>
 
