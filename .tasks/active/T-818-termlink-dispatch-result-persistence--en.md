@@ -4,7 +4,7 @@ name: "TermLink dispatch result persistence — ensure worker outputs survive pa
 description: >
   Inception: TermLink dispatch result persistence — ensure worker outputs survive parent budget exhaustion
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T21:27:24Z
-last_update: 2026-04-03T21:28:39Z
-date_finished: null
+last_update: 2026-04-03T21:36:04Z
+date_finished: 2026-04-03T21:36:04Z
 ---
 
 # T-818: TermLink dispatch result persistence — ensure worker outputs survive parent budget exhaustion
@@ -87,14 +87,11 @@ When TermLink workers are dispatched in parallel, their results follow the "writ
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: simple fix, workers write to target files directly
+
+**Date**: 2026-04-03T21:36:04Z
 
 ## Recommendation
 
@@ -107,7 +104,11 @@ When TermLink workers are dispatched in parallel, their results follow the "writ
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: simple fix, workers write to target files directly
+
+**Date**: 2026-04-03T21:36:04Z
 
 ## Updates
 
@@ -116,3 +117,12 @@ When TermLink workers are dispatched in parallel, their results follow the "writ
 
 ### 2026-04-03T21:28:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-03T21:36:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** simple fix, workers write to target files directly
+
+### 2026-04-03T21:36:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

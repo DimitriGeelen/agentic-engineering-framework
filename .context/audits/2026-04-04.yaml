@@ -1,5 +1,5 @@
-# Audit Results - 2026-04-03-2358
-timestamp: 2026-04-03T21:58:01Z
+# Audit Results - 2026-04-04-0006
+timestamp: 2026-04-03T22:06:41Z
 summary:
   pass: 211
   warn: 18
@@ -40,7 +40,7 @@ findings:
     check: "Task T-807 has short description (42 chars)"
     mitigation: "Expand description in T-807-unit-tests-for-libcostssh-token-tracking.md"
   - level: PASS
-    check: "Git traceability: 99% (2070/2089 commits reference tasks)"
+    check: "Git traceability: 99% (2071/2090 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -90,13 +90,12 @@ findings:
     check: "C-002: No research warnings logged (clean or first run)"
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
-  - level: WARN
-    check: "CTL-001: Focus file empty but 8 commit(s) in last 30min"
-    mitigation: "Check .claude/settings.json hook configuration for check-active-task"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-819)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 1 (last commit: 77 seconds ago)"
+    check: "CTL-004: Tool counter at 3 (last commit: 4 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: warn)"
   - level: PASS
@@ -176,7 +175,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-817 has decision (4 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-818 has decision (3 commits)"
+    check: "CTL-009: Inception T-818 has decision (4 commits)"
   - level: PASS
     check: "CTL-009: Inception T-084 has decision (3 commits)"
   - level: PASS
@@ -452,7 +451,7 @@ findings:
   - level: PASS
     check: "D1: Episodic quality — 2% [TODO] (19/759)"
   - level: WARN
-    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(20d) T-460(21d) T-470(22d) T-476(21d) T-481(20d) T-483(20d) T-493(20d) T-505(17d) T-511(17d) T-516(16d) T-518(16d)"
+    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(20d) T-460(21d) T-470(22d) T-476(21d) T-481(20d) T-483(20d) T-493(20d) T-505(17d) T-511(17d) T-516(17d) T-518(16d)"
     mitigation: "Review with: fw task verify"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -468,10 +467,11 @@ findings:
   - level: WARN
     check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(9d-active) (+17 more)"
     mitigation: "Review flagged tasks for process issues"
+  - level: WARN
+    check: "D3: Commit velocity — WARN drop today=2 avg=65 ratio=0.0x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=0 avg=65 ratio=0.0x)"
-  - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 50_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 52_commits_24h)"
   - level: WARN
     check: "D6: Completion velocity — sustained drop (drop recent_avg=3.0 vs earlier_avg=21.7)"
     mitigation: "Check for blockers or process issues slowing work"
