@@ -1,5 +1,5 @@
 # Agentic Engineering Framework
-
+![agentic-engeneering-framework](header.svg)
 > Governance and guardrails for AI coding agents in your repo. Not another chatbot.
 
 This is not an assistant runtime, not an orchestration engine, and not a skills marketplace. It is a governance layer that sits inside your git repo and enforces structural rules on whatever AI coding agent you already use — Claude Code, Cursor, Copilot, or anything with CLI access. The agent cannot edit files without a task. It cannot force-push without human approval. It cannot lose context between sessions.
