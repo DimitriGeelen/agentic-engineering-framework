@@ -29,3 +29,242 @@ could not find expected ':'
 127.0.0.1 - - [04/Apr/2026 01:10:55] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [04/Apr/2026 01:10:59] "GET /gaps HTTP/1.1" 200 -
 127.0.0.1 - - [04/Apr/2026 01:11:04] "GET /config HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:11:14] "GET /risks HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:11:54] "GET /quality HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:12:02] "GET /metrics HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:12:12] "GET /costs HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:12:37] "GET /config HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:12:40] "GET /cron HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:04] "GET /tasks HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:09] "GET /inception HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:13] "GET /assumptions HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:20] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:31] "GET /learnings HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:13:37] "GET /patterns HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:13] "GET /patterns?type=success HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:16] "GET /patterns?type=antifragile HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:18] "GET /patterns?type=workflow HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:24] "GET /decisions HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:38] "GET /learnings HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:49] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:14:53] "GET /directives HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET /file/.tasks/active/ HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET /file/.tasks/active/ HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:21] "GET /config HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:15:28] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:28] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:28] "GET /file/.tasks/active/ HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:15:28] "GET /file/.tasks/active/ HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:15:29] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:15:29] "GET /config HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:15:48] "GET /tasks HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:16:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:09] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:09] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:09] "GET /file/CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:10] "GET /file/CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:10] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:10] "GET /config HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:16:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:17] "GET /file/CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:24] "GET /file/CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:30] "GET /file?path=CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:30] "GET /view/CLAUDE.md HTTP/1.1" 404 -
+127.0.0.1 - - [04/Apr/2026 01:16:37] "GET /docs/file/CLAUDE.md HTTP/1.1" 404 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:16:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Apr/2026 01:16:59] "GET /timeline HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:16:59] "GET /review/T-822 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:04] "GET /file/CLAUDE.md HTTP/1.1" 404 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:32] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:17:33] "GET /config HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:18:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:24] "GET /config HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:18:26] "GET / HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:18:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:27] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:27] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:28] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:28] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:28] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:28] "GET /config HTTP/1.1" 200 -
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
+  in "<unicode string>", line 9, column 1:
+    Claude Code fires zero hooks for ... 
+    ^
+could not find expected ':'
+  in "<unicode string>", line 11, column 1:
+    ## Solution
+    ^
+127.0.0.1 - - [04/Apr/2026 01:18:54] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:54] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:54] "GET /review/T-631 HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:55] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:55] "GET /file/docs/reports/T-823-automated-human-ac-verification.md HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:55] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:18:55] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [04/Apr/2026 01:19:43] "GET /timeline HTTP/1.1" 200 -
