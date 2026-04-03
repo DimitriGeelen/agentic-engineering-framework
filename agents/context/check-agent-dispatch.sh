@@ -24,6 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+fw_hook_crash_trap "check-agent-dispatch"
 
 COUNTER_FILE="$PROJECT_ROOT/.context/working/.agent-dispatch-counter"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.dispatch-approval"

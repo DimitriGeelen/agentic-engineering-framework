@@ -54,6 +54,26 @@ fw_config_int() {
     echo "$val"
 }
 
+# fw_hook_crash_trap — Install ERR trap for PreToolUse hooks (T-821)
+# Distinguishes "hook crashed" (exit 1) from "hook blocked" (exit 2).
+# Call this AFTER sourcing config.sh and setting up variables.
+fw_hook_crash_trap() {
+    local hook_name="${1:-unknown}"
+    local crash_log="${PROJECT_ROOT:-.}/.context/working/.hook-crashes.log"
+    trap '
+        _exit=$?
+        if [ $_exit -ne 0 ] && [ $_exit -ne 2 ]; then
+            echo "" >&2
+            echo "╔══════════════════════════════════════════════════╗" >&2
+            echo "║  HOOK CRASHED: '"$hook_name"' (exit $_exit)            ║" >&2
+            echo "║  This is a hook malfunction, NOT a policy block ║" >&2
+            echo "║  Action: Report to human, run fw doctor         ║" >&2
+            echo "╚══════════════════════════════════════════════════╝" >&2
+            echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] CRASH: '"$hook_name"' exit=$_exit" >> "'"$crash_log"'" 2>/dev/null
+        fi
+    ' ERR
+}
+
 # fw_config_list — List all FW_* overrides (for fw doctor / Watchtower)
 # Output: KEY=VALUE lines for each FW_* env var that is set
 fw_config_list() {

@@ -1185,6 +1185,23 @@ else:
         fi
     fi
 
+    # Check: Hook crash log (T-821)
+    local crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
+    if [ -f "$crash_log" ] && [ -s "$crash_log" ]; then
+        local crash_count
+        crash_count=$(wc -l < "$crash_log" | tr -d '[:space:]')
+        local recent_crashes
+        recent_crashes=$(grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null | wc -l | tr -d '[:space:]')
+        if [ "${recent_crashes:-0}" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — check .context/working/.hook-crashes.log"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${CYAN}INFO${NC}  Hook crash log: $crash_count historical entries (none today)"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  No hook crashes logged"
+    fi
+
     # Check: Configuration overrides (T-819)
     source "$FRAMEWORK_ROOT/lib/config.sh"
     local config_overrides
