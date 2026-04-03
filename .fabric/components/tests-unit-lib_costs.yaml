@@ -1,0 +1,17 @@
+id: tests/unit/lib_costs.bats
+name: lib_costs tests
+type: test
+subsystem: tests
+location: tests/unit/lib_costs.bats
+tags: [tokens, costs, testing]
+
+purpose: "26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807)"
+
+depends_on:
+  - target: lib/costs.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-03
+created_by: unknown
