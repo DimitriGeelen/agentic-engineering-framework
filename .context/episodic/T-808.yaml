@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-808: Upgrade 10 consumer projects to v1.4.394 — fw doctor WARN remediation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-03T20:11:34Z
+# ============================================================================
+
+task_id: T-808
+task_name: "Upgrade 10 consumer projects to v1.4.394 — fw doctor WARN remediation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T20:06:41Z
+completed: 2026-04-03T20:11:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-03T22:11:27+02:00
+last_commit: 2026-04-03T22:11:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Upgrade 10 consumer projects to v1.4.397 — fw doctor clean
+
+# Key outcomes
+outcomes:
+  - "All 10 consumer projects upgraded via `fw upgrade`"
+  - "`fw doctor` shows 0 consumer project warnings after upgrade"
+  - "No errors reported during upgrade"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-808-upgrade-10-consumer-projects-to-v14394--.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-03T22:11:27"
+    action: "T-808: Upgrade 10 consumer projects to v1.4.397 — fw doctor clean"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 1
+  lines_added: 75
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-808-upgrade-10-consumer-projects-to-v14394--.md
+generated_by: context-agent-hybrid
