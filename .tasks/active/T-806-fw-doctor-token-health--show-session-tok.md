@@ -1,0 +1,52 @@
+---
+id: T-806
+name: "fw doctor token health — show session token usage in health check"
+description: >
+  Add token usage line to fw doctor output. Show current session tokens and cache hit rate as an informational line. Quick integration using lib/costs.sh.
+
+status: started-work
+workflow_type: build
+owner: human
+horizon: now
+tags: [tokens, doctor, observability]
+components: []
+related_tasks: []
+created: 2026-04-03T19:42:49Z
+last_update: 2026-04-03T19:42:49Z
+date_finished: null
+---
+
+# T-806: fw doctor token health — show session token usage in health check
+
+## Context
+
+Extends `fw doctor` with token health info line. Uses `fw costs current` parsing from lib/costs.sh (T-801).
+
+## Acceptance Criteria
+
+### Agent
+- [x] `fw doctor` output includes a token usage informational line
+- [x] Shows current session total tokens and turns
+- [x] Graceful: if no JSONL transcript found, line is omitted
+
+## Verification
+
+bin/fw doctor 2>&1 | grep -qi "token"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-03T19:42:49Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-806-fw-doctor-token-health--show-session-tok.md
+- **Context:** Initial task creation

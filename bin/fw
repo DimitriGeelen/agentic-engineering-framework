@@ -1059,6 +1059,21 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         warnings=$((warnings + 1))
     fi
 
+    # Check: Token usage (T-806)
+    if [ -f "$FW_LIB_DIR/costs.sh" ]; then
+        local token_info
+        token_info=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
+            bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh" 2>/dev/null; source "$FRAMEWORK_ROOT/lib/costs.sh"; costs_main current 2>/dev/null' 2>/dev/null || true)
+        if [ -n "$token_info" ]; then
+            local t_total t_turns
+            t_total=$(echo "$token_info" | grep "^Total:" | awk '{print $2}')
+            t_turns=$(echo "$token_info" | grep "^Turns:" | awk '{print $2}' | tr -d ',')
+            if [ -n "$t_total" ]; then
+                echo -e "  ${CYAN}INFO${NC}  Session tokens: $t_total ($t_turns turns)"
+            fi
+        fi
+    fi
+
     # Check: Consumer project fleet health (T-616)
     # Only runs from framework repo — scans /opt for .framework.yaml
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
