@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T22:51:09Z
-last_update: 2026-04-03T22:51:09Z
+last_update: 2026-04-03T23:04:29Z
 date_finished: null
 ---
 
@@ -25,16 +25,16 @@ Follow-on from T-819 (lib/config.sh). 8 files still hardcode settings that shoul
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/watchtower.sh` uses `fw_config "PORT" 3000` for port default
-- [ ] `lib/keylock.sh` uses `fw_config_int "KEYLOCK_TIMEOUT" 300`
-- [ ] `lib/review.sh` uses `fw_config "PORT" 3000` for Watchtower URL fallback
-- [ ] `agents/termlink/termlink.sh` uses `fw_config_int` for spawn/worker timeouts
-- [ ] `agents/context/pre-compact.sh` uses `fw_config_int` for handover dedup cooldown
-- [ ] `agents/audit/audit.sh` uses `fw_config` for health check port
-- [ ] `FW_CONFIG_REGISTRY` updated with new settings (KEYLOCK_TIMEOUT, TERMLINK_WORKER_TIMEOUT, HANDOVER_DEDUP_COOLDOWN)
-- [ ] Watchtower `/config` page updated to show new settings
-- [ ] All 518+ unit tests still pass
-- [ ] `fw doctor` shows no new warnings
+- [x] `bin/watchtower.sh` uses `fw_config "PORT" 3000` for port default
+- [x] `lib/keylock.sh` uses `fw_config_int "KEYLOCK_TIMEOUT" 300`
+- [x] `lib/review.sh` uses `fw_config "PORT" 3000` for Watchtower URL fallback
+- [x] `agents/termlink/termlink.sh` uses `fw_config_int` for spawn/worker timeouts
+- [x] `agents/context/pre-compact.sh` uses `fw_config_int` for handover dedup cooldown
+- [x] `agents/audit/audit.sh` uses `fw_config` for health check port
+- [x] `FW_CONFIG_REGISTRY` updated with new settings (KEYLOCK_TIMEOUT, TERMLINK_WORKER_TIMEOUT, HANDOVER_DEDUP_COOLDOWN)
+- [x] Watchtower `/config` page updated to show new settings
+- [x] All 518+ unit tests still pass
+- [x] `fw doctor` shows no new warnings
 
 ### Human
 - [ ] [RUBBER-STAMP] Watchtower /config page shows new settings

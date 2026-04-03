@@ -503,6 +503,9 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 | Handover cooldown | `FW_HANDOVER_COOLDOWN` | `600` | Seconds between auto-handover triggers |
 | Stale task days | `FW_STALE_TASK_DAYS` | `7` | Days before task is flagged stale |
 | Max restarts | `FW_MAX_RESTARTS` | `5` | Max consecutive auto-restarts |
+| Keylock timeout | `FW_KEYLOCK_TIMEOUT` | `300` | Per-key lock stale cleanup (seconds) |
+| TermLink worker timeout | `FW_TERMLINK_WORKER_TIMEOUT` | `600` | TermLink worker execution timeout (seconds) |
+| Handover dedup cooldown | `FW_HANDOVER_DEDUP_COOLDOWN` | `300` | Seconds between duplicate handover detection |
 
 Check active overrides: `env | grep FW_`
 Validate: `fw doctor` shows warnings for out-of-range values.

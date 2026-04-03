@@ -10,6 +10,9 @@
 #
 # Requires: PROJECT_ROOT, BOLD, NC, CYAN (from colors.sh/paths.sh chain)
 
+# Source config for PORT setting (guard protects double-source)
+source "${FRAMEWORK_ROOT:-.}/lib/config.sh"
+
 emit_review() {
     local task_id="${1:-}"
     local task_file="${2:-}"
@@ -44,7 +47,9 @@ emit_review() {
         wt_host=$(hostname -I 2>/dev/null | awk '{print $1}')
         wt_host="${wt_host:-$(hostname 2>/dev/null)}"
         wt_host="${wt_host:-localhost}"
-        base_url="http://${wt_host}:${wt_port:-3000}"
+        local default_port
+        default_port=$(fw_config "PORT" 3000 2>/dev/null || echo 3000)
+        base_url="http://${wt_host}:${wt_port:-$default_port}"
     fi
     # Detect workflow type for URL routing (T-642)
     local workflow_type=""

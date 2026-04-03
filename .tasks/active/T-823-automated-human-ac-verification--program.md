@@ -4,7 +4,7 @@ name: "Automated Human AC verification — programmatic, TermLink E2E, and Playw
 description: >
   Inception: Automated Human AC verification — programmatic, TermLink E2E, and Playwright approaches for stale task clearance
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T22:52:29Z
-last_update: 2026-04-03T22:52:45Z
-date_finished: null
+last_update: 2026-04-03T23:05:55Z
+date_finished: 2026-04-03T23:05:55Z
 ---
 
 # T-823: Automated Human AC verification — programmatic, TermLink E2E, and Playwright approaches for stale task clearance
@@ -104,18 +104,30 @@ grep -q "Phase 1" docs/reports/T-823-automated-human-ac-verification.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: GO — 10 of 27 tasks (37%) verified with clear evidence. Verification ran in under 3 minutes total.
+
+Findings:
+- Programmatic (curl + HTML) is the best approach for Watchtower UI verification — faster and more deterministic than Playwright
+- Playwright doesn't work on root Linux (sandbox issue). Not a blocker since curl-based verification is superior for server-rendered pages
+- TermLink E2E works for process-level tests (loop detector), but macOS tests need .107 access
+- 8 tasks genuinely requ...
+
+**Date**: 2026-04-03T23:05:55Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO — 10 of 27 tasks (37%) verified with clear evidence. Verification ran in under 3 minutes total.
+
+Findings:
+- Programmatic (curl + HTML) is the best approach for Watchtower UI verification — faster and more deterministic than Playwright
+- Playwright doesn't work on root Linux (sandbox issue). Not a blocker since curl-based verification is superior for server-rendered pages
+- TermLink E2E works for process-level tests (loop detector), but macOS tests need .107 access
+- 8 tasks genuinely requ...
+
+**Date**: 2026-04-03T23:05:55Z
 
 ## Updates
 
@@ -124,3 +136,18 @@ grep -q "Phase 1" docs/reports/T-823-automated-human-ac-verification.md
 
 ### 2026-04-03T22:52:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-03T23:05:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO — 10 of 27 tasks (37%) verified with clear evidence. Verification ran in under 3 minutes total.
+
+Findings:
+- Programmatic (curl + HTML) is the best approach for Watchtower UI verification — faster and more deterministic than Playwright
+- Playwright doesn't work on root Linux (sandbox issue). Not a blocker since curl-based verification is superior for server-rendered pages
+- TermLink E2E works for process-level tests (loop detector), but macOS tests need .107 access
+- 8 tasks genuinely requ...
+
+### 2026-04-03T23:05:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

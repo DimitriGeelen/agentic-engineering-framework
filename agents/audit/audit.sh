@@ -17,6 +17,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -2906,13 +2907,14 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-if curl -sf --max-time 3 http://localhost:3000/health >/dev/null 2>&1; then
-    pass "Deploy gate: Health endpoint responds on :3000"
+_wt_port=$(fw_config "PORT" 3000)
+if curl -sf --max-time 3 "http://localhost:${_wt_port}/health" >/dev/null 2>&1; then
+    pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"
 else
     warn "Deploy gate: Health endpoint not reachable" \
-         "Neither :3000 nor :5050 /health responded" \
+         "Neither :${_wt_port} nor :5050 /health responded" \
          "Start server: fw serve (or check if health endpoint exists)"
 fi
 

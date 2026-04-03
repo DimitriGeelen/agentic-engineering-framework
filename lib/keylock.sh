@@ -16,9 +16,13 @@
 [ -n "${_KEYLOCK_LOADED:-}" ] && return 0
 _KEYLOCK_LOADED=1
 
+# Source config (may already be loaded by caller — guard protects against double-source)
+FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+
 # Configuration
 KEYLOCK_DIR="${PROJECT_ROOT:-.}/.context/locks"
-KEYLOCK_TIMEOUT="${KEYLOCK_TIMEOUT:-300}"  # seconds before stale lock cleanup
+KEYLOCK_TIMEOUT=$(fw_config_int "KEYLOCK_TIMEOUT" 300)  # seconds before stale lock cleanup
 
 # Track file descriptors per key for release
 # declare -A requires bash 4+; fail gracefully

@@ -15,6 +15,11 @@
 
 set -euo pipefail
 
+# Resolve paths for config
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -23,6 +28,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 DISPATCH_DIR="/tmp/tl-dispatch"
+TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
@@ -230,7 +236,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout=600
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -313,7 +319,7 @@ RUNEOF
 
 cmd_wait() {
     ensure_termlink
-    local name="" wait_all=false timeout=600
+    local name="" wait_all=false timeout="$TERMLINK_WORKER_TIMEOUT"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
