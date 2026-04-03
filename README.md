@@ -1,4 +1,3 @@
-# Agentic Engineering Framework
 ![agentic-engeneering-framework](header.svg)
 > Governance and guardrails for AI coding agents in your repo. Not another chatbot.
 
