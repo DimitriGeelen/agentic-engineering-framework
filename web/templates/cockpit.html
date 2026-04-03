@@ -68,6 +68,22 @@
 </article>
 {% endif %}
 
+{# --- Token Usage Widget (T-803) ------------------------------ #}
+{% if token_usage %}
+<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Tokens</span>
+        <span style="font-weight: 700; font-size: 1.1rem;">{{ token_usage.current_tokens }}</span>
+        <span style="font-size: 0.8rem; color: var(--pico-muted-color);">this session ({{ token_usage.current_turns }} turns)</span>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--pico-muted-color);">
+        {{ token_usage.project_tokens }} project total &middot; {{ token_usage.cache_hit }}% cache &middot; {{ token_usage.sessions }} sessions
+    </div>
+    <a href="/costs" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+       style="font-size: 0.8rem; margin-left: auto;">Details &rarr;</a>
+</article>
+{% endif %}
+
 {% if scan_status == 'partial' %}
 <article style="border-left:4px solid #f9a825; padding:0.5rem 1rem; margin-bottom:1rem;">
     <small>Scan partially completed — some data sources were unavailable.</small>
