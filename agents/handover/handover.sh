@@ -292,6 +292,22 @@ if [ -f "$GAPS_FILE" ]; then
     fi
 fi
 
+# Step 1.8: Token usage (T-805)
+TOKEN_USAGE=""
+TOKEN_TOTAL=""
+TOKEN_TURNS=""
+TOKEN_CACHE_HIT=""
+if [ -x "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
+    TOKEN_DATA=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
+        bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh" 2>/dev/null; source "$FRAMEWORK_ROOT/lib/costs.sh"; costs_main current 2>/dev/null' || true)
+    if [ -n "$TOKEN_DATA" ]; then
+        TOKEN_TOTAL=$(echo "$TOKEN_DATA" | grep "^Total:" | awk '{print $2}')
+        TOKEN_TURNS=$(echo "$TOKEN_DATA" | grep "^Turns:" | awk '{print $2}' | tr -d ',')
+        TOKEN_CACHE_HIT=$(echo "$TOKEN_DATA" | grep "^  Cache Rd:" | awk '{print $2}')
+        TOKEN_USAGE="${TOKEN_TOTAL:-0} tokens, ${TOKEN_TURNS:-0} turns"
+    fi
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -304,6 +320,7 @@ tasks_active: [$ACTIVE_TASKS]
 tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
+token_usage: "${TOKEN_USAGE}"
 owner: ${AGENT_OWNER:-claude-code}
 session_narrative: ""
 ---
@@ -555,6 +572,18 @@ None
 ## Open Questions / Blockers
 
 None
+
+## Token Usage
+
+$(if [ -n "$TOKEN_TOTAL" ]; then
+    echo "- **Total:** $TOKEN_TOTAL tokens"
+    echo "- **Turns:** ${TOKEN_TURNS:-?}"
+    [ -n "$TOKEN_CACHE_HIT" ] && echo "- **Cache read:** $TOKEN_CACHE_HIT"
+    echo ""
+    echo "Run \`fw costs current\` for detailed breakdown."
+else
+    echo "No token data available (requires JSONL transcript)."
+fi)
 
 ## Gotchas / Warnings for Next Session
 
