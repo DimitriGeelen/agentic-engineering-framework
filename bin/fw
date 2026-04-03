@@ -497,6 +497,7 @@ show_help() {
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}validate-init${NC}        Verify fw init output is correct and complete"
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
+    echo -e "  ${GREEN}verify-acs${NC}           Automated Human AC evidence collection"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
     echo -e "  ${GREEN}costs${NC}                Token usage tracking (session/project totals)"
@@ -3376,6 +3377,10 @@ PYSEARCH
         ;;
     doctor)
         do_doctor "$@"
+        ;;
+    verify-acs)
+        source "$FW_LIB_DIR/verify-acs.sh"
+        do_verify_acs "$@"
         ;;
     self-test)
         # Detect subcommand vs flags — flags start with --
