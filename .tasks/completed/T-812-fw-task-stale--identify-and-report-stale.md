@@ -4,16 +4,16 @@ name: "fw task stale — identify and report stale active tasks"
 description: >
   fw task stale — identify and report stale active tasks
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-03T20:28:35Z
-last_update: 2026-04-03T20:28:35Z
-date_finished: null
+last_update: 2026-04-03T20:32:00Z
+date_finished: 2026-04-03T20:32:00Z
 ---
 
 # T-812: fw task stale — identify and report stale active tasks
@@ -76,3 +76,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-812-fw-task-stale--identify-and-report-stale.md
 - **Context:** Initial task creation
+
+### 2026-04-03T20:32:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

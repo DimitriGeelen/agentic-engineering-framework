@@ -1,11 +1,11 @@
-timestamp: 2026-04-03T20:04:11Z
+timestamp: 2026-04-03T20:27:16Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (19/748)"
+    check: "D1: Episodic quality — 2% [TODO] (19/752)"
   - id: D2
     level: WARN
-    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(19d) T-460(21d) T-470(21d) T-476(21d) T-481(20d) T-483(20d) T-493(19d) T-505(17d) T-511(17d) T-516(16d) T-518(16d)"
+    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(19d) T-460(21d) T-470(21d) T-476(21d) T-481(20d) T-483(20d) T-493(20d) T-505(17d) T-511(17d) T-516(16d) T-518(16d)"
     mitigation: "Review with: fw task verify"
   - id: D8
     level: PASS
@@ -26,13 +26,13 @@ findings:
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=20 avg=61 ratio=0.3x)"
+    check: "D3: Commit velocity — normal (PASS today=29 avg=61 ratio=0.5x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 20_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 29_commits_24h)"
   - id: D6
     level: WARN
-    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.0 vs earlier_avg=21.7)"
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=1.3 vs earlier_avg=21.7)"
     mitigation: "Check for blockers or process issues slowing work"
   - id: D12
     level: PASS
