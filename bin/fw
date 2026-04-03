@@ -1074,6 +1074,35 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         fi
     fi
 
+    # Check: Stale task debt (T-814)
+    local stale_count=0
+    local active_dir="$PROJECT_ROOT/.tasks/active"
+    if [ -d "$active_dir" ]; then
+        local cutoff_epoch
+        cutoff_epoch=$(date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
+        if [ "$cutoff_epoch" -gt 0 ]; then
+            for tf in "$active_dir"/*.md; do
+                [ -f "$tf" ] || continue
+                local lu
+                lu=$(grep '^last_update:' "$tf" 2>/dev/null | head -1 | sed 's/last_update: *//' | tr -d '"' || true)
+                if [ -n "$lu" ]; then
+                    local lu_epoch
+                    lu_epoch=$(date -d "${lu}" +%s 2>/dev/null || date -jf "%Y-%m-%dT%H:%M:%SZ" "${lu}" +%s 2>/dev/null || echo 0)
+                    if [ "$lu_epoch" -gt 0 ] && [ "$lu_epoch" -lt "$cutoff_epoch" ]; then
+                        stale_count=$((stale_count + 1))
+                    fi
+                fi
+            done
+        fi
+        if [ "$stale_count" -gt 10 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
+            echo -e "         Run: fw task stale"
+            warnings=$((warnings + 1))
+        elif [ "$stale_count" -gt 0 ]; then
+            echo -e "  ${CYAN}INFO${NC}  Task debt: $stale_count stale tasks (no updates in 7+ days)"
+        fi
+    fi
+
     # Check: Consumer project fleet health (T-616)
     # Only runs from framework repo — scans /opt for .framework.yaml
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
