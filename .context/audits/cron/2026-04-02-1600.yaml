@@ -1,0 +1,41 @@
+# Audit Results - 2026-04-02-1600
+timestamp: 2026-04-02T14:00:01Z
+sections: "traceability,episodic,discovery-trends"
+summary:
+  pass: 9
+  warn: 5
+  fail: 0
+findings:
+  - level: PASS
+    check: "Git traceability: 99% (2019/2038 commits reference tasks)"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
+  - level: PASS
+    check: "All commit task refs resolve to actual tasks"
+  - level: PASS
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 748 episodic summaries have quality content"
+  - level: WARN
+    check: "Orphaned episodic: T-779 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
+  - level: WARN
+    check: "Orphaned episodic: T-785 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - level: WARN
+    check: "D5: Task lifecycle — 26 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-554(9d-active) (+16 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - level: PASS
+    check: "D3: Commit velocity — insufficient data"
+  - level: PASS
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
+  - level: WARN
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.0 vs earlier_avg=24.6)"
+    mitigation: "Check for blockers or process issues slowing work"
+  - level: PASS
+    check: "D12: Bypass log — no log file"
+  - level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
