@@ -1,0 +1,222 @@
+<style>
+    .costs-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .costs-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .metric-card { text-align: center; }
+    .metric-card .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .metric-card .metric-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .metric-card .metric-sub {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.25rem;
+    }
+    .breakdown-bar {
+        display: flex;
+        height: 24px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+    .breakdown-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #fff;
+        white-space: nowrap;
+        min-width: 2px;
+    }
+    .seg-input { background: #1565c0; }
+    .seg-cache-read { background: #2e7d32; }
+    .seg-cache-create { background: #f9a825; color: #333; }
+    .seg-output { background: #c62828; }
+    .breakdown-legend {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+    }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    .session-table {
+        width: 100%;
+        font-size: 0.875rem;
+    }
+    .session-table th {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+        color: var(--pico-muted-color);
+    }
+    .session-table td {
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+    .session-table td.num {
+        text-align: right;
+    }
+    .session-table tfoot td {
+        font-weight: 700;
+        border-top: 2px solid var(--pico-muted-border-color);
+    }
+    .current-badge {
+        display: inline-block;
+        background: var(--pico-primary);
+        color: #fff;
+        font-size: 0.65rem;
+        padding: 0.1em 0.5em;
+        border-radius: 3px;
+        margin-left: 0.4em;
+        vertical-align: middle;
+    }
+    .wt-section-title {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--pico-muted-color);
+    }
+</style>
+
+<div class="page-header flex-between">
+    <div>
+        <h1>{{ page_title }}</h1>
+        <p>Token usage across {{ total_sessions }} session{{ 's' if total_sessions != 1 }}{% if date_range %} &middot; {{ date_range }}{% endif %}</p>
+    </div>
+    <a role="button" class="outline text-sm"
+       hx-get="/costs" hx-target="#content" hx-swap="innerHTML">Refresh</a>
+</div>
+
+<!-- Summary cards -->
+<div class="costs-grid">
+    <article class="metric-card">
+        <div class="metric-value">{{ total_tokens }}</div>
+        <div class="metric-label">Total Tokens</div>
+        <div class="metric-sub">{{ total_turns }} turns</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-value">{{ total_sessions }}</div>
+        <div class="metric-label">Sessions</div>
+        <div class="metric-sub">{{ avg_per_turn }}/turn avg</div>
+    </article>
+
+    <article class="metric-card">
+        <div class="metric-value">{{ cache_hit }}%</div>
+        <div class="metric-label">Cache Hit Rate</div>
+        <div class="metric-sub">of total input</div>
+    </article>
+
+    {% if current_session %}
+    <article class="metric-card">
+        <div class="metric-value">{{ current_session.total_fmt }}</div>
+        <div class="metric-label">Current Session</div>
+        <div class="metric-sub">{{ current_session.turns | default(0) }} turns</div>
+    </article>
+    {% endif %}
+</div>
+
+<!-- Token breakdown bar -->
+{% if categories %}
+<h3 class="wt-section-title">Token Breakdown</h3>
+<div class="breakdown-bar">
+    {% for cat in categories %}
+    {% set pct = cat.pct | float %}
+    {% if pct >= 0.1 %}
+    <div class="breakdown-segment seg-{{ cat.name | lower | replace(' ', '-') }}"
+         style="width: {{ pct }}%;"
+         title="{{ cat.name }}: {{ cat.fmt }} ({{ cat.pct }}%)">
+        {% if pct > 5 %}{{ cat.pct }}%{% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+<div class="breakdown-legend">
+    <div class="legend-item">
+        <div class="legend-dot seg-input" style="background: #1565c0;"></div>
+        <span>Fresh input ({{ categories[0].fmt }})</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-dot" style="background: #2e7d32;"></div>
+        <span>Cache read ({{ categories[1].fmt }})</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-dot" style="background: #f9a825;"></div>
+        <span>Cache create ({{ categories[2].fmt }})</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-dot" style="background: #c62828;"></div>
+        <span>Output ({{ categories[3].fmt }})</span>
+    </div>
+</div>
+{% endif %}
+
+<!-- Per-session table -->
+<h3 class="wt-section-title">Sessions</h3>
+<div style="overflow-x: auto;">
+<table class="session-table">
+    <thead>
+        <tr>
+            <th>Session</th>
+            <th>Date</th>
+            <th style="text-align:right;">Turns</th>
+            <th style="text-align:right;">Input</th>
+            <th style="text-align:right;">Cache Rd</th>
+            <th style="text-align:right;">Cache Cr</th>
+            <th style="text-align:right;">Output</th>
+            <th style="text-align:right;">Total</th>
+            <th style="text-align:right;">Size</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sessions %}
+        <tr>
+            <td>{{ s.id }}{% if loop.last %}<span class="current-badge">current</span>{% endif %}</td>
+            <td>{{ s.date }}</td>
+            <td class="num">{{ "{:,}".format(s.turns) }}</td>
+            <td class="num">{{ s.input_fmt }}</td>
+            <td class="num">{{ s.cache_read_fmt }}</td>
+            <td class="num">{{ s.cache_create_fmt }}</td>
+            <td class="num">{{ s.output_fmt }}</td>
+            <td class="num">{{ s.total_fmt }}</td>
+            <td class="num">{{ s.size_mb }}MB</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2"><strong>Total</strong></td>
+            <td class="num">{{ total_turns }}</td>
+            <td class="num" colspan="4"></td>
+            <td class="num">{{ total_tokens }}</td>
+            <td></td>
+        </tr>
+    </tfoot>
+</table>
+</div>
