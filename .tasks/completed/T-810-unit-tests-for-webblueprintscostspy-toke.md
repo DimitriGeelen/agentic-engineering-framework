@@ -1,22 +1,22 @@
 ---
-id: T-809
-name: "Add /costs route to Watchtower test suite"
+id: T-810
+name: "Unit tests for web/blueprints/costs.py token dashboard"
 description: >
-  Add /costs route to Watchtower test suite
+  Unit tests for web/blueprints/costs.py token dashboard
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/test_costs.py]
 related_tasks: []
-created: 2026-04-03T20:12:56Z
-last_update: 2026-04-03T20:12:56Z
-date_finished: null
+created: 2026-04-03T20:22:04Z
+last_update: 2026-04-03T20:24:31Z
+date_finished: 2026-04-03T20:24:31Z
 ---
 
-# T-809: Add /costs route to Watchtower test suite
+# T-810: Unit tests for web/blueprints/costs.py token dashboard
 
 ## Context
 
@@ -26,9 +26,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `/costs` route added to route availability test in `web/test_app.py`
-- [x] `/costs` route added to htmx fragment test
-- [x] Tests pass: `pytest web/test_app.py -v -k costs`
+- [x] Test file `web/test_costs.py` exists following project pytest conventions
+- [x] Tests cover `_parse_session()` and `_load_all_sessions()` with JSONL fixtures
+- [x] Tests cover `/costs` route response and template rendering
+- [x] Tests cover edge cases: empty JSONL dir, malformed data
+- [x] All tests pass: `pytest web/test_costs.py -v`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -69,7 +71,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-03T20:12:56Z — task-created [task-create-agent]
+### 2026-04-03T20:22:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-809-add-costs-route-to-watchtower-test-suite.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-810-unit-tests-for-webblueprintscostspy-toke.md
 - **Context:** Initial task creation
+
+### 2026-04-03T20:24:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

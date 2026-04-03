@@ -1,52 +1,41 @@
 # Audit Results - 2026-04-03-2200
 timestamp: 2026-04-03T20:00:01Z
-sections: "structure,compliance,quality,discovery"
+sections: "traceability,episodic,discovery-trends"
 summary:
-  pass: 13
-  warn: 6
+  pass: 9
+  warn: 5
   fail: 0
 findings:
   - level: PASS
-    check: "Tasks directory exists"
-  - level: PASS
-    check: "Tasks/active directory exists"
-  - level: PASS
-    check: "Tasks/completed directory exists"
-  - level: PASS
-    check: "Tasks/templates directory exists"
-  - level: PASS
-    check: "Task template exists"
-  - level: PASS
-    check: "All 10 project YAML files parse correctly"
-  - level: PASS
-    check: "Fabric: 232 registered, 0 unregistered"
+    check: "Git traceability: 99% (2037/2056 commits reference tasks)"
   - level: WARN
-    check: "Fabric: 19/232 cards have no edges"
-    mitigation: "Run: fw fabric enrich"
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (232 cards)"
+    check: "All commit task refs resolve to actual tasks"
   - level: PASS
-    check: "All 101 active tasks are valid"
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 748 episodic summaries have quality content"
   - level: WARN
-    check: "Task T-548 is 11 days old with only 1 updates"
-    mitigation: "Add progress updates to T-548-npm-install-pathway--evaluate-whether-to.md"
+    check: "Orphaned episodic: T-779 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
   - level: WARN
-    check: "Task T-568 is 11 days old with only 1 updates"
-    mitigation: "Add progress updates to T-568-openclaw-deep-dive-architecture-patterns.md"
+    check: "Orphaned episodic: T-785 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "Task T-569 is 11 days old with only 1 updates"
-    mitigation: "Add progress updates to T-569-openclaw-deep-dive-quality-and-testing-p.md"
+    check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(9d-active) (+17 more)"
+    mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (19/748)"
+    check: "D3: Commit velocity — insufficient data"
+  - level: PASS
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - level: WARN
-    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(19d) T-460(21d) T-470(21d) T-476(21d) T-481(20d) T-483(20d) T-493(19d) T-505(17d) T-511(17d) T-516(16d) T-518(16d)"
-    mitigation: "Review with: fw task verify"
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.0 vs earlier_avg=21.7)"
+    mitigation: "Check for blockers or process issues slowing work"
   - level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
+    check: "D12: Bypass log — no log file"
   - level: PASS
-    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
-  - level: WARN
-    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
-    mitigation: "Review flagged tasks — human dialogue may have been skipped"
-  - level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"

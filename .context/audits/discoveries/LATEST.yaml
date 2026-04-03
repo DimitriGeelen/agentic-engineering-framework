@@ -1,4 +1,4 @@
-timestamp: 2026-04-03T20:00:01Z
+timestamp: 2026-04-03T20:04:11Z
 findings:
   - id: D1
     level: PASS
@@ -17,9 +17,32 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(9d-active) (+17 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=20 avg=61 ratio=0.3x)"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 20_commits_24h)"
+  - id: D6
+    level: WARN
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=0.0 vs earlier_avg=21.7)"
+    mitigation: "Check for blockers or process issues slowing work"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 3
-  warn: 2
+  pass: 8
+  warn: 4
   fail: 0
-  total: 5
+  total: 12
