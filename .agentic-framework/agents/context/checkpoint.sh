@@ -21,12 +21,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+fw_hook_crash_trap "checkpoint"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
 # Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
 # Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
 
 # Token thresholds (autoCompact disabled — D-027)
 # Tighter margins required for smaller window. ~10K headroom for handover routine.
@@ -35,12 +37,12 @@ TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K) — commi
 TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
-TOKEN_CHECK_INTERVAL=5
+TOKEN_CHECK_INTERVAL=$(fw_config_int "TOKEN_CHECK_INTERVAL" 5)
 
 # Fallback tool call thresholds (only used when transcript unavailable)
-CALL_WARN=40
-CALL_URGENT=60
-CALL_CRITICAL=80
+CALL_WARN=$(fw_config_int "CALL_WARN" 40)
+CALL_URGENT=$(fw_config_int "CALL_URGENT" 60)
+CALL_CRITICAL=$(fw_config_int "CALL_CRITICAL" 80)
 
 ensure_counter() {
     mkdir -p "$(dirname "$COUNTER_FILE")"
@@ -56,15 +58,21 @@ increment_counter() {
     echo "$count"
 }
 
-# Find current session JSONL transcript.
-# Always finds the most-recently-modified transcript (~23ms) to avoid stale
-# cache hits from previous sessions. The old caching approach checked file
-# existence but not recency, so it silently returned old transcripts.
+# Find current session JSONL transcript — scoped to THIS project.
+# Uses PROJECT_ROOT to derive the Claude Code project directory name,
+# matching the pattern in budget-gate.sh. Without project scoping,
+# find_transcript picks up transcripts from other projects (T-791).
 find_transcript() {
-    local transcript
-    transcript=$(find ~/.claude/projects -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
-    if [ -n "$transcript" ]; then
-        echo "$transcript"
+    local project_dir_name
+    project_dir_name="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    project_dir_name="${project_dir_name//\//-}"
+    local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
+    if [ -d "$project_jsonl_dir" ]; then
+        local transcript
+        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
+        if [ -n "$transcript" ]; then
+            echo "$transcript"
+        fi
     fi
 }
 
@@ -116,14 +124,15 @@ warn_by_tokens() {
         #       because tokens stay above critical — caused 23 handover commits in sprechloop)
         local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
         local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
-        local COOLDOWN_SECONDS=600  # 10 minutes
+        local COOLDOWN_SECONDS
+        COOLDOWN_SECONDS=$(fw_config_int "HANDOVER_COOLDOWN" 600)
 
         local should_fire=true
         if [ -f "$handover_lock" ]; then
             should_fire=false
         elif [ -f "$handover_cooldown" ]; then
             local last_fired
-            last_fired=$(cat "$handover_cooldown" 2>/dev/null | tr -d '[:space:]')
+            last_fired=$(tr -d '[:space:]' < "$handover_cooldown" 2>/dev/null)
             local now
             now=$(date +%s)
             if [ -n "$last_fired" ] && [ $((now - last_fired)) -lt "$COOLDOWN_SECONDS" ]; then

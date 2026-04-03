@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-820: Fix TermLink dispatch preamble — workers write to target files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-03T21:48:26Z
+# ============================================================================
+
+task_id: T-820
+task_name: "Fix TermLink dispatch preamble — workers write to target files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T21:46:22Z
+completed: 2026-04-03T21:48:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-03T23:48:20+02:00
+last_commit: 2026-04-03T23:48:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix TermLink dispatch preamble + handover orphan check
+
+# Key outcomes
+outcomes:
+  - "Dispatch preamble has TermLink-specific output rules section"
+  - "TermLink section instructs workers to write directly to target files"
+  - "Handover agent checks for orphaned /tmp/fw-agent-* outputs"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix TermLink dispatch preamble + handover orphan check"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/dispatch/preamble.md"
+  - "agents/handover/handover.sh"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/tests-unit-lib_config.yaml"
+  - ".fabric/components/web-blueprints-config.yaml"
+  - ".tasks/active/T-820-fix-termlink-dispatch-preamble--workers-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-03T23:48:20"
+    action: "T-820: Fix TermLink dispatch preamble + handover orphan check"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 180
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-820-fix-termlink-dispatch-preamble--workers-.md
+generated_by: context-agent-hybrid

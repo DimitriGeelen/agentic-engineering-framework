@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-03T21:54:02Z
+# ============================================================================
+
+task_id: T-821
+task_name: "Hook crash distinguishability — trap handlers + stderr headers for crash vs block"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T21:50:47Z
+completed: 2026-04-03T21:54:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-03T23:53:55+02:00
+last_commit: 2026-04-03T23:53:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Hook crash distinguishability — ERR traps + crash log
+
+# Key outcomes
+outcomes:
+  - "All PreToolUse hooks have ERR trap that emits \"HOOK CRASHED\" marker to stderr"
+  - "Intentional blocks (exit 2) emit \"BLOCKED BY POLICY\" header in stderr (already present in existing code)"
+  - "Crashes log to `.context/working/.hook-crashes.log`"
+  - "`fw doctor` checks `.hook-crashes.log` for recent crashes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/budget-gate.sh"
+  - "agents/context/check-active-task.sh"
+  - "agents/context/check-agent-dispatch.sh"
+  - "agents/context/checkpoint.sh"
+  - "agents/context/check-project-boundary.sh"
+  - "agents/context/check-tier0.sh"
+  - "bin/fw"
+  - "lib/config.sh"
+  - ".tasks/active/T-821-hook-crash-distinguishability--trap-hand.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-03T23:53:55"
+    action: "T-821: Hook crash distinguishability — ERR traps + crash log"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 9
+  lines_added: 118
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-821-hook-crash-distinguishability--trap-hand.md
+generated_by: context-agent-hybrid

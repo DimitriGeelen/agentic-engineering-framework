@@ -29,6 +29,8 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+fw_hook_crash_trap "check-active-task"
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
 # Read stdin (JSON from Claude Code)

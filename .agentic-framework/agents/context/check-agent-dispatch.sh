@@ -23,10 +23,12 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+fw_hook_crash_trap "check-agent-dispatch"
 
 COUNTER_FILE="$PROJECT_ROOT/.context/working/.agent-dispatch-counter"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.dispatch-approval"
-DISPATCH_LIMIT=2
+DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
@@ -50,7 +52,7 @@ mkdir -p "$(dirname "$COUNTER_FILE")"
 
 # Read current count
 if [ -f "$COUNTER_FILE" ]; then
-    COUNT=$(cat "$COUNTER_FILE" 2>/dev/null | tr -d '[:space:]')
+    COUNT=$(tr -d '[:space:]' < "$COUNTER_FILE" 2>/dev/null)
     COUNT=${COUNT:-0}
 else
     COUNT=0
@@ -74,7 +76,7 @@ fi
 
 # Check for approval token
 if [ -f "$APPROVAL_FILE" ]; then
-    APPROVAL_TS=$(cat "$APPROVAL_FILE" 2>/dev/null | tr -d '[:space:]')
+    APPROVAL_TS=$(tr -d '[:space:]' < "$APPROVAL_FILE" 2>/dev/null)
     NOW_TS=$(date +%s)
     AGE=$(( NOW_TS - APPROVAL_TS ))
     if [ "$AGE" -lt 300 ]; then

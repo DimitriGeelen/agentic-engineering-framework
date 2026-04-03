@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-817: 3-tier config resolution — env var configuration layer for framework settings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-03T21:36:04Z
+# ============================================================================
+
+task_id: T-817
+task_name: "3-tier config resolution — env var configuration layer for framework settings"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-04-03T20:52:22Z
+completed: 2026-04-03T21:36:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-03T22:53:30+02:00
+last_commit: 2026-04-03T22:53:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-816, T-817: Create inception tasks and research artifacts for traceAI pattern adoption
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.budget-gate-counter"
+  - ".context/working/.budget-status"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/T-816-null-object-fallback.md"
+  - "docs/reports/T-817-three-tier-config.md"
+  - ".tasks/active/T-816-null-object-fallback-for-hooks--fail-ope.md"
+  - ".tasks/active/T-817-3-tier-config-resolution--env-var-config.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-03T22:53:30"
+    action: "T-816, T-817: Create inception tasks and research artifacts for traceAI pattern adoption"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 2
+  files_changed: 10
+  lines_added: 590
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-817-3-tier-config-resolution--env-var-config.md
+generated_by: context-agent-hybrid

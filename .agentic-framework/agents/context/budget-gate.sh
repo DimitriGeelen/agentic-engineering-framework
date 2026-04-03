@@ -22,12 +22,14 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+fw_hook_crash_trap "budget-gate"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
 # Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
 # Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
 
 # Token thresholds (autoCompact disabled — D-027)
 # Tighter margins required for smaller window. ~10K headroom for handover routine.
@@ -36,10 +38,10 @@ TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K)
 TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K)
 
 # How often to re-read the transcript (every Nth tool call)
-RECHECK_INTERVAL=5
+RECHECK_INTERVAL=$(fw_config_int "BUDGET_RECHECK_INTERVAL" 5)
 
 # Max age of .budget-status before considering it stale (seconds)
-STATUS_MAX_AGE=90
+STATUS_MAX_AGE=$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
@@ -93,6 +95,7 @@ print(f'{level} {tokens} {age} {tool_name} {\"allowed\" if (is_allowed_cmd or is
 STATUS_LEVEL=$(echo "$RESULT" | awk '{print $1}')
 STATUS_TOKENS=$(echo "$RESULT" | awk '{print $2}')
 STATUS_AGE=$(echo "$RESULT" | awk '{print $3}')
+# shellcheck disable=SC2034 # TOOL_NAME available for debug logging
 TOOL_NAME=$(echo "$RESULT" | awk '{print $4}')
 CMD_CLASS=$(echo "$RESULT" | awk '{print $5}')
 
@@ -169,11 +172,11 @@ fi
 
 # Find transcript — scoped to THIS project's Claude Code directory
 # Claude Code encodes project paths: /opt/foo → -opt-foo in ~/.claude/projects/
-PROJECT_DIR_NAME=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+PROJECT_DIR_NAME="${PROJECT_ROOT//\//-}"
 PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
 TRANSCRIPT=""
 if [ -d "$PROJECT_JSONL_DIR" ]; then
-    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" 2>/dev/null | xargs ls -t 2>/dev/null | head -1)
+    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
