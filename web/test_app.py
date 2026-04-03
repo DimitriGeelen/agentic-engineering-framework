@@ -66,6 +66,7 @@ class TestRoutes:
             "/metrics",
             "/patterns",
             "/patterns?type=failure",
+            "/costs",
         ],
     )
     def test_route_returns_200(self, client, path):
@@ -88,7 +89,7 @@ class TestHtmxPartials:
 
     @pytest.mark.parametrize(
         "path",
-        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality", "/metrics", "/patterns"],
+        ["/", "/tasks", "/timeline", "/decisions", "/learnings", "/gaps", "/quality", "/metrics", "/patterns", "/costs"],
     )
     def test_htmx_returns_fragment(self, client, path):
         resp = client.get(path, headers={"HX-Request": "true"})
