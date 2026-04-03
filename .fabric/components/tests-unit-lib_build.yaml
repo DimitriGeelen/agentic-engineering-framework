@@ -1,0 +1,17 @@
+id: tests/unit/lib_build.bats
+name: lib_build tests
+type: test
+subsystem: tests
+location: tests/unit/lib_build.bats
+tags: [typescript, build, testing]
+
+purpose: "7 bats unit tests for lib/build.sh — early exits, stale guard, build detection (T-811)"
+
+depends_on:
+  - target: lib/build.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-03
+created_by: unknown
