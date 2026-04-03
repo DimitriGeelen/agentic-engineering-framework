@@ -499,6 +499,7 @@ show_help() {
     echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
+    echo -e "  ${GREEN}costs${NC}                Token usage tracking (session/project totals)"
     echo -e "  ${GREEN}self-test${NC} [phase]     Run E2E self-test (onboarding|all) [--json]"
     echo -e "  ${GREEN}test${NC} [suite]           Run tests (all|unit|integration|web|lint)"
     echo -e "  ${GREEN}version${NC}              Show version information"
@@ -3451,6 +3452,11 @@ PYPREDICT
                 exit 1
                 ;;
         esac
+        ;;
+    costs)
+        # T-801: Token usage tracking from JSONL transcripts
+        source "$FW_LIB_DIR/costs.sh"
+        costs_main "$@"
         ;;
     test)
         _test_exit=0
