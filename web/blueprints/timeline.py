@@ -124,6 +124,7 @@ def timeline():
                     "narrative_short": _truncate(narrative),
                     "predecessor": fm.get("predecessor", ""),
                     "is_emergency": is_emergency,
+                    "token_usage": fm.get("token_usage", ""),
                 }
             )
 
