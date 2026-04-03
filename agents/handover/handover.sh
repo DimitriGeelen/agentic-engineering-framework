@@ -297,7 +297,7 @@ TOKEN_USAGE=""
 TOKEN_TOTAL=""
 TOKEN_TURNS=""
 TOKEN_CACHE_HIT=""
-if [ -x "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
+if [ -f "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
     TOKEN_DATA=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
         bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh" 2>/dev/null; source "$FRAMEWORK_ROOT/lib/costs.sh"; costs_main current 2>/dev/null' || true)
     if [ -n "$TOKEN_DATA" ]; then
