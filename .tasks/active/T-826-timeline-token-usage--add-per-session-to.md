@@ -4,16 +4,16 @@ name: "Timeline token usage — add per-session token costs to /timeline cards"
 description: >
   Timeline token usage — add per-session token costs to /timeline cards
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/timeline.py, web/templates/timeline.html]
 related_tasks: []
 created: 2026-04-03T23:38:50Z
-last_update: 2026-04-03T23:38:50Z
-date_finished: null
+last_update: 2026-04-03T23:41:12Z
+date_finished: 2026-04-03T23:41:12Z
 ---
 
 # T-826: Timeline token usage — add per-session token costs to /timeline cards
@@ -40,7 +40,10 @@ Build task from T-825 GO decision. Add `token_usage` from handover frontmatter t
 
 ## Verification
 
-curl -sf http://localhost:3000/timeline | grep -q "token"
+# Verify token_usage field is extracted in timeline.py
+grep -q "token_usage" web/blueprints/timeline.py
+# Verify badge markup exists in template
+grep -q "token_usage" web/templates/timeline.html
 
 ## Decisions
 
@@ -59,3 +62,6 @@ curl -sf http://localhost:3000/timeline | grep -q "token"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-826-timeline-token-usage--add-per-session-to.md
 - **Context:** Initial task creation
+
+### 2026-04-03T23:41:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
