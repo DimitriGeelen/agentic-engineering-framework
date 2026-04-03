@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-823: Automated Human AC verification — programmatic, TermLink E2E, and Playwright approaches for stale task clearance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-03T23:05:57Z
+# ============================================================================
+
+task_id: T-823
+task_name: "Automated Human AC verification — programmatic, TermLink E2E, and Playwright approaches for stale task clearance"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T22:52:29Z
+completed: 2026-04-03T23:05:55Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-04T00:54:08+02:00
+last_commit: 2026-04-04T01:04:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Research artifact — automated Human AC verification analysis. Execute verification — 10/27 tasks verified via programmatic + HTTP + TermLink
+
+# Key outcomes
+outcomes:
+  - "Categorized 27 tasks by verification approach (A/B/C/D)"
+  - "Phase 1: 4 programmatic tests run — 2 PASS, 2 SKIP"
+  - "Phase 2: 7 HTTP verification tests — all 7 PASS"
+  - "Phase 3: T-594 loop detector verified via synthetic test — PASS"
+  - "Research artifact with full results: `docs/reports/T-823-automated-human-ac-verification.md`"
+  - "Recommendation written"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-823-automated-human-ac-verification.md"
+  - ".tasks/active/T-822-complete-fwconfig-migration--remaining-h.md"
+  - ".tasks/active/T-823-automated-human-ac-verification--program.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T00:54:08"
+    action: "T-823: Research artifact — automated Human AC verification analysis"
+  - time: "2026-04-04T01:04:17"
+    action: "T-823: Execute verification — 10/27 tasks verified via programmatic + HTTP + TermLink"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 2
+  files_changed: 3
+  lines_added: 394
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-823-automated-human-ac-verification--program.md
+generated_by: context-agent-hybrid

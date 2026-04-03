@@ -8,10 +8,3 @@ learnings:
   date: 2026-04-03
   context: Added via context agent
   application: TBD
-- id: L-002
-  learning: "TermLink workers must write directly to target files in the repo, not /tmp/fw-agent-*. If the parent session hits budget critical before integrating /tmp results, outputs are lost. T-816 incident: 307 lines lost, recovered manually."
-  source: P-001
-  task: T-818
-  date: 2026-04-03
-  context: Added via context agent
-  application: TBD
