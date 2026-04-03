@@ -4,7 +4,7 @@ name: "Add fw task stale to CLAUDE.md quick reference"
 description: >
   Add fw task stale to CLAUDE.md quick reference
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T20:32:23Z
-last_update: 2026-04-03T20:32:23Z
-date_finished: null
+last_update: 2026-04-03T20:34:17Z
+date_finished: 2026-04-03T20:34:17Z
 ---
 
 # T-813: Add fw task stale to CLAUDE.md quick reference
@@ -72,3 +72,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-813-add-fw-task-stale-to-claudemd-quick-refe.md
 - **Context:** Initial task creation
+
+### 2026-04-03T20:34:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
