@@ -22,12 +22,13 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
 # Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
 # Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
 
 # Token thresholds (autoCompact disabled — D-027)
 # Tighter margins required for smaller window. ~10K headroom for handover routine.
@@ -36,10 +37,10 @@ TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K)
 TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K)
 
 # How often to re-read the transcript (every Nth tool call)
-RECHECK_INTERVAL=5
+RECHECK_INTERVAL=$(fw_config_int "BUDGET_RECHECK_INTERVAL" 5)
 
 # Max age of .budget-status before considering it stale (seconds)
-STATUS_MAX_AGE=90
+STATUS_MAX_AGE=$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)

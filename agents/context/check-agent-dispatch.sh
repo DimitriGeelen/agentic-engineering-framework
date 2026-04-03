@@ -23,10 +23,11 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 
 COUNTER_FILE="$PROJECT_ROOT/.context/working/.agent-dispatch-counter"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.dispatch-approval"
-DISPATCH_LIMIT=2
+DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)

@@ -21,12 +21,13 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
 # Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
 # Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=${CONTEXT_WINDOW:-200000}
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
 
 # Token thresholds (autoCompact disabled — D-027)
 # Tighter margins required for smaller window. ~10K headroom for handover routine.
@@ -35,12 +36,12 @@ TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K) — commi
 TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
-TOKEN_CHECK_INTERVAL=5
+TOKEN_CHECK_INTERVAL=$(fw_config_int "TOKEN_CHECK_INTERVAL" 5)
 
 # Fallback tool call thresholds (only used when transcript unavailable)
-CALL_WARN=40
-CALL_URGENT=60
-CALL_CRITICAL=80
+CALL_WARN=$(fw_config_int "CALL_WARN" 40)
+CALL_URGENT=$(fw_config_int "CALL_URGENT" 60)
+CALL_CRITICAL=$(fw_config_int "CALL_CRITICAL" 80)
 
 ensure_counter() {
     mkdir -p "$(dirname "$COUNTER_FILE")"
@@ -122,7 +123,8 @@ warn_by_tokens() {
         #       because tokens stay above critical — caused 23 handover commits in sprechloop)
         local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
         local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
-        local COOLDOWN_SECONDS=600  # 10 minutes
+        local COOLDOWN_SECONDS
+        COOLDOWN_SECONDS=$(fw_config_int "HANDOVER_COOLDOWN" 600)
 
         local should_fire=true
         if [ -f "$handover_lock" ]; then
