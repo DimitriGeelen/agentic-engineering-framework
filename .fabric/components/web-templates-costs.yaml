@@ -5,16 +5,13 @@ subsystem: watchtower
 location: web/templates/costs.html
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Jinja2 template for token usage dashboard — summary cards, breakdown bar, session table (T-802)"
 
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+depends_on: []
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: web/blueprints/costs.py
+    type: renders
 
 last_verified: 2026-04-03
 created_by: unknown

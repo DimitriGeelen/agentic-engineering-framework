@@ -5,16 +5,19 @@ subsystem: framework-core
 location: lib/costs.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801)"
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+  - target: lib/colors.sh
+    type: calls
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: bin/fw
+    type: calls
+  - target: web/blueprints/costs.py
+    type: calls
+  - target: agents/handover/handover.sh
+    type: calls
 
 last_verified: 2026-04-03
 created_by: unknown
