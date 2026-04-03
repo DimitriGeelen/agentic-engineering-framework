@@ -96,9 +96,64 @@ T-594 (loop detection) can run locally as a TermLink dispatch.
 ### Phase 4 — Human Queue
 Present remaining 8 tasks to human with direct Watchtower review links.
 
+## Execution Results
+
+### Phase 1: Programmatic Verification (Category A)
+
+| Task | Result | Evidence |
+|------|--------|----------|
+| T-648 | **PASS** | `fw v1.4.432` — version auto-derived from git, exit 0 |
+| T-646 | **PASS** | `.mcp.json` created by `fw init` in temp consumer project |
+| T-493 | **SKIP** | `fw update --check` requires `upstream_repo` in consumer .framework.yaml — not testable from framework repo |
+| T-516 | **SKIP** | E2E tier B tests require `ANTHROPIC_API_KEY` — skipped |
+
+### Phase 2: Programmatic HTTP Verification (Category B)
+
+Playwright failed (root + sandbox), pivoted to curl + HTML parsing.
+
+| Task | Result | Evidence |
+|------|--------|----------|
+| T-645 | **PASS** | Landing page: summary card present, /approvals link, task counts, 150KB page |
+| T-631 | **PASS** | `/review/T-631` returns HTTP 200, task ID present, human ACs rendered, steps visible |
+| T-610 | **PASS** | `/review/T-610` shows Human section, structured layout (Steps/Expected), checkboxes |
+| T-611 | **PASS** | `/approvals` has task cards, approve action, check functionality, 323KB page |
+| T-632 | **PASS** | `/file/docs/reports/T-823-*.md` renders markdown with links, 37KB |
+| T-633 | **PASS** | File viewer auto-links task refs (T-XXX → fabric/file links), file path links present |
+| T-819 | **PASS** | `/config` shows all 14 settings with source badges after Watchtower restart |
+
+### Phase 3: TermLink E2E (Category C)
+
+| Task | Result | Evidence |
+|------|--------|----------|
+| T-594 | **PASS** | Loop detector fires on 5+ identical calls — `generic_repeat` warning emitted, state tracked in `.loop-detect.json` |
+| T-621 | **SKIP** | Requires Mac SSH access — server is running on :3000 (verified locally) |
+| T-481 | **SKIP** | Requires macOS — no access via TermLink |
+| T-483 | **SKIP** | Requires macOS Python 3.9 — no access |
+| T-518 | **SKIP** | Requires macOS bash 3.2 — no access |
+| T-530 | **SKIP** | Requires TermLink remote attach — no remote peer |
+| T-613 | **SKIP** | Requires macOS Homebrew — no access |
+
+### Summary
+
+| Result | Count | Tasks |
+|--------|-------|-------|
+| **PASS** | 10 | T-648, T-646, T-645, T-631, T-610, T-611, T-632, T-633, T-594, T-819 |
+| **SKIP** | 7 | T-493, T-516, T-621, T-481, T-483, T-518, T-530, T-613 |
+| **Human only** | 8 | T-446, T-460, T-470, T-505, T-511, T-579, T-607, T-644 |
+
+**10 of 27 tasks verified with evidence.** 7 skipped due to missing macOS access or API keys.
+
+### Playwright Findings
+
+Playwright MCP installed with `--no-sandbox` flag but Chrome still fails on root Linux:
+"Running as root without --no-sandbox is not supported." The MCP's `--no-sandbox` flag
+doesn't propagate to Chrome's `chromiumSandbox` launch option. Workaround: curl + HTML
+parsing provided equivalent verification for server-rendered pages.
+
 ## Constraints
 
 - **Authority model**: Agent cannot CHECK Human ACs — only human can mark them done
 - **What we CAN do**: Run verification, collect evidence, present to human for approval
-- **Playwright MCP**: Available via `mcp__plugin_playwright_playwright__*` tools
-- **TermLink hub**: Need to verify .107 connectivity
+- **Playwright MCP**: Broken on root Linux (sandbox issue) — use curl + HTML parsing
+- **TermLink hub**: Local only, no .107 Mac peer available
+- **macOS tests**: 6 tasks require macOS — need physical access or cross-machine TermLink
