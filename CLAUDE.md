@@ -566,6 +566,8 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 **Evidence:** T-522 session — 3 evaluation agents dispatched via Task tool consumed ~25K parent context tokens. Same work via TermLink dispatch would cost zero parent context.
 
+**TermLink output rule (T-818):** TermLink workers MUST write directly to target files in the repo (e.g., `docs/reports/T-XXX-analysis.md`), NOT to `/tmp/fw-agent-*`. If the parent session hits budget critical before integrating `/tmp/` results, outputs are lost. The `/tmp/` convention is for Task tool agents only (consumed immediately). See `agents/dispatch/preamble.md` for full instructions.
+
 ### Prompt Template Structure
 
 When dispatching sub-agents, include in the prompt:
