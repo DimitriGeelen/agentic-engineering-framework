@@ -354,6 +354,16 @@ Validate: `fw doctor` shows warnings for out-of-range values.
 - `fw doctor` warns on all overrides and validates ranges
 - Never make structural constants configurable (task file format, directory names, hook mechanics)
 
+### Watchtower config page (user-suggested addition)
+
+A `/config` page in Watchtower would provide visibility into all framework settings:
+- Table: setting name, current value, source (env var / default), description
+- Warning indicators for out-of-range values (reuse `fw doctor` validation logic)
+- Read-only — env vars are set outside the web UI, but seeing all settings in one place aids debugging
+- Implementation: new blueprint `web/blueprints/config.py`, one template, reads `env | grep FW_` and maps against the known settings table
+
+This is a natural complement to `fw doctor` output — `fw doctor` is CLI, `/config` is web.
+
 ### Not recommended
 
 - A `.fw-config.yaml` file — bash `${VAR:-default}` is already the native mechanism; adding YAML parsing is overengineering

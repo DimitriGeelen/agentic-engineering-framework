@@ -4,7 +4,7 @@ name: "Null object fallback for hooks — fail-open resilience pattern"
 description: >
   Inception: Null object fallback for hooks — fail-open resilience pattern
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T20:52:04Z
-last_update: 2026-04-03T20:52:38Z
-date_finished: null
+last_update: 2026-04-03T21:35:59Z
+date_finished: 2026-04-03T21:35:59Z
 ---
 
 # T-816: Null object fallback for hooks — fail-open resilience pattern
@@ -78,18 +78,20 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: NO-GO
 
+**Rationale**: fail-closed correct for safety-critical hooks, carve-out for crash distinguishability is a small build
+  task
+
+**Date**: 2026-04-03T21:35:59Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: fail-closed correct for safety-critical hooks, carve-out for crash distinguishability is a small build
+  task
+
+**Date**: 2026-04-03T21:35:59Z
 
 ## Updates
 
@@ -98,3 +100,13 @@ date_finished: null
 
 ### 2026-04-03T20:52:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-03T21:35:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** fail-closed correct for safety-critical hooks, carve-out for crash distinguishability is a small build
+  task
+
+### 2026-04-03T21:35:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

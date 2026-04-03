@@ -4,7 +4,7 @@ name: "3-tier config resolution — env var configuration layer for framework se
 description: >
   Inception: 3-tier config resolution — env var configuration layer for framework settings
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T20:52:22Z
-last_update: 2026-04-03T20:53:12Z
-date_finished: null
+last_update: 2026-04-03T21:36:02Z
+date_finished: 2026-04-03T21:36:02Z
 ---
 
 # T-817: 3-tier config resolution — env var configuration layer for framework settings
@@ -78,18 +78,18 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: pattern already exists ad-hoc, standardize with lib/config.sh + Watchtower config page
+
+**Date**: 2026-04-03T21:36:01Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: pattern already exists ad-hoc, standardize with lib/config.sh + Watchtower config page
+
+**Date**: 2026-04-03T21:36:01Z
 
 ## Updates
 
@@ -98,3 +98,12 @@ date_finished: null
 
 ### 2026-04-03T20:53:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-03T21:36:01Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** pattern already exists ad-hoc, standardize with lib/config.sh + Watchtower config page
+
+### 2026-04-03T21:36:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
