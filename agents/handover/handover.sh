@@ -292,11 +292,15 @@ if [ -f "$GAPS_FILE" ]; then
     fi
 fi
 
-# Step 1.8: Token usage (T-805)
+# Step 1.8: Token usage (T-805, T-829)
 TOKEN_USAGE=""
 TOKEN_TOTAL=""
 TOKEN_TURNS=""
 TOKEN_CACHE_HIT=""
+TOKEN_INPUT=""
+TOKEN_CACHE_READ=""
+TOKEN_CACHE_CREATE=""
+TOKEN_OUTPUT=""
 if [ -f "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
     TOKEN_DATA=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
         bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh" 2>/dev/null; source "$FRAMEWORK_ROOT/lib/costs.sh"; costs_main current 2>/dev/null' || true)
@@ -304,6 +308,10 @@ if [ -f "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
         TOKEN_TOTAL=$(echo "$TOKEN_DATA" | grep "^Total:" | awk '{print $2}')
         TOKEN_TURNS=$(echo "$TOKEN_DATA" | grep "^Turns:" | awk '{print $2}' | tr -d ',')
         TOKEN_CACHE_HIT=$(echo "$TOKEN_DATA" | grep "^  Cache Rd:" | awk '{print $3}')
+        TOKEN_INPUT=$(echo "$TOKEN_DATA" | grep "^  Input:" | awk '{print $2}')
+        TOKEN_CACHE_READ=$(echo "$TOKEN_DATA" | grep "^  Cache Rd:" | awk '{print $3}')
+        TOKEN_CACHE_CREATE=$(echo "$TOKEN_DATA" | grep "^  Cache Cr:" | awk '{print $3}')
+        TOKEN_OUTPUT=$(echo "$TOKEN_DATA" | grep "^  Output:" | awk '{print $2}')
         TOKEN_USAGE="${TOKEN_TOTAL:-0} tokens, ${TOKEN_TURNS:-0} turns"
     fi
 fi
@@ -321,6 +329,10 @@ tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
 token_usage: "${TOKEN_USAGE}"
+token_input: "${TOKEN_INPUT}"
+token_cache_read: "${TOKEN_CACHE_READ}"
+token_cache_create: "${TOKEN_CACHE_CREATE}"
+token_output: "${TOKEN_OUTPUT}"
 owner: ${AGENT_OWNER:-claude-code}
 session_narrative: ""
 ---

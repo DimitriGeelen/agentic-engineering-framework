@@ -161,6 +161,10 @@ def timeline():
                     "predecessor": fm.get("predecessor", ""),
                     "is_emergency": is_emergency,
                     "token_usage": fm.get("token_usage", ""),
+                    "token_input": fm.get("token_input", ""),
+                    "token_cache_read": fm.get("token_cache_read", ""),
+                    "token_cache_create": fm.get("token_cache_create", ""),
+                    "token_output": fm.get("token_output", ""),
                 }
             )
 
