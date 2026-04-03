@@ -1680,6 +1680,7 @@ PYTASK_VERIFY
             echo "  update    Update task status (auto-triggers healing/episodic)"
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"
+            echo "  stale     Show tasks with no updates in 7+ days (--days N)"
             echo "  verify [T-XXX]    Run verification commands (T-070) or list awaiting tasks (T-193)"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo ""
@@ -1694,7 +1695,114 @@ PYTASK_VERIFY
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
+            echo '  fw task stale            # Show tasks older than 7 days'
+            echo '  fw task stale --days 14  # Show tasks older than 14 days'
             echo '  fw task verify  # List tasks awaiting human verification'
+            ;;
+        stale)
+            # T-812: Show tasks that haven't had updates or commits in N days
+            FW_TASK_STALE_ARGS="$*" python3 - << 'PYTASK_STALE'
+import os, sys, shlex
+from datetime import datetime, timezone, timedelta
+
+args = shlex.split(os.environ.get('FW_TASK_STALE_ARGS', ''))
+threshold_days = 7
+i = 0
+while i < len(args):
+    if args[i] == '--days' and i + 1 < len(args):
+        threshold_days = int(args[i+1]); i += 2
+    elif args[i] in ('-h', '--help'):
+        print("Usage: fw task stale [--days N]")
+        print("  Show active tasks with no updates in the last N days (default: 7)")
+        sys.exit(0)
+    else:
+        i += 1
+
+BOLD = '\033[1m'
+GREEN = '\033[0;32m'
+YELLOW = '\033[1;33m'
+CYAN = '\033[0;36m'
+RED = '\033[0;31m'
+NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+active_dir = os.path.join(project_root, '.tasks', 'active')
+
+if not os.path.isdir(active_dir):
+    print(f'{RED}No active tasks directory{NC}')
+    sys.exit(1)
+
+now = datetime.now(timezone.utc)
+cutoff = now - timedelta(days=threshold_days)
+stale_tasks = []
+
+for fn in sorted(os.listdir(active_dir)):
+    if not fn.endswith('.md'):
+        continue
+
+    filepath = os.path.join(active_dir, fn)
+    try:
+        with open(filepath) as f:
+            text = f.read()
+    except:
+        continue
+
+    if not text.startswith('---'):
+        continue
+
+    try:
+        end = text.index('---', 3)
+        block = text[3:end]
+    except ValueError:
+        continue
+
+    # Parse frontmatter fields
+    fm = {}
+    for line in block.strip().split('\n'):
+        if ':' in line:
+            key = line.split(':')[0].strip()
+            val = ':'.join(line.split(':')[1:]).strip().strip('"').strip("'")
+            fm[key] = val
+
+    task_id = fm.get('id', '?')
+    status = fm.get('status', '?')
+    name = fm.get('name', '?')
+    horizon = fm.get('horizon', '?')
+    last_update = fm.get('last_update', fm.get('created', ''))
+
+    # Parse last_update as datetime
+    try:
+        if 'T' in last_update:
+            lu = datetime.fromisoformat(last_update.replace('Z', '+00:00'))
+        else:
+            lu = datetime.strptime(last_update[:10], '%Y-%m-%d').replace(tzinfo=timezone.utc)
+    except:
+        lu = None
+
+    if lu and lu < cutoff:
+        age_days = (now - lu).days
+        stale_tasks.append({
+            'id': task_id, 'name': name, 'status': status,
+            'horizon': horizon, 'age': age_days, 'last_update': last_update[:10]
+        })
+
+# Sort by age descending
+stale_tasks.sort(key=lambda t: -t['age'])
+
+if not stale_tasks:
+    print(f'{GREEN}No stale tasks (threshold: {threshold_days} days){NC}')
+    sys.exit(0)
+
+print(f'{BOLD}Stale Tasks{NC} ({len(stale_tasks)} older than {threshold_days} days)')
+print()
+print(f'  {"ID":<8} {"Age":>5} {"Last Update":<12} {"Status":<18} {"Hz":<6} {"Name"}')
+print(f'  {"─"*8} {"─"*5} {"─"*12} {"─"*18} {"─"*6} {"─"*30}')
+
+for t in stale_tasks:
+    age_str = f'{t["age"]}d'
+    color = RED if t['age'] > 30 else YELLOW if t['age'] > 14 else NC
+    print(f'  {t["id"]:<8} {color}{age_str:>5}{NC} {t["last_update"]:<12} {t["status"]:<18} {t["horizon"]:<6} {t["name"][:50]}')
+PYTASK_STALE
             ;;
         *)
             echo -e "${RED}Unknown task subcommand: $subcmd${NC}"
