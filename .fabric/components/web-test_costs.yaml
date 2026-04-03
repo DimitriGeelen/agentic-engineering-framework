@@ -1,0 +1,17 @@
+id: web/test_costs.py
+name: test_costs
+type: test
+subsystem: tests
+location: web/test_costs.py
+tags: [tokens, costs, testing]
+
+purpose: "24 pytest tests for costs blueprint — _fmt_tokens, _parse_session, _load_all_sessions, route (T-810)"
+
+depends_on:
+  - target: web/blueprints/costs.py
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-03
+created_by: unknown
