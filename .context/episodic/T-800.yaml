@@ -1,0 +1,67 @@
+# ============================================================================
+# EPISODIC MEMORY - T-800: Token efficiency strategies — reduce per-task and per-session cost through context management, output discipline, caching, and dispatch optimization
+# ============================================================================
+# STATUS: REQUIRES ENRICHMENT
+# Limited data sources. Review and fill missing sections manually.
+# Generated: 2026-04-01T11:24:09Z
+# ============================================================================
+
+task_id: T-800
+task_name: "Token efficiency strategies — reduce per-task and per-session cost through context management, output discipline, caching, and dispatch optimization"
+workflow_type: inception
+enrichment_status: pending  # No git commits or AC found — needs manual enrichment
+
+# Timeline
+created: 2026-04-01T09:25:47Z
+completed: 2026-04-01T11:24:07Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cost, tokens, efficiency, context-budget]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 118
+  commits: 2
+  files_changed: 3
+  lines_added: 479
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-800-token-efficiency-strategies--reduce-per-.md
+generated_by: context-agent-hybrid

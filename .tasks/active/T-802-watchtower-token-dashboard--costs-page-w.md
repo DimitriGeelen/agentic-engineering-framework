@@ -12,7 +12,7 @@ tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-801, T-799, T-800]
 created: 2026-04-03T19:09:41Z
-last_update: 2026-04-03T19:09:48Z
+last_update: 2026-04-03T19:14:58Z
 date_finished: null
 ---
 

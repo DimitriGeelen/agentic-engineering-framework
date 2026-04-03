@@ -6,7 +6,7 @@ description: >
   Subscription model (flat rate) — cost declared in tokens, not dollars.
   Data source: JSONL transcripts contain per-turn usage with cache breakdown.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,8 +14,8 @@ tags: [cost, tokens, observability]
 components: [budget-gate, checkpoint]
 related_tasks: [T-800, T-699, T-596]
 created: 2026-03-31T19:05:13Z
-last_update: 2026-04-01T09:45:45Z
-date_finished: null
+last_update: 2026-04-01T11:24:04Z
+date_finished: 2026-04-01T11:24:04Z
 ---
 
 # T-799: Token cost tracking — count/calculate per-task and project-total token usage and costs
@@ -126,18 +126,18 @@ The framework tracks task count, traceability, and session context budget — bu
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: JSONL data confirmed rich and structured, implementation straightforward
+
+**Date**: 2026-04-01T11:24:04Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: JSONL data confirmed rich and structured, implementation straightforward
+
+**Date**: 2026-04-01T11:24:04Z
 
 ## Updates
 
@@ -146,3 +146,12 @@ The framework tracks task count, traceability, and session context budget — bu
 
 ### 2026-04-01T09:41:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-01T11:24:04Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** JSONL data confirmed rich and structured, implementation straightforward
+
+### 2026-04-01T11:24:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

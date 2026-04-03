@@ -12,7 +12,7 @@ tags: [cost, tokens, observability, cli]
 components: [bin-fw, budget-gate]
 related_tasks: [T-799, T-800, T-596, T-699]
 created: 2026-04-03T19:01:09Z
-last_update: 2026-04-03T19:01:09Z
+last_update: 2026-04-03T19:07:03Z
 date_finished: null
 ---
 
