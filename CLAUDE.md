@@ -876,6 +876,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Update task | `fw task update T-XXX --status ...` | `./agents/task-create/update-task.sh T-XXX ...` |
 | Add tags | `fw task update T-XXX --add-tag "ui"` | `update-task.sh T-XXX --add-tag "..."` |
 | Set horizon | `fw task update T-XXX --horizon later` | `update-task.sh T-XXX --horizon later` |
+| Stale tasks | `fw task stale` | _(fw only)_ |
+| Stale (custom) | `fw task stale --days 14` | _(fw only)_ |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
