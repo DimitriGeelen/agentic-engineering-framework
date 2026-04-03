@@ -26,6 +26,11 @@ Exit codes: 0 = all clear, 1 = bypassing skills found
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-plugin-audit.yaml`*
 *Last verified: 2026-02-20*

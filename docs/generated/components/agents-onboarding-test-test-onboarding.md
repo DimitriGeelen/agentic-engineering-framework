@@ -38,6 +38,11 @@ From T-307 inception GO → T-317 build task.
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-798: Shellcheck cleanup: remaining peripheral agent scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-onboarding-test-test-onboarding.yaml`*
 *Last verified: 2026-03-04*

@@ -39,11 +39,6 @@ Exempt paths (framework operations that don't need task context):
 
 - [Deep Dive: The Task Gate](docs/articles/deep-dives/01-task-gate.md) (deep-dive)
 
-## Related
-
-### Tasks
-- T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-active-task.yaml`*
 *Last verified: 2026-03-01*

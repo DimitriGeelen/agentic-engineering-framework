@@ -89,11 +89,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
 - T-710: fw notify CLI — setup, test, enable, disable commands
 - T-714: Add fw notify to help text
 - T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 - T-775: fw pickup send — consumer-side CLI for local and TermLink push
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

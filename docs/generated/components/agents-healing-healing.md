@@ -44,6 +44,11 @@ Usage:
 
 - [Deep Dive: The Healing Loop](docs/articles/deep-dives/05-healing-loop.md) (deep-dive)
 
+## Related
+
+### Tasks
+- T-796: Fix remaining single-warning shellcheck issues in agent scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-healing-healing.yaml`*
 *Last verified: 2026-02-20*

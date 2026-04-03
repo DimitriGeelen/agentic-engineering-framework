@@ -23,6 +23,11 @@ mcp-reaper.sh --age 60           # Set age threshold to 60 minutes
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-798: Shellcheck cleanup: remaining peripheral agent scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-mcp-mcp-reaper.yaml`*
 *Last verified: 2026-02-20*

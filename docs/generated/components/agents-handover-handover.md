@@ -42,6 +42,8 @@ Creates handover documents for session continuity
 ### Tasks
 - T-595: Migrate highest-risk inline Python blocks to fw-util calls
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
+- T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-handover.yaml`*

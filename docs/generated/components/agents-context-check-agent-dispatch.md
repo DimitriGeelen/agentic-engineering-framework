@@ -26,6 +26,11 @@ Enforcement:
 | `lib/dispatch.sh` | calls |
 | `lib/paths.sh` | calls |
 
+## Related
+
+### Tasks
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-agent-dispatch.yaml`*
 *Last verified: 2026-03-23*

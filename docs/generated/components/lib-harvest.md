@@ -20,6 +20,11 @@ Graduation pipeline:
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-harvest.yaml`*
 *Last verified: 2026-02-20*

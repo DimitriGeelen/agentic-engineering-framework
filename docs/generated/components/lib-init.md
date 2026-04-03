@@ -32,11 +32,11 @@ for a project to use the framework.
 ## Related
 
 ### Tasks
-- T-615: Fix fw upgrade hook count bug — enumerate by type not count
-- T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
 - T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
 - T-681: Add TermLink MCP server to fw init default MCP config
 - T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
+- T-796: Fix remaining single-warning shellcheck issues in agent scripts
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-init.yaml`*
