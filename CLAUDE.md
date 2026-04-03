@@ -487,6 +487,27 @@ The Watchtower web UI at `/fabric` provides: subsystem overview, component table
 - **Blocked:** Write/Edit to source files, general Bash commands
 - Wrap up calmly — task files already have all essential state from continuous capture
 
+## Configuration (T-819)
+
+Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env var > hardcoded default.
+
+| Setting | Env Var | Default | Purpose |
+|---------|---------|---------|---------|
+| Context window | `FW_CONTEXT_WINDOW` | `200000` | Token budget enforcement |
+| Dispatch limit | `FW_DISPATCH_LIMIT` | `2` | Agent tool cap before TermLink gate |
+| Watchtower port | `FW_PORT` | `3000` | Web UI listen port |
+| Safe mode | `FW_SAFE_MODE` | `0` | Bypass task gate (escape hatch) |
+| Budget recheck | `FW_BUDGET_RECHECK_INTERVAL` | `5` | Re-read transcript every N calls |
+| Status max age | `FW_BUDGET_STATUS_MAX_AGE` | `90` | Seconds before cached status is stale |
+| Token check | `FW_TOKEN_CHECK_INTERVAL` | `5` | Check tokens every N calls |
+| Handover cooldown | `FW_HANDOVER_COOLDOWN` | `600` | Seconds between auto-handover triggers |
+| Stale task days | `FW_STALE_TASK_DAYS` | `7` | Days before task is flagged stale |
+| Max restarts | `FW_MAX_RESTARTS` | `5` | Max consecutive auto-restarts |
+
+Check active overrides: `env | grep FW_`
+Validate: `fw doctor` shows warnings for out-of-range values.
+Watchtower: `/config` page shows all settings with current values and sources.
+
 ## Sub-Agent Dispatch Protocol
 
 When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, etc.), follow these rules. Based on evidence from 96 tasks where 8 used sub-agents.
