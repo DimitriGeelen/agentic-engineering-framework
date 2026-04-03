@@ -635,6 +635,23 @@ $RECENT_COMMITS
 - What was unnecessary?
 EOF
 
+# Step 2b: Check for orphaned TermLink worker outputs (T-818/T-820)
+ORPHAN_COUNT=$(find /tmp -maxdepth 1 -name "fw-agent-*.md" -newer "$HANDOVER_DIR/LATEST.md" 2>/dev/null | wc -l)
+ORPHAN_COUNT=$(echo "$ORPHAN_COUNT" | tr -d '[:space:]')
+if [ "${ORPHAN_COUNT:-0}" -gt 0 ]; then
+    echo "" >> "$HANDOVER_FILE"
+    echo "## Orphaned Worker Outputs" >> "$HANDOVER_FILE"
+    echo "" >> "$HANDOVER_FILE"
+    echo "**$ORPHAN_COUNT file(s) in /tmp/fw-agent-\*.md** newer than last handover." >> "$HANDOVER_FILE"
+    echo "These may be TermLink worker results that weren't integrated." >> "$HANDOVER_FILE"
+    echo "" >> "$HANDOVER_FILE"
+    find /tmp -maxdepth 1 -name "fw-agent-*.md" -newer "$HANDOVER_DIR/LATEST.md" 2>/dev/null | while read -r f; do
+        echo "- \`$(basename "$f")\` ($(wc -l < "$f") lines)" >> "$HANDOVER_FILE"
+    done
+    echo "" >> "$HANDOVER_FILE"
+    echo -e "${YELLOW}WARNING: $ORPHAN_COUNT orphaned worker output(s) in /tmp${NC}"
+fi
+
 # Step 3: Update LATEST.md (symlink so edits to session file auto-reflect)
 ln -sf "$(basename "$HANDOVER_FILE")" "$HANDOVER_DIR/LATEST.md"
 

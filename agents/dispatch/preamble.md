@@ -57,6 +57,35 @@ When your task involves **modifying source files**, follow these rules:
 
 3. **Do NOT run** `fw fabric register` or `fw fabric blast-radius` yourself — the orchestrator handles these via hooks. Just report what you modified/created.
 
+## TermLink Workers — Different Output Rules
+
+TermLink workers (`fw termlink dispatch`) are NOT sub-agents. They run in
+independent processes with their own context budget. The `/tmp/` convention
+above does NOT apply to them — it exists to prevent context explosion in
+Task tool agents, which share the parent's context window.
+
+**For TermLink dispatch, the orchestrator MUST:**
+1. Specify the **target output path** in the dispatch prompt (e.g., `docs/reports/T-816-analysis.md`)
+2. NOT include the `/tmp/fw-agent-*` instruction — use the target file directly
+3. Instruct the worker to write output to the target file in the git repo
+
+**Why this matters (T-818):** If the parent session hits budget critical before
+integrating worker results, outputs in `/tmp/` are lost. T-816 incident: a
+TermLink worker wrote 307 lines to `/tmp/fw-agent-T-816-*.md` but the parent
+couldn't copy it to `docs/reports/` because the budget gate blocked Write.
+Had the worker written directly to `docs/reports/`, the output would have
+survived regardless of parent session state.
+
+**TermLink dispatch prompt template:**
+```
+Write your analysis directly to: docs/reports/T-XXX-topic.md
+Do NOT write to /tmp/. Your output must be in the git repo.
+When done, your final message should be ≤ 5 lines:
+  DONE
+  docs/reports/T-XXX-topic.md
+  One-sentence summary
+```
+
 ## Why This Exists
 
 - T-073: 9 agents returned full YAML → 177K token spike → session crash
