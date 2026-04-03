@@ -42,9 +42,9 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -83,6 +83,17 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Recommendation
+
+- **Recommendation:** SPLIT — NO-GO on integration, GO on pattern adoption
+- **Rationale:** traceAI solves runtime telemetry (OTel spans), which our `fw costs` already covers at the level we need. Their architecture is Python SDK-level instrumentation — fundamentally different from our bash/file governance layer. But 2 patterns are directly applicable: null object fallback for hooks, and 3-tier config resolution (explicit > env var > default).
+- **Evidence:**
+  - D1 Antifragility: Weak — catches errors but no learning loop
+  - D2 Reliability: Mixed — great app observability, silent tracing failures
+  - D3 Usability: Strong — 3-line setup, env-var config, privacy controls
+  - D4 Portability: Excellent — OTel-native, 4 languages, 50+ providers
+  - Full analysis: `docs/reports/T-815-traceai-evaluation.md`
 
 ## Decision
 
