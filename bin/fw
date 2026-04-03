@@ -1185,6 +1185,37 @@ else:
         fi
     fi
 
+    # Check: Configuration overrides (T-819)
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+    local config_overrides
+    config_overrides=$(fw_config_list 2>/dev/null | grep -v "^$" | wc -l)
+    config_overrides=$(echo "$config_overrides" | tr -d '[:space:]')
+    if [ "${config_overrides:-0}" -gt 0 ]; then
+        echo ""
+        echo -e "  ${BOLD}Configuration Overrides${NC}"
+        fw_config_list | while read -r line; do
+            echo -e "  ${CYAN}SET${NC}   $line"
+        done
+        # Validate ranges for known settings
+        local cw
+        cw=$(fw_config_int "CONTEXT_WINDOW" 200000)
+        if [ "$cw" -lt 50000 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  FW_CONTEXT_WINDOW=$cw is very low — budget gate will fire early"
+            warnings=$((warnings + 1))
+        elif [ "$cw" -gt 2000000 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  FW_CONTEXT_WINDOW=$cw exceeds known model limits"
+            warnings=$((warnings + 1))
+        fi
+        local dl
+        dl=$(fw_config_int "DISPATCH_LIMIT" 2)
+        if [ "$dl" -gt 10 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  FW_DISPATCH_LIMIT=$dl — very high, risk of context explosion"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Configuration: all defaults (no FW_* overrides)"
+    fi
+
     # Summary
     echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then

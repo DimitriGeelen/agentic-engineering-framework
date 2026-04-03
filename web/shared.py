@@ -52,6 +52,7 @@ NAV_GROUPS = [
         ("Quality",       "quality.quality_gate",                  None),
         ("Metrics",       "metrics.project_metrics",               None),
         ("Costs",         "costs.costs_dashboard",                 None),
+        ("Config",        "config.config_page",                    None),
         ("Cron",          "cron.cron_registry",                    None),
     ]),
 ]

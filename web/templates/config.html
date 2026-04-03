@@ -1,0 +1,127 @@
+<style>
+    .config-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+        .config-summary { grid-template-columns: 1fr; }
+    }
+    .config-card { text-align: center; }
+    .config-card .config-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .config-card .config-label {
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .source-badge {
+        display: inline-block;
+        padding: 0.15em 0.5em;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .source-default {
+        background: var(--pico-muted-border-color);
+        color: var(--pico-muted-color);
+    }
+    .source-env {
+        background: #1565c0;
+        color: #fff;
+    }
+    .warning-text {
+        color: #f57c00;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .config-table code {
+        font-size: 0.85rem;
+    }
+    .config-help {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .config-help h4 { margin-top: 0; }
+    .config-help pre {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+    }
+</style>
+
+<div class="config-summary">
+    <article class="config-card">
+        <div class="config-value">{{ total_count }}</div>
+        <div class="config-label">Settings</div>
+    </article>
+    <article class="config-card">
+        <div class="config-value" {% if override_count > 0 %}style="color: #1565c0;"{% endif %}>
+            {{ override_count }}
+        </div>
+        <div class="config-label">Overrides</div>
+    </article>
+    <article class="config-card">
+        <div class="config-value" {% if warning_count > 0 %}style="color: #f57c00;"{% endif %}>
+            {{ warning_count }}
+        </div>
+        <div class="config-label">Warnings</div>
+    </article>
+</div>
+
+<figure>
+    <table class="config-table">
+        <thead>
+            <tr>
+                <th>Env Var</th>
+                <th>Current</th>
+                <th>Default</th>
+                <th>Source</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in settings %}
+            <tr>
+                <td><code>{{ s.env_var }}</code></td>
+                <td>
+                    <strong>{{ s.current }}</strong>
+                    {% if s.warning %}
+                    <br><span class="warning-text">{{ s.warning }}</span>
+                    {% endif %}
+                </td>
+                <td><code>{{ s.default }}</code></td>
+                <td>
+                    <span class="source-badge source-{{ s.source }}">{{ s.source }}</span>
+                </td>
+                <td>{{ s.description }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+
+<div class="config-help">
+    <h4>How to override</h4>
+    <p>Set <code>FW_*</code> environment variables before starting the framework. Resolution order: explicit CLI flag > env var > default.</p>
+    <pre>
+# Per-session
+export FW_CONTEXT_WINDOW=1000000
+
+# In systemd service (persistent)
+Environment=FW_PORT=5050
+
+# In .bashrc (persistent)
+export FW_DISPATCH_LIMIT=5</pre>
+    <p>Run <code>fw doctor</code> to validate overrides and check for out-of-range values.</p>
+</div>
