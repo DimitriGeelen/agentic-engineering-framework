@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-840: verify-acs --auto-check — programmatic RUBBER-STAMP AC verification and auto-check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T13:16:53Z
+# ============================================================================
+
+task_id: T-840
+task_name: "verify-acs --auto-check — programmatic RUBBER-STAMP AC verification and auto-check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T13:13:25Z
+completed: 2026-04-04T13:16:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T15:16:38+02:00
+last_commit: 2026-04-04T15:16:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add --auto-check and --execute flags to fw verify-acs
+
+# Key outcomes
+outcomes:
+  - "`fw verify-acs --auto-check` flag added to lib/verify-acs.sh"
+  - "Auto-check only modifies RUBBER-STAMP ACs (never REVIEW — 50 skipped)"
+  - "Dry-run by default (`--auto-check` without `--execute` just reports candidates)"
+  - "`--execute` flag writes checkmarks to task files for passing ACs"
+  - "Reports: 5 pass, 1 fail, 24 skip, 50 review in dry run"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/verify-acs.sh"
+  - ".tasks/active/T-840-verify-acs---auto-check--programmatic-ru.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T15:16:38"
+    action: "T-840: Add --auto-check and --execute flags to fw verify-acs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 140
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-840-verify-acs---auto-check--programmatic-ru.md
+generated_by: context-agent-hybrid
