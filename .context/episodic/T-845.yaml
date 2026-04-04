@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-845: Run bats test suite and fix any failures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T13:44:48Z
+# ============================================================================
+
+task_id: T-845
+task_name: "Run bats test suite and fix any failures"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T13:37:20Z
+completed: 2026-04-04T13:44:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T15:44:35+02:00
+last_commit: 2026-04-04T15:44:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix keylock.sh tr character class — dash must be at end of class
+
+# Key outcomes
+outcomes:
+  - "All 524 bats unit tests pass (522 passed initially, 2 fixed)"
+  - "Fixed lib/keylock.sh tr character class — dash at end of class, not middle"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix keylock.sh tr character class — dash must be at end of class"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/keylock.sh"
+  - ".tasks/active/T-845-run-bats-test-suite-and-fix-any-failures.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T15:44:35"
+    action: "T-845: Fix keylock.sh tr character class — dash must be at end of class"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 2
+  lines_added: 74
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-845-run-bats-test-suite-and-fix-any-failures.md
+generated_by: context-agent-hybrid
