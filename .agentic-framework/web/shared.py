@@ -51,6 +51,8 @@ NAV_GROUPS = [
         ("Gaps",          "discovery.gaps",                        None),
         ("Quality",       "quality.quality_gate",                  None),
         ("Metrics",       "metrics.project_metrics",               None),
+        ("Costs",         "costs.costs_dashboard",                 None),
+        ("Config",        "config.config_page",                    None),
         ("Cron",          "cron.cron_registry",                    None),
     ]),
 ]
@@ -221,6 +223,17 @@ def load_latest_audit():
     summary = data.get("summary", {})
     findings = data.get("findings", [])
     return timestamp, summary, findings
+
+
+def linkify_tasks(text):
+    """Convert T-XXX references to clickable Watchtower links (T-851)."""
+    if not text:
+        return text
+    return re_mod.sub(
+        r'\b(T-\d{3,})\b',
+        r'<a href="/tasks/\1">\1</a>',
+        str(text),
+    )
 
 
 def render_page(template_name, **context):

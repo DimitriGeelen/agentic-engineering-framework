@@ -10,13 +10,35 @@
             {% if session.is_emergency %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; background: var(--pico-del-color); color: white; border-radius: 3px;">emergency</mark> {% endif %}
             <strong>{{ session.id }}</strong>
             <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
-            — {% if session.narrative_short %}{{ session.narrative_short }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
+            {% if session.session_tokens %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; border-radius: 3px;" {% if session.token_input %}title="Input: {{ session.token_input }} | Cache Rd: {{ session.token_cache_read }} | Cache Cr: {{ session.token_cache_create }} | Output: {{ session.token_output }}"{% endif %}>{{ session.session_tokens }} tokens, {{ session.session_turns }} turns</mark> {% endif %}{% if session.token_usage %}<small style="opacity: 0.6;" title="Cumulative project total">({{ session.token_usage }})</small> {% endif %}
+            — {% if session.narrative_short %}{{ session.narrative_short|linkify_tasks }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
         </summary>
 
         <!-- Level 2: Session narrative + task list -->
         <div style="padding: 1rem 0;">
+            {% if session.token_input or session.commits_per_turn %}
+            <div style="font-size: 0.85em; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 4px; background: var(--pico-card-background-color, #f8f9fa);">
+                {% if session.token_input %}
+                <div><strong>Token Breakdown:</strong>
+                Input: {{ session.token_input }} |
+                Cache Read: {{ session.token_cache_read }} |
+                Cache Create: {{ session.token_cache_create }} |
+                Output: {{ session.token_output }}</div>
+                {% endif %}
+                {% if session.commits_per_turn %}
+                <div style="margin-top: 0.25rem;"><strong>Quality Metrics{% if session.session_commits_per_turn %} (session){% endif %}:</strong>
+                CPT: {{ session.session_commits_per_turn or session.commits_per_turn }} |
+                Error rate: {{ session.session_failed_tool_call_rate or session.failed_tool_call_rate }} |
+                Edit bursts: {{ session.session_edit_bursts or session.edit_bursts }} |
+                {% if not session.session_commits_per_turn %}1st commit: turn {{ session.first_commit_turn }} | {% endif %}
+                Productive: {{ session.session_productive_turns_ratio or session.productive_turns_ratio }}
+                {% if session.session_commits_per_turn %}<span style="opacity:0.5; font-size:0.8em;" title="Cumulative: CPT {{ session.commits_per_turn }}, Error {{ session.failed_tool_call_rate }}, Productive {{ session.productive_turns_ratio }}">(cumulative in tooltip)</span>{% endif %}</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
             {% if session.narrative %}
-            <blockquote>{{ session.narrative }}</blockquote>
+            <blockquote>{{ session.narrative|linkify_tasks }}</blockquote>
             {% endif %}
 
             {% if session.tasks_touched %}

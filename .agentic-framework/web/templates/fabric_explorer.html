@@ -366,14 +366,13 @@
 <!-- Graph Area -->
 <div id="graph-area">
   <div id="header">
-    <h1>OpenClaw Fabric Explorer</h1>
-    <div class="subtitle">154 components &middot; 29 subsystems &middot; 6 architectural layers</div>
+    <h1>Fabric Explorer</h1>
+    <div class="subtitle">{{ total_components }} components &middot; {{ total_subsystems }} subsystems &middot; {{ total_layers }} architectural layers</div>
     <div class="stats">
-      <div><span>280K</span> LOC</div>
-      <div><span>81</span> Extensions</div>
-      <div><span>50</span> Deep-dives</div>
-      <div><span>561</span> Dep edges</div>
-      <div><span>7</span> Extracted</div>
+      <div><span>{{ total_components }}</span> Components</div>
+      <div><span>{{ total_subsystems }}</span> Subsystems</div>
+      <div><span>{{ total_dep_edges }}</span> Dep edges</div>
+      <div><span>{{ total_reports }}</span> Reports</div>
     </div>
   </div>
   <div id="search-box">
@@ -419,105 +418,14 @@
 </div>
 
 <script>
-// ===== DATA =====
-const layers = {
-  'Entry': { color: '#6366f1', subsystems: ['bootstrap', 'cli', 'commands'] },
-  'Control Plane': { color: '#06b6d4', subsystems: ['gateway', 'sessions', 'routing', 'configuration'] },
-  'Agent Runtime': { color: '#8b5cf6', subsystems: ['agents', 'auto-reply', 'skills', 'memory', 'cron'] },
-  'Extensions': { color: '#10b981', subsystems: ['plugin-sdk', 'plugins', 'channels', 'ai-providers', 'media', 'hooks'] },
-  'Platform': { color: '#f59e0b', subsystems: ['platform-apps', 'web-ui', 'canvas', 'terminal'] },
-  'Infrastructure': { color: '#64748b', subsystems: ['core', 'infrastructure', 'security', 'onboarding', 'wizard', 'build', 'testing'] }
-};
+// ===== DATA (injected from Flask — derived from .fabric/components/*.yaml) =====
+const layers = {{ layers | tojson }};
 
-const subsystemData = {
-  'bootstrap':      { name: 'Bootstrap & Entry', count: 3, loc: '~2K', finding: 'Node.js pre-flight with graceful degradation. Library exports pattern enables both CLI and programmatic use.', desc: 'CLI entry points, Node.js pre-flight, library exports' },
-  'cli':            { name: 'CLI Layer', count: 2, loc: '~4K', finding: 'RouteSpec lazy-loading pattern: 333 LOC declares all commands, handlers load on first use. Fast startup despite 50+ commands.', desc: 'Argument parsing, command routing, subcommand dispatch' },
-  'commands':       { name: 'CLI Commands', count: 9, loc: '~8K', finding: '50+ commands via RouteSpec pattern. doctor command alone is 6.5K LOC. Interactive repair, not just diagnostics.', desc: 'User-facing CLI subcommands: send, status, config, doctor' },
-  'gateway':        { name: 'Gateway Server', count: 20, loc: '~12K', finding: 'Single WebSocket protocol for ALL clients. Pre-auth 64KB limit. dropIfSlow backpressure. 109 RPC methods across 29 namespaces.', desc: 'WebSocket control plane: 107+ RPC methods, auth, chat dispatch' },
-  'sessions':       { name: 'Session Management', count: 5, loc: '~5K', finding: '7-tier binding cascade: peer, parent-peer, guild+roles, guild, team, account, channel, default. O(1) lookup per tier.', desc: 'Session IDs, send policy, transcript events, lifecycle' },
-  'routing':        { name: 'Message Routing', count: 6, loc: '~8.5K', finding: 'Hierarchical key isolation: agent:{id}:{channel}:{peer}. 804 LOC resolve-route.ts handles all routing.', desc: 'Route inbound messages to correct session/agent by channel context' },
-  'configuration':  { name: 'Configuration', count: 8, loc: '~45K', finding: '10-step loading pipeline. Hot-reload with declarative rules (hot/restart/none per path). WeakMap cache invalidation. Pattern extracted (T-041).', desc: '45K LOC config system: agent directories, allowed values, schema' },
-  'agents':         { name: 'Agent Runtime', count: 18, loc: '~20K', finding: '4-detector tool loop system (generic_repeat + known_poll + global_circuit_breaker + ping_pong, 624 LOC). Pattern extracted (T-038).', desc: 'Agent lifecycle, ACP server, context engine, embedded runner, subagents' },
-  'auto-reply':     { name: 'Message Pipeline', count: 7, loc: '~6K', finding: '5 lazy runtimes loaded on demand. ~20 streaming callbacks decouple UI surfaces.', desc: 'Auto-reply dispatch, conversation sessions, reply formatting' },
-  'skills':         { name: 'Skills Platform', count: 2, loc: '~3K', finding: '3-tier token budget: full context, compact, binary-search-fit. Budget algorithm extracted (T-040).', desc: 'User-facing capabilities: canvas, coding agent, integrations' },
-  'memory':         { name: 'Memory & Knowledge', count: 2, loc: '~4K', finding: 'Pluggable ContextEngine: bootstrap, ingest, afterTurn, assemble, compact, maintain. RAG via LanceDB.', desc: 'Vector embeddings, batch processing, knowledge retrieval' },
-  'cron':           { name: 'Scheduled Jobs', count: 3, loc: '~3K', finding: 'Each cron job spawns an isolated agent session. Schedule normalization handles timezone-aware recurring jobs.', desc: 'Cron service, isolated agent execution, schedule normalization' },
-  'plugin-sdk':     { name: 'Plugin SDK', count: 6, loc: '~11K', finding: '15-method API, zero abstract base classes. 81 extensions from 30 LOC (Groq) to 31K LOC (Discord). Composition over inheritance.', desc: '15-method API surface for 81 extensions' },
-  'plugins':        { name: 'Plugin Runtime', count: 2, loc: '~3K', finding: 'jiti TypeScript runtime: plugins execute TS directly without build step. Runtime isolation prevents cross-plugin leakage.', desc: 'Plugin loading, lifecycle management, runtime isolation' },
-  'channels':       { name: 'Channel System', count: 18, loc: '~50K', finding: 'createChatChannelPlugin() factory: fill config sections, get compliant adapter. 21 channels, zero inheritance.', desc: '21 messaging platforms: WhatsApp, Telegram, Discord, Slack, Signal...' },
-  'ai-providers':   { name: 'AI Providers', count: 3, loc: '~17K', finding: 'Health-tracked failover across 34 providers. Cooldown probing. Auth key rotation. Context overflow = skip, not retry.', desc: '34 LLM providers: Anthropic, OpenAI, Google, Ollama, and 30 more' },
-  'media':          { name: 'Media Processing', count: 7, loc: '~8K', finding: 'Provider-agnostic media pipeline: TTS, image gen, media understanding all route through same dispatch.', desc: 'TTS, image generation, media understanding, link previews' },
-  'hooks':          { name: 'Hooks System', count: 2, loc: '~5K', finding: '4-tier precedence: bundled, plugin, managed, workspace. Workspace hooks off by default (security).', desc: '4-tier precedence lifecycle hooks' },
-  'platform-apps':  { name: 'Native Apps', count: 4, loc: '~105K', finding: '3 native apps (macOS/iOS/Android) sharing identical WebSocket protocol. 3,757 LOC protocol types per platform.', desc: 'macOS menu bar, iOS, Android: 105K Swift/Kotlin' },
-  'web-ui':         { name: 'Web UI', count: 3, loc: '~38K', finding: 'React dashboard with real-time WebSocket state. Same protocol as native apps.', desc: '38K LOC React dashboard: chat, gateway connection, app state' },
-  'canvas':         { name: 'Canvas & A2UI', count: 0, loc: '~2K', finding: 'Browser-based agent UI with sandboxed iframe execution. A2UI bundle hash tracking.', desc: 'Canvas host, A2UI bundling, browser-based agent UI' },
-  'terminal':       { name: 'Terminal UI', count: 2, loc: '~3K', finding: 'CLI palette system for consistent ANSI styling. Progress display via osc-progress + clack/prompts.', desc: 'Terminal links, themes, progress display, CLI formatting' },
-  'core':           { name: 'Core Libraries', count: 6, loc: '~6K', finding: 'Global state singleton, structured logger, runtime detection. Foundation layer for every subsystem.', desc: 'Global state, logger, runtime, shared utilities' },
-  'infrastructure': { name: 'Infrastructure', count: 4, loc: '~5K', finding: 'SSRF protection: DNS-level blocking + IPv4-in-IPv6 detection + cloud metadata URL blocking + redirect chain validation.', desc: 'Environment loading, error formatting, platform utilities, SSRF protection' },
-  'security':       { name: 'Security', count: 4, loc: '~9K', finding: '6 defense layers. dangerously* pattern forces typing "dangerously" to bypass. Sandbox: seccomp + AppArmor.', desc: '6 defense layers: sandbox, DM policy, exec approvals, audit, ReDoS' },
-  'onboarding':     { name: 'Onboarding', count: 1, loc: '~2K', finding: 'Provider auto-detection scans for existing API keys before asking. Minimal configuration friction.', desc: 'First-run experience, provider detection, guided setup' },
-  'wizard':         { name: 'Onboarding Wizard', count: 3, loc: '~4K', finding: 'Multi-step setup with channel-specific config. Validates provider connectivity before completing.', desc: 'Setup flow, provider auto-detection, channel configuration' },
-  'build':          { name: 'Build & Monorepo', count: 3, loc: '~3K', finding: 'pnpm workspace with 81 extension packages. Dynamic import guardrails detect INEFFECTIVE_DYNAMIC_IMPORT at build time.', desc: 'package.json, pnpm workspace, TypeScript config, unified tsdown build' },
-  'testing':        { name: 'Testing Infra', count: 1, loc: '~167K', finding: '5-tier hierarchy: unit(~2000), contract(21), integration(12), E2E(28), live(15). 70% coverage gates. 0.83:1 test-to-source ratio.', desc: '2,061 test files: 5-tier hierarchy, 21 contract tests, 31 utilities' }
-};
+const subsystemData = {{ subsystem_data | tojson }};
 
-const edges = [
-  ['bootstrap', 'cli'], ['cli', 'commands'], ['commands', 'gateway'],
-  ['gateway', 'sessions'], ['gateway', 'routing'], ['gateway', 'configuration'],
-  ['gateway', 'agents'], ['gateway', 'auto-reply'], ['gateway', 'web-ui'],
-  ['gateway', 'platform-apps'], ['gateway', 'canvas'],
-  ['routing', 'channels'], ['routing', 'auto-reply'], ['routing', 'configuration'],
-  ['sessions', 'agents'], ['sessions', 'routing'],
-  ['agents', 'skills'], ['agents', 'memory'], ['agents', 'cron'], ['agents', 'hooks'],
-  ['agents', 'auto-reply'], ['agents', 'plugin-sdk'],
-  ['auto-reply', 'channels'], ['auto-reply', 'ai-providers'],
-  ['plugin-sdk', 'channels'], ['plugin-sdk', 'ai-providers'], ['plugin-sdk', 'media'],
-  ['plugins', 'plugin-sdk'], ['plugins', 'hooks'],
-  ['hooks', 'plugins'], ['hooks', 'cron'],
-  ['channels', 'security'], ['channels', 'configuration'],
-  ['ai-providers', 'configuration'],
-  ['cli', 'terminal'],
-  ['core', 'infrastructure'],
-  ['security', 'gateway'], ['security', 'infrastructure'],
-  ['onboarding', 'wizard'], ['wizard', 'channels'], ['wizard', 'ai-providers'],
-  ['configuration', 'core'],
-  ['media', 'ai-providers'],
-  ['memory', 'plugin-sdk'],
-  ['cron', 'agents'],
-  ['build', 'core']
-];
+const edges = {{ subsystem_edges | tojson }};
 
-const subsystemReports = {
-  'security': ['T-045-security-deep-dive.md', 'T-085-sandbox-isolation-deep-dive.md'],
-  'cli': ['T-046-cli-deep-dive.md'],
-  'infrastructure': ['T-047-infrastructure-deep-dive.md', 'T-067-infra-utilities-deep-dive.md'],
-  'plugin-sdk': ['T-048-plugin-sdk-deep-dive.md'],
-  'testing': ['T-050-testing-deep-dive.md', 'T-073-test-infrastructure-deep-dive.md'],
-  'gateway': ['T-051-gateway-rpc-deep-dive.md', 'T-080-auth-credentials-deep-dive.md'],
-  'agents': ['T-052-agent-runtime-deep-dive.md', 'T-087-acp-deep-dive.md'],
-  'configuration': ['T-053-config-routing-deep-dive.md'],
-  'routing': ['T-053-config-routing-deep-dive.md', 'T-078-channel-routing-deep-dive.md'],
-  'auto-reply': ['T-055-auto-reply-deep-dive.md'],
-  'memory': ['T-056-memory-context-deep-dive.md'],
-  'web-ui': ['T-058-web-control-ui-deep-dive.md'],
-  'canvas': ['T-059-browser-control-deep-dive.md'],
-  'terminal': ['T-060-tui-daemon-media-deep-dive.md', 'T-090-terminal-websearch-links-deep-dive.md'],
-  'media': ['T-060-tui-daemon-media-deep-dive.md'],
-  'platform-apps': ['T-061-native-apps-deep-dive.md'],
-  'onboarding': ['T-063-wizard-extensions-deep-dive.md', 'T-083-onboarding-doctor-deep-dive.md'],
-  'wizard': ['T-063-wizard-extensions-deep-dive.md', 'T-083-onboarding-doctor-deep-dive.md'],
-  'plugins': ['T-068-plugin-runtime-deep-dive.md'],
-  'build': ['T-074-build-system-deep-dive.md'],
-  'hooks': ['T-088-hooks-system-deep-dive.md'],
-  'channels': ['T-077-extension-ecosystem-deep-dive.md', 'T-078-channel-routing-deep-dive.md'],
-  'ai-providers': ['T-086-model-selection-deep-dive.md'],
-  'skills': ['T-079-skills-platform-deep-dive.md'],
-  'cron': ['T-081-cron-webhooks-deep-dive.md'],
-  'sessions': ['T-089-process-shared-context-deep-dive.md'],
-  'core': ['T-047-infrastructure-deep-dive.md'],
-  'bootstrap': ['T-046-cli-deep-dive.md'],
-  'commands': ['T-046-cli-deep-dive.md', 'T-083-onboarding-doctor-deep-dive.md']
-};
+const subsystemReports = {{ subsystem_reports | tojson }};
 
 // Component data injected from Flask (loaded from .fabric/components/*.yaml)
 const componentData = {{ components | tojson }};
@@ -663,8 +571,8 @@ function buildSubsystemGraph() {
       `<div class="layer" style="color:${d.color}">${d.layer}</div>` +
       `<div class="name">${d.name}</div>` +
       `<div class="desc">${d.desc}</div>` +
-      `<div style="margin-top:6px"><span class="count">${d.loc}</span> LOC &middot; <span class="count">${d.count}</span> components</div>` +
-      `<div style="margin-top:6px;font-style:italic;color:#c084fc;font-size:11px">${d.finding}</div>` +
+      `<div style="margin-top:6px"><span class="count">${d.count}</span> components</div>` +
+      (d.finding ? `<div style="margin-top:6px;font-style:italic;color:#c084fc;font-size:11px">${d.finding}</div>` : '') +
       `<div class="hint">Click: details &middot; Dbl-click: drill down &middot; +: expand in-place</div>`
     );
     d3.select(this).selectAll('.mc').attr('stroke-width', 3);
@@ -882,7 +790,7 @@ function rerenderGraph() {
     d3.select(this).selectAll('.node-expand').style('opacity', 0.8);
     const tip = d.isInline
       ? `<div class="name">${esc(d.name)}</div><div class="desc">${esc(d.purpose)}</div><div style="margin-top:4px;font-family:monospace;font-size:10px;color:#475569">${d.location}</div><div class="hint">Click for details</div>`
-      : `<div class="layer" style="color:${d.color}">${d.layer}</div><div class="name">${d.name}</div><div class="desc">${d.desc||d.purpose}</div><div style="margin-top:6px"><span class="count">${d.loc}</span> LOC &middot; <span class="count">${d.count}</span> components</div><div style="margin-top:6px;font-style:italic;color:#c084fc;font-size:11px">${d.finding||''}</div><div class="hint">Click: details &middot; +: expand in-place</div>`;
+      : `<div class="layer" style="color:${d.color}">${d.layer}</div><div class="name">${d.name}</div><div class="desc">${d.desc||d.purpose}</div><div style="margin-top:6px"><span class="count">${d.count}</span> components</div>${d.finding ? '<div style="margin-top:6px;font-style:italic;color:#c084fc;font-size:11px">'+d.finding+'</div>' : ''}<div class="hint">Click: details &middot; +: expand in-place</div>`;
     tt.style('display', 'block').html(tip);
     d3.select(this).selectAll('.mc').attr('stroke-width', 3);
   }).on('mousemove', function(e) {
@@ -1005,7 +913,7 @@ function showTabContent(id) {
   const locBadge = document.getElementById('detail-loc');
   const layerBadge = document.getElementById('detail-layer');
   if (tab.type === 'subsystem') {
-    locBadge.textContent = tab.data.loc + ' LOC'; locBadge.style.display = 'inline';
+    locBadge.textContent = tab.data.count + ' components'; locBadge.style.display = 'inline';
     layerBadge.textContent = tab.data.layer; layerBadge.style.display = 'inline'; layerBadge.style.color = tab.color;
   } else {
     locBadge.textContent = tab.data.type || ''; locBadge.style.display = 'inline';
@@ -1072,7 +980,7 @@ function openDetailPane(d) {
     const downstream = edges.filter(e => e[0] === d.id).map(e => e[1]);
 
     let html = '';
-    html += makeSection('Architectural Discovery', `<div class="finding-text">${esc(d.finding)}</div>`, true);
+    if (d.finding) html += makeSection('Architectural Discovery', `<div class="finding-text">${esc(d.finding)}</div>`, true);
 
     if (comps.length) {
       let compHtml = '';
@@ -1132,7 +1040,6 @@ function openDetailPane(d) {
     comps.forEach(c => { types[c.type] = (types[c.type]||0) + 1; });
     let statsHtml = '<div class="stats-grid">';
     statsHtml += `<div class="stat-card"><div class="stat-value">${comps.length}</div><div class="stat-label">Components</div></div>`;
-    statsHtml += `<div class="stat-card"><div class="stat-value">${d.loc}</div><div class="stat-label">Lines of Code</div></div>`;
     statsHtml += `<div class="stat-card"><div class="stat-value">${totalDeps}</div><div class="stat-label">Dep Edges</div></div>`;
     statsHtml += `<div class="stat-card"><div class="stat-value">${reports.length}</div><div class="stat-label">Reports</div></div>`;
     Object.entries(types).forEach(([t,c]) => {
@@ -1354,7 +1261,7 @@ searchInput.addEventListener('input', function() {
   } else {
     // Search subsystems + their components
     node?.each(function(d) {
-      const subMatch = (d.name + ' ' + d.desc + ' ' + d.finding).toLowerCase().includes(q);
+      const subMatch = (d.name + ' ' + d.desc + ' ' + (d.finding||'')).toLowerCase().includes(q);
       const compMatch = getComps(d.id).some(c =>
         (c.name + ' ' + c.location + ' ' + c.purpose + ' ' + (c.tags||[]).join(' ')).toLowerCase().includes(q)
       );

@@ -13,6 +13,42 @@ logger = logging.getLogger(__name__)
 bp = Blueprint("timeline", __name__)
 
 
+def _parse_token_usage(usage_str):
+    """Parse '809.7M tokens, 6608 turns' → (tokens_millions, turns) or None."""
+    if not usage_str:
+        return None
+    m = re_mod.match(r"([\d.]+)M tokens,\s*(\d+) turns", usage_str)
+    if m:
+        return float(m.group(1)), int(m.group(2))
+    return None
+
+
+def _compute_session_deltas(sessions):
+    """Add session_tokens/session_turns deltas (newest-first list)."""
+    for i, s in enumerate(sessions):
+        parsed = _parse_token_usage(s.get("token_usage", ""))
+        if not parsed:
+            continue
+        curr_tokens, curr_turns = parsed
+        # Next item in list is the predecessor (older session)
+        prev = None
+        for j in range(i + 1, len(sessions)):
+            prev_parsed = _parse_token_usage(sessions[j].get("token_usage", ""))
+            if prev_parsed:
+                prev = prev_parsed
+                break
+        if prev:
+            delta_tokens = curr_tokens - prev[0]
+            delta_turns = curr_turns - prev[1]
+            if delta_tokens >= 0:
+                s["session_tokens"] = f"{delta_tokens:.1f}M"
+                s["session_turns"] = str(delta_turns)
+        else:
+            # First session — cumulative IS the session total
+            s["session_tokens"] = f"{curr_tokens:.1f}M"
+            s["session_turns"] = str(curr_turns)
+
+
 def _load_task_names():
     """Build {task_id: name} dict from active and completed task files."""
     names = {}
@@ -124,10 +160,27 @@ def timeline():
                     "narrative_short": _truncate(narrative),
                     "predecessor": fm.get("predecessor", ""),
                     "is_emergency": is_emergency,
+                    "token_usage": fm.get("token_usage", ""),
+                    "token_input": fm.get("token_input", ""),
+                    "token_cache_read": fm.get("token_cache_read", ""),
+                    "token_cache_create": fm.get("token_cache_create", ""),
+                    "token_output": fm.get("token_output", ""),
+                    "commits_per_turn": fm.get("commits_per_turn", ""),
+                    "first_commit_turn": fm.get("first_commit_turn", ""),
+                    "failed_tool_call_rate": fm.get("failed_tool_call_rate", ""),
+                    "edit_bursts": fm.get("edit_bursts", ""),
+                    "productive_turns_ratio": fm.get("productive_turns_ratio", ""),
+                    # Per-session deltas (T-852)
+                    "session_commits_per_turn": fm.get("session_commits_per_turn", ""),
+                    "session_failed_tool_call_rate": fm.get("session_failed_tool_call_rate", ""),
+                    "session_edit_bursts": fm.get("session_edit_bursts", ""),
+                    "session_productive_turns_ratio": fm.get("session_productive_turns_ratio", ""),
+                    "session_commits": fm.get("session_commits", ""),
                 }
             )
 
     sessions = _collapse_emergency_runs(sessions)
+    _compute_session_deltas(sessions)
 
     return render_page("timeline.html", page_title="Timeline", sessions=sessions)
 

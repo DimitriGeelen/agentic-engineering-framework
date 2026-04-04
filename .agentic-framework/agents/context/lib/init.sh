@@ -73,6 +73,9 @@ EOF
     echo "0" > "$CONTEXT_DIR/working/.budget-gate-counter"
     rm -f "$CONTEXT_DIR/working/.budget-status"
 
+    # Reset session turn offset (T-850 per-session metrics)
+    rm -f "$CONTEXT_DIR/working/.session-turn-offset"
+
     echo -e "${GREEN}=== Session Initialized ===${NC}"
     echo "Session ID: $session_id"
     echo "Start time: $timestamp"
