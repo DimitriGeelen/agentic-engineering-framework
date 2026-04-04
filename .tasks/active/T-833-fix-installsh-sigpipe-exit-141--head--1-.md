@@ -1,22 +1,22 @@
 ---
-id: T-832
-name: "Fix install.sh unbound LOCAL_REPO variable in update path"
+id: T-833
+name: "Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e"
 description: >
-  Fix install.sh unbound LOCAL_REPO variable in update path
+  Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e
 
-status: work-completed
+status: started-work
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-04T09:08:36Z
-last_update: 2026-04-04T09:10:25Z
-date_finished: 2026-04-04T09:10:25Z
+created: 2026-04-04T09:15:38Z
+last_update: 2026-04-04T09:15:38Z
+date_finished: null
 ---
 
-# T-832: Fix install.sh unbound LOCAL_REPO variable in update path
+# T-833: Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e
 
 ## Context
 
@@ -25,16 +25,11 @@ date_finished: 2026-04-04T09:10:25Z
 ## Acceptance Criteria
 
 ### Agent
-- [x] LOCAL_REPO initialized to empty string before use
-- [x] install.sh update path works without --local flag
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] SIGPIPE from head -1 in pipe suppressed with || true
+- [ ] install.sh exits 0 on successful install
 
 ### Human
-- [ ] [RUBBER-STAMP] Installer works from curl pipe
-  **Steps:**
-  1. Run: `curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash`
-  **Expected:** Installer completes without "unbound variable" error
-  **If not:** Check line ~135 for LOCAL_REPO reference
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -73,10 +68,7 @@ date_finished: 2026-04-04T09:10:25Z
 
 ## Updates
 
-### 2026-04-04T09:08:36Z — task-created [task-create-agent]
+### 2026-04-04T09:15:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-832-fix-installsh-unbound-localrepo-variable.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-833-fix-installsh-sigpipe-exit-141--head--1-.md
 - **Context:** Initial task creation
-
-### 2026-04-04T09:10:25Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

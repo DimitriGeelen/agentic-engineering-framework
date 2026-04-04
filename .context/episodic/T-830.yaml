@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-830: Session length optimization — when to /clear vs continue, context cost vs momentum tradeoff
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T09:04:03Z
+# ============================================================================
+
+task_id: T-830
+task_name: "Session length optimization — when to /clear vs continue, context cost vs momentum tradeoff"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T07:58:00Z
+completed: 2026-04-04T09:04:01Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-04T10:02:43+02:00
+last_commit: 2026-04-04T10:16:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — session length optimization (initial analysis). Multi-agent inception research — session length optimization
+
+# Key outcomes
+outcomes:
+  - "Token cost analysis complete — /clear costs ~745K tokens overhead per clear"
+  - "Quality hypothesis documented — bathtub curve finding contradicts degradation hypothesis"
+  - "Historical session data mined — 14 JSONL transcripts, 472 handovers, 766 episodics (Agent A)"
+  - "Measurement framework designed — 14 metrics in 4 categories with A/B experiment (Agent B)"
+  - "Recommendation written — GO for measurement infrastructure, defer /clear decision to data"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-830-agent-a-historical-analysis.md"
+  - "docs/reports/T-830-agent-b-quality-metrics.md"
+  - "docs/reports/T-830-session-length-optimization.md"
+  - ".tasks/active/T-830-session-length-optimization--when-to-cle.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T10:02:43"
+    action: "T-830: Inception research — session length optimization (initial analysis)"
+  - time: "2026-04-04T10:16:33"
+    action: "T-830: Multi-agent inception research — session length optimization"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 66
+  commits: 2
+  files_changed: 4
+  lines_added: 983
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-830-session-length-optimization--when-to-cle.md
+generated_by: context-agent-hybrid
