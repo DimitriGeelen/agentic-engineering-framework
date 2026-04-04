@@ -252,15 +252,18 @@ def fabric_graph():
     """Interactive D3 fabric explorer."""
     all_components = _load_components()
 
-    # Pass all components to the D3 explorer — it handles subsystem grouping
-    # and drill-down internally via its force-directed graph
+    # Build component list + subsystem lookup
     components = []
+    comp_to_sub = {}
     for c in all_components:
+        comp_id = c.get("id", c.get("name", ""))
+        sub = c.get("subsystem", "unknown")
+        comp_to_sub[comp_id] = sub
         components.append({
-            "id": c.get("id", c.get("name", "")),
+            "id": comp_id,
             "name": c.get("name", c.get("id", "")),
             "type": c.get("type", "unknown"),
-            "subsystem": c.get("subsystem", "unknown"),
+            "subsystem": sub,
             "location": c.get("location", ""),
             "purpose": c.get("purpose", ""),
             "depends_on": c.get("depends_on", []),
@@ -268,10 +271,92 @@ def fabric_graph():
             "tags": c.get("tags", []),
         })
 
+    # Build subsystem data from actual component cards
+    subsystem_data = {}
+    for c in all_components:
+        sub = c.get("subsystem", "unknown")
+        if sub not in subsystem_data:
+            subsystem_data[sub] = {
+                "name": sub.replace("-", " ").title(),
+                "count": 0,
+                "desc": "",
+            }
+        subsystem_data[sub]["count"] += 1
+    for info in subsystem_data.values():
+        info["desc"] = f"{info['count']} components"
+
+    # Inter-subsystem edges from component dependencies
+    edge_set = set()
+    for c in all_components:
+        src_sub = c.get("subsystem", "unknown")
+        for dep in c.get("depends_on", []):
+            target_id = dep.get("target", "") if isinstance(dep, dict) else dep
+            tgt_sub = comp_to_sub.get(target_id)
+            if tgt_sub and src_sub != tgt_sub:
+                edge_set.add((src_sub, tgt_sub))
+    subsystem_edges = sorted(edge_set)
+
+    # Assign layers — group subsystems by prefix, assign palette colors
+    palette = [
+        "#6366f1", "#06b6d4", "#8b5cf6", "#10b981",
+        "#f59e0b", "#64748b", "#ec4899", "#f97316",
+    ]
+    groups = {}
+    for sub_id in sorted(subsystem_data.keys()):
+        prefix = sub_id.split("-")[0]
+        groups.setdefault(prefix, []).append(sub_id)
+    # Merge single-member groups into "Other" if >8 groups
+    if len(groups) > 8:
+        merged = {}
+        other = []
+        for prefix, subs in sorted(groups.items(), key=lambda x: -len(x[1])):
+            if len(subs) > 1 or len(merged) < 6:
+                merged[prefix.title()] = subs
+            else:
+                other.extend(subs)
+        if other:
+            merged["Other"] = other
+        groups = merged
+    else:
+        groups = {k.title(): v for k, v in groups.items()}
+    explorer_layers = {}
+    for i, (layer_name, subs) in enumerate(sorted(groups.items())):
+        explorer_layers[layer_name] = {
+            "color": palette[i % len(palette)],
+            "subsystems": subs,
+        }
+
+    # Match reports to subsystems
+    subsystem_reports = {}
+    reports_dir = os.path.join(ACTUAL_PROJECT_ROOT, "docs", "reports")
+    if os.path.isdir(reports_dir):
+        for rpt in sorted(os.listdir(reports_dir)):
+            if not rpt.endswith(".md"):
+                continue
+            rpt_norm = rpt.lower().replace("-", "")
+            for sub_id in subsystem_data:
+                if sub_id.lower().replace("-", "") in rpt_norm:
+                    subsystem_reports.setdefault(sub_id, []).append(rpt)
+
+    # Stats
+    total_dep_edges = sum(len(c.get("depends_on", [])) for c in all_components)
+    report_count = 0
+    if os.path.isdir(reports_dir):
+        report_count = len([f for f in os.listdir(reports_dir) if f.endswith(".md")])
+
     return render_page(
         "fabric_explorer.html",
         page_title="Fabric Explorer",
         components=components,
+        subsystem_data=subsystem_data,
+        subsystem_edges=subsystem_edges,
+        layers=explorer_layers,
+        subsystem_reports=subsystem_reports,
+        total_components=len(components),
+        total_subsystems=len(subsystem_data),
+        total_layers=len(explorer_layers),
+        total_dep_edges=total_dep_edges,
+        total_reports=report_count,
     )
 
 
