@@ -122,10 +122,10 @@ setup() {
 
 # --- Real settings ---
 
-@test "CONTEXT_WINDOW default is 200000" {
+@test "CONTEXT_WINDOW default is 300000" {
     unset FW_CONTEXT_WINDOW
-    result=$(fw_config_int "CONTEXT_WINDOW" 200000)
-    [ "$result" = "200000" ]
+    result=$(fw_config_int "CONTEXT_WINDOW" 300000)
+    [ "$result" = "300000" ]
 }
 
 @test "DISPATCH_LIMIT default is 2" {
@@ -135,6 +135,6 @@ setup() {
 }
 
 @test "FW_CONTEXT_WINDOW override works" {
-    result=$(FW_CONTEXT_WINDOW=1000000 fw_config_int "CONTEXT_WINDOW" 200000)
+    result=$(FW_CONTEXT_WINDOW=1000000 fw_config_int "CONTEXT_WINDOW" 300000)
     [ "$result" = "1000000" ]
 }

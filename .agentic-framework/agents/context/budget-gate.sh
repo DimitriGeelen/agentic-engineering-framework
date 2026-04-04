@@ -27,15 +27,14 @@ fw_hook_crash_trap "budget-gate"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 
-# Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
-# Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
+# Context window size — conservative default, override via FW_CONTEXT_WINDOW.
+# Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
 
 # Token thresholds (autoCompact disabled — D-027)
-# Tighter margins required for smaller window. ~10K headroom for handover routine.
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (150K at 200K)
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K)
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K)
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (225K at 300K)
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (255K at 300K)
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (285K at 300K)
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=$(fw_config_int "BUDGET_RECHECK_INTERVAL" 5)

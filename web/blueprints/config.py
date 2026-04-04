@@ -11,7 +11,7 @@ bp = Blueprint("config", __name__)
 
 # Known settings registry (mirrors lib/config.sh FW_CONFIG_REGISTRY)
 SETTINGS = [
-    ("CONTEXT_WINDOW", "200000", "Context window size for budget enforcement (tokens)"),
+    ("CONTEXT_WINDOW", "300000", "Context window size for budget enforcement (tokens)"),
     ("PORT", "3000", "Watchtower web UI listen port"),
     ("DISPATCH_LIMIT", "2", "Agent tool dispatches before TermLink gate triggers"),
     ("BUDGET_RECHECK_INTERVAL", "5", "Re-read transcript every N tool calls"),

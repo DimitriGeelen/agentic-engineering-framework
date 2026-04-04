@@ -5,7 +5,7 @@
 #
 # Usage:
 #   source "$FRAMEWORK_ROOT/lib/config.sh"
-#   CONTEXT_WINDOW=$(fw_config "CONTEXT_WINDOW" 200000)
+#   CONTEXT_WINDOW=$(fw_config "CONTEXT_WINDOW" 300000)
 #   DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
 #
 # Origin: T-817 inception (traceAI pattern adoption), T-819 build
@@ -84,7 +84,7 @@ fw_config_list() {
 # Known settings registry — used by fw doctor and Watchtower /config
 # Format: KEY|DEFAULT|DESCRIPTION
 FW_CONFIG_REGISTRY=(
-    "CONTEXT_WINDOW|200000|Context window size for budget enforcement (tokens)"
+    "CONTEXT_WINDOW|300000|Context window size for budget enforcement (tokens)"
     "PORT|3000|Watchtower web UI listen port"
     "DISPATCH_LIMIT|2|Agent tool dispatches before TermLink gate triggers"
     "BUDGET_RECHECK_INTERVAL|5|Re-read transcript every N tool calls"
@@ -98,6 +98,9 @@ FW_CONFIG_REGISTRY=(
     "CALL_URGENT|60|Tool-call count threshold for urgent level (fallback)"
     "CALL_CRITICAL|80|Tool-call count threshold for critical level (fallback)"
     "BASH_TIMEOUT|300000|Default Bash tool timeout in milliseconds"
+    "KEYLOCK_TIMEOUT|300|Per-key lock stale cleanup timeout in seconds"
+    "TERMLINK_WORKER_TIMEOUT|600|TermLink worker execution timeout in seconds"
+    "HANDOVER_DEDUP_COOLDOWN|300|Seconds between duplicate handover detection"
 )
 
 # fw_config_registry — Print all known settings with current values

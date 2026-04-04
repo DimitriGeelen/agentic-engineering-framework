@@ -26,15 +26,14 @@ fw_hook_crash_trap "checkpoint"
 COUNTER_FILE="$CONTEXT_DIR/working/.tool-counter"
 PREV_TOKENS_FILE="$CONTEXT_DIR/working/.prev-token-reading"
 
-# Context window size — 200K observed for Opus 4.6 (2026-03-24, T-596)
-# Anthropic reduced from 1M to ~200K without notice. Max observed: 196,505 tokens.
-CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 200000)
+# Context window size — conservative default, override via FW_CONTEXT_WINDOW.
+# Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
 
 # Token thresholds (autoCompact disabled — D-027)
-# Tighter margins required for smaller window. ~10K headroom for handover routine.
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (150K at 200K) — informational
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (170K at 200K) — commit + checkpoint
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (190K at 200K) — handover NOW
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (225K at 300K) — informational
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (255K at 300K) — commit + checkpoint
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (285K at 300K) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=$(fw_config_int "TOKEN_CHECK_INTERVAL" 5)

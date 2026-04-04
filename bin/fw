@@ -1216,7 +1216,7 @@ else:
         done
         # Validate ranges for known settings
         local cw
-        cw=$(fw_config_int "CONTEXT_WINDOW" 200000)
+        cw=$(fw_config_int "CONTEXT_WINDOW" 300000)
         if [ "$cw" -lt 50000 ]; then
             echo -e "  ${YELLOW}WARN${NC}  FW_CONTEXT_WINDOW=$cw is very low — budget gate will fire early"
             warnings=$((warnings + 1))
