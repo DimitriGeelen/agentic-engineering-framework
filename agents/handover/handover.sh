@@ -323,6 +323,14 @@ METRICS_FTC=""
 METRICS_FTC_RATE=""
 METRICS_EDIT_BURSTS=""
 METRICS_PTR=""
+# Per-session deltas (T-850)
+S_METRICS_CPT=""
+S_METRICS_TURNS=""
+S_METRICS_COMMITS=""
+S_METRICS_FTC=""
+S_METRICS_FTC_RATE=""
+S_METRICS_EDIT_BURSTS=""
+S_METRICS_PTR=""
 if [ -f "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" ]; then
     bash "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" 2>/dev/null || true
     METRICS_FILE="$CONTEXT_DIR/working/.session-metrics.yaml"
@@ -333,6 +341,14 @@ if [ -f "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" ]; then
         METRICS_FTC_RATE=$(grep '^failed_tool_call_rate:' "$METRICS_FILE" | awk '{print $2}')
         METRICS_EDIT_BURSTS=$(grep '^edit_bursts:' "$METRICS_FILE" | awk '{print $2}')
         METRICS_PTR=$(grep '^productive_turns_ratio:' "$METRICS_FILE" | awk '{print $2}')
+        # Per-session deltas (T-850)
+        S_METRICS_TURNS=$(grep '^session_turns:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_COMMITS=$(grep '^session_commits:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_CPT=$(grep '^session_commits_per_turn:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_FTC=$(grep '^session_failed_tool_calls:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_FTC_RATE=$(grep '^session_failed_tool_call_rate:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_EDIT_BURSTS=$(grep '^session_edit_bursts:' "$METRICS_FILE" | awk '{print $2}')
+        S_METRICS_PTR=$(grep '^session_productive_turns_ratio:' "$METRICS_FILE" | awk '{print $2}')
     fi
 fi
 
@@ -359,6 +375,13 @@ failed_tool_calls: "${METRICS_FTC}"
 failed_tool_call_rate: "${METRICS_FTC_RATE}"
 edit_bursts: "${METRICS_EDIT_BURSTS}"
 productive_turns_ratio: "${METRICS_PTR}"
+session_turns: "${S_METRICS_TURNS}"
+session_commits: "${S_METRICS_COMMITS}"
+session_commits_per_turn: "${S_METRICS_CPT}"
+session_failed_tool_calls: "${S_METRICS_FTC}"
+session_failed_tool_call_rate: "${S_METRICS_FTC_RATE}"
+session_edit_bursts: "${S_METRICS_EDIT_BURSTS}"
+session_productive_turns_ratio: "${S_METRICS_PTR}"
 owner: ${AGENT_OWNER:-claude-code}
 session_narrative: ""
 ---
