@@ -165,6 +165,11 @@ def timeline():
                     "token_cache_read": fm.get("token_cache_read", ""),
                     "token_cache_create": fm.get("token_cache_create", ""),
                     "token_output": fm.get("token_output", ""),
+                    "commits_per_turn": fm.get("commits_per_turn", ""),
+                    "first_commit_turn": fm.get("first_commit_turn", ""),
+                    "failed_tool_call_rate": fm.get("failed_tool_call_rate", ""),
+                    "edit_bursts": fm.get("edit_bursts", ""),
+                    "productive_turns_ratio": fm.get("productive_turns_ratio", ""),
                 }
             )
 

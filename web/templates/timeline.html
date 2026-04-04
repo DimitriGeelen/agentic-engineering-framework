@@ -16,13 +16,23 @@
 
         <!-- Level 2: Session narrative + task list -->
         <div style="padding: 1rem 0;">
-            {% if session.token_input %}
+            {% if session.token_input or session.commits_per_turn %}
             <div style="font-size: 0.85em; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 4px; background: var(--pico-card-background-color, #f8f9fa);">
-                <strong>Token Breakdown:</strong>
+                {% if session.token_input %}
+                <div><strong>Token Breakdown:</strong>
                 Input: {{ session.token_input }} |
                 Cache Read: {{ session.token_cache_read }} |
                 Cache Create: {{ session.token_cache_create }} |
-                Output: {{ session.token_output }}
+                Output: {{ session.token_output }}</div>
+                {% endif %}
+                {% if session.commits_per_turn %}
+                <div style="margin-top: 0.25rem;"><strong>Quality Metrics:</strong>
+                CPT: {{ session.commits_per_turn }} |
+                Error rate: {{ session.failed_tool_call_rate }} |
+                Edit bursts: {{ session.edit_bursts }} |
+                1st commit: turn {{ session.first_commit_turn }} |
+                Productive: {{ session.productive_turns_ratio }}</div>
+                {% endif %}
             </div>
             {% endif %}
 

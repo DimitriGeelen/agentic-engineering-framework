@@ -316,6 +316,26 @@ if [ -f "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
     fi
 fi
 
+# Step 1.9: Session quality metrics (T-831)
+METRICS_CPT=""
+METRICS_FCT=""
+METRICS_FTC=""
+METRICS_FTC_RATE=""
+METRICS_EDIT_BURSTS=""
+METRICS_PTR=""
+if [ -f "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" ]; then
+    bash "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" 2>/dev/null || true
+    METRICS_FILE="$CONTEXT_DIR/working/.session-metrics.yaml"
+    if [ -f "$METRICS_FILE" ]; then
+        METRICS_CPT=$(grep '^commits_per_turn:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FCT=$(grep '^first_commit_turn:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FTC=$(grep '^failed_tool_calls:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FTC_RATE=$(grep '^failed_tool_call_rate:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_EDIT_BURSTS=$(grep '^edit_bursts:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_PTR=$(grep '^productive_turns_ratio:' "$METRICS_FILE" | awk '{print $2}')
+    fi
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -333,6 +353,12 @@ token_input: "${TOKEN_INPUT}"
 token_cache_read: "${TOKEN_CACHE_READ}"
 token_cache_create: "${TOKEN_CACHE_CREATE}"
 token_output: "${TOKEN_OUTPUT}"
+commits_per_turn: "${METRICS_CPT}"
+first_commit_turn: "${METRICS_FCT}"
+failed_tool_calls: "${METRICS_FTC}"
+failed_tool_call_rate: "${METRICS_FTC_RATE}"
+edit_bursts: "${METRICS_EDIT_BURSTS}"
+productive_turns_ratio: "${METRICS_PTR}"
 owner: ${AGENT_OWNER:-claude-code}
 session_narrative: ""
 ---
