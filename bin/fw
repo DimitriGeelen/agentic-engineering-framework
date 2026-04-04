@@ -3368,12 +3368,13 @@ PYSEARCH
             exit 1
         fi
         _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
-        if [ ! -x "$_hook_script" ]; then
-            echo "ERROR: Hook script not found or not executable: $_hook_script" >&2
+        if [ ! -f "$_hook_script" ]; then
+            echo "ERROR: Hook script not found: $_hook_script" >&2
             exit 2
         fi
         export FRAMEWORK_ROOT PROJECT_ROOT
-        exec "$_hook_script" "$@"
+        # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
+        exec bash "$_hook_script" "$@"
         ;;
     doctor)
         do_doctor "$@"
