@@ -13,10 +13,14 @@
 do_verify_acs() {
     local verbose=false
     local filter_task=""
+    local auto_check=false
+    local execute=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --verbose|-v) verbose=true; shift ;;
+            --auto-check) auto_check=true; shift ;;
+            --execute) auto_check=true; execute=true; shift ;;
             --help|-h)
                 echo -e "${BOLD}fw verify-acs${NC} — Automated Human AC evidence collection"
                 echo ""
@@ -27,14 +31,17 @@ do_verify_acs() {
                 echo ""
                 echo "Options:"
                 echo "  -v, --verbose     Show detailed evidence for each check"
+                echo "  --auto-check      Report which RUBBER-STAMP ACs can be auto-checked"
+                echo "  --execute         Actually check passing RUBBER-STAMP ACs in task files"
                 echo "  T-XXX             Verify specific task only"
                 echo "  -h, --help        Show this help"
                 echo ""
                 echo "AC types:"
                 echo "  [RUBBER-STAMP]    Mechanical verification — automated where possible"
-                echo "  [REVIEW]          Human judgment required — skipped by automation"
+                echo "  [REVIEW]          Human judgment required — never auto-checked"
                 echo ""
                 echo "Origin: T-823 (Automated Human AC verification inception)"
+                echo "        T-840 (Auto-check RUBBER-STAMP ACs)"
                 return 0
                 ;;
             T-*) filter_task="$1"; shift ;;
@@ -58,7 +65,7 @@ do_verify_acs() {
     echo ""
 
     # Find all tasks with unchecked Human ACs
-    python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" << 'PYVERIFY'
+    python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" "$auto_check" "$execute" << 'PYVERIFY'
 import os, re, sys, subprocess, json
 
 project_root = sys.argv[1]
@@ -66,6 +73,8 @@ filter_task = sys.argv[2] if len(sys.argv) > 2 else ""
 wt_port = sys.argv[3] if len(sys.argv) > 3 else "3000"
 wt_running = sys.argv[4] == "true" if len(sys.argv) > 4 else False
 verbose = sys.argv[5] == "true" if len(sys.argv) > 5 else False
+auto_check = sys.argv[6] == "true" if len(sys.argv) > 6 else False
+execute = sys.argv[7] == "true" if len(sys.argv) > 7 else False
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
@@ -249,6 +258,55 @@ for fn in sorted(os.listdir(active_dir)):
             if verbose and evidence:
                 print(f"         Reason: {evidence}")
 
+# Auto-check: modify task files for passing RUBBER-STAMP ACs (T-840)
+checked_count = 0
+if auto_check:
+    # Collect passing RUBBER-STAMP ACs grouped by task file
+    to_check = {}
+    for tid, status, ac_text, evidence in task_results:
+        if status == "PASS":
+            to_check.setdefault(tid, []).append(ac_text)
+
+    if to_check and not execute:
+        print()
+        print(f"{BOLD}Auto-check candidates (dry run):{NC}")
+        for tid, acs in sorted(to_check.items()):
+            print(f"  {tid}: {len(acs)} AC(s) would be checked")
+        print()
+        print(f"  Run with {BOLD}--execute{NC} to apply changes")
+
+    elif to_check and execute:
+        print()
+        print(f"{BOLD}Auto-checking RUBBER-STAMP ACs:{NC}")
+        for tid, acs in sorted(to_check.items()):
+            # Find the task file
+            task_file = None
+            for fn in os.listdir(active_dir):
+                if fn.startswith(f"{tid}-") and fn.endswith('.md'):
+                    task_file = os.path.join(active_dir, fn)
+                    break
+            if not task_file:
+                continue
+
+            with open(task_file) as f:
+                content = f.read()
+
+            modified = False
+            for ac_text in acs:
+                # Find the unchecked AC line that matches (first 60 chars)
+                ac_prefix = ac_text[:60]
+                pattern = re.compile(r'^(\s*- )\[ \](\s*' + re.escape(ac_prefix) + r')', re.MULTILINE)
+                match = pattern.search(content)
+                if match:
+                    content = content[:match.start()] + match.group(1) + '[x]' + match.group(2) + content[match.end():]
+                    modified = True
+                    checked_count += 1
+                    print(f"  {GREEN}CHECKED{NC} {tid}: {ac_text[:60]}")
+
+            if modified:
+                with open(task_file, 'w') as f:
+                    f.write(content)
+
 # Summary
 print()
 print(f"{BOLD}Summary{NC}")
@@ -257,8 +315,10 @@ print(f"  {GREEN}PASS{NC}:   {results['pass']}")
 print(f"  {RED}FAIL{NC}:   {results['fail']}")
 print(f"  {CYAN}SKIP{NC}:   {results['skip']} (no automated check)")
 print(f"  {YELLOW}REVIEW{NC}: {results['review']} (human judgment needed)")
+if checked_count > 0:
+    print(f"  {GREEN}AUTO-CHECKED{NC}: {checked_count}")
 
-if results['pass'] > 0:
+if results['pass'] > 0 and not auto_check:
     print()
     # Get LAN IP for Watchtower URL
     try:
@@ -266,6 +326,7 @@ if results['pass'] > 0:
     except:
         ip = "localhost"
     print(f"  {BOLD}Review verified tasks:{NC} http://{ip}:{wt_port}/approvals")
+    print(f"  {BOLD}Auto-check:{NC} fw verify-acs --auto-check --execute")
 
 # Exit code: 0 if any passes, 1 if all fail
 sys.exit(0 if results['pass'] > 0 or results['total'] == 0 else 1)
