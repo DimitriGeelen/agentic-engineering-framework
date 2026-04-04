@@ -40,7 +40,7 @@ do_suggest() {
 
         echo "  Action: Run 'healing.sh diagnose $task_id' for detailed analysis"
         echo ""
-        ((count++))
+        count=$((count + 1))
     done <<< "$all_problem_tasks"
 
     echo -e "${CYAN}Total tasks needing attention: $count${NC}"

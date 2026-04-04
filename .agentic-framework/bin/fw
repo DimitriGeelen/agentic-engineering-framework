@@ -1585,15 +1585,15 @@ PYTASK_SHOW
                 echo
 
                 while IFS= read -r cmd; do
-                    ((total++))
+                    total=$((total + 1))
                     echo -e "[$total] ${BOLD}$cmd${NC}"
 
                     if eval "$cmd" >/dev/null 2>&1; then
                         echo -e "  ${GREEN}✓ PASS${NC}"
-                        ((passed++))
+                        passed=$((passed + 1))
                     else
                         echo -e "  ${RED}✗ FAIL${NC}"
-                        ((failed++))
+                        failed=$((failed + 1))
                     fi
                 done <<< "$verification"
 
