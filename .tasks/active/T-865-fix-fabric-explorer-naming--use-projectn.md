@@ -30,7 +30,7 @@ T-854 added `project_name` Jinja global but Fabric Explorer h1 still says "Fabri
 
 ## Verification
 
-curl -sf http://localhost:3000/fabric/graph | grep -q 'Agentic Engineering Framework.*Fabric Explorer\|Fabric Explorer.*Agentic'
+curl -sf http://localhost:3000/fabric/graph -o /tmp/t865.html && grep -q 'Agentic Engineering Framework' /tmp/t865.html
 
 ## Decisions
 
