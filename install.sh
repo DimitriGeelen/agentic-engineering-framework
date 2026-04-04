@@ -214,7 +214,7 @@ link_fw() {
     # Check if ~/.local/bin is in PATH
     if [[ ":$PATH:" != *":${local_bin}:"* ]]; then
         echo ""
-        warn "~/.local/bin is not in your PATH"
+        warn "$HOME/.local/bin is not in your PATH"
         echo ""
 
         if [[ "$MODIFY_PATH" == "true" ]]; then

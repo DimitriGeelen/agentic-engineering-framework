@@ -61,6 +61,7 @@ fw_config_int() {
 fw_hook_crash_trap() {
     local hook_name="${1:-unknown}"
     local crash_log="${PROJECT_ROOT:-.}/.context/working/.hook-crashes.log"
+    # shellcheck disable=SC2154 # _exit is assigned by $? inside the trap
     trap '
         _exit=$?
         if [ $_exit -ne 0 ] && [ $_exit -ne 2 ]; then
