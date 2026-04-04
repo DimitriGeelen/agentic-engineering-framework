@@ -1,9 +1,9 @@
-# Audit Results - 2026-03-27-1530
-timestamp: 2026-03-27T14:30:01Z
+# Audit Results - 2026-04-04-1630
+timestamp: 2026-04-04T14:30:01Z
 sections: "structure,compliance,quality,discovery"
 summary:
   pass: 12
-  warn: 8
+  warn: 6
   fail: 0
 findings:
   - level: PASS
@@ -19,31 +19,25 @@ findings:
   - level: PASS
     check: "All 10 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 163 registered, 0 unregistered"
+    check: "Fabric: 239 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 11/163 cards have no edges"
+    check: "Fabric: 23/239 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: WARN
-    check: "Fabric drift: 8 source file(s) have no fabric card"
+    check: "Fabric drift: 2 source file(s) have no fabric card"
     mitigation: "Run: fw fabric scan"
   - level: PASS
-    check: "All 83 active tasks are valid"
+    check: "All 118 active tasks are valid"
   - level: WARN
-    check: "Task T-316 is 23 days old with only 1 updates"
-    mitigation: "Add progress updates to T-316-spike-layered-claudemd-framework-base--p.md"
+    check: "Task T-548 is 12 days old with only 1 updates"
+    mitigation: "Add progress updates to T-548-npm-install-pathway--evaluate-whether-to.md"
   - level: WARN
-    check: "Task T-432 is 17 days old with only 1 updates"
-    mitigation: "Add progress updates to T-432-re-evaluate-skip-refactoring-findings-27.md"
-  - level: WARN
-    check: "Task T-548 has no updates but status is started-work"
-    mitigation: "Add update entry to T-548-npm-install-pathway--evaluate-whether-to.md"
-  - level: WARN
-    check: "Task T-571 has no updates but status is started-work"
-    mitigation: "Add update entry to T-571-termlink-supervisor-event-loop--reliable.md"
+    check: "Task T-807 has short description (42 chars)"
+    mitigation: "Expand description in T-807-unit-tests-for-libcostssh-token-tracking.md"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (13/583)"
+    check: "D1: Episodic quality — 2% [TODO] (19/777)"
   - level: WARN
-    check: "D2: Human review queue — 3 task(s) waiting >14d: T-460(14d) T-470(14d) T-476(14d)"
+    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(20d) T-460(22d) T-470(22d) T-476(22d) T-481(20d) T-483(20d) T-493(20d) T-505(18d) T-511(18d) T-516(17d) T-518(17d)"
     mitigation: "Review with: fw task verify"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
