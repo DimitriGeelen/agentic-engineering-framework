@@ -56,11 +56,11 @@ When fixing a bug discovered through real-world usage (user testing, production 
 ## Related
 
 ### Tasks
-- T-694: Approval file lifecycle — cleanup resolved files older than 7 days, reset notified tracker on session init
 - T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 - T-791: Fix checkpoint.sh cross-project transcript leak — scope find_transcript to current project
 - T-796: Fix remaining single-warning shellcheck issues in agent scripts
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---
 *Auto-generated from Component Fabric. Card: `checkpoint.yaml`*

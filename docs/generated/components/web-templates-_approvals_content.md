@@ -17,6 +17,7 @@
 ### Tasks
 - T-669: Approvals page auto-refresh — htmx polling for live Tier 0 and Human AC updates
 - T-672: Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last
+- T-839: Watchtower approvals page improvements — filtering, sorting, RUBBER-STAMP highlighting
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_approvals_content.yaml`*

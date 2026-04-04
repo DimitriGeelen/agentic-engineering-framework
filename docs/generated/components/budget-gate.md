@@ -46,6 +46,7 @@ Performance target: <100ms per invocation
 - T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
 - T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-gate.yaml`*

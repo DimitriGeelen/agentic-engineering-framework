@@ -19,11 +19,11 @@
 ## Related
 
 ### Tasks
-- T-775: fw pickup send — consumer-side CLI for local and TermLink push
-- T-776: fw pickup process — cron-triggered inbox scanner
 - T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
 - T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
 - T-789: Add pickup CLI commands to CLAUDE.md quick reference
+- T-816: Null object fallback for hooks — fail-open resilience pattern
+- T-817: 3-tier config resolution — env var configuration layer for framework settings
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-status.yaml`*

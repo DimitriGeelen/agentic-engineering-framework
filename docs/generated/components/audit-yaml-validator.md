@@ -42,7 +42,6 @@ Sections: structure, compliance, quality, traceability, enforcement,
 ## Related
 
 ### Tasks
-- T-590: Traceability baseline — audit ignores pre-ingestion commits on imported projects
 - T-687: Fix audit YAML writer — escape quotes in findings to prevent parse errors
 - T-695: Audit check for bugfix learning coverage — detect completed fix tasks without learning entries
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover

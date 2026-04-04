@@ -26,7 +26,6 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 ## Related
 
 ### Tasks
-- T-587: Keyed async queue — per-key serialization primitive for concurrent operations
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 
 ---

@@ -40,11 +40,11 @@ Flow:
 ## Related
 
 ### Tasks
-- T-612: Agent approval pickup — hook/cron scanning Watchtower approval ledger
 - T-635: Deterministic human-facing action routing — structural enforcement that agent always routes through Watchtower/fw-task-review instead of pasting raw commands
 - T-638: check-tier0 Watchtower link — emit approval page URL in Tier 0 block message
 - T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
+- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-tier0.yaml`*

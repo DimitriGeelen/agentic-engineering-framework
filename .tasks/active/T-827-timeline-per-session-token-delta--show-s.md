@@ -4,16 +4,16 @@ name: "Timeline per-session token delta — show session-specific token and turn
 description: >
   Timeline per-session token delta — show session-specific token and turn counts alongside cumulative
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/timeline.py, web/templates/timeline.html]
 related_tasks: []
 created: 2026-04-03T23:43:16Z
-last_update: 2026-04-03T23:43:16Z
-date_finished: null
+last_update: 2026-04-03T23:45:37Z
+date_finished: 2026-04-03T23:45:37Z
 ---
 
 # T-827: Timeline per-session token delta — show session-specific token and turn counts alongside cumulative
@@ -61,3 +61,6 @@ grep -q "session_tokens" web/templates/timeline.html
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-827-timeline-per-session-token-delta--show-s.md
 - **Context:** Initial task creation
+
+### 2026-04-03T23:45:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

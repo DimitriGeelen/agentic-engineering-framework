@@ -39,6 +39,11 @@ Exempt paths (framework operations that don't need task context):
 
 - [Deep Dive: The Task Gate](docs/articles/deep-dives/01-task-gate.md) (deep-dive)
 
+## Related
+
+### Tasks
+- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-active-task.yaml`*
 *Last verified: 2026-03-01*

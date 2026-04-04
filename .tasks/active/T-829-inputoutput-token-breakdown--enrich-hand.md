@@ -4,16 +4,16 @@ name: "Input/output token breakdown — enrich handover frontmatter and timeline
 description: >
   Input/output token breakdown — enrich handover frontmatter and timeline display
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/handover/handover.sh, web/blueprints/timeline.py, web/templates/timeline.html]
 related_tasks: []
 created: 2026-04-03T23:53:55Z
-last_update: 2026-04-03T23:53:55Z
-date_finished: null
+last_update: 2026-04-03T23:57:12Z
+date_finished: 2026-04-03T23:57:12Z
 ---
 
 # T-829: Input/output token breakdown — enrich handover frontmatter and timeline display
@@ -62,3 +62,6 @@ grep -q "token_input" web/blueprints/timeline.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-829-inputoutput-token-breakdown--enrich-hand.md
 - **Context:** Initial task creation
+
+### 2026-04-03T23:57:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -24,7 +24,6 @@ Git Agent - Hook installation subcommand
 ## Related
 
 ### Tasks
-- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
 - T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
 
 ---
