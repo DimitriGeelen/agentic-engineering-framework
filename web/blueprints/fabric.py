@@ -271,8 +271,9 @@ def fabric_graph():
             "tags": c.get("tags", []),
         })
 
-    # Build subsystem data from actual component cards
+    # Build subsystem data from actual component cards (T-853)
     subsystem_data = {}
+    subsystem_purposes = {}  # collect purposes for description
     for c in all_components:
         sub = c.get("subsystem", "unknown")
         if sub not in subsystem_data:
@@ -281,9 +282,23 @@ def fabric_graph():
                 "count": 0,
                 "desc": "",
             }
+            subsystem_purposes[sub] = []
         subsystem_data[sub]["count"] += 1
-    for info in subsystem_data.values():
-        info["desc"] = f"{info['count']} components"
+        purpose = c.get("purpose", "")
+        if purpose and len(purpose) > 10:
+            subsystem_purposes[sub].append(purpose)
+    # Generate descriptions from component purposes
+    for sub_id, info in subsystem_data.items():
+        purposes = subsystem_purposes.get(sub_id, [])
+        if purposes:
+            # Use the shortest distinct purpose as description, append count
+            purposes.sort(key=len)
+            desc = purposes[0]
+            if len(desc) > 80:
+                desc = desc[:77] + "..."
+            info["desc"] = f"{desc} ({info['count']} components)"
+        else:
+            info["desc"] = f"{info['count']} components"
 
     # Inter-subsystem edges from component dependencies
     edge_set = set()
