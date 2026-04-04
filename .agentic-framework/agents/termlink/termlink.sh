@@ -10,8 +10,15 @@
 # Install: cargo install --path crates/termlink-cli
 #
 # Part of: Agentic Engineering Framework (T-503, from T-502 inception)
+# shellcheck disable=SC2015 # A && B || true pattern is idiomatic for set -e safety
+# shellcheck disable=SC2009 # ps|grep is used for process inspection with context
 
 set -euo pipefail
+
+# Resolve paths for config
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 
 # Colors
 RED='\033[0;31m'
@@ -21,6 +28,7 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 DISPATCH_DIR="/tmp/tl-dispatch"
+TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
@@ -143,14 +151,29 @@ cmd_cleanup() {
             # Skip already-finished workers
             [ -f "$wdir/exit_code" ] && continue
 
-            # Check if any claude/sleep process is still running for this worker
-            # The run.sh script runs claude -p in background — find it via the wdir path
-            local orphan_pids=""
-            orphan_pids=$(ps aux 2>/dev/null | grep "$wdir" | grep -v grep | awk '{print $2}' || true)
+            # Check if any processes are still running for this worker
+            local worker_pids=""
+            worker_pids=$(ps aux 2>/dev/null | grep "$wdir" | grep -v grep | awk '{print $2}' || true)
 
-            if [ -n "$orphan_pids" ]; then
+            if [ -n "$worker_pids" ]; then
+                # T-843: Check if a claude process is actively running — if so, skip (not orphaned)
+                local has_claude=false
+                for pid in $worker_pids; do
+                    local cmd_line
+                    cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "")
+                    if echo "$cmd_line" | grep -q "claude"; then
+                        has_claude=true
+                        break
+                    fi
+                done
+
+                if [ "$has_claude" = true ]; then
+                    echo -e "${GREEN}ACTIVE${NC}  Worker '$wname' has running claude process — skipping"
+                    continue
+                fi
+
                 echo -e "${YELLOW}ORPHAN${NC}  Worker '$wname' has running processes without TermLink session"
-                for pid in $orphan_pids; do
+                for pid in $worker_pids; do
                     local cmd_line
                     cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "unknown")
                     echo "  PID $pid: $cmd_line"
@@ -228,7 +251,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout=600
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -311,7 +334,7 @@ RUNEOF
 
 cmd_wait() {
     ensure_termlink
-    local name="" wait_all=false timeout=600
+    local name="" wait_all=false timeout="$TERMLINK_WORKER_TIMEOUT"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -394,7 +417,7 @@ cmd_update() {
     git fetch --quiet 2>/dev/null || die "Failed to fetch from remote"
     local local_head remote_head
     local_head=$(git rev-parse HEAD)
-    remote_head=$(git rev-parse @{u} 2>/dev/null || echo "unknown")
+    remote_head=$(git rev-parse '@{u}' 2>/dev/null || echo "unknown")
 
     if [ "$local_head" = "$remote_head" ]; then
         $quiet || echo -e "${GREEN}OK${NC}  TermLink is up to date ($(git log --oneline -1))"
@@ -404,7 +427,7 @@ cmd_update() {
     if $quiet; then
         echo -e "${YELLOW}UPDATE${NC}  TermLink update available"
         echo "  Local:  $(git log --oneline -1)"
-        echo "  Remote: $(git log --oneline -1 @{u})"
+        echo "  Remote: $(git log --oneline -1 '@{u}')"
         echo "  Run: fw termlink update"
         return 0
     fi
