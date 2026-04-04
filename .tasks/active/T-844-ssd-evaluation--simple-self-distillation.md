@@ -1,0 +1,102 @@
+---
+id: T-844
+name: "SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)"
+description: >
+  Inception: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-04T13:27:15Z
+last_update: 2026-04-04T13:27:44Z
+date_finished: null
+---
+
+# T-844: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
+
+## Problem Statement
+
+Evaluate "Embarrassingly Simple Self-Distillation Improves Code Generation" (arxiv 2604.01193) for relevance to the Agentic Engineering Framework. The paper proposes Simple Self-Distillation (SSD) — sampling model outputs at specific temperature/truncation configs and fine-tuning on them to improve code generation pass@1 rates by 30% (42.4% → 55.3% on LiveCodeBench v6).
+
+Key questions:
+1. Is SSD applicable to agentic workflows (not just code benchmarks)?
+2. Could the precision-exploration conflict insight inform our session quality work (T-830/T-831)?
+3. Are there practical integration points with the framework?
+
+## Exploration Plan
+
+1. Deep-read the paper (PDF) — extract methodology, results, limitations
+2. Map findings to framework context — where does SSD intersect with our work?
+3. Evaluate actionability — is there something concrete to build or adopt?
+
+## Scope Fence
+
+IN: Paper evaluation, relevance assessment, integration opportunity identification
+OUT: Reproducing the paper's experiments, fine-tuning models, building SSD pipelines
+
+## Acceptance Criteria
+
+### Agent
+- [x] Paper deep-read completed — methodology, results, theoretical framework extracted
+- [x] Framework relevance assessed — LOW direct, MEDIUM conceptual
+- [x] Recommendation: DEFER — interesting parallels but no actionable build
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Read the research artifact and recommendation in this task
+  2. Evaluate go/no-go criteria against findings
+  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-XXX go|no-go --rationale "your rationale"`
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+**GO if:**
+- SSD applicable at inference time (not just training)
+- Direct integration point with framework tooling
+
+**NO-GO / DEFER if:**
+- Requires model fine-tuning (outside our scope)
+- Only conceptual parallels, no concrete build
+
+## Recommendation
+
+- **Recommendation:** DEFER
+- **Rationale:** SSD requires model fine-tuning — we consume Claude as a service. The precision-exploration conflict (locks vs forks) is a useful mental model for agentic behavior but has no immediate build target. Worth revisiting if inference-time analogs emerge.
+- **Evidence:** Full analysis in `docs/reports/T-844-ssd-self-distillation-evaluation.md`
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     For inception tasks, verification is often not needed (decisions, not code).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-04-04T13:27:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
