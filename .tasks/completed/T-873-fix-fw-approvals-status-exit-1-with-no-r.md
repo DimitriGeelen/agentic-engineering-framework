@@ -4,16 +4,16 @@ name: "Fix fw approvals status exit 1 with no resolved approvals"
 description: >
   Fix fw approvals status exit 1 with no resolved approvals
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-04T23:21:22Z
-last_update: 2026-04-04T23:21:22Z
-date_finished: null
+last_update: 2026-04-04T23:23:18Z
+date_finished: 2026-04-04T23:23:18Z
 ---
 
 # T-873: Fix fw approvals status exit 1 with no resolved approvals
@@ -49,3 +49,6 @@ bats tests/integration/fw_approvals.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-873-fix-fw-approvals-status-exit-1-with-no-r.md
 - **Context:** Initial task creation
+
+### 2026-04-04T23:23:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
