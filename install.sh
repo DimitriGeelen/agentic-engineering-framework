@@ -17,6 +17,7 @@ INSTALL_DIR="${INSTALL_DIR:-$HOME/.agentic-framework}"
 REPO_URL="${REPO_URL:-https://github.com/DimitriGeelen/agentic-engineering-framework.git}"
 BRANCH="${BRANCH:-master}"
 MODIFY_PATH="${MODIFY_PATH:-false}"
+LOCAL_REPO=""
 
 # --- Colors ---
 RED='\033[0;31m'
