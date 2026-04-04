@@ -93,6 +93,11 @@ def create_app() -> Flask:
         _ver = "dev"
     app.jinja_env.globals["fw_version"] = _ver
 
+    # Project name from directory basename (T-854)
+    app.jinja_env.globals["project_name"] = os.path.basename(
+        os.path.normpath(str(PROJECT_ROOT))
+    ).replace("-", " ").replace("_", " ")
+
     # Jinja2 filter: convert project path to Watchtower URL (T-376)
     from web.search_utils import path_to_link
     app.jinja_env.filters["path_to_link"] = path_to_link

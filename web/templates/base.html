@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ page_title | default("Watchtower") }} — Agentic Engineering Framework</title>
+    <title>{{ page_title | default("Watchtower") }} — {{ project_name | default("Agentic Engineering Framework") }}</title>
     <script>
         (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
     </script>
@@ -349,7 +349,7 @@
 
     <!-- Footer -->
     <footer class="site-footer container">
-        Watchtower {{ fw_version }} &mdash; Agentic Engineering Framework
+        Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
         <br><span style="font-size:0.8rem">Found a framework bug? <code style="font-size:0.75rem;user-select:all">fw upstream report --title "..." --attach-doctor</code></span>
     </footer>
 
