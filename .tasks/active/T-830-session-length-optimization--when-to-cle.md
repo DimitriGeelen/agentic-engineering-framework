@@ -1,0 +1,108 @@
+---
+id: T-830
+name: "Session length optimization — when to /clear vs continue, context cost vs momentum tradeoff"
+description: >
+  Inception: Session length optimization — when to /clear vs continue, context cost vs momentum tradeoff
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-04T07:58:00Z
+last_update: 2026-04-04T07:58:23Z
+date_finished: null
+---
+
+# T-830: Session length optimization — when to /clear vs continue, context cost vs momentum tradeoff
+
+## Problem Statement
+
+Should we use `/clear` proactively to improve agent quality and reduce wasted tokens? Token analysis shows /clear costs ~745K tokens overhead per clear, but quality degradation in long sessions (instruction drift, stale context, repetition loops) may waste millions more. Need measurements to decide empirically.
+
+## Assumptions
+
+1. Quality degrades in long sessions (anecdotal, needs measurement)
+2. Handover fidelity is sufficient to recover within 8 turns
+3. Context pollution (stale tool results, superseded code) affects agent output quality
+4. Efficiency metrics are meaningful proxies for quality
+5. 10 sessions per group is sufficient for statistical signal
+
+## Exploration Plan
+
+Multi-agent TermLink inception:
+1. **Agent A — Historical analysis**: Mine JSONL transcripts for error/retry patterns across session ages
+2. **Agent B — Quality metrics design**: Design measurable quality indicators and propose instrumentation
+3. **Agent C — Literature/best practices**: Research LLM context window management strategies
+4. Synthesize findings into recommendation with measurement plan
+
+## Technical Constraints
+
+None — research/analysis task, no code changes in this inception.
+
+## Scope Fence
+
+**IN:** Evaluate /clear value proposition, design measurement framework, propose experiment
+**OUT:** Implementing the measurements, running the A/B experiment, building tooling
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Token cost analysis complete (done — /clear costs more in raw tokens)
+- [ ] Quality hypothesis documented with proposed measurements
+- [ ] Historical session data mined for quality signals
+- [ ] Measurement framework designed with specific metrics
+- [ ] Recommendation written with phased approach
+
+### Human
+- [ ] [REVIEW] Review findings and approve measurement implementation
+  **Steps:**
+  1. Read research artifact: `cd /opt/999-Agentic-Engineering-Framework && cat docs/reports/T-830-session-length-optimization.md`
+  2. Evaluate proposed metrics and experiment design
+  3. Decide: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-830 go --rationale "your rationale"`
+  **Expected:** Decision recorded
+  **If not:** Ask for clarification
+
+## Go/No-Go Criteria
+
+**GO if:**
+- Measurement framework is concrete and implementable
+- Quality signals from historical data suggest /clear has value
+- Proposed metrics are actionable (not just theoretical)
+
+**NO-GO if:**
+- Historical data shows no quality difference between short and long sessions
+- Proposed measurements are too expensive or invasive to implement
+
+## Verification
+
+<!-- Shell commands that MUST pass before work-completed. One per line.
+     Lines starting with # are comments. Empty lines ignored.
+     The completion gate runs each command — if any exits non-zero, completion is blocked.
+     For inception tasks, verification is often not needed (decisions, not code).
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-04-04T07:58:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
