@@ -50,6 +50,7 @@ fw_notify() {
     local title="${1:-}"
     local message="${2:-}"
     local trigger="${3:-manual}"
+    # shellcheck disable=SC2034  # reserved for dispatcher expansion
     local category="${4:-framework}"
 
     # Require at least title

@@ -12,15 +12,18 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
+
+HANDOVER_DEDUP_COOLDOWN=$(fw_config_int "HANDOVER_DEDUP_COOLDOWN" 300)
 
 # Generate handover — always full quality (D-028)
-# Deduplicate: skip commit if last commit was a handover within 5 minutes
+# Deduplicate: skip commit if last commit was a handover within cooldown period
 LAST_COMMIT_MSG=$(cd "$PROJECT_ROOT" && git log -1 --format="%s" 2>/dev/null)
 LAST_COMMIT_AGE=$(cd "$PROJECT_ROOT" && git log -1 --format="%ct" 2>/dev/null)
 NOW=$(date +%s)
 SKIP_COMMIT=false
 if echo "$LAST_COMMIT_MSG" | grep -qE "(handover|Handover)" 2>/dev/null; then
-    if [ -n "$LAST_COMMIT_AGE" ] && [ $((NOW - LAST_COMMIT_AGE)) -lt 300 ]; then
+    if [ -n "$LAST_COMMIT_AGE" ] && [ $((NOW - LAST_COMMIT_AGE)) -lt "$HANDOVER_DEDUP_COOLDOWN" ]; then
         SKIP_COMMIT=true
     fi
 fi

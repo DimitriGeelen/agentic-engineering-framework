@@ -171,7 +171,7 @@ plus Claude Code-specific integration notes.
                 # Backup before overwriting
                 cp "$project_claude" "${project_claude}.bak"
                 # Write combined file, fix any leftover placeholders
-                project_header=$(echo "$project_header" | sed "s|__PROJECT_NAME__|$project_name|g")
+                project_header="${project_header//__PROJECT_NAME__/$project_name}"
                 printf '%s\n%s\n' "$project_header" "$governance" > "$project_claude"
                 echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
             fi
@@ -302,13 +302,13 @@ CRONREGEOF
             echo -e "  ${CYAN}WOULD REINSTALL${NC}  Git hooks"
             changes=$((changes + 1))
         else
-            PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks > /dev/null 2>&1 && {
+            if PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks > /dev/null 2>&1; then
                 echo -e "  ${GREEN}UPDATED${NC}  Git hooks reinstalled"
                 changes=$((changes + 1))
-            } || {
+            else
                 echo -e "  ${YELLOW}WARN${NC}  Git hook installation failed"
                 skipped=$((skipped + 1))
-            }
+            fi
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  Not a git repository"
@@ -688,7 +688,6 @@ MCPJSON
     echo -e "${YELLOW}[7/10] Claude Code commands${NC}"
 
     local resume_file="$target_dir/.claude/commands/resume.md"
-    local framework_resume="$FRAMEWORK_ROOT/lib/templates/resume-command.md"
 
     # Use the version from init.sh if no separate template exists
     if [ -f "$resume_file" ]; then

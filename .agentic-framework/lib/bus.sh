@@ -199,6 +199,7 @@ with open(os.environ['BUS_RESULT_FILE'], 'w') as f:
     yaml.dump(envelope, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 PYEOF
 
+    # shellcheck disable=SC2181 # $? needed — exit code from heredoc Python block above
     if [ $? -ne 0 ]; then
         echo -e "${RED}ERROR: Failed to write result envelope${NC}" >&2
         return 1
@@ -339,8 +340,6 @@ do_bus_manifest() {
 
     echo -e "${BOLD}Result Manifest: $task_id${NC} ($count results)"
     echo ""
-
-    local total_bytes=0
 
     for f in "$bus_dir"/R-*.yaml; do
         [ -f "$f" ] || continue

@@ -352,7 +352,7 @@ harvest_decisions() {
         fi
     done <<< "$project_decisions"
 
-    if [ $new_decisions -gt 0 ]; then
+    if [ "$new_decisions" -gt 0 ]; then
         echo -e "  ${YELLOW}NOTE${NC}  Decisions are project-specific — review manually for framework relevance"
     fi
 }

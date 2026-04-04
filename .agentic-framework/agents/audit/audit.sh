@@ -17,6 +17,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -238,7 +239,7 @@ CRONEOF
                 done
                 echo ""
                 # Show latest cron audit
-                local_latest=$(ls -t "$CONTEXT_DIR/audits/cron/"*.yaml 2>/dev/null | head -1)
+                local_latest=$(find "$CONTEXT_DIR/audits/cron/" -maxdepth 1 -name '*.yaml' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
                 if [ -n "$local_latest" ]; then
                     echo "Latest cron audit: $(basename "$local_latest")"
                     grep -E "^  (pass|warn|fail):" "$local_latest" 2>/dev/null | sed 's/^/  /'
@@ -442,6 +443,7 @@ try:
 except yaml.YAMLError as e:
     print(str(e).split(chr(10))[0]); sys.exit(1)
 " 2>&1)
+    # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
     if [ $? -eq 0 ]; then
         yaml_pass_count=$((yaml_pass_count + 1))
     else
@@ -457,7 +459,7 @@ fi
 
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
-    fabric_cards=$(ls "$PROJECT_ROOT/.fabric/components/"*.yaml 2>/dev/null | wc -l)
+    fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
     if [ "$fabric_cards" -gt 0 ]; then
         drift_result=$(python3 -c "
 import yaml, glob, os
@@ -796,15 +798,17 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     TRACE_BASELINE_FILE="$PROJECT_ROOT/.context/project/traceability-baseline"
     trace_range=""
     if [ -f "$TRACE_BASELINE_FILE" ]; then
-        trace_base=$(cat "$TRACE_BASELINE_FILE" | tr -d '[:space:]')
+        trace_base=$(tr -d '[:space:]' < "$TRACE_BASELINE_FILE")
         if git -C "$PROJECT_ROOT" rev-parse --verify "$trace_base" >/dev/null 2>&1; then
             trace_range="${trace_base}..HEAD"
             pass "Traceability baseline active (excluding pre-ingestion commits)"
         fi
     fi
 
+    # shellcheck disable=SC2086 # trace_range intentionally unquoted — empty means no range arg
     total_commits=$(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null | wc -l | tr -d ' ')
-    task_commits=$(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null | grep -E "T-[0-9]+" | wc -l | tr -d ' ')
+    # shellcheck disable=SC2086
+    task_commits=$(git -C "$PROJECT_ROOT" log --oneline $trace_range 2>/dev/null | grep -cE "T-[0-9]+" || true)
 
     if [ "$total_commits" -gt 0 ]; then
         pct=$((task_commits * 100 / total_commits))
@@ -833,6 +837,7 @@ if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
 
     # Quality Check: Verify task refs in commits exist as actual tasks
     orphan_refs=0
+    # shellcheck disable=SC2086 # trace_range intentionally unquoted
     while IFS= read -r commit_line; do
         task_ref=$(echo "$commit_line" | grep -oE "T-[0-9]+" | head -1)
         if [ -n "$task_ref" ]; then
@@ -1392,7 +1397,9 @@ if [ -f "$LEARNINGS_FILE" ]; then
     if [ "$learning_count" -ge 20 ]; then
         # Check for promotion candidates using fw promote
         promote_output=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/bin/fw" promote suggest 2>/dev/null) || true
+        # shellcheck disable=SC2034 # ready_count/almost_count used for debug logging
         ready_count=$(echo "$promote_output" | grep -c "ready for promotion" 2>/dev/null) || ready_count=0
+        # shellcheck disable=SC2034
         almost_count=$(echo "$promote_output" | grep -c "^  " 2>/dev/null) || almost_count=0
 
         if echo "$promote_output" | grep -q "No learnings currently meet"; then
@@ -1433,7 +1440,7 @@ if [ -d "$TASKS_DIR/completed" ] && [ -d "$PROJECT_ROOT/docs/reports" ]; then
         # Check if any docs/reports/ file references this task ID
         has_artifact=false
         for report in "$PROJECT_ROOT/docs/reports"/*.md; do
-            if echo "$(basename "$report")" | grep -qi "$task_id"; then
+            if basename "$report" | grep -qi "$task_id"; then
                 has_artifact=true
                 break
             fi
@@ -1513,7 +1520,7 @@ done
 shopt -u nullglob
 
 if [ "$c001_missing" -eq 0 ]; then
-    inception_active=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/active/" 2>/dev/null | while read f; do grep -l "^status: started-work" "$f" 2>/dev/null; done | wc -l | tr -d ' ')
+    inception_active=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/active/" 2>/dev/null | while read -r f; do grep -l "^status: started-work" "$f" 2>/dev/null; done | wc -l | tr -d ' ')
     if [ "$inception_active" -gt 0 ]; then
         pass "C-001: All $inception_active active inceptions have research artifacts"
     else
@@ -1533,7 +1540,8 @@ fi
 # C-002 OE: Check warning log for recent inception commits without research
 WARN_LOG="$CONTEXT_DIR/working/.inception-research-warnings"
 if [ -f "$WARN_LOG" ]; then
-    recent_warns=$(grep "$(date +%Y-%m-%d)" "$WARN_LOG" 2>/dev/null | wc -l | tr -d ' ')
+    recent_warns=$(grep -c "$(date +%Y-%m-%d)" "$WARN_LOG" 2>/dev/null || true)
+    recent_warns=$(echo "$recent_warns" | tr -d '[:space:]')
     if [ "$recent_warns" -gt 0 ]; then
         warn "C-002: $recent_warns inception commit(s) today without docs/reports/ artifact" \
              "Warnings logged in .inception-research-warnings" \
@@ -1556,7 +1564,8 @@ else
 fi
 
 if [ -f "$CHECKPOINT_LOG" ]; then
-    today_prompts=$(grep "$(date +%Y-%m-%d)" "$CHECKPOINT_LOG" 2>/dev/null | wc -l | tr -d ' ')
+    today_prompts=$(grep -c "$(date +%Y-%m-%d)" "$CHECKPOINT_LOG" 2>/dev/null || true)
+    today_prompts=$(echo "$today_prompts" | tr -d '[:space:]')
     echo "       C-003 checkpoint prompts today: $today_prompts"
 fi
 
@@ -1619,7 +1628,7 @@ fi
 # CTL-004 OE: Context Checkpoint — tool counter behavior
 TOOL_COUNTER="$CONTEXT_DIR/working/.tool-counter"
 if [ -f "$TOOL_COUNTER" ]; then
-    counter_val=$(cat "$TOOL_COUNTER" 2>/dev/null | tr -d '[:space:]')
+    counter_val=$(tr -d '[:space:]' < "$TOOL_COUNTER" 2>/dev/null)
     counter_val=${counter_val:-0}
     # After a commit, post-commit hook resets to 0. High values without recent commit = checkpoint working
     last_commit_age=$(git -C "$PROJECT_ROOT" log -1 --format="%cr" 2>/dev/null || echo "unknown")
@@ -1657,24 +1666,27 @@ echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
 _ctl008_range=""
 _ctl008_baseline_file="$PROJECT_ROOT/.context/project/traceability-baseline"
 if [ -f "$_ctl008_baseline_file" ]; then
-    _ctl008_base=$(cat "$_ctl008_baseline_file" | tr -d '[:space:]')
+    _ctl008_base=$(tr -d '[:space:]' < "$_ctl008_baseline_file")
     if git -C "$PROJECT_ROOT" rev-parse --verify "$_ctl008_base" >/dev/null 2>&1; then
         _ctl008_range="${_ctl008_base}..HEAD"
     fi
 fi
 if [ -n "$_ctl008_range" ]; then
+    # shellcheck disable=SC2086 # _ctl008_range intentionally unquoted
     total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | wc -l | tr -d ' ')
 else
     total_recent=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | wc -l | tr -d ' ')
 fi
 if [ "$total_recent" -gt 0 ]; then
     if [ -n "$_ctl008_range" ]; then
+        # shellcheck disable=SC2086
         without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 $_ctl008_range 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     else
         without_task=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null | grep -cv '^[a-f0-9]* T-' || true)
     fi
     without_task=$(echo "$without_task" | tr -d '[:space:]')
     ratio=$(( (total_recent - without_task) * 100 / total_recent ))
+    # shellcheck disable=SC2086 # _ctl008_range intentionally unquoted (empty = no range arg)
     if [ "$ratio" -ge 95 ]; then
         pass "CTL-008: Task reference traceability ${ratio}% ($without_task/$total_recent without T-XXX)"
     elif [ "$ratio" -ge 80 ]; then
@@ -1698,7 +1710,7 @@ if [ -d "$CRON_DIR" ]; then
         pass "CTL-020: $recent_cron cron audit file(s) in last hour"
     else
         warn "CTL-020: No cron audit files in last hour" \
-             "$(ls -lt "$CRON_DIR"/*.yaml 2>/dev/null | head -1)" \
+             "$(find "$CRON_DIR" -maxdepth 1 -name '*.yaml' -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)" \
              "Check cron schedule: crontab -l | grep agentic; cat /etc/cron.d/agentic-audit"
     fi
 else
@@ -1752,7 +1764,7 @@ COMPACT_LOG="$CONTEXT_DIR/working/.compact-log"
 if [ -f "$COMPACT_LOG" ]; then
     # Check each compaction has a handover within ~5min
     compact_count=$(wc -l < "$COMPACT_LOG" 2>/dev/null | tr -d ' ')
-    handover_count=$(ls -1 "$CONTEXT_DIR/handovers/S-"*.md 2>/dev/null | wc -l | tr -d ' ')
+    handover_count=$(find "$CONTEXT_DIR/handovers" -maxdepth 1 -name 'S-*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
     if [ "$handover_count" -ge "$compact_count" ] || [ "$compact_count" -eq 0 ]; then
         pass "CTL-006: Handover coverage for compactions ($handover_count handovers, $compact_count compactions)"
     else
@@ -1843,6 +1855,7 @@ ac_fail=0
 shopt -s nullglob
 for task_file in "$TASKS_DIR/completed"/*.md; do
     [ -f "$task_file" ] || continue
+    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
     # Check for unchecked ACs in Acceptance Criteria section
     # Skip ### Human subsection — those are human-owned and intentionally unchecked (T-193)
     in_ac=false
@@ -1866,7 +1879,6 @@ for task_file in "$TASKS_DIR/completed"/*.md; do
             continue
         fi
         if [ "$in_ac" = true ] && [ "$in_human" = false ] && echo "$line" | grep -q '^\- \[ \]'; then
-            task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
             warn "CTL-012: Completed task $task_id has unchecked AC" \
                  "$(echo "$line" | head -c 80)" \
                  "Review task completion — AC gate may have been bypassed"
@@ -1877,7 +1889,7 @@ for task_file in "$TASKS_DIR/completed"/*.md; do
 done
 shopt -u nullglob
 if [ "$ac_fail" -eq 0 ]; then
-    completed_count=$(ls -1 "$TASKS_DIR/completed"/*.md 2>/dev/null | wc -l | tr -d ' ')
+    completed_count=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
     pass "CTL-012: All $completed_count completed tasks have checked ACs"
 fi
 
@@ -1885,7 +1897,7 @@ fi
 # (Full re-run of all verification is expensive; check latest 3)
 verify_fail=0
 shopt -s nullglob
-recent_completed=$(ls -t "$TASKS_DIR/completed"/*.md 2>/dev/null | head -3)
+recent_completed=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -3)
 for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
     task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
@@ -1916,7 +1928,7 @@ for task_file in $recent_completed; do
                 fi
                 continue
             fi
-            trimmed=$(echo "$line" | sed 's/^[[:space:]]*//')
+            trimmed="${line#"${line%%[![:space:]]*}"}"
             [ -z "$trimmed" ] && continue
             echo "$trimmed" | grep -q '^#' && continue
             verify_cmds+=("$trimmed")
@@ -2087,6 +2099,7 @@ except: print(0)
 done
 shopt -u nullglob
 
+# shellcheck disable=SC2034 # d2_total available for debug/summary
 d2_total=$((d2_info + d2_warn + d2_fail))
 if [ "$d2_fail" -gt 0 ]; then
     fail "D2: Human review queue — $d2_fail task(s) waiting >30d:$d2_details" \
@@ -2124,12 +2137,13 @@ if [ -f "$HANDOVER_LATEST" ]; then
     # D8b: Check last 10 handovers for TODO rot (archive check, T-393)
     d8b_stale=0
     d8b_checked=0
-    for hf in $(ls -t "$CONTEXT_DIR/handovers"/S-*.md 2>/dev/null | head -10); do
+    while IFS= read -r hf; do
+        [ -n "$hf" ] || continue
         d8b_checked=$((d8b_checked + 1))
         hf_todos=$(grep -c '\[TODO' "$hf" 2>/dev/null || true)
         hf_todos=$(echo "$hf_todos" | tr -d '[:space:]')
         [ "${hf_todos:-0}" -gt 3 ] && d8b_stale=$((d8b_stale + 1))
-    done
+    done < <(find "$CONTEXT_DIR/handovers" -maxdepth 1 -name 'S-*.md' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -10)
     if [ "$d8b_stale" -gt 5 ]; then
         fail "D8b: Handover archive rot — $d8b_stale/$d8b_checked recent handovers have unfilled [TODO]s" \
              "Auto-generated handovers are not being filled" \
@@ -2882,7 +2896,6 @@ else
 fi
 
 # Check deployment files exist
-DEPLOY_FILES_OK=true
 for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-routes.yml; do
     if [ -f "$PROJECT_ROOT/$deploy_file" ]; then
         pass "Deploy gate: $deploy_file exists"
@@ -2890,18 +2903,18 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
         fail "Deploy gate: $deploy_file missing" \
              "$deploy_file not found in project root" \
              "Run: fw deploy scaffold --app <name> --pattern swarm --port-prod <N> --port-dev <N>"
-        DEPLOY_FILES_OK=false
     fi
 done
 
 # Check health endpoint responds (if server is running)
-if curl -sf --max-time 3 http://localhost:3000/health >/dev/null 2>&1; then
-    pass "Deploy gate: Health endpoint responds on :3000"
+_wt_port=$(fw_config "PORT" 3000)
+if curl -sf --max-time 3 "http://localhost:${_wt_port}/health" >/dev/null 2>&1; then
+    pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"
 else
     warn "Deploy gate: Health endpoint not reachable" \
-         "Neither :3000 nor :5050 /health responded" \
+         "Neither :${_wt_port} nor :5050 /health responded" \
          "Start server: fw serve (or check if health endpoint exists)"
 fi
 

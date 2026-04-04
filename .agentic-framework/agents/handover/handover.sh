@@ -19,7 +19,7 @@ _resolve_commit_task() {
     fi
     # Look for any task with "handover" in its slug
     local handover_task
-    handover_task=$(ls "$TASKS_DIR/active/"*handover*.md "$TASKS_DIR/completed/"*handover*.md 2>/dev/null | head -1)
+    handover_task=$(find "$TASKS_DIR/active" "$TASKS_DIR/completed" -maxdepth 1 -name '*handover*.md' -type f 2>/dev/null | head -1)
     if [ -n "$handover_task" ]; then
         COMMIT_TASK=$(basename "$handover_task" | grep -oE "T-[0-9]+" | head -1)
         if [ -n "$COMMIT_TASK" ]; then return; fi
@@ -182,17 +182,16 @@ ACTIVE_TASKS="${ACTIVE_TASKS%, }"  # Remove trailing comma
 
 # Get git info
 UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-LAST_COMMIT=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
 RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/null)
 
 # Get tasks touched recently (modified in last day)
 TASKS_TOUCHED=""
-for f in $(find "$TASKS_DIR" -name "*.md" -mmin -1440 -type f 2>/dev/null); do
+while IFS= read -r f; do
     task_id=$(grep "^id:" "$f" | head -1 | cut -d: -f2 | tr -d ' ')
     if [ -n "$task_id" ]; then
         TASKS_TOUCHED="$TASKS_TOUCHED$task_id, "
     fi
-done
+done < <(find "$TASKS_DIR" -name "*.md" -mmin -1440 -type f 2>/dev/null)
 TASKS_TOUCHED="${TASKS_TOUCHED%, }"
 
 # Step 1.5: EPISODIC COMPLETENESS GATE
@@ -293,6 +292,50 @@ if [ -f "$GAPS_FILE" ]; then
     fi
 fi
 
+# Step 1.8: Token usage (T-805, T-829)
+TOKEN_USAGE=""
+TOKEN_TOTAL=""
+TOKEN_TURNS=""
+TOKEN_CACHE_HIT=""
+TOKEN_INPUT=""
+TOKEN_CACHE_READ=""
+TOKEN_CACHE_CREATE=""
+TOKEN_OUTPUT=""
+if [ -f "$FRAMEWORK_ROOT/lib/costs.sh" ]; then
+    TOKEN_DATA=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
+        bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh" 2>/dev/null; source "$FRAMEWORK_ROOT/lib/costs.sh"; costs_main current 2>/dev/null' || true)
+    if [ -n "$TOKEN_DATA" ]; then
+        TOKEN_TOTAL=$(echo "$TOKEN_DATA" | grep "^Total:" | awk '{print $2}')
+        TOKEN_TURNS=$(echo "$TOKEN_DATA" | grep "^Turns:" | awk '{print $2}' | tr -d ',')
+        TOKEN_CACHE_HIT=$(echo "$TOKEN_DATA" | grep "^  Cache Rd:" | awk '{print $3}')
+        TOKEN_INPUT=$(echo "$TOKEN_DATA" | grep "^  Input:" | awk '{print $2}')
+        TOKEN_CACHE_READ=$(echo "$TOKEN_DATA" | grep "^  Cache Rd:" | awk '{print $3}')
+        TOKEN_CACHE_CREATE=$(echo "$TOKEN_DATA" | grep "^  Cache Cr:" | awk '{print $3}')
+        TOKEN_OUTPUT=$(echo "$TOKEN_DATA" | grep "^  Output:" | awk '{print $2}')
+        TOKEN_USAGE="${TOKEN_TOTAL:-0} tokens, ${TOKEN_TURNS:-0} turns"
+    fi
+fi
+
+# Step 1.9: Session quality metrics (T-831)
+METRICS_CPT=""
+METRICS_FCT=""
+METRICS_FTC=""
+METRICS_FTC_RATE=""
+METRICS_EDIT_BURSTS=""
+METRICS_PTR=""
+if [ -f "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" ]; then
+    bash "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" 2>/dev/null || true
+    METRICS_FILE="$CONTEXT_DIR/working/.session-metrics.yaml"
+    if [ -f "$METRICS_FILE" ]; then
+        METRICS_CPT=$(grep '^commits_per_turn:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FCT=$(grep '^first_commit_turn:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FTC=$(grep '^failed_tool_calls:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_FTC_RATE=$(grep '^failed_tool_call_rate:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_EDIT_BURSTS=$(grep '^edit_bursts:' "$METRICS_FILE" | awk '{print $2}')
+        METRICS_PTR=$(grep '^productive_turns_ratio:' "$METRICS_FILE" | awk '{print $2}')
+    fi
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -305,6 +348,17 @@ tasks_active: [$ACTIVE_TASKS]
 tasks_touched: [$TASKS_TOUCHED]
 tasks_completed: []
 uncommitted_changes: $UNCOMMITTED
+token_usage: "${TOKEN_USAGE}"
+token_input: "${TOKEN_INPUT}"
+token_cache_read: "${TOKEN_CACHE_READ}"
+token_cache_create: "${TOKEN_CACHE_CREATE}"
+token_output: "${TOKEN_OUTPUT}"
+commits_per_turn: "${METRICS_CPT}"
+first_commit_turn: "${METRICS_FCT}"
+failed_tool_calls: "${METRICS_FTC}"
+failed_tool_call_rate: "${METRICS_FTC_RATE}"
+edit_bursts: "${METRICS_EDIT_BURSTS}"
+productive_turns_ratio: "${METRICS_PTR}"
 owner: ${AGENT_OWNER:-claude-code}
 session_narrative: ""
 ---
@@ -557,6 +611,18 @@ None
 
 None
 
+## Token Usage
+
+$(if [ -n "$TOKEN_TOTAL" ]; then
+    echo "- **Total:** $TOKEN_TOTAL tokens"
+    echo "- **Turns:** ${TOKEN_TURNS:-?}"
+    [ -n "$TOKEN_CACHE_HIT" ] && echo "- **Cache read:** $TOKEN_CACHE_HIT"
+    echo ""
+    echo "Run \`fw costs current\` for detailed breakdown."
+else
+    echo "No token data available (requires JSONL transcript)."
+fi)
+
 ## Gotchas / Warnings for Next Session
 
 See gaps register above.
@@ -607,6 +673,23 @@ $RECENT_COMMITS
 - What was unnecessary?
 EOF
 
+# Step 2b: Check for orphaned TermLink worker outputs (T-818/T-820)
+ORPHAN_COUNT=$(find /tmp -maxdepth 1 -name "fw-agent-*.md" -newer "$HANDOVER_DIR/LATEST.md" 2>/dev/null | wc -l)
+ORPHAN_COUNT=$(echo "$ORPHAN_COUNT" | tr -d '[:space:]')
+if [ "${ORPHAN_COUNT:-0}" -gt 0 ]; then
+    echo "" >> "$HANDOVER_FILE"
+    echo "## Orphaned Worker Outputs" >> "$HANDOVER_FILE"
+    echo "" >> "$HANDOVER_FILE"
+    echo "**$ORPHAN_COUNT file(s) in /tmp/fw-agent-\*.md** newer than last handover." >> "$HANDOVER_FILE"
+    echo "These may be TermLink worker results that weren't integrated." >> "$HANDOVER_FILE"
+    echo "" >> "$HANDOVER_FILE"
+    find /tmp -maxdepth 1 -name "fw-agent-*.md" -newer "$HANDOVER_DIR/LATEST.md" 2>/dev/null | while read -r f; do
+        echo "- \`$(basename "$f")\` ($(wc -l < "$f") lines)" >> "$HANDOVER_FILE"
+    done
+    echo "" >> "$HANDOVER_FILE"
+    echo -e "${YELLOW}WARNING: $ORPHAN_COUNT orphaned worker output(s) in /tmp${NC}"
+fi
+
 # Step 3: Update LATEST.md (symlink so edits to session file auto-reflect)
 ln -sf "$(basename "$HANDOVER_FILE")" "$HANDOVER_DIR/LATEST.md"
 
@@ -618,7 +701,7 @@ echo "Latest: $HANDOVER_DIR/LATEST.md"
 # T-709: Push notification — session ended
 if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/notify.sh"
-    ACTIVE_COUNT=$(ls "$PROJECT_ROOT/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    ACTIVE_COUNT=$(find "$PROJECT_ROOT/.tasks/active" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null | wc -l)
     fw_notify "Session Ended: $SESSION_ID" "Handover created. Active tasks: $ACTIVE_COUNT" "manual" "framework"
 fi
 

@@ -90,7 +90,7 @@ do_version_bump() {
         echo "Files to update:"
         for f in "${files_to_update[@]}"; do
             local rel
-            rel="${f#$FRAMEWORK_ROOT/}"
+            rel="${f#"$FRAMEWORK_ROOT"/}"
             echo "  $rel"
         done
         if [ "$do_tag" = true ]; then
@@ -174,7 +174,7 @@ do_version_check() {
     local root_version_file="$FRAMEWORK_ROOT/VERSION"
     if [ -f "$root_version_file" ]; then
         local root_val
-        root_val=$(cat "$root_version_file" | tr -d '[:space:]')
+        root_val=$(tr -d '[:space:]' < "$root_version_file")
         if [ "$root_val" = "$fw_version" ]; then
             echo -e "  VERSION (root):                  ${GREEN}$root_val${NC} ✓"
         else
@@ -189,7 +189,7 @@ do_version_check() {
     local vendored_version="$FRAMEWORK_ROOT/.agentic-framework/VERSION"
     if [ -f "$vendored_version" ]; then
         local vendored_val
-        vendored_val=$(cat "$vendored_version" | tr -d '[:space:]')
+        vendored_val=$(tr -d '[:space:]' < "$vendored_version")
         if [ "$vendored_val" = "$fw_version" ]; then
             echo -e "  .agentic-framework/VERSION:      ${GREEN}$vendored_val${NC} ✓"
         else
@@ -292,7 +292,7 @@ do_version_sync() {
     local root_version="$FRAMEWORK_ROOT/VERSION"
     if [ -f "$root_version" ]; then
         local current
-        current=$(cat "$root_version" | tr -d '[:space:]')
+        current=$(tr -d '[:space:]' < "$root_version")
         if [ "$current" != "$fw_version" ]; then
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}[dry-run]${NC} VERSION: $current → $fw_version"
@@ -310,7 +310,7 @@ do_version_sync() {
     local vendored_version="$FRAMEWORK_ROOT/.agentic-framework/VERSION"
     if [ -f "$vendored_version" ]; then
         local current
-        current=$(cat "$vendored_version" | tr -d '[:space:]')
+        current=$(tr -d '[:space:]' < "$vendored_version")
         if [ "$current" != "$fw_version" ]; then
             if [ "$dry_run" = true ]; then
                 echo -e "  ${CYAN}[dry-run]${NC} .agentic-framework/VERSION: $current → $fw_version"
@@ -391,7 +391,7 @@ do_version_audit() {
     local root_version="$FRAMEWORK_ROOT/VERSION"
     if [ -f "$root_version" ]; then
         local root_val
-        root_val=$(cat "$root_version" | tr -d '[:space:]')
+        root_val=$(tr -d '[:space:]' < "$root_version")
         if [ "$root_val" = "$fw_version" ]; then
             pass=$((pass + 1))
         else
@@ -404,7 +404,7 @@ do_version_audit() {
     local vendored_version="$FRAMEWORK_ROOT/.agentic-framework/VERSION"
     if [ -f "$vendored_version" ]; then
         local vendored_val
-        vendored_val=$(cat "$vendored_version" | tr -d '[:space:]')
+        vendored_val=$(tr -d '[:space:]' < "$vendored_version")
         if [ "$vendored_val" = "$fw_version" ]; then
             pass=$((pass + 1))
         else

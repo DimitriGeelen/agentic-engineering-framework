@@ -59,9 +59,12 @@ get_active_tasks() {
 
 # Get uncommitted changes
 get_git_state() {
-    local uncommitted=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
-    local last_commit=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
-    local branch=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
+    local uncommitted
+    uncommitted=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    local last_commit
+    last_commit=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
+    local branch
+    branch=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
     echo "$uncommitted|$last_commit|$branch"
 }
 
@@ -89,8 +92,10 @@ cmd_status() {
     echo ""
 
     # Session info
-    local session_id=$(get_session)
-    local focus=$(get_focus)
+    local session_id
+    session_id=$(get_session)
+    local focus
+    focus=$(get_focus)
     echo -e "${BOLD}Session:${NC} ${session_id:-unknown}"
     echo -e "${BOLD}Focus:${NC} ${focus:-none}"
     echo ""
@@ -126,20 +131,25 @@ cmd_status() {
     # Handover summary
     if [ -f "$HANDOVER_DIR/LATEST.md" ]; then
         # Check for unfilled TODO placeholders
-        local todo_count=$(grep -c "\[TODO\]" "$HANDOVER_DIR/LATEST.md" 2>/dev/null | tr -d "\n" || echo "0")
+        local todo_count
+        todo_count=$(grep -c "\[TODO\]" "$HANDOVER_DIR/LATEST.md" 2>/dev/null | tr -d "\n" || echo "0")
         if [ "$todo_count" -gt 0 ]; then
             echo -e "${YELLOW}⚠ Handover has $todo_count unfilled [TODO] placeholder(s) — may be incomplete${NC}"
         fi
 
         echo -e "${BOLD}Last Handover:${NC}"
         # Extract "Where We Are" section (first paragraph after header)
-        local where_we_are=$(sed -n '/^## Where We Are/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -5)
+        local where_we_are
+        where_we_are=$(sed -n '/^## Where We Are/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -5)
+        # shellcheck disable=SC2001 # multi-line prefix — can't use ${//}
         if [ -n "$where_we_are" ]; then
             echo "$where_we_are" | sed 's/^/  /'
         fi
 
         # Extract suggested first action
-        local suggested=$(sed -n '/^## Suggested First Action/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -3)
+        local suggested
+        suggested=$(sed -n '/^## Suggested First Action/,/^##/p' "$HANDOVER_DIR/LATEST.md" | grep -v "^##" | head -3)
+        # shellcheck disable=SC2001 # multi-line prefix — can't use ${//}
         if [ -n "$suggested" ]; then
             echo ""
             echo -e "${BOLD}Suggested Action:${NC}"
@@ -147,9 +157,12 @@ cmd_status() {
         fi
 
         # Check for untracked open questions (G-002)
-        local open_questions=$(sed -n '/^## Open Questions/,/^## /p' "$HANDOVER_DIR/LATEST.md" | grep -E "^[0-9]+\.|^- " | grep -v "\[Question" | grep -v "\[TODO")
+        local open_questions
+        open_questions=$(sed -n '/^## Open Questions/,/^## /p' "$HANDOVER_DIR/LATEST.md" | grep -E "^[0-9]+\.|^- " | grep -v "\[Question" | grep -v "\[TODO")
+        # shellcheck disable=SC2001
         if [ -n "$open_questions" ]; then
-            local oq_count=$(echo "$open_questions" | wc -l | tr -d ' ')
+            local oq_count
+            oq_count=$(echo "$open_questions" | wc -l | tr -d ' ')
             echo ""
             echo -e "${YELLOW}${BOLD}Unresolved Open Questions ($oq_count):${NC}"
             echo "$open_questions" | sed 's/^/  /'
@@ -275,9 +288,12 @@ cmd_sync() {
 
     # Update session.yaml
     if [ -f "$WORKING_DIR/session.yaml" ]; then
-        local session_id=$(grep "^session_id:" "$WORKING_DIR/session.yaml" | cut -d: -f2 | tr -d ' ')
-        local start_time=$(grep "^start_time:" "$WORKING_DIR/session.yaml" | cut -d: -f2- | tr -d ' ')
-        local predecessor=$(grep "^predecessor:" "$WORKING_DIR/session.yaml" | cut -d: -f2 | tr -d ' ')
+        local session_id
+        session_id=$(grep "^session_id:" "$WORKING_DIR/session.yaml" | cut -d: -f2 | tr -d ' ')
+        local start_time
+        start_time=$(grep "^start_time:" "$WORKING_DIR/session.yaml" | cut -d: -f2- | tr -d ' ')
+        local predecessor
+        predecessor=$(grep "^predecessor:" "$WORKING_DIR/session.yaml" | cut -d: -f2 | tr -d ' ')
 
         cat > "$WORKING_DIR/session.yaml" << EOF
 # Working Memory - Session State
@@ -307,10 +323,15 @@ EOF
 
     # Validate focus
     if [ -f "$WORKING_DIR/focus.yaml" ]; then
-        local current_focus=$(grep "^current_task:" "$WORKING_DIR/focus.yaml" | cut -d: -f2 | tr -d ' ')
+        local current_focus
+        current_focus=$(grep "^current_task:" "$WORKING_DIR/focus.yaml" | cut -d: -f2 | tr -d ' ')
         if [ -n "$current_focus" ]; then
             # Check if focus task still exists in active
-            if [ ! -f "$TASKS_DIR/active"/*"$current_focus"* ] 2>/dev/null; then
+            local focus_found=false
+            for _f in "$TASKS_DIR/active"/*"$current_focus"*; do
+                [ -f "$_f" ] && focus_found=true && break
+            done
+            if [ "$focus_found" = false ]; then
                 echo -e "${YELLOW}⚠ Focus task $current_focus no longer active${NC}"
                 # Clear focus if task completed
                 _sed_i "s/^current_task:.*/current_task:/" "$WORKING_DIR/focus.yaml"
@@ -327,7 +348,8 @@ EOF
 
 # QUICK command - one-line summary
 cmd_quick() {
-    local focus=$(get_focus)
+    local focus
+    focus=$(get_focus)
     IFS='|' read -r task_count task_list <<< "$(get_active_tasks)"
     IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
 

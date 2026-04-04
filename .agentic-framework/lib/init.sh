@@ -8,10 +8,12 @@ do_init() {
     local target_dir=""
     local provider="generic"
     local force=false
+    # shellcheck disable=SC2034  # reserved for future use
     local first_run=true
 
     # Parse arguments
     while [[ $# -gt 0 ]]; do
+        # shellcheck disable=SC2034
         case $1 in
             --provider) provider="$2"; shift 2 ;;
             --force) force=true; shift ;;
@@ -193,10 +195,10 @@ WGIT
     local upstream_repo=""
     if [ -d "$FRAMEWORK_ROOT/.git" ]; then
         local remote_url
-        remote_url=$(cd "$FRAMEWORK_ROOT" && git remote get-url origin 2>/dev/null || true)
+        remote_url=$(git -C "$FRAMEWORK_ROOT" remote get-url origin 2>/dev/null) || true
         # If no origin, try first available push remote
         if [ -z "$remote_url" ]; then
-            remote_url=$(cd "$FRAMEWORK_ROOT" && git remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}' || true)
+            remote_url=$(git -C "$FRAMEWORK_ROOT" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
         fi
         if [ -n "$remote_url" ]; then
             # GitHub URLs: extract owner/repo for compact display
@@ -204,7 +206,7 @@ WGIT
                 upstream_repo=$(echo "$remote_url" | sed -E 's|.*github\.com[:/]||;s|\.git$||')
             else
                 # Non-GitHub: store full URL (OneDev, GitLab, Gitea, etc.)
-                upstream_repo=$(echo "$remote_url" | sed 's|\.git$||')
+                upstream_repo="${remote_url%.git}"
             fi
         fi
     fi
@@ -429,7 +431,8 @@ CYAML
             init_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             for tmpl in "$seed_dir"/T-*.md; do
                 [ -f "$tmpl" ] || continue
-                local dest="$target_dir/.tasks/active/$(basename "$tmpl")"
+                local dest
+                dest="$target_dir/.tasks/active/$(basename "$tmpl")"
                 sed \
                     -e "s|__PROJECT_NAME__|$project_display|g" \
                     -e "s|__DATE__|$init_date|g" \
