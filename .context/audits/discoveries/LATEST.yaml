@@ -1,8 +1,8 @@
-timestamp: 2026-04-04T13:45:12Z
+timestamp: 2026-04-04T13:49:52Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (19/776)"
+    check: "D1: Episodic quality — 2% [TODO] (19/777)"
   - id: D2
     level: WARN
     check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(20d) T-460(22d) T-470(22d) T-476(22d) T-481(20d) T-483(20d) T-493(20d) T-505(18d) T-511(18d) T-516(17d) T-518(17d)"
@@ -26,13 +26,13 @@ findings:
     mitigation: "Review flagged tasks for process issues"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=59 avg=65 ratio=0.9x)"
+    check: "D3: Commit velocity — normal (PASS today=63 avg=65 ratio=1.0x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 109_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 113_commits_24h)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=7.7 earlier=19.9)"
+    check: "D6: Completion velocity — normal (PASS recent=8.0 earlier=19.9)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"

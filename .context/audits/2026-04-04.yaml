@@ -1,5 +1,5 @@
-# Audit Results - 2026-04-04-1545
-timestamp: 2026-04-04T13:45:12Z
+# Audit Results - 2026-04-04-1549
+timestamp: 2026-04-04T13:49:52Z
 summary:
   pass: 224
   warn: 21
@@ -34,7 +34,7 @@ findings:
     check: "Task T-807 has short description (42 chars)"
     mitigation: "Expand description in T-807-unit-tests-for-libcostssh-token-tracking.md"
   - level: PASS
-    check: "Git traceability: 99% (2127/2146 commits reference tasks)"
+    check: "Git traceability: 99% (2129/2148 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -68,7 +68,7 @@ findings:
     check: "Completed task T-841 has no episodic summary"
     mitigation: "Run: ./agents/context/context.sh generate-episodic T-841"
   - level: PASS
-    check: "All 775 episodic summaries have quality content"
+    check: "All 776 episodic summaries have quality content"
   - level: WARN
     check: "Orphaned episodic: T-779 has no matching task file"
     mitigation: "Remove orphaned episodic or create matching task"
@@ -104,11 +104,11 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-846)"
+    check: "CTL-001: Focus file has active task (T-847)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 10 (last commit: 2 minutes ago)"
+    check: "CTL-004: Tool counter at 9 (last commit: 2 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
@@ -486,7 +486,7 @@ findings:
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (19/776)"
+    check: "D1: Episodic quality — 2% [TODO] (19/777)"
   - level: WARN
     check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(20d) T-460(22d) T-470(22d) T-476(22d) T-481(20d) T-483(20d) T-493(20d) T-505(18d) T-511(18d) T-516(17d) T-518(17d)"
     mitigation: "Review with: fw task verify"
@@ -505,11 +505,11 @@ findings:
     check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(9d-active) (+17 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=59 avg=65 ratio=0.9x)"
+    check: "D3: Commit velocity — normal (PASS today=63 avg=65 ratio=1.0x)"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 109_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 113_commits_24h)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=7.7 earlier=19.9)"
+    check: "D6: Completion velocity — normal (PASS recent=8.0 earlier=19.9)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS
