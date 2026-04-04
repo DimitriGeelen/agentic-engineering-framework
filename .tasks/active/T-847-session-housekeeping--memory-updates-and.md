@@ -1,8 +1,8 @@
 ---
-id: T-845
-name: "Run bats test suite and fix any failures"
+id: T-847
+name: "Session housekeeping — memory updates and handover"
 description: >
-  Run bats test suite and fix any failures
+  Session housekeeping — memory updates and handover
 
 status: started-work
 workflow_type: build
@@ -11,12 +11,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-04T13:37:20Z
-last_update: 2026-04-04T13:37:20Z
+created: 2026-04-04T13:50:30Z
+last_update: 2026-04-04T13:50:30Z
 date_finished: null
 ---
 
-# T-845: Run bats test suite and fix any failures
+# T-847: Session housekeeping — memory updates and handover
 
 ## Context
 
@@ -25,8 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] All 524 bats unit tests pass (522 passed initially, 2 fixed)
-- [x] Fixed lib/keylock.sh tr character class — dash at end of class, not middle
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] Memory file updated with context window preference
+- [ ] Handover generated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -67,7 +68,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-04T13:37:20Z — task-created [task-create-agent]
+### 2026-04-04T13:50:30Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-845-run-bats-test-suite-and-fix-any-failures.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-847-session-housekeeping--memory-updates-and.md
 - **Context:** Initial task creation

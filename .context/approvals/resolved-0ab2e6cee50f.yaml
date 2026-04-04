@@ -1,0 +1,15 @@
+command_hash: 0ab2e6cee50f00cb2f784363ceccc68c5b1714239a892cafa43c5308b5412dc3
+command_preview: "bin/fw inception decide T-825 go --rationale \"Human approved \u2014\
+  \ data exists in 100% of handovers, minimal effort, adds cost trend visibility to\
+  \ timeline\""
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: approved
+timestamp: '2026-04-03T23:37:51Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-04-03T23:38:25Z'
+  mechanism: watchtower
