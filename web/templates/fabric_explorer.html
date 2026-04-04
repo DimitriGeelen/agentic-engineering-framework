@@ -366,7 +366,7 @@
 <!-- Graph Area -->
 <div id="graph-area">
   <div id="header">
-    <h1>Fabric Explorer</h1>
+    <h1>{{ project_name | default("") }} Fabric Explorer</h1>
     <div class="subtitle">{{ total_components }} components &middot; {{ total_subsystems }} subsystems &middot; {{ total_layers }} architectural layers</div>
     <div class="stats">
       <div><span>{{ total_components }}</span> Components</div>
