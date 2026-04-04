@@ -225,6 +225,17 @@ def load_latest_audit():
     return timestamp, summary, findings
 
 
+def linkify_tasks(text):
+    """Convert T-XXX references to clickable Watchtower links (T-851)."""
+    if not text:
+        return text
+    return re_mod.sub(
+        r'\b(T-\d{3,})\b',
+        r'<a href="/tasks/\1">\1</a>',
+        str(text),
+    )
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 

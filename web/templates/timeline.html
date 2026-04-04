@@ -11,7 +11,7 @@
             <strong>{{ session.id }}</strong>
             <small>{{ session.timestamp[:10] if session.timestamp else 'Unknown' }}</small>
             {% if session.session_tokens %}<mark style="font-size: 0.75em; padding: 0.1em 0.4em; border-radius: 3px;" {% if session.token_input %}title="Input: {{ session.token_input }} | Cache Rd: {{ session.token_cache_read }} | Cache Cr: {{ session.token_cache_create }} | Output: {{ session.token_output }}"{% endif %}>{{ session.session_tokens }} tokens, {{ session.session_turns }} turns</mark> {% endif %}{% if session.token_usage %}<small style="opacity: 0.6;" title="Cumulative project total">({{ session.token_usage }})</small> {% endif %}
-            — {% if session.narrative_short %}{{ session.narrative_short }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
+            — {% if session.narrative_short %}{{ session.narrative_short|linkify_tasks }}{% if session.touched_count %} ({{ session.touched_count }} tasks){% endif %}{% else %}{{ session.touched_count }} tasks touched, {{ session.completed_count }} completed{% endif %}
         </summary>
 
         <!-- Level 2: Session narrative + task list -->
@@ -37,7 +37,7 @@
             {% endif %}
 
             {% if session.narrative %}
-            <blockquote>{{ session.narrative }}</blockquote>
+            <blockquote>{{ session.narrative|linkify_tasks }}</blockquote>
             {% endif %}
 
             {% if session.tasks_touched %}

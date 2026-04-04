@@ -97,6 +97,11 @@ def create_app() -> Flask:
     from web.search_utils import path_to_link
     app.jinja_env.filters["path_to_link"] = path_to_link
 
+    # Jinja2 filter: auto-link T-XXX task references (T-851)
+    from web.shared import linkify_tasks
+    from markupsafe import Markup
+    app.jinja_env.filters["linkify_tasks"] = lambda text: Markup(linkify_tasks(text))
+
     # -------------------------------------------------------------------
     # Register blueprints (centralized in __init__.py — T-431/A2)
     # -------------------------------------------------------------------
