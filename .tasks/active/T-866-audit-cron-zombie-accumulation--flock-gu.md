@@ -4,7 +4,7 @@ name: "Audit cron zombie accumulation — flock guard, timeout, stale reaper"
 description: >
   Inception: Audit cron zombie accumulation — flock guard, timeout, stale reaper
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T20:43:13Z
-last_update: 2026-04-04T20:43:13Z
+last_update: 2026-04-04T21:49:26Z
 date_finished: null
 ---
 
@@ -54,9 +54,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -87,14 +87,27 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-04-04 — macOS flock compatibility
+- **Chose:** flock with mkdir-based POSIX fallback
+- **Why:** flock available on Linux (primary), not on macOS by default. mkdir is atomic and POSIX.
+- **Rejected:** Requiring `brew install util-linux` (adds dependency), pidfile-based locking (race conditions)
+
+### 2026-04-04 — timeout mechanism
+- **Chose:** Internal self-timeout via re-exec with `timeout` command
+- **Why:** Self-documenting, portable (graceful degradation on macOS), configurable via FW_AUDIT_TIMEOUT
+- **Rejected:** External timeout in cron command (not self-contained, easy to forget when adding new cron entries)
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** All three mechanisms are feasible, well-scoped, and address the root cause. flock is available on Linux. macOS fallback identified. Changes are confined to --cron mode entry point (~50 lines), zero impact on manual audit runs.
+- **Evidence:**
+  - flock available at `/usr/bin/flock` ✓
+  - 18+ zombie processes confirmed running right now ✓
+  - Lock directory `.context/locks/` already exists ✓
+  - FW_AUDIT_TIMEOUT follows existing `FW_*` config pattern ✓
+  - All changes in first 50 lines of audit.sh, cron-only path ✓
+- **Research artifact:** `docs/reports/T-866-audit-cron-zombies.md`
 
 ## Decision
 
@@ -104,3 +117,6 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-04T21:49:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
