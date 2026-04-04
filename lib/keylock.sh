@@ -38,7 +38,7 @@ _keylock_path() {
     local key="$1"
     # Replace non-alphanumeric chars with dashes
     local safe_key
-    safe_key=$(echo "$key" | tr -c 'a-zA-Z0-9_-\n' '-')
+    safe_key=$(echo "$key" | tr -c 'a-zA-Z0-9_\n-' '-')
     echo "${KEYLOCK_DIR}/${safe_key}.lock"
 }
 
