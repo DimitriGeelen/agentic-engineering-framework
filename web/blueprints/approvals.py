@@ -246,6 +246,12 @@ def _build_approvals_context():
     )
     total = tier0_count + go_count + len(pending_acs)
 
+    # Count tasks ready for batch completion (all human ACs checked)
+    ready_count = sum(
+        1 for t in pending_acs
+        if all(ac["checked"] for ac in t["human_acs"])
+    )
+
     return dict(
         pending_tier0=pending_tier0,
         resolved_tier0=resolved_tier0,
@@ -257,6 +263,7 @@ def _build_approvals_context():
         ac_task_count=len(pending_acs),
         total_count=total,
         active_count=tier0_count,
+        ready_count=ready_count,
     )
 
 
@@ -329,3 +336,52 @@ def decide_approval():
     status_color = "var(--pico-ins-color)" if decision == "approved" else "var(--pico-del-color)"
     status_icon = "Approved" if decision == "approved" else "Rejected"
     return f'<p style="color:{status_color};">{status_icon}. Agent can retry the command.</p>'
+
+
+@bp.route("/api/approvals/complete-batch", methods=["POST"])
+def complete_batch():
+    """Complete all tasks where ALL Human ACs are checked (T-846).
+
+    This is a human-initiated batch action from the Watchtower UI.
+    Only completes tasks that are fully ready (no unchecked ACs).
+    """
+    import subprocess
+
+    pending_acs = _load_pending_human_acs()
+
+    # Find tasks where ALL human ACs are checked
+    ready_tasks = []
+    for t in pending_acs:
+        unchecked = [ac for ac in t["human_acs"] if not ac["checked"]]
+        if not unchecked:
+            ready_tasks.append(t["task_id"])
+
+    if not ready_tasks:
+        return '<p style="color:var(--pico-muted-color);">No tasks ready for completion (all have unchecked ACs).</p>'
+
+    completed = []
+    errors = []
+    fw_path = str(PROJECT_ROOT / "bin" / "fw")
+
+    for task_id in ready_tasks:
+        try:
+            result = subprocess.run(
+                [fw_path, "task", "update", task_id, "--status", "work-completed",
+                 "--force", "--reason", "Batch completed via Watchtower UI (human action)"],
+                capture_output=True, text=True, timeout=30,
+                cwd=str(PROJECT_ROOT)
+            )
+            if result.returncode == 0:
+                completed.append(task_id)
+            else:
+                errors.append(f"{task_id}: {result.stderr[:100]}")
+        except Exception as e:
+            errors.append(f"{task_id}: {str(e)[:100]}")
+
+    parts = []
+    if completed:
+        parts.append(f'<p style="color:var(--pico-ins-color);">Completed {len(completed)} task(s): {", ".join(completed)}</p>')
+    if errors:
+        parts.append(f'<p style="color:var(--pico-del-color);">Errors ({len(errors)}): {"<br>".join(errors)}</p>')
+
+    return "\n".join(parts)

@@ -113,6 +113,18 @@
     <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
 </div>
 
+<!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->
+{% if ready_count is defined and ready_count > 0 %}
+<div id="batch-complete-result" style="margin-bottom:0.5rem;">
+    <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
+          hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
+        <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
+            Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
+        </button>
+    </form>
+</div>
+{% endif %}
+
 <!-- Filter buttons (T-839) -->
 {% set rubber_stamp_count = pending_acs | selectattr('sort_priority', 'equalto', 2) | list | length %}
 {% set review_count = pending_acs | selectattr('sort_priority', 'equalto', 0) | list | length %}
