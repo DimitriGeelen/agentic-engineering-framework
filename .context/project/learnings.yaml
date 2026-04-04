@@ -8,3 +8,10 @@ learnings:
   date: 2026-04-04
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "Scan entire codebase for ((var++)) under set -e after fixing one instance — the pattern often repeats in vendored copies and related scripts"
+  source: P-001
+  task: T-868
+  date: 2026-04-04
+  context: Added via context agent
+  application: TBD

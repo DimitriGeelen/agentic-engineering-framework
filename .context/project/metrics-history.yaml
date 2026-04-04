@@ -92,36 +92,6 @@ entries:
   traceability_pct: 100
   episodic_quality_pct: 39
   open_gaps: 13
-- timestamp: '2026-03-28T23:00:04Z'
-  pass: 2
-  warn: 0
-  fail: 0
-  active_tasks: 77
-  completed_tasks: 609
-  velocity: 122
-  traceability_pct: 100
-  episodic_quality_pct: 36
-  open_gaps: 12
-- timestamp: '2026-03-28T23:00:16Z'
-  pass: 15
-  warn: 2
-  fail: 0
-  active_tasks: 77
-  completed_tasks: 609
-  velocity: 122
-  traceability_pct: 100
-  episodic_quality_pct: 36
-  open_gaps: 12
-- timestamp: '2026-03-28T23:00:26Z'
-  pass: 9
-  warn: 4
-  fail: 0
-  active_tasks: 77
-  completed_tasks: 609
-  velocity: 122
-  traceability_pct: 100
-  episodic_quality_pct: 36
-  open_gaps: 12
 - timestamp: '2026-03-28T23:15:04Z'
   pass: 7
   warn: 1
@@ -11159,6 +11129,66 @@ entries:
   active_tasks: 126
   completed_tasks: 730
   velocity: 99
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T22:54:15Z'
+  pass: 8
+  warn: 1
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 99
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T22:54:25Z'
+  pass: 8
+  warn: 1
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 99
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T22:58:43Z'
+  pass: 8
+  warn: 1
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 100
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T22:58:52Z'
+  pass: 8
+  warn: 1
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 100
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T23:00:21Z'
+  pass: 13
+  warn: 5
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 100
+  traceability_pct: 96
+  episodic_quality_pct: 30
+  open_gaps: 11
+- timestamp: '2026-04-04T23:00:31Z'
+  pass: 9
+  warn: 5
+  fail: 0
+  active_tasks: 126
+  completed_tasks: 730
+  velocity: 100
   traceability_pct: 96
   episodic_quality_pct: 30
   open_gaps: 11
