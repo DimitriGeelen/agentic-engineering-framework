@@ -4,7 +4,7 @@ name: "Sync vendored bin/fw with T-873 approvals fix"
 description: >
   Sync vendored bin/fw with T-873 approvals fix
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T23:23:57Z
-last_update: 2026-04-04T23:23:57Z
-date_finished: null
+last_update: 2026-04-04T23:24:58Z
+date_finished: 2026-04-04T23:24:58Z
 ---
 
 # T-874: Sync vendored bin/fw with T-873 approvals fix
@@ -70,3 +70,6 @@ Vendored bin/fw needs xargs -r fix from T-873.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-874-sync-vendored-binfw-with-t-873-approvals.md
 - **Context:** Initial task creation
+
+### 2026-04-04T23:24:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
