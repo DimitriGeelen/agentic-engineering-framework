@@ -50,11 +50,11 @@ None — research/analysis task, no code changes in this inception.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Token cost analysis complete (done — /clear costs more in raw tokens)
-- [ ] Quality hypothesis documented with proposed measurements
-- [ ] Historical session data mined for quality signals
-- [ ] Measurement framework designed with specific metrics
-- [ ] Recommendation written with phased approach
+- [x] Token cost analysis complete — /clear costs ~745K tokens overhead per clear
+- [x] Quality hypothesis documented — bathtub curve finding contradicts degradation hypothesis
+- [x] Historical session data mined — 14 JSONL transcripts, 472 handovers, 766 episodics (Agent A)
+- [x] Measurement framework designed — 14 metrics in 4 categories with A/B experiment (Agent B)
+- [x] Recommendation written — GO for measurement infrastructure, defer /clear decision to data
 
 ### Human
 - [ ] [REVIEW] Review findings and approve measurement implementation

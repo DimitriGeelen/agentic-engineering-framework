@@ -121,18 +121,53 @@ Group B (Treatment): Proactive /clear at 100K tokens (~50% of window)
 
 ## Recommendation
 
-**GO with phased approach:**
+**GO — Build measurement infrastructure first, THEN decide on /clear policy.**
 
-1. **Phase 1 (build):** Add efficiency metrics to handover frontmatter (commits, errors, first commit turn). Display on /timeline. This is foundation for any measurement.
+Historical data does NOT support the hypothesis that longer sessions degrade quality. Error rates stabilize at 5% regardless of session length (bathtub curve). However, we lack instrumentation for subtler signals (edit bursts, error rate by context phase).
 
-2. **Phase 2 (experiment):** Run 10 sessions with proactive /clear at 100K and 10 without. Compare metrics.
+### Phased approach:
 
-3. **Phase 3 (decide):** If quality metrics improve by >10% with proactive /clear, make it default despite the ~4% cost increase. Quality > cost.
+1. **Phase 1 (build):** Create `session-metrics.sh` — single-pass JSONL analyzer extracting P0 metrics (commits/turn, failed tool calls, edit bursts, first commit turn). Inject into handover frontmatter. Display on /timeline.
 
-**Key insight:** The cost analysis shows /clear INCREASES spend. But if it improves quality (fewer errors, fewer human corrections, better AC pass rates), the cost increase is trivially justified — one avoided bug fix pays for dozens of /clear cycles.
+2. **Phase 2 (baseline, 2 weeks):** Collect 15+ sessions of metric data under current natural policy. Establish baselines.
+
+3. **Phase 3 (experiment, 4 weeks):** Alternate natural vs proactive-/clear-at-100K. Compare FTC rate, edit bursts, commits/turn.
+
+4. **Phase 4 (decide):** If FTC rate drops >20% with /clear AND commits/turn doesn't drop >30%, make proactive /clear default.
+
+### Critical finding from Agent A:
+The real quality problem may NOT be session length — it's **handover growth** (33KB, consuming 16% of each 200K window) and **task accumulation** (23→107 active, diluting context). Fixing handover pruning may be more impactful than /clear optimization.
+
+## Multi-Agent Research Results
+
+Three TermLink workers conducted parallel research:
+- **Agent A** (`docs/reports/T-830-agent-a-historical-analysis.md`): Mined 14 JSONL transcripts, 472 handovers, 766 episodics
+- **Agent B** (`docs/reports/T-830-agent-b-quality-metrics.md`): Designed 14 metrics across 4 categories with A/B experiment plan
+- **Agent C** (context research): Timed out — research scope too broad for single worker
+
+### Key Finding from Agent A: NO evidence that session length degrades quality
+
+Error rates follow a **bathtub curve** (high at startup, stable mid-session at ~5%), NOT monotonic increase:
+- Turns 0-10%: 9-14% error rate (warmup/orientation)
+- Turns 20-80%: 4-6% error rate (stable plateau)
+- Turns 90-100%: 5-7% (slight rise but within noise)
+
+36% of "errors" are governance hooks working correctly (task gate, Tier 0 blocks). True error rate is ~3.5-4%.
+
+**Productivity inversely correlates with session count**: W06 (30 sessions) = 2.33 tasks/session vs W07 (152 sessions) = 0.80 tasks/session. More short sessions = MORE overhead, NOT better quality.
+
+### Key Design from Agent B: 14 measurable metrics in 4 categories
+
+Most important proposed metrics:
+1. **Failed Tool Call rate by context phase** (D2) — the smoking gun metric
+2. **Edit burst count** (B4) — same file edited 3+ times in 10 turns
+3. **Commits per turn** (A1) — productivity density
+4. **First commit turn** (A3) — session startup efficiency
+
+A/B experiment: 15 sessions per group, alternating assignment, 4-6 weeks.
 
 ## Assumptions
-1. Quality degradation in long sessions is real (anecdotal, not yet measured)
+1. Quality degradation in long sessions is real — **Agent A data CONTRADICTS this** (bathtub curve, not monotonic)
 2. Handover fidelity is sufficient to recover within 8 turns
-3. Efficiency metrics are meaningful proxies for quality
-4. 10 sessions per group is sufficient for signal
+3. Context pollution (stale tool results, superseded code) affects agent output quality — **needs measurement (metrics B4, D2)**
+4. 15 sessions per group is sufficient for signal (Agent B power analysis)
