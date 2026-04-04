@@ -20,34 +20,26 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
-
-## Assumptions
-
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+77 work-completed tasks with 79 unchecked Human ACs. Backlog growing at ~7/day, 0 reviewed/day. All review tooling is single-task-oriented — clearing the backlog requires 2-3 hours of manual clicking.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+3 parallel TermLink workers:
+- Agent A: Backlog analysis (categories, verifiability, age distribution)
+- Agent B: Existing tooling audit (gaps, quick wins)
+- Agent C: Design options (batch approval, auto-close, digest notification)
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+IN: Clearing the 77-task backlog efficiently, auto-closing RUBBER-STAMP tasks
+OUT: New Watchtower pages (Option A deferred to separate build task)
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (77 tasks, 79 unchecked ACs)
+- [x] 3 TermLink workers completed research
+- [x] Recommendation written: GO — Option B (auto-close RUBBER-STAMP) first
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +53,19 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Option B effort justified (S, 1-2h) relative to 31+ tasks cleared
+- No sovereignty violation from auto-close (RUBBER-STAMP only, dry-run default)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Human prefers manual review of all tasks (no automation)
+- Backlog is intentionally maintained as a review queue
+
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** 77 tasks in stale backlog, growing at 7/day. Option B auto-closes 31 RUBBER-STAMP tasks (S effort). Option A handles remaining 48 REVIEW tasks with batch UI (M effort).
+- **Evidence:** 3 TermLink research reports in `docs/reports/T-835-agent-{a,b,c}-*.md`
+- **Build tasks after GO:** T-836 (verify-acs --auto-close), T-837 (batch approval page)
 
 ## Verification
 
