@@ -297,7 +297,15 @@ METAEOF
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"
-cd "$PROJECT_DIR"
+cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
+
+# T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
+export PROJECT_ROOT="$PROJECT_DIR"
+if [ -d "$PROJECT_DIR/.agentic-framework" ]; then
+    export FRAMEWORK_ROOT="$PROJECT_DIR/.agentic-framework"
+else
+    export FRAMEWORK_ROOT="$PROJECT_DIR"
+fi
 
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
 unset CLAUDECODE 2>/dev/null || true
