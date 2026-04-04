@@ -4,16 +4,16 @@ name: "Fix session metrics — per-session deltas instead of cumulative transcri
 description: >
   Session quality metrics (CPT, error rate, edit bursts, productive ratio) are identical across handovers because session-metrics.sh always analyzes the most recent JSONL file cumulatively. After /compact, multiple handovers within the same Claude Code session all read the same 7551-turn transcript. Fix: track turn offset at session start, compute deltas per handover window.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/lib/init.sh, agents/context/session-metrics.sh, agents/handover/handover.sh]
 related_tasks: []
 created: 2026-04-04T15:04:18Z
-last_update: 2026-04-04T15:04:18Z
-date_finished: null
+last_update: 2026-04-04T22:02:56Z
+date_finished: 2026-04-04T22:02:56Z
 ---
 
 # T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis
@@ -62,3 +62,6 @@ grep -q "session_turn_offset\|turn.offset\|OFFSET" agents/context/session-metric
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-850-fix-session-metrics--per-session-deltas-.md
 - **Context:** Initial task creation
+
+### 2026-04-04T22:02:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

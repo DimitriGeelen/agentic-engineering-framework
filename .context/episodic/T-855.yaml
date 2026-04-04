@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T22:06:49Z
+# ============================================================================
+
+task_id: T-855
+task_name: "Sync vendored .agentic-framework/ with T-849 through T-854 fixes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T18:19:38Z
+completed: 2026-04-04T21:58:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T20:20:52+02:00
+last_commit: 2026-04-04T20:20:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+
+# Key outcomes
+outcomes:
+  - "Vendored web/, agents/, lib/ files match upstream after sync"
+  - "VERSION file updated"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Sync vendored .agentic-framework/ with T-849 through T-854 fixes"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/lib/init.sh"
+  - ".agentic-framework/agents/context/session-metrics.sh"
+  - ".agentic-framework/agents/handover/handover.sh"
+  - ".agentic-framework/VERSION"
+  - ".agentic-framework/web/app.py"
+  - ".agentic-framework/web/blueprints/fabric.py"
+  - ".agentic-framework/web/blueprints/timeline.py"
+  - ".agentic-framework/web/shared.py"
+  - ".agentic-framework/web/templates/base.html"
+  - ".agentic-framework/web/templates/fabric_explorer.html"
+  - ".agentic-framework/web/templates/timeline.html"
+  - ".tasks/active/T-855-sync-vendored-agentic-framework-with-t-8.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T20:20:52"
+    action: "T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 219 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 219
+  commits: 1
+  files_changed: 12
+  lines_added: 392
+  lines_removed: 126
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-855-sync-vendored-agentic-framework-with-t-8.md
+generated_by: context-agent-hybrid

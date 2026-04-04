@@ -679,5 +679,7 @@ concerns:
   last_reviewed: 2026-03-25
   related_task: T-614
   mitigation: 'T-657 (2026-03-28): All 7 consumer projects upgraded v1.3.0→v1.4.73. fw doctor now detects and reports stale
-    consumers. Structural: fw upgrade exists, fw doctor warns, upgrade trail logged to .context/audits/upgrades.yaml. Gap
-    remaining: no automated trigger for upgrades — relies on human running fw doctor.'
+    consumers. Structural: fw upgrade exists, fw doctor warns, upgrade trail logged to .context/audits/upgrades.yaml. T-857
+    (2026-04-04): fw upgrade now syncs lib/*.sh, 9 agent directories, and VERSION file to consumer vendored dirs. T-859: VERSION
+    file sync prevents stale version detection after upgrade. All 9 consumers upgraded 2026-04-05. Gap remaining: no automated
+    trigger for upgrades — relies on human running fw doctor.'

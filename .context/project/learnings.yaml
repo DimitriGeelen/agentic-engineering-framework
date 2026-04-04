@@ -8,3 +8,10 @@ learnings:
   date: 2026-04-04
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "curl pipe to grep causes exit 23 (write error) when server sends large HTML and grep finds match early — use curl -o /tmp/file && grep -q pattern /tmp/file instead"
+  source: P-001
+  task: T-865
+  date: 2026-04-04
+  context: Added via context agent
+  application: TBD
