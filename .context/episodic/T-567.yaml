@@ -1,0 +1,67 @@
+# ============================================================================
+# EPISODIC MEMORY - T-567: OpenClaw deep-dive: P1-P4 value extraction — request context, session keys, config reload, skills discovery
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T12:34:58Z
+# ============================================================================
+
+task_id: T-567
+task_name: "OpenClaw deep-dive: P1-P4 value extraction — request context, session keys, config reload, skills discovery"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T17:18:02Z
+completed: 2026-04-04T12:34:55Z
+duration_days: 11
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "P1-P4 patterns evaluated (via parent T-549 evaluation)"
+  - "[REVIEW] Review decision to close as superseded"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 16996 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16996
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-567-openclaw-deep-dive-p1-p4-value-extractio.md
+generated_by: context-agent-hybrid
