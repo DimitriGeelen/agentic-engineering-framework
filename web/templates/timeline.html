@@ -26,12 +26,13 @@
                 Output: {{ session.token_output }}</div>
                 {% endif %}
                 {% if session.commits_per_turn %}
-                <div style="margin-top: 0.25rem;"><strong>Quality Metrics:</strong>
-                CPT: {{ session.commits_per_turn }} |
-                Error rate: {{ session.failed_tool_call_rate }} |
-                Edit bursts: {{ session.edit_bursts }} |
-                1st commit: turn {{ session.first_commit_turn }} |
-                Productive: {{ session.productive_turns_ratio }}</div>
+                <div style="margin-top: 0.25rem;"><strong>Quality Metrics{% if session.session_commits_per_turn %} (session){% endif %}:</strong>
+                CPT: {{ session.session_commits_per_turn or session.commits_per_turn }} |
+                Error rate: {{ session.session_failed_tool_call_rate or session.failed_tool_call_rate }} |
+                Edit bursts: {{ session.session_edit_bursts or session.edit_bursts }} |
+                {% if not session.session_commits_per_turn %}1st commit: turn {{ session.first_commit_turn }} | {% endif %}
+                Productive: {{ session.session_productive_turns_ratio or session.productive_turns_ratio }}
+                {% if session.session_commits_per_turn %}<span style="opacity:0.5; font-size:0.8em;" title="Cumulative: CPT {{ session.commits_per_turn }}, Error {{ session.failed_tool_call_rate }}, Productive {{ session.productive_turns_ratio }}">(cumulative in tooltip)</span>{% endif %}</div>
                 {% endif %}
             </div>
             {% endif %}

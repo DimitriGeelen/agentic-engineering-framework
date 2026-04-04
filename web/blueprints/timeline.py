@@ -170,6 +170,12 @@ def timeline():
                     "failed_tool_call_rate": fm.get("failed_tool_call_rate", ""),
                     "edit_bursts": fm.get("edit_bursts", ""),
                     "productive_turns_ratio": fm.get("productive_turns_ratio", ""),
+                    # Per-session deltas (T-852)
+                    "session_commits_per_turn": fm.get("session_commits_per_turn", ""),
+                    "session_failed_tool_call_rate": fm.get("session_failed_tool_call_rate", ""),
+                    "session_edit_bursts": fm.get("session_edit_bursts", ""),
+                    "session_productive_turns_ratio": fm.get("session_productive_turns_ratio", ""),
+                    "session_commits": fm.get("session_commits", ""),
                 }
             )
 
