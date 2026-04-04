@@ -905,6 +905,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Stale tasks | `fw task stale` | _(fw only)_ |
 | Verify Human ACs | `fw verify-acs` | _(fw only)_ |
 | Verify specific | `fw verify-acs T-XXX` | _(fw only)_ |
+| Auto-check (dry run) | `fw verify-acs --auto-check` | _(fw only)_ |
+| Auto-check (execute) | `fw verify-acs --execute` | _(fw only)_ |
 | Stale (custom) | `fw task stale --days 14` | _(fw only)_ |
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
