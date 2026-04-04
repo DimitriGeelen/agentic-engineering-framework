@@ -26,8 +26,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] SIGPIPE from head -1 in pipe suppressed with || true
-- [ ] install.sh exits 0 on successful install
+- [x] SIGPIPE from head -1 in pipe suppressed with || true (lines 97 and 273)
+- [x] install.sh exits 0 on successful install
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

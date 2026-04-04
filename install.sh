@@ -94,7 +94,7 @@ check_prereqs() {
         ok=false
     else
         local git_ver
-        git_ver=$(git --version | grep -oE '[0-9]+\.[0-9]+' | head -1)
+        git_ver=$(git --version | grep -oE '[0-9]+\.[0-9]+' | head -1 || true)
         info "git ${git_ver}"
     fi
 
@@ -270,7 +270,7 @@ verify() {
     # Step 2: Check fw version works
     if "$fw_path" version &>/dev/null; then
         local ver
-        ver=$("$fw_path" version 2>&1 | head -1)
+        ver=$("$fw_path" version 2>&1 | head -1 || true)
         info "Step 2/3: fw version works ✓ ($ver)"
     else
         error "Step 2/3: fw version failed"
