@@ -1,0 +1,13 @@
+pickup_id: P-008
+version: 1
+type: bug-report
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-843"
+  agent: "claude-code"
+  timestamp: "2026-04-04T13:34:57Z"
+payload:
+  summary: "TermLink cleanup kills active dispatch workers — fw termlink cleanup treats running workers as orphans because they lack exit_code file"
+  detail: "Bug: cmd_cleanup in termlink.sh checks for workers without exit_code and kills all processes in their wdir. But active workers (claude -p still running) also lack exit_code until completion. Fix: Before killing, check if a claude process is running in the worker PIDs. If yes, skip with ACTIVE message. Discovered when T-842 TermLink workers were killed mid-research by a concurrent cleanup call. Patch applied in framework agents/termlink/termlink.sh — should be ported to upstream TermLink if applicable."
+  priority: high
+  tags: [termlink, cleanup, orphan-detection]
