@@ -422,6 +422,15 @@ CRONREGEOF
             fi
         done
 
+        # T-859: Sync VERSION file so fw doctor doesn't report stale after upgrade
+        local dst_version="$vendored_dir/VERSION"
+        if [ ! -f "$dst_version" ] || [ "$(cat "$dst_version" 2>/dev/null)" != "$fw_version" ]; then
+            script_updated=$((script_updated + 1))
+            if [ "$dry_run" != true ]; then
+                echo "$fw_version" > "$dst_version"
+            fi
+        fi
+
         if [ "$script_updated" -gt 0 ]; then
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
