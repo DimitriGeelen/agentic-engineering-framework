@@ -4,7 +4,7 @@ name: "Sync vendored .agentic-framework/ with all recent fixes"
 description: >
   Sync vendored .agentic-framework/ with all recent fixes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T13:54:22Z
-last_update: 2026-04-04T13:54:22Z
-date_finished: null
+last_update: 2026-04-04T13:56:38Z
+date_finished: 2026-04-04T13:56:38Z
 ---
 
 # T-848: Sync vendored .agentic-framework/ with all recent fixes
@@ -26,9 +26,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] All modified lib/*.sh synced to .agentic-framework/lib/
-- [ ] All modified agents/ synced to .agentic-framework/agents/
-- [ ] bin/fw synced to .agentic-framework/bin/fw
+- [x] All modified lib/*.sh synced to .agentic-framework/lib/ (34 files)
+- [x] All modified agents/ synced to .agentic-framework/agents/
+- [x] bin/fw synced to .agentic-framework/bin/fw
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -73,3 +73,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-848-sync-vendored-agentic-framework-with-all.md
 - **Context:** Initial task creation
+
+### 2026-04-04T13:56:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
