@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T13:25:20Z
-last_update: 2026-04-04T13:25:20Z
+last_update: 2026-04-04T13:31:24Z
 date_finished: null
 ---
 
@@ -25,9 +25,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw termlink cleanup` skips workers with active claude processes
-- [ ] Only kills orphaned workers (no TermLink session + no claude process)
-- [ ] Active workers (claude process running) are preserved
+- [x] `fw termlink cleanup` checks for active claude processes before killing
+- [x] Workers with running claude process show "ACTIVE — skipping" message
+- [x] Only kills genuinely orphaned workers (stale processes, no claude running)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
