@@ -34,6 +34,9 @@ do_upgrade() {
                 echo "  - Git hooks"
                 echo "  - .claude/settings.json (hook config)"
                 echo "  - .claude/commands/resume.md"
+                echo "  - lib/*.sh (fw subcommands: inception, upgrade, init, etc.)"
+                echo "  - Agent scripts (task-create, handover, git, healing, fabric, etc.)"
+                echo "  - bin/fw (CLI entry point)"
                 return 0
                 ;;
             -*)
