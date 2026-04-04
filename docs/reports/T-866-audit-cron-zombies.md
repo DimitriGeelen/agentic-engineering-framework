@@ -140,3 +140,5 @@ fi
 - Configurable via existing pattern: `FW_AUDIT_TIMEOUT` env var ✓
 - 18+ zombie processes confirmed right now ✓
 - macOS fallback patterns identified for all three mechanisms ✓
+
+**Additional finding (2026-04-05):** `fw doctor` does not detect zombie audit processes. Consider adding process health check as follow-up build task after GO.
