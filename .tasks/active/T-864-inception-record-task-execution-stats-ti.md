@@ -4,16 +4,16 @@ name: "Inception: Record task execution stats (timing, token cost, complexity) i
 description: >
   Inception: Record task execution stats (timing, token cost, complexity) in task files
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T20:36:33Z
-last_update: 2026-04-04T21:53:01Z
-date_finished: null
+last_update: 2026-04-04T21:56:57Z
+date_finished: 2026-04-04T21:56:57Z
 ---
 
 # T-864: Inception: Record task execution stats (timing, token cost, complexity) in task files
@@ -84,10 +84,17 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 
 ## Decisions
 
-### 2026-04-04 — Duplicate stats in task files vs rely on episodic
-- **Chose:** Rely on existing episodic summaries (NO-GO for separate stats section)
-- **Why:** Episodic already captures wall_clock, commits, files_changed, lines_added/removed. Adding `## Stats` to task files duplicates this without new data.
-- **Rejected:** (a) `## Stats` section in task files — data duplication. (b) Per-task token cost — focus boundaries are imprecise, JSONL parsing is expensive (5-30s on 68MB transcript).
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: Episodic summaries already capture 80% of desired stats. Per-task token cost attribution is inaccurate and expensive. Session-level costs divided by tasks-per-session is a reasonable approximation.
+- Evidence:
+  - Episodic T-043 has: wall_clock_minutes: 53, commits: 1, files_changed: 85, lines_added: 4043
+  - JSONL transcript: 68MB — parsing takes 5-30s
+  - `fw metrics predict --type build` already works from episodic data
+  - No mechanism to tag JSONL ent...
+
+**Date**: 2026-04-04T21:56:56Z
 
 ## Recommendation
 
@@ -102,7 +109,17 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO
+- Rationale: Episodic summaries already capture 80% of desired stats. Per-task token cost attribution is inaccurate and expensive. Session-level costs divided by tasks-per-session is a reasonable approximation.
+- Evidence:
+  - Episodic T-043 has: wall_clock_minutes: 53, commits: 1, files_changed: 85, lines_added: 4043
+  - JSONL transcript: 68MB — parsing takes 5-30s
+  - `fw metrics predict --type build` already works from episodic data
+  - No mechanism to tag JSONL ent...
+
+**Date**: 2026-04-04T21:56:56Z
 
 ## Updates
 
@@ -114,3 +131,18 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 
 ### 2026-04-04T21:53:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-04T21:56:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO
+- Rationale: Episodic summaries already capture 80% of desired stats. Per-task token cost attribution is inaccurate and expensive. Session-level costs divided by tasks-per-session is a reasonable approximation.
+- Evidence:
+  - Episodic T-043 has: wall_clock_minutes: 53, commits: 1, files_changed: 85, lines_added: 4043
+  - JSONL transcript: 68MB — parsing takes 5-30s
+  - `fw metrics predict --type build` already works from episodic data
+  - No mechanism to tag JSONL ent...
+
+### 2026-04-04T21:56:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO

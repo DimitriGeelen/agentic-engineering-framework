@@ -1,22 +1,22 @@
 ---
-id: T-854
-name: "Pass project name to Watchtower templates — resolve from project root, display in header"
+id: T-853
+name: "Enrich Fabric Explorer subsystem descriptions from component purpose fields"
 description: >
-  Pass project name to Watchtower templates — resolve from project root, display in header
+  Enrich Fabric Explorer subsystem descriptions from component purpose fields
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/fabric.py]
 related_tasks: []
-created: 2026-04-04T18:16:16Z
-last_update: 2026-04-04T18:16:16Z
-date_finished: null
+created: 2026-04-04T18:11:18Z
+last_update: 2026-04-04T21:58:24Z
+date_finished: 2026-04-04T21:58:24Z
 ---
 
-# T-854: Pass project name to Watchtower templates — resolve from project root, display in header
+# T-853: Enrich Fabric Explorer subsystem descriptions from component purpose fields
 
 ## Context
 
@@ -25,8 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] project_name available as Jinja global in templates (derived from PROJECT_ROOT basename)
-- [x] Browser tab title includes project name (e.g., "Tasks — MyProject")
+- [x] subsystem_data includes a meaningful desc field derived from component purposes (not just "N components")
+- [x] Tooltip in Fabric Explorer shows subsystem description on hover
 -->
 
 ## Verification
@@ -53,7 +53,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-04T18:16:16Z — task-created [task-create-agent]
+### 2026-04-04T18:11:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-854-pass-project-name-to-watchtower-template.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-853-enrich-fabric-explorer-subsystem-descrip.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:58:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

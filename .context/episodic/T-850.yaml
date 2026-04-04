@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T20:50:20Z
+# ============================================================================
+
+task_id: T-850
+task_name: "Fix session metrics — per-session deltas instead of cumulative transcript analysis"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T15:04:18Z
+completed: 2026-04-04T15:04:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-04T19:54:58+02:00
+last_commit: 2026-04-04T19:54:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix session metrics — per-session deltas instead of cumulative
+
+# Key outcomes
+outcomes:
+  - "session-metrics.sh records baseline turn count at session start (`.context/working/.session-turn-offset`)"
+  - "Handover frontmatter includes both cumulative AND per-session delta metrics"
+  - "Per-session metrics differ from cumulative when multiple handovers occur in same transcript"
+  - "Script handles missing offset file gracefully (falls back to cumulative)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix session metrics — per-session deltas instead of cumulative"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/init.sh"
+  - "agents/context/session-metrics.sh"
+  - "agents/handover/handover.sh"
+  - ".tasks/active/T-850-fix-session-metrics--per-session-deltas-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T19:54:58"
+    action: "T-850: Fix session metrics — per-session deltas instead of cumulative"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 4
+  lines_added: 165
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-850-fix-session-metrics--per-session-deltas-.md
+generated_by: context-agent-hybrid

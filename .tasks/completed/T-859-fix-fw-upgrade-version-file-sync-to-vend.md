@@ -4,16 +4,16 @@ name: "Fix fw upgrade VERSION file sync to vendored .agentic-framework/"
 description: >
   Fix fw upgrade VERSION file sync to vendored .agentic-framework/
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-04-04T19:29:41Z
-last_update: 2026-04-04T19:29:41Z
-date_finished: null
+last_update: 2026-04-04T21:57:59Z
+date_finished: 2026-04-04T21:57:59Z
 ---
 
 # T-859: Fix fw upgrade VERSION file sync to vendored .agentic-framework/
@@ -49,3 +49,6 @@ grep -q 'vendored_dir.*VERSION\|VERSION.*vendored' lib/upgrade.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-859-fix-fw-upgrade-version-file-sync-to-vend.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:57:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

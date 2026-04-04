@@ -1,22 +1,22 @@
 ---
-id: T-853
-name: "Enrich Fabric Explorer subsystem descriptions from component purpose fields"
+id: T-855
+name: "Sync vendored .agentic-framework/ with T-849 through T-854 fixes"
 description: >
-  Enrich Fabric Explorer subsystem descriptions from component purpose fields
+  Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-04T18:11:18Z
-last_update: 2026-04-04T18:11:18Z
-date_finished: null
+created: 2026-04-04T18:19:38Z
+last_update: 2026-04-04T21:58:55Z
+date_finished: 2026-04-04T21:58:55Z
 ---
 
-# T-853: Enrich Fabric Explorer subsystem descriptions from component purpose fields
+# T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ## Context
 
@@ -25,8 +25,13 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] subsystem_data includes a meaningful desc field derived from component purposes (not just "N components")
-- [x] Tooltip in Fabric Explorer shows subsystem description on hover
+- [x] Vendored web/, agents/, lib/ files match upstream after sync
+- [x] VERSION file updated
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
 -->
 
 ## Verification
@@ -53,7 +58,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-04T18:11:18Z — task-created [task-create-agent]
+### 2026-04-04T18:19:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-853-enrich-fabric-explorer-subsystem-descrip.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-855-sync-vendored-agentic-framework-with-t-8.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:58:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

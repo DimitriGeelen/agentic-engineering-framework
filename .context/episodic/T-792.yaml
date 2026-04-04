@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T20:50:36Z
+# ============================================================================
+
+task_id: T-792
+task_name: "Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-30T14:51:26Z
+completed: 2026-04-04T20:50:34Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-04-04T21:47:00+02:00
+last_commit: 2026-04-04T21:47:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix TermLink dispatch CWD — export PROJECT_ROOT in worker run.sh
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (T-842 worker evidence analyzed, root cause: hooks resolve PROJECT_ROOT via git, env var bypass available)"
+  - "Assumptions tested (A1-A3 validated, A4 disproven — see report)"
+  - "Recommendation written with rationale (GO — export PROJECT_ROOT/FRAMEWORK_ROOT in run.sh)"
+  - "Fix implemented in termlink.sh cmd_dispatch run.sh template"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix TermLink dispatch CWD — export PROJECT_ROOT in worker run.sh"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - "docs/reports/T-792-termlink-dispatch-cwd.md"
+  - ".tasks/active/T-792-pickup-termlink-agent-dispatch-pattern--.md"
+  - ".tasks/active/T-860-audit-performance--123-active-tasks--7-l.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T21:47:00"
+    action: "T-792: Fix TermLink dispatch CWD — export PROJECT_ROOT in worker run.sh"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7559 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, learning]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7559
+  commits: 1
+  files_changed: 4
+  lines_added: 207
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-792-pickup-termlink-agent-dispatch-pattern--.md
+generated_by: context-agent-hybrid

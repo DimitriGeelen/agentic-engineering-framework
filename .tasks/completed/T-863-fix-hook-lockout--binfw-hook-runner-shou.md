@@ -4,16 +4,16 @@ name: "Fix hook lockout — bin/fw hook runner should not require -x on agent sc
 description: >
   Fix hook lockout — bin/fw hook runner should not require -x on agent scripts
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-04T20:33:21Z
-last_update: 2026-04-04T20:33:21Z
-date_finished: null
+last_update: 2026-04-04T20:36:02Z
+date_finished: 2026-04-04T20:36:02Z
 ---
 
 # T-863: Fix hook lockout — bin/fw hook runner should not require -x on agent scripts
@@ -52,3 +52,6 @@ grep -q 'bash.*_hook_script' bin/fw
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-863-fix-hook-lockout--binfw-hook-runner-shou.md
 - **Context:** Initial task creation
+
+### 2026-04-04T20:36:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

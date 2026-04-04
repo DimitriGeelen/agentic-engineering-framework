@@ -4,16 +4,16 @@ name: "Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge 
 description: >
   Auto-created from pickup envelope. Source: 050-email-archive, task T-400. Type: learning.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: next
 tags: [pickup, learning]
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T14:51:26Z
-last_update: 2026-04-04T19:39:40Z
-date_finished: null
+last_update: 2026-04-04T20:50:34Z
+date_finished: 2026-04-04T20:50:34Z
 ---
 
 # T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)
@@ -86,14 +86,11 @@ Related: T-856 (human-owned inception for same problem), T-682 (TermLink --worki
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: Framework-side fix proven, already implemented and propagated
+
+**Date**: 2026-04-04T20:50:34Z
 
 ## Recommendation
 
@@ -107,7 +104,11 @@ Related: T-856 (human-owned inception for same problem), T-682 (TermLink --worki
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Framework-side fix proven, already implemented and propagated
+
+**Date**: 2026-04-04T20:50:34Z
 
 ## Updates
 
@@ -116,3 +117,12 @@ Related: T-856 (human-owned inception for same problem), T-682 (TermLink --worki
 
 ### 2026-04-04T19:39:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-04T20:50:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Framework-side fix proven, already implemented and propagated
+
+### 2026-04-04T20:50:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

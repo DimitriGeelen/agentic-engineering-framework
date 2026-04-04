@@ -4,16 +4,16 @@ name: "Linkable task references in handover session summary — clickable T-XXX 
 description: >
   The 'Where We Are' session summary in handovers lists tasks like 'T-848 (Sync vendored...)' as plain text. These should be clickable links to the relevant Watchtower task pages (/tasks/T-XXX) and related documents (docs/reports/). Applies to both the handover markdown and the Watchtower /timeline view that renders handover summaries.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T15:17:20Z
-last_update: 2026-04-04T17:55:58Z
-date_finished: null
+last_update: 2026-04-04T21:59:11Z
+date_finished: 2026-04-04T21:59:11Z
 ---
 
 # T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
@@ -65,3 +65,6 @@ python3 -c "from web.shared import linkify_tasks; assert '<a ' in linkify_tasks(
 
 ### 2026-04-04T17:55:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-04T21:59:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,37 +1,38 @@
 # ============================================================================
-# EPISODIC MEMORY - T-858: Update fw upgrade help text with new sync targets
+# EPISODIC MEMORY - T-863: Fix hook lockout — bin/fw hook runner should not require -x on agent scripts
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-04T21:57:56Z
+# Generated: 2026-04-04T20:36:04Z
 # ============================================================================
 
-task_id: T-858
-task_name: "Update fw upgrade help text with new sync targets"
+task_id: T-863
+task_name: "Fix hook lockout — bin/fw hook runner should not require -x on agent scripts"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
-created: 2026-04-04T19:16:54Z
-completed: 2026-04-04T21:57:53Z
+created: 2026-04-04T20:33:21Z
+completed: 2026-04-04T20:36:02Z
 duration_days: 0
 updates_count: 2
-first_commit: 2026-04-04T21:18:39+02:00
-last_commit: 2026-04-04T21:18:39+02:00
+first_commit: 2026-04-04T22:35:54+02:00
+last_commit: 2026-04-04T22:35:54+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Update fw upgrade help text with T-857 sync targets
+  Fix hook lockout — use bash instead of -x check in hook runner
 
 # Key outcomes
 outcomes:
-  - "Help text lists lib/*.sh sync"
-  - "Help text lists agent scripts sync"
-  - "Help text lists bin/fw sync"
+  - "Hook runner uses `bash \"$_hook_script\"` instead of requiring `-x`"
+  - "Check changed from `-x` to `-f` (file exists, not executable)"
+  - "Hooks still work normally after the change (verified: fw version, hook calls work)"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: "Fix hook lockout — use bash instead of -x check in hook runner"
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -42,17 +43,17 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "lib/upgrade.sh"
-  - ".tasks/active/T-858-update-fw-upgrade-help-text-with-new-syn.md"
+  - "bin/fw"
+  - ".tasks/active/T-863-fix-hook-lockout--binfw-hook-runner-shou.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-04-04T21:18:39"
-    action: "T-858: Update fw upgrade help text with T-857 sync targets"
+  - time: "2026-04-04T22:35:54"
+    action: "T-863: Fix hook lockout — use bash instead of -x check in hook runner"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 160 min
+  # Completed successfully in 1 commit(s), 2 min
 
 # Related tasks
 related_tasks:
@@ -65,12 +66,12 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 160
+  wall_clock_minutes: 2
   commits: 1
   files_changed: 2
-  lines_added: 56
-  lines_removed: 0
+  lines_added: 58
+  lines_removed: 3
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-858-update-fw-upgrade-help-text-with-new-syn.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-863-fix-hook-lockout--binfw-hook-runner-shou.md
 generated_by: context-agent-hybrid

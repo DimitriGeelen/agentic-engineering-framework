@@ -1,22 +1,22 @@
 ---
-id: T-855
-name: "Sync vendored .agentic-framework/ with T-849 through T-854 fixes"
+id: T-854
+name: "Pass project name to Watchtower templates — resolve from project root, display in header"
 description: >
-  Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+  Pass project name to Watchtower templates — resolve from project root, display in header
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-04T18:19:38Z
-last_update: 2026-04-04T18:19:38Z
-date_finished: null
+created: 2026-04-04T18:16:16Z
+last_update: 2026-04-04T21:58:28Z
+date_finished: 2026-04-04T21:58:28Z
 ---
 
-# T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+# T-854: Pass project name to Watchtower templates — resolve from project root, display in header
 
 ## Context
 
@@ -25,13 +25,8 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] Vendored web/, agents/, lib/ files match upstream after sync
-- [x] VERSION file updated
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+- [x] project_name available as Jinja global in templates (derived from PROJECT_ROOT basename)
+- [x] Browser tab title includes project name (e.g., "Tasks — MyProject")
 -->
 
 ## Verification
@@ -58,7 +53,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-04T18:19:38Z — task-created [task-create-agent]
+### 2026-04-04T18:16:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-855-sync-vendored-agentic-framework-with-t-8.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-854-pass-project-name-to-watchtower-template.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:58:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

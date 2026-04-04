@@ -4,16 +4,16 @@ name: "Fix Fabric Explorer double-refresh bug — componentData hoisting + hardc
 description: >
   Fabric Explorer at /fabric/graph requires two page refreshes to render. Root cause: componentData const referenced before initialization in JS execution order. Additionally, ~100 lines of hardcoded OpenClaw project data (layers, subsystems, edges) remain from the integration (T-730). Evidence: processed pickups P-001 and P-002 from 051-vinix24 OpenClaw evaluation.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T15:03:56Z
-last_update: 2026-04-04T15:03:56Z
-date_finished: null
+last_update: 2026-04-04T21:59:51Z
+date_finished: 2026-04-04T21:59:51Z
 ---
 
 # T-849: Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data
@@ -46,7 +46,7 @@ Evidence: processed pickups P-001 (hardcoded data) and P-002 (double-refresh) fr
 
 ## Verification
 
-curl -sf http://localhost:3000/fabric/graph | grep -q "Fabric Explorer"
+curl -sf http://localhost:3000/fabric/graph -o /tmp/T-849-verify.html && grep -q "Fabric Explorer" /tmp/T-849-verify.html
 python3 -c "import sys; html=open('web/templates/fabric_explorer.html').read(); sys.exit(1 if 'OpenClaw' in html else 0)"
 
 ## Decisions
@@ -66,3 +66,6 @@ python3 -c "import sys; html=open('web/templates/fabric_explorer.html').read(); 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-849-fix-fabric-explorer-double-refresh-bug--.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:59:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

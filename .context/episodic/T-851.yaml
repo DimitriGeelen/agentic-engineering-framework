@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-04T18:00:57Z
+# Generated: 2026-04-04T20:50:20Z
 # ============================================================================
 
 task_id: T-851
@@ -13,9 +13,9 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-04-04T15:17:20Z
-completed: 2026-04-04T18:00:52Z
+completed: 2026-04-04T17:55:58Z
 duration_days: 0
-updates_count: 3
+updates_count: 2
 first_commit: 2026-04-04T20:00:44+02:00
 last_commit: 2026-04-04T20:00:44+02:00
 
@@ -54,7 +54,7 @@ git_timeline:
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 163 min
+  # Completed successfully in 1 commit(s), 158 min
 
 # Related tasks
 related_tasks:
@@ -67,7 +67,7 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 163
+  wall_clock_minutes: 158
   commits: 1
   files_changed: 4
   lines_added: 85

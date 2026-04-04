@@ -4,16 +4,16 @@ name: "Update fw upgrade help text with new sync targets"
 description: >
   Update fw upgrade help text with new sync targets
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-04-04T19:16:54Z
-last_update: 2026-04-04T19:16:54Z
-date_finished: null
+last_update: 2026-04-04T21:57:53Z
+date_finished: 2026-04-04T21:57:53Z
 ---
 
 # T-858: Update fw upgrade help text with new sync targets
@@ -51,3 +51,6 @@ bin/fw upgrade --help 2>&1 | grep -q 'Agent scripts'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-858-update-fw-upgrade-help-text-with-new-syn.md
 - **Context:** Initial task creation
+
+### 2026-04-04T21:57:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

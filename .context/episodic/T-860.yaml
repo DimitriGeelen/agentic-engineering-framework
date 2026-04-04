@@ -1,33 +1,29 @@
 # ============================================================================
-# EPISODIC MEMORY - T-858: Update fw upgrade help text with new sync targets
+# EPISODIC MEMORY - T-860: Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime
 # ============================================================================
-# STATUS: AUTO-GENERATED
-# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-04-04T21:57:56Z
+# STATUS: REQUIRES ENRICHMENT
+# Limited data sources. Review and fill missing sections manually.
+# Generated: 2026-04-04T20:50:21Z
 # ============================================================================
 
-task_id: T-858
-task_name: "Update fw upgrade help text with new sync targets"
-workflow_type: build
-enrichment_status: complete  # AC checked + decisions recorded
+task_id: T-860
+task_name: "Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime"
+workflow_type: inception
+enrichment_status: pending  # No git commits or AC found — needs manual enrichment
 
 # Timeline
-created: 2026-04-04T19:16:54Z
-completed: 2026-04-04T21:57:53Z
+created: 2026-04-04T19:33:13Z
+completed: 2026-04-04T19:34:28Z
 duration_days: 0
-updates_count: 2
-first_commit: 2026-04-04T21:18:39+02:00
-last_commit: 2026-04-04T21:18:39+02:00
+updates_count: 1
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Update fw upgrade help text with T-857 sync targets
+  >
 
 # Key outcomes
 outcomes:
-  - "Help text lists lib/*.sh sync"
-  - "Help text lists agent scripts sync"
-  - "Help text lists bin/fw sync"
+  - "Task completed"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
@@ -42,17 +38,16 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - "lib/upgrade.sh"
-  - ".tasks/active/T-858-update-fw-upgrade-help-text-with-new-syn.md"
+  # No artifacts found in git
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-04-04T21:18:39"
-    action: "T-858: Update fw upgrade help text with T-857 sync targets"
+  # No git timeline available
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 160 min
+  - description: "[TODO: What worked well?]"
+    why: "[TODO: Why did it work?]"
 
 # Related tasks
 related_tasks:
@@ -65,12 +60,12 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 160
-  commits: 1
-  files_changed: 2
-  lines_added: 56
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
   lines_removed: 0
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-858-update-fw-upgrade-help-text-with-new-syn.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-860-audit-performance--123-active-tasks--7-l.md
 generated_by: context-agent-hybrid

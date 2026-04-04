@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-864: Inception: Record task execution stats (timing, token cost, complexity) in task files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T21:57:00Z
+# ============================================================================
+
+task_id: T-864
+task_name: "Inception: Record task execution stats (timing, token cost, complexity) in task files"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T20:36:33Z
+completed: 2026-04-04T21:56:57Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-04-04T22:45:09+02:00
+last_commit: 2026-04-04T23:56:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create inception tasks T-864 (task stats) and T-866 (audit zombies). Inception research — task execution stats (NO-GO recommended)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-864-task-execution-stats.md"
+  - ".tasks/active/T-864-inception-record-task-execution-stats-ti.md"
+  - ".tasks/active/T-866-audit-cron-zombie-accumulation--flock-gu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T22:45:09"
+    action: "T-012: Create inception tasks T-864 (task stats) and T-866 (audit zombies)"
+  - time: "2026-04-04T23:56:19"
+    action: "T-864: Inception research — task execution stats (NO-GO recommended)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 80 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 80
+  commits: 2
+  files_changed: 3
+  lines_added: 312
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-864-inception-record-task-execution-stats-ti.md
+generated_by: context-agent-hybrid

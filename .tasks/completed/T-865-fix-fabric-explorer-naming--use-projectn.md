@@ -4,16 +4,16 @@ name: "Fix Fabric Explorer naming — use project_name in title"
 description: >
   Fix Fabric Explorer naming — use project_name in title
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/app.py, web/templates/fabric_explorer.html]
 related_tasks: []
 created: 2026-04-04T20:39:09Z
-last_update: 2026-04-04T20:39:09Z
-date_finished: null
+last_update: 2026-04-04T20:43:03Z
+date_finished: 2026-04-04T20:43:03Z
 ---
 
 # T-865: Fix Fabric Explorer naming — use project_name in title
@@ -49,3 +49,6 @@ curl -sf http://localhost:3000/fabric/graph -o /tmp/t865.html && grep -q 'Agenti
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-865-fix-fabric-explorer-naming--use-projectn.md
 - **Context:** Initial task creation
+
+### 2026-04-04T20:43:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
