@@ -42,7 +42,7 @@ When Watchtower renders markdown (file viewer, task body), file references like 
 
 ## Verification
 
-curl -s http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md | grep -c 'href="/file/'
+curl -s http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md -o /tmp/T-633-verify.html && grep -c 'href="/file/' /tmp/T-633-verify.html
 
 ## Decisions
 
