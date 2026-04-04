@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-857: fw upgrade sync gap — lib/, agents/task-create/, agents/handover/, agents/git/ not vendored to consumer projects
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T19:05:49Z
+# ============================================================================
+
+task_id: T-857
+task_name: "fw upgrade sync gap — lib/, agents/task-create/, agents/handover/, agents/git/ not vendored to consumer projects"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T19:00:27Z
+completed: 2026-04-04T19:05:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T21:03:06+02:00
+last_commit: 2026-04-04T21:03:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix fw upgrade vendored sync gap — add lib/*.sh and agent scripts
+
+# Key outcomes
+outcomes:
+  - "`upgrade.sh` vendored sync section syncs `lib/*.sh` to consumer `.agentic-framework/lib/`"
+  - "`upgrade.sh` vendored sync section syncs agent scripts (task-create, handover, git, healing, fabric, dispatch, resume) to consumer `.agentic-framework/agents/`"
+  - "`upgrade.sh --dry-run` reports the new sync targets without modifying files (verified: 40 vendored scripts detected)"
+  - "Existing vendored sync (agents/context/, bin/fw) still works"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix fw upgrade vendored sync gap — add lib/*.sh and agent scripts"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/upgrade.sh"
+  - ".tasks/active/T-857-fw-upgrade-sync-gap--lib-agentstask-crea.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T21:03:06"
+    action: "T-857: Fix fw upgrade vendored sync gap — add lib/*.sh and agent scripts"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 130
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-857-fw-upgrade-sync-gap--lib-agentstask-crea.md
+generated_by: context-agent-hybrid

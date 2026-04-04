@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-862: Fix audit performance for pre-push — fast path for push hook
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T20:29:45Z
+# ============================================================================
+
+task_id: T-862
+task_name: "Fix audit performance for pre-push — fast path for push hook"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T19:57:14Z
+completed: 2026-04-04T20:29:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T22:04:10+02:00
+last_commit: 2026-04-04T22:04:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Pre-push hook fast audit — structure-only section filter
+
+# Key outcomes
+outcomes:
+  - "Pre-push hook passes `--section structure` flag to audit to run fast subset"
+  - "`audit.sh --section structure` completes in ~11s (vs >90s for full audit)"
+  - "Full audit (no --section) still runs all checks"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/git/lib/hooks.sh"
+  - ".tasks/active/T-862-fix-audit-performance-for-pre-push--fast.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T22:04:10"
+    action: "T-862: Pre-push hook fast audit — structure-only section filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 32
+  commits: 1
+  files_changed: 2
+  lines_added: 56
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-862-fix-audit-performance-for-pre-push--fast.md
+generated_by: context-agent-hybrid
