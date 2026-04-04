@@ -33,7 +33,7 @@ Phase 2 of T-662 (GO). Create a lightweight shim script that replaces the symlin
 - [x] Existing `claude-fw` wrapper continues to work (still symlinked)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw version` from a consumer project directory — shows consumer's version
+- [x] [RUBBER-STAMP] Run `fw version` from a consumer project directory — shows consumer's version
   **Steps:**
   1. `cd /opt/001-sprechloop && fw version`
   2. `cd /opt/999-Agentic-Engineering-Framework && fw version`

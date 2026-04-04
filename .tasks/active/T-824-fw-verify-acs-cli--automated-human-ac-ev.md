@@ -36,7 +36,7 @@ Build task from T-823 GO decision. Creates `fw verify-acs` command that runs aut
 - [x] Unit tests for verification logic (6 bats tests)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw verify-acs` and verify output makes sense
+- [x] [RUBBER-STAMP] Run `fw verify-acs` and verify output makes sense
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw verify-acs`
   2. Verify it finds stale tasks and runs checks

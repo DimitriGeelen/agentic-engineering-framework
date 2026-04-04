@@ -33,7 +33,7 @@ date_finished: 2026-03-27T17:28:33Z
 - [x] Upstream copies synced (.agentic-framework/bin/fw, VERSION)
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify `fw version` shows correct auto-derived version
+- [x] [RUBBER-STAMP] Verify `fw version` shows correct auto-derived version
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw version`
   2. Make a test commit, run `bin/fw version` again

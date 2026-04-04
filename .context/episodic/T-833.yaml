@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-833: Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-04T18:08:54Z
+# ============================================================================
+
+task_id: T-833
+task_name: "Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T09:15:38Z
+completed: 2026-04-04T10:10:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T11:17:25+02:00
+last_commit: 2026-04-04T12:10:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Session housekeeping — T-831/T-832 completion, T-833 captured. Fix install.sh SIGPIPE exit 141 — add || true to head -1 pipes
+
+# Key outcomes
+outcomes:
+  - "SIGPIPE from head -1 in pipe suppressed with || true (lines 97 and 273)"
+  - "install.sh exits 0 on successful install"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix install.sh SIGPIPE exit 141 — add || true to head -1 pipes"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-827.yaml"
+  - ".context/episodic/T-828.yaml"
+  - ".context/episodic/T-829.yaml"
+  - ".context/episodic/T-830.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.approval-notified"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/.restart-requested"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval"
+  - ".context/working/.tier0-approval.pending"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - "install.sh"
+  - ".tasks/active/T-831-session-quality-metrics--session-metrics.md"
+  - ".tasks/active/T-832-fix-installsh-unbound-localrepo-variable.md"
+  - ".tasks/active/T-833-fix-installsh-sigpipe-exit-141--head--1-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T11:17:25"
+    action: "T-012: Session housekeeping — T-831/T-832 completion, T-833 captured"
+  - time: "2026-04-04T12:10:17"
+    action: "T-833: Fix install.sh SIGPIPE exit 141 — add || true to head -1 pipes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 2
+  files_changed: 22
+  lines_added: 981
+  lines_removed: 255
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-833-fix-installsh-sigpipe-exit-141--head--1-.md
+generated_by: context-agent-hybrid

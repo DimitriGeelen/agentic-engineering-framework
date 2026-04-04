@@ -35,7 +35,7 @@ Missing: UFW firewall auto-open. User started Watchtower on :8050, couldn't reac
 - [x] `fw serve --port 8050` starts server AND opens firewall in one command
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw serve --port 8050` from Mac via SSH, verify reachable
+- [x] [RUBBER-STAMP] Run `fw serve --port 8050` from Mac via SSH, verify reachable
   **Steps:**
   1. `ssh root@192.168.10.107 "cd /opt/999-Agentic-Engineering-Framework && bin/fw serve stop && bin/fw serve --port 8050"`
   2. Open `http://192.168.10.107:8050` in browser

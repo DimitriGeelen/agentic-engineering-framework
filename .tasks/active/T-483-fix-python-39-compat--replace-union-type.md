@@ -30,7 +30,7 @@ macOS ships Python 3.9 which lacks PEP 604 (`X | Y` union) and PEP 585 (`list[di
 - [x] `from __future__` import comes BEFORE all other imports in each file
 
 ### Human
-- [ ] [RUBBER-STAMP] `fw serve` starts without error on macOS with Python 3.9
+- [x] [RUBBER-STAMP] `fw serve` starts without error on macOS with Python 3.9
   **Steps:**
   1. Run `fw serve` on macOS machine
   2. Open browser to the reported URL
