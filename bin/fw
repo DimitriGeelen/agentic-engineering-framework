@@ -2549,7 +2549,7 @@ print(f'    {c}{status.upper():10}{nc}  {chash}  via {mechanism}  at {responded}
 print(f'              {risk}')
 " 2>/dev/null
                     found=$((found + 1))
-                done < <(find "$APPROVAL_DIR" -maxdepth 1 -name 'resolved-*.yaml' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -10)
+                done < <(find "$APPROVAL_DIR" -maxdepth 1 -name 'resolved-*.yaml' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -10 || true)
                 if [ "$found" -eq 0 ]; then
                     echo "    (none)"
                 fi
