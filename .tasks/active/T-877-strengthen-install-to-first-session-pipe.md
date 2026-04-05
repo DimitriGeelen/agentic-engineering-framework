@@ -4,7 +4,7 @@ name: "Strengthen install-to-first-session pipeline — auto-fix warnings, guide
 description: >
   Inception: Strengthen install-to-first-session pipeline — auto-fix warnings, guide onboarding, fw vs bin/fw resolution
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:06:23Z
-last_update: 2026-04-05T06:06:23Z
-date_finished: null
+last_update: 2026-04-05T06:14:36Z
+date_finished: 2026-04-05T06:14:36Z
 ---
 
 # T-877: Strengthen install-to-first-session pipeline — auto-fix warnings, guide onboarding, fw vs bin/fw resolution
@@ -116,14 +116,17 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 6 of 8 failure modes are fixable with low-risk auto-remediation. Real user (framework author) hit all of them in one session. Implementation is ~50 lines across 2 files.
+- Evidence:
+  - Full flow audit in `docs/reports/T-877-install-pipeline.md`
+  - F1 already fixed (T-875)
+  - F3/F4/F5 auto-remediation is safe (idempotent, no overwrites)
+  - F2/F6 are messaging changes only
+
+**Date**: 2026-04-05T06:14:36Z
 
 ## Recommendation
 
@@ -137,9 +140,34 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 6 of 8 failure modes are fixable with low-risk auto-remediation. Real user (framework author) hit all of them in one session. Implementation is ~50 lines across 2 files.
+- Evidence:
+  - Full flow audit in `docs/reports/T-877-install-pipeline.md`
+  - F1 already fixed (T-875)
+  - F3/F4/F5 auto-remediation is safe (idempotent, no overwrites)
+  - F2/F6 are messaging changes only
+
+**Date**: 2026-04-05T06:14:36Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-05T06:14:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: 6 of 8 failure modes are fixable with low-risk auto-remediation. Real user (framework author) hit all of them in one session. Implementation is ~50 lines across 2 files.
+- Evidence:
+  - Full flow audit in `docs/reports/T-877-install-pipeline.md`
+  - F1 already fixed (T-875)
+  - F3/F4/F5 auto-remediation is safe (idempotent, no overwrites)
+  - F2/F6 are messaging changes only
+
+### 2026-04-05T06:14:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

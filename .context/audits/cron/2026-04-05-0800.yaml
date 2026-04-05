@@ -1,8 +1,8 @@
-# Audit Results - 2026-04-05-0755
-timestamp: 2026-04-05T05:55:52Z
+# Audit Results - 2026-04-05-0800
+timestamp: 2026-04-05T06:00:01Z
 summary:
   pass: 237
-  warn: 16
+  warn: 17
   fail: 0
 findings:
   - level: PASS
@@ -25,7 +25,7 @@ findings:
   - level: PASS
     check: "Fabric drift: All watched source files registered (241 cards)"
   - level: PASS
-    check: "All 126 active tasks are valid"
+    check: "All 127 active tasks are valid"
   - level: WARN
     check: "Task T-548 is 13 days old with only 1 updates"
     mitigation: "Add progress updates to T-548-npm-install-pathway--evaluate-whether-to.md"
@@ -93,17 +93,17 @@ findings:
   - level: PASS
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-872)"
+    check: "CTL-001: Focus file has active task (T-875)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 9 (last commit: 18 minutes ago)"
+    check: "CTL-004: Tool counter at 27 (last commit: 22 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 4 cron audit file(s) in last hour"
+    check: "CTL-020: 5 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
@@ -310,8 +310,9 @@ findings:
   - level: WARN
     check: "CTL-012: Completed task T-534 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
-  - level: PASS
-    check: "CTL-013: T-873 verification re-run: 1/1 pass"
+  - level: WARN
+    check: "CTL-013: T-873 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-873 — environment may have changed"
   - level: PASS
     check: "CTL-013: T-872 verification re-run: 1/1 pass"
   - level: PASS
@@ -495,9 +496,11 @@ findings:
   - level: PASS
     check: "CTL-025: T-866 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-875 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (20/808)"
+    check: "D1: Episodic quality — 2% [TODO] (20/809)"
   - level: WARN
     check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(21d) T-460(22d) T-470(23d) T-476(22d) T-481(21d) T-483(21d) T-493(21d) T-505(18d) T-511(18d) T-516(18d) T-518(18d)"
     mitigation: "Review with: fw task verify"
@@ -516,9 +519,9 @@ findings:
     check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(10d-active) (+17 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=25 avg=72 ratio=0.3x)"
+    check: "D3: Commit velocity — insufficient data"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 102_commits_24h)"
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS recent=14.3 earlier=19.3)"
   - level: PASS

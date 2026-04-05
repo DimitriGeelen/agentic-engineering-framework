@@ -1,115 +1,17 @@
-# Audit Results - 2026-04-05-0755
-timestamp: 2026-04-05T05:55:52Z
+# Audit Results - 2026-04-05-0700
+timestamp: 2026-04-05T05:00:01Z
+sections: "oe-daily"
 summary:
-  pass: 237
-  warn: 16
+  pass: 190
+  warn: 4
   fail: 0
 findings:
-  - level: PASS
-    check: "Tasks directory exists"
-  - level: PASS
-    check: "Tasks/active directory exists"
-  - level: PASS
-    check: "Tasks/completed directory exists"
-  - level: PASS
-    check: "Tasks/templates directory exists"
-  - level: PASS
-    check: "Task template exists"
-  - level: PASS
-    check: "All 10 project YAML files parse correctly"
-  - level: PASS
-    check: "Fabric: 241 registered, 0 unregistered"
-  - level: WARN
-    check: "Fabric: 23/241 cards have no edges"
-    mitigation: "Run: fw fabric enrich"
-  - level: PASS
-    check: "Fabric drift: All watched source files registered (241 cards)"
-  - level: PASS
-    check: "All 126 active tasks are valid"
-  - level: WARN
-    check: "Task T-548 is 13 days old with only 1 updates"
-    mitigation: "Add progress updates to T-548-npm-install-pathway--evaluate-whether-to.md"
-  - level: WARN
-    check: "Task T-807 has short description (42 chars)"
-    mitigation: "Expand description in T-807-unit-tests-for-libcostssh-token-tracking.md"
-  - level: PASS
-    check: "Git traceability: 98% (2188/2215 commits reference tasks)"
-  - level: WARN
-    check: "Uncommitted changes present"
-    mitigation: "Commit changes with task reference or stash"
-  - level: PASS
-    check: "All commit task refs resolve to actual tasks"
-  - level: PASS
-    check: "Bypass log exists"
-  - level: PASS
-    check: "Commit-msg hook installed"
-  - level: PASS
-    check: "No Tier 0 violations detected"
-  - level: PASS
-    check: "Practices documented: 7 practice(s) in 015-Practices.md"
-  - level: PASS
-    check: "All practices have traceable origins"
-  - level: PASS
-    check: "All practice origins resolve to actual tasks"
-  - level: WARN
-    check: "Bugfix-learning coverage: 0% (0/115)"
-    mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
-  - level: PASS
-    check: "All completed tasks have episodic summaries"
-  - level: PASS
-    check: "All 808 episodic summaries have quality content"
-  - level: WARN
-    check: "Orphaned episodic: T-779 has no matching task file"
-    mitigation: "Remove orphaned episodic or create matching task"
-  - level: WARN
-    check: "Orphaned episodic: T-785 has no matching task file"
-    mitigation: "Remove orphaned episodic or create matching task"
-  - level: PASS
-    check: "Observation inbox clean (0 pending)"
-  - level: PASS
-    check: "Gaps register: 11 watching, no triggers fired"
-  - level: PASS
-    check: "Handover open questions: none (section empty or template placeholder)"
-  - level: PASS
-    check: "Graduation pipeline: 0 learnings (threshold: 20)"
-  - level: WARN
-    check: "Inception task T-567 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-567-*.md"
-  - level: WARN
-    check: "Inception task T-568 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-568-*.md"
-  - level: WARN
-    check: "Inception task T-569 has no research artifact in docs/reports/"
-    mitigation: "Save research findings: docs/reports/T-569-*.md"
-  - level: WARN
-    check: "C-001: Inception T-837 has artifact but task doesn't reference it"
-    mitigation: "Add artifact reference to ## Updates section of T-837"
-  - level: PASS
-    check: "C-001: All 18 active inceptions have research artifacts"
-  - level: PASS
-    check: "C-002: commit-msg hook has research artifact check"
-  - level: PASS
-    check: "C-002: No research warnings logged (clean or first run)"
-  - level: PASS
-    check: "C-003: Research checkpoint logic present in checkpoint.sh"
-  - level: PASS
-    check: "CTL-001: Focus file has active task (T-872)"
-  - level: PASS
-    check: "CTL-003: Budget status file fresh (< 5min old)"
-  - level: PASS
-    check: "CTL-004: Tool counter at 9 (last commit: 18 minutes ago)"
-  - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: ok)"
-  - level: PASS
-    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
-  - level: PASS
-    check: "CTL-020: 4 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (486 handovers, 179 compactions)"
+    check: "CTL-006: Handover coverage for compactions (485 handovers, 178 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -310,10 +212,12 @@ findings:
   - level: WARN
     check: "CTL-012: Completed task T-534 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
-  - level: PASS
-    check: "CTL-013: T-873 verification re-run: 1/1 pass"
-  - level: PASS
-    check: "CTL-013: T-872 verification re-run: 1/1 pass"
+  - level: WARN
+    check: "CTL-013: T-873 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-873 — environment may have changed"
+  - level: WARN
+    check: "CTL-013: T-872 verification re-run: 1 command(s) failing"
+    mitigation: "Review T-872 — environment may have changed"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -493,37 +397,4 @@ findings:
   - level: PASS
     check: "CTL-025: T-864 partial-complete with owner:human ✓"
   - level: PASS
-    check: "CTL-025: T-866 partial-complete with owner:human ✓"
-  - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
-  - level: PASS
-    check: "D1: Episodic quality — 2% [TODO] (20/808)"
-  - level: WARN
-    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(21d) T-460(22d) T-470(23d) T-476(22d) T-481(21d) T-483(21d) T-493(21d) T-505(18d) T-511(18d) T-516(18d) T-518(18d)"
-    mitigation: "Review with: fw task verify"
-  - level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - level: PASS
-    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
-  - level: WARN
-    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
-    mitigation: "Review flagged tasks — human dialogue may have been skipped"
-  - level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
-  - level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - level: WARN
-    check: "D5: Task lifecycle — 27 anomaly(s): T-407(4min,human) T-404(3min,human) T-437(0min,human) T-524(3min,human) T-523(1min,human) T-405(2min,human) T-443(3min,human) T-472(2min,human) T-410(3min,human) T-608(10d-active) (+17 more)"
-    mitigation: "Review flagged tasks for process issues"
-  - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=25 avg=72 ratio=0.3x)"
-  - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 102_commits_24h)"
-  - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=14.3 earlier=19.3)"
-  - level: PASS
-    check: "D12: Bypass log — no log file"
-  - level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
-  - level: PASS
-    check: "CTL-016: No failure patterns recorded"
