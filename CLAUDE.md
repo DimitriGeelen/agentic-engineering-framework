@@ -503,6 +503,10 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 | Handover cooldown | `FW_HANDOVER_COOLDOWN` | `600` | Seconds between auto-handover triggers |
 | Stale task days | `FW_STALE_TASK_DAYS` | `7` | Days before task is flagged stale |
 | Max restarts | `FW_MAX_RESTARTS` | `5` | Max consecutive auto-restarts |
+| Call warn | `FW_CALL_WARN` | `40` | Tool-call count threshold for warn level (fallback) |
+| Call urgent | `FW_CALL_URGENT` | `60` | Tool-call count threshold for urgent level (fallback) |
+| Call critical | `FW_CALL_CRITICAL` | `80` | Tool-call count threshold for critical level (fallback) |
+| Bash timeout | `FW_BASH_TIMEOUT` | `300000` | Default Bash tool timeout in milliseconds |
 | Keylock timeout | `FW_KEYLOCK_TIMEOUT` | `300` | Per-key lock stale cleanup (seconds) |
 | TermLink worker timeout | `FW_TERMLINK_WORKER_TIMEOUT` | `600` | TermLink worker execution timeout (seconds) |
 | Handover dedup cooldown | `FW_HANDOVER_DEDUP_COOLDOWN` | `300` | Seconds between duplicate handover detection |
