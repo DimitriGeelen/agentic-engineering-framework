@@ -49,9 +49,9 @@ do_verify_acs() {
         esac
     done
 
-    source "$FRAMEWORK_ROOT/lib/config.sh"
+    source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null || true
     local wt_port
-    wt_port=$(fw_config "PORT" 3000)
+    wt_port=$(type fw_config >/dev/null 2>&1 && fw_config "PORT" 3000 || echo 3000)
 
     # Check if Watchtower is running (needed for HTTP checks)
     local wt_running=false
