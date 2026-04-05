@@ -1,0 +1,286 @@
+# ============================================================================
+# EPISODIC MEMORY - T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T11:55:36Z
+# ============================================================================
+
+task_id: T-881
+task_name: "Upgrade consumer projects with T-879 xargs fix and T-880 init improvements"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T06:52:32Z
+completed: 2026-04-05T06:57:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T08:54:22+02:00
+last_commit: 2026-04-05T08:57:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Re-vendor framework to v1.4.559 (T-879 xargs fix + T-880 init improvements). Upgrade all 11 consumer projects to v1.4.559
+
+# Key outcomes
+outcomes:
+  - "All 11 consumer projects upgraded"
+  - "fw doctor shows all consumers current"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Re-vendor framework to v1.4.559 (T-879 xargs fix + T-880 init improvements)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/git/lib/hooks.sh"
+  - ".agentic-framework/agents/termlink/termlink.sh"
+  - ".agentic-framework/bin/watchtower.sh"
+  - ".agentic-framework/docs/articles/deep-dives/19-fabric-explorer.md"
+  - ".agentic-framework/docs/generated/components/agents-audit-plugin-audit.md"
+  - ".agentic-framework/docs/generated/components/agents-audit-self-audit.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-active-task.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-agent-dispatch.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-dispatch-pre.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-fabric-new-file.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-project-boundary.md"
+  - ".agentic-framework/docs/generated/components/agents-context-check-tier0.md"
+  - ".agentic-framework/docs/generated/components/agents-context-commit-cadence.md"
+  - ".agentic-framework/docs/generated/components/agents-context-lib-focus.md"
+  - ".agentic-framework/docs/generated/components/agents-context-lib-init.md"
+  - ".agentic-framework/docs/generated/components/agents-context-lib-safe-commands.md"
+  - ".agentic-framework/docs/generated/components/agents-context-loop-detect.md"
+  - ".agentic-framework/docs/generated/components/agents-context-post-compact-resume.md"
+  - ".agentic-framework/docs/generated/components/agents-context-pre-compact.md"
+  - ".agentic-framework/docs/generated/components/agents-context-session-metrics.md"
+  - ".agentic-framework/docs/generated/components/agents-dispatch-preamble.md"
+  - ".agentic-framework/docs/generated/components/agents-docgen-generate-article.md"
+  - ".agentic-framework/docs/generated/components/agents-fabric-lib-register.md"
+  - ".agentic-framework/docs/generated/components/agents-fabric-lib-summary.md"
+  - ".agentic-framework/docs/generated/components/agents-git-lib-hooks.md"
+  - ".agentic-framework/docs/generated/components/agents-handover-handover.md"
+  - ".agentic-framework/docs/generated/components/agents-healing-healing.md"
+  - ".agentic-framework/docs/generated/components/agents-healing-lib-diagnose.md"
+  - ".agentic-framework/docs/generated/components/agents-healing-lib-suggest.md"
+  - ".agentic-framework/docs/generated/components/agents-mcp-mcp-reaper.md"
+  - ".agentic-framework/docs/generated/components/agents-onboarding-test-test-onboarding.md"
+  - ".agentic-framework/docs/generated/components/agents-resume-resume.md"
+  - ".agentic-framework/docs/generated/components/agents-task-create-create-task.md"
+  - ".agentic-framework/docs/generated/components/agents-task-create-update-task.md"
+  - ".agentic-framework/docs/generated/components/agents-termlink-termlink.md"
+  - ".agentic-framework/docs/generated/components/audit-yaml-validator.md"
+  - ".agentic-framework/docs/generated/components/bin-claude-fw.md"
+  - ".agentic-framework/docs/generated/components/bin-fw.md"
+  - ".agentic-framework/docs/generated/components/bin-fw-shim.md"
+  - ".agentic-framework/docs/generated/components/bin-watchtower.md"
+  - ".agentic-framework/docs/generated/components/budget-gate-counter.md"
+  - ".agentic-framework/docs/generated/components/budget-gate.md"
+  - ".agentic-framework/docs/generated/components/budget-status.md"
+  - ".agentic-framework/docs/generated/components/checkpoint.md"
+  - ".agentic-framework/docs/generated/components/context-project-concerns.md"
+  - ".agentic-framework/docs/generated/components/context-project-decisions.md"
+  - ".agentic-framework/docs/generated/components/context-project-metrics-history.md"
+  - ".agentic-framework/docs/generated/components/hook-config.md"
+  - ".agentic-framework/docs/generated/components/learnings-data.md"
+  - ".agentic-framework/docs/generated/components/lib-assumption.md"
+  - ".agentic-framework/docs/generated/components/lib-build.md"
+  - ".agentic-framework/docs/generated/components/lib-bus.md"
+  - ".agentic-framework/docs/generated/components/lib-colors.md"
+  - ".agentic-framework/docs/generated/components/lib-compat.md"
+  - ".agentic-framework/docs/generated/components/lib-config.md"
+  - ".agentic-framework/docs/generated/components/lib-costs.md"
+  - ".agentic-framework/docs/generated/components/lib-dispatch.md"
+  - ".agentic-framework/docs/generated/components/lib-enums.md"
+  - ".agentic-framework/docs/generated/components/lib-errors.md"
+  - ".agentic-framework/docs/generated/components/lib-harvest.md"
+  - ".agentic-framework/docs/generated/components/lib-inception.md"
+  - ".agentic-framework/docs/generated/components/lib-init.md"
+  - ".agentic-framework/docs/generated/components/lib-keylock.md"
+  - ".agentic-framework/docs/generated/components/lib-notify.md"
+  - ".agentic-framework/docs/generated/components/lib-pickup.md"
+  - ".agentic-framework/docs/generated/components/lib-preflight.md"
+  - ".agentic-framework/docs/generated/components/lib-review.md"
+  - ".agentic-framework/docs/generated/components/lib-runtime.md"
+  - ".agentic-framework/docs/generated/components/lib-setup.md"
+  - ".agentic-framework/docs/generated/components/lib-tasks.md"
+  - ".agentic-framework/docs/generated/components/lib-update.md"
+  - ".agentic-framework/docs/generated/components/lib-upgrade.md"
+  - ".agentic-framework/docs/generated/components/lib-upstream.md"
+  - ".agentic-framework/docs/generated/components/lib-validate-init.md"
+  - ".agentic-framework/docs/generated/components/lib-verify-acs.md"
+  - ".agentic-framework/docs/generated/components/lib-version.md"
+  - ".agentic-framework/docs/generated/components/lib-yaml.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_approvals.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_assumption.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_audit.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_bus.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_context.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_cron.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_decisions.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_doctor.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_fabric.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_fix_learned.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_gaps.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_git.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_handover.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_harvest.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_healing.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_help.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_hook.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_inception.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_init.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_learnings.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_metrics.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_notify.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_onboarding.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_patterns.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_pickup.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_practices.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_preflight.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_promote.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_resume.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_search.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_task.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_tier0.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_timeline.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_traceability.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_upstream.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_validate_init.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_vendor.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_version.md"
+  - ".agentic-framework/docs/generated/components/tests-integration-fw_work_on.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-checkpoint.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_build.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_config.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_costs.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_first_run.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_harvest.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_init.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_pickup.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_promote.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_upgrade.md"
+  - ".agentic-framework/docs/generated/components/tests-unit-lib_validate_init.md"
+  - ".agentic-framework/docs/generated/components/web-app.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-api.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-approvals.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-config.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-costs.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-cron.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-docs.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-fabric.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-inception.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-review.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-settings.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-tasks.md"
+  - ".agentic-framework/docs/generated/components/web-blueprints-timeline.md"
+  - ".agentic-framework/docs/generated/components/web-context_loader.md"
+  - ".agentic-framework/docs/generated/components/web-embeddings.md"
+  - ".agentic-framework/docs/generated/components/web-search.md"
+  - ".agentic-framework/docs/generated/components/web-search_utils.md"
+  - ".agentic-framework/docs/generated/components/web-shared.md"
+  - ".agentic-framework/docs/generated/components/web-static-d3.md"
+  - ".agentic-framework/docs/generated/components/web-subprocess_utils.md"
+  - ".agentic-framework/docs/generated/components/web-templates-_approvals_content.md"
+  - ".agentic-framework/docs/generated/components/web-templates-approvals.md"
+  - ".agentic-framework/docs/generated/components/web-templates-base.md"
+  - ".agentic-framework/docs/generated/components/web-templates-config.md"
+  - ".agentic-framework/docs/generated/components/web-templates-costs.md"
+  - ".agentic-framework/docs/generated/components/web-templates-cron.md"
+  - ".agentic-framework/docs/generated/components/web-templates-docs_detail.md"
+  - ".agentic-framework/docs/generated/components/web-templates-docs_index.md"
+  - ".agentic-framework/docs/generated/components/web-templates-fabric_explorer.md"
+  - ".agentic-framework/docs/generated/components/web-templates-fabric.md"
+  - ".agentic-framework/docs/generated/components/web-templates-inception_detail.md"
+  - ".agentic-framework/docs/generated/components/web-templates-index.md"
+  - ".agentic-framework/docs/generated/components/web-templates-_partials-badge.md"
+  - ".agentic-framework/docs/generated/components/web-templates-_review_acs.md"
+  - ".agentic-framework/docs/generated/components/web-templates-_review_error.md"
+  - ".agentic-framework/docs/generated/components/web-templates-review.md"
+  - ".agentic-framework/docs/generated/components/web-templates-settings.md"
+  - ".agentic-framework/docs/generated/components/web-templates-task_detail.md"
+  - ".agentic-framework/docs/generated/components/web-templates-timeline.md"
+  - ".agentic-framework/docs/generated/components/web-test_costs.md"
+  - ".agentic-framework/docs/reports/fleet-doctor.sh"
+  - ".agentic-framework/docs/reports/fleet-health-2026-04-05.md"
+  - ".agentic-framework/docs/reports/pending-inception-decisions.md"
+  - ".agentic-framework/docs/reports/T-772-cross-project-pickup.md"
+  - ".agentic-framework/docs/reports/T-792-termlink-dispatch-cwd.md"
+  - ".agentic-framework/docs/reports/T-799-T-800-token-cost-analysis.md"
+  - ".agentic-framework/docs/reports/T-815-traceai-evaluation.md"
+  - ".agentic-framework/docs/reports/T-816-null-object-fallback.md"
+  - ".agentic-framework/docs/reports/T-817-three-tier-config.md"
+  - ".agentic-framework/docs/reports/T-818-termlink-dispatch-persistence.md"
+  - ".agentic-framework/docs/reports/T-823-automated-human-ac-verification.md"
+  - ".agentic-framework/docs/reports/T-825-timeline-token-usage.md"
+  - ".agentic-framework/docs/reports/T-828-token-breakdown-inception.md"
+  - ".agentic-framework/docs/reports/T-830-agent-a-historical-analysis.md"
+  - ".agentic-framework/docs/reports/T-830-agent-b-quality-metrics.md"
+  - ".agentic-framework/docs/reports/T-830-session-length-optimization.md"
+  - ".agentic-framework/docs/reports/T-835-agent-a-backlog-analysis.md"
+  - ".agentic-framework/docs/reports/T-835-agent-b-tooling-audit.md"
+  - ".agentic-framework/docs/reports/T-835-agent-c-design-options.md"
+  - ".agentic-framework/docs/reports/T-835-stale-task-dashboard.md"
+  - ".agentic-framework/docs/reports/T-837-auto-detect-context-window.md"
+  - ".agentic-framework/docs/reports/T-842-quality-scan.md"
+  - ".agentic-framework/docs/reports/T-844-ssd-self-distillation-evaluation.md"
+  - ".agentic-framework/docs/reports/T-864-task-execution-stats.md"
+  - ".agentic-framework/docs/reports/T-866-audit-cron-zombies.md"
+  - ".agentic-framework/docs/reports/T-877-install-pipeline.md"
+  - ".agentic-framework/lib/upgrade.sh"
+  - ".agentic-framework/VERSION"
+  - ".agentic-framework/web/app.py"
+  - ".agentic-framework/web/blueprints/approvals.py"
+  - ".agentic-framework/web/blueprints/config.py"
+  - ".agentic-framework/web/blueprints/core.py"
+  - ".agentic-framework/web/blueprints/costs.py"
+  - ".agentic-framework/web/blueprints/__init__.py"
+  - ".agentic-framework/web/templates/_approvals_content.html"
+  - ".agentic-framework/web/templates/cockpit.html"
+  - ".agentic-framework/web/templates/config.html"
+  - ".agentic-framework/web/templates/costs.html"
+  - ".agentic-framework/web/templates/fabric_explorer.html"
+  - ".agentic-framework/web/test_app.py"
+  - ".agentic-framework/web/test_costs.py"
+  - ".tasks/active/T-880-implement-install-pipeline-auto-remediat.md"
+  - ".tasks/completed/T-881-upgrade-consumer-projects-with-t-879-xar.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T08:54:22"
+    action: "T-881: Re-vendor framework to v1.4.559 (T-879 xargs fix + T-880 init improvements)"
+  - time: "2026-04-05T08:57:12"
+    action: "T-881: Upgrade all 11 consumer projects to v1.4.559"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 210
+  lines_added: 7005
+  lines_removed: 238
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-881-upgrade-consumer-projects-with-t-879-xar.md
+generated_by: context-agent-hybrid
