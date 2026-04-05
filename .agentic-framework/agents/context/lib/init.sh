@@ -102,16 +102,26 @@ EOF
         echo ""
         echo -e "${YELLOW}=== Welcome — First Session ===${NC}"
         echo ""
-        echo "This looks like a new project. Here's how to get started:"
-        echo ""
-        echo "  1. Start working on something:"
-        echo "     fw work-on 'Your task name' --type build"
-        echo ""
-        echo "  2. Or start an inception (exploration):"
-        echo "     fw inception start 'Explore problem X'"
-        echo ""
-        echo "  3. When done, generate handover:"
-        echo "     fw handover --commit"
+        # Check if onboarding tasks exist
+        local onboard_count=0
+        if [ -d "$TASKS_DIR/active" ]; then
+            onboard_count=$(grep -rl "tags:.*onboarding" "$TASKS_DIR/active" 2>/dev/null | wc -l)
+        fi
+        if [ "$onboard_count" -gt 0 ]; then
+            echo "Onboarding tasks are ready ($onboard_count tasks). Start with:"
+            echo ""
+            echo "  fw work-on T-001"
+            echo ""
+            echo "The tasks guide you through framework setup step by step."
+        else
+            echo "This looks like a new project. Here's how to get started:"
+            echo ""
+            echo "  1. Start working on something:"
+            echo "     fw work-on 'Your task name' --type build"
+            echo ""
+            echo "  2. Or start an inception (exploration):"
+            echo "     fw inception start 'Explore problem X'"
+        fi
         echo ""
         echo "  Run 'fw help' for all commands, 'fw doctor' to check setup."
     fi
