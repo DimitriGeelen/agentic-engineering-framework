@@ -919,6 +919,9 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Token usage | `fw costs` | _(fw only)_ |
 | Session tokens | `fw costs session` | _(fw only)_ |
 | Current session | `fw costs current` | _(fw only)_ |
+| Config set | `fw config set KEY VALUE` | _(fw only)_ |
+| Config get | `fw config get KEY` | _(fw only)_ |
+| Config list | `fw config list` | _(fw only)_ |
 | Promotion candidates | `fw promote suggest` | _(fw only)_ |
 | Promote learning | `fw promote L-XXX --name "..." --directive D1` | _(fw only)_ |
 | Graduation status | `fw promote status` | _(fw only)_ |
