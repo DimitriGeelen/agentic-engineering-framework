@@ -487,9 +487,11 @@ The Watchtower web UI at `/fabric` provides: subsystem overview, component table
 - **Blocked:** Write/Edit to source files, general Bash commands
 - Wrap up calmly — task files already have all essential state from continuous capture
 
-## Configuration (T-819)
+## Configuration (T-819, T-891)
 
-Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env var > hardcoded default.
+Framework settings follow a 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default.
+
+Persistent per-project configuration: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
 | Setting | Env Var | Default | Purpose |
 |---------|---------|---------|---------|
@@ -511,9 +513,9 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 | TermLink worker timeout | `FW_TERMLINK_WORKER_TIMEOUT` | `600` | TermLink worker execution timeout (seconds) |
 | Handover dedup cooldown | `FW_HANDOVER_DEDUP_COOLDOWN` | `300` | Seconds between duplicate handover detection |
 
-Check active overrides: `env | grep FW_`
+Check overrides: `fw config list` (file) or `env | grep FW_` (env).
 Validate: `fw doctor` shows warnings for out-of-range values.
-Watchtower: `/config` page shows all settings with current values and sources.
+Watchtower: `/config` page shows all settings with current values and sources (default/env/file).
 
 ## Sub-Agent Dispatch Protocol
 
