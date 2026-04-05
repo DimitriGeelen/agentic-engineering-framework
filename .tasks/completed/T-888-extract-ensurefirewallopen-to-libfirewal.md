@@ -4,16 +4,16 @@ name: "Extract ensure_firewall_open to lib/firewall.sh for reuse"
 description: >
   Extract ensure_firewall_open to lib/firewall.sh for reuse
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/watchtower.sh, lib/firewall.sh]
 related_tasks: []
 created: 2026-04-05T12:34:31Z
-last_update: 2026-04-05T12:34:31Z
-date_finished: null
+last_update: 2026-04-05T12:36:05Z
+date_finished: 2026-04-05T12:36:05Z
 ---
 
 # T-888: Extract ensure_firewall_open to lib/firewall.sh for reuse
@@ -53,3 +53,6 @@ grep -q 'lib/firewall.sh' bin/watchtower.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-888-extract-ensurefirewallopen-to-libfirewal.md
 - **Context:** Initial task creation
+
+### 2026-04-05T12:36:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
