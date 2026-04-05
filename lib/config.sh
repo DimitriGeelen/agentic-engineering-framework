@@ -13,8 +13,44 @@
 [[ -n "${_FW_CONFIG_LOADED:-}" ]] && return 0
 _FW_CONFIG_LOADED=1
 
+# _fw_config_file_val KEY — read a value from .framework.yaml
+# Supports dot-notation (e.g., watchtower.port) and flat keys
+_fw_config_file_val() {
+    local key="$1"
+    local config_file="${PROJECT_ROOT:-.}/.framework.yaml"
+
+    # Skip if no config file
+    [ -f "$config_file" ] || return 1
+
+    # For simple (non-dotted) keys, use grep for speed (no Python startup)
+    if [[ "$key" != *.* ]]; then
+        local val
+        val=$(grep "^${key}:" "$config_file" 2>/dev/null | head -1 | sed "s/^${key}:[[:space:]]*//;s/[[:space:]]*$//;s/^[\"']//;s/[\"']$//")
+        [ -n "$val" ] && echo "$val" && return 0
+        return 1
+    fi
+
+    # For dotted keys, use Python for nested YAML lookup
+    python3 - "$config_file" "$key" << 'PYVAL' 2>/dev/null
+import yaml, sys
+try:
+    with open(sys.argv[1]) as f:
+        data = yaml.safe_load(f) or {}
+    parts = sys.argv[2].split('.')
+    current = data
+    for part in parts:
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+        else:
+            sys.exit(1)
+    print(current)
+except:
+    sys.exit(1)
+PYVAL
+}
+
 # fw_config KEY DEFAULT [EXPLICIT_VALUE]
-# Returns: EXPLICIT_VALUE if non-empty, else FW_KEY env var, else DEFAULT
+# Returns: EXPLICIT_VALUE if non-empty, else FW_KEY env var, else .framework.yaml, else DEFAULT
 fw_config() {
     local key="$1"
     local default="$2"
@@ -34,7 +70,14 @@ fw_config() {
         return
     fi
 
-    # Tier 3: Default
+    # Tier 3: .framework.yaml persistent config (T-891)
+    local file_val
+    file_val=$(_fw_config_file_val "$key" 2>/dev/null) && [ -n "$file_val" ] && {
+        echo "$file_val"
+        return
+    }
+
+    # Tier 4: Default
     echo "$default"
 }
 
