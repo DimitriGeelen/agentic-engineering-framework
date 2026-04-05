@@ -1,0 +1,17 @@
+id: tests/unit/create_task.bats
+name: create_task
+type: test
+subsystem: tests
+location: tests/unit/create_task.bats
+tags: [task-create, bats, unit-test]
+
+purpose: "Unit tests for agents/task-create/create-task.sh (17 tests)"
+
+depends_on:
+  - target: agents/task-create/create-task.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-921
