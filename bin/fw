@@ -3951,6 +3951,10 @@ YAMLEOF
                 ;;
         esac
         ;;
+    config)
+        source "$FW_LIB_DIR/config-file.sh"
+        do_config "$@"
+        ;;
     version|-v|--version)
         _ver_sub="${1:-}"
         case "$_ver_sub" in
