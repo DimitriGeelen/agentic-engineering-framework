@@ -4,16 +4,16 @@ name: "Add unit tests for agents/termlink/termlink.sh"
 description: >
   Add unit tests for agents/termlink/termlink.sh
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/termlink.bats]
 related_tasks: []
 created: 2026-04-05T16:24:53Z
-last_update: 2026-04-05T16:24:53Z
-date_finished: null
+last_update: 2026-04-05T16:26:04Z
+date_finished: 2026-04-05T16:26:04Z
 ---
 
 # T-930: Add unit tests for agents/termlink/termlink.sh
@@ -72,3 +72,6 @@ TermLink wrapper agent has no tests. Testing help, check, status, and routing.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-930-add-unit-tests-for-agentstermlinktermlin.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:26:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
