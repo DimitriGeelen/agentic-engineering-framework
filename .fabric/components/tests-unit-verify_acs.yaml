@@ -1,0 +1,17 @@
+id: tests/unit/verify_acs.bats
+name: verify_acs
+type: test
+subsystem: tests
+location: tests/unit/verify_acs.bats
+tags: [verify-acs, bats, unit-test]
+
+purpose: "Unit tests for verify acs (6 tests)"
+
+depends_on:
+  - target: lib/verify-acs.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

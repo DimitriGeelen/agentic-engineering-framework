@@ -1,0 +1,17 @@
+id: tests/unit/context_safe_commands.bats
+name: context_safe_commands
+type: test
+subsystem: tests
+location: tests/unit/context_safe_commands.bats
+tags: [context, safe_commands, bats, unit-test]
+
+purpose: "Unit tests for context safe_commands (35 tests)"
+
+depends_on:
+  - target: agents/context/context.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

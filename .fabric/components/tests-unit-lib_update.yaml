@@ -1,0 +1,17 @@
+id: tests/unit/lib_update.bats
+name: lib_update
+type: test
+subsystem: tests
+location: tests/unit/lib_update.bats
+tags: [update, bats, unit-test]
+
+purpose: "Unit tests for update (3 tests)"
+
+depends_on:
+  - target: lib/update.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

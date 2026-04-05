@@ -1,0 +1,17 @@
+id: tests/unit/context_learning.bats
+name: context_learning
+type: test
+subsystem: tests
+location: tests/unit/context_learning.bats
+tags: [context, learning, bats, unit-test]
+
+purpose: "Unit tests for context learning (10 tests)"
+
+depends_on:
+  - target: agents/context/context.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

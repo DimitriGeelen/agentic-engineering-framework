@@ -1,0 +1,17 @@
+id: tests/unit/lib_inception.bats
+name: lib_inception
+type: test
+subsystem: tests
+location: tests/unit/lib_inception.bats
+tags: [inception, bats, unit-test]
+
+purpose: "Unit tests for inception (12 tests)"
+
+depends_on:
+  - target: lib/inception.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

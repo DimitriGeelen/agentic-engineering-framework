@@ -1,0 +1,17 @@
+id: tests/unit/context_focus.bats
+name: context_focus
+type: test
+subsystem: tests
+location: tests/unit/context_focus.bats
+tags: [context, focus, bats, unit-test]
+
+purpose: "Unit tests for context focus (15 tests)"
+
+depends_on:
+  - target: agents/context/context.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

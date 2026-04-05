@@ -1,0 +1,17 @@
+id: tests/unit/lib_errors.bats
+name: lib_errors
+type: test
+subsystem: tests
+location: tests/unit/lib_errors.bats
+tags: [errors, bats, unit-test]
+
+purpose: "Unit tests for errors (11 tests)"
+
+depends_on:
+  - target: lib/errors.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

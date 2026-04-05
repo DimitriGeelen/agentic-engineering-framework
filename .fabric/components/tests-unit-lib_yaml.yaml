@@ -1,0 +1,17 @@
+id: tests/unit/lib_yaml.bats
+name: lib_yaml
+type: test
+subsystem: tests
+location: tests/unit/lib_yaml.bats
+tags: [yaml, bats, unit-test]
+
+purpose: "Unit tests for yaml (8 tests)"
+
+depends_on:
+  - target: lib/yaml.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

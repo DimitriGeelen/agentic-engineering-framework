@@ -1,0 +1,17 @@
+id: tests/unit/context_status.bats
+name: context_status
+type: test
+subsystem: tests
+location: tests/unit/context_status.bats
+tags: [context, status, bats, unit-test]
+
+purpose: "Unit tests for context status (7 tests)"
+
+depends_on:
+  - target: agents/context/context.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916

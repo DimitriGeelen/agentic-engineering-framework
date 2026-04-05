@@ -1,0 +1,17 @@
+id: tests/unit/lib_dispatch.bats
+name: lib_dispatch
+type: test
+subsystem: tests
+location: tests/unit/lib_dispatch.bats
+tags: [dispatch, bats, unit-test]
+
+purpose: "Unit tests for dispatch (9 tests)"
+
+depends_on:
+  - target: lib/dispatch.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-916
