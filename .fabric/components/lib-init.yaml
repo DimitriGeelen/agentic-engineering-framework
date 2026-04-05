@@ -30,3 +30,5 @@ depended_by:
   type: read_by
 - target: lib/validate-init.sh
   type: read_by
+- target: tests/unit/lib_init.bats
+  type: called-by

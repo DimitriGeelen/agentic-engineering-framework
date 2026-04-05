@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/dispatch.sh
 tags: []
-purpose: "fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive."
+purpose: 'fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes
+  bus envelopes and pipes via SSH to remote fw bus receive.'
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -13,6 +14,8 @@ depended_by:
   type: called_by
 - target: agents/context/check-agent-dispatch.sh
   type: called_by
+- target: tests/unit/lib_dispatch.bats
+  type: called-by
 last_verified: 2026-03-23
 created_by: unknown
 last_enriched: '2026-03-28'

@@ -8,8 +8,8 @@ tags:
 - web-ui
 - shared
 - navigation
-purpose: Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full
-  page rendering)
+purpose: Shared helpers for all web blueprints — path resolution, navigation groups,
+  ambient status strip, render_page (htmx/full page rendering)
 depends_on: []
 last_verified: 2026-02-20
 created_by: T-227
@@ -82,4 +82,10 @@ depended_by:
   type: imports_by
 - target: web/subprocess_utils.py
   type: called_by
+- target: web/blueprints/costs.py
+  type: called-by
+- target: web/blueprints/config.py
+  type: called-by
+- target: web/blueprints/discovery.py
+  type: called-by
 last_enriched: '2026-03-28'

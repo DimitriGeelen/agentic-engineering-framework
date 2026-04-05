@@ -13,6 +13,10 @@ depended_by:
   type: called_by
 - target: capture-skill
   type: read_by
+- target: agents/context/context.sh
+  type: called-by
+- target: .claude/commands/capture.md
+  type: used-by
 last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md

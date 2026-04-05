@@ -9,6 +9,10 @@ purpose: 'Runtime environment detection: OS type, shell version, Python availabi
 depends_on:
 - target: lib/runtime.sh
   type: calls
-depended_by: []
+depended_by:
+- target: lib/runtime.sh
+  type: called-by
+- target: tests/unit/lib_runtime.bats
+  type: called-by
 last_verified: 2026-03-27
 created_by: unknown

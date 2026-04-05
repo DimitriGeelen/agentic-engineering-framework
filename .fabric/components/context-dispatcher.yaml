@@ -10,8 +10,8 @@ tags:
 - decision
 - pattern
 - focus
-purpose: Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status,
-  generate-episodic)
+purpose: Central dispatcher for all context agent commands (init, focus, add-learning,
+  add-pattern, add-decision, status, generate-episodic)
 depends_on:
 - target: C-002
   type: calls
@@ -51,6 +51,22 @@ depended_by:
   type: called_by
 - target: lib/init.sh
   type: called_by
+- target: tests/unit/context_status.bats
+  type: called-by
+- target: tests/unit/context_focus.bats
+  type: called-by
+- target: tests/unit/context_safe_commands.bats
+  type: called-by
+- target: tests/unit/context_decision.bats
+  type: called-by
+- target: tests/unit/context_init.bats
+  type: called-by
+- target: tests/unit/context_learning.bats
+  type: called-by
+- target: tests/unit/context_episodic.bats
+  type: called-by
+- target: tests/unit/context_pattern.bats
+  type: called-by
 last_verified: 2026-02-20
 created_by: T-191
 last_enriched: '2026-03-28'

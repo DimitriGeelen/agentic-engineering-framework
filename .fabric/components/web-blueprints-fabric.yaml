@@ -26,3 +26,5 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: web/templates/fabric_explorer.html
+  type: used-by

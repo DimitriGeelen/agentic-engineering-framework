@@ -3,21 +3,24 @@ name: notify
 type: script
 subsystem: framework-core
 location: lib/notify.sh
-tags: [ntfy, notifications, alerts]
-
-purpose: "Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh."
-
+tags:
+- ntfy
+- notifications
+- alerts
+purpose: Push notification wrapper — fw_notify() function sends alerts via skills-manager
+  alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used
+  by check-tier0.sh, update-task.sh, audit.sh.
 depends_on: []
-
 depended_by:
-  - target: bin/fw
-    type: called_by
-  - target: agents/context/check-tier0.sh
-    type: called_by
-  - target: agents/task-create/update-task.sh
-    type: called_by
-  - target: agents/audit/audit.sh
-    type: called_by
-
+- target: bin/fw
+  type: called_by
+- target: agents/context/check-tier0.sh
+  type: called_by
+- target: agents/task-create/update-task.sh
+  type: called_by
+- target: agents/audit/audit.sh
+  type: called_by
+- target: tests/unit/lib_notify.bats
+  type: called-by
 last_verified: 2026-03-29
 created_by: agent

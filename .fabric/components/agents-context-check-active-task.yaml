@@ -25,6 +25,8 @@ depended_by:
   type: related_by
 - target: C-009
   type: triggers_by
+- target: .claude/settings.json
+  type: used-by
 last_verified: 2026-03-01
 created_by: unknown
 docs:

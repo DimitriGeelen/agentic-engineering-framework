@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/tasks.sh
 tags: []
-purpose: "fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts."
+purpose: 'fw task subcommand dispatcher: routes task create/update/list/verify/review
+  to agents/task-create/ scripts.'
 depends_on: []
 depended_by:
 - target: agents/git/lib/hooks.sh
@@ -13,6 +14,8 @@ depended_by:
   type: called_by
 - target: lib/paths.sh
   type: called_by
+- target: tests/unit/lib_tasks.bats
+  type: called-by
 last_verified: 2026-03-11
 created_by: unknown
 last_enriched: '2026-03-28'

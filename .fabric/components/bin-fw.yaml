@@ -4,8 +4,9 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT,
-  then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes.
+purpose: Single entry point for all framework operations. Reads .framework.yaml from
+  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
+  agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -98,3 +99,81 @@ depended_by:
   type: called_by
 - target: web/subprocess_utils.py
   type: called_by
+- target: tests/integration/fw_work_on.bats
+  type: called-by
+- target: tests/integration/fw_init.bats
+  type: called-by
+- target: tests/integration/fw_handover.bats
+  type: called-by
+- target: tests/integration/fw_decisions.bats
+  type: called-by
+- target: tests/integration/fw_learnings.bats
+  type: called-by
+- target: tests/integration/fw_help.bats
+  type: called-by
+- target: tests/integration/fw_preflight.bats
+  type: called-by
+- target: bin/fw-shim
+  type: called-by
+- target: tests/integration/fw_fabric.bats
+  type: called-by
+- target: tests/integration/fw_vendor.bats
+  type: called-by
+- target: tests/integration/fw_approvals.bats
+  type: called-by
+- target: tests/integration/fw_version.bats
+  type: called-by
+- target: tests/integration/fw_resume.bats
+  type: called-by
+- target: tests/integration/fw_cron.bats
+  type: called-by
+- target: tests/integration/fw_inception.bats
+  type: called-by
+- target: tests/integration/fw_gaps.bats
+  type: called-by
+- target: tests/integration/fw_assumption.bats
+  type: called-by
+- target: tests/integration/fw_metrics.bats
+  type: called-by
+- target: tests/integration/fw_promote.bats
+  type: called-by
+- target: tests/integration/fw_audit.bats
+  type: called-by
+- target: tests/integration/fw_git.bats
+  type: called-by
+- target: tests/integration/fw_bus.bats
+  type: called-by
+- target: tests/integration/fw_healing.bats
+  type: called-by
+- target: tests/integration/fw_fix_learned.bats
+  type: called-by
+- target: tests/integration/fw_notify.bats
+  type: called-by
+- target: tests/integration/fw_task.bats
+  type: called-by
+- target: tests/integration/fw_patterns.bats
+  type: called-by
+- target: tests/integration/fw_search.bats
+  type: called-by
+- target: tests/integration/fw_practices.bats
+  type: called-by
+- target: tests/integration/fw_validate_init.bats
+  type: called-by
+- target: tests/integration/fw_upstream.bats
+  type: called-by
+- target: tests/integration/fw_harvest.bats
+  type: called-by
+- target: tests/integration/fw_tier0.bats
+  type: called-by
+- target: tests/integration/fw_doctor.bats
+  type: called-by
+- target: tests/integration/fw_timeline.bats
+  type: called-by
+- target: tests/integration/fw_context.bats
+  type: called-by
+- target: tests/integration/fw_onboarding.bats
+  type: called-by
+- target: tests/integration/fw_hook.bats
+  type: called-by
+- target: tests/integration/fw_traceability.bats
+  type: called-by

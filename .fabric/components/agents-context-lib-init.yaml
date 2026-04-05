@@ -11,6 +11,10 @@ created_by: unknown
 depended_by:
 - target: C-001
   type: called_by
+- target: agents/context/session-metrics.sh
+  type: used-by
+- target: agents/context/context.sh
+  type: called-by
 last_enriched: '2026-02-21'
 docs:
 - path: docs/articles/deep-dives/04-three-layer-memory.md

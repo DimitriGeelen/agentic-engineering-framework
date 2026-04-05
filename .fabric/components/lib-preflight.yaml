@@ -7,8 +7,8 @@ tags:
 - lib
 - fw-subcommand
 - validation
-purpose: fw preflight subcommand. Validates system prerequisites (bash version, git version, python3, PyYAML) before framework
-  operations.
+purpose: fw preflight subcommand. Validates system prerequisites (bash version, git
+  version, python3, PyYAML) before framework operations.
 depends_on:
 - id: bin/fw
   relationship: invoked-by
@@ -19,4 +19,6 @@ depended_by:
   type: called_by
 - target: lib/init.sh
   type: called_by
+- target: tests/unit/lib_preflight.bats
+  type: called-by
 last_enriched: '2026-03-28'

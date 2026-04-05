@@ -14,3 +14,5 @@ last_enriched: '2026-02-21'
 depended_by:
 - target: bin/fw
   type: called_by
+- target: tests/unit/lib_upgrade.bats
+  type: called-by

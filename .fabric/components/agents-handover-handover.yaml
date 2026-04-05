@@ -26,6 +26,8 @@ depended_by:
   type: called_by
 - target: agents/onboarding-test/test-onboarding.sh
   type: called_by
+- target: agents/context/checkpoint.sh
+  type: called-by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

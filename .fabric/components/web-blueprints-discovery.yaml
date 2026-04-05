@@ -3,17 +3,23 @@ name: discovery_blueprint
 type: blueprint
 subsystem: watchtower
 location: web/blueprints/discovery.py
-tags: [watchtower, flask, discovery, decisions, learnings, gaps]
-
-purpose: "Watchtower discovery page — decisions, learnings, gaps, search, graduation"
-
+tags:
+- watchtower
+- flask
+- discovery
+- decisions
+- learnings
+- gaps
+purpose: Watchtower discovery page — decisions, learnings, gaps, search, graduation
 depends_on:
-  - target: web/context_loader.py
-    type: calls
-  - target: web/shared.py
-    type: calls
-
-depended_by: []
-
+- target: web/context_loader.py
+  type: calls
+- target: web/shared.py
+  type: calls
+depended_by:
+- target: web/search.py
+  type: used-by
+- target: web/static/js/chat.js
+  type: called-by
 last_verified: 2026-04-05
 created_by: T-917

@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/compat.sh
 tags: []
-purpose: "Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms."
+purpose: 'Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare
+  -A and other bashisms.'
 depends_on: []
 depended_by:
 - target: bin/fw
@@ -13,6 +14,8 @@ depended_by:
   type: called_by
 - target: lib/paths.sh
   type: called_by
+- target: tests/unit/lib_compat.bats
+  type: called-by
 last_verified: 2026-03-09
 created_by: unknown
 last_enriched: '2026-03-28'

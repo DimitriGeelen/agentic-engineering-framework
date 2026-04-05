@@ -8,6 +8,10 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/config-file.sh
   type: calls
-depended_by: []
+depended_by:
+- target: lib/config-file.sh
+  type: called-by
+- target: tests/unit/lib_config_file.bats
+  type: called-by
 last_verified: 2026-04-05
 created_by: unknown

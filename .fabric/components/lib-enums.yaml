@@ -8,9 +8,10 @@ tags:
 - enums
 - validation
 - core
-purpose: Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions.
-  Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists
-  previously duplicated across 6+ files.
+purpose: Single source of truth for framework enumerations — valid statuses, workflow
+  types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(),
+  is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously
+  duplicated across 6+ files.
 depends_on: []
 depended_by:
 - target: agents/task-create/create-task.sh
@@ -21,6 +22,8 @@ depended_by:
   type: called_by
 - target: agents/task-create/update-task.sh
   type: called_by
+- target: tests/unit/lib_enums.bats
+  type: called-by
 last_verified: 2026-03-10
 created_by: T-413
 last_enriched: '2026-03-28'

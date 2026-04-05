@@ -8,6 +8,14 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/config.sh
   type: calls
-depended_by: []
+depended_by:
+- target: lib/verify-acs.sh
+  type: called-by
+- target: tests/unit/lib_config.bats
+  type: called-by
+- target: web/templates/config.html
+  type: used-by
+- target: lib/config.sh
+  type: called-by
 last_verified: 2026-04-03
 created_by: unknown

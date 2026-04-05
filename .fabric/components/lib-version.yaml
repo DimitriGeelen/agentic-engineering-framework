@@ -4,17 +4,11 @@ type: script
 subsystem: framework-core
 location: lib/version.sh
 tags: []
-
-purpose: "fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection."
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'fw version subcommand: show framework version, git tag, commit count, paths.
+  Supports --check for update detection.'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/lib_version.bats
+  type: called-by
 last_verified: 2026-03-27
 created_by: unknown

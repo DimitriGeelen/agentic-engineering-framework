@@ -4,11 +4,14 @@ type: script
 subsystem: framework-core
 location: lib/keylock.sh
 tags: []
-purpose: "Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications."
+purpose: 'Advisory file locking: task-level lock files in .context/locks/ to prevent
+  concurrent task modifications.'
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
+- target: tests/unit/lib_keylock.bats
+  type: called-by
 last_verified: 2026-03-28
 created_by: unknown
 last_enriched: '2026-03-28'

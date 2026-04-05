@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/review.sh
 tags: []
-purpose: "fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation."
+purpose: 'fw task review helper: emit Watchtower URL, QR code, and research artifact
+  links for human review presentation.'
 depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
@@ -13,6 +14,8 @@ depended_by:
   type: called_by
 - target: lib/inception.sh
   type: called_by
+- target: tests/unit/lib_review.bats
+  type: called-by
 last_verified: 2026-03-27
 created_by: unknown
 last_enriched: '2026-03-28'

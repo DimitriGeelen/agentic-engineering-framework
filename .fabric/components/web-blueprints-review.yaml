@@ -4,7 +4,8 @@ type: route
 subsystem: watchtower
 location: web/blueprints/review.py
 tags: []
-purpose: "Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions."
+purpose: 'Watchtower review blueprint: task review page — shows ACs, research artifacts,
+  recommendation, approval actions.'
 depends_on:
 - target: web/shared.py
   type: calls
@@ -17,6 +18,8 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- target: web/templates/_review_error.html
+  type: used-by
 last_verified: 2026-03-28
 created_by: unknown
 last_enriched: '2026-03-28'

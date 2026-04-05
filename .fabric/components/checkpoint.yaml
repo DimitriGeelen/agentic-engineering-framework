@@ -10,8 +10,8 @@ tags:
 - hook
 - PostToolUse
 - auto-handover
-purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages
-  inception checkpoints.
+purpose: Post-tool budget monitoring. Warns at thresholds, auto-triggers handover
+  at critical, detects compaction, manages inception checkpoints.
 interfaces:
   input: 'Invoked as PostToolUse hook or CLI: checkpoint.sh {post-tool|reset|status}'
   output: Warnings to stderr, writes state files
@@ -43,6 +43,10 @@ depended_by:
   type: read_by
 - target: C-009
   type: triggers_by
+- target: agents/context/session-metrics.sh
+  type: called-by
+- target: tests/unit/checkpoint.bats
+  type: called-by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call

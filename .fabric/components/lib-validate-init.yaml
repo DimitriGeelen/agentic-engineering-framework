@@ -7,8 +7,9 @@ tags:
 - init
 - validation
 - governance
-purpose: 'Post-init validation — reads #@init: tags from init.sh and validates each creation unit exists and is correct. Called
-  automatically at end of fw init and available as fw validate-init.'
+purpose: 'Post-init validation — reads #@init: tags from init.sh and validates each
+  creation unit exists and is correct. Called automatically at end of fw init and
+  available as fw validate-init.'
 depends_on:
 - target: lib/init.sh
   type: reads
@@ -20,4 +21,6 @@ depended_by:
   type: called_by
 - target: lib/init.sh
   type: called_by
+- target: tests/unit/lib_validate_init.bats
+  type: called-by
 last_enriched: '2026-03-28'

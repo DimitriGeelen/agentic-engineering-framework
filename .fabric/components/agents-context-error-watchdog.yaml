@@ -15,4 +15,8 @@ depended_by:
   type: read_by
 - target: C-009
   type: triggers_by
+- target: .claude/settings.json
+  type: used-by
+- target: agents/audit/audit.sh
+  type: called-by
 last_enriched: '2026-03-28'

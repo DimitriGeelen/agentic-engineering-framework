@@ -8,6 +8,10 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/firewall.sh
   type: calls
-depended_by: []
+depended_by:
+- target: tests/unit/lib_firewall.bats
+  type: called-by
+- target: lib/firewall.sh
+  type: called-by
 last_verified: 2026-04-05
 created_by: unknown

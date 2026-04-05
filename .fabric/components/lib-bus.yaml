@@ -15,4 +15,6 @@ depended_by:
   type: called_by
 - target: agents/context/bus-handler.sh
   type: read_by
+- target: tests/unit/lib_bus.bats
+  type: called-by
 last_enriched: '2026-03-28'

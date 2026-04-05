@@ -18,3 +18,5 @@ depended_by:
   type: read_by
 - target: C-009
   type: triggers_by
+- target: .claude/settings.json
+  type: used-by
