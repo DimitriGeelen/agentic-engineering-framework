@@ -1,0 +1,138 @@
+# ============================================================================
+# EPISODIC MEMORY - T-920: Add missing depended_by reverse edges to fabric cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T16:01:43Z
+# ============================================================================
+
+task_id: T-920
+task_name: "Add missing depended_by reverse edges to fabric cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T16:00:24Z
+completed: 2026-04-05T16:01:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T18:01:37+02:00
+last_commit: 2026-04-05T18:01:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 127 missing depended_by reverse edges to 63 fabric cards
+
+# Key outcomes
+outcomes:
+  - "Missing reverse edge count reduced from 127 to 8 (remaining 8 point to unregistered targets)"
+  - "All cards remain valid YAML"
+  - "No existing edges corrupted or duplicated"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-dispatch.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-error-watchdog.yaml"
+  - ".fabric/components/agents-context-lib-decision.yaml"
+  - ".fabric/components/agents-context-lib-episodic.yaml"
+  - ".fabric/components/agents-context-lib-focus.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-lib-pattern.yaml"
+  - ".fabric/components/agents-context-lib-status.yaml"
+  - ".fabric/components/agents-context-post-compact-resume.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/capture-reader.yaml"
+  - ".fabric/components/capture-skill.yaml"
+  - ".fabric/components/checkpoint.yaml"
+  - ".fabric/components/context-dispatcher.yaml"
+  - ".fabric/components/lib-assumption.yaml"
+  - ".fabric/components/lib-build.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-colors.yaml"
+  - ".fabric/components/lib-compat.yaml"
+  - ".fabric/components/lib-config-file.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-costs.yaml"
+  - ".fabric/components/lib-dispatch.yaml"
+  - ".fabric/components/lib-enums.yaml"
+  - ".fabric/components/lib-errors.yaml"
+  - ".fabric/components/lib-firewall.yaml"
+  - ".fabric/components/lib-first-run.yaml"
+  - ".fabric/components/lib-harvest.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-keylock.yaml"
+  - ".fabric/components/lib-notify.yaml"
+  - ".fabric/components/lib-paths.yaml"
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/lib-preflight.yaml"
+  - ".fabric/components/lib-promote.yaml"
+  - ".fabric/components/lib-review.yaml"
+  - ".fabric/components/lib-runtime.yaml"
+  - ".fabric/components/lib-setup.yaml"
+  - ".fabric/components/lib-tasks.yaml"
+  - ".fabric/components/lib-update.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/lib-upstream.yaml"
+  - ".fabric/components/lib-validate-init.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/lib-version.yaml"
+  - ".fabric/components/lib-yaml.yaml"
+  - ".fabric/components/web-app.yaml"
+  - ".fabric/components/web-blueprints-config.yaml"
+  - ".fabric/components/web-blueprints-costs.yaml"
+  - ".fabric/components/web-blueprints-discovery.yaml"
+  - ".fabric/components/web-blueprints-fabric.yaml"
+  - ".fabric/components/web-blueprints-review.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-fabric_explorer.yaml"
+  - ".tasks/active/T-920-add-missing-dependedby-reverse-edges-to-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T18:01:37"
+    action: "T-920: Add 127 missing depended_by reverse edges to 63 fabric cards"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 64
+  lines_added: 485
+  lines_removed: 157
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-920-add-missing-dependedby-reverse-edges-to-.md
+generated_by: context-agent-hybrid
