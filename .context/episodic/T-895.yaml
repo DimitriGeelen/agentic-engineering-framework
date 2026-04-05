@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-895: Update Watchtower config page template for .framework.yaml source
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T13:29:52Z
+# ============================================================================
+
+task_id: T-895
+task_name: "Update Watchtower config page template for .framework.yaml source"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T13:28:16Z
+completed: 2026-04-05T13:29:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T15:29:47+02:00
+last_commit: 2026-04-05T15:29:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Update config page template — source-file badge + .framework.yaml docs
+
+# Key outcomes
+outcomes:
+  - "CSS class `source-file` defined in config.html"
+  - "Help section mentions `.framework.yaml` as a configuration source"
+  - "Resolution order updated to: explicit > env > .framework.yaml > default"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-895-update-watchtower-config-page-template-f.md"
+  - "web/templates/config.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T15:29:47"
+    action: "T-895: Update config page template — source-file badge + .framework.yaml docs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 65
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-895-update-watchtower-config-page-template-f.md
+generated_by: context-agent-hybrid
