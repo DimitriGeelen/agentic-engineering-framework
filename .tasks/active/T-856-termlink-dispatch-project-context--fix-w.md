@@ -4,7 +4,7 @@ name: "TermLink dispatch project context — fix worker CWD resolution so hooks 
 description: >
   Inception: TermLink dispatch project context — fix worker CWD resolution so hooks find correct PROJECT_ROOT
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T18:23:31Z
-last_update: 2026-04-04T18:23:31Z
+last_update: 2026-04-05T12:01:03Z
 date_finished: null
 ---
 
@@ -60,9 +60,9 @@ were research-only (no Write/Edit needed inside the project).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated with reproduction evidence
-- [ ] At least 2 approaches investigated
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated — T-792 already fixed the root cause (export PROJECT_ROOT in run.sh)
+- [x] At least 2 approaches investigated — env var export (implemented), --cwd flag (not needed), symlink (not needed)
+- [x] Recommendation written with rationale (NO-GO — already fixed)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -106,6 +106,16 @@ were research-only (no Write/Edit needed inside the project).
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+- **Recommendation:** NO-GO (already fixed by T-792)
+- **Rationale:** The core issue (worker CWD resolution) was fixed by commit `305038d8` (T-792) which exports `PROJECT_ROOT` and `FRAMEWORK_ROOT` in the worker's `run.sh` before launching `claude -p`. All four assumptions were invalidated — no TermLink binary changes, no `--cwd` flag, no symlink hacks needed. The fix is simpler than any proposed approach.
+- **Evidence:**
+  - T-792 commit `305038d8` exports PROJECT_ROOT in `agents/termlink/termlink.sh:300-308`
+  - `lib/paths.sh:33` respects pre-set PROJECT_ROOT
+  - T-856 was created (18:23 UTC) before T-792 was committed (19:47 UTC)
+  - Suggested action: close T-856 as superseded by T-792
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
@@ -114,3 +124,6 @@ were research-only (no Write/Edit needed inside the project).
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-05T12:01:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
