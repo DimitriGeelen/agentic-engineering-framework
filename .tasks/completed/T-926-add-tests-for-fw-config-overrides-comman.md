@@ -4,16 +4,16 @@ name: "Add tests for fw config overrides command"
 description: >
   Add tests for fw config overrides command
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/lib_config_file.bats]
 related_tasks: []
 created: 2026-04-05T16:15:28Z
-last_update: 2026-04-05T16:15:28Z
-date_finished: null
+last_update: 2026-04-05T16:16:30Z
+date_finished: 2026-04-05T16:16:30Z
 ---
 
 # T-926: Add tests for fw config overrides command
@@ -72,3 +72,6 @@ The `fw config overrides` command (T-912) has no unit or integration tests.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-926-add-tests-for-fw-config-overrides-comman.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:16:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
