@@ -101,6 +101,7 @@ All approaches should converge on this file as the single source of truth per pr
 - 11+ consumer projects may run simultaneously — port space must not collide
 - Port scanning (`ss -tlnp`) requires no special privileges on Linux
 - Config must survive: session restarts, agent changes, compactions, `fw context init`
+- **Firewall (UFW):** When services start on a configured port, the firewall port must also be opened for LAN access. `watchtower.sh` already calls `ensure_firewall_open` — this pattern should extend to registered services
 
 ## Scope Fence
 
@@ -109,6 +110,7 @@ All approaches should converge on this file as the single source of truth per pr
 - Watchtower auto-starts on configured port (no env var needed)
 - Application service port registry in `.framework.yaml`
 - Port conflict detection at startup (warn + suggest available port)
+- Firewall port auto-open on service startup (extend `ensure_firewall_open` pattern)
 - Watchtower services page showing configured services, ports, status
 - `fw doctor` extension to check registered service availability
 - All URL-generating tools read port from config (handover, task review, QR)

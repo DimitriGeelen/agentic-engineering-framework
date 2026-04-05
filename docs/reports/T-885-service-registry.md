@@ -143,6 +143,19 @@ for service in $(parse_services); do
 done
 ```
 
+### Firewall Integration
+
+`watchtower.sh` already has `ensure_firewall_open` (opens UFW port for LAN access). This pattern should extend to registered services:
+
+```bash
+# After service starts successfully on configured port:
+ensure_firewall_open "$service_port"
+```
+
+Without this, services start but are unreachable from other devices on the LAN. This is already a known pain point (memory: `feedback_check_firewall_lan.md` — "ALWAYS check UFW and open port when starting web services").
+
+**Build task addition:** B-8: Firewall auto-open for registered service ports.
+
 ### CLI for port configuration
 
 ```bash
