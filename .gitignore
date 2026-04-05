@@ -2,6 +2,12 @@ __pycache__/
 .context/working/.tool-counter
 .context/working/.transcript-path
 .context/working/.prev-token-reading
+.context/working/.budget-gate-counter
+.context/working/.budget-status
+.context/working/.session-turn-offset
+.context/working/.new-file-counter
+.context/working/.compact-log
+.context/working/.restart-requested
 .playwright-mcp/
 .context/bus/
 .context/locks/
