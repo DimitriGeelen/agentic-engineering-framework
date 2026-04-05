@@ -165,13 +165,13 @@ fw_config_registry() {
             source="env"
         else
             local file_val
-            file_val=$(_fw_config_file_val "$key" 2>/dev/null) && [ -n "$file_val" ] && {
+            if file_val=$(_fw_config_file_val "$key" 2>/dev/null) && [ -n "$file_val" ]; then
                 current="$file_val"
                 source="file"
-            } || {
+            else
                 current="$default"
                 source="default"
-            }
+            fi
         fi
 
         echo "${key}|${default}|${current}|${source}|${desc}"
