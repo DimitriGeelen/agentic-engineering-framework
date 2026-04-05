@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-931: Add unit tests for agents/fabric/fabric.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T16:28:46Z
+# ============================================================================
+
+task_id: T-931
+task_name: "Add unit tests for agents/fabric/fabric.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T16:27:31Z
+completed: 2026-04-05T16:28:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T18:28:38+02:00
+last_commit: 2026-04-05T18:28:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 10 unit tests for fabric agent
+
+# Key outcomes
+outcomes:
+  - "Test file exists at tests/unit/fabric.bats"
+  - "Tests cover help, overview, search, deps, unknown command"
+  - "All tests pass (10/10)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-fabric.yaml"
+  - ".tasks/active/T-931-add-unit-tests-for-agentsfabricfabricsh.md"
+  - "tests/unit/fabric.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T18:28:38"
+    action: "T-931: Add 10 unit tests for fabric agent"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 170
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-931-add-unit-tests-for-agentsfabricfabricsh.md
+generated_by: context-agent-hybrid
