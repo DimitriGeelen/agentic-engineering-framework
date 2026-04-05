@@ -64,6 +64,20 @@
     }
 </style>
 
+{% if project_info %}
+<article style="margin-bottom: 1.5rem; padding: 1rem;">
+    <h4 style="margin-top: 0;">Project</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        {% for key, val in project_info.items() %}
+        <div>
+            <small style="color: var(--pico-muted-color); text-transform: uppercase;">{{ key }}</small>
+            <div><strong>{{ val }}</strong></div>
+        </div>
+        {% endfor %}
+    </div>
+</article>
+{% endif %}
+
 <div class="config-summary">
     <article class="config-card">
         <div class="config-value">{{ total_count }}</div>
@@ -114,6 +128,25 @@
         </tbody>
     </table>
 </figure>
+
+{% if custom_settings %}
+<h4>Custom Settings <small style="color: var(--pico-muted-color);">(.framework.yaml)</small></h4>
+<figure>
+    <table>
+        <thead>
+            <tr><th>Key</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            {% for key, val in custom_settings.items() %}
+            <tr>
+                <td><code>{{ key }}</code></td>
+                <td><strong>{{ val }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% endif %}
 
 <div class="config-help">
     <h4>How to override</h4>

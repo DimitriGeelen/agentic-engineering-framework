@@ -106,11 +106,37 @@ def _get_config():
     return result
 
 
+def _get_project_info():
+    """Get project info and custom settings from .framework.yaml."""
+    file_data = _read_framework_yaml()
+    standard_keys = {"project_name", "version", "provider", "initialized_at",
+                     "upgraded_from", "last_upgrade", "upstream_repo"}
+    known_fw_keys = {k for k, _, _ in SETTINGS}
+
+    project_info = {}
+    for k in ["project_name", "version", "provider"]:
+        if k in file_data:
+            project_info[k] = file_data[k]
+
+    # Custom settings: anything not standard and not a known FW_ key
+    custom = {}
+    for k, v in file_data.items():
+        if k not in standard_keys and k not in known_fw_keys:
+            if isinstance(v, dict):
+                for sk, sv in v.items():
+                    custom[f"{k}.{sk}"] = sv
+            else:
+                custom[k] = v
+
+    return project_info, custom
+
+
 @bp.route("/config")
 def config_page():
     settings = _get_config()
     override_count = sum(1 for s in settings if s["source"] in ("env", "file"))
     warning_count = sum(1 for s in settings if s["warning"])
+    project_info, custom_settings = _get_project_info()
 
     return render_page(
         "config.html",
@@ -119,4 +145,6 @@ def config_page():
         override_count=override_count,
         warning_count=warning_count,
         total_count=len(settings),
+        project_info=project_info,
+        custom_settings=custom_settings,
     )
