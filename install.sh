@@ -283,7 +283,8 @@ verify() {
         info "Step 3/3: fw doctor passes ✓"
     else
         warn "Step 3/3: fw doctor has warnings (non-fatal)"
-        echo "  Run: $fw_path doctor"
+        echo "  To see details:"
+        echo "    $fw_path doctor"
     fi
 
     echo ""

@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T20:36:33Z
-last_update: 2026-04-04T21:56:57Z
+last_update: 2026-04-05T05:39:24Z
 date_finished: 2026-04-04T21:56:57Z
 ---
 
@@ -86,15 +86,9 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 
 **Decision**: NO-GO
 
-**Rationale**: - Recommendation: NO-GO
-- Rationale: Episodic summaries already capture 80% of desired stats. Per-task token cost attribution is inaccurate and expensive. Session-level costs divided by tasks-per-session is a reasonable approximation.
-- Evidence:
-  - Episodic T-043 has: wall_clock_minutes: 53, commits: 1, files_changed: 85, lines_added: 4043
-  - JSONL transcript: 68MB — parsing takes 5-30s
-  - `fw metrics predict --type build` already works from episodic data
-  - No mechanism to tag JSONL ent...
+**Rationale**: Episodic summaries already capture 80% of desired stats
 
-**Date**: 2026-04-04T21:56:56Z
+**Date**: 2026-04-05T05:39:24Z
 
 ## Recommendation
 
@@ -111,15 +105,9 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 
 **Decision**: NO-GO
 
-**Rationale**: - Recommendation: NO-GO
-- Rationale: Episodic summaries already capture 80% of desired stats. Per-task token cost attribution is inaccurate and expensive. Session-level costs divided by tasks-per-session is a reasonable approximation.
-- Evidence:
-  - Episodic T-043 has: wall_clock_minutes: 53, commits: 1, files_changed: 85, lines_added: 4043
-  - JSONL transcript: 68MB — parsing takes 5-30s
-  - `fw metrics predict --type build` already works from episodic data
-  - No mechanism to tag JSONL ent...
+**Rationale**: Episodic summaries already capture 80% of desired stats
 
-**Date**: 2026-04-04T21:56:56Z
+**Date**: 2026-04-05T05:39:24Z
 
 ## Updates
 
@@ -146,3 +134,8 @@ Is it sensible and achievable to record execution statistics (timing, token cost
 ### 2026-04-04T21:56:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: NO-GO
+
+### 2026-04-05T05:39:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Episodic summaries already capture 80% of desired stats

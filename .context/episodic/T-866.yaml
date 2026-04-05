@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-866: Audit cron zombie accumulation — flock guard, timeout, stale reaper
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T05:39:24Z
+# ============================================================================
+
+task_id: T-866
+task_name: "Audit cron zombie accumulation — flock guard, timeout, stale reaper"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T20:43:13Z
+completed: 2026-04-05T05:39:21Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-04-04T22:45:09+02:00
+last_commit: 2026-04-04T23:52:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-012: Create inception tasks T-864 (task stats) and T-866 (audit zombies). Inception research — audit cron zombie fix (GO recommended)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Inception research — audit cron zombie fix (GO recommended)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-866-audit-cron-zombies.md"
+  - ".tasks/active/T-864-inception-record-task-execution-stats-ti.md"
+  - ".tasks/active/T-866-audit-cron-zombie-accumulation--flock-gu.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T22:45:09"
+    action: "T-012: Create inception tasks T-864 (task stats) and T-866 (audit zombies)"
+  - time: "2026-04-04T23:52:45"
+    action: "T-866: Inception research — audit cron zombie fix (GO recommended)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 536 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 536
+  commits: 2
+  files_changed: 3
+  lines_added: 383
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-866-audit-cron-zombie-accumulation--flock-gu.md
+generated_by: context-agent-hybrid

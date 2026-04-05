@@ -4,7 +4,7 @@ name: "Audit cron zombie accumulation — flock guard, timeout, stale reaper"
 description: >
   Inception: Audit cron zombie accumulation — flock guard, timeout, stale reaper
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T20:43:13Z
-last_update: 2026-04-04T21:49:26Z
-date_finished: null
+last_update: 2026-04-05T05:39:21Z
+date_finished: 2026-04-05T05:39:21Z
 ---
 
 # T-866: Audit cron zombie accumulation — flock guard, timeout, stale reaper
@@ -87,15 +87,11 @@ date_finished: null
 
 ## Decisions
 
-### 2026-04-04 — macOS flock compatibility
-- **Chose:** flock with mkdir-based POSIX fallback
-- **Why:** flock available on Linux (primary), not on macOS by default. mkdir is atomic and POSIX.
-- **Rejected:** Requiring `brew install util-linux` (adds dependency), pidfile-based locking (race conditions)
+**Decision**: GO
 
-### 2026-04-04 — timeout mechanism
-- **Chose:** Internal self-timeout via re-exec with `timeout` command
-- **Why:** Self-documenting, portable (graceful degradation on macOS), configurable via FW_AUDIT_TIMEOUT
-- **Rejected:** External timeout in cron command (not self-contained, easy to forget when adding new cron entries)
+**Rationale**: flock guard, timeout, stale reaper all feasible on Linux with macOS fallback
+
+**Date**: 2026-04-05T05:39:21Z
 
 ## Recommendation
 
@@ -111,7 +107,11 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: flock guard, timeout, stale reaper all feasible on Linux with macOS fallback
+
+**Date**: 2026-04-05T05:39:21Z
 
 ## Updates
 
@@ -120,3 +120,12 @@ date_finished: null
 
 ### 2026-04-04T21:49:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-05T05:39:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** flock guard, timeout, stale reaper all feasible on Linux with macOS fallback
+
+### 2026-04-05T05:39:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
