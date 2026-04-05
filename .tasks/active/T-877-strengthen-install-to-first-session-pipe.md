@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:06:23Z
-last_update: 2026-04-05T06:32:05Z
+last_update: 2026-04-05T06:45:45Z
 date_finished: 2026-04-05T06:14:36Z
 ---
 
@@ -118,15 +118,9 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 
 **Decision**: GO
 
-**Rationale**: - Recommendation: GO
-- Rationale: 6 of 8 failure modes are fixable with low-risk auto-remediation. Real user (framework author) hit all of them in one session. Implementation is ~50 lines across 2 files.
-- Evidence:
-  - Full flow audit in `docs/reports/T-877-install-pipeline.md`
-  - F1 already fixed (T-875)
-  - F3/F4/F5 auto-remediation is safe (idempotent, no overwrites)
-  - F2/F6 are messaging changes only
+**Rationale**: 6 of 8 failure modes fixable
 
-**Date**: 2026-04-05T06:14:36Z
+**Date**: 2026-04-05T06:45:45Z
 
 ## Recommendation
 
@@ -142,15 +136,9 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 
 **Decision**: GO
 
-**Rationale**: - Recommendation: GO
-- Rationale: 6 of 8 failure modes are fixable with low-risk auto-remediation. Real user (framework author) hit all of them in one session. Implementation is ~50 lines across 2 files.
-- Evidence:
-  - Full flow audit in `docs/reports/T-877-install-pipeline.md`
-  - F1 already fixed (T-875)
-  - F3/F4/F5 auto-remediation is safe (idempotent, no overwrites)
-  - F2/F6 are messaging changes only
+**Rationale**: 6 of 8 failure modes fixable
 
-**Date**: 2026-04-05T06:14:36Z
+**Date**: 2026-04-05T06:45:45Z
 
 ## Updates
 
@@ -171,3 +159,8 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 ### 2026-04-05T06:14:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-05T06:45:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 6 of 8 failure modes fixable

@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-880: Implement install pipeline auto-remediation — git hooks, identity, baseline, messaging (T-877)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T06:52:01Z
+# ============================================================================
+
+task_id: T-880
+task_name: "Implement install pipeline auto-remediation — git hooks, identity, baseline, messaging (T-877)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T06:47:22Z
+completed: 2026-04-05T06:51:57Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "F2: install.sh post-install messaging includes `cd` guidance"
+  - "F3: fw init auto-installs git hooks"
+  - "F4: fw init inherits git identity from global config"
+  - "F5: fw init auto-creates enforcement baseline"
+  - "F6: Post-init message mentions onboarding tasks and agent startup"
+  - "Vendored copies synced"
+  - "Integration tests pass (3/3)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-880-implement-install-pipeline-auto-remediat.md
+generated_by: context-agent-hybrid

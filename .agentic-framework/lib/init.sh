@@ -88,6 +88,22 @@ do_init() {
         git init -q "$target_dir"
     fi
 
+    # --- Git identity inheritance (T-880/F4: inherit from global if not set) ---
+    if ! git -C "$target_dir" config user.email >/dev/null 2>&1; then
+        local global_email
+        global_email=$(git config --global user.email 2>/dev/null || true)
+        if [ -n "$global_email" ]; then
+            local global_name
+            global_name=$(git config --global user.name 2>/dev/null || echo "Developer")
+            git -C "$target_dir" config user.email "$global_email"
+            git -C "$target_dir" config user.name "$global_name"
+            echo -e "  ${GREEN}✓${NC}  Git identity inherited from global config ($global_email)"
+        else
+            echo -e "  ${YELLOW}⚠${NC}   Git identity not configured (commits will fail)"
+            echo "       git config user.email 'you@example.com' && git config user.name 'Your Name'"
+        fi
+    fi
+
     # --- Vendor framework (T-498: full project isolation) ---
     if [ ! -d "$target_dir/.agentic-framework" ] || [ "${force:-false}" = true ]; then
         echo -e "${BOLD}Vendoring framework into project...${NC}"
@@ -370,6 +386,26 @@ CYAML
             ;;
     esac
 
+    # --- Git hooks (T-880/F3: auto-install for commit traceability) ---
+    local git_sh="$target_dir/.agentic-framework/agents/git/git.sh"
+    if [ -x "$git_sh" ]; then
+        if PROJECT_ROOT="$target_dir" "$git_sh" install-hooks 2>/dev/null; then
+            echo -e "  ${GREEN}✓${NC}  Git hooks installed (commit traceability active)"
+        else
+            echo -e "  ${YELLOW}⚠${NC}   Git hooks install failed — run 'fw git install-hooks' manually"
+        fi
+    fi
+
+    # --- Enforcement baseline (T-880/F5: auto-create for drift detection) ---
+    if [ ! -f "$target_dir/.context/project/enforcement-baseline.sha256" ]; then
+        local fw_bin="$target_dir/.agentic-framework/bin/fw"
+        if [ -x "$fw_bin" ] && [ -f "$target_dir/.claude/settings.json" ]; then
+            if PROJECT_ROOT="$target_dir" "$fw_bin" enforcement baseline >/dev/null 2>&1; then
+                echo -e "  ${GREEN}✓${NC}  Enforcement baseline created"
+            fi
+        fi
+    fi
+
     # --- Post-init validation (T-461: Tier 1 structural + Tier 2 functional) ---
     echo ""
     echo -e "${BOLD}Validating...${NC}"
@@ -449,11 +485,17 @@ CYAML
 
     # --- Done ---
     echo ""
-    echo -e "${GREEN}Done!${NC} All commands: ${BOLD}fw help${NC}"
+    echo -e "${GREEN}Done!${NC} Governance is active."
+    echo ""
+    echo -e "  ${BOLD}Next step:${NC} Start your AI agent (e.g. Claude Code) in this directory."
+    if [ "$has_existing_tasks" = false ] && [ -d "$target_dir/.tasks/active" ] && ls "$target_dir/.tasks/active/"T-*.md >/dev/null 2>&1; then
+        local onboard_count
+        onboard_count=$(ls "$target_dir/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+        echo -e "  Onboarding tasks are ready — ${BOLD}$onboard_count tasks${NC} will guide you through setup."
+    fi
     echo ""
     echo -e "  ${BOLD}Dashboard${NC}: fw serve"
-    echo -e "  ${BOLD}Start work${NC}: fw work-on \"task name\" --type build"
-    echo -e "  ${BOLD}Explore first${NC}: fw inception start \"problem to explore\""
+    echo -e "  ${BOLD}All commands${NC}: fw help"
 }
 
 # --- Provider Config Generators ---
