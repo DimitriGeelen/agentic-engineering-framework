@@ -1,0 +1,148 @@
+# ============================================================================
+# EPISODIC MEMORY - T-934: Clean up 31 stale lock files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T16:34:44Z
+# ============================================================================
+
+task_id: T-934
+task_name: "Clean up 31 stale lock files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T16:33:53Z
+completed: 2026-04-05T16:34:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T18:34:38+02:00
+last_commit: 2026-04-05T18:34:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Clean up 31 stale lock files
+
+# Key outcomes
+outcomes:
+  - "31 stale lock files removed"
+  - "25 remaining locks all correspond to active tasks"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/locks/.lock"
+  - ".context/locks/T-001.lock"
+  - ".context/locks/T-477.lock"
+  - ".context/locks/T-568.lock"
+  - ".context/locks/T-739.lock"
+  - ".context/locks/T-740.lock"
+  - ".context/locks/T-741.lock"
+  - ".context/locks/T-742.lock"
+  - ".context/locks/T-743.lock"
+  - ".context/locks/T-744.lock"
+  - ".context/locks/T-745.lock"
+  - ".context/locks/T-746.lock"
+  - ".context/locks/T-747.lock"
+  - ".context/locks/T-748.lock"
+  - ".context/locks/T-749.lock"
+  - ".context/locks/T-750.lock"
+  - ".context/locks/T-751.lock"
+  - ".context/locks/T-752.lock"
+  - ".context/locks/T-753.lock"
+  - ".context/locks/T-754.lock"
+  - ".context/locks/T-755.lock"
+  - ".context/locks/T-756.lock"
+  - ".context/locks/T-757.lock"
+  - ".context/locks/T-758.lock"
+  - ".context/locks/T-759.lock"
+  - ".context/locks/T-760.lock"
+  - ".context/locks/T-761.lock"
+  - ".context/locks/T-762.lock"
+  - ".context/locks/T-764.lock"
+  - ".context/locks/T-765.lock"
+  - ".context/locks/T-766.lock"
+  - ".context/locks/T-773.lock"
+  - ".context/locks/T-774.lock"
+  - ".context/locks/T-775.lock"
+  - ".context/locks/T-776.lock"
+  - ".context/locks/T-777.lock"
+  - ".context/locks/T-778.lock"
+  - ".context/locks/T-780.lock"
+  - ".context/locks/T-788.lock"
+  - ".context/locks/T-789.lock"
+  - ".context/locks/T-790.lock"
+  - ".context/locks/T-791.lock"
+  - ".context/locks/T-793.lock"
+  - ".context/locks/T-794.lock"
+  - ".context/locks/T-795.lock"
+  - ".context/locks/T-796.lock"
+  - ".context/locks/T-845.lock"
+  - ".context/locks/T-846.lock"
+  - ".context/locks/T-847.lock"
+  - ".context/locks/T-848.lock"
+  - ".context/locks/T-852.lock"
+  - ".context/locks/T-853.lock"
+  - ".context/locks/T-854.lock"
+  - ".context/locks/T-855.lock"
+  - ".context/locks/T-858.lock"
+  - ".context/locks/T-859.lock"
+  - ".context/locks/T-861.lock"
+  - ".context/locks/T-862.lock"
+  - ".context/locks/T-863.lock"
+  - ".context/locks/T-865.lock"
+  - ".context/locks/T-867.lock"
+  - ".context/locks/T-868.lock"
+  - ".context/locks/T-869.lock"
+  - ".context/locks/T-870.lock"
+  - ".context/locks/T-871.lock"
+  - ".context/locks/T-872.lock"
+  - ".context/locks/T-873.lock"
+  - ".context/locks/T-874.lock"
+  - ".context/locks/T-876.lock"
+  - ".context/locks/T-879.lock"
+  - ".context/locks/T-881.lock"
+  - ".context/locks/T-883.lock"
+  - ".context/locks/T-884.lock"
+  - ".context/locks/T-886.lock"
+  - ".tasks/active/T-934-clean-up-31-stale-lock-files.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T18:34:38"
+    action: "T-934: Clean up 31 stale lock files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 75
+  lines_added: 73
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-934-clean-up-31-stale-lock-files.md
+generated_by: context-agent-hybrid
