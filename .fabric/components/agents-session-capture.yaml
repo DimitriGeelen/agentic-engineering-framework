@@ -1,0 +1,15 @@
+id: agents/session-capture/AGENT.md
+name: session_capture_agent
+type: agent
+subsystem: agents
+location: agents/session-capture/AGENT.md
+tags: [agent, session-capture, checklist]
+
+purpose: "Session capture checklist — ensures all work, decisions, and learnings are recorded before session end"
+
+depends_on: []
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-917
