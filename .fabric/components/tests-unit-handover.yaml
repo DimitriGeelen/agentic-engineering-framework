@@ -1,0 +1,17 @@
+id: tests/unit/handover.bats
+name: handover
+type: test
+subsystem: tests
+location: tests/unit/handover.bats
+tags: [handover, bats, unit-test]
+
+purpose: "Unit tests for agents/handover/handover.sh (10 tests)"
+
+depends_on:
+  - target: agents/handover/handover.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-923
