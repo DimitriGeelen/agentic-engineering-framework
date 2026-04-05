@@ -138,3 +138,98 @@ setup() {
     result=$(FW_CONTEXT_WINDOW=1000000 fw_config_int "CONTEXT_WINDOW" 300000)
     [ "$result" = "1000000" ]
 }
+
+# --- .framework.yaml tier (T-891, T-894) ---
+
+setup_config_file() {
+    export BATS_TMPDIR="${BATS_TMPDIR:-/tmp}"
+    export TEST_PROJECT_ROOT="$BATS_TMPDIR/fw_config_test_$$"
+    mkdir -p "$TEST_PROJECT_ROOT"
+    cat > "$TEST_PROJECT_ROOT/.framework.yaml" << 'EOF'
+project_name: test-project
+version: 1.0.0
+PORT: 4000
+CONTEXT_WINDOW: 500000
+watchtower:
+  port: 4001
+  theme: dark
+EOF
+    # Override PROJECT_ROOT for config file lookup
+    export PROJECT_ROOT="$TEST_PROJECT_ROOT"
+    # Re-source to pick up new PROJECT_ROOT
+    _FW_CONFIG_LOADED=""
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+}
+
+teardown_config_file() {
+    rm -rf "$TEST_PROJECT_ROOT" 2>/dev/null || true
+}
+
+@test "_fw_config_file_val reads flat key" {
+    setup_config_file
+    result=$(_fw_config_file_val "PORT")
+    teardown_config_file
+    [ "$result" = "4000" ]
+}
+
+@test "_fw_config_file_val reads dotted key" {
+    setup_config_file
+    result=$(_fw_config_file_val "watchtower.port")
+    teardown_config_file
+    [ "$result" = "4001" ]
+}
+
+@test "_fw_config_file_val returns 1 for missing key" {
+    setup_config_file
+    run _fw_config_file_val "NONEXISTENT_KEY"
+    teardown_config_file
+    [ "$status" -ne 0 ]
+}
+
+@test "_fw_config_file_val returns 1 when no config file" {
+    export PROJECT_ROOT="/tmp/no_such_dir_$$"
+    _FW_CONFIG_LOADED=""
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+    run _fw_config_file_val "PORT"
+    [ "$status" -ne 0 ]
+}
+
+@test "fw_config reads from .framework.yaml when no env var" {
+    setup_config_file
+    unset FW_PORT
+    result=$(fw_config "PORT" "3000")
+    teardown_config_file
+    [ "$result" = "4000" ]
+}
+
+@test "fw_config env var takes precedence over .framework.yaml" {
+    setup_config_file
+    result=$(FW_PORT=5000 fw_config "PORT" "3000")
+    teardown_config_file
+    [ "$result" = "5000" ]
+}
+
+@test "fw_config falls to default when key not in .framework.yaml" {
+    setup_config_file
+    unset FW_STALE_TASK_DAYS
+    result=$(fw_config "STALE_TASK_DAYS" "7")
+    teardown_config_file
+    [ "$result" = "7" ]
+}
+
+@test "fw_config_registry shows source=file for .framework.yaml values" {
+    setup_config_file
+    unset FW_PORT
+    result=$(fw_config_registry | grep "^PORT|")
+    teardown_config_file
+    [[ "$result" == *"|file|"* ]]
+    [[ "$result" == *"|4000|"* ]]
+}
+
+@test "fw_config_registry shows source=env over file" {
+    setup_config_file
+    result=$(FW_PORT=9999 fw_config_registry | grep "^PORT|")
+    teardown_config_file
+    [[ "$result" == *"|env|"* ]]
+    [[ "$result" == *"|9999|"* ]]
+}
