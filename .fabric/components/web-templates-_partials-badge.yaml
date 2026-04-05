@@ -4,17 +4,11 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_partials/badge.html
 tags: []
-
-purpose: "htmx partial: status badge component — renders colored badge for task status (captured, started-work, etc.)."
-
+purpose: 'htmx partial: status badge component — renders colored badge for task status
+  (captured, started-work, etc.).'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/app.py
+  type: used-by
+depended_by: []
 last_verified: 2026-03-11
 created_by: unknown

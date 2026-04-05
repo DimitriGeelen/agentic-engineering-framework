@@ -4,17 +4,11 @@ type: script
 subsystem: framework-core
 location: lib/colors.sh
 tags: []
-
-purpose: "Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output."
-
+purpose: 'Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color).
+  Sourced by all framework scripts for consistent output.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/colors.sh
+  type: calls
+depended_by: []
 last_verified: 2026-03-11
 created_by: unknown

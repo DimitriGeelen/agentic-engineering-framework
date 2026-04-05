@@ -4,17 +4,11 @@ type: script
 subsystem: framework-core
 location: bin/fw-shim
 tags: []
-
-purpose: "Project-detecting fw shim: resolves framework root from .framework.yaml or bin/ location. Replaces global install symlink (T-664)."
-
+purpose: 'Project-detecting fw shim: resolves framework root from .framework.yaml
+  or bin/ location. Replaces global install symlink (T-664).'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: calls
+depended_by: []
 last_verified: 2026-03-28
 created_by: unknown

@@ -4,17 +4,11 @@ type: script
 subsystem: framework-core
 location: lib/runtime.sh
 tags: []
-
-purpose: "Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution."
-
+purpose: 'Runtime environment detection: OS type, shell version, Python availability,
+  brew/apt package manager resolution.'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/runtime.sh
+  type: calls
+depended_by: []
 last_verified: 2026-03-27
 created_by: unknown

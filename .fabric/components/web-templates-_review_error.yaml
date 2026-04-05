@@ -4,17 +4,11 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_review_error.html
 tags: []
-
-purpose: "htmx partial: review error message — displayed when task review action fails (task not found, validation error)."
-
+purpose: 'htmx partial: review error message — displayed when task review action fails
+  (task not found, validation error).'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/review.py
+  type: used-by
+depended_by: []
 last_verified: 2026-03-28
 created_by: unknown
