@@ -1,0 +1,17 @@
+id: tests/unit/termlink.bats
+name: termlink
+type: test
+subsystem: tests
+location: tests/unit/termlink.bats
+tags: [termlink, bats, unit-test]
+
+purpose: "Unit tests for agents/termlink/termlink.sh (8 tests)"
+
+depends_on:
+  - target: agents/termlink/termlink.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-930
