@@ -33,6 +33,9 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 
 ### Tasks
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
+- T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
+- T-838: ShellCheck sweep — fix warnings across framework bash scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-config.yaml`*

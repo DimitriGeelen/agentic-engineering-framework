@@ -1,12 +1,10 @@
 # config
 
-> TODO: describe what this component does
+> Watchtower /config page — show all FW_* settings with current values and sources
 
-**Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/config.py`
+**Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/config.html`
 
 ## What It Does
-
-Known settings registry (mirrors lib/config.sh FW_CONFIG_REGISTRY)
 
 ### Framework Reference
 
@@ -23,11 +21,14 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Related
+## Dependencies (3)
 
-### Tasks
-- T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/config.py` | renders |
+| `lib/config.sh` | reads |
+| `web/templates/base.html` | renders |
 
 ---
-*Auto-generated from Component Fabric. Card: `web-blueprints-config.yaml`*
-*Last verified: 2026-04-03*
+*Auto-generated from Component Fabric. Card: `web-templates-config.yaml`*
+*Last verified: 2026-04-04*

@@ -28,6 +28,11 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 | `agents/audit/self-audit.sh` | read_by |
 | `C-009` | triggers_by |
 
+## Related
+
+### Tasks
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-pre-compact.yaml`*
 *Last verified: 2026-02-20*

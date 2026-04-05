@@ -24,7 +24,7 @@ Git Agent - Hook installation subcommand
 ## Related
 
 ### Tasks
-- T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
+- T-862: Fix audit performance for pre-push — fast path for push hook
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-hooks.yaml`*

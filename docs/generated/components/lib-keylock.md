@@ -27,6 +27,7 @@ Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-rel
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-845: Run bats test suite and fix any failures
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-keylock.yaml`*

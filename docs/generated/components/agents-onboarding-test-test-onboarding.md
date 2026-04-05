@@ -42,6 +42,7 @@ From T-307 inception GO → T-317 build task.
 
 ### Tasks
 - T-798: Shellcheck cleanup: remaining peripheral agent scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-onboarding-test-test-onboarding.yaml`*

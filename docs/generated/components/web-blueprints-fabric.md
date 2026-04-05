@@ -47,6 +47,9 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 ### Tasks
 - T-735: Remove dead _build_graph function from fabric.py
 - T-736: Fix component detail source path — use ACTUAL_PROJECT_ROOT
+- T-849: Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data
+- T-853: Enrich Fabric Explorer subsystem descriptions from component purpose fields
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-fabric.yaml`*

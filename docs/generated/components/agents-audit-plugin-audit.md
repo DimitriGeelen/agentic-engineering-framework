@@ -30,6 +30,7 @@ Exit codes: 0 = all clear, 1 = bypassing skills found
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-plugin-audit.yaml`*

@@ -24,11 +24,6 @@ Safe directories for file viewer (relative to PROJECT_ROOT)
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
 
-## Related
-
-### Tasks
-- T-633: Auto-link file references — fw commands and Watchtower markdown emit clickable URLs
-
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-docs.yaml`*
 *Last verified: 2026-03-09*

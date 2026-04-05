@@ -41,6 +41,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 
 ### Tasks
 - T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-dispatch.yaml`*

@@ -22,11 +22,11 @@ Auto-appended by audit.sh on each run
 ## Related
 
 ### Tasks
-- T-744: Commit untracked research artifacts and clean up git state
 - T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
 - T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
 - T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
 - T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+- T-847: Session housekeeping — memory updates and handover
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-metrics-history.yaml`*

@@ -32,11 +32,11 @@ for a project to use the framework.
 ## Related
 
 ### Tasks
-- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
-- T-681: Add TermLink MCP server to fw init default MCP config
-- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-796: Fix remaining single-warning shellcheck issues in agent scripts
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-init.yaml`*

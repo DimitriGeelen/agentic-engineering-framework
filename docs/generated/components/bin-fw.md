@@ -89,11 +89,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-775: fw pickup send — consumer-side CLI for local and TermLink push
-- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
-- T-812: fw task stale — identify and report stale active tasks
-- T-814: fw doctor stale task count — show task debt in health check
-- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
+- T-863: Fix hook lockout — bin/fw hook runner should not require -x on agent scripts
+- T-869: Fix ((var++)) set -e crash in bin/fw verify-acs
+- T-870: Sync vendored .agentic-framework/ with T-868/T-869 bugfixes
+- T-873: Fix fw approvals status exit 1 with no resolved approvals
+- T-874: Sync vendored bin/fw with T-873 approvals fix
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

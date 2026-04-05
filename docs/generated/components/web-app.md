@@ -57,6 +57,14 @@ When building a web application:
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
+- T-854: Pass project name to Watchtower templates — resolve from project root, display in header
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+- T-865: Fix Fabric Explorer naming — use project_name in title
+
 ---
 *Auto-generated from Component Fabric. Card: `web-app.yaml`*
 *Last verified: 2026-02-20*

@@ -29,11 +29,6 @@ bin/watchtower.sh status
 |-----------|-------------|
 | `bin/fw` | called_by |
 
-## Related
-
-### Tasks
-- T-621: fw serve — add UFW firewall check to watchtower.sh startup
-
 ---
 *Auto-generated from Component Fabric. Card: `bin-watchtower.yaml`*
 *Last verified: 2026-03-04*

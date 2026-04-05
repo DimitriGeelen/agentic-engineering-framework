@@ -18,6 +18,7 @@ Scripts that source lib/paths.sh get colors for free.
 
 ### Tasks
 - T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-colors.yaml`*

@@ -32,6 +32,7 @@ Synthesizes current state from handover, working memory, git, and tasks
 ### Tasks
 - T-794: Fix shellcheck SC2155 warnings in resume.sh — split declare and assign
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-resume-resume.yaml`*

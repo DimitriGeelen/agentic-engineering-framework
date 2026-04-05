@@ -21,7 +21,6 @@
 ## Related
 
 ### Tasks
-- T-639: Unified /approvals page — Tier 0 + Human ACs + GO decisions in urgency-ordered sections
 - T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 - T-643: Htmx-ify GO decision form — inline response on /approvals page
 - T-668: Add /review/T-XXX mobile link to approvals page Human AC cards

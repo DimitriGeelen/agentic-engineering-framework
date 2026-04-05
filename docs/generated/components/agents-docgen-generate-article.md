@@ -36,6 +36,7 @@ Article: docs/articles/deep-dives/{NN}-{subsystem}.md
 
 ### Tasks
 - T-798: Shellcheck cleanup: remaining peripheral agent scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-article.yaml`*

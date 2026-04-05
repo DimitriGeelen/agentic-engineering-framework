@@ -29,6 +29,7 @@ to latest upstream (legacy path, pre-T-499).
 ### Tasks
 - T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-update.yaml`*

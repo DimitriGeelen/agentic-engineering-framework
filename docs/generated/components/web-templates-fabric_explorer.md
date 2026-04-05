@@ -15,6 +15,13 @@
 | `web/static/d3.v7.min.js` | calls |
 | `web/blueprints/fabric.py` | rendered_by |
 
+## Related
+
+### Tasks
+- T-849: Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+- T-865: Fix Fabric Explorer naming — use project_name in title
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fabric_explorer.yaml`*
 *Last verified: 2026-03-29*

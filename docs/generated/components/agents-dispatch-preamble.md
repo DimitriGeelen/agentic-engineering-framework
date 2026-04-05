@@ -21,6 +21,7 @@ Mandatory Dispatch Preamble
 
 ### Tasks
 - T-820: Fix TermLink dispatch preamble — workers write to target files
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-dispatch-preamble.yaml`*

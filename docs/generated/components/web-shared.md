@@ -53,6 +53,8 @@ Path resolution
 
 ### Tasks
 - T-733: Update Watchtower navigation labels for Fabric Explorer
+- T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `web-shared.yaml`*

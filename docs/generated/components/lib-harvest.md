@@ -24,6 +24,7 @@ Graduation pipeline:
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-harvest.yaml`*

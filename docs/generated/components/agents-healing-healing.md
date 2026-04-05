@@ -48,6 +48,9 @@ Usage:
 
 ### Tasks
 - T-796: Fix remaining single-warning shellcheck issues in agent scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-871: Fix unbound PATTERNS_FILE variable in healing agent
+- T-872: Sync vendored healing.sh with T-871 fix
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-healing-healing.yaml`*

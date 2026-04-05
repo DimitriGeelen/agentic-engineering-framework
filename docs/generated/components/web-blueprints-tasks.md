@@ -42,13 +42,6 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/blueprints/review.py` | called_by |
 | `web/blueprints/review.py` | registered_by |
 
-## Related
-
-### Tasks
-- T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
-- T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI
-- T-640: "Complete Task" button — show when all Human ACs checked, auto-complete via Watchtower
-
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-tasks.yaml`*
 *Last verified: 2026-02-20*

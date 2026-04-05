@@ -31,6 +31,11 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 | `web/blueprints/costs.py` | calls |
 | `agents/handover/handover.sh` | calls |
 
+## Related
+
+### Tasks
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-costs.yaml`*
 *Last verified: 2026-04-03*

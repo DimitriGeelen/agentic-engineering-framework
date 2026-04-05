@@ -56,11 +56,11 @@ When fixing a bug discovered through real-world usage (user testing, production 
 ## Related
 
 ### Tasks
-- T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 - T-791: Fix checkpoint.sh cross-project transcript leak — scope find_transcript to current project
 - T-796: Fix remaining single-warning shellcheck issues in agent scripts
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
+- T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
 
 ---
 *Auto-generated from Component Fabric. Card: `checkpoint.yaml`*
