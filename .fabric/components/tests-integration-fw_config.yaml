@@ -1,0 +1,19 @@
+id: tests/integration/fw_config.bats
+name: fw_config
+type: test
+subsystem: tests
+location: tests/integration/fw_config.bats
+tags: [config, bats, integration-test]
+
+purpose: "Integration tests for fw config CLI (9 tests)"
+
+depends_on:
+  - target: lib/config-file.sh
+    type: calls
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-927
