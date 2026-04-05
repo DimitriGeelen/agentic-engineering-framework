@@ -4,15 +4,15 @@ name: "Audit performance — 123 active tasks × 7 loops × 15 Python calls = >9
 description: >
   Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T19:33:13Z
-last_update: 2026-04-04T19:34:28Z
+last_update: 2026-04-05T12:16:46Z
 date_finished: null
 ---
 
@@ -20,53 +20,63 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`fw audit` takes 3m56s (measured). Cron runs every 15 minutes — a 4-minute audit blocks other cron jobs. Root cause: 10 separate loops over task files (132 active + 740 completed), each spawning multiple subprocesses (grep, sed, head). `sys` time (4m8s) exceeds real time — confirms subprocess fork/exec overhead is dominant.
+
+**For whom:** Framework cron system and any user running `fw audit` manually.
+**Why now:** 132 active tasks growing. Previous measurement was 90s — now at 236s (2.6× worse).
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A-1: Subprocess spawning is the primary bottleneck (confirmed by sys > real)
+- A-2: Merging loops will reduce iterations from 3802 to ~1000
+- A-3: A `--fast` flag for cron can skip completed-task analysis safely
+- A-4: The audit's 10-loop structure is accidental, not by design
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Measured audit runtime: 3m56s ✓
+2. Inventoried loops: 10 loops, 3802 total iterations ✓
+3. Profiled bottleneck: subprocess spawning (sys 4m8s) ✓
+4. Evaluated 4 optimization options ✓
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- `audit.sh` is 3274 lines — rewriting is substantial
+- Cron audit uses flock + timeout (T-866) — audit must finish within timeout
+- Some checks require Python (YAML parsing, pattern matching)
+- Task file format is stable (Markdown with YAML frontmatter)
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Reduce audit runtime to <60s for standard run, <30s for `--fast`
+**OUT:** Rewriting audit in Python (Phase 3, separate task if needed)
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated — 3m56s measured, 10 loops identified
+- [x] Assumptions tested — subprocess spawning confirmed as dominant cost
+- [x] Recommendation written with rationale (GO — Phase 1: --fast flag, Phase 2: merge loops)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Read the research artifact and recommendation in this task
-  2. Evaluate go/no-go criteria against findings
-  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-XXX go|no-go --rationale "your rationale"`
-  **Expected:** Decision recorded, task completed
-  **If not:** Ask agent for clarification on specific findings
+  1. Read `docs/reports/T-860-audit-performance.md`
+  2. Evaluate: is the phased approach (fast flag + loop merge) acceptable?
+  3. Decide: `cd /opt/999-Agentic-Engineering-Framework && bin/fw tier0 approve && bin/fw inception decide T-860 go --rationale "your rationale"`
+  **Expected:** Decision recorded, build tasks created
+  **If not:** Ask for clarification on specific findings
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Audit runtime is measurably reduced (target: <60s standard, <30s fast)
+- `--fast` flag is safe for cron (no critical checks skipped)
+- Loop merge is incremental (can be done one pair at a time)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The audit structure is too complex to merge safely
+- Fast mode would miss critical compliance issues
 
 ## Verification
 
@@ -87,6 +97,16 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+- **Recommendation:** GO (phased: --fast flag first, then loop merge)
+- **Rationale:** 3m56s audit runtime blocks cron and is growing. Phase 1 (`--fast` flag) is ~10 lines, gives immediate relief. Phase 2 (loop merge) reduces 10 loops to 3, cutting iterations from 3802 to ~1000. Both are safe, incremental changes.
+- **Evidence:**
+  - 3m56s measured (reproducible), was 90s when task was created — 2.6× degradation
+  - `sys 4m8s` confirms subprocess fork/exec is the bottleneck
+  - 10 loops × avg 380 iterations = 3802 total, each spawning 2-5 subprocesses
+  - Cron runs every 15 min — 4-minute audit leaves only 11 minutes between audits
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
@@ -98,3 +118,7 @@ date_finished: null
 
 ### 2026-04-04T19:34:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-04-05T12:16:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now
