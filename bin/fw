@@ -14,8 +14,9 @@ set -euo pipefail
 # Version: derived from git tags (major.minor = human tag, patch = commits since tag)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
+    local fw_dir="${BASH_SOURCE[0]%/*}/.."
     local desc
-    desc=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
     if [ -n "$desc" ]; then
         # v1.4.0 → 1.4.0 | v1.4.0-5-gabc123 → 1.4.5
         desc="${desc#v}"  # strip leading v

@@ -1,0 +1,51 @@
+---
+id: T-898
+name: "Fix _derive_version — use framework git repo, not cwd"
+description: >
+  Fix _derive_version — use framework git repo, not cwd
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-05T13:36:39Z
+last_update: 2026-04-05T13:36:39Z
+date_finished: null
+---
+
+# T-898: Fix _derive_version — use framework git repo, not cwd
+
+## Context
+
+`_derive_version()` in `bin/fw` uses `git describe` without `-C`, so it derives version from the cwd's git repo, not the framework repo. When `fw upgrade` is run from a consumer project directory, it gets the consumer's version instead of the framework version. Found during T-897 — first upgrade round set sprechloop version to 1.0.15 instead of 1.4.603.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `_derive_version()` uses `git -C` to target the framework repo directory
+- [x] Version is correct when running from a different directory
+
+## Verification
+
+grep -q '\-C.*BASH_SOURCE\|git -C' bin/fw
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-05T13:36:39Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-898-fix-deriveversion--use-framework-git-rep.md
+- **Context:** Initial task creation
