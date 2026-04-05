@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-918: Enrich 26 edgeless fabric cards with dependency links
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T15:55:11Z
+# ============================================================================
+
+task_id: T-918
+task_name: "Enrich 26 edgeless fabric cards with dependency links"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T15:53:29Z
+completed: 2026-04-05T15:55:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T17:55:06+02:00
+last_commit: 2026-04-05T17:55:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Enrich 19 edgeless fabric cards with dependency links (26→7)
+
+# Key outcomes
+outcomes:
+  - "Edgeless card count reduced from 26 to 7"
+  - "All modified cards parse as valid YAML"
+  - "No existing edges corrupted"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-915.yaml"
+  - ".fabric/components/bin-fw-shim.yaml"
+  - ".fabric/components/lib-colors.yaml"
+  - ".fabric/components/lib-config-file.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-firewall.yaml"
+  - ".fabric/components/lib-runtime.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/tests-unit-checkpoint.yaml"
+  - ".fabric/components/tests-unit-lib_config.yaml"
+  - ".fabric/components/tests-unit-lib_first_run.yaml"
+  - ".fabric/components/tests-unit-lib_harvest.yaml"
+  - ".fabric/components/tests-unit-lib_init.yaml"
+  - ".fabric/components/tests-unit-lib_pickup.yaml"
+  - ".fabric/components/tests-unit-lib_promote.yaml"
+  - ".fabric/components/tests-unit-lib_upgrade.yaml"
+  - ".fabric/components/tests-unit-lib_validate_init.yaml"
+  - ".fabric/components/web-blueprints-config.yaml"
+  - ".fabric/components/web-templates-_partials-badge.yaml"
+  - ".fabric/components/web-templates-_review_error.yaml"
+  - ".tasks/active/T-918-enrich-26-edgeless-fabric-cards-with-dep.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T17:55:06"
+    action: "T-918: Enrich 19 edgeless fabric cards with dependency links (26→7)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 21
+  lines_added: 224
+  lines_removed: 209
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-918-enrich-26-edgeless-fabric-cards-with-dep.md
+generated_by: context-agent-hybrid
