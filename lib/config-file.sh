@@ -25,6 +25,7 @@ do_config() {
         set)   _config_set "$@" ;;
         get)   _config_get "$@" ;;
         list)  _config_list "$@" ;;
+        overrides) _config_overrides "$@" ;;
         help|--help|-h) _config_help ;;
         *)
             echo -e "${RED:-}Unknown config subcommand: $subcmd${NC:-}" >&2
@@ -41,6 +42,7 @@ _config_help() {
     echo "  fw config set KEY VALUE    Set a config value (dot-notation for nesting)"
     echo "  fw config get KEY          Get a config value"
     echo "  fw config list             Show all custom settings"
+    echo "  fw config overrides        Show all non-default settings (env + file)"
     echo ""
     echo "Examples:"
     echo "  fw config set watchtower.port 3001"
@@ -222,4 +224,29 @@ for k in data:
 if not custom_found:
     print("  (no custom settings)")
 PYLIST
+}
+
+_config_overrides() {
+    # Source config.sh to get the registry function
+    local fw_root="${FRAMEWORK_ROOT:-$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)}"
+    source "$fw_root/lib/config.sh" 2>/dev/null
+
+    echo -e "${BOLD:-}Active Overrides${NC:-}"
+    echo ""
+
+    local found=0
+    local line
+    while IFS='|' read -r key default current source desc; do
+        if [ "$source" != "default" ]; then
+            found=$((found + 1))
+            printf "  %-30s = %-15s (source: %s)\n" "$key" "$current" "$source"
+        fi
+    done <<< "$(fw_config_registry)"
+
+    if [ "$found" -eq 0 ]; then
+        echo "  (no overrides — all settings at default)"
+    else
+        echo ""
+        echo "  $found override(s) active"
+    fi
 }
