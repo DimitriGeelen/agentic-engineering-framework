@@ -4,16 +4,16 @@ name: "Add unit tests for agents/observe/observe.sh"
 description: >
   Add unit tests for agents/observe/observe.sh
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/observe.bats]
 related_tasks: []
 created: 2026-04-05T16:29:09Z
-last_update: 2026-04-05T16:29:09Z
-date_finished: null
+last_update: 2026-04-05T16:30:40Z
+date_finished: 2026-04-05T16:30:40Z
 ---
 
 # T-932: Add unit tests for agents/observe/observe.sh
@@ -72,3 +72,6 @@ Observe agent (fw note) is the last agent without tests. Testing help, note capt
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-932-add-unit-tests-for-agentsobserveobserves.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:30:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
