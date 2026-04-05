@@ -4,16 +4,16 @@ name: "Add unit tests for agents/resume/resume.sh"
 description: >
   Add unit tests for agents/resume/resume.sh
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/resume.bats]
 related_tasks: []
 created: 2026-04-05T16:04:51Z
-last_update: 2026-04-05T16:04:51Z
-date_finished: null
+last_update: 2026-04-05T16:06:05Z
+date_finished: 2026-04-05T16:06:05Z
 ---
 
 # T-922: Add unit tests for agents/resume/resume.sh
@@ -72,3 +72,6 @@ agents/resume/resume.sh is used in every session recovery but has no unit tests.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-922-add-unit-tests-for-agentsresumeresumesh.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:06:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
