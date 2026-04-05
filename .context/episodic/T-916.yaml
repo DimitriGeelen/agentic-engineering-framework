@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-916: Register missing fabric component cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T15:45:26Z
+# ============================================================================
+
+task_id: T-916
+task_name: "Register missing fabric component cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T15:41:38Z
+completed: 2026-04-05T15:45:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T17:45:19+02:00
+last_commit: 2026-04-05T17:45:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register 33 missing fabric cards for test files
+
+# Key outcomes
+outcomes:
+  - "All 46 test files in tests/unit/ have corresponding fabric component cards"
+  - "All generated YAML cards parse without errors"
+  - "Cards include correct depends_on references to tested lib/ files"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-context_decision.yaml"
+  - ".fabric/components/tests-unit-context_episodic.yaml"
+  - ".fabric/components/tests-unit-context_focus.yaml"
+  - ".fabric/components/tests-unit-context_init.yaml"
+  - ".fabric/components/tests-unit-context_learning.yaml"
+  - ".fabric/components/tests-unit-context_pattern.yaml"
+  - ".fabric/components/tests-unit-context_safe_commands.yaml"
+  - ".fabric/components/tests-unit-context_status.yaml"
+  - ".fabric/components/tests-unit-git_common.yaml"
+  - ".fabric/components/tests-unit-git_log.yaml"
+  - ".fabric/components/tests-unit-healing_diagnose.yaml"
+  - ".fabric/components/tests-unit-healing_suggest.yaml"
+  - ".fabric/components/tests-unit-lib_assumption.yaml"
+  - ".fabric/components/tests-unit-lib_bus.yaml"
+  - ".fabric/components/tests-unit-lib_colors.yaml"
+  - ".fabric/components/tests-unit-lib_compat.yaml"
+  - ".fabric/components/tests-unit-lib_dispatch.yaml"
+  - ".fabric/components/tests-unit-lib_enums.yaml"
+  - ".fabric/components/tests-unit-lib_errors.yaml"
+  - ".fabric/components/tests-unit-lib_inception.yaml"
+  - ".fabric/components/tests-unit-lib_keylock.yaml"
+  - ".fabric/components/tests-unit-lib_notify.yaml"
+  - ".fabric/components/tests-unit-lib_paths.yaml"
+  - ".fabric/components/tests-unit-lib_preflight.yaml"
+  - ".fabric/components/tests-unit-lib_review.yaml"
+  - ".fabric/components/tests-unit-lib_runtime.yaml"
+  - ".fabric/components/tests-unit-lib_setup.yaml"
+  - ".fabric/components/tests-unit-lib_tasks.yaml"
+  - ".fabric/components/tests-unit-lib_update.yaml"
+  - ".fabric/components/tests-unit-lib_upstream.yaml"
+  - ".fabric/components/tests-unit-lib_version.yaml"
+  - ".fabric/components/tests-unit-lib_yaml.yaml"
+  - ".fabric/components/tests-unit-verify_acs.yaml"
+  - ".tasks/active/T-916-register-missing-fabric-component-cards.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T17:45:19"
+    action: "T-916: Register 33 missing fabric cards for test files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 34
+  lines_added: 616
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-916-register-missing-fabric-component-cards.md
+generated_by: context-agent-hybrid
