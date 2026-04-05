@@ -175,3 +175,51 @@ print(type(d['debug']).__name__)
     "
     [[ "$output" != *"WARNING"* ]]
 }
+
+# --- Overrides (T-912/T-926) ---
+
+@test "config overrides shows 'no overrides' when all defaults" {
+    run bash -c "
+        export PROJECT_ROOT='$TEST_DIR'
+        export FRAMEWORK_ROOT='$FRAMEWORK_ROOT'
+        _FW_CONFIG_FILE_LOADED=''
+        export _config_yaml='$TEST_DIR/.framework.yaml'
+        echo 'project_name: test' > '$TEST_DIR/.framework.yaml'
+        source '$FRAMEWORK_ROOT/lib/config-file.sh'
+        _config_overrides 2>&1
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Active Overrides"* ]]
+    [[ "$output" == *"no overrides"* ]] || [[ "$output" == *"override"* ]]
+}
+
+@test "config overrides detects env var override" {
+    run bash -c "
+        export PROJECT_ROOT='$TEST_DIR'
+        export FRAMEWORK_ROOT='$FRAMEWORK_ROOT'
+        export FW_PORT=4444
+        _FW_CONFIG_FILE_LOADED=''
+        export _config_yaml='$TEST_DIR/.framework.yaml'
+        echo 'project_name: test' > '$TEST_DIR/.framework.yaml'
+        source '$FRAMEWORK_ROOT/lib/config-file.sh'
+        _config_overrides 2>&1
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Active Overrides"* ]]
+    [[ "$output" == *"4444"* ]]
+    [[ "$output" == *"env"* ]]
+}
+
+@test "do_config routes to overrides" {
+    run bash -c "
+        export PROJECT_ROOT='$TEST_DIR'
+        export FRAMEWORK_ROOT='$FRAMEWORK_ROOT'
+        _FW_CONFIG_FILE_LOADED=''
+        export _config_yaml='$TEST_DIR/.framework.yaml'
+        echo 'project_name: test' > '$TEST_DIR/.framework.yaml'
+        source '$FRAMEWORK_ROOT/lib/config-file.sh'
+        do_config overrides 2>&1
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Overrides"* ]]
+}
