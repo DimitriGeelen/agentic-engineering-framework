@@ -149,3 +149,29 @@ print(type(d['debug']).__name__)
     [ "$status" -eq 0 ]
     [[ "$output" == *"fw config"* ]]
 }
+
+# --- Validation (T-907) ---
+
+@test "config set warns for non-numeric known integer setting" {
+    run bash -c "
+        export PROJECT_ROOT='$TEST_DIR'
+        _FW_CONFIG_FILE_LOADED=''
+        export _config_yaml='$TEST_DIR/.framework.yaml'
+        echo 'project_name: test' > '$TEST_DIR/.framework.yaml'
+        source '$FRAMEWORK_ROOT/lib/config-file.sh'
+        _config_set PORT banana 2>&1
+    "
+    [[ "$output" == *"WARNING"* ]]
+}
+
+@test "config set no warning for numeric known setting" {
+    run bash -c "
+        export PROJECT_ROOT='$TEST_DIR'
+        _FW_CONFIG_FILE_LOADED=''
+        export _config_yaml='$TEST_DIR/.framework.yaml'
+        echo 'project_name: test' > '$TEST_DIR/.framework.yaml'
+        source '$FRAMEWORK_ROOT/lib/config-file.sh'
+        _config_set PORT 4000 2>&1
+    "
+    [[ "$output" != *"WARNING"* ]]
+}

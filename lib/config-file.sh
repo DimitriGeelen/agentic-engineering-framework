@@ -122,6 +122,19 @@ with open(yaml_file, 'w') as f:
     yaml.dump(data, f)
 
 print(f"Set {key} = {value}")
+
+# Validate known integer settings
+INTEGER_SETTINGS = {
+    'PORT', 'CONTEXT_WINDOW', 'DISPATCH_LIMIT', 'BUDGET_RECHECK_INTERVAL',
+    'BUDGET_STATUS_MAX_AGE', 'TOKEN_CHECK_INTERVAL', 'HANDOVER_COOLDOWN',
+    'STALE_TASK_DAYS', 'MAX_RESTARTS', 'SAFE_MODE', 'CALL_WARN',
+    'CALL_URGENT', 'CALL_CRITICAL', 'BASH_TIMEOUT', 'KEYLOCK_TIMEOUT',
+    'TERMLINK_WORKER_TIMEOUT', 'HANDOVER_DEDUP_COOLDOWN',
+}
+# Check the last segment of dotted keys (e.g., watchtower.port → port)
+check_key = key.split('.')[-1].upper()
+if check_key in INTEGER_SETTINGS and not isinstance(value, (int, float)):
+    print(f"WARNING: {key} is typically a numeric setting", file=sys.stderr)
 PYSET
 }
 
