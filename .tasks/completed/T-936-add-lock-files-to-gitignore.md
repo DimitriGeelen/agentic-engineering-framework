@@ -4,7 +4,7 @@ name: "Add lock files to .gitignore"
 description: >
   Add lock files to .gitignore
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T16:37:04Z
-last_update: 2026-04-05T16:37:04Z
-date_finished: null
+last_update: 2026-04-05T16:37:55Z
+date_finished: 2026-04-05T16:37:55Z
 ---
 
 # T-936: Add lock files to .gitignore
@@ -71,3 +71,6 @@ Lock files (.context/locks/) are ephemeral runtime state that clutters git statu
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-936-add-lock-files-to-gitignore.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:37:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
