@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-912: Add fw config overrides command — show all non-default settings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T15:37:17Z
+# ============================================================================
+
+task_id: T-912
+task_name: "Add fw config overrides command — show all non-default settings"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T14:20:01Z
+completed: 2026-04-05T14:21:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T16:21:33+02:00
+last_commit: 2026-04-05T16:21:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw config overrides — show all non-default settings. Complete — fw config overrides command
+
+# Key outcomes
+outcomes:
+  - "`fw config overrides` shows all non-default settings (env + file)"
+  - "Output includes source (env/file) for each override"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/config-file.sh"
+  - ".tasks/active/T-912-add-fw-config-overrides-command--show-al.md"
+  - ".tasks/completed/T-912-add-fw-config-overrides-command--show-al.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T16:21:33"
+    action: "T-912: Add fw config overrides — show all non-default settings"
+  - time: "2026-04-05T16:21:45"
+    action: "T-912: Complete — fw config overrides command"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 3
+  lines_added: 176
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-912-add-fw-config-overrides-command--show-al.md
+generated_by: context-agent-hybrid
