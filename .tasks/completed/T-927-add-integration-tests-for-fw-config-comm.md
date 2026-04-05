@@ -4,16 +4,16 @@ name: "Add integration tests for fw config command"
 description: >
   Add integration tests for fw config command
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/integration/fw_config.bats]
 related_tasks: []
 created: 2026-04-05T16:17:14Z
-last_update: 2026-04-05T16:17:14Z
-date_finished: null
+last_update: 2026-04-05T16:19:26Z
+date_finished: 2026-04-05T16:19:26Z
 ---
 
 # T-927: Add integration tests for fw config command
@@ -72,3 +72,6 @@ No integration tests exist for `fw config` (set/get/list/overrides). Other fw co
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-927-add-integration-tests-for-fw-config-comm.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:19:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
