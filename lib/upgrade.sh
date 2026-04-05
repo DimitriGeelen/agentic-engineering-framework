@@ -860,6 +860,30 @@ EOF
         echo -e "  ${GREEN}LOGGED${NC}  Upgrade trail → .context/audits/upgrades.yaml"
     fi
 
+    # ── 10. Enforcement baseline (T-884: auto-create if missing) ──
+    echo -e "${YELLOW}[10/10] Enforcement baseline${NC}"
+    local ef_baseline="$target_dir/.context/project/enforcement-baseline.sha256"
+    local ef_settings="$target_dir/.claude/settings.json"
+    if [ -f "$ef_baseline" ]; then
+        echo -e "  ${GREEN}OK${NC}  Enforcement baseline exists"
+    elif [ -f "$ef_settings" ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD CREATE${NC}  Enforcement baseline"
+            changes=$((changes + 1))
+        else
+            if PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" enforcement baseline >/dev/null 2>&1; then
+                echo -e "  ${GREEN}CREATED${NC}  Enforcement baseline"
+                changes=$((changes + 1))
+            else
+                echo -e "  ${YELLOW}SKIP${NC}  Could not create enforcement baseline"
+                skipped=$((skipped + 1))
+            fi
+        fi
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  No settings.json — enforcement baseline not applicable"
+        skipped=$((skipped + 1))
+    fi
+
     # ── Summary ──
     echo ""
     if [ "$dry_run" = true ]; then
