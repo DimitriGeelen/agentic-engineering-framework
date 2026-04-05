@@ -1,88 +1,22 @@
 FW_SECRET_KEY not set — using auto-generated key. Set FW_SECRET_KEY for production deployment.
-Watchtower running at http://0.0.0.0:3000
-  Project root: /opt/999-Agentic-Engineering-Framework
+Watchtower running at http://0.0.0.0:4444
+  Project root: /opt/001-sprechloop
   Framework:    /opt/999-Agentic-Engineering-Framework
 
  * Serving Flask app 'app'
  * Debug mode: off
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:3000
- * Running on http://192.168.10.113:3000
+ * Running on http://127.0.0.1:4444
+ * Running on http://192.168.10.107:4444
 Press CTRL+C to quit
-Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
-  in "<unicode string>", line 9, column 1:
-    Claude Code fires zero hooks for ... 
-    ^
-could not find expected ':'
-  in "<unicode string>", line 11, column 1:
-    ## Solution
-    ^
-Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
-  in "<unicode string>", line 9, column 1:
-    Claude Code fires zero hooks for ... 
-    ^
-could not find expected ':'
-  in "<unicode string>", line 11, column 1:
-    ## Solution
-    ^
-127.0.0.1 - - [05/Apr/2026 14:12:25] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:13:56] "GET /health HTTP/1.1" 200 -
-Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
-  in "<unicode string>", line 9, column 1:
-    Claude Code fires zero hooks for ... 
-    ^
-could not find expected ':'
-  in "<unicode string>", line 11, column 1:
-    ## Solution
-    ^
-Failed to parse frontmatter in /opt/999-Agentic-Engineering-Framework/.tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md: while scanning a simple key
-  in "<unicode string>", line 9, column 1:
-    Claude Code fires zero hooks for ... 
-    ^
-could not find expected ':'
-  in "<unicode string>", line 11, column 1:
-    ## Solution
-    ^
-127.0.0.1 - - [05/Apr/2026 14:13:58] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:13:59] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:13:59] "GET /approvals/content HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:13:59] "GET /assumptions HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:13:59] "GET /config HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:00] "GET /costs HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:00] "GET /cron HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:00] "GET /decisions HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:00] "GET /directives HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:02] "GET /discoveries HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:02] "GET /docs/generated HTTP/1.1" 200 -
-Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /enforcement HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /fabric HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /fabric/graph HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /gaps HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /graduation HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:03] "GET /health HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:04] "GET /inception HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:04] "GET /learnings HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:05] "GET /metrics HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:05] "GET /patterns HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:05] "GET /project HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:05] "GET /quality HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:06] "GET /risks HTTP/1.1" 200 -
-Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
-  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
-expected <block end>, but found '<block sequence start>'
-  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
-Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
-  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
-found unknown escape character 'd'
-  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
-127.0.0.1 - - [05/Apr/2026 14:14:08] "GET /search HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:08] "GET /search/conversations HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:08] "GET /search/feedback/analytics HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:08] "GET /search/load-conversation HTTP/1.1" 400 -
-Failed to list Ollama models: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download
-127.0.0.1 - - [05/Apr/2026 14:14:15] "GET /settings/models HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:15] "GET /settings/ HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:18] "GET /tasks HTTP/1.1" 200 -
-127.0.0.1 - - [05/Apr/2026 14:14:20] "GET /timeline HTTP/1.1" 200 -
+YAML parse error in learnings (/opt/001-sprechloop/.context/project/learnings.yaml): while parsing a block mapping
+  in "/opt/001-sprechloop/.context/project/learnings.yaml", line 3, column 1
+expected <block end>, but found '-'
+  in "/opt/001-sprechloop/.context/project/learnings.yaml", line 148, column 1
+YAML parse error in decisions (/opt/001-sprechloop/.context/project/decisions.yaml): while parsing a block mapping
+  in "/opt/001-sprechloop/.context/project/decisions.yaml", line 242, column 3
+expected <block end>, but found '-'
+  in "/opt/001-sprechloop/.context/project/decisions.yaml", line 249, column 3
+127.0.0.1 - - [05/Apr/2026 15:54:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [05/Apr/2026 15:54:03] "GET /health HTTP/1.1" 200 -

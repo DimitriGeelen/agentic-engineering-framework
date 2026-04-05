@@ -8,17 +8,3 @@ learnings:
   date: 2026-04-05
   context: Added via context agent
   application: TBD
-- id: L-002
-  learning: "When adding a new config resolution tier (T-891), update ALL consumers: fw_config(), fw_config_registry(), and Watchtower config.py _get_config(). T-892/T-893 found the registry and Watchtower were missed."
-  source: P-001
-  task: T-892
-  date: 2026-04-05
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "fw version derivation must use git -C to target framework repo dir, not cwd. Without this, running fw upgrade from a consumer project dir picks up the consumer's git tags and stamps the wrong version into .framework.yaml."
-  source: P-001
-  task: T-898
-  date: 2026-04-05
-  context: Added via context agent
-  application: TBD
