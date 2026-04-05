@@ -4,16 +4,16 @@ name: "Add unit tests for agents/task-create/update-task.sh"
 description: >
   Add unit tests for agents/task-create/update-task.sh
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/update_task.bats]
 related_tasks: []
 created: 2026-04-05T16:19:48Z
-last_update: 2026-04-05T16:19:48Z
-date_finished: null
+last_update: 2026-04-05T16:22:00Z
+date_finished: 2026-04-05T16:22:00Z
 ---
 
 # T-928: Add unit tests for agents/task-create/update-task.sh
@@ -72,3 +72,6 @@ update-task.sh (805 lines) is the most complex agent script with no tests. Testi
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-928-add-unit-tests-for-agentstask-createupda.md
 - **Context:** Initial task creation
+
+### 2026-04-05T16:22:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
