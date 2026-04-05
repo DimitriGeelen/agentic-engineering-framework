@@ -4,7 +4,7 @@ name: "Add unit tests for lib/upstream.sh"
 description: >
   Add unit tests for lib/upstream.sh
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T15:39:36Z
-last_update: 2026-04-05T15:39:36Z
-date_finished: null
+last_update: 2026-04-05T15:41:24Z
+date_finished: 2026-04-05T15:41:24Z
 ---
 
 # T-915: Add unit tests for lib/upstream.sh
@@ -25,12 +25,12 @@ lib/upstream.sh is one of only 2 lib/ files without unit tests (82% coverage). I
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Test file exists at tests/unit/lib_upstream.bats
-- [ ] Tests cover _upstream_resolve_repo (from .framework.yaml)
-- [ ] Tests cover _upstream_is_sent / _upstream_mark_sent dedup
-- [ ] Tests cover do_upstream_config (show + set)
-- [ ] Tests cover do_upstream routing (help, unknown subcommand)
-- [ ] All tests pass
+- [x] Test file exists at tests/unit/lib_upstream.bats
+- [x] Tests cover _upstream_resolve_repo (from .framework.yaml)
+- [x] Tests cover _upstream_is_sent / _upstream_mark_sent dedup
+- [x] Tests cover do_upstream_config (show + set)
+- [x] Tests cover do_upstream routing (help, unknown subcommand)
+- [x] All tests pass (22/22)
 
 ## Verification
 
@@ -53,3 +53,6 @@ bats tests/unit/lib_upstream.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-915-add-unit-tests-for-libupstreamsh.md
 - **Context:** Initial task creation
+
+### 2026-04-05T15:41:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
