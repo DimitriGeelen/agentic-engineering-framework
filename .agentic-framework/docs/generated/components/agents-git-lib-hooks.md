@@ -24,11 +24,7 @@ Git Agent - Hook installation subcommand
 ## Related
 
 ### Tasks
-- T-519: Fix do_vendor not found during fw doctor interactive init
-- T-520: Fix commit-msg hook FRAMEWORK_ROOT resolution for vendored installs
-- T-521: fw init should git init when not in a git repo
-- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
-- T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
+- T-862: Fix audit performance for pre-push — fast path for push hook
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-hooks.yaml`*

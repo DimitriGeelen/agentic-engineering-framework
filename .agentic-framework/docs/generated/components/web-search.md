@@ -27,11 +27,6 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 | `web/blueprints/api.py` | called_by |
 | `web/embeddings.py` | called_by |
 
-## Related
-
-### Tasks
-- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
-
 ---
 *Auto-generated from Component Fabric. Card: `web-search.yaml`*
 *Last verified: 2026-02-21*

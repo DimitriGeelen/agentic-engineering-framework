@@ -19,10 +19,7 @@
 ## Related
 
 ### Tasks
-- T-469: Inception: Structural remediation for pickup-message governance bypass
-- T-495: Path isolation — eliminate hardcoded absolute paths from all committed files
-- T-559: Project boundary gate — PreToolUse hook blocking writes outside PROJECT_ROOT
-- T-614: TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis
+- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-concerns.yaml`*

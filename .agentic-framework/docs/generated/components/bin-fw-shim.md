@@ -1,6 +1,6 @@
 # fw-shim
 
-> TODO: describe what this component does
+> Project-detecting fw shim: resolves framework root from .framework.yaml or bin/ location. Replaces global install symlink (T-664).
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `bin/fw-shim`
 

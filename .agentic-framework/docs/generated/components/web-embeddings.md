@@ -26,11 +26,6 @@ Configuration (T-273: config-driven, no hardcoded paths)
 | `web/app.py` | called_by |
 | `web/blueprints/api.py` | called_by |
 
-## Related
-
-### Tasks
-- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
-
 ---
 *Auto-generated from Component Fabric. Card: `web-embeddings.yaml`*
 *Last verified: 2026-02-22*

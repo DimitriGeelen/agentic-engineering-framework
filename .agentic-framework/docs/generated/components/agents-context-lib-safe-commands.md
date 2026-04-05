@@ -1,6 +1,6 @@
 # safe-commands
 
-> TODO: describe what this component does
+> Allowlist of safe bash commands for task gate bypass — git status, ls, cat, grep etc. that dont need an active task.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/lib/safe-commands.sh`
 

@@ -1,6 +1,6 @@
 # commit-cadence
 
-> TODO: describe what this component does
+> PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management).
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/commit-cadence.sh`
 
@@ -16,11 +16,6 @@ Exempt paths (not counted):
 Counter reset: post-commit git hook resets .edit-counter to 0
 Exit code: always 0 (PostToolUse hooks are advisory, cannot block)
 Output: JSON with additionalContext when warning threshold reached
-
-## Related
-
-### Tasks
-- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-commit-cadence.yaml`*

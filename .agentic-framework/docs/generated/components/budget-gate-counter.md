@@ -17,11 +17,11 @@
 ## Related
 
 ### Tasks
-- T-546: Continue fixing TermLink release builds
-- T-588: Declarative status transition rules — compiled ACL pattern for task state machine
-- T-596: Fix context budget thresholds — Anthropic reduced window to 200K without notice
-- T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer
-- T-649: Horizon triage + automated Human AC validation across work-completed tasks
+- T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+- T-789: Add pickup CLI commands to CLAUDE.md quick reference
+- T-816: Null object fallback for hooks — fail-open resilience pattern
+- T-817: 3-tier config resolution — env var configuration layer for framework settings
+- T-847: Session housekeeping — memory updates and handover
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-gate-counter.yaml`*

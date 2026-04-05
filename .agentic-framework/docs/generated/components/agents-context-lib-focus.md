@@ -23,7 +23,6 @@ Set or show current task focus
 ## Related
 
 ### Tasks
-- T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
 - T-659: Fix focus.yaml test failure — include default fields when creating from scratch
 
 ---

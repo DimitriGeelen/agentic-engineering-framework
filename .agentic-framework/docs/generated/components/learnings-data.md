@@ -8,9 +8,8 @@
 
 ## What It Does
 
-Project Memory - Learnings
-Lessons learned from completed tasks.
-Used by agents to improve future work.
+Project Learnings - Knowledge gained during development
+Added via: fw context add-learning "description" --task T-XXX
 
 ## Used By (3)
 
@@ -23,9 +22,11 @@ Used by agents to improve future work.
 ## Related
 
 ### Tasks
-- T-495: Path isolation — eliminate hardcoded absolute paths from all committed files
-- T-546: Continue fixing TermLink release builds
-- T-614: TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis
+- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
+- T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
+- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
+- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
+- T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-data.yaml`*

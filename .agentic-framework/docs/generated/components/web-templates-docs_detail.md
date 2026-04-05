@@ -1,6 +1,6 @@
 # docs_detail
 
-> TODO: describe what this component does
+> Full page template: document detail — renders markdown file content with breadcrumbs and navigation.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/docs_detail.html`
 

@@ -37,7 +37,9 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 ## Related
 
 ### Tasks
-- T-605: Fix bus.sh race condition — atomic ID generation for multi-agent safety
+- T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-bus.yaml`*

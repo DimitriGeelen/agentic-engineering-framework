@@ -16,9 +16,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
+source "$FRAMEWORK_ROOT/lib/config.sh"
 PID_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.pid"
 LOG_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.log"
-DEFAULT_PORT="${FW_PORT:-3000}"
+DEFAULT_PORT=$(fw_config "PORT" 3000)
 
 # Colors provided by lib/colors.sh (via paths.sh chain)
 

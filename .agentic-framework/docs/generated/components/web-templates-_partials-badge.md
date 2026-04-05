@@ -1,6 +1,6 @@
 # badge
 
-> TODO: describe what this component does
+> htmx partial: status badge component — renders colored badge for task status (captured, started-work, etc.).
 
 **Type:** fragment | **Subsystem:** watchtower | **Location:** `web/templates/_partials/badge.html`
 

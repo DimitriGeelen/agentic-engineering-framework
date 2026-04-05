@@ -1,6 +1,6 @@
 # review
 
-> TODO: describe what this component does
+> fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/review.sh`
 
@@ -39,6 +39,8 @@ When agent ACs are complete and human ACs remain:
 ### Tasks
 - T-642: emit_review type parameter — route inception to /inception, tasks to /tasks
 - T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-review.yaml`*

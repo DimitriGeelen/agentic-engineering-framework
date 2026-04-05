@@ -32,7 +32,8 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 ## Related
 
 ### Tasks
-- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-validate-init.yaml`*

@@ -40,8 +40,11 @@ Creates handover documents for session continuity
 ## Related
 
 ### Tasks
-- T-556: Handover commit attribution — use session ID not active task ID
-- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+- T-820: Fix TermLink dispatch preamble — workers write to target files
+- T-829: Input/output token breakdown — enrich handover frontmatter and timeline display
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-handover-handover.yaml`*

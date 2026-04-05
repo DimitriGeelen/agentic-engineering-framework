@@ -30,9 +30,6 @@
 ## Related
 
 ### Tasks
-- T-496: Implement path isolation — fw hook subcommand + portable settings.json + doctor validation
-- T-559: Project boundary gate — PreToolUse hook blocking writes outside PROJECT_ROOT
-- T-591: Commit cadence warning — PostToolUse hook counting edits since last commit
 - T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
 
 ---

@@ -1,6 +1,6 @@
 # search_utils
 
-> TODO: describe what this component does
+> Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page.
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/search_utils.py`
 
@@ -21,11 +21,6 @@
 | `web/app.py` | called_by |
 | `web/embeddings.py` | called_by |
 | `web/search.py` | called_by |
-
-## Related
-
-### Tasks
-- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search_utils.yaml`*

@@ -32,6 +32,12 @@ Article: docs/articles/deep-dives/{NN}-{subsystem}.md
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-798: Shellcheck cleanup: remaining peripheral agent scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-article.yaml`*
 *Last verified: 2026-03-11*

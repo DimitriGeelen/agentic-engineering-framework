@@ -17,6 +17,12 @@ Mandatory Dispatch Preamble
 | `agents/context/check-dispatch.sh` | referenced_by |
 | `agents/context/check-dispatch.sh` | references_by |
 
+## Related
+
+### Tasks
+- T-820: Fix TermLink dispatch preamble — workers write to target files
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-dispatch-preamble.yaml`*
 *Last verified: 2026-03-01*

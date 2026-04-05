@@ -89,11 +89,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-664: Project-detecting fw shim — replace global install symlink
-- T-666: fw doctor — warn about stale global install at HOME/.agentic-framework
-- T-680: Fix fw vendor self-referencing — detect source==target and pull from upstream
-- T-685: fw init should check/configure git user identity
-- T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
+- T-863: Fix hook lockout — bin/fw hook runner should not require -x on agent scripts
+- T-869: Fix ((var++)) set -e crash in bin/fw verify-acs
+- T-870: Sync vendored .agentic-framework/ with T-868/T-869 bugfixes
+- T-873: Fix fw approvals status exit 1 with no resolved approvals
+- T-874: Sync vendored bin/fw with T-873 approvals fix
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

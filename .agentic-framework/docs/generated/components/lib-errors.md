@@ -31,6 +31,12 @@ success MESSAGE           — Print success to stdout
 | `agents/context/context.sh` | calls |
 | `lib/paths.sh` | called_by |
 
+## Related
+
+### Tasks
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-errors.yaml`*
 *Last verified: 2026-03-10*

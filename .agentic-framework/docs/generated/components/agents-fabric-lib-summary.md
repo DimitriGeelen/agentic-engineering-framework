@@ -15,11 +15,6 @@ Implements: fw fabric overview, fw fabric subsystem, fw fabric stats
 |-----------|-------------|
 | `agents/fabric/fabric.sh` | called_by |
 
-## Related
-
-### Tasks
-- T-506: Fix stale subsystems.yaml — update counts, add missing watchtower-web-ui
-
 ---
 *Auto-generated from Component Fabric. Card: `agents-fabric-lib-summary.yaml`*
 *Last verified: 2026-02-20*

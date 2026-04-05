@@ -26,11 +26,11 @@ Project-specific content is preserved.
 ## Related
 
 ### Tasks
-- T-622: Fix fw upgrade — sync vendored hook scripts to consumers
-- T-653: Add cron registry seeding to fw upgrade
-- T-660: Fix global install sync — upgrade also syncs bin/fw and lib/ to HOME/.agentic-framework
-- T-665: Upgrade migration — replace global symlink with shim during fw upgrade
-- T-681: Add TermLink MCP server to fw init default MCP config
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-857: fw upgrade sync gap — lib/, agents/task-create/, agents/handover/, agents/git/ not vendored to consumer projects
+- T-858: Update fw upgrade help text with new sync targets
+- T-859: Fix fw upgrade VERSION file sync to vendored .agentic-framework/
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-upgrade.yaml`*

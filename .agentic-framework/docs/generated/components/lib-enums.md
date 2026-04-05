@@ -22,11 +22,6 @@ Usage: source "$FRAMEWORK_ROOT/lib/enums.sh"
 | `agents/task-create/create-task.sh` | called_by |
 | `agents/task-create/update-task.sh` | called_by |
 
-## Related
-
-### Tasks
-- T-588: Declarative status transition rules — compiled ACL pattern for task state machine
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-enums.yaml`*
 *Last verified: 2026-03-10*

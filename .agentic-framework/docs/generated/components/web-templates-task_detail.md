@@ -15,8 +15,6 @@
 ## Related
 
 ### Tasks
-- T-610: Parse Agent/Human AC sections + confidence markers in Watchtower
-- T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI
 - T-640: "Complete Task" button — show when all Human ACs checked, auto-complete via Watchtower
 
 ---

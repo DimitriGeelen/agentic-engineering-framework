@@ -8,9 +8,8 @@
 
 ## What It Does
 
-Project Memory - Decisions
-Key decisions made during the project with rationale.
-Referenced when similar decisions come up.
+Project Decisions - Architectural choices with rationale
+Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 
 ## Used By (2)
 
@@ -18,6 +17,11 @@ Referenced when similar decisions come up.
 |-----------|-------------|
 | `agents/context/context.sh` | read_by |
 | `agents/audit/audit.sh` | read_by |
+
+## Related
+
+### Tasks
+- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-decisions.yaml`*

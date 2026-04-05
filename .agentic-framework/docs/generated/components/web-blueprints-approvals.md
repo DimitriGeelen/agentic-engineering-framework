@@ -1,6 +1,6 @@
 # approvals
 
-> TODO: describe what this component does
+> Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/approvals.py`
 
@@ -35,6 +35,7 @@ Approvals older than this are considered expired (seconds)
 - T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 - T-669: Approvals page auto-refresh — htmx polling for live Tier 0 and Human AC updates
 - T-672: Add priority sorting to approvals page — urgent/stale items first, rubber-stamps last
+- T-846: Watchtower /approvals — add 'Complete All Ready' batch action for tasks with all ACs checked
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-approvals.yaml`*

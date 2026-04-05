@@ -42,8 +42,7 @@ Exempt paths (framework operations that don't need task context):
 ## Related
 
 ### Tasks
-- T-535: Build onboarding gate — tag-based PreToolUse enforcement + SessionStart injection
-- T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently
+- T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-active-task.yaml`*

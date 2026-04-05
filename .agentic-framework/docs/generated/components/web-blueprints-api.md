@@ -1,6 +1,6 @@
 # api
 
-> TODO: describe what this component does
+> Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/api.py`
 

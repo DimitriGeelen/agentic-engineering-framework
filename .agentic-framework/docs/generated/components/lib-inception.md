@@ -33,12 +33,6 @@ When the active task has `workflow_type: inception`:
 |-----------|-------------|
 | `bin/fw` | called_by |
 
-## Related
-
-### Tasks
-- T-633: Auto-link file references — fw commands and Watchtower markdown emit clickable URLs
-- T-637: Frictionless inception completion — Watchtower approval auto-completes inception tasks without second manual command
-
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception.yaml`*
 *Last verified: 2026-02-20*

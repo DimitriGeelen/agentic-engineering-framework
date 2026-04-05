@@ -6,6 +6,8 @@
 
 ## What It Does
 
+Next item in list is the predecessor (older session)
+
 ## Dependencies (2)
 
 | Target | Relationship |
@@ -21,6 +23,15 @@
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+
+## Related
+
+### Tasks
+- T-826: Timeline token usage — add per-session token costs to /timeline cards
+- T-827: Timeline per-session token delta — show session-specific token and turn counts alongside cumulative
+- T-829: Input/output token breakdown — enrich handover frontmatter and timeline display
+- T-852: Timeline per-session quality metrics display
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-timeline.yaml`*

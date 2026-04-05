@@ -1,6 +1,6 @@
 # review
 
-> TODO: describe what this component does
+> Full page template: task review — recommendation, evidence, AC list, approval/reject actions.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/review.html`
 
@@ -28,6 +28,7 @@ When agent ACs are complete and human ACs remain:
 
 ### Tasks
 - T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
+- T-676: Watchtower dark mode toggle — persist theme preference
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-review.yaml`*

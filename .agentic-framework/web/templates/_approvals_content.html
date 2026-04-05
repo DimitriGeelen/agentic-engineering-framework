@@ -112,8 +112,65 @@
     <h3>Human Acceptance Criteria</h3>
     <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }}</small>
 </div>
+
+<!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->
+{% if ready_count is defined and ready_count > 0 %}
+<div id="batch-complete-result" style="margin-bottom:0.5rem;">
+    <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
+          hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
+        <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
+            Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
+        </button>
+    </form>
+</div>
+{% endif %}
+
+<!-- Filter buttons (T-839) -->
+{% set rubber_stamp_count = pending_acs | selectattr('sort_priority', 'equalto', 2) | list | length %}
+{% set review_count = pending_acs | selectattr('sort_priority', 'equalto', 0) | list | length %}
+{% set stale_count = pending_acs | selectattr('is_stale') | list | length %}
+<div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+    <button class="ac-filter-btn outline" data-filter="all"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;"
+            onclick="filterACs('all')">
+        All ({{ ac_task_count }})
+    </button>
+    <button class="ac-filter-btn outline" data-filter="review"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b45309; color:#b45309;"
+            onclick="filterACs('review')">
+        Review ({{ review_count }})
+    </button>
+    <button class="ac-filter-btn outline" data-filter="rubber-stamp"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#047857; color:#047857;"
+            onclick="filterACs('rubber-stamp')">
+        Rubber-stamp ({{ rubber_stamp_count }})
+    </button>
+    {% if stale_count %}
+    <button class="ac-filter-btn outline" data-filter="stale"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            onclick="filterACs('stale')">
+        Stale >7d ({{ stale_count }})
+    </button>
+    {% endif %}
+</div>
+<script>
+function filterACs(filter) {
+    document.querySelectorAll('.human-ac-group').forEach(function(card) {
+        var priority = card.dataset.priority;
+        var stale = card.dataset.stale === 'true';
+        var show = filter === 'all'
+            || (filter === 'review' && priority === '0')
+            || (filter === 'rubber-stamp' && priority === '2')
+            || (filter === 'stale' && stale);
+        card.style.display = show ? '' : 'none';
+    });
+    document.querySelectorAll('.ac-filter-btn').forEach(function(btn) {
+        btn.classList.toggle('contrast', btn.dataset.filter === filter);
+    });
+}
+</script>
 {% for t in pending_acs %}
-<div class="approval-card human-ac-group">
+<div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
         <div>
             <a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:

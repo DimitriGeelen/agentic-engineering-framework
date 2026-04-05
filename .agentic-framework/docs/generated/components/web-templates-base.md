@@ -15,7 +15,10 @@
 ## Related
 
 ### Tasks
-- T-507: Fix fabric graph not rendering on htmx navigation (requires reload)
+- T-676: Watchtower dark mode toggle — persist theme preference
+- T-732: Remove unused Cytoscape.js vendor files from base.html
+- T-854: Pass project name to Watchtower templates — resolve from project root, display in header
+- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-base.yaml`*

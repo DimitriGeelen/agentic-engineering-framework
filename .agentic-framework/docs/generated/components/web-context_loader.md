@@ -27,11 +27,6 @@
 | `web/blueprints/metrics.py` | called_by |
 | `web/blueprints/risks.py` | called_by |
 
-## Related
-
-### Tasks
-- T-492: Build E2E onboarding test script — install → init → doctor → serve → smoke
-
 ---
 *Auto-generated from Component Fabric. Card: `web-context_loader.yaml`*
 *Last verified: 2026-03-11*

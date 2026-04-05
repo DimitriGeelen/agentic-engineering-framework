@@ -1,6 +1,6 @@
 # version
 
-> TODO: describe what this component does
+> fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/version.sh`
 
@@ -18,8 +18,10 @@ Part of: Agentic Engineering Framework (T-606)
 ## Related
 
 ### Tasks
-- T-606: Version bumping mechanism — structural enforcement for version tracking across framework and vendored projects
 - T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
+- T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
+- T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-version.yaml`*

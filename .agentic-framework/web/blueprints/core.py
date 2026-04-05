@@ -258,6 +258,28 @@ def _get_approval_qr():
         return summary, None, None
 
 
+def _get_token_usage():
+    """Get token usage summary for landing page widget (T-803)."""
+    try:
+        from web.blueprints.costs import _load_all_sessions, _fmt_tokens
+        sessions = _load_all_sessions()
+        if not sessions:
+            return None
+        current = sessions[-1]
+        total_all = sum(s["total"] for s in sessions)
+        total_cache_read = sum(s["cache_read"] for s in sessions)
+        cache_hit = (total_cache_read * 100 / total_all) if total_all > 0 else 0
+        return {
+            "current_tokens": _fmt_tokens(current["total"]),
+            "current_turns": current["turns"],
+            "project_tokens": _fmt_tokens(total_all),
+            "sessions": len(sessions),
+            "cache_hit": f"{cache_hit:.0f}",
+        }
+    except Exception:
+        return None
+
+
 @bp.route("/")
 def index():
     active_dir = PROJECT_ROOT / ".tasks" / "active"
@@ -290,6 +312,8 @@ def index():
         ctx["approval_summary"] = approval_summary
         ctx["qr_approvals_data"] = qr_data
         ctx["qr_approvals_url"] = qr_url
+        # T-803: Token usage widget
+        ctx["token_usage"] = _get_token_usage()
         return render_page("cockpit.html", page_title="Watchtower", **ctx)
 
     # Fallback: existing dashboard (no scan data)

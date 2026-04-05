@@ -1,6 +1,6 @@
 # check-dispatch-pre
 
-> TODO: describe what this component does
+> PreToolUse hook: gate agent dispatch count — blocks Agent tool when parallel limit reached (max 5). Prevents T-073-class context explosions.
 
 **Type:** script | **Subsystem:** context-fabric | **Location:** `agents/context/check-dispatch-pre.sh`
 

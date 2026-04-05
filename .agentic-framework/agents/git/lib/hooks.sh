@@ -360,8 +360,9 @@ echo ""
 echo "=== Pre-Push Audit Check ==="
 echo ""
 
-# Run audit
-"$AUDIT_SCRIPT"
+# T-862: Run fast audit subset for pre-push (full audit takes >90s with 100+ tasks)
+# Structure checks: dirs exist, YAML parses, fabric valid — fast and catches real breaks
+"$AUDIT_SCRIPT" --section structure
 audit_exit=$?
 
 if [ $audit_exit -eq 2 ]; then

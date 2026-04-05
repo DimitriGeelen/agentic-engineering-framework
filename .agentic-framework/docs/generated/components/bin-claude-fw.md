@@ -23,12 +23,6 @@ The restart signal file is .context/working/.restart-requested
 |--------|-------------|
 | `C-008` | reads |
 
-## Related
-
-### Tasks
-- T-501: Add BASH_DEFAULT_TIMEOUT_MS to claude-fw wrapper
-- T-530: Port claude-fw --termlink flag from consumer project to upstream
-
 ---
 *Auto-generated from Component Fabric. Card: `bin-claude-fw.yaml`*
 *Last verified: 2026-03-01*

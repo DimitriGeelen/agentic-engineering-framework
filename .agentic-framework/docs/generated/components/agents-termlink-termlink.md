@@ -1,6 +1,6 @@
 # termlink
 
-> TODO: describe what this component does
+> TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary.
 
 **Type:** script | **Subsystem:** unknown | **Location:** `agents/termlink/termlink.sh`
 
@@ -38,11 +38,11 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 ## Related
 
 ### Tasks
-- T-502: TermLink integration — cross-terminal session communication for framework
-- T-503: TermLink Phase 0 build — doctor check, agents/termlink/, fw route, CLAUDE.md
-- T-504: Add fw termlink update subcommand + daily update check cron
-- T-577: PICKUP-007: TermLink run timeout creates orphaned processes
 - T-652: TermLink dispatch task enforcement — make --task mandatory in fw termlink dispatch
+- T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)
+- T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
+- T-798: Shellcheck cleanup: remaining peripheral agent scripts
+- T-843: Fix TermLink cleanup killing active dispatch workers
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-termlink-termlink.yaml`*

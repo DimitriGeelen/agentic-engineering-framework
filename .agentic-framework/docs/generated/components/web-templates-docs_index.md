@@ -1,6 +1,6 @@
 # docs_index
 
-> TODO: describe what this component does
+> Full page template: document index — lists docs/reports/ and docs/articles/ files with last-modified dates.
 
 **Type:** template | **Subsystem:** watchtower | **Location:** `web/templates/docs_index.html`
 

@@ -1,6 +1,6 @@
 # docs
 
-> TODO: describe what this component does
+> Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/ — renders markdown with syntax highlighting.
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/docs.py`
 
@@ -23,11 +23,6 @@ Safe directories for file viewer (relative to PROJECT_ROOT)
 |-----------|-------------|
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
-
-## Related
-
-### Tasks
-- T-633: Auto-link file references — fw commands and Watchtower markdown emit clickable URLs
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-docs.yaml`*

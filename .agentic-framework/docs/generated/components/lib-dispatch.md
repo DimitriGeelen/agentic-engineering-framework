@@ -1,6 +1,6 @@
 # dispatch
 
-> TODO: describe what this component does
+> fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/dispatch.sh`
 
@@ -36,6 +36,12 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | `bin/fw` | called_by |
 | `lib/bus.sh` | called_by |
 | `agents/context/check-agent-dispatch.sh` | called_by |
+
+## Related
+
+### Tasks
+- T-760: Fix shellcheck warnings in core lib scripts (bus.sh, dispatch.sh, colors.sh)
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-dispatch.yaml`*

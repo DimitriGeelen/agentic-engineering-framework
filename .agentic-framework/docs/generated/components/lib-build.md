@@ -1,6 +1,6 @@
 # build
 
-> TODO: describe what this component does
+> fw build subcommand: placeholder for future build orchestration. Currently unused.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/build.sh`
 
@@ -14,11 +14,6 @@ Called by: fw build, fw update, stale-guard in hooks
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
-
-## Related
-
-### Tasks
-- T-592: Scaffold lib/ts/ — TypeScript build infrastructure for framework
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-build.yaml`*

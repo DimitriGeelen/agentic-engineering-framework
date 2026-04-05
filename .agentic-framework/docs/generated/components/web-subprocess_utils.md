@@ -32,11 +32,6 @@
 | `web/blueprints/session.py` | called_by |
 | `web/blueprints/tasks.py` | called_by |
 
-## Related
-
-### Tasks
-- T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional
-
 ---
 *Auto-generated from Component Fabric. Card: `web-subprocess_utils.yaml`*
 *Last verified: 2026-03-11*

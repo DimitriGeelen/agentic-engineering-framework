@@ -32,8 +32,8 @@ Creates properly structured tasks following the framework specification
 ## Related
 
 ### Tasks
-- T-555: Reject template placeholder task names in create-task.sh
-- T-595: Migrate highest-risk inline Python blocks to fw-util calls
+- T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
+- T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-task-create-create-task.yaml`*

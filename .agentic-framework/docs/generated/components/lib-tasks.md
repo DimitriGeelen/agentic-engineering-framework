@@ -1,6 +1,6 @@
 # tasks
 
-> TODO: describe what this component does
+> fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts.
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/tasks.sh`
 
