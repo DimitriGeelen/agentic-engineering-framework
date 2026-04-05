@@ -1,9 +1,8 @@
-# Audit Results - 2026-04-05-0914
-timestamp: 2026-04-05T07:14:36Z
-sections: "structure"
+# Audit Results - 2026-04-05-0943
+timestamp: 2026-04-05T07:43:08Z
 summary:
-  pass: 8
-  warn: 1
+  pass: 139
+  warn: 33
   fail: 0
 findings:
   - level: PASS
@@ -17,11 +16,369 @@ findings:
   - level: PASS
     check: "Task template exists"
   - level: PASS
-    check: "All 10 project YAML files parse correctly"
+    check: "All 7 project YAML files parse correctly"
   - level: PASS
-    check: "Fabric: 241 registered, 0 unregistered"
+    check: "All 135 active tasks are valid"
   - level: WARN
-    check: "Fabric: 23/241 cards have no edges"
-    mitigation: "Run: fw fabric enrich"
+    check: "Task T-548 is 13 days old with only 1 updates"
+    mitigation: "Add progress updates to T-548-npm-install-pathway--evaluate-whether-to.md"
+  - level: WARN
+    check: "Task T-807 has short description (42 chars)"
+    mitigation: "Expand description in T-807-unit-tests-for-libcostssh-token-tracking.md"
+  - level: WARN
+    check: "Task T-876 has short description (40 chars)"
+    mitigation: "Expand description in T-876-upgrade-11-consumer-projects-to-v14553.md"
+  - level: WARN
+    check: "Task T-885 has short description (20 chars)"
+    mitigation: "Expand description in T-885-onboarding-test-task.md"
+  - level: WARN
+    check: "Task T-886 has short description (20 chars)"
+    mitigation: "Expand description in T-886-onboarding-test-task.md"
+  - level: WARN
+    check: "Task T-887 has short description (20 chars)"
+    mitigation: "Expand description in T-887-onboarding-test-task.md"
+  - level: WARN
+    check: "Uncommitted changes present"
+    mitigation: "Commit changes with task reference or stash"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (241 cards)"
+    check: "Bypass log exists"
+  - level: PASS
+    check: "Commit-msg hook installed"
+  - level: PASS
+    check: "No Tier 0 violations detected"
+  - level: PASS
+    check: "Practices documented: 10 practice(s) in practices.yaml"
+  - level: WARN
+    check: "Bugfix-learning coverage: 0% (0/117)"
+    mitigation: "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
+  - level: WARN
+    check: "Completed task T-881 has no episodic summary"
+    mitigation: "Run: ./agents/context/context.sh generate-episodic T-881"
+  - level: PASS
+    check: "All 814 episodic summaries have quality content"
+  - level: WARN
+    check: "Orphaned episodic: T-779 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
+  - level: WARN
+    check: "Orphaned episodic: T-785 has no matching task file"
+    mitigation: "Remove orphaned episodic or create matching task"
+  - level: PASS
+    check: "Observation inbox clean (0 pending)"
+  - level: PASS
+    check: "Gaps register: 11 watching, no triggers fired"
+  - level: PASS
+    check: "Handover open questions: none (section empty or template placeholder)"
+  - level: PASS
+    check: "Graduation pipeline: 0 learnings (threshold: 20)"
+  - level: PASS
+    check: "All 97 completed inceptions have research artifacts"
+  - level: WARN
+    check: "C-001: Inception T-316 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-316-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-432 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-432-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-532 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-532-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-533 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-533-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-548 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-548-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-549 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-549-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-550 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-550-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-558 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-558-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-586 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-586-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-601 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-601-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-603 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-603-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-608 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-608-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-705 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-705-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-815 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-815-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-825 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-825-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-835 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-835-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-837 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-837-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-844 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-844-*.md — the thinking trail IS the artifact"
+  - level: WARN
+    check: "C-001: Inception T-882 has no research artifact in docs/reports/"
+    mitigation: "Create docs/reports/T-882-*.md — the thinking trail IS the artifact"
+  - level: PASS
+    check: "C-002: commit-msg hook has research artifact check"
+  - level: PASS
+    check: "C-002: No research warnings logged (clean or first run)"
+  - level: PASS
+    check: "C-003: Research checkpoint logic present in checkpoint.sh"
+  - level: PASS
+    check: "CTL-001: Focus file has active task (T-887)"
+  - level: PASS
+    check: "CTL-003: Budget status file absent (no active session)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 0 (last commit: unknown)"
+  - level: PASS
+    check: "CTL-018: Budget status absent (no active session — expected)"
+  - level: PASS
+    check: "CTL-008: No commits to check"
+  - level: PASS
+    check: "CTL-020: 4 cron audit file(s) in last hour"
+  - level: PASS
+    check: "CTL-002: Tier 0 guard installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-005: Error watchdog installed and wired in settings.json"
+  - level: PASS
+    check: "CTL-006: Handover coverage for compactions (486 handovers, 179 compactions)"
+  - level: PASS
+    check: "CTL-007: Post-compact resume hook configured in settings.json"
+  - level: PASS
+    check: "CTL-010: Bypass log has 13 entries (post-commit detector working)"
+  - level: PASS
+    check: "CTL-011: pre-push hook installed and executable"
+  - level: WARN
+    check: "CTL-012: Completed task T-451 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: WARN
+    check: "CTL-012: Completed task T-534 has unchecked AC"
+    mitigation: "Review task completion — AC gate may have been bypassed"
+  - level: PASS
+    check: "CTL-019: claude-fw wrapper installed and executable"
+  - level: PASS
+    check: "CTL-025: T-436 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-446 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-448 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-460 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-470 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-476 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-479 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-481 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-483 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-493 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-505 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-511 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-516 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-518 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-530 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-571 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-579 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-584 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-594 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-598 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-599 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-600 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-602 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-607 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-610 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-611 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-612 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-613 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-614 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-619 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-621 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-631 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-632 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-633 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-634 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-640 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-644 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-645 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-646 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-648 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-650 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-651 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-662 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-663 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-664 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-671 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-676 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-678 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-679 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-686 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-696 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-697 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-698 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-699 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-700 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-701 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-702 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-703 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-706 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-707 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-708 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-710 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-726 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-730 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-772 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-782 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-792 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-799 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-800 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-816 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-817 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-818 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-819 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-822 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-823 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-824 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-826 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-827 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-828 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-829 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-830 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-831 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-832 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-849 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-850 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-851 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-857 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-864 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-866 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-875 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-877 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-025: T-880 partial-complete with owner:human ✓"
+  - level: PASS
+    check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
+  - level: PASS
+    check: "D1: Episodic quality — 2% [TODO] (20/814)"
+  - level: WARN
+    check: "D2: Human review queue — 11 task(s) waiting >14d: T-446(21d) T-460(22d) T-470(23d) T-476(23d) T-481(21d) T-483(21d) T-493(21d) T-505(18d) T-511(18d) T-516(18d) T-518(18d)"
+    mitigation: "Review with: fw task verify"
+  - level: PASS
+    check: "D8: Handover quality — no [TODO] in LATEST.md"
+  - level: PASS
+    check: "D8b: Handover archive — 0/10 recent handovers have [TODO]s"
+  - level: PASS
+    check: "D10: Decision-without-dialogue — none detected"
+  - level: PASS
+    check: "D11: Gap register staleness — all gaps fresh"
+  - level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - level: PASS
+    check: "D5: Task lifecycle — no anomalies"
+  - level: PASS
+    check: "D3: Commit velocity — normal (PASS today=41 avg=72 ratio=0.6x)"
+  - level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 118_commits_24h)"
+  - level: PASS
+    check: "D6: Completion velocity — normal (PASS insufficient_data)"
+  - level: PASS
+    check: "D12: Bypass log — no log file"
+  - level: PASS
+    check: "D9: Control drift — normal (PASS insufficient_audits)"
+  - level: PASS
+    check: "CTL-016: No failure patterns recorded"
