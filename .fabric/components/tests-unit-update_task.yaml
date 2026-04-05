@@ -1,0 +1,17 @@
+id: tests/unit/update_task.bats
+name: update_task
+type: test
+subsystem: tests
+location: tests/unit/update_task.bats
+tags: [task-update, bats, unit-test]
+
+purpose: "Unit tests for agents/task-create/update-task.sh (11 tests)"
+
+depends_on:
+  - target: agents/task-create/update-task.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-05
+created_by: T-928
