@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-921: Add unit tests for agents/task-create/create-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-05T16:04:30Z
+# ============================================================================
+
+task_id: T-921
+task_name: "Add unit tests for agents/task-create/create-task.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-05T16:02:31Z
+completed: 2026-04-05T16:04:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-05T18:03:57+02:00
+last_commit: 2026-04-05T18:04:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 17 unit tests for create-task.sh. Register create_task.bats in fabric
+
+# Key outcomes
+outcomes:
+  - "Test file exists at tests/unit/create_task.bats"
+  - "Tests cover generate_slug (3 tests: lowercase, hyphens, truncation)"
+  - "Tests cover format_yaml_array (via tags test)"
+  - "Tests cover placeholder name rejection (3 tests)"
+  - "Tests cover help flag"
+  - "Tests cover full task creation (5 tests: basic, tags, horizon, start, inception)"
+  - "All tests pass (17/17)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-create_task.yaml"
+  - ".tasks/active/T-921-add-unit-tests-for-agentstask-createcrea.md"
+  - "tests/unit/create_task.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-05T18:03:57"
+    action: "T-921: Add 17 unit tests for create-task.sh"
+  - time: "2026-04-05T18:04:23"
+    action: "T-921: Register create_task.bats in fabric"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 3
+  lines_added: 283
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-921-add-unit-tests-for-agentstask-createcrea.md
+generated_by: context-agent-hybrid
