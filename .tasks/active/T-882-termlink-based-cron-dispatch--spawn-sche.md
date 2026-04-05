@@ -4,7 +4,7 @@ name: "TermLink-based cron dispatch — spawn scheduled Claude sessions for dete
 description: >
   Inception: TermLink-based cron dispatch — spawn scheduled Claude sessions for deterministic audit/health tasks with interpreted output
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:58:24Z
-last_update: 2026-04-05T06:59:39Z
+last_update: 2026-04-05T07:10:38Z
 date_finished: null
 ---
 
@@ -85,9 +85,9 @@ The idea: use TermLink to spawn scheduled Claude sessions (`claude -p` or `claud
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] All 3 spikes completed with findings
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] All 3 spikes completed with findings
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -129,6 +129,17 @@ The idea: use TermLink to spawn scheduled Claude sessions (`claude -p` or `claud
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** 5 high-value use cases identified. `fw termlink dispatch` mechanism already works. Token cost ~$1-3/day. Safety model (read-only + structured output + action separation) prevents unintended mutations.
+- **Evidence:**
+  - 4 dispatch mechanisms evaluated, Option C (fw termlink dispatch) is best
+  - `claude -p` works headlessly from cron (no TTY needed)
+  - `--json-schema` enables deterministic structured output
+  - Hybrid local/API approach reduces cost for simple tasks
+  - Research in `docs/reports/T-882-termlink-cron-dispatch.md`
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
@@ -137,3 +148,6 @@ The idea: use TermLink to spawn scheduled Claude sessions (`claude -p` or `claud
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-05T07:10:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
