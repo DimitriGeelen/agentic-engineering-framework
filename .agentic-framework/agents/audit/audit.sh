@@ -239,7 +239,7 @@ CRONEOF
                 done
                 echo ""
                 # Show latest cron audit
-                local_latest=$(find "$CONTEXT_DIR/audits/cron/" -maxdepth 1 -name '*.yaml' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
+                local_latest=$(find "$CONTEXT_DIR/audits/cron/" -maxdepth 1 -name '*.yaml' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
                 if [ -n "$local_latest" ]; then
                     echo "Latest cron audit: $(basename "$local_latest")"
                     grep -E "^  (pass|warn|fail):" "$local_latest" 2>/dev/null | sed 's/^/  /'
@@ -1897,7 +1897,7 @@ fi
 # (Full re-run of all verification is expensive; check latest 3)
 verify_fail=0
 shopt -s nullglob
-recent_completed=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -3)
+recent_completed=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -3)
 for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
     task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
@@ -2143,7 +2143,7 @@ if [ -f "$HANDOVER_LATEST" ]; then
         hf_todos=$(grep -c '\[TODO' "$hf" 2>/dev/null || true)
         hf_todos=$(echo "$hf_todos" | tr -d '[:space:]')
         [ "${hf_todos:-0}" -gt 3 ] && d8b_stale=$((d8b_stale + 1))
-    done < <(find "$CONTEXT_DIR/handovers" -maxdepth 1 -name 'S-*.md' -type f -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -10)
+    done < <(find "$CONTEXT_DIR/handovers" -maxdepth 1 -name 'S-*.md' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -10)
     if [ "$d8b_stale" -gt 5 ]; then
         fail "D8b: Handover archive rot — $d8b_stale/$d8b_checked recent handovers have unfilled [TODO]s" \
              "Auto-generated handovers are not being filled" \

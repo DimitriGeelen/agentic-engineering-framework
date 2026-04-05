@@ -175,7 +175,7 @@ PROJECT_DIR_NAME="${PROJECT_ROOT//\//-}"
 PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
 TRANSCRIPT=""
 if [ -d "$PROJECT_JSONL_DIR" ]; then
-    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -1)
+    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
