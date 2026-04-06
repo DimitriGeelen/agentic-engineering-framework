@@ -1,0 +1,17 @@
+id: tests/integration/fw_costs.bats
+name: fw_costs
+type: test
+subsystem: tests
+location: tests/integration/fw_costs.bats
+tags: [fw-costs, bats, integration-test]
+
+purpose: "Integration tests for fw costs CLI (4 tests)"
+
+depends_on:
+  - target: bin/fw
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-06
+created_by: T-947
