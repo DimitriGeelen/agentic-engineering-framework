@@ -1,13 +1,17 @@
 id: tests/unit/lib_validate_init.bats
 name: lib_validate_init
-type: script
-subsystem: unknown
+type: test
+subsystem: tests
 location: tests/unit/lib_validate_init.bats
-tags: []
-purpose: 'TODO: describe what this component does'
+tags: [lib-validate-init, bats, unit-test]
+
+purpose: "Unit tests for lib/validate-init.sh (7 tests)"
+
 depends_on:
-- target: lib/validate-init.sh
-  type: calls
+  - target: lib/validate-init.sh
+    type: calls
+
 depended_by: []
-last_verified: 2026-03-30
-created_by: unknown
+
+last_verified: 2026-04-06
+created_by: T-945

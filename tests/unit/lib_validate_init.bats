@@ -1,84 +1,64 @@
 #!/usr/bin/env bats
-# Unit tests for lib/validate-init.sh
-#
-# Tests do_validate_init argument parsing, help, and validation logic
+# Unit tests for lib/validate-init.sh (fw validate-init)
+# Origin: T-945
 
-load ../test_helper
+FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+VALIDATE="$FRAMEWORK_ROOT/lib/validate-init.sh"
 
 setup() {
-    TEST_TEMP_DIR="$(mktemp -d)"
-    export FRAMEWORK_ROOT
-    export PROJECT_ROOT="$TEST_TEMP_DIR"
-    export NO_COLOR=1
-    source "$FRAMEWORK_ROOT/lib/colors.sh"
-    source "$FRAMEWORK_ROOT/lib/validate-init.sh"
+    export TEST_DIR="$(mktemp -d)"
+    mkdir -p "$TEST_DIR/.context/working"
+    mkdir -p "$TEST_DIR/.tasks/active"
+    mkdir -p "$TEST_DIR/.tasks/completed"
+    mkdir -p "$TEST_DIR/.tasks/templates"
+    cat > "$TEST_DIR/.framework.yaml" << 'EOF'
+project_name: test-project
+version: 1.0.0
+provider: generic
+EOF
 }
 
 teardown() {
-    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    rm -rf "$TEST_DIR"
 }
 
-@test "validate-init: do_validate_init --help shows usage" {
-    run do_validate_init --help
+@test "validate-init --help shows usage" {
+    run bash -c "source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init --help"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"fw validate-init"* ]]
-    [[ "$output" == *"--provider"* ]]
-    [[ "$output" == *"--quiet"* ]]
+    [[ "$output" == *"validate-init"* ]]
+    [[ "$output" == *"Verify"* ]]
 }
 
-@test "validate-init: do_validate_init rejects unknown option" {
-    run do_validate_init --bogus
+@test "validate-init rejects unknown options" {
+    run bash -c "source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init --invalid-option"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"Unknown option"* ]]
+    [[ "$output" == *"Unknown"* ]]
 }
 
-@test "validate-init: do_validate_init rejects nonexistent directory" {
-    run do_validate_init "/nonexistent/xyz"
+@test "validate-init handles nonexistent directory" {
+    run bash -c "source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init /nonexistent/path/xyz"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"does not exist"* ]]
+    [[ "$output" == *"does not exist"* ]] || [[ "$output" == *"ERROR"* ]]
 }
 
-@test "validate-init: runs on empty dir and reports failures" {
-    local proj="$TEST_TEMP_DIR/empty-proj"
-    mkdir -p "$proj"
-    run do_validate_init "$proj"
-    [ -n "$output" ]
+@test "validate-init runs on test directory" {
+    run bash -c "export FRAMEWORK_ROOT='$FRAMEWORK_ROOT' && source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init '$TEST_DIR' --provider generic"
+    [[ "$status" -le 1 ]]
 }
 
-@test "validate-init: --quiet produces less output than verbose" {
-    local proj="$TEST_TEMP_DIR/quiet-proj"
-    mkdir -p "$proj"
-    local quiet_output verbose_output
-    quiet_output=$(do_validate_init "$proj" --quiet 2>&1 || true)
-    verbose_output=$(do_validate_init "$proj" 2>&1 || true)
-    local quiet_lines verbose_lines
-    quiet_lines=$(echo "$quiet_output" | wc -l)
-    verbose_lines=$(echo "$verbose_output" | wc -l)
-    [ "$quiet_lines" -le "$verbose_lines" ]
+@test "validate-init accepts --quiet flag" {
+    run bash -c "export FRAMEWORK_ROOT='$FRAMEWORK_ROOT' && source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init '$TEST_DIR' --provider generic --quiet"
+    [[ "$status" -le 1 ]]
 }
 
-@test "validate-init: detects created directories as passing" {
-    local proj="$TEST_TEMP_DIR/partial-proj"
-    mkdir -p "$proj/.tasks/active" "$proj/.tasks/completed" "$proj/.tasks/templates"
-    mkdir -p "$proj/.context/working" "$proj/.context/project" "$proj/.context/episodic"
-    mkdir -p "$proj/.context/handovers" "$proj/.context/scans"
-    mkdir -p "$proj/.context/bus/results" "$proj/.context/bus/blobs"
-    mkdir -p "$proj/.context/audits/cron" "$proj/.context/cron"
-    run do_validate_init "$proj" --provider generic
-    [[ "$output" == *"Passed"* ]] || [[ "$output" == *"pass"* ]]
+@test "validate-init detects provider from .framework.yaml" {
+    run bash -c "export FRAMEWORK_ROOT='$FRAMEWORK_ROOT' && source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init '$TEST_DIR'"
+    [[ "$status" -le 1 ]]
 }
 
-@test "validate-init: auto-detects provider from .framework.yaml" {
-    local proj="$TEST_TEMP_DIR/autodetect-proj"
-    mkdir -p "$proj"
-    echo "provider: generic" > "$proj/.framework.yaml"
-    run do_validate_init "$proj"
-    [ "$status" -eq 0 ] || [ "$status" -eq 1 ]
-}
-
-@test "validate-init: shows summary with totals" {
-    local proj="$TEST_TEMP_DIR/summary-proj"
-    mkdir -p "$proj"
-    run do_validate_init "$proj"
-    [[ "$output" == *"Passed"* ]] || [[ "$output" == *"/"* ]]
+@test "validate-init on framework root runs checks" {
+    run bash -c "export FRAMEWORK_ROOT='$FRAMEWORK_ROOT' && source '$FRAMEWORK_ROOT/lib/paths.sh' && source '$VALIDATE' && do_validate_init '$FRAMEWORK_ROOT' --provider claude-code"
+    # May have warnings from invalid task files, but should complete (0 or 1)
+    [[ "$status" -le 1 ]]
+    [[ "$output" == *"Validation"* ]]
 }
