@@ -218,6 +218,29 @@ do_inception_decide() {
         exit 1
     fi
 
+    # Gate: require ## Recommendation with actual content (T-974)
+    local has_recommendation=false
+    if grep -q '^## Recommendation' "$task_file"; then
+        # Check it has content beyond just comments/placeholders
+        local rec_content
+        rec_content=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" | grep -v '^## ' | grep -v '^<!--' | grep -v '^\-\->' | grep -v '^$' | head -1)
+        if [ -n "$rec_content" ]; then
+            has_recommendation=true
+        fi
+    fi
+    if ! $has_recommendation; then
+        echo -e "${RED}ERROR: ## Recommendation section required before decision${NC}" >&2
+        echo "" >&2
+        echo -e "The task file must contain a ## Recommendation section with:" >&2
+        echo -e "  **Recommendation:** GO / NO-GO / DEFER" >&2
+        echo -e "  **Rationale:** Why (cite evidence)" >&2
+        echo -e "  **Evidence:** Bullet list of findings" >&2
+        echo "" >&2
+        echo -e "Watchtower reads this section — without it, the human sees no recommendation." >&2
+        echo -e "Write the recommendation, then re-run this command." >&2
+        exit 1
+    fi
+
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     local decision_upper
