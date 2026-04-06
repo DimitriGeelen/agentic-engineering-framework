@@ -21,6 +21,8 @@ depended_by:
   type: called_by
 - target: lib/setup.sh
   type: called_by
+- target: tests/unit/create_task.bats
+  type: tested_by
 last_enriched: '2026-03-28'
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md

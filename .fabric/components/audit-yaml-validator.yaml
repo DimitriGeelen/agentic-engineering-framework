@@ -9,8 +9,8 @@ tags:
 - validation
 - regression
 - structure
-purpose: Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after
-  T-206 silent corruption.
+purpose: Validate all project YAML files parse correctly. Part of the audit structure
+  section. Added as regression test after T-206 silent corruption.
 location_detail:
   file: agents/audit/audit.sh
   section: structure checks
@@ -19,7 +19,7 @@ depends_on:
 - target: F-001
   type: reads
   location: agents/audit/audit.sh:276
-  contract: python3 yaml.safe_load() — checks parse, non-empty, is-dict
+  contract: "python3 yaml.safe_load() \u2014 checks parse, non-empty, is-dict"
 - target: C-008
   type: calls
 - target: agents/context/check-tier0.sh
@@ -40,6 +40,8 @@ depended_by:
   type: called_by
 - target: agents/onboarding-test/test-onboarding.sh
   type: called_by
+- target: tests/unit/audit.bats
+  type: tested_by
 last_verified: 2026-02-20
 created_by: T-207
 last_enriched: '2026-03-28'

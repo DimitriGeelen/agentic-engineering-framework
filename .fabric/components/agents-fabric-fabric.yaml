@@ -30,6 +30,8 @@ depended_by:
   type: called_by
 - target: agents/context/check-fabric-new-file.sh
   type: called_by
+- target: tests/unit/fabric.bats
+  type: tested_by
 docs:
 - path: docs/articles/deep-dives/07-component-fabric.md
   title: 'Deep Dive: Component Fabric'

@@ -177,3 +177,9 @@ depended_by:
   type: called-by
 - target: tests/integration/fw_traceability.bats
   type: called-by
+- target: tests/integration/fw_costs.bats
+  type: tested_by
+- target: tests/integration/fw_self_test.bats
+  type: tested_by
+- target: tests/integration/fw_config.bats
+  type: tested_by

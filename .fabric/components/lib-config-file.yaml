@@ -13,5 +13,7 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_config_file.bats
   type: called-by
+- target: tests/integration/fw_config.bats
+  type: tested_by
 last_verified: 2026-04-05
 created_by: unknown
