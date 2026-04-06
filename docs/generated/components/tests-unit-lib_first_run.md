@@ -1,13 +1,15 @@
 # lib_first_run
 
-> TODO: describe what this component does
+> Unit tests for lib/first-run.sh (4 tests)
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/unit/lib_first_run.bats`
+**Type:** test | **Subsystem:** tests | **Location:** `tests/unit/lib_first_run.bats`
+
+**Tags:** `lib-first-run`, `bats`, `unit-test`
 
 ## What It Does
 
-Unit tests for lib/first-run.sh
-Tests do_first_run output and structure
+Unit tests for lib/first-run.sh (fw first-run)
+Origin: T-945
 
 ## Dependencies (1)
 
@@ -19,7 +21,8 @@ Tests do_first_run output and structure
 
 ### Tasks
 - T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
+- T-945: Unit tests for untested lib scripts — ask.sh, first-run.sh, validate-init.sh
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_first_run.yaml`*
-*Last verified: 2026-03-30*
+*Last verified: 2026-04-06*

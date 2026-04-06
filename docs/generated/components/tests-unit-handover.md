@@ -9,7 +9,7 @@
 ## What It Does
 
 Unit tests for agents/handover/handover.sh
-Origin: T-923
+Origin: T-923, T-944 (isolation fix)
 
 ### Framework Reference
 
@@ -27,6 +27,7 @@ Origin: T-923
 
 ### Tasks
 - T-923: Add unit tests for agents/handover/handover.sh
+- T-944: Fix handover.bats test pollution — handover tests overwrite real LATEST.md
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover.yaml`*
