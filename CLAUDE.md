@@ -761,6 +761,35 @@ Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteri
 - When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
 - The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
 
+### AC Classification Guidance (T-954)
+
+When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
+
+**Make it a Human AC if ANY apply:**
+1. **Strategic authority** — go/no-go decisions, architecture choices, priority calls
+2. **Subjective judgment** — quality, tone, UX feel, "is this good enough?"
+3. **Irreversible external action** — publishing, deploying to production, sending communications
+4. **Cross-project blast radius** — changes affecting multiple consumer projects or external users
+
+**Make it an Agent AC (with verification command) if ALL apply:**
+1. **Deterministic outcome** — binary pass/fail with clear expected result
+2. **Reversible** — can be undone if wrong (git revert, config change)
+3. **Internal scope** — affects only development tooling, not external users
+4. **Mechanical execution** — no judgment needed, just "run X, check Y"
+
+**When in doubt, make it Human** — false negatives (missing a broken thing) are worse than false positives (asking the human unnecessarily).
+
+**RUBBER-STAMP conversion rule:** If a Human AC has `[RUBBER-STAMP]` prefix and its Steps section contains only deterministic shell commands with clear expected output, it SHOULD be an Agent AC with verification commands in `## Verification` instead. The machine is more reliable than a human for pass/fail checks.
+
+**Verification tiers for Agent ACs:**
+- **Tier 1 (programmatic):** Shell commands, curl, grep, file checks — for deterministic, reversible checks
+- **Tier 2 (TermLink E2E):** Spawn process, inject commands, check output — for integration/CLI workflows
+- **Tier 3 (Playwright):** Browser automation — for interactive UI verification
+
+**UI AC split:** When verifying UI features, split into two criteria:
+- Agent AC for functional check: "page returns HTTP 200 and contains key element" (Tier 1)
+- Human AC only if aesthetic judgment is genuinely needed: "layout is clean and intuitive" (`[REVIEW]`)
+
 ### Human AC Format Requirements (T-325)
 When writing `### Human` acceptance criteria, each criterion MUST include:
 - **Steps:** block with numbered, copy-pasteable instructions (no placeholders the human must figure out)
