@@ -65,16 +65,18 @@ Should the framework offer `npm install` as an installation pathway? The framewo
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
-## Decisions
+## Recommendation
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Recommendation:** NO-GO
+**Rationale:** Framework is bash+Python, not JavaScript. npm is the wrong distribution channel. Zero user demand. Adding Node.js as runtime dependency for a non-JS tool is incoherent.
+**Evidence:**
+- 4 install methods already exist (git clone, curl, Homebrew, fw init --vendor)
+- Framework has no JavaScript code in core (Watchtower frontend is optional)
+- A-001 (demand exists) — NOT VALIDATED: zero GitHub issues or requests
+- A-002 (npm simplifies install) — INVALID: npm for non-JS tools adds confusion
+- A-003 (compatible with bash entry point) — INVALID: requires platform-specific bin entries
+
+## Decisions
 
 ## Decision
 
