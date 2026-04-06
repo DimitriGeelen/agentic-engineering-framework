@@ -1,19 +1,86 @@
 <style>
-    /* Terminal container — fill available space */
+    /* Tab bar */
+    .session-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0.25rem 0.5rem;
+        background: #252526;
+        border-radius: 8px 8px 0 0;
+        border: 1px solid var(--pico-muted-border-color);
+        border-bottom: none;
+        overflow-x: auto;
+        min-height: 36px;
+    }
+    .session-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px 4px 0 0;
+        font-size: 0.8rem;
+        cursor: pointer;
+        background: transparent;
+        color: #888;
+        border: none;
+        white-space: nowrap;
+        transition: background 0.1s;
+    }
+    .session-tab:hover { background: #2d2d2d; color: #ccc; }
+    .session-tab.active { background: #1e1e1e; color: #d4d4d4; }
+    .session-tab .tab-status {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .tab-status.running { background: #2e7d32; }
+    .tab-status.exited { background: #c62828; }
+    .session-tab .tab-close {
+        font-size: 0.7rem;
+        opacity: 0;
+        padding: 0 2px;
+        cursor: pointer;
+        color: #888;
+    }
+    .session-tab:hover .tab-close { opacity: 0.7; }
+    .session-tab .tab-close:hover { opacity: 1; color: #f44747; }
+    .new-session {
+        display: flex;
+        align-items: center;
+        padding: 0.3rem 0.5rem;
+        background: transparent;
+        border: 1px dashed #555;
+        border-radius: 4px;
+        color: #888;
+        cursor: pointer;
+        font-size: 0.8rem;
+        margin-left: 4px;
+    }
+    .new-session:hover { background: #2d2d2d; color: #ccc; border-color: #888; }
+
+    /* Terminal container */
     .terminal-container {
         position: relative;
         width: 100%;
-        height: calc(100vh - 180px);
+        height: calc(100vh - 210px);
         min-height: 400px;
         background: #1e1e1e;
-        border-radius: 8px;
+        border-radius: 0 0 8px 8px;
         overflow: hidden;
         border: 1px solid var(--pico-muted-border-color);
+        border-top: none;
     }
     .terminal-container .xterm {
         height: 100%;
         padding: 8px;
     }
+    .terminal-viewport {
+        display: none;
+        width: 100%;
+        height: 100%;
+    }
+    .terminal-viewport.active { display: block; }
+
     .terminal-status {
         display: flex;
         align-items: center;
@@ -24,8 +91,7 @@
     }
     .terminal-status .status-dot {
         display: inline-block;
-        width: 8px;
-        height: 8px;
+        width: 8px; height: 8px;
         border-radius: 50%;
         margin-right: 0.5rem;
     }
@@ -36,7 +102,7 @@
 
 <div class="page-header">
     <h1>Terminal</h1>
-    <p>Interactive shell session in the browser.</p>
+    <p>Interactive shell sessions in the browser.</p>
 </div>
 
 <div class="terminal-status">
@@ -47,8 +113,12 @@
     <span id="terminal-info"></span>
 </div>
 
-<div class="terminal-container">
-    <div id="terminal"></div>
+<div class="session-tabs" id="session-tabs">
+    <button class="new-session" id="new-session" title="New terminal session">+ New</button>
+</div>
+
+<div class="terminal-container" id="terminal-container">
+    <!-- Terminal viewports are created dynamically -->
 </div>
 
 <!-- xterm.js from CDN -->
@@ -62,101 +132,197 @@
 
 <script>
 (function() {
-    const termEl = document.getElementById('terminal');
+    const tabBar = document.getElementById('session-tabs');
+    const newBtn = document.getElementById('new-session');
+    const container = document.getElementById('terminal-container');
     const statusDot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
     const termInfo = document.getElementById('terminal-info');
 
-    // Initialize xterm.js
-    const term = new Terminal({
+    // Session state
+    const sessions = {};  // { sessionId: { term, fitAddon, tabEl, viewportEl, name, state } }
+    let activeSession = null;
+    let sessionCounter = 0;
+
+    // Shared terminal config
+    const TERM_OPTS = {
         cursorBlink: true,
         fontSize: 14,
         fontFamily: '"Cascadia Code", "Fira Code", "JetBrains Mono", Menlo, monospace',
         theme: {
-            background: '#1e1e1e',
-            foreground: '#d4d4d4',
-            cursor: '#d4d4d4',
+            background: '#1e1e1e', foreground: '#d4d4d4', cursor: '#d4d4d4',
             selectionBackground: '#264f78',
-            black: '#1e1e1e',
-            red: '#f44747',
-            green: '#6a9955',
-            yellow: '#d7ba7d',
-            blue: '#569cd6',
-            magenta: '#c586c0',
-            cyan: '#4ec9b0',
-            white: '#d4d4d4',
-            brightBlack: '#808080',
-            brightRed: '#f44747',
-            brightGreen: '#6a9955',
-            brightYellow: '#d7ba7d',
-            brightBlue: '#569cd6',
-            brightMagenta: '#c586c0',
-            brightCyan: '#4ec9b0',
-            brightWhite: '#ffffff',
+            black: '#1e1e1e', red: '#f44747', green: '#6a9955', yellow: '#d7ba7d',
+            blue: '#569cd6', magenta: '#c586c0', cyan: '#4ec9b0', white: '#d4d4d4',
+            brightBlack: '#808080', brightRed: '#f44747', brightGreen: '#6a9955',
+            brightYellow: '#d7ba7d', brightBlue: '#569cd6', brightMagenta: '#c586c0',
+            brightCyan: '#4ec9b0', brightWhite: '#ffffff',
         },
         scrollback: 5000,
         convertEol: false,
         allowProposedApi: true,
-    });
-
-    // Addons
-    const fitAddon = new FitAddon.FitAddon();
-    term.loadAddon(fitAddon);
-    const webLinksAddon = new WebLinksAddon.WebLinksAddon();
-    term.loadAddon(webLinksAddon);
-
-    // Open terminal in DOM
-    term.open(termEl);
-    fitAddon.fit();
+    };
 
     // Connect to Socket.IO
-    const socket = io({
-        path: '/socket.io',
-        transports: ['websocket', 'polling'],
-    });
+    const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
 
     socket.on('connect', function() {
         statusDot.className = 'status-dot connected';
         statusText.textContent = 'Connected';
-        termInfo.textContent = 'Session: ' + socket.id;
-        // Send initial size
-        socket.emit('resize', { rows: term.rows, cols: term.cols });
+        // Create first session on connect
+        if (Object.keys(sessions).length === 0) {
+            createSession();
+        }
     });
 
     socket.on('disconnect', function() {
         statusDot.className = 'status-dot disconnected';
         statusText.textContent = 'Disconnected';
-        term.write('\r\n\x1b[31m[Connection lost]\x1b[0m\r\n');
     });
 
-    socket.on('connect_error', function(err) {
+    socket.on('connect_error', function() {
         statusDot.className = 'status-dot disconnected';
         statusText.textContent = 'Connection error';
     });
 
-    // Receive output from server
+    // Receive output routed to specific session
     socket.on('pty_output', function(data) {
-        term.write(data.output);
+        const s = sessions[data.session_id];
+        if (s) s.term.write(data.output);
     });
 
-    // Send input to server
-    term.onData(function(data) {
-        socket.emit('pty_input', { input: data });
+    // Session exited
+    socket.on('session_exited', function(data) {
+        const s = sessions[data.session_id];
+        if (s) {
+            s.state = 'exited';
+            const dot = s.tabEl.querySelector('.tab-status');
+            if (dot) dot.className = 'tab-status exited';
+            s.term.write('\r\n\x1b[31m[Process exited]\x1b[0m\r\n');
+        }
     });
 
-    // Handle resize
-    term.onResize(function(size) {
-        socket.emit('resize', { rows: size.rows, cols: size.cols });
-    });
+    function createSession() {
+        sessionCounter++;
+        const name = 'bash-' + sessionCounter;
+        const sessionId = 'ts-' + Math.random().toString(36).substr(2, 8);
 
-    // Fit terminal on window resize
+        // Create viewport div
+        const viewport = document.createElement('div');
+        viewport.className = 'terminal-viewport';
+        viewport.id = 'viewport-' + sessionId;
+        container.appendChild(viewport);
+
+        // Create xterm instance
+        const term = new Terminal(TERM_OPTS);
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+        term.open(viewport);
+
+        // Create tab
+        const tab = document.createElement('div');
+        tab.className = 'session-tab';
+        tab.innerHTML = '<span class="tab-status running"></span>'
+            + '<span class="tab-name">' + name + '</span>'
+            + '<span class="tab-close" title="Close session">\u00d7</span>';
+        tabBar.insertBefore(tab, newBtn);
+
+        // Store session
+        sessions[sessionId] = {
+            term: term,
+            fitAddon: fitAddon,
+            tabEl: tab,
+            viewportEl: viewport,
+            name: name,
+            state: 'running',
+        };
+
+        // Tab click → switch session
+        tab.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab-close')) return;
+            switchSession(sessionId);
+        });
+
+        // Close button
+        tab.querySelector('.tab-close').addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSession(sessionId);
+        });
+
+        // Terminal input → server
+        term.onData(function(data) {
+            socket.emit('pty_input', { session_id: sessionId, input: data });
+        });
+
+        // Terminal resize → server
+        term.onResize(function(size) {
+            socket.emit('resize', { session_id: sessionId, rows: size.rows, cols: size.cols });
+        });
+
+        // Tell server to spawn PTY for this session
+        socket.emit('create_session', { session_id: sessionId, name: name });
+
+        // Switch to this session
+        switchSession(sessionId);
+
+        return sessionId;
+    }
+
+    function switchSession(sessionId) {
+        // Deactivate current
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].tabEl.classList.remove('active');
+            sessions[activeSession].viewportEl.classList.remove('active');
+        }
+        // Activate new
+        activeSession = sessionId;
+        const s = sessions[sessionId];
+        s.tabEl.classList.add('active');
+        s.viewportEl.classList.add('active');
+        s.fitAddon.fit();
+        s.term.focus();
+        termInfo.textContent = s.name + ' (' + s.state + ')';
+    }
+
+    function closeSession(sessionId) {
+        const s = sessions[sessionId];
+        if (!s) return;
+
+        // Tell server to kill PTY
+        socket.emit('close_session', { session_id: sessionId });
+
+        // Clean up DOM
+        s.term.dispose();
+        s.tabEl.remove();
+        s.viewportEl.remove();
+        delete sessions[sessionId];
+
+        // Switch to another session or create new
+        const remaining = Object.keys(sessions);
+        if (remaining.length > 0) {
+            switchSession(remaining[remaining.length - 1]);
+        } else {
+            activeSession = null;
+            termInfo.textContent = '';
+        }
+    }
+
+    // New session button
+    newBtn.addEventListener('click', createSession);
+
+    // Fit active terminal on window resize
     window.addEventListener('resize', function() {
-        fitAddon.fit();
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].fitAddon.fit();
+        }
     });
 
-    // Also fit when the content area changes (htmx navigation)
+    // ResizeObserver for container changes
     new ResizeObserver(function() {
-        fitAddon.fit();
-    }).observe(termEl);
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].fitAddon.fit();
+        }
+    }).observe(container);
 })();
 </script>

@@ -120,47 +120,74 @@ def create_app() -> Flask:
     # Flask-SocketIO for web terminal (T-964)
     # -------------------------------------------------------------------
 
-    from flask_socketio import SocketIO, emit
+    from flask_socketio import SocketIO, emit, join_room
     from web import terminal as term_mgr
 
     socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
     app.extensions["socketio"] = socketio
 
+    # Map SocketIO sid → set of session_ids (multi-session per connection)
+    _client_sessions = {}
+
     @socketio.on("connect")
     def handle_connect():
-        """Spawn a PTY for the new WebSocket connection."""
+        """Track the WebSocket connection."""
         from flask import request as req
-        sid = req.sid
-        term_mgr.spawn_pty(sid)
+        _client_sessions[req.sid] = set()
 
     @socketio.on("disconnect")
     def handle_disconnect():
-        """Kill the PTY when the WebSocket disconnects."""
+        """Kill all PTYs owned by this WebSocket connection."""
         from flask import request as req
-        term_mgr.kill_pty(req.sid)
+        for session_id in list(_client_sessions.get(req.sid, [])):
+            term_mgr.kill_pty(session_id)
+        _client_sessions.pop(req.sid, None)
+
+    @socketio.on("create_session")
+    def handle_create_session(data):
+        """Spawn a new PTY for a named terminal session."""
+        from flask import request as req
+        session_id = data.get("session_id", req.sid)
+        join_room(session_id)
+        term_mgr.spawn_pty(session_id)
+        _client_sessions.setdefault(req.sid, set()).add(session_id)
+
+    @socketio.on("close_session")
+    def handle_close_session(data):
+        """Kill a specific terminal session."""
+        from flask import request as req
+        session_id = data.get("session_id")
+        if session_id:
+            term_mgr.kill_pty(session_id)
+            _client_sessions.get(req.sid, set()).discard(session_id)
 
     @socketio.on("pty_input")
     def handle_pty_input(data):
         """Forward browser keystrokes to the PTY."""
-        from flask import request as req
-        term_mgr.write_pty(req.sid, data.get("input", ""))
+        session_id = data.get("session_id")
+        if session_id:
+            term_mgr.write_pty(session_id, data.get("input", ""))
 
     @socketio.on("resize")
     def handle_resize(data):
         """Resize the PTY to match the browser terminal dimensions."""
-        from flask import request as req
+        session_id = data.get("session_id")
         rows = data.get("rows", 24)
         cols = data.get("cols", 80)
-        term_mgr.resize_pty(req.sid, rows, cols)
+        if session_id:
+            term_mgr.resize_pty(session_id, rows, cols)
 
     def _pty_output_loop():
         """Background thread: poll all PTYs and emit output to clients."""
         import time
         while True:
-            for sid in list(term_mgr._sessions.keys()):
-                output = term_mgr.read_pty(sid)
+            for session_id in list(term_mgr._sessions.keys()):
+                output = term_mgr.read_pty(session_id)
                 if output:
-                    socketio.emit("pty_output", {"output": output.decode("utf-8", errors="replace")}, to=sid)
+                    socketio.emit("pty_output", {
+                        "session_id": session_id,
+                        "output": output.decode("utf-8", errors="replace"),
+                    }, to=session_id)
             time.sleep(0.01)  # 10ms poll interval
 
     import threading
