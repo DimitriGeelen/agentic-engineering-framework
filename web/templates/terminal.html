@@ -1,0 +1,162 @@
+<style>
+    /* Terminal container — fill available space */
+    .terminal-container {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 180px);
+        min-height: 400px;
+        background: #1e1e1e;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--pico-muted-border-color);
+    }
+    .terminal-container .xterm {
+        height: 100%;
+        padding: 8px;
+    }
+    .terminal-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+    .terminal-status .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    .status-dot.connected { background: #2e7d32; }
+    .status-dot.disconnected { background: #c62828; }
+    .status-dot.connecting { background: #f9a825; }
+</style>
+
+<div class="page-header">
+    <h1>Terminal</h1>
+    <p>Interactive shell session in the browser.</p>
+</div>
+
+<div class="terminal-status">
+    <span>
+        <span class="status-dot connecting" id="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+    </span>
+    <span id="terminal-info"></span>
+</div>
+
+<div class="terminal-container">
+    <div id="terminal"></div>
+</div>
+
+<!-- xterm.js from CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+
+<!-- Socket.IO client -->
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4/dist/socket.io.min.js"></script>
+
+<script>
+(function() {
+    const termEl = document.getElementById('terminal');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const termInfo = document.getElementById('terminal-info');
+
+    // Initialize xterm.js
+    const term = new Terminal({
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: '"Cascadia Code", "Fira Code", "JetBrains Mono", Menlo, monospace',
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#d4d4d4',
+            cursor: '#d4d4d4',
+            selectionBackground: '#264f78',
+            black: '#1e1e1e',
+            red: '#f44747',
+            green: '#6a9955',
+            yellow: '#d7ba7d',
+            blue: '#569cd6',
+            magenta: '#c586c0',
+            cyan: '#4ec9b0',
+            white: '#d4d4d4',
+            brightBlack: '#808080',
+            brightRed: '#f44747',
+            brightGreen: '#6a9955',
+            brightYellow: '#d7ba7d',
+            brightBlue: '#569cd6',
+            brightMagenta: '#c586c0',
+            brightCyan: '#4ec9b0',
+            brightWhite: '#ffffff',
+        },
+        scrollback: 5000,
+        convertEol: false,
+        allowProposedApi: true,
+    });
+
+    // Addons
+    const fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+    term.loadAddon(webLinksAddon);
+
+    // Open terminal in DOM
+    term.open(termEl);
+    fitAddon.fit();
+
+    // Connect to Socket.IO
+    const socket = io({
+        path: '/socket.io',
+        transports: ['websocket', 'polling'],
+    });
+
+    socket.on('connect', function() {
+        statusDot.className = 'status-dot connected';
+        statusText.textContent = 'Connected';
+        termInfo.textContent = 'Session: ' + socket.id;
+        // Send initial size
+        socket.emit('resize', { rows: term.rows, cols: term.cols });
+    });
+
+    socket.on('disconnect', function() {
+        statusDot.className = 'status-dot disconnected';
+        statusText.textContent = 'Disconnected';
+        term.write('\r\n\x1b[31m[Connection lost]\x1b[0m\r\n');
+    });
+
+    socket.on('connect_error', function(err) {
+        statusDot.className = 'status-dot disconnected';
+        statusText.textContent = 'Connection error';
+    });
+
+    // Receive output from server
+    socket.on('pty_output', function(data) {
+        term.write(data.output);
+    });
+
+    // Send input to server
+    term.onData(function(data) {
+        socket.emit('pty_input', { input: data });
+    });
+
+    // Handle resize
+    term.onResize(function(size) {
+        socket.emit('resize', { rows: size.rows, cols: size.cols });
+    });
+
+    // Fit terminal on window resize
+    window.addEventListener('resize', function() {
+        fitAddon.fit();
+    });
+
+    // Also fit when the content area changes (htmx navigation)
+    new ResizeObserver(function() {
+        fitAddon.fit();
+    }).observe(termEl);
+})();
+</script>

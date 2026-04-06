@@ -117,6 +117,57 @@ def create_app() -> Flask:
     register_blueprints(app)
 
     # -------------------------------------------------------------------
+    # Flask-SocketIO for web terminal (T-964)
+    # -------------------------------------------------------------------
+
+    from flask_socketio import SocketIO, emit
+    from web import terminal as term_mgr
+
+    socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+    app.extensions["socketio"] = socketio
+
+    @socketio.on("connect")
+    def handle_connect():
+        """Spawn a PTY for the new WebSocket connection."""
+        from flask import request as req
+        sid = req.sid
+        term_mgr.spawn_pty(sid)
+
+    @socketio.on("disconnect")
+    def handle_disconnect():
+        """Kill the PTY when the WebSocket disconnects."""
+        from flask import request as req
+        term_mgr.kill_pty(req.sid)
+
+    @socketio.on("pty_input")
+    def handle_pty_input(data):
+        """Forward browser keystrokes to the PTY."""
+        from flask import request as req
+        term_mgr.write_pty(req.sid, data.get("input", ""))
+
+    @socketio.on("resize")
+    def handle_resize(data):
+        """Resize the PTY to match the browser terminal dimensions."""
+        from flask import request as req
+        rows = data.get("rows", 24)
+        cols = data.get("cols", 80)
+        term_mgr.resize_pty(req.sid, rows, cols)
+
+    def _pty_output_loop():
+        """Background thread: poll all PTYs and emit output to clients."""
+        import time
+        while True:
+            for sid in list(term_mgr._sessions.keys()):
+                output = term_mgr.read_pty(sid)
+                if output:
+                    socketio.emit("pty_output", {"output": output.decode("utf-8", errors="replace")}, to=sid)
+            time.sleep(0.01)  # 10ms poll interval
+
+    import threading
+    _output_thread = threading.Thread(target=_pty_output_loop, daemon=True)
+    _output_thread.start()
+
+    # -------------------------------------------------------------------
     # Health endpoint
     # -------------------------------------------------------------------
 
@@ -251,7 +302,11 @@ def main():
     print()
 
     try:
-        app.run(host=host, port=port, debug=args.debug)
+        socketio = app.extensions.get("socketio")
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=args.debug, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=args.debug)
     except OSError as exc:
         if "Address already in use" in str(exc) or "address already in use" in str(exc):
             print(
