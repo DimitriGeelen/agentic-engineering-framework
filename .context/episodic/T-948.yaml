@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-948: Fix T-464 invalid YAML frontmatter — broken multi-line description
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T10:48:55Z
+# ============================================================================
+
+task_id: T-948
+task_name: "Fix T-464 invalid YAML frontmatter — broken multi-line description"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:47:48Z
+completed: 2026-04-06T10:48:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:48:49+02:00
+last_commit: 2026-04-06T12:48:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix T-464 invalid YAML frontmatter — truncated description to valid YAML
+
+# Key outcomes
+outcomes:
+  - "T-464 YAML frontmatter valid"
+  - "No other invalid task files in .tasks/active/"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix T-464 invalid YAML frontmatter — truncated description to valid YAML"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:48:49"
+    action: "T-948: Fix T-464 invalid YAML frontmatter — truncated description to valid YAML"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 1
+  lines_added: 2
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-948-fix-t-464-invalid-yaml-frontmatter--brok.md
+generated_by: context-agent-hybrid
