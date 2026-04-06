@@ -784,11 +784,22 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 **Verification tiers for Agent ACs:**
 - **Tier 1 (programmatic):** Shell commands, curl, grep, file checks — for deterministic, reversible checks
 - **Tier 2 (TermLink E2E):** Spawn process, inject commands, check output — for integration/CLI workflows
-- **Tier 3 (Playwright):** Browser automation — for interactive UI verification
+- **Tier 3 (Playwright):** Browser automation via `tests/playwright/` — for interactive UI verification. Run with `fw test playwright`.
 
 **UI AC split:** When verifying UI features, split into two criteria:
 - Agent AC for functional check: "page returns HTTP 200 and contains key element" (Tier 1)
 - Human AC only if aesthetic judgment is genuinely needed: "layout is clean and intuitive" (`[REVIEW]`)
+
+**Playwright test generation rule (T-971):** When writing an Agent AC for a UI feature (Tier 3), also write or update a Playwright test in `tests/playwright/`. The AC verifies the feature once; the test guards it forever. Pattern:
+
+| AC pattern | Test pattern |
+|------------|-------------|
+| `curl -sf URL` → 200 | `page.goto(url)` + `assert resp.status == 200` |
+| `curl URL \| grep -q "X"` | `page.goto(url)` + `assert "X" in page.content()` |
+| "page shows element X" | `expect(page.locator("X")).to_be_visible()` |
+| "click X, verify Y appears" | `page.click("X")` + `expect(page.locator("Y")).to_be_visible()` |
+| `[RUBBER-STAMP]` with deterministic steps | Convert to Agent AC + Playwright test |
+| `[REVIEW]` with subjective judgment | Keep as Human AC (not automatable) |
 
 ### Human AC Format Requirements (T-325)
 When writing `### Human` acceptance criteria, each criterion MUST include:
