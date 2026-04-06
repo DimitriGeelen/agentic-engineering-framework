@@ -21,6 +21,9 @@ deploy/onedev-pr-sync.sh
 # TypeScript build artifacts
 lib/ts/node_modules/
 
+# Cron audit history (only LATEST-CRON.yaml is tracked)
+.context/audits/cron/2*.yaml
+
 # Temporary screenshots (Playwright MCP output)
 *.png
 # But track documentation screenshots
