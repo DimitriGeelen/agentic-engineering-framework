@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-942: Unit tests for docgen agents — generate-article.sh and generate-component.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T10:21:00Z
+# ============================================================================
+
+task_id: T-942
+task_name: "Unit tests for docgen agents — generate-article.sh and generate-component.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:16:32Z
+completed: 2026-04-06T10:20:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:20:45+02:00
+last_commit: 2026-04-06T12:20:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Unit tests for docgen agents — 11 tests, 100% agent test coverage
+
+# Key outcomes
+outcomes:
+  - "tests/unit/docgen_article.bats created with tests for generate-article.sh"
+  - "tests/unit/docgen_component.bats created with tests for generate-component.sh"
+  - "All new tests pass (5 + 6 = 11 tests)"
+  - "Fabric cards registered for new test files"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-docgen_article.yaml"
+  - ".fabric/components/tests-unit-docgen_component.yaml"
+  - "tests/unit/docgen_article.bats"
+  - "tests/unit/docgen_component.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:20:45"
+    action: "T-942: Unit tests for docgen agents — 11 tests, 100% agent test coverage"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 143
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-942-unit-tests-for-docgen-agents--generate-a.md
+generated_by: context-agent-hybrid

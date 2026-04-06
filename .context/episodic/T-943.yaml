@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-943: Fix observe.bats test pollution — test observations leak into real inbox
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T10:32:58Z
+# ============================================================================
+
+task_id: T-943
+task_name: "Fix observe.bats test pollution — test observations leak into real inbox"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:31:01Z
+completed: 2026-04-06T10:32:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:32:44+02:00
+last_commit: 2026-04-06T12:32:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix observe.bats test pollution — isolate captures to temp dir
+
+# Key outcomes
+outcomes:
+  - "observe.bats uses temp PROJECT_ROOT for capture/tag tests"
+  - "Tests still pass (7/7)"
+  - "Running tests no longer adds entries to real inbox (verified: count stayed at 11)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix observe.bats test pollution — isolate captures to temp dir"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/inbox.yaml"
+  - "tests/unit/observe.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:32:44"
+    action: "T-943: Fix observe.bats test pollution — isolate captures to temp dir"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 49
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-943-fix-observebats-test-pollution--test-obs.md
+generated_by: context-agent-hybrid

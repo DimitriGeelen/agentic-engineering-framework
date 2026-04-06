@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-945: Unit tests for untested lib scripts — ask.sh, first-run.sh, validate-init.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T10:40:41Z
+# ============================================================================
+
+task_id: T-945
+task_name: "Unit tests for untested lib scripts — ask.sh, first-run.sh, validate-init.sh"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:37:15Z
+completed: 2026-04-06T10:40:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:39:38+02:00
+last_commit: 2026-04-06T12:39:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Unit tests for ask.sh, first-run.sh, validate-init.sh — 16 tests
+
+# Key outcomes
+outcomes:
+  - "tests/unit/lib_ask.bats created (5 tests)"
+  - "tests/unit/lib_first_run.bats created (4 tests)"
+  - "tests/unit/lib_validate_init.bats created (7 tests)"
+  - "All new tests pass (16/16)"
+  - "Fabric cards registered (3 cards)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-unit-lib_ask.yaml"
+  - ".fabric/components/tests-unit-lib_first_run.yaml"
+  - ".fabric/components/tests-unit-lib_validate_init.yaml"
+  - "tests/unit/lib_ask.bats"
+  - "tests/unit/lib_first_run.bats"
+  - "tests/unit/lib_validate_init.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:39:38"
+    action: "T-945: Unit tests for ask.sh, first-run.sh, validate-init.sh — 16 tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 6
+  lines_added: 139
+  lines_removed: 147
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-945-unit-tests-for-untested-lib-scripts--ask.md
+generated_by: context-agent-hybrid

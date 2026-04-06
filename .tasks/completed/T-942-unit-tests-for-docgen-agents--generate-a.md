@@ -1,33 +1,34 @@
 ---
-id: T-940
-name: "Commit accumulated generated docs and cron audits"
+id: T-942
+name: "Unit tests for docgen agents — generate-article.sh and generate-component.sh"
 description: >
-  Commit accumulated generated docs and cron audits
+  Unit tests for docgen agents — generate-article.sh and generate-component.sh
 
-status: started-work
-workflow_type: refactor
+status: work-completed
+workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/unit/docgen_article.bats, tests/unit/docgen_component.bats]
 related_tasks: []
-created: 2026-04-06T09:55:55Z
-last_update: 2026-04-06T09:56:27Z
-date_finished: null
+created: 2026-04-06T10:16:32Z
+last_update: 2026-04-06T10:20:58Z
+date_finished: 2026-04-06T10:20:58Z
 ---
 
-# T-940: Commit accumulated generated docs and cron audits
+# T-942: Unit tests for docgen agents — generate-article.sh and generate-component.sh
 
 ## Context
 
-95 modified generated component docs, 118 untracked cron audit files, and working directory noise from session init.
+Last 2 untested agent scripts. All other agents have bats unit tests.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Generated component docs committed
-- [ ] Cron audit files committed
-- [ ] Working directory file count reduced below 10
+- [x] tests/unit/docgen_article.bats created with tests for generate-article.sh
+- [x] tests/unit/docgen_component.bats created with tests for generate-component.sh
+- [x] All new tests pass (5 + 6 = 11 tests)
+- [x] Fabric cards registered for new test files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,7 +69,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-06T09:55:55Z — task-created [task-create-agent]
+### 2026-04-06T10:16:32Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-940-commit-accumulated-generated-docs-and-cr.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-942-unit-tests-for-docgen-agents--generate-a.md
 - **Context:** Initial task creation
+
+### 2026-04-06T10:20:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

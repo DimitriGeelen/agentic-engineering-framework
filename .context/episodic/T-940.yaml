@@ -1,0 +1,301 @@
+# ============================================================================
+# EPISODIC MEMORY - T-940: Commit accumulated generated docs and cron audits
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T09:57:06Z
+# ============================================================================
+
+task_id: T-940
+task_name: "Commit accumulated generated docs and cron audits"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T09:55:55Z
+completed: 2026-04-06T09:57:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T11:56:26+02:00
+last_commit: 2026-04-06T11:56:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Commit 95 updated generated component docs. Commit 118 accumulated cron audit files. Commit working state and completed T-939
+
+# Key outcomes
+outcomes:
+  - "Generated component docs committed"
+  - "Cron audit files committed"
+  - "Working directory file count reduced below 10"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/2026-04-05-1845.yaml"
+  - ".context/audits/cron/2026-04-05-1900.yaml"
+  - ".context/audits/cron/2026-04-05-1915.yaml"
+  - ".context/audits/cron/2026-04-05-1930.yaml"
+  - ".context/audits/cron/2026-04-05-1945.yaml"
+  - ".context/audits/cron/2026-04-05-2000.yaml"
+  - ".context/audits/cron/2026-04-05-2015.yaml"
+  - ".context/audits/cron/2026-04-05-2030.yaml"
+  - ".context/audits/cron/2026-04-05-2045.yaml"
+  - ".context/audits/cron/2026-04-05-2100.yaml"
+  - ".context/audits/cron/2026-04-05-2115.yaml"
+  - ".context/audits/cron/2026-04-05-2130.yaml"
+  - ".context/audits/cron/2026-04-05-2145.yaml"
+  - ".context/audits/cron/2026-04-05-2200.yaml"
+  - ".context/audits/cron/2026-04-05-2215.yaml"
+  - ".context/audits/cron/2026-04-05-2230.yaml"
+  - ".context/audits/cron/2026-04-05-2245.yaml"
+  - ".context/audits/cron/2026-04-05-2300.yaml"
+  - ".context/audits/cron/2026-04-05-2315.yaml"
+  - ".context/audits/cron/2026-04-05-2330.yaml"
+  - ".context/audits/cron/2026-04-05-2345.yaml"
+  - ".context/audits/cron/2026-04-06-0000.yaml"
+  - ".context/audits/cron/2026-04-06-0015.yaml"
+  - ".context/audits/cron/2026-04-06-0030.yaml"
+  - ".context/audits/cron/2026-04-06-0045.yaml"
+  - ".context/audits/cron/2026-04-06-0100.yaml"
+  - ".context/audits/cron/2026-04-06-0115.yaml"
+  - ".context/audits/cron/2026-04-06-0130.yaml"
+  - ".context/audits/cron/2026-04-06-0145.yaml"
+  - ".context/audits/cron/2026-04-06-0200.yaml"
+  - ".context/audits/cron/2026-04-06-0215.yaml"
+  - ".context/audits/cron/2026-04-06-0230.yaml"
+  - ".context/audits/cron/2026-04-06-0245.yaml"
+  - ".context/audits/cron/2026-04-06-0300.yaml"
+  - ".context/audits/cron/2026-04-06-0315.yaml"
+  - ".context/audits/cron/2026-04-06-0330.yaml"
+  - ".context/audits/cron/2026-04-06-0345.yaml"
+  - ".context/audits/cron/2026-04-06-0400.yaml"
+  - ".context/audits/cron/2026-04-06-0415.yaml"
+  - ".context/audits/cron/2026-04-06-0430.yaml"
+  - ".context/audits/cron/2026-04-06-0445.yaml"
+  - ".context/audits/cron/2026-04-06-0500.yaml"
+  - ".context/audits/cron/2026-04-06-0515.yaml"
+  - ".context/audits/cron/2026-04-06-0530.yaml"
+  - ".context/audits/cron/2026-04-06-0545.yaml"
+  - ".context/audits/cron/2026-04-06-0600.yaml"
+  - ".context/audits/cron/2026-04-06-0615.yaml"
+  - ".context/audits/cron/2026-04-06-0630.yaml"
+  - ".context/audits/cron/2026-04-06-0645.yaml"
+  - ".context/audits/cron/2026-04-06-0700.yaml"
+  - ".context/audits/cron/2026-04-06-0715.yaml"
+  - ".context/audits/cron/2026-04-06-0730.yaml"
+  - ".context/audits/cron/2026-04-06-0745.yaml"
+  - ".context/audits/cron/2026-04-06-0800.yaml"
+  - ".context/audits/cron/2026-04-06-0815.yaml"
+  - ".context/audits/cron/2026-04-06-0830.yaml"
+  - ".context/audits/cron/2026-04-06-0845.yaml"
+  - ".context/audits/cron/2026-04-06-0900.yaml"
+  - ".context/audits/cron/2026-04-06-0915.yaml"
+  - ".context/audits/cron/2026-04-06-0930.yaml"
+  - ".context/audits/cron/2026-04-06-0945.yaml"
+  - ".context/audits/cron/2026-04-06-1000.yaml"
+  - ".context/audits/cron/2026-04-06-1015.yaml"
+  - ".context/audits/cron/2026-04-06-1030.yaml"
+  - ".context/audits/cron/2026-04-06-1045.yaml"
+  - ".context/audits/cron/2026-04-06-1100.yaml"
+  - ".context/audits/cron/2026-04-06-1115.yaml"
+  - ".context/audits/cron/2026-04-06-1130.yaml"
+  - ".context/audits/cron/2026-04-06-1145.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-939.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - "docs/generated/components/agents-audit-self-audit.md"
+  - "docs/generated/components/agents-context-check-active-task.md"
+  - "docs/generated/components/agents-context-check-dispatch.md"
+  - "docs/generated/components/agents-context-check-project-boundary.md"
+  - "docs/generated/components/agents-context-check-tier0.md"
+  - "docs/generated/components/agents-context-error-watchdog.md"
+  - "docs/generated/components/agents-context-lib-decision.md"
+  - "docs/generated/components/agents-context-lib-episodic.md"
+  - "docs/generated/components/agents-context-lib-focus.md"
+  - "docs/generated/components/agents-context-lib-init.md"
+  - "docs/generated/components/agents-context-lib-pattern.md"
+  - "docs/generated/components/agents-context-lib-status.md"
+  - "docs/generated/components/agents-context-post-compact-resume.md"
+  - "docs/generated/components/agents-context-pre-compact.md"
+  - "docs/generated/components/agents-git-git.md"
+  - "docs/generated/components/agents-git-lib-hooks.md"
+  - "docs/generated/components/agents-handover-handover.md"
+  - "docs/generated/components/agents-healing-healing.md"
+  - "docs/generated/components/agents-session-capture.md"
+  - "docs/generated/components/agents-task-create-update-task.md"
+  - "docs/generated/components/agents-termlink-termlink.md"
+  - "docs/generated/components/audit-yaml-validator.md"
+  - "docs/generated/components/bin-fw.md"
+  - "docs/generated/components/bin-fw-shim.md"
+  - "docs/generated/components/bin-watchtower.md"
+  - "docs/generated/components/capture-reader.md"
+  - "docs/generated/components/capture-skill.md"
+  - "docs/generated/components/checkpoint.md"
+  - "docs/generated/components/context-dispatcher.md"
+  - "docs/generated/components/context-project-concerns.md"
+  - "docs/generated/components/context-project-decisions.md"
+  - "docs/generated/components/hook-config.md"
+  - "docs/generated/components/learnings-data.md"
+  - "docs/generated/components/lib-assumption.md"
+  - "docs/generated/components/lib-build.md"
+  - "docs/generated/components/lib-bus.md"
+  - "docs/generated/components/lib-colors.md"
+  - "docs/generated/components/lib-compat.md"
+  - "docs/generated/components/lib-config-file.md"
+  - "docs/generated/components/lib-config.md"
+  - "docs/generated/components/lib-costs.md"
+  - "docs/generated/components/lib-dispatch.md"
+  - "docs/generated/components/lib-enums.md"
+  - "docs/generated/components/lib-errors.md"
+  - "docs/generated/components/lib-firewall.md"
+  - "docs/generated/components/lib-first-run.md"
+  - "docs/generated/components/lib-harvest.md"
+  - "docs/generated/components/lib-inception.md"
+  - "docs/generated/components/lib-init.md"
+  - "docs/generated/components/lib-keylock.md"
+  - "docs/generated/components/lib-notify.md"
+  - "docs/generated/components/lib-paths.md"
+  - "docs/generated/components/lib-pickup.md"
+  - "docs/generated/components/lib-preflight.md"
+  - "docs/generated/components/lib-promote.md"
+  - "docs/generated/components/lib-review.md"
+  - "docs/generated/components/lib-runtime.md"
+  - "docs/generated/components/lib-setup.md"
+  - "docs/generated/components/lib-tasks.md"
+  - "docs/generated/components/lib-update.md"
+  - "docs/generated/components/lib-upgrade.md"
+  - "docs/generated/components/lib-upstream.md"
+  - "docs/generated/components/lib-validate-init.md"
+  - "docs/generated/components/lib-verify-acs.md"
+  - "docs/generated/components/lib-version.md"
+  - "docs/generated/components/lib-yaml.md"
+  - "docs/generated/components/tests-integration-fw_config.md"
+  - "docs/generated/components/tests-unit-audit.md"
+  - "docs/generated/components/tests-unit-checkpoint.md"
+  - "docs/generated/components/tests-unit-context_decision.md"
+  - "docs/generated/components/tests-unit-context_episodic.md"
+  - "docs/generated/components/tests-unit-context_focus.md"
+  - "docs/generated/components/tests-unit-context_init.md"
+  - "docs/generated/components/tests-unit-context_learning.md"
+  - "docs/generated/components/tests-unit-context_pattern.md"
+  - "docs/generated/components/tests-unit-context_safe_commands.md"
+  - "docs/generated/components/tests-unit-context_status.md"
+  - "docs/generated/components/tests-unit-create_task.md"
+  - "docs/generated/components/tests-unit-fabric.md"
+  - "docs/generated/components/tests-unit-git_common.md"
+  - "docs/generated/components/tests-unit-git_log.md"
+  - "docs/generated/components/tests-unit-handover.md"
+  - "docs/generated/components/tests-unit-healing_diagnose.md"
+  - "docs/generated/components/tests-unit-healing_suggest.md"
+  - "docs/generated/components/tests-unit-lib_assumption.md"
+  - "docs/generated/components/tests-unit-lib_bus.md"
+  - "docs/generated/components/tests-unit-lib_colors.md"
+  - "docs/generated/components/tests-unit-lib_compat.md"
+  - "docs/generated/components/tests-unit-lib_config_file.md"
+  - "docs/generated/components/tests-unit-lib_config.md"
+  - "docs/generated/components/tests-unit-lib_dispatch.md"
+  - "docs/generated/components/tests-unit-lib_enums.md"
+  - "docs/generated/components/tests-unit-lib_errors.md"
+  - "docs/generated/components/tests-unit-lib_firewall.md"
+  - "docs/generated/components/tests-unit-lib_first_run.md"
+  - "docs/generated/components/tests-unit-lib_harvest.md"
+  - "docs/generated/components/tests-unit-lib_inception.md"
+  - "docs/generated/components/tests-unit-lib_init.md"
+  - "docs/generated/components/tests-unit-lib_keylock.md"
+  - "docs/generated/components/tests-unit-lib_notify.md"
+  - "docs/generated/components/tests-unit-lib_paths.md"
+  - "docs/generated/components/tests-unit-lib_pickup.md"
+  - "docs/generated/components/tests-unit-lib_preflight.md"
+  - "docs/generated/components/tests-unit-lib_promote.md"
+  - "docs/generated/components/tests-unit-lib_review.md"
+  - "docs/generated/components/tests-unit-lib_runtime.md"
+  - "docs/generated/components/tests-unit-lib_setup.md"
+  - "docs/generated/components/tests-unit-lib_tasks.md"
+  - "docs/generated/components/tests-unit-lib_update.md"
+  - "docs/generated/components/tests-unit-lib_upgrade.md"
+  - "docs/generated/components/tests-unit-lib_upstream.md"
+  - "docs/generated/components/tests-unit-lib_validate_init.md"
+  - "docs/generated/components/tests-unit-lib_version.md"
+  - "docs/generated/components/tests-unit-lib_yaml.md"
+  - "docs/generated/components/tests-unit-observe.md"
+  - "docs/generated/components/tests-unit-resume.md"
+  - "docs/generated/components/tests-unit-termlink.md"
+  - "docs/generated/components/tests-unit-update_task.md"
+  - "docs/generated/components/tests-unit-verify_acs.md"
+  - "docs/generated/components/web-app.md"
+  - "docs/generated/components/web-blueprints-approvals.md"
+  - "docs/generated/components/web-blueprints-config.md"
+  - "docs/generated/components/web-blueprints-core.md"
+  - "docs/generated/components/web-blueprints-costs.md"
+  - "docs/generated/components/web-blueprints-discovery.md"
+  - "docs/generated/components/web-blueprints-fabric.md"
+  - "docs/generated/components/web-blueprints-inception.md"
+  - "docs/generated/components/web-blueprints-__init__.md"
+  - "docs/generated/components/web-blueprints-review.md"
+  - "docs/generated/components/web-shared.md"
+  - "docs/generated/components/web-templates-_approvals_content.md"
+  - "docs/generated/components/web-templates-approvals.md"
+  - "docs/generated/components/web-templates-base.md"
+  - "docs/generated/components/web-templates-cockpit.md"
+  - "docs/generated/components/web-templates-config.md"
+  - "docs/generated/components/web-templates-costs.md"
+  - "docs/generated/components/web-templates-fabric_explorer.md"
+  - "docs/generated/components/web-templates-inception_detail.md"
+  - "docs/generated/components/web-templates-_partials-badge.md"
+  - "docs/generated/components/web-templates-_review_acs.md"
+  - "docs/generated/components/web-templates-_review_error.md"
+  - "docs/generated/components/web-templates-review.md"
+  - "docs/generated/components/web-test_costs.md"
+  - ".tasks/active/T-940-commit-accumulated-generated-docs-and-cr.md"
+  - ".tasks/completed/T-939-housekeeping--episodic-gaps-cron-cleanup.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T11:56:26"
+    action: "T-940: Commit 95 updated generated component docs"
+  - time: "2026-04-06T11:56:27"
+    action: "T-940: Commit 118 accumulated cron audit files"
+  - time: "2026-04-06T11:56:39"
+    action: "T-940: Commit working state and completed T-939"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 3
+  files_changed: 223
+  lines_added: 10844
+  lines_removed: 5807
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-940-commit-accumulated-generated-docs-and-cr.md
+generated_by: context-agent-hybrid
