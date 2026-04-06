@@ -4,16 +4,16 @@ name: "Audit Loop 2 noise fix — recalibrate quality thresholds or escalate dif
 description: >
   Loop 2 (active task quality) fires warnings that persist for weeks without action. Either recalibrate thresholds so warnings are actionable, or route stale warnings to human review queue. From T-860 GO decision.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/audit/active-task-scan.py]
 related_tasks: []
 created: 2026-04-06T11:50:13Z
-last_update: 2026-04-06T12:59:23Z
-date_finished: null
+last_update: 2026-04-06T13:00:45Z
+date_finished: 2026-04-06T13:00:45Z
 ---
 
 # T-956: Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently (T-860 Phase 2)
@@ -55,3 +55,6 @@ bash -c 'bin/fw audit --section quality 2>&1 | tail -3; exit 0'
 
 ### 2026-04-06T12:59:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T13:00:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

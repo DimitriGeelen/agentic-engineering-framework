@@ -4,7 +4,7 @@ name: "Reclassify 29 deterministic RUBBER-STAMP Human ACs to Agent ACs with veri
 description: >
   Convert 29 CLI-testable RUBBER-STAMP Human ACs to Agent ACs. Each gets a verification command in the Verification section. Split 12 UI ACs into functional (Agent) and aesthetic (Human) where applicable. Target: reduce Human AC backlog by 35-40%. From T-954 GO.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T12:11:32Z
-last_update: 2026-04-06T12:58:33Z
-date_finished: null
+last_update: 2026-04-06T12:59:12Z
+date_finished: 2026-04-06T12:59:12Z
 ---
 
 # T-958: Reclassify 29 deterministic RUBBER-STAMP Human ACs to Agent ACs with verification commands (T-954 Phase 2)
@@ -55,3 +55,6 @@ python3 -c "import os,re; count=sum(len(re.findall(r'- \[ \]',m.group(1))) for f
 
 ### 2026-04-06T12:55:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T12:59:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

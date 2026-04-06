@@ -4,16 +4,16 @@ name: "Batch inception review page in Watchtower — surface pending go/no-go de
 description: >
   Add batch review page to Watchtower for the 48 pending inception go/no-go decisions. Show recommendation summary, research artifact link, and one-click approve/reject. Priority scoring so most impactful decisions surface first. From T-954 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception.html]
 related_tasks: []
 created: 2026-04-06T12:11:35Z
-last_update: 2026-04-06T13:01:17Z
-date_finished: null
+last_update: 2026-04-06T13:03:50Z
+date_finished: 2026-04-06T13:03:50Z
 ---
 
 # T-959: Batch inception review page in Watchtower — surface pending go/no-go decisions with summaries (T-954 Phase 3a)
@@ -66,3 +66,6 @@ grep -q "recommendation" web/templates/inception.html
 
 ### 2026-04-06T13:01:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T13:03:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
