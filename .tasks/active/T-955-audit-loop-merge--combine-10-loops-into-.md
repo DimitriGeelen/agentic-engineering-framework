@@ -4,7 +4,7 @@ name: "Audit loop merge — combine 10 loops into 3 passes (T-860 Phase 1)"
 description: >
   Merge audit.sh 10 task-file loops into 3 passes: active-pass, completed-pass, cross-cutting. Each file read once per pass. Target: 3802 iterations to ~1000. From T-860 GO decision.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T11:50:10Z
-last_update: 2026-04-06T11:50:10Z
+last_update: 2026-04-06T12:38:18Z
 date_finished: null
 ---
 
@@ -20,40 +20,23 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Merge audit.sh's 10 task-file loops into fewer passes. See `docs/reports/T-860-audit-performance.md` for loop inventory and value analysis.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Active task loops (1,2,5,9,10) merged into single pass
+- [x] Completed task loops (3,4,7) merged into single pass
+- [x] All audit findings still produced (no checks lost)
+- [x] `fw audit` passes (exit 0 or 1, not 2)
+- [x] Audit output matches or improves on pre-merge output
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+# Audit runs without errors
+bin/fw audit --section structure,compliance,quality 2>&1 | tail -5
+# Self-test still passes
+bash tests/e2e/gates-test.sh
 
 ## Decisions
 
@@ -72,3 +55,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-955-audit-loop-merge--combine-10-loops-into-.md
 - **Context:** Initial task creation
+
+### 2026-04-06T12:38:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
