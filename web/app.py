@@ -158,15 +158,32 @@ def create_app() -> Flask:
         from flask import request as req
         session_id = data.get("session_id")
         if session_id:
-            term_mgr.kill_pty(session_id)
+            if term_mgr.is_termlink_session(session_id):
+                term_mgr.detach_termlink(session_id)
+            else:
+                term_mgr.kill_pty(session_id)
             _client_sessions.get(req.sid, set()).discard(session_id)
+
+    @socketio.on("attach_termlink")
+    def handle_attach_termlink(data):
+        """Attach to an existing TermLink session for observation (T-966)."""
+        from flask import request as req
+        session_id = data.get("session_id")
+        tl_name = data.get("tl_name")
+        if session_id and tl_name:
+            join_room(session_id)
+            term_mgr.attach_termlink(session_id, tl_name)
+            _client_sessions.setdefault(req.sid, set()).add(session_id)
 
     @socketio.on("pty_input")
     def handle_pty_input(data):
         """Forward browser keystrokes to the PTY."""
         session_id = data.get("session_id")
         if session_id:
-            term_mgr.write_pty(session_id, data.get("input", ""))
+            if term_mgr.is_termlink_session(session_id):
+                term_mgr.write_termlink(session_id, data.get("input", ""))
+            else:
+                term_mgr.write_pty(session_id, data.get("input", ""))
 
     @socketio.on("resize")
     def handle_resize(data):
@@ -180,7 +197,9 @@ def create_app() -> Flask:
     def _pty_output_loop():
         """Background thread: poll all PTYs and emit output to clients."""
         import time
+        tl_poll_counter = 0
         while True:
+            # Poll local PTYs (10ms)
             for session_id in list(term_mgr._sessions.keys()):
                 output = term_mgr.read_pty(session_id)
                 if output:
@@ -188,6 +207,17 @@ def create_app() -> Flask:
                         "session_id": session_id,
                         "output": output.decode("utf-8", errors="replace"),
                     }, to=session_id)
+            # Poll TermLink sessions less frequently (every 200ms = every 20th loop)
+            tl_poll_counter += 1
+            if tl_poll_counter >= 20:
+                tl_poll_counter = 0
+                for session_id in list(term_mgr._termlink_sessions.keys()):
+                    output = term_mgr.read_termlink(session_id)
+                    if output:
+                        socketio.emit("pty_output", {
+                            "session_id": session_id,
+                            "output": output,
+                        }, to=session_id)
             time.sleep(0.01)  # 10ms poll interval
 
     import threading

@@ -57,6 +57,32 @@
         margin-left: 4px;
     }
     .new-session:hover { background: #2d2d2d; color: #ccc; border-color: #888; }
+    .attach-menu {
+        position: absolute;
+        background: #252526;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 4px 0;
+        min-width: 200px;
+        z-index: 100;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .attach-menu.visible { display: block; }
+    .attach-item {
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .attach-item:hover { background: #2d2d2d; }
+    .attach-item .tl-tag { font-size: 0.65rem; color: #888; }
+    .session-tab.termlink { border-top: 2px solid #569cd6; }
+    .attach-empty { padding: 0.4rem 0.8rem; color: #666; font-size: 0.8rem; font-style: italic; }
 
     /* Terminal container */
     .terminal-container {
@@ -115,6 +141,8 @@
 
 <div class="session-tabs" id="session-tabs">
     <button class="new-session" id="new-session" title="New terminal session">+ New</button>
+    <button class="new-session" id="attach-termlink" title="Attach to TermLink session" style="border-color: #569cd6; color: #569cd6;">Attach</button>
+    <div class="attach-menu" id="attach-menu"></div>
 </div>
 
 <div class="terminal-container" id="terminal-container">
@@ -310,6 +338,108 @@
 
     // New session button
     newBtn.addEventListener('click', createSession);
+
+    // Attach TermLink button (T-966)
+    const attachBtn = document.getElementById('attach-termlink');
+    const attachMenu = document.getElementById('attach-menu');
+
+    attachBtn.addEventListener('click', function() {
+        // Toggle menu and fetch sessions
+        if (attachMenu.classList.contains('visible')) {
+            attachMenu.classList.remove('visible');
+            return;
+        }
+        attachMenu.innerHTML = '<div class="attach-empty">Loading...</div>';
+        attachMenu.classList.add('visible');
+        // Position menu below button
+        const rect = attachBtn.getBoundingClientRect();
+        attachMenu.style.top = (rect.bottom + 2) + 'px';
+        attachMenu.style.left = rect.left + 'px';
+
+        fetch('/api/termlink/sessions')
+            .then(r => r.json())
+            .then(function(tlSessions) {
+                attachMenu.innerHTML = '';
+                if (tlSessions.length === 0) {
+                    attachMenu.innerHTML = '<div class="attach-empty">No TermLink sessions found</div>';
+                    return;
+                }
+                tlSessions.forEach(function(tl) {
+                    const item = document.createElement('div');
+                    item.className = 'attach-item';
+                    const tags = (tl.tags || []).join(', ');
+                    item.innerHTML = '<span class="tab-status running"></span>'
+                        + '<span>' + tl.name + '</span>'
+                        + (tags ? '<span class="tl-tag">[' + tags + ']</span>' : '');
+                    item.addEventListener('click', function() {
+                        attachTermlinkSession(tl.name);
+                        attachMenu.classList.remove('visible');
+                    });
+                    attachMenu.appendChild(item);
+                });
+            })
+            .catch(function() {
+                attachMenu.innerHTML = '<div class="attach-empty">TermLink not available</div>';
+            });
+    });
+
+    // Close attach menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!attachBtn.contains(e.target) && !attachMenu.contains(e.target)) {
+            attachMenu.classList.remove('visible');
+        }
+    });
+
+    function attachTermlinkSession(tlName) {
+        const sessionId = 'tl-' + Math.random().toString(36).substr(2, 8);
+        const name = tlName;
+
+        // Create viewport
+        const viewport = document.createElement('div');
+        viewport.className = 'terminal-viewport';
+        viewport.id = 'viewport-' + sessionId;
+        container.appendChild(viewport);
+
+        // Create xterm (observation mode)
+        const term = new Terminal(TERM_OPTS);
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+        term.open(viewport);
+
+        // Create tab with TermLink styling
+        const tab = document.createElement('div');
+        tab.className = 'session-tab termlink';
+        tab.innerHTML = '<span class="tab-status running"></span>'
+            + '<span class="tab-name">' + name + '</span>'
+            + '<span class="tab-close" title="Detach">\u00d7</span>';
+        tabBar.insertBefore(tab, newBtn);
+
+        sessions[sessionId] = {
+            term: term, fitAddon: fitAddon, tabEl: tab, viewportEl: viewport,
+            name: name, state: 'observing', type: 'termlink',
+        };
+
+        tab.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab-close')) return;
+            switchSession(sessionId);
+        });
+        tab.querySelector('.tab-close').addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSession(sessionId);
+        });
+
+        // Input forwarding (inject to TermLink)
+        term.onData(function(data) {
+            socket.emit('pty_input', { session_id: sessionId, input: data });
+        });
+
+        // Tell server to attach
+        socket.emit('attach_termlink', { session_id: sessionId, tl_name: tlName });
+
+        switchSession(sessionId);
+        term.write('\x1b[36m[Attached to TermLink session: ' + tlName + ']\x1b[0m\r\n');
+    }
 
     // Fit active terminal on window resize
     window.addEventListener('resize', function() {

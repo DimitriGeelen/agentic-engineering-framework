@@ -119,7 +119,70 @@ def has_pty(sid):
     return sid in _sessions
 
 
+# --- TermLink observation sessions (T-966) ---
+
+# TermLink-attached sessions: {sid: {"tl_name": str, "last_lines": int}}
+_termlink_sessions = {}
+
+
+def attach_termlink(sid, tl_name):
+    """Register a TermLink observation session."""
+    _termlink_sessions[sid] = {"tl_name": tl_name, "last_lines": 0}
+    logger.info("Attached TermLink session %s → %s", sid, tl_name)
+
+
+def read_termlink(sid, max_lines=50):
+    """Poll TermLink PTY output for an observation session. Returns string or None."""
+    tl = _termlink_sessions.get(sid)
+    if not tl:
+        return None
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["termlink", "pty", "output", tl["tl_name"],
+             "--lines", str(max_lines), "--strip-ansi"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if result.returncode == 0:
+            output = result.stdout
+            # Only return new content (simple approach: hash comparison)
+            if output and hash(output) != tl.get("last_hash"):
+                tl["last_hash"] = hash(output)
+                return output
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+    return None
+
+
+def write_termlink(sid, data):
+    """Inject input to a TermLink session."""
+    tl = _termlink_sessions.get(sid)
+    if not tl:
+        return
+    try:
+        import subprocess
+        subprocess.run(
+            ["termlink", "pty", "inject", tl["tl_name"], data, "--enter"],
+            capture_output=True, timeout=2,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        logger.warning("Failed to inject to TermLink session %s", tl["tl_name"])
+
+
+def detach_termlink(sid):
+    """Remove a TermLink observation session."""
+    tl = _termlink_sessions.pop(sid, None)
+    if tl:
+        logger.info("Detached TermLink session %s", sid)
+
+
+def is_termlink_session(sid):
+    """Check if this is a TermLink observation session."""
+    return sid in _termlink_sessions
+
+
 def cleanup_all():
     """Kill all PTY sessions. Called on shutdown."""
     for sid in list(_sessions.keys()):
         kill_pty(sid)
+    _termlink_sessions.clear()
