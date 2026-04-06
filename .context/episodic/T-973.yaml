@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-973: Review-before-decide gate — fw inception decide requires fw task review first
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T20:30:38Z
+# ============================================================================
+
+task_id: T-973
+task_name: "Review-before-decide gate — fw inception decide requires fw task review first"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T19:53:57Z
+completed: 2026-04-06T19:58:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T21:57:58+02:00
+last_commit: 2026-04-06T21:57:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Review-before-decide gate — fw inception decide requires fw task review first
+
+# Key outcomes
+outcomes:
+  - "`review.sh` creates `.context/working/.reviewed-T-XXX` marker when `emit_review()` runs"
+  - "`review.sh` outputs full `fw inception decide` command for inception tasks alongside QR code"
+  - "`inception.sh` `do_inception_decide()` checks for marker and blocks with helpful message if missing"
+  - "Marker is cleaned up after decision is recorded"
+  - "Verification commands pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/inception.sh"
+  - ".agentic-framework/lib/review.sh"
+  - "lib/inception.sh"
+  - "lib/review.sh"
+  - ".tasks/active/T-973-review-before-decide-gate--fw-inception-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T21:57:58"
+    action: "T-973: Review-before-decide gate — fw inception decide requires fw task review first"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 5
+  lines_added: 112
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-973-review-before-decide-gate--fw-inception-.md
+generated_by: context-agent-hybrid
