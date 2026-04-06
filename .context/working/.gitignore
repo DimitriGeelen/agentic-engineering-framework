@@ -4,3 +4,12 @@
 session.yaml
 focus.yaml
 tier0-approval
+.reviewed-*
+.budget-gate-counter
+.budget-status
+.approval-notified
+.edit-counter
+.new-file-counter
+.dispatch-approval
+.agent-dispatch-counter
+.tier0-approval.pending
