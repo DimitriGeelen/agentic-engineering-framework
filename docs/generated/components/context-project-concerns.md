@@ -16,11 +16,6 @@
 | `agents/audit/audit.sh` | read_by |
 | `agents/handover/handover.sh` | read_by |
 
-## Related
-
-### Tasks
-- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
-
 ---
 *Auto-generated from Component Fabric. Card: `context-project-concerns.yaml`*
 *Last verified: 2026-03-10*

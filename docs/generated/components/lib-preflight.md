@@ -24,12 +24,13 @@ Exit codes:
 |--------|-------------|
 | `?` | uses |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `lib/init.sh` | called_by |
+| `tests/unit/lib_preflight.bats` | called-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

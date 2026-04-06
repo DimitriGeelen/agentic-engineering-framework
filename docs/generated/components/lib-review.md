@@ -26,19 +26,18 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/task-create/update-task.sh` | called_by |
 | `bin/fw` | called_by |
 | `lib/inception.sh` | called_by |
+| `tests/unit/lib_review.bats` | called-by |
 
 ## Related
 
 ### Tasks
-- T-642: emit_review type parameter — route inception to /inception, tasks to /tasks
-- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 

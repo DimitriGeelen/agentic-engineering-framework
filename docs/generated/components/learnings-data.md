@@ -22,10 +22,6 @@ Added via: fw context add-learning "description" --task T-XXX
 ## Related
 
 ### Tasks
-- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
-- T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns
-- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
-- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
 - T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
 
 ---

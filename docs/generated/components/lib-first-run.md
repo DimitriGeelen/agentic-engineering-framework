@@ -22,6 +22,12 @@ Steps:
 |--------|-------------|
 | `?` | uses |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/lib_first_run.bats` | called-by |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-first-run.yaml`*
 *Last verified: 2026-03-04*

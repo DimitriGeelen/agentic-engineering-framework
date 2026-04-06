@@ -38,7 +38,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | `agents/handover/handover.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (6)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -48,6 +48,8 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | `agents/audit/self-audit.sh` | read_by |
 | `bin/claude-fw` | read_by |
 | `C-009` | triggers_by |
+| `agents/context/session-metrics.sh` | called-by |
+| `tests/unit/checkpoint.bats` | called-by |
 
 ## Documentation
 

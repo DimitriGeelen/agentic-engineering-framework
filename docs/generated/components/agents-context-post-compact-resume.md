@@ -21,12 +21,13 @@ Part of: T-111 (compact-resume), T-179/T-188 (auto-restart)
 | `agents/fabric/fabric.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/audit/self-audit.sh` | read_by |
 | `C-009` | triggers_by |
+| `.claude/settings.json` | used-by |
 
 ## Related
 

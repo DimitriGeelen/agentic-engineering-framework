@@ -33,7 +33,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/templates/fabric_detail.html` | renders |
 | `web/templates/fabric_explorer.html` | renders |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -41,6 +41,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `web/templates/fabric_explorer.html` | used-by |
 
 ## Related
 

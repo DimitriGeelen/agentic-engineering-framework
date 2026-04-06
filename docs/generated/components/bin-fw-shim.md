@@ -16,10 +16,11 @@ Resolution order:
 Install: copy to ~/.local/bin/fw (or anywhere on PATH)
 Origin: T-664 (Phase 2 of T-662: eliminate global install dependency)
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-664: Project-detecting fw shim — replace global install symlink
+| Target | Relationship |
+|--------|-------------|
+| `bin/fw` | calls |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw-shim.yaml`*

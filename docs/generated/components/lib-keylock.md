@@ -17,11 +17,12 @@ Cross-key parallelism: locks on different keys do not block each other.
 Same-key serialization: locks on the same key execute sequentially.
 Stale lock cleanup: locks older than KEYLOCK_TIMEOUT (default 300s) are auto-released.
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/task-create/update-task.sh` | called_by |
+| `tests/unit/lib_keylock.bats` | called-by |
 
 ## Related
 

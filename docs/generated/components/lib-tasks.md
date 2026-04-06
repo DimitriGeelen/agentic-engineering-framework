@@ -24,13 +24,14 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/git/lib/hooks.sh` | called_by |
 | `bin/fw` | called_by |
 | `lib/paths.sh` | called_by |
+| `tests/unit/lib_tasks.bats` | called-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

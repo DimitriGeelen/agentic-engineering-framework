@@ -27,11 +27,12 @@ When the active task has `workflow_type: inception`:
 |--------|-------------|
 | `lib/review.sh` | calls |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/lib_inception.bats` | called-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception.yaml`*

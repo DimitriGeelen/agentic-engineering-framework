@@ -10,7 +10,9 @@ Known settings registry (mirrors lib/config.sh FW_CONFIG_REGISTRY)
 
 ### Framework Reference
 
-Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env var > hardcoded default.
+Framework settings follow a 4-tier resolution: explicit CLI flag > `FW_*` env var > `.framework.yaml` > hardcoded default.
+
+Persistent per-project configuration: `fw config set KEY VALUE` writes to `.framework.yaml`.
 
 | Setting | Env Var | Default | Purpose |
 |---------|---------|---------|---------|
@@ -18,15 +20,29 @@ Framework settings follow a 3-tier resolution: explicit CLI flag > `FW_*` env va
 | Dispatch limit | `FW_DISPATCH_LIMIT` | `2` | Agent tool cap before TermLink gate |
 | Watchtower port | `FW_PORT` | `3000` | Web UI listen port |
 | Safe mode | `FW_SAFE_MODE` | `0` | Bypass task gate (escape hatch) |
-| Budget recheck | `FW_BUDGET_RECHECK_INTERVAL` | `5` | Re-read transcript every N calls |
-| Status max age | `FW_B
+|
 
 *(truncated — see CLAUDE.md for full section)*
+
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/shared.py` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/templates/config.html` | used-by |
 
 ## Related
 
 ### Tasks
 - T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+- T-893: Fix Watchtower /config page — add .framework.yaml tier lookup
+- T-901: Add project info section to Watchtower /config page
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-config.yaml`*

@@ -38,6 +38,11 @@ Active tasks with no recent update
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
 
+## Related
+
+### Tasks
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-core.yaml`*
 *Last verified: 2026-02-20*

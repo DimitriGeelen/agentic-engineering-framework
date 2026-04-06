@@ -9,11 +9,12 @@
 Context Agent - add-decision command
 Add a decision to project memory
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
+| `agents/context/context.sh` | called-by |
 
 ## Documentation
 

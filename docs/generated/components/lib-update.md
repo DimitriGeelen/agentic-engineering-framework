@@ -18,11 +18,12 @@ to latest upstream (legacy path, pre-T-499).
 
 **When to use:** To change task status. Auto-triggers healing diagnosis on `issues`, and finalizes tasks on `work-completed`.
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/lib_update.bats` | called-by |
 
 ## Related
 

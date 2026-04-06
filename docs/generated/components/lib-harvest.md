@@ -14,11 +14,12 @@ Graduation pipeline:
 2+ projects = candidate (proposed for framework)
 3+ projects = practice (promoted to framework)
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/lib_harvest.bats` | called-by |
 
 ## Related
 

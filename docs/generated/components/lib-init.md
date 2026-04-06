@@ -19,7 +19,7 @@ for a project to use the framework.
 | `lib/preflight.sh` | calls |
 | `C-001` | calls |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -28,6 +28,7 @@ for a project to use the framework.
 | `lib/validate-init.sh` | reads_tags |
 | `lib/upstream.sh` | read_by |
 | `lib/validate-init.sh` | read_by |
+| `tests/unit/lib_init.bats` | called-by |
 
 ## Related
 

@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/app.py` | used-by |
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_partials-badge.yaml`*
 *Last verified: 2026-03-11*

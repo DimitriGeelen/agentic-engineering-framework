@@ -18,11 +18,6 @@ Added via: fw context add-decision "description" --task T-XXX --rationale "why"
 | `agents/context/context.sh` | read_by |
 | `agents/audit/audit.sh` | read_by |
 
-## Related
-
-### Tasks
-- T-677: Fix fw init hook merge — pre-existing settings.json blocks framework hooks
-
 ---
 *Auto-generated from Component Fabric. Card: `context-project-decisions.yaml`*
 *Last verified: 2026-03-04*

@@ -38,11 +38,11 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 ## Related
 
 ### Tasks
-- T-652: TermLink dispatch task enforcement — make --task mandatory in fw termlink dispatch
 - T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)
 - T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 - T-798: Shellcheck cleanup: remaining peripheral agent scripts
 - T-843: Fix TermLink cleanup killing active dispatch workers
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-termlink-termlink.yaml`*

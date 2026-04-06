@@ -9,21 +9,18 @@
 Context Agent - focus command
 Set or show current task focus
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
 | `capture-skill` | read_by |
+| `agents/context/context.sh` | called-by |
+| `.claude/commands/capture.md` | used-by |
 
 ## Documentation
 
 - [Deep Dive: The Task Gate](docs/articles/deep-dives/01-task-gate.md) (deep-dive)
-
-## Related
-
-### Tasks
-- T-659: Fix focus.yaml test failure — include default fields when creating from scratch
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-focus.yaml`*

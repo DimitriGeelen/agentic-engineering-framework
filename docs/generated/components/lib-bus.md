@@ -27,12 +27,13 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 |--------|-------------|
 | `lib/dispatch.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `agents/context/bus-handler.sh` | read_by |
+| `tests/unit/lib_bus.bats` | called-by |
 
 ## Related
 

@@ -42,8 +42,6 @@ Sections: structure, compliance, quality, traceability, enforcement,
 ## Related
 
 ### Tasks
-- T-687: Fix audit YAML writer — escape quotes in findings to prevent parse errors
-- T-695: Audit check for bugfix learning coverage — detect completed fix tasks without learning entries
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes

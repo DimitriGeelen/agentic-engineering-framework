@@ -34,7 +34,7 @@ Usage:
 | `agents/context/lib/focus.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (5)
+## Used By (13)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -43,6 +43,14 @@ Usage:
 | `bin/fw` | called_by |
 | `lib/setup.sh` | called_by |
 | `lib/init.sh` | called_by |
+| `tests/unit/context_status.bats` | called-by |
+| `tests/unit/context_focus.bats` | called-by |
+| `tests/unit/context_safe_commands.bats` | called-by |
+| `tests/unit/context_decision.bats` | called-by |
+| `tests/unit/context_init.bats` | called-by |
+| `tests/unit/context_learning.bats` | called-by |
+| `tests/unit/context_episodic.bats` | called-by |
+| `tests/unit/context_pattern.bats` | called-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-dispatcher.yaml`*

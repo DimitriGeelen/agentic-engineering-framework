@@ -17,5 +17,11 @@
 |--------|-------------|
 | `.claude/commands/capture.md` | invoked-by |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `.claude/commands/capture.md` | called-by |
+
 ---
 *Auto-generated from Component Fabric. Card: `capture-reader.yaml`*

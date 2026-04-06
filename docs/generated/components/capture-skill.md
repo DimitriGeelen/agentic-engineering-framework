@@ -18,5 +18,11 @@
 | `agents/capture/read-transcript.py` | calls |
 | `agents/context/lib/focus.sh` | reads |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/capture/read-transcript.py` | used-by |
+
 ---
 *Auto-generated from Component Fabric. Card: `capture-skill.yaml`*

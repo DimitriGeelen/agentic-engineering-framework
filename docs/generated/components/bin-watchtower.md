@@ -29,6 +29,12 @@ bin/watchtower.sh status
 |-----------|-------------|
 | `bin/fw` | called_by |
 
+## Related
+
+### Tasks
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+- T-888: Extract ensure_firewall_open to lib/firewall.sh for reuse
+
 ---
 *Auto-generated from Component Fabric. Card: `bin-watchtower.yaml`*
 *Last verified: 2026-03-04*

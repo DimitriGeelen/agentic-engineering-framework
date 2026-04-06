@@ -9,6 +9,12 @@
 Unit tests for lib/upgrade.sh
 Tests do_upgrade argument parsing, help, and guards
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/upgrade.sh` | calls |
+
 ## Related
 
 ### Tasks

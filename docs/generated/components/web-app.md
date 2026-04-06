@@ -51,11 +51,12 @@ When building a web application:
 | `web/blueprints/__init__.py` | calls |
 | `web/embeddings.py` | calls |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `web/templates/_partials/badge.html` | used-by |
 
 ## Related
 
@@ -64,6 +65,7 @@ When building a web application:
 - T-854: Pass project name to Watchtower templates — resolve from project root, display in header
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 - T-865: Fix Fabric Explorer naming — use project_name in title
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `web-app.yaml`*

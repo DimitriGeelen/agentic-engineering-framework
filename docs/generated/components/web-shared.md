@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (34)
+## Used By (37)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -48,6 +48,9 @@ Path resolution
 | `web/search.py` | imports_by |
 | `web/search_utils.py` | imports_by |
 | `web/subprocess_utils.py` | called_by |
+| `web/blueprints/costs.py` | called-by |
+| `web/blueprints/config.py` | called-by |
+| `web/blueprints/discovery.py` | called-by |
 
 ## Related
 

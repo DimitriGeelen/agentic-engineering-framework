@@ -23,7 +23,7 @@ Flow:
 |--------|-------------|
 | `lib/paths.sh` | calls |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -31,6 +31,8 @@ Flow:
 | `agents/audit/self-audit.sh` | read_by |
 | `agents/context/check-project-boundary.sh` | related_by |
 | `C-009` | triggers_by |
+| `.claude/settings.json` | used-by |
+| `agents/audit/audit.sh` | called-by |
 
 ## Documentation
 
@@ -40,7 +42,6 @@ Flow:
 ## Related
 
 ### Tasks
-- T-641: Tier 0 rejection feedback — write rejection reason to resolved YAML, agent reads on retry
 - T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 

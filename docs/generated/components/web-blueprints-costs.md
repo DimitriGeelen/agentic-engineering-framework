@@ -13,12 +13,18 @@
 | `web/shared.py` | calls |
 | `web/templates/costs.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | calls |
 | `web/blueprints/core.py` | calls |
+| `web/test_costs.py` | called-by |
+
+## Related
+
+### Tasks
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-costs.yaml`*

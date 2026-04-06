@@ -36,8 +36,6 @@ Allowed exceptions:
 ## Related
 
 ### Tasks
-- T-661: Add integration tests for check-project-boundary.sh
-- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---

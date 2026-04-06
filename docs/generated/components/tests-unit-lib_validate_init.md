@@ -9,6 +9,12 @@
 Unit tests for lib/validate-init.sh
 Tests do_validate_init argument parsing, help, and validation logic
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/validate-init.sh` | calls |
+
 ## Related
 
 ### Tasks

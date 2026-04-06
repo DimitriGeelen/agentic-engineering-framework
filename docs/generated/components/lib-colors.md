@@ -14,6 +14,20 @@ Variables: RED, GREEN, YELLOW, CYAN, BOLD, NC
 Automatically sourced via lib/errors.sh → lib/paths.sh chain.
 Scripts that source lib/paths.sh get colors for free.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/colors.sh` | calls |
+
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `lib/colors.sh` | called-by |
+| `lib/costs.sh` | called-by |
+| `tests/unit/lib_colors.bats` | called-by |
+
 ## Related
 
 ### Tasks

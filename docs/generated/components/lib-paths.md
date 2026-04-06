@@ -28,7 +28,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | `lib/tasks.sh` | calls |
 | `lib/yaml.sh` | calls |
 
-## Used By (41)
+## Used By (42)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -73,6 +73,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | `C-008` | called_by |
 | `C-001` | called_by |
 | `lib/ask.sh` | called_by |
+| `tests/unit/lib_paths.bats` | called-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

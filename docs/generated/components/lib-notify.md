@@ -19,7 +19,7 @@ Configuration:
 NTFY_ENABLED — set to "true" to enable (default: disabled)
 Design: Fire-and-forget, backgrounded, never blocks the calling script.
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,6 +27,7 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 | `agents/context/check-tier0.sh` | called_by |
 | `agents/task-create/update-task.sh` | called_by |
 | `agents/audit/audit.sh` | called_by |
+| `tests/unit/lib_notify.bats` | called-by |
 
 ## Related
 

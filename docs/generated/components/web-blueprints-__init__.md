@@ -63,7 +63,7 @@ Adding a new blueprint: import it here and append to _BLUEPRINTS.
 ## Related
 
 ### Tasks
-- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-__init__.yaml`*

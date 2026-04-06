@@ -15,10 +15,15 @@ Single source of truth: FW_VERSION in bin/fw line 14
 All other VERSION files are derived copies.
 Part of: Agentic Engineering Framework (T-606)
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/lib_version.bats` | called-by |
+
 ## Related
 
 ### Tasks
-- T-690: Fix self-audit false FAIL on settings.json — node output includes newline before exit code
 - T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes

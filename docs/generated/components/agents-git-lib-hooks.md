@@ -25,6 +25,7 @@ Git Agent - Hook installation subcommand
 
 ### Tasks
 - T-862: Fix audit performance for pre-push — fast path for push hook
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-hooks.yaml`*

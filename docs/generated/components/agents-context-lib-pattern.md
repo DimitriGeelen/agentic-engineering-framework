@@ -21,11 +21,12 @@ Add a pattern to project memory
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
+| `agents/context/context.sh` | called-by |
 
 ## Documentation
 

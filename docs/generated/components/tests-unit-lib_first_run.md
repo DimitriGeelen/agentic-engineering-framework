@@ -9,6 +9,12 @@
 Unit tests for lib/first-run.sh
 Tests do_first_run output and structure
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/first-run.sh` | calls |
+
 ## Related
 
 ### Tasks

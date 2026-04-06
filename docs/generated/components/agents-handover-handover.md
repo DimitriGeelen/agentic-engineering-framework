@@ -24,7 +24,7 @@ Creates handover documents for session continuity
 | `agents/git/git.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -32,6 +32,7 @@ Creates handover documents for session continuity
 | `bin/fw` | called_by |
 | `C-008` | called_by |
 | `agents/onboarding-test/test-onboarding.sh` | called_by |
+| `agents/context/checkpoint.sh` | called-by |
 
 ## Documentation
 

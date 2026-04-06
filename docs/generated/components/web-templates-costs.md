@@ -12,6 +12,11 @@
 |-----------|-------------|
 | `web/blueprints/costs.py` | renders |
 
+## Related
+
+### Tasks
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-costs.yaml`*
 *Last verified: 2026-04-03*

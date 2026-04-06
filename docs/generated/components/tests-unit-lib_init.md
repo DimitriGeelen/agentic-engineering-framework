@@ -9,6 +9,12 @@
 Unit tests for lib/init.sh
 Tests do_init argument parsing, help, guards, and generator functions
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/init.sh` | calls |
+
 ## Related
 
 ### Tasks

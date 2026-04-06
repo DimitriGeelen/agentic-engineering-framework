@@ -14,6 +14,20 @@ source "$FRAMEWORK_ROOT/lib/verify-acs.sh"
 do_verify_acs [--verbose] [T-XXX]
 Origin: T-823 GO decision — 63% of Human ACs can be verified programmatically.
 
+## Dependencies (2)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/verify-acs.sh` | calls |
+| `lib/config.sh` | calls |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `lib/verify-acs.sh` | called-by |
+| `tests/unit/verify_acs.bats` | called-by |
+
 ## Related
 
 ### Tasks
