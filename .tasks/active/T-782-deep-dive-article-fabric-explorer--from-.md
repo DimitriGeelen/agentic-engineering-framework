@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: [T-726, T-730]
 created: 2026-03-30T13:32:46Z
-last_update: 2026-03-30T13:35:26Z
+last_update: 2026-04-06T22:29:22Z
 date_finished: 2026-03-30T13:35:26Z
 ---
 
@@ -63,3 +63,6 @@ test -s docs/articles/deep-dives/19-fabric-explorer.md
 
 ### 2026-03-30T13:35:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

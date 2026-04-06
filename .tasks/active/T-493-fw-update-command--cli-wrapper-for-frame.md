@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [upgrade, cli]
 components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T20:05:12Z
-last_update: 2026-03-14T20:14:40Z
+last_update: 2026-04-06T22:29:17Z
 date_finished: 2026-03-14T20:14:40Z
 ---
 
@@ -66,3 +66,6 @@ bin/fw help | grep -q "update"
 
 ### 2026-03-14T20:14:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:17Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

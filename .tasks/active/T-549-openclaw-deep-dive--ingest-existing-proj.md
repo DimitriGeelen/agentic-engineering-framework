@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T11:32:07Z
-last_update: 2026-03-27T17:34:07Z
+last_update: 2026-04-06T22:29:32Z
 date_finished: null
 ---
 
@@ -175,3 +175,6 @@ This is a **dual-purpose evaluation:**
 
 ### 2026-03-27 — artifact-reference [audit-fix]
 - **Research artifact:** docs/reports/T-549-openclaw-architecture-mapping.md
+
+### 2026-04-06T22:29:32Z — status-update [task-update-agent]
+- **Change:** horizon: next → later

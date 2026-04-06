@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [path-c, termlink, ingestion, process-improvement]
 components: []
 related_tasks: [T-678, T-677, T-549, T-559]
 created: 2026-03-28T21:30:03Z
-last_update: 2026-03-28T21:57:32Z
+last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T21:55:27Z
 ---
 
@@ -216,3 +216,6 @@ Evidence:
 ### 2026-03-28T21:55:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-06T22:29:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

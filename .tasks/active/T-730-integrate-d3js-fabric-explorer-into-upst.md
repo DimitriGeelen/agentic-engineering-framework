@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T20:13:54Z
-last_update: 2026-03-29T20:36:29Z
+last_update: 2026-04-06T22:29:22Z
 date_finished: 2026-03-29T20:36:29Z
 ---
 
@@ -85,3 +85,6 @@ test "$(curl -s -o /dev/null -w '%{http_code}' 'http://localhost:3000/api/fabric
 
 ### 2026-03-29T20:36:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

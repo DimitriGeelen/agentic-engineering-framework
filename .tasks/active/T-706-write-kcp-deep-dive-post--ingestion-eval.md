@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T09:10:50Z
-last_update: 2026-03-29T09:52:44Z
+last_update: 2026-04-06T22:29:21Z
 date_finished: 2026-03-29T09:52:44Z
 ---
 
@@ -68,3 +68,6 @@ date_finished: 2026-03-29T09:52:44Z
 
 ### 2026-03-29T09:52:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:21Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

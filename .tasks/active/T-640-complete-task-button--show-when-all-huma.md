@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-27T11:32:46Z
-last_update: 2026-03-27T11:36:45Z
+last_update: 2026-04-06T22:29:19Z
 date_finished: 2026-03-27T11:36:45Z
 ---
 
@@ -66,3 +66,6 @@ grep -q 'complete-button' web/templates/task_detail.html
 
 ### 2026-03-27T11:36:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

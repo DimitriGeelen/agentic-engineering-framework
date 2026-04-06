@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T13:33:54Z
-last_update: 2026-03-27T13:49:20Z
+last_update: 2026-04-06T22:29:19Z
 date_finished: 2026-03-27T13:49:20Z
 ---
 
@@ -64,3 +64,6 @@ grep -q "mcp" lib/init.sh
 
 ### 2026-03-27T13:49:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

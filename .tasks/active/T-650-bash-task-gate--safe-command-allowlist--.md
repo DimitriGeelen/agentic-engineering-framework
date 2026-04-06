@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T09:39:20Z
-last_update: 2026-03-28T09:44:44Z
+last_update: 2026-04-06T22:29:19Z
 date_finished: 2026-03-28T09:44:32Z
 ---
 
@@ -68,3 +68,6 @@ The code is built, but `.claude/settings.json` needs the matcher updated from `W
 
 ### 2026-03-28T09:44:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

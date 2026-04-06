@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:26:27Z
-last_update: 2026-03-24T09:30:02Z
+last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-24T09:29:53Z
 ---
 
@@ -67,3 +67,6 @@ grep -q 'agentic-audit-' agents/audit/audit.sh
 
 ### 2026-03-24T09:29:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:18Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

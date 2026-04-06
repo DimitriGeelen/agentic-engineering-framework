@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [bin/watchtower.sh]
 related_tasks: []
 created: 2026-03-25T21:59:43Z
-last_update: 2026-03-25T23:00:16Z
+last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-25T23:00:16Z
 ---
 
@@ -67,3 +67,6 @@ bash -n bin/watchtower.sh
 
 ### 2026-03-25T23:00:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:18Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

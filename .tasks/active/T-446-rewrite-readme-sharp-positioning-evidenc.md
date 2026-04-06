@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-12T00:36:10Z
-last_update: 2026-03-14T21:00:57Z
+last_update: 2026-04-06T22:29:17Z
 date_finished: 2026-03-14T21:00:57Z
 ---
 
@@ -79,3 +79,6 @@ python3 -c "import re; t=open('README.md').read(); clean=re.sub(r'```.*?```','',
 
 ### 2026-03-14T21:00:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:17Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

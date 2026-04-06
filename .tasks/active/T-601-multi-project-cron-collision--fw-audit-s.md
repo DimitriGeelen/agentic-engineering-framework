@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: later
 tags: [urgent]
 components: []
 related_tasks: []
 created: 2026-03-24T09:17:00Z
-last_update: 2026-03-27T17:34:07Z
+last_update: 2026-04-06T22:29:32Z
 date_finished: null
 ---
 
@@ -112,3 +112,6 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-06T22:29:32Z — status-update [task-update-agent]
+- **Change:** horizon: next → later

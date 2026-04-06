@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T17:08:35Z
-last_update: 2026-03-27T18:04:50Z
+last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-27T18:04:50Z
 ---
 
@@ -68,3 +68,6 @@ grep -q "v1.4.0" /tmp/homebrew-agentic-fw/Formula/agentic-fw.rb
 
 ### 2026-03-27T18:04:50Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:18Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

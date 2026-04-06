@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:35Z
-last_update: 2026-03-29T13:33:17Z
+last_update: 2026-04-06T22:29:21Z
 date_finished: 2026-03-29T13:32:56Z
 ---
 
@@ -130,3 +130,6 @@ grep -q "Recommendation" docs/reports/T-702-single-source-of-truth.md
 - **Decision:** NO-GO
 - **Rationale:** - Recommendation: NO-GO
 - Rationale: The problem is real (3-file sync on hook changes) but the proposed solution (structured manifest + generators) is over-engineered. CLAUDE.md is 60% hand-authore...
+
+### 2026-04-06T22:29:21Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

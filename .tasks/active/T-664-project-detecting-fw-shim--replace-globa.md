@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [T-662, isolation, shim]
 components: []
 related_tasks: []
 created: 2026-03-28T17:11:52Z
-last_update: 2026-03-28T17:14:19Z
+last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T17:14:19Z
 ---
 
@@ -66,3 +66,6 @@ grep -q 'fw-shim' install.sh
 
 ### 2026-03-28T17:14:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

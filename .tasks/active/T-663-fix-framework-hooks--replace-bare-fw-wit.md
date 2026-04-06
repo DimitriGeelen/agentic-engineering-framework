@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [T-662, hooks, isolation]
 components: []
 related_tasks: []
 created: 2026-03-28T17:06:45Z
-last_update: 2026-03-28T17:11:36Z
+last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T17:11:36Z
 ---
 
@@ -64,3 +64,6 @@ grep -q 'fw_prefix="bin/fw"' lib/init.sh
 
 ### 2026-03-28T17:11:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: [T-625, T-660, T-559, T-614]
 created: 2026-03-28T16:44:24Z
-last_update: 2026-03-28T17:06:18Z
+last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T17:06:18Z
 ---
 
@@ -150,3 +150,6 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 ### 2026-03-28T17:06:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-06T22:29:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

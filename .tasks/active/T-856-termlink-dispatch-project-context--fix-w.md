@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T18:23:31Z
-last_update: 2026-04-05T12:01:03Z
+last_update: 2026-04-06T22:23:16Z
 date_finished: null
 ---
 
@@ -127,3 +127,6 @@ were research-only (no Write/Edit needed inside the project).
 
 ### 2026-04-05T12:01:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T22:23:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → later

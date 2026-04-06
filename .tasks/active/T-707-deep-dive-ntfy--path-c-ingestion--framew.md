@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [path-c, deep-dive, external, ntfy, notifications]
 components: []
 related_tasks: [T-696, T-697, T-698]
 created: 2026-03-29T09:52:55Z
-last_update: 2026-03-29T11:13:43Z
+last_update: 2026-04-06T22:29:21Z
 date_finished: 2026-03-29T11:13:43Z
 ---
 
@@ -163,3 +163,6 @@ ntfy (`github.com/binwiederhier/ntfy`) is a simple HTTP-based pub/sub notificati
 ### 2026-03-29T11:13:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-06T22:29:21Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

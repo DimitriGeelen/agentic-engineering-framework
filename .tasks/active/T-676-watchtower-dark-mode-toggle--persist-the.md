@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T20:18:56Z
-last_update: 2026-03-28T20:21:48Z
+last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T20:21:39Z
 ---
 
@@ -68,3 +68,6 @@ grep -q 'localStorage.*theme' web/templates/review.html
 
 ### 2026-03-28T20:21:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

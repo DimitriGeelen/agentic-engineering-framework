@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-29T19:55:54Z
-last_update: 2026-03-29T20:13:36Z
+last_update: 2026-04-06T22:29:22Z
 date_finished: 2026-03-29T20:13:36Z
 ---
 
@@ -152,3 +152,6 @@ The current Watchtower `/fabric/graph` uses Cytoscape.js with static subsystem-o
 ### 2026-03-29T20:13:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-06T22:29:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

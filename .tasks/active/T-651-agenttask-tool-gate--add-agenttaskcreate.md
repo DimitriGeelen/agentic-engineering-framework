@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T09:44:55Z
-last_update: 2026-03-28T09:45:43Z
+last_update: 2026-04-06T22:29:19Z
 date_finished: 2026-03-28T09:45:43Z
 ---
 
@@ -62,3 +62,6 @@ T-630 GO: Universal task gate. Spike 2 proved check-active-task.sh already handl
 
 ### 2026-03-28T09:45:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T08:43:03Z
-last_update: 2026-03-27T17:34:07Z
+last_update: 2026-04-06T22:29:32Z
 date_finished: null
 ---
 
@@ -120,3 +120,6 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-06T22:29:32Z — status-update [task-update-agent]
+- **Change:** horizon: next → later

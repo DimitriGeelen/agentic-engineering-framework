@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T08:42:41Z
-last_update: 2026-03-27T17:34:07Z
+last_update: 2026-04-06T22:29:31Z
 date_finished: null
 ---
 
@@ -120,3 +120,6 @@ This means a freshly initialized project can immediately drift into ungoverned w
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-06T22:29:31Z — status-update [task-update-agent]
+- **Change:** horizon: next → later

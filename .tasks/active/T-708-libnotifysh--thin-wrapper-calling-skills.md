@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [ntfy, notifications]
 components: [lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:11Z
-last_update: 2026-03-29T11:16:12Z
+last_update: 2026-04-06T22:29:21Z
 date_finished: 2026-03-29T11:16:12Z
 ---
 
@@ -69,3 +69,6 @@ grep -q "NTFY_ENABLED" lib/notify.sh
 
 ### 2026-03-29T11:16:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:21Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

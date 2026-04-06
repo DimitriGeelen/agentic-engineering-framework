@@ -7,12 +7,12 @@ description: >
 status: started-work
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T12:58:31Z
-last_update: 2026-04-04T12:59:00Z
+last_update: 2026-04-06T22:23:16Z
 date_finished: null
 ---
 
@@ -93,3 +93,6 @@ Hardcoded 300K context window default doesn't adapt to model capabilities (Opus 
 
 ### 2026-04-04T12:59:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T22:23:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → later

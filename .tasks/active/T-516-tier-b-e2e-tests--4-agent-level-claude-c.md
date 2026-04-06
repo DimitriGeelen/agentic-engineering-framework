@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [testing, termlink, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T21:10:37Z
-last_update: 2026-03-17T22:01:51Z
+last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-17T22:01:51Z
 ---
 
@@ -62,3 +62,6 @@ test -x tests/e2e/runner.sh
 
 ### 2026-03-17T22:01:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:18Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

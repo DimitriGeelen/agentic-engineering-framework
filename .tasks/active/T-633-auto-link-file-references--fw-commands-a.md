@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [bin/fw, lib/inception.sh, web/blueprints/docs.py]
 related_tasks: []
 created: 2026-03-26T22:37:19Z
-last_update: 2026-03-27T08:36:05Z
+last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-27T06:47:34Z
 ---
 
@@ -60,3 +60,6 @@ curl -sf http://localhost:3000/ | grep -q "href"
 
 ### 2026-03-27T06:47:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-06T22:29:18Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
