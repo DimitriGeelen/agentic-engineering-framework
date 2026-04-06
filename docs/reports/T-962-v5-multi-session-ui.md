@@ -1,712 +1,744 @@
-# T-962 Vector 5: Multi-Session Terminal UI Patterns
+# T-962 v5: Multi-Session Terminal UI Patterns — Survey & Recommendation
 
-Research report for T-962 (Web Terminal in Watchtower).
-Covers how existing tools handle multiple concurrent terminal sessions in a browser,
-and recommends a UI pattern for Watchtower.
-
----
-
-## 1. Survey of Existing Tools
-
-### 1.1 VS Code Integrated Terminal
-
-**Architecture:** Tab list on the right side of the terminal panel. Each tab shows name, icon, color decoration, and group indicator. The core component (`TerminalTabbedView`) uses a `SplitView` to create a resizable layout between the tab list and the terminal display area.
-
-**Session management:**
-- **Creation:** `+` button in panel toolbar; keyboard shortcut; command palette; terminal profiles dropdown
-- **Tabs:** Vertical tab list on right side (configurable). Each entry shows: icon (customizable per profile), name (auto or user-set), color coding, group decoration
-- **Split panes:** Drag a tab into the terminal area to create side-by-side splits within a group. Groups are visually joined
-- **Profiles:** Named presets (shell type, env vars, icon, color) — user creates "Python", "Node", "SSH prod" profiles
-- **Lifecycle:** Running terminals show animated icon; exited terminals show exit code badge; dead terminals can be restarted
-- **At scale (5+ terminals):** Tab list scrolls vertically. Terminal editor mode lets terminals live as regular editor tabs in the main area. Groups collapse
-- **Persistence:** Layouts serialize and restore across window reloads (`enablePersistentSessions`)
-
-**Key takeaway:** The tab-list-on-side + split-pane-in-main pattern scales well. Profile system prevents "Terminal 1, Terminal 2, Terminal 3" label fatigue. Color coding is surprisingly useful for quick visual scanning.
-
-### 1.2 JupyterLab
-
-**Architecture:** Dock panel layout with tabs along the top of the main work area. Terminals are peers of notebooks — same tab bar, same layout system.
-
-**Session management:**
-- **Creation:** `+` launcher button opens a launcher page; click "Terminal" tile. Also available from File menu
-- **Tabs:** Horizontal tab bar at top of each panel. Terminals and notebooks share the tab bar — distinguished by icon (terminal icon vs notebook icon)
-- **Split panes:** Drag any tab to an edge of the main area to create a new panel. Panels tile freely (horizontal or vertical)
-- **Running panel:** Left sidebar "Running" panel lists all active kernel sessions AND terminal sessions. Terminals can be re-opened from here if tab was closed (session survives tab close)
-- **Labels:** Auto-named "Terminal 1", "Terminal 2", etc. No rename capability built-in. Distinguished by number only
-- **Lifecycle:** Closing a tab does NOT kill the session — it continues on the server. The "Running" sidebar shows all live sessions for reconnection
-- **Areas:** Four docking areas: left sidebar, right sidebar, main dock panel, bottom area. Terminals can be placed in any area
-
-**Key takeaway:** The "session survives tab close" pattern is important for Watchtower — TermLink sessions persist independently of the browser. The "Running" sidebar as a session registry is a strong pattern. Weak labeling (just numbers) is a known pain point.
-
-### 1.3 Portainer Container Console
-
-**Architecture:** Per-container console access. Each container has a "Console" action that opens an exec session in the container detail view.
-
-**Session management:**
-- **Creation:** Click console icon in container row, or "Console" button on container detail page. Choose shell (`/bin/bash`, `/bin/sh`, custom command) and user (root, default, custom)
-- **Tabs:** No multi-tab terminal. One console session per container view. Opening another container console navigates away
-- **Shell selection:** Dropdown for shell type; toggle for custom command; user field for privilege control
-- **Lifecycle:** Sessions timeout after ~60s of inactivity (known pain point). Reconnection loses previous state. No session persistence
-- **Multi-container:** To watch multiple containers, users open multiple browser tabs (external multiplexing)
-
-**Key takeaway:** Portainer's model is anti-pattern for Watchtower. Single-session-per-view forces browser-tab multiplexing. The shell-selection and user-selection UX during session creation is relevant though — we need something similar for choosing session type (bash, Claude, TermLink attach).
-
-### 1.4 Cockpit
-
-**Architecture:** Host-switching model. Each connected machine has its own set of pages, including a terminal. The "host switcher" dropdown at top-left navigates between machines.
-
-**Session management:**
-- **Multi-host:** SSH to secondary hosts from primary. Each host gets a full Cockpit session with its own terminal
-- **Switching:** Dropdown at top-left corner. Selecting a host switches all pages (not just terminal) to that host's context
-- **Terminal:** One terminal per host. Full-screen terminal page within each host's context
-- **Security:** All remote code runs in the same browser context (no isolation). Only connect to trusted hosts
-- **Current status:** Host switcher is deprecated in favor of Cockpit Client (Flatpak app)
-
-**Key takeaway:** The per-host switching model is relevant for multi-machine orchestration (future). But one-terminal-per-host is too limited. The security concern (same browser context for all hosts) applies to Watchtower too — all sessions share the same Watchtower auth context.
-
-### 1.5 Tabby (formerly Terminus)
-
-**Architecture:** Electron-based terminal with deep tab and split-pane support. Connection profiles as first-class concept.
-
-**Session management:**
-- **Tabs:** Top tab bar. Each tab shows profile icon, name, and activity indicator
-- **Split panes:** Split any tab horizontally or vertically. Nested splits supported. Save split layout as a reusable profile
-- **Profiles:** Named connection profiles (SSH, serial, local shell) with icon, color, and configuration. Profiles are the primary organizing concept
-- **Broadcast:** `Ctrl-Shift-I` types into ALL panes simultaneously (useful for cluster ops)
-- **Labels:** Profile name + optional custom name. Rich metadata: host, connection type, status
-- **Full-screen pane:** `Ctrl-Alt-Enter` temporarily maximizes a single pane
-
-**Key takeaway:** Profiles-as-first-class-concept is the right model for Watchtower. A "Claude Code session", "bash terminal", "TermLink attach" are profiles. The broadcast-to-all-panes feature is interesting for future orchestrator (send same command to all agent sessions). Save-layout-as-profile is powerful but complex.
-
-### 1.6 Tmux/Screen in Browser (GoTTY, ttyd)
-
-**Architecture:** Thin web wrapper around a server-side terminal multiplexer. The browser is a viewport into a tmux/screen session.
-
-**Session management:**
-- **GoTTY:** Starts a web server on port 8080 serving a single command/session. One URL = one terminal view. Multi-session requires running multiple GoTTY instances on different ports, or using tmux inside the single session
-- **ttyd:** Similar to GoTTY but C-based (faster). Shares terminal output over web. For interaction, run tmux/screen inside ttyd
-- **tmux integration:** The typical pattern is: GoTTY/ttyd wraps tmux. Tmux handles panes/windows. Browser just renders the tmux output. Multiple browser clients can attach to the same tmux session (shared view)
-- **Multi-session:** Not built into the web layer. Users rely on tmux's own window/pane management (keyboard-driven, not clickable tabs)
-
-**Key takeaway:** The "wrap tmux in a web shell" pattern is proven but crude for a modern UI. It pushes all session management to the terminal multiplexer, losing the ability to have browser-native tabs, lifecycle indicators, and metadata. However, the "multiple clients attach to one session" pattern is directly relevant — TermLink sessions can have multiple viewers.
+**Task:** T-962 (Inception — web terminal in Watchtower)
+**Date:** 2026-04-06
+**Purpose:** Survey multi-session terminal UI patterns across industry tools, recommend a UI architecture for Watchtower (Flask/Jinja + htmx + PicoCSS), and define a session data model that supports future multi-provider agent sessions.
 
 ---
 
-## 2. Pattern Comparison Matrix
+## Executive Summary
 
-| Feature | VS Code | JupyterLab | Portainer | Cockpit | Tabby | GoTTY+tmux |
-|---------|---------|------------|-----------|---------|-------|------------|
-| Multi-session | Tab list | Tab bar | No (1 per view) | 1 per host | Tab bar | tmux internal |
-| Split panes | Yes (groups) | Yes (dock panels) | No | No | Yes (nested) | tmux panes |
-| Session persistence | Across reloads | Survives tab close | No (60s timeout) | Per-host | App-level | tmux persistent |
-| Profiles/presets | Yes (rich) | No | Shell selection | No | Yes (rich) | No |
-| Session lifecycle UI | Icon + exit code | Running sidebar | Error only | N/A | Activity indicator | N/A |
-| Rename/color | Yes/Yes | No/No | No/No | No/No | Yes/Yes | No/No |
-| Session metadata | Profile, icon, color, group | Type icon, number | Container, shell, user | Host | Profile, connection | None |
-| Mobile-friendly | No | Partial | Yes | Partial | No | Yes (responsive) |
-| Scales to 10+ sessions | Yes (scrollable list) | Yes (Running panel) | N/A | N/A | Yes | tmux windows |
+Six tools were studied across four categories: IDE terminals (VS Code, JupyterLab), container/infrastructure consoles (Portainer, Cockpit), desktop terminal emulators (Tabby), and browser-terminal bridges (GoTTY, ttyd, Muxplex). The recommended Watchtower pattern is a **sidebar session list + tabbed main area** with lifecycle badges, profile-based creation, and a session data model that carries provider metadata from day one. The design uses htmx for session switching (no SPA framework) and xterm.js for terminal rendering.
 
 ---
 
-## 3. Recommended UI Pattern for Watchtower
+## 1. Survey: Session List UI
 
-### 3.1 Design Principles
+How each tool presents its list of terminal sessions to the user.
 
-1. **Session list, not tab bar** — A sidebar/panel session list (VS Code model) scales better than horizontal tabs (JupyterLab) for 5+ sessions. Horizontal tabs break at ~6 items on typical screens
-2. **Profiles as first-class concept** — Borrow from Tabby/VS Code. "New Terminal" is not enough; users need "New Bash", "New Claude Session", "Attach TermLink T-042"
-3. **Sessions outlive the browser** — Follow JupyterLab: closing a tab doesn't kill the session. TermLink sessions already persist server-side
-4. **Lifecycle is visible** — Running, idle, exited, error states with distinct visual treatment (VS Code model)
-5. **htmx-compatible** — No React state management. Server renders the session list. xterm.js is the only JS-heavy component (loaded per-terminal, not framework-level)
+### VS Code — Right sidebar tab list
+- Terminal sessions appear as a **vertical list on the right side** of the terminal panel
+- Each entry: icon + name + optional status decoration (spinner, checkmark, X)
+- Split terminals are **grouped** — a group appears as one entry with sub-entries, keeping the list compact even with many splits
+- Terminals can also live in the editor area as regular tabs (top tab bar)
+- The session list is toggleable: always visible, hidden when single, or never shown
 
-### 3.2 Layout: Two-Column with Collapsible Session Panel
+### JupyterLab — Running sidebar panel + tabs
+- "Running Terminals and Kernels" is a **left sidebar panel** listing all active sessions
+- Terminals listed flat: `terminals/1`, `terminals/2`, etc.
+- Each terminal also opens as a **tab in the main dock area** alongside notebook tabs
+- Clicking a session in the sidebar re-focuses its tab
+- Launcher page provides tile-based creation (Terminal tile under "Other")
 
-```
-+-------------------------------------------------------------------+
-| Watchtower nav bar (existing)                                     |
-+-------------------------------------------------------------------+
-| Ambient strip (existing)                                          |
-+-------------------+-----------------------------------------------+
-| SESSION PANEL     | TERMINAL VIEWPORT                             |
-| (collapsible)     |                                               |
-|                   | +-------------------------------------------+ |
-| [+ New ▾]         | |                                           | |
-|                   | |  xterm.js instance                        | |
-| ● bash-1          | |  (active session)                         | |
-|   T-962 | local   | |                                           | |
-|                   | |  $ fw audit                                | |
-| ● claude-prod     | |  PASS: 12 checks                          | |
-|   T-962 | claude  | |  WARN: 1 check                            | |
-|                   | |  $ _                                      | |
-| ◐ termlink-T042   | |                                           | |
-|   T-042 | termlink| |                                           | |
-|                   | +-------------------------------------------+ |
-| ◌ bash-2 (exited) | [ bash-1 ][ claude-prod ][ termlink-T042 ]   |
-|   — | local       | (secondary tab bar for quick switching)       |
-+-------------------+-----------------------------------------------+
-```
+### Portainer — No session list
+- **One session per view** — the Console tab within a container's detail page
+- No multi-session management within the UI
+- Multiple sessions require multiple browser tabs
+- Container list serves as the implicit "session list" (pick a container → open its console)
 
-**Session panel (left, ~200px, collapsible):**
-- Header: "Sessions" title + "+ New" dropdown button
-- Each session card: status icon, name, task badge, provider badge
-- Click to switch active terminal
-- Right-click/long-press: rename, change color, kill, detach
-- Collapsible on mobile (hamburger toggle)
-- Rendered server-side via htmx (`hx-get="/api/terminal/sessions"`)
+### Cockpit — Host switcher dropdown
+- Terminal is a **full-page module** in a sidebar-navigated dashboard
+- **Host switcher** dropdown in sidebar header lists connected machines
+- Switching hosts changes the entire dashboard context, including Terminal
+- One terminal session per host — no tab bar, no multiplexing
+- User-assigned **color dots** next to hostname for visual identification
 
-**Terminal viewport (right, fills remaining space):**
-- Single xterm.js instance showing the active session
-- Secondary tab bar below terminal for quick switching (optional, can be hidden)
-- Resize handle between session panel and viewport
+### Tabby — Horizontal top tab bar
+- Tabs across the top of the window: icon + title + close button
+- **Color-coded tabs** per profile (red = production, green = dev, blue = staging)
+- Tabs are draggable for reordering
+- Profiles organized into hierarchical groups in a settings sidebar
+- Split panes within a tab (broadcast mode sends to all panes simultaneously)
 
-**Secondary tab bar (bottom of viewport, optional):**
-- Compact horizontal tabs for the 3-5 most recent sessions
-- Overflow: `...` dropdown
-- Duplicates session panel functionality but enables faster switching without the panel open
+### GoTTY / ttyd — No session list
+- One command per server instance — no built-in multiplexing
+- Each browser connection spawns an independent session
+- No listing, labeling, or re-attachment API
+- For multi-session: run multiple instances on different ports, or wrap tmux
 
-### 3.3 Session Lifecycle Indicators
+### Muxplex — Grid dashboard
+- Discovers tmux sessions, renders a **live thumbnail grid**
+- Clicking a session opens a full interactive terminal (ttyd + xterm.js)
+- Session operations: list, create, attach, kill, rename
+- Designed for parallel agent monitoring dashboards
 
-| State | Icon | Color | Meaning |
-|-------|------|-------|---------|
-| `running` | ● (filled circle) | Green `#2e7d32` | Process active, accepting input |
-| `idle` | ◐ (half circle) | Blue `#1565c0` | Connected but no recent I/O (>60s) |
-| `exited` | ◌ (empty circle) | Gray (muted) | Process exited (show exit code) |
-| `error` | ✕ (cross) | Red `#c62828` | Connection failed or process crashed |
-| `connecting` | ◎ (target) | Amber `#f9a825` | WebSocket connecting / PTY spawning |
+### Pattern comparison
 
-These map directly to PicoCSS/Watchtower's existing color palette (`.audit-pass`, `.audit-warn`, `.audit-fail`).
-
-### 3.4 Session Creation Flow
-
-The "+ New" button opens a dropdown (PicoCSS `<details class="dropdown">`):
-
-```
-+---------------------------+
-| + New Terminal             |
-+---------------------------+
-| ▸ Bash Shell              |
-| ▸ Claude Code Session     |
-| ▸ Attach TermLink...      |  → sub-menu: list active TermLink sessions
-| ▸ SSH to Host...          |  → future: host selection
-+---------------------------+
-| ▸ From Profile...         |  → future: saved profiles
-+---------------------------+
-```
-
-Each option hits an htmx endpoint:
-- `POST /api/terminal/sessions` with `{"type": "bash"}` → spawns PTY
-- `POST /api/terminal/sessions` with `{"type": "claude", "task": "T-042"}` → spawns `claude -p`
-- `POST /api/terminal/sessions` with `{"type": "termlink", "session": "worker-1"}` → attaches to existing TermLink session
-
-### 3.5 Session Labels and Naming
-
-**Auto-generated format:** `{type}-{counter}` (e.g., `bash-1`, `claude-2`, `termlink-T042`)
-
-**Metadata shown per session:**
-- Line 1: **Name** (editable, click-to-rename like VS Code)
-- Line 2: Task ID badge (if associated) + Provider badge
-
-**Provider badges** (inline, colored):
-| Provider | Badge | Color |
-|----------|-------|-------|
-| Local shell | `local` | Gray |
-| Claude | `claude` | Orange/amber |
-| TermLink | `termlink` | Blue |
-| GPT (future) | `gpt` | Green |
-| Gemini (future) | `gemini` | Blue |
-| Ollama (future) | `ollama` | Purple |
-
-### 3.6 htmx Integration Pattern
-
-The terminal page is a hybrid: server-rendered chrome (session list, controls) + client-side xterm.js (terminal I/O).
-
-```
-Page load:
-  GET /terminal → server renders full page with session list + empty viewport
-  
-Session list updates:
-  hx-get="/api/terminal/sessions" hx-trigger="every 5s" hx-swap="innerHTML"
-  → Server renders session list HTML fragment
-  
-Session switching:
-  hx-get="/api/terminal/sessions/{id}/activate" hx-target="#terminal-viewport"
-  → JS callback attaches xterm.js to the session's WebSocket
-  
-Session creation:
-  hx-post="/api/terminal/sessions" hx-vals='{"type":"bash"}'
-  → Server spawns PTY, returns session ID
-  → JS creates new xterm.js instance, connects WebSocket
-
-Terminal I/O:
-  Pure WebSocket (not htmx) — xterm.js ↔ ws://host/api/terminal/ws/{session_id}
-```
-
-**Key architectural split:**
-- htmx handles: session list, session creation, session metadata, lifecycle indicators
-- WebSocket handles: terminal I/O (keystrokes, output)
-- xterm.js handles: rendering, cursor, colors, scrollback
-
-This preserves Watchtower's htmx-first architecture while using WebSocket only where htmx can't work (real-time bidirectional terminal I/O).
-
-### 3.7 Integration with Existing Watchtower Pages
-
-**Option A: Dedicated `/terminal` page (recommended for v1)**
-- New nav item under "Operations" group
-- Full-page terminal experience
-- Session panel + viewport layout as described above
-
-**Option B: Embedded terminal on task detail page (v2)**
-- Collapsible terminal drawer at bottom of task detail page
-- Pre-filtered to show sessions associated with that task
-- "Open in full page" link to `/terminal?task=T-042`
-
-**Option C: Both (recommended long-term)**
-- `/terminal` as the power-user multi-session view
-- Task detail page embeds a mini terminal (single session, task-scoped)
-- Inception detail page: terminal for running spikes
-- Approvals page: terminal for Tier 0 command execution
-
-### 3.8 Mobile Considerations
-
-**Recommendation: Desktop-primary, mobile-aware.**
-
-Full terminal interaction on mobile is poor UX (small screen, soft keyboard, no modifier keys). But *viewing* terminal output and *session management* are valuable on mobile.
-
-Mobile layout:
-- Session panel becomes full-width (stacked above viewport, not beside it)
-- Terminal viewport is read-only by default on mobile (prevents accidental input)
-- "Enable input" toggle for when mobile input is genuinely needed
-- Session lifecycle indicators and metadata are fully functional
-- QR code on desktop `/terminal` page links to mobile view
-
-```
-Mobile (< 768px):
-+---------------------------+
-| Watchtower nav (hamburger)|
-+---------------------------+
-| Sessions (horizontal scroll) |
-| [●bash-1] [●claude] [◐tl]|
-+---------------------------+
-|                           |
-|  Terminal output          |
-|  (read-only by default)   |
-|                           |
-|  [Enable Input]           |
-+---------------------------+
-```
+| Pattern | Tools | Strengths | Weaknesses |
+|---------|-------|-----------|------------|
+| **Sidebar list** | VS Code, JupyterLab | Compact, scalable to many sessions, always visible | Requires horizontal space |
+| **Top tab bar** | Tabby, JupyterLab (main area) | Familiar, drag-to-reorder | Doesn't scale past ~10 tabs |
+| **Dropdown** | Cockpit | Minimal chrome, works on mobile | Hard to scan many sessions |
+| **Grid/dashboard** | Muxplex | Visual overview, thumbnails | Space-hungry, not for primary interaction |
+| **No list** | Portainer, GoTTY/ttyd | Simplest | Doesn't support multi-session at all |
 
 ---
 
-## 4. Session Data Model
+## 2. Survey: Lifecycle Indicators
 
-### 4.1 JSON Schema
+How each tool communicates session state (running, idle, exited, disconnected).
+
+### VS Code
+- **Status decorations** appear as icons to the right of the terminal name in the tab list
+- Running task: animated spinner icon
+- Task success (exit 0): green checkmark
+- Task failure (non-zero): red X icon (elevated to warning severity for visibility)
+- Bell triggered: yellow bell (brief flash, configurable duration)
+- Disconnected: dedicated icon
+- **Shell integration command decorations:** colored circles in the gutter — blue for success, red for failure — per-command, not per-session
+- Statuses are **transient overlays** with optional auto-timeout, not permanent state columns
+
+### JupyterLab
+- Minimal: terminals are either **running** (listed in sidebar) or **shut down** (removed)
+- Status bar shows terminal count: `"if-any"`, `"always"`, or `"never"`
+- Close tab ≠ kill session (configurable via `shutdownOnClose`)
+- No visual distinction between active/idle sessions
+
+### Portainer
+- Container status shown in container list (running/stopped badges with color)
+- Console has binary state: connected or disconnected
+- **60-second idle timeout** auto-disconnects (known pain point)
+- No reconnection — disconnecting destroys the session entirely
+
+### Cockpit
+- No per-session lifecycle indicator (one terminal per host)
+- Host status implicit in the host switcher dropdown
+- Color dots are user-assigned identity markers, not state indicators
+
+### Tabby
+- Disconnected SSH sessions: tab remains open showing disconnection state
+- No automatic reconnection — must manually reconnect
+- No idle/active distinction in tab appearance
+- Layout persists through app restart (tab restore)
+
+### Pattern comparison
+
+| Indicator style | Tools | Description |
+|----------------|-------|-------------|
+| **Icon overlay on name** | VS Code | Small icon to right of session name — most space-efficient |
+| **Color-coded badge** | Portainer (containers) | Colored pill with text (RUNNING, STOPPED) |
+| **Presence/absence** | JupyterLab | In list = running, not in list = dead |
+| **Status bar count** | JupyterLab | Global count, not per-session |
+| **None** | Cockpit, Tabby | No explicit lifecycle visualization |
+
+---
+
+## 3. Survey: Session Creation
+
+### VS Code
+- **"+" button** with dropdown arrow for profile selection
+- Profile dropdown lists auto-detected + manually configured profiles
+- Split button (hover over tab entry) creates split terminal within same group
+- Keyboard: `Ctrl+Shift+`` (new), `Ctrl+Shift+5` (split)
+- Auto-detection of available shells (`$SHELL`, PowerShell, Git Bash, WSL)
+
+### JupyterLab
+- **Five methods:** Launcher tile, Menu bar (File > New > Terminal), keyboard shortcut (`Ctrl+Shift+T`), command palette, URL-based (`/terminals/<name>`)
+- All methods create the same thing — a new PTY session + tab
+- No profile/preset system — all terminals use the system default shell
+
+### Portainer
+- **Explicit configuration bar** above terminal: shell selector (bash/sh/ash/custom), user field, Connect button
+- Must choose shell type before connecting
+- Disconnect button replaces Connect during active session
+
+### Cockpit
+- **Implicit** — clicking Terminal module immediately opens a shell as the logged-in user
+- No shell selector, no configuration step
+- Add host dialog for new machine connections
+
+### Tabby
+- **Profile-based** — click a profile to open a new tab with that configuration
+- SSH profiles: hostname, port, key, jump host, color
+- Local profiles: shell path, working directory, env vars
+- "Quick Connect" for ad-hoc SSH connections
+
+### Pattern comparison
+
+| Creation pattern | Suitability for Watchtower |
+|-----------------|---------------------------|
+| **Button + profile dropdown** (VS Code) | Best for multi-provider: "+" with Claude/GPT/local presets |
+| **Launcher tiles** (JupyterLab) | Good for discoverability, wasteful if user knows what they want |
+| **Config bar + Connect** (Portainer) | Good for one-off exec sessions |
+| **Implicit** (Cockpit) | Only works for single-type sessions |
+| **Profile sidebar** (Tabby) | Good for many saved connections |
+
+---
+
+## 4. Survey: Labels and Naming
+
+### VS Code
+- **Dynamic titles** via variable templates: `${process}`, `${cwd}`, `${task}`, `${shellType}`
+- Title updates in real-time as child processes run (bash → python → bash)
+- Right-click to rename (sets a static override)
+- Per-profile icons from Codicon set (terminal-bash, terminal-powershell, etc.)
+- Per-profile color from theme palette (ansiGreen, ansiRed, etc.)
+- Implicit 1-9 indexing for keyboard navigation
+
+### JupyterLab
+- Sequential numbering: "Terminal 1", "Terminal 2", etc.
+- **No rename UI** — feature requested since 2018, still not implemented (issue #4393)
+- Shell-set titles via escape sequences propagate to tab header but not to the Running sidebar
+- Architectural gap: sidebar reads server-side data, not widget state
+
+### Tabby
+- Profile name as default tab title
+- Custom tab names supported
+- Color-coded tabs per profile (user-chosen accent color)
+- Profile groups for organization
+
+### Cockpit
+- Hostname + user-assigned color dot
+- No per-session naming (only one session per host)
+
+### Pattern comparison
+
+| Feature | VS Code | JupyterLab | Tabby | Cockpit |
+|---------|---------|------------|-------|---------|
+| Auto-name | Process name (dynamic) | Sequential number | Profile name | Hostname |
+| Rename | Yes (right-click) | No | Yes | No |
+| Icon per type | Yes (Codicon) | No | Yes (profile icon) | No |
+| Color coding | Yes (per-profile) | No | Yes (per-profile) | Yes (per-host) |
+| Task/context label | Yes (`${task}` var) | No | No | No |
+
+---
+
+## 5. Survey: Layout Patterns
+
+### VS Code
+- **Split panes** within terminal panel (horizontal splits)
+- Groups = splits under one tab entry (compact list)
+- Terminal panel position: bottom (default), right, or left
+- Drag-and-drop between groups
+- **Detach/Attach** — terminals survive window changes (analogous to TermLink sessions)
+
+### JupyterLab
+- **Dock panel** with arbitrary nesting: drag tab to edge for split
+- Tabbed stacking (multiple docs in one panel)
+- "Down area" below main dock for consoles/terminals (like VS Code bottom panel)
+- Workspace persistence saves layout state server-side
+
+### Tabby
+- Horizontal + vertical splits within tabs
+- Broadcast mode (input to all panes)
+- Save layout as profile (reconstruct exact split config)
+- Drag-to-resize with percentage-based sizing
+
+### Mobile viability
+
+| Tool | Mobile support |
+|------|---------------|
+| VS Code | VS Code Server/Codespaces: usable but cramped, no split panes |
+| JupyterLab | Responsive but terminal is narrow, no split panes |
+| Portainer | Console works on mobile (full-width single session) |
+| Cockpit | Bottom nav bar on mobile (<768px), full-page terminal works |
+| Tabby | Desktop-only (Electron) |
+| ttyd | Works on mobile (single terminal, full viewport) |
+
+**Key insight:** Split panes are a desktop luxury. Mobile terminal UX demands **single session, full width** with a session switcher (dropdown or sidebar drawer).
+
+---
+
+## 6. Survey: tmux-in-Browser Architecture
+
+Two architectural variants exist for bridging server-side sessions to the browser:
+
+### Variant A: tmux as persistence layer
+```
+Browser (xterm.js) → WebSocket → Bridge → tmux attach -t session
+```
+- Session survives browser disconnect (tmux persists)
+- Multiple viewers can attach simultaneously
+- Extra dependency (tmux must be installed)
+- Resize conflicts (smallest client wins)
+
+### Variant B: Direct PTY
+```
+Browser (xterm.js) → WebSocket → Bridge → pty.fork()
+```
+- Simpler, fewer moving parts
+- No persistence — browser close = session lost
+- One client per PTY, no sharing
+- Lower latency
+
+**For Watchtower:** Variant A aligns with TermLink integration. TermLink already manages tmux/PTY sessions. The bridge attaches to existing TermLink sessions rather than spawning new ones. For ad-hoc terminals (quick shell for the operator), Variant B with direct PTY is sufficient.
+
+### Notable projects
+
+| Project | Stack | Pattern | Multi-session |
+|---------|-------|---------|---------------|
+| GoTTY | Go | One command per server | No (multiple ports needed) |
+| ttyd | C (libwebsockets) | One command per server + base-path | No (same limitation) |
+| Muxplex | Python/FastAPI | tmux session discovery + ttyd per session | Yes (grid + attach) |
+| Webmux | Bun/Vue | tmux adapter + WebSocket bridge | Yes (PWA, mobile-friendly) |
+
+---
+
+## 7. Recommended UI Pattern for Watchtower
+
+### Architecture: Sidebar + Tabs
+
+Based on the survey, the recommended pattern combines:
+- **JupyterLab's sidebar** (always-visible session list, independent of main area)
+- **VS Code's lifecycle decorations** (icon overlays, not full state columns)
+- **VS Code's profile-based creation** (button + dropdown for provider presets)
+- **Tabby's color coding** (provider-keyed colors for instant visual identification)
+- **Cockpit's responsive approach** (sidebar collapses to drawer on mobile)
+
+### Page placement
+
+**Option A — Dedicated `/terminal` page** (recommended for Phase 1):
+- Full page in Watchtower nav, like Cockpit's Terminal module
+- Sidebar left: session list (collapsible on mobile)
+- Main area: active terminal (xterm.js)
+- No splits in Phase 1 — single active session, switch via sidebar click
+
+**Option B — Embedded in task detail** (future Phase 2):
+- Terminal pane below task detail content
+- Pre-filtered to show sessions tagged with that task ID
+- "Open in full page" button to expand to `/terminal`
+
+### Wireframe description
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Watchtower  │  Tasks ▾  │  Governance ▾  │  System ▾  │  D/L │
+├──────────────┴───────────┴────────────────┴────────────┴───────┤
+│ ┌──────────────┐ ┌────────────────────────────────────────────┐ │
+│ │ SESSIONS     │ │  ┌──────┐ ┌──────┐ ┌──────┐               │ │
+│ │ [+ New ▾]    │ │  │ T1 ● │ │ T2   │ │ T3   │               │ │
+│ │              │ │  └──────┘ └──────┘ └──────┘               │ │
+│ │ ● claude-01  │ │ ┌────────────────────────────────────────┐ │ │
+│ │   T-962 idle │ │ │                                        │ │ │
+│ │ ● shell      │ │ │  $ fw audit                            │ │ │
+│ │   running    │ │ │  PASS — 0 warnings, 0 failures         │ │ │
+│ │ ○ gpt-dev    │ │ │  $                                     │ │ │
+│ │   exited(0)  │ │ │                                        │ │ │
+│ │              │ │ │                                        │ │ │
+│ │              │ │ │                                        │ │ │
+│ │              │ │ │                                        │ │ │
+│ │              │ │ │                                        │ │ │
+│ │              │ │ └────────────────────────────────────────┘ │ │
+│ └──────────────┘ └────────────────────────────────────────────┘ │
+│ Session: claude-01 │ Provider: Claude │ Task: T-962 │ PID: 4821│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Sidebar (left, ~200px):**
+- Header: "SESSIONS" + "New ▾" button (dropdown with provider presets)
+- Each entry: status dot (colored by lifecycle) + name + subtitle line (task ID + state text)
+- Active session highlighted with accent border-left (matches Watchtower's `wt-card` pattern)
+- On mobile (<768px): collapses to a hamburger-triggered drawer overlay
+
+**Tab bar (top of main area):**
+- Horizontal tabs for open sessions (only sessions the user has "opened" in this browser session)
+- Active tab highlighted; inactive tabs show provider badge
+- Close button per tab (closes the view, not the session — JupyterLab pattern)
+- Max ~6 visible tabs before overflow scroll
+
+**Terminal area (main):**
+- xterm.js instance, full width of remaining space
+- Fit addon for responsive resize
+- WebGL addon for performance
+
+**Status bar (bottom):**
+- Session name, provider, task association, PID
+- Styled as Watchtower's existing `session-strip` component
+
+### Mobile layout
+
+```
+┌──────────────────────┐
+│ Watchtower    ☰  ▾   │
+├──────────────────────┤
+│ claude-01 ▾          │
+├──────────────────────┤
+│                      │
+│  $ fw audit          │
+│  PASS                │
+│  $                   │
+│                      │
+│                      │
+│                      │
+├──────────────────────┤
+│ Claude | T-962 | idle│
+└──────────────────────┘
+```
+
+- Session switcher: **dropdown** at top (replaces sidebar + tabs)
+- Terminal: full width, full remaining height
+- Status bar: compact single line
+- No split panes on mobile
+
+### htmx integration pattern
+
+```html
+<!-- Session list: htmx partial updates via SSE -->
+<aside id="session-list"
+       hx-ext="sse"
+       sse-connect="/api/terminal/sessions/stream"
+       sse-swap="sessions">
+  <!-- Replaced by server-sent session list HTML -->
+</aside>
+
+<!-- Session creation: htmx form -->
+<button hx-get="/api/terminal/new?provider=claude&task=T-962"
+        hx-target="#terminal-area"
+        hx-swap="innerHTML">
+  New Claude Terminal
+</button>
+
+<!-- Terminal area: xterm.js (managed by JS, not htmx) -->
+<div id="terminal-area"></div>
+<script>
+  // xterm.js lifecycle managed by vanilla JS
+  // WebSocket connection per session, independent of htmx
+  // Session switching: destroy old Terminal, create new one, connect new WS
+</script>
+```
+
+**Key principle:** htmx manages the session list, creation forms, and status bar. xterm.js manages the terminal rendering via its own WebSocket. These are independent — htmx does not touch the terminal area, xterm.js does not touch the session list.
+
+### PicoCSS compatibility
+
+The design uses existing Watchtower patterns:
+- **Session cards** in sidebar: `wt-card` with `border-left` color (matches cockpit.html pattern)
+- **Status badges**: `wt-badge` (pass/warn/fail) repurposed for lifecycle states
+- **Session strip**: existing `_session_strip.html` component extended with terminal metadata
+- **Dropdown**: PicoCSS `<details>` dropdown for profile/provider selection
+- **Responsive grid**: `@media (max-width:768px)` breakpoint (matches existing `wt-columns`)
+
+No new CSS framework or component library needed.
+
+---
+
+## 8. Session Data Model
+
+### JSON Schema
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "TerminalSession",
-  "description": "Watchtower terminal session — supports local, Claude, TermLink, and future multi-provider sessions",
+  "description": "A terminal session in Watchtower, supporting multi-provider agent sessions",
   "type": "object",
-  "required": ["id", "type", "state", "created_at"],
+  "required": ["id", "name", "provider", "state", "created_at"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique session identifier",
-      "pattern": "^ts-[a-z0-9]{8}$",
-      "examples": ["ts-a1b2c3d4"]
+      "description": "Unique session identifier (UUID or provider-assigned)",
+      "examples": ["sess-a1b2c3d4", "termlink-claude-master-4821"]
     },
     "name": {
       "type": "string",
       "description": "Human-readable session name (auto-generated or user-set)",
-      "examples": ["bash-1", "claude-prod", "termlink-T042"]
+      "examples": ["claude-01", "shell", "gpt-analysis"]
     },
-    "type": {
-      "type": "string",
-      "enum": ["shell", "claude", "termlink", "agent"],
-      "description": "Session type. 'shell' = local PTY, 'claude' = Claude Code session, 'termlink' = attached TermLink session, 'agent' = generic AI agent (future)"
+    "provider": {
+      "type": "object",
+      "description": "Provider identity for multi-provider routing",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["shell", "claude", "gpt", "gemini", "local-llm", "custom"],
+          "description": "Provider type — determines badge, color, and routing"
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "Specific model identifier (null for shell sessions)",
+          "examples": ["claude-opus-4-6", "gpt-4o", "gemini-2.5-pro", "llama-3.3-70b"]
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label (defaults to type if not set)",
+          "examples": ["Claude", "GPT-4o", "Gemini", "Llama 3.3"]
+        },
+        "color": {
+          "type": "string",
+          "description": "CSS color for badge/accent (hex or named)",
+          "examples": ["#D97706", "#10A37F", "#4285F4", "#6B7280"]
+        },
+        "icon": {
+          "type": ["string", "null"],
+          "description": "Icon identifier or emoji for provider badge",
+          "examples": ["anthropic", "openai", "google", "terminal"]
+        }
+      }
     },
     "state": {
       "type": "string",
-      "enum": ["connecting", "running", "idle", "exited", "error"],
+      "enum": ["starting", "running", "idle", "exited", "disconnected", "error"],
       "description": "Current lifecycle state"
     },
     "exit_code": {
       "type": ["integer", "null"],
-      "description": "Process exit code (null if still running)"
+      "description": "Process exit code (null while running)"
     },
-
-    "provider": {
-      "type": "object",
-      "description": "AI provider metadata (null for shell sessions)",
-      "properties": {
-        "name": {
-          "type": "string",
-          "enum": ["local", "anthropic", "openai", "google", "ollama", "custom"],
-          "description": "Provider identifier"
-        },
-        "model": {
-          "type": ["string", "null"],
-          "description": "Model identifier if applicable",
-          "examples": ["claude-opus-4-6", "gpt-4o", "gemini-2.5-pro"]
-        },
-        "display_name": {
-          "type": "string",
-          "description": "Human-readable provider name for UI badges",
-          "examples": ["Claude", "GPT", "Gemini", "Ollama", "Local"]
-        },
-        "icon": {
-          "type": ["string", "null"],
-          "description": "Provider icon identifier or URL"
-        },
-        "color": {
-          "type": ["string", "null"],
-          "description": "Badge color hex code",
-          "examples": ["#d97706", "#10b981", "#3b82f6"]
-        }
-      },
-      "required": ["name", "display_name"]
-    },
-
     "task_id": {
       "type": ["string", "null"],
       "description": "Associated framework task ID",
-      "pattern": "^T-\\d{3,4}$",
-      "examples": ["T-042", "T-962"]
+      "examples": ["T-962", "T-503"]
     },
-
-    "connection": {
-      "type": "object",
-      "description": "Connection details (varies by type)",
-      "properties": {
-        "pid": {
-          "type": ["integer", "null"],
-          "description": "Server-side process ID (shell/claude sessions)"
-        },
-        "termlink_session": {
-          "type": ["string", "null"],
-          "description": "TermLink session name (termlink type only)"
-        },
-        "ws_path": {
-          "type": "string",
-          "description": "WebSocket endpoint path for this session",
-          "examples": ["/api/terminal/ws/ts-a1b2c3d4"]
-        },
-        "shell": {
-          "type": ["string", "null"],
-          "description": "Shell command (shell type)",
-          "examples": ["/bin/bash", "/bin/zsh"]
-        },
-        "command": {
-          "type": ["string", "null"],
-          "description": "Launch command (claude/agent type)",
-          "examples": ["claude -p 'task prompt'", "aider"]
-        },
-        "host": {
-          "type": ["string", "null"],
-          "description": "Remote host (future: SSH sessions, remote agents)",
-          "examples": ["192.168.10.107"]
-        }
-      },
-      "required": ["ws_path"]
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Arbitrary tags for filtering and discovery",
+      "examples": [["inception", "research"], ["build", "frontend"]]
     },
-
-    "metadata": {
-      "type": "object",
-      "description": "User-customizable metadata",
-      "properties": {
-        "color": {
-          "type": ["string", "null"],
-          "description": "User-assigned color for visual distinction"
-        },
-        "pinned": {
-          "type": "boolean",
-          "default": false,
-          "description": "Pinned sessions appear first in the list"
-        },
-        "tags": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "User-assigned tags for filtering"
-        }
-      }
-    },
-
     "created_at": {
       "type": "string",
-      "format": "date-time"
-    },
-    "connected_at": {
-      "type": ["string", "null"],
       "format": "date-time",
-      "description": "When WebSocket last connected"
+      "description": "ISO 8601 creation timestamp"
     },
     "last_activity": {
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "Last I/O timestamp (for idle detection)"
+      "description": "ISO 8601 timestamp of last I/O activity (for idle detection)"
     },
-    "exited_at": {
+    "pid": {
+      "type": ["integer", "null"],
+      "description": "Server-side process ID (null for remote/proxy sessions)"
+    },
+    "termlink_session": {
       "type": ["string", "null"],
-      "format": "date-time"
+      "description": "TermLink session name if attached via TermLink",
+      "examples": ["claude-master-4821", "dispatch-T962-explore"]
+    },
+    "connection": {
+      "type": "object",
+      "description": "Connection details for the WebSocket bridge",
+      "properties": {
+        "ws_path": {
+          "type": "string",
+          "description": "WebSocket endpoint path",
+          "examples": ["/ws/terminal/sess-a1b2c3d4"]
+        },
+        "pty_mode": {
+          "type": "string",
+          "enum": ["direct", "tmux-attach", "termlink-proxy"],
+          "description": "How the backend bridges to the terminal process"
+        },
+        "read_only": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, client can observe but not send input"
+        }
+      }
+    },
+    "profile": {
+      "type": ["string", "null"],
+      "description": "Profile name used to create this session",
+      "examples": ["default-shell", "claude-agent", "ssh-prod"]
+    },
+    "layout": {
+      "type": "object",
+      "description": "UI layout state (persisted per browser session)",
+      "properties": {
+        "tab_index": {
+          "type": ["integer", "null"],
+          "description": "Position in the tab bar (null = not open as tab)"
+        },
+        "is_pinned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pinned tabs cannot be closed accidentally"
+        }
+      }
     }
   }
 }
 ```
 
-### 4.2 Data Model Design Decisions
+### Provider color map (defaults)
 
-**Why `type` + `provider` instead of just `type`:**
-The `type` field controls *how* the session works (PTY, TermLink attach, agent process). The `provider` field controls *who* is behind the session. A Claude session and a GPT session are both `type: "agent"` but different providers. This separation allows the UI to use `type` for connection logic and `provider` for badges/icons/routing.
+| Provider | Color | Badge text | Rationale |
+|----------|-------|------------|-----------|
+| `shell` | `#6B7280` (gray) | SH | Neutral — not an agent |
+| `claude` | `#D97706` (amber) | CL | Anthropic brand association |
+| `gpt` | `#10A37F` (green) | GP | OpenAI brand association |
+| `gemini` | `#4285F4` (blue) | GE | Google brand association |
+| `local-llm` | `#8B5CF6` (purple) | LM | Distinct from cloud providers |
+| `custom` | `#EC4899` (pink) | ?? | User-defined |
 
-**Why `connection.ws_path` is required:**
-Every session, regardless of type, is accessed through a WebSocket from the browser's perspective. The server-side implementation differs (PTY bridge, TermLink proxy, agent process), but the browser always connects to a WebSocket endpoint. This uniformity simplifies the xterm.js client code.
-
-**Why `task_id` is top-level:**
-Framework governance requires task traceability. Every terminal session SHOULD be associated with a task. Making it top-level (not buried in metadata) makes it a first-class filter for the session list and enables the "show sessions for this task" feature on task detail pages.
-
-**Future orchestrator fields (not in v1, designed for):**
-- `provider.routing_priority` — Which agent gets routed which prompts
-- `provider.capabilities` — What this agent can do (code, research, review)
-- `metadata.group_id` — Group sessions into an "agent team" for aggregate views
-- `connection.relay_to` — Forward output to another session (agent chaining)
-
-### 4.3 Session State Machine
+### Lifecycle state machine
 
 ```
-                    spawn/attach
-          ┌─────────────────────────┐
-          │                         ▼
-     [connecting] ──────────► [running]
-          │                    │     │
-          │ fail               │     │ no I/O > 60s
-          │                    │     │
-          ▼                    │     ▼
-       [error]                 │  [idle]
-          │                    │     │
-          │ retry              │     │ I/O resumes
-          │                    │     │
-          └───► [connecting]   │     └──► [running]
-                               │
-                               │ process exits
-                               ▼
-                           [exited]
-                               │
-                               │ respawn
-                               ▼
-                          [connecting]
+           ┌──────────────────────────────────────────────┐
+           │                                              │
+           v                                              │
+  ┌───────────────┐     ┌──────────┐     ┌───────────┐   │
+  │   starting    │────>│ running  │────>│   idle    │───┘
+  └───────────────┘     └──────────┘     └───────────┘
+           │                 │                │
+           │                 │                │
+           v                 v                v
+  ┌───────────────┐     ┌──────────┐     ┌───────────┐
+  │    error      │     │  exited  │     │disconnected│
+  └───────────────┘     └──────────┘     └───────────┘
+                             │                │
+                             │                │
+                             v                v
+                        [removable]     [reconnectable]
+```
+
+- **starting -> running**: Process spawned successfully, PTY attached
+- **running -> idle**: No I/O for configurable duration (default: 30s)
+- **idle -> running**: Any I/O activity resumes running state
+- **running/idle -> exited**: Process terminated (captures exit_code)
+- **running/idle -> disconnected**: WebSocket dropped but process may still live (TermLink sessions)
+- **starting -> error**: Failed to spawn (bad profile, permission denied, etc.)
+- **disconnected -> running**: Reconnection successful (TermLink re-attach)
+
+### Lifecycle indicator rendering
+
+| State | Dot color | Icon | Text |
+|-------|-----------|------|------|
+| starting | yellow pulse | (hollow, animated) | starting... |
+| running | green solid | (filled) | running |
+| idle | green dim | (50% opacity) | idle (30s) |
+| exited(0) | gray | (hollow) | exited(0) |
+| exited(N) | red | X | exited(1) |
+| disconnected | orange | (half-filled) | disconnected |
+| error | red | X | error |
+
+---
+
+## 9. Design Questions — Answered
+
+### Session list UI: sidebar vs tabs vs dropdown?
+
+**Answer: Sidebar + tabs (desktop), dropdown (mobile).**
+- Sidebar provides persistent visibility without consuming tab bar space
+- Tabs provide fast switching between "open" sessions (subset of all sessions)
+- Mobile collapses both to a single dropdown selector
+- Evidence: VS Code and JupyterLab both use sidebar lists; both scale to 10+ sessions. Cockpit's dropdown works for <5 hosts but doesn't scale. Portainer's no-list approach is explicitly rejected.
+
+### Lifecycle indicators: how prominent?
+
+**Answer: Status dot + state text in sidebar; dot-only in tab bar.**
+- VS Code's icon-overlay approach is the most space-efficient
+- Full-text state labels in sidebar (space is available)
+- Dot-only in tab bar (space is constrained)
+- Color alone is insufficient (accessibility) — always pair with icon shape or text
+
+### Session creation: button, presets, or both?
+
+**Answer: "+" button with provider dropdown.**
+- Primary action: "+" creates a default shell session (one click)
+- Dropdown arrow: reveals provider presets (Claude, GPT, Local LLM, Shell)
+- Each preset can be bound to a profile with pre-configured env vars, model, task association
+- VS Code's pattern works well and is familiar to the target user base
+
+### Labels: auto vs named, task ID, provider?
+
+**Answer: Auto-generated with rename, task ID association, provider badge.**
+- Auto-name: `{provider}-{sequence}` (e.g., `claude-01`, `shell-03`)
+- Rename: right-click or double-click name in sidebar (VS Code pattern)
+- Task ID: optional association, shown as subtitle in sidebar, filterable
+- Provider badge: colored 2-letter code (CL, GP, GE, SH) — always visible
+- Learn from JupyterLab's mistake: ship rename from day one
+
+### Layout: tabs or splits?
+
+**Answer: Tabs in Phase 1, splits in Phase 2.**
+- Tabs are essential (fast switching between sessions)
+- Splits add complexity (resize logic, broadcast mode) — defer to Phase 2
+- Phase 1 goal: working multi-session terminal, not a full terminal emulator
+- Phase 2: horizontal splits within a tab (VS Code group pattern)
+
+### Mobile viability?
+
+**Answer: Yes, with degraded UX — single session, no tabs, dropdown switcher.**
+- Full-width terminal works on mobile (ttyd, Portainer prove this)
+- No split panes, no sidebar — dropdown session switcher at top
+- Touch keyboard may obscure terminal — accept this limitation
+- Mobile is "check on a session" UX, not "do serious work" UX
+
+### Watchtower integration: alongside tasks or separate page?
+
+**Answer: Both — dedicated page Phase 1, task-embedded Phase 2.**
+- Phase 1: `/terminal` page in Watchtower nav (under System dropdown)
+- Phase 2: terminal pane in task detail page, pre-filtered to task's sessions
+- Phase 2: Tier 0 approval page gets "Open terminal" action (approve, then interact)
+- The session data model supports task association from day one (`task_id` field)
+
+---
+
+## 10. Future: Multi-Provider Sessions
+
+The data model and UI are designed to support multi-provider routing without rewrites:
+
+### What changes with multi-provider
+
+| Concern | Single-provider (Phase 1) | Multi-provider (future) |
+|---------|--------------------------|------------------------|
+| Session creation | "New Shell" / "New Claude" | Provider picker with model selector |
+| Provider badge | Static per session | Dynamic (provider + model) |
+| Routing | Direct PTY or TermLink attach | Provider-specific adapter (API key, endpoint) |
+| Cost tracking | N/A | Per-provider token/cost counters |
+| Context | Single agent context | Cross-provider context sharing (future) |
+
+### Provider adapter interface
+
+Each provider type needs an adapter that implements:
+1. **spawn(profile) -> session_id** — Create a new session
+2. **attach(session_id) -> websocket** — Connect browser to session
+3. **status(session_id) -> state** — Query lifecycle state
+4. **terminate(session_id)** — Kill session
+
+For Phase 1, only two adapters are needed:
+- `ShellAdapter` — direct PTY via `pty.fork()`
+- `TermLinkAdapter` — attach to existing TermLink session via `termlink attach`
+
+Future adapters:
+- `ClaudeAdapter` — spawn `claude -p` process, bridge PTY
+- `GPTAdapter` — spawn `openai-cli` or custom bridge
+- `LocalLLMAdapter` — spawn local model process (Ollama, llama.cpp)
+
+### Provider badges in the UI
+
+```html
+<!-- Provider badge: 2-letter code with provider color -->
+<span class="wt-provider-badge" style="background: #D97706;">CL</span>
+
+<!-- In session list entry -->
+<div class="wt-session-entry active">
+  <span class="wt-state-dot running"></span>
+  <span class="wt-provider-badge" style="background: #D97706;">CL</span>
+  <div class="wt-session-info">
+    <span class="wt-session-name">claude-01</span>
+    <span class="wt-session-meta">T-962 · running</span>
+  </div>
+</div>
 ```
 
 ---
 
-## 5. Text-Based Wireframe: Full Terminal Page
+## 11. Implementation Phases
 
-### 5.1 Desktop Layout (>= 768px)
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ 🔷 Watchtower    [Operations ▾] [Insights ▾] [Knowledge ▾]  🔍 ◐  │
-├─────────────────────────────────────────────────────────────────────┤
-│ Focus: T-962 | Session: 2h14m | Audit: PASS | 0 items attention    │
-├────────────────┬────────────────────────────────────────────────────┤
-│ SESSIONS       │ TERMINAL                                          │
-│                │                                                    │
-│ [+ New ▾]      │ ┌──────────────────────────────────────────────┐  │
-│                │ │ $ fw audit                                    │  │
-│ ● bash-1    ← │ │ Running compliance audit...                   │  │
-│   T-962|local  │ │                                               │  │
-│                │ │ P-001 Task traceability .......... PASS       │  │
-│ ● claude-1     │ │ P-002 Git references ............. PASS       │  │
-│   T-962|claude │ │ P-009 Context budget ............. WARN       │  │
-│                │ │ P-010 Acceptance criteria ........ PASS       │  │
-│ ◐ tl-worker-1  │ │                                               │  │
-│   T-042|termlink│ │ Result: PASS (12 pass, 1 warn, 0 fail)      │  │
-│                │ │ $ _                                           │  │
-│ ◌ bash-2       │ │                                               │  │
-│   —|local [0]  │ └──────────────────────────────────────────────┘  │
-│                │                                                    │
-│ ─────────────  │  ┌────────┐┌──────────┐┌─────────────┐           │
-│ Disconnected   │  │●bash-1 ││●claude-1 ││◐tl-worker-1 │  [⚙]     │
-│                │  └────────┘└──────────┘└─────────────┘           │
-│ ✕ ssh-prod     │                                                    │
-│   —|ssh [err]  │                                                    │
-├────────────────┴────────────────────────────────────────────────────┤
-│ Watchtower v0.9.2 — Agentic Engineering Framework                  │
-└─────────────────────────────────────────────────────────────────────┘
-
-Legend:
-  ← = currently active session (highlighted)
-  ● = running    ◐ = idle    ◌ = exited    ✕ = error
-  [0] = exit code    [err] = connection error
-  [⚙] = terminal settings (font size, scrollback, theme)
-```
-
-### 5.2 Session Panel Detail (Hover/Expanded)
-
-```
-┌──────────────────┐
-│ ● bash-1         │  ← name (click to rename)
-│   T-962 | local  │  ← task badge | provider badge
-│   2m ago | PID 42│  ← last activity | connection info
-│                  │
-│   [Kill] [Detach]│  ← actions (on hover or right-click)
-└──────────────────┘
-```
-
-### 5.3 "+ New" Dropdown
-
-```
-┌──────────────────────┐
-│  Bash Shell           │  → POST /api/terminal/sessions {"type":"shell"}
-│  Claude Code Session  │  → POST /api/terminal/sessions {"type":"claude"}
-│  ───────────────────  │
-│  Attach TermLink  ▸   │  → submenu: list of active TermLink sessions
-│    ● worker-1 (T-042) │
-│    ● master-main       │
-│  ───────────────────  │
-│  Custom Command...     │  → modal: enter command
-└──────────────────────┘
-```
-
-### 5.4 Mobile Layout (< 768px)
-
-```
-┌───────────────────────────┐
-│ ☰ Watchtower         🔍 ◐│
-├───────────────────────────┤
-│ T-962 | 2h14m | PASS     │
-├───────────────────────────┤
-│ Sessions [+ New ▾]       │
-│ [●bash-1][●claude][◐tl]→ │  ← horizontal scroll
-├───────────────────────────┤
-│                           │
-│ $ fw audit                │
-│ Running compliance audit..│
-│ P-001 Task traceability.. │
-│ ................ PASS     │
-│                           │
-│ [📱 Enable Input]        │
-│                           │
-└───────────────────────────┘
-```
-
-### 5.5 Task Detail Integration (v2)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ T-962: Web terminal in Watchtower                               │
-│ Status: started-work | Owner: human | Horizon: now              │
-├─────────────────────────────────────────────────────────────────┤
-│ [Description] [Acceptance Criteria] [Terminal ▾] [Updates]      │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│ Sessions for T-962:                                             │
-│ ● bash-1    ● claude-1                                          │
-│                                                                 │
-│ ┌─────────────────────────────────────────────────────────┐    │
-│ │ $ fw audit                                               │    │
-│ │ PASS: 12 checks                                          │    │
-│ │ $ _                                                      │    │
-│ └─────────────────────────────────────────────────────────┘    │
-│                                                                 │
-│ [Open full terminal ↗]                                         │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Phase | Scope | Dependencies |
+|-------|-------|-------------|
+| **1a** | Session data model + REST API (`/api/terminal/sessions`) | Flask, YAML/JSON store |
+| **1b** | Single terminal page with xterm.js + WebSocket PTY bridge | xterm.js, flask-sock |
+| **1c** | Sidebar session list + tab bar + lifecycle indicators | htmx SSE, PicoCSS |
+| **1d** | Session profiles + "New" dropdown | PicoCSS `<details>` |
+| **2a** | TermLink session discovery + attach | TermLink binary |
+| **2b** | Task association + task detail embed | Existing task system |
+| **2c** | Split panes within tabs | xterm.js fit addon |
+| **3** | Multi-provider adapters + provider routing | Per-provider work |
 
 ---
 
-## 6. Implementation Considerations for htmx + PicoCSS
+## Sources
 
-### 6.1 What PicoCSS Gives Us
-
-- `<article>` for session cards in the panel
-- `<details class="dropdown">` for the "+ New" menu
-- Color variables (`--pico-muted-color`, card background, border colors) for consistent theming
-- Dark mode via `data-theme="dark"` (already implemented in Watchtower)
-- Responsive breakpoints (768px, 576px) already defined in `base.html`
-
-### 6.2 What Requires Custom CSS
-
-- Two-column layout (session panel + viewport) — CSS Grid or Flexbox
-- Session lifecycle indicator icons (small colored circles — pure CSS)
-- Provider badges (small inline `<span>` with background color)
-- Resize handle between panel and viewport
-- xterm.js container sizing (must fill available space)
-
-### 6.3 What Requires JavaScript Beyond htmx
-
-- **xterm.js** — Terminal rendering (no alternative)
-- **WebSocket management** — Connect/disconnect/reconnect per session
-- **Session switching** — Swap which WebSocket feeds xterm.js (show/hide or create/destroy instances)
-- **Resize observer** — Notify xterm.js and server when terminal viewport changes size
-- **Fit addon** — xterm.js addon to auto-fit terminal to container
-
-### 6.4 xterm.js Multi-Instance Strategy
-
-Two approaches for managing multiple terminal instances:
-
-**Option A: Single xterm.js instance, swap WebSocket (recommended for v1)**
-- One xterm.js `Terminal` in the DOM at all times
-- Switching sessions: disconnect old WS, clear buffer, connect new WS, replay scrollback from server
-- Pro: Minimal memory/DOM overhead
-- Con: No instant switching (small delay for scrollback replay)
-
-**Option B: Multiple hidden xterm.js instances**
-- One `Terminal` per session, only one visible at a time
-- Switching: `display:none`/`display:block`
-- Pro: Instant switching, buffer preserved client-side
-- Con: Memory grows with session count; WebGL context limit (~8-16 per page)
-
-**Recommendation:** Option A for v1. The WebGL context limit makes Option B fragile above ~8 sessions. Option A is simpler and aligns with the htmx philosophy of server-as-source-of-truth (scrollback replayed from server, not cached in browser).
-
-### 6.5 Estimated JS Budget
-
-| Component | Size (minified) | Purpose |
-|-----------|----------------|---------|
-| xterm.js | ~230KB | Terminal emulation |
-| xterm-addon-fit | ~3KB | Auto-resize |
-| xterm-addon-web-links | ~5KB | Clickable URLs |
-| Custom session manager | ~5KB | WS management, session switching |
-| **Total** | **~243KB** | |
-
-This is comparable to the existing htmx.min.js (~14KB) + marked.min.js + highlight.js already loaded. The terminal page would load xterm.js only on `/terminal` (not globally).
-
----
-
-## 7. Key Design Decisions Summary
-
-| Decision | Choice | Rationale | Alternative Rejected |
-|----------|--------|-----------|---------------------|
-| Session list style | Sidebar panel | Scales to 10+ sessions; shows metadata | Horizontal tab bar (breaks at 6+) |
-| Session switching | Single xterm, swap WS | Memory-safe, no WebGL limit | Multi-instance (WebGL limit at ~8) |
-| Session lifecycle | 5-state machine | Covers all real states | 3-state (too coarse for debugging) |
-| Provider model | Separate from type | Future multi-provider routing | Flat enum (can't distinguish GPT agent from Claude agent) |
-| Mobile approach | Read-only default | Soft keyboard UX is terrible | Full interaction (frustrating) |
-| Watchtower integration | Dedicated page + task embed | Power users need full page; casual needs task context | Only embedded (too cramped) |
-| htmx/WS split | htmx for chrome, WS for I/O | Preserves Watchtower architecture | Full WS (breaks htmx pattern) |
-
----
-
-## 8. Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| xterm.js bundle size (230KB) | Slower page load | Lazy-load only on `/terminal` page |
-| WebGL context limit | Crashes with many instances | Single-instance architecture (Option A) |
-| WebSocket reconnection | Lost output during network blips | Server-side scrollback buffer; reconnect with replay |
-| Session cleanup | Orphaned PTY processes | Server-side reaper with TTL; leverage TermLink cleanup |
-| Browser tab close ≠ session close | Resource leak | Session TTL; "Running sessions" count in ambient strip |
-| Mobile keyboard covers terminal | Unusable on phone | Read-only default; viewport-aware resize |
-
----
-
-## References
-
-- [VS Code Terminal Basics](https://code.visualstudio.com/docs/terminal/basics)
-- [VS Code Terminal UI and Layout (DeepWiki)](https://deepwiki.com/microsoft/vscode/9.6-terminal-ui-and-layout)
-- [JupyterLab Terminal Documentation](https://jupyterlab.readthedocs.io/en/stable/user/terminal.html)
-- [JupyterLab Interface](https://jupyterlab.readthedocs.io/en/stable/user/interface.html)
-- [Portainer Container Console](https://docs.portainer.io/user/docker/containers/console)
-- [Cockpit Multi-Host Management](https://cockpit-project.org/guide/latest/multi-host)
-- [Tabby Features](https://tabby.sh/about/features)
-- [xterm.js](https://xtermjs.org/)
-- [xterm.js Multi-Instance Discussion (#4379)](https://github.com/xtermjs/xterm.js/issues/4379)
-- [GoTTY](https://github.com/yudai/gotty)
+- VS Code terminal documentation and source (xtermjs/xterm.js integration)
+- JupyterLab terminal plugin (jupyterlab/jupyterlab, `@jupyterlab/terminal`)
+- Portainer console (portainer/portainer, container exec WebSocket)
+- Cockpit terminal (cockpit-project/cockpit, PatternFly + host switcher)
+- Tabby terminal (Eugeny/tabby, Electron + xterm.js)
+- GoTTY (sorenisanerd/gotty, maintained fork)
+- ttyd (tsl0922/ttyd, C + libwebsockets)
+- Muxplex (bkrabach/muxplex, Python/FastAPI + tmux discovery)
+- Webmux (nooesc/webmux, Bun/Vue + tmux adapter)
+- T-962 v1 OSS terminal survey (this project)

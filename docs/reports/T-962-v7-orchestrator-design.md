@@ -1,524 +1,943 @@
-# T-962: Orchestrator-Aware Design Patterns for Multi-Agent Terminal Routing
+# T-962 v7: Orchestrator-Aware Architecture for Multi-Agent Multi-Provider Terminal Routing
 
-**Task:** T-962 (Inception — Web Terminal in Watchtower)
+**Task:** T-962 (Inception -- web terminal in Watchtower)
 **Date:** 2026-04-06
-**Scope:** Design consideration for v7 web terminal, not build scope
+**Purpose:** Design the session data model, routing architecture, and provider abstraction layer that enables Watchtower's web terminal to manage sessions across multiple AI providers and local shells -- without coupling v1 to decisions that block v2.
 
 ---
 
-## 1. Multi-Agent Framework Analysis
+## 1. Multi-Agent Framework Patterns
 
-### 1.1 CrewAI — Role-Based Orchestration
+### 1.1 CrewAI -- Role-Based Task Routing
 
-**Core abstraction:** An agent is defined by `role`, `goal`, `backstory`, and `tools`. This maps to how humans think about teams — each agent has a job title and purpose.
+CrewAI structures multi-agent work as **Crew -> Agent -> Task** with a process model (sequential, hierarchical, or consensual). Key patterns:
 
-**Routing:** Tasks are assigned to agents within a "crew" using three process types:
-- **Sequential** — agents run in order, output of one feeds the next
-- **Hierarchical** — a manager agent delegates to workers, can override decisions
-- **Consensual** — agents vote on decisions (rarely used in practice)
+| Concept | Pattern | Relevance to Watchtower |
+|---------|---------|------------------------|
+| **Agent** | Role + goal + backstory + tools | Maps to our agent definitions (`agents/*/AGENT.md`) -- role-based identity |
+| **Task** | Description + expected output + agent assignment | Already modeled in `.tasks/` -- task-agent binding exists |
+| **Process** | Sequential (chain), hierarchical (manager delegates), consensual (vote) | Hierarchical maps to our dispatch model (orchestrator -> workers) |
+| **Delegation** | Agent can delegate sub-tasks to other agents | Exists via `fw termlink dispatch` and Task tool |
+| **Memory** | Short-term (conversation), long-term (vector DB), entity (knowledge graph) | Maps to working/project/episodic memory in `.context/` |
 
-**State:** Task outputs pass between agents as structured data. No shared mutable state — communication is mediated through task outputs, not direct messaging.
+**What we can steal:** CrewAI's `process` enum (sequential/hierarchical) is a clean abstraction for routing. A Watchtower terminal session could declare its process model, and the orchestrator routes accordingly. We don't need CrewAI's agent DSL -- our agents are shell scripts + markdown, not Python classes.
 
-**Provider:** Single-provider per agent (whichever LLM backs it). No built-in multi-provider abstraction.
+**What we should ignore:** CrewAI's tight coupling between agents and LLM configuration (each agent binds to a specific model). In our model, the session binds to a provider -- the agent is provider-agnostic.
 
-**Strengths:** Under 20 lines of Python for a working multi-agent system. MCP support native. Developer experience is excellent.
+### 1.2 AutoGen -- Conversation Patterns
 
-**Weaknesses:** No checkpointing for long-running workflows. Error handling is coarse-grained. Limited control over agent-to-agent communication.
+AutoGen (Microsoft) models multi-agent interaction as **conversations between agents**. Key patterns:
 
-**Relevance to us:** The role/goal/backstory pattern maps well to our existing agent model (agents/{audit,context,git,healing}/AGENT.md already define purpose and scope). CrewAI's task-output-as-communication matches our bus protocol.
+| Concept | Pattern | Relevance |
+|---------|---------|-----------|
+| **ConversableAgent** | Every agent can send/receive messages | Our agents don't converse -- they dispatch and return results |
+| **GroupChat** | N agents in a shared conversation with a manager | Not needed -- our orchestrator is the only conversation hub |
+| **Two-agent chat** | Pair of agents ping-ponging | Sequential TDD pattern (T-058) is this |
+| **Nested chats** | Agent triggers sub-conversation as a tool | TermLink dispatch is this -- a spawned worker is a nested conversation |
+| **Human-in-the-loop** | Human approval at specific steps | Our Tier 0/sovereignty model, but more structural |
 
-### 1.2 AutoGen (Microsoft) — Conversation-Based Orchestration
+**What we can steal:** AutoGen's "termination condition" concept -- conversations end when a condition is met (max turns, keyword, function return). Our dispatch workers use `exit_code` as implicit termination, but we lack explicit termination conditions for interactive sessions. A web terminal session needs: max idle time, max cost, explicit user close.
 
-**Core abstraction:** Agents are conversational participants. A `GroupChatManager` orchestrates multi-agent conversations by selecting who speaks next.
+**What we should ignore:** AutoGen's conversation-centric model. Our agents are task-executors, not conversationalists. The overhead of modeling every dispatch as a "conversation" adds complexity without value.
 
-**Routing:** Four selection strategies:
-- **round_robin** — fixed order
-- **random** — random selection
-- **manual** — human picks
-- **auto** — the manager's LLM selects based on conversation context (default)
+### 1.3 LangGraph -- State Machine Orchestration
 
-**State:** Shared conversation history. All agents see all messages. The GroupChatManager broadcasts each message to all participants.
+LangGraph models workflows as **directed graphs with state**. Key patterns:
 
-**Provider:** Originally single-provider. v0.4 (AG2) added pluggable LLM backends. Now merging with Semantic Kernel into Microsoft Agent Framework (MAF).
+| Concept | Pattern | Relevance |
+|---------|---------|-----------|
+| **StateGraph** | Typed state flows through nodes | Our task lifecycle (`captured -> started -> issues -> completed`) is a state machine |
+| **Nodes** | Functions that transform state | Our agents are nodes -- `create-task.sh`, `healing.sh`, etc. |
+| **Edges** | Conditional routing between nodes | Task status transitions are conditional edges |
+| **Checkpointing** | State is persisted at each node | Handovers are our checkpoints |
+| **Human-in-the-loop** | Graph pauses at specific nodes for human input | Sovereignty gates are this |
+| **Subgraphs** | Nested state machines | TermLink dispatch workers are subgraphs |
 
-**Relevance to us:** The GroupChat pattern is closest to what a web terminal would do — multiple agents in a shared conversation space, with the human selecting which agent responds. The `auto` selection strategy (LLM picks the best agent) is a future v3+ feature.
+**What we can steal:** LangGraph's checkpoint model is the closest analog to what we need. A terminal session is a stateful node in a graph. When the session pauses (idle, context exhaustion, human review), its state must be checkpointable and resumable. Our handover system already does this for Claude Code sessions -- the question is whether we can generalize it for arbitrary provider sessions.
 
-### 1.3 LangGraph — Graph-Based Orchestration
+**What we should ignore:** LangGraph's graph compilation and execution engine. We're building a session manager, not a workflow engine. The graph topology is implicit in our task system.
 
-**Core abstraction:** A DAG where nodes are agents/functions and edges are data flows. A centralized `StateGraph` maintains overall context.
+### 1.4 Synthesis: What These Frameworks Agree On
 
-**Routing:** Conditional edges route execution based on agent outputs or state conditions. Explicit, reducer-driven state schemas using Python's `TypedDict` and `Annotated` types.
+All three frameworks converge on these primitives:
 
-**State:** Immutable state management — each agent receives current state, returns updated version. New state version created per step (no race conditions, but memory grows).
+1. **Session identity** -- Every agent interaction has a unique, traceable ID
+2. **State persistence** -- Sessions can be paused, resumed, and inspected
+3. **Termination conditions** -- Sessions end for a reason (success, failure, timeout, budget)
+4. **Routing** -- Someone decides which agent/model handles which task
+5. **Result collection** -- Results flow back to an orchestrator or shared state
 
-**Provider:** Provider-agnostic through LangChain's LLM abstraction layer.
-
-**Relevance to us:** The state-graph pattern maps to our task lifecycle (`captured -> started -> issues -> completed`). LangGraph's conditional routing is how we'd implement "if agent fails, route to healing agent" in an automated orchestrator. The TypedDict state schema approach informs our session schema design.
-
-### 1.4 Common Patterns Across Frameworks
-
-| Pattern | CrewAI | AutoGen | LangGraph | Our Framework |
-|---------|--------|---------|-----------|---------------|
-| Agent identity | role/goal/backstory | system message | node function | AGENT.md |
-| Task routing | crew process type | GroupChatManager | conditional edges | human selection |
-| State passing | task outputs | conversation history | state graph | bus + context fabric |
-| Agent registry | crew definition | GroupChat members | graph nodes | agents/ directory |
-| Capability matching | tools list | agent descriptions | node metadata | AGENT.md capabilities |
-| Provider abstraction | none (single LLM) | pluggable (v0.4+) | via LangChain | none (Claude only) |
-
-**Universal pattern: the agent registry.** Every framework maintains a registry of available agents with their capabilities. This is the minimum viable abstraction for routing.
+Our framework already has 1 (task IDs), 2 (handovers), 3 (partial -- exit codes only), 4 (manual dispatch), and 5 (`fw bus`). The gap is making these work for interactive terminal sessions that may span multiple providers.
 
 ---
 
 ## 2. Multi-Provider Abstraction
 
-### 2.1 LiteLLM — The De Facto Standard
+### 2.1 Current State: `web/llm/provider.py`
 
-LiteLLM provides a single OpenAI-compatible interface to 140+ providers (Claude, GPT, Gemini, Ollama, Bedrock, etc.). It handles:
-- **Model routing** — map `model: "claude-sonnet-4-6"` to the right API
-- **Cost tracking** — per-request token costs across providers
-- **Load balancing** — distribute across multiple API keys/endpoints
-- **Fallbacks** — if Provider A fails, try Provider B
-- **Caching** — response caching for identical queries
-- **Rate limiting** — respect provider rate limits
+The framework already has a clean Strategy-pattern provider abstraction for the Watchtower chat UI:
 
-**Key insight:** LiteLLM normalizes everything to OpenAI's chat completion format. This means the routing layer doesn't need to know provider-specific details — it just sends `model: "provider/model-name"`.
+```
+LLMProvider (ABC)
+  +-- OllamaProvider    -- local models, streaming
+  +-- OpenRouterProvider -- remote API, model catalog
+```
 
-### 2.2 Provider-Neutral Session Design
+`ProviderManager` handles registration, hot-switching, and fallback. This works for **chat completions** -- a request/response cycle with streaming.
 
-A provider-neutral session needs:
+**The gap:** Terminal sessions are fundamentally different from chat completions:
 
-1. **Normalized input** — all providers accept messages in `{role, content}` format (OpenAI standard)
-2. **Normalized output** — stream tokens as Server-Sent Events regardless of provider
-3. **Capability flags** — not all providers support tools, vision, code execution
-4. **Cost normalization** — token counts mapped to a common unit
+| Dimension | Chat (current) | Terminal Session (needed) |
+|-----------|-----------------|--------------------------|
+| Lifecycle | Request -> Stream -> Done | Spawn -> Interactive -> Persist -> Close |
+| State | Stateless (messages in, tokens out) | Stateful (conversation context, file edits, process state) |
+| Control | User sends message, waits | User can observe, inject, pause, resume, kill |
+| Cost model | Per-request tokens | Continuous (idle cost, context window consumption) |
+| Provider API | `chat_stream()` | Provider-specific CLI or API (claude, openai, ollama run) |
 
-**What this means for us:** The web terminal doesn't need to implement 4 different APIs. It implements ONE (the OpenAI chat format, which LiteLLM normalizes to) and routes via provider metadata.
+### 2.2 Provider Landscape: How They Differ
 
-### 2.3 The Claude Code Exception
+| Provider | Terminal/Agent Mode | API | Session Model | Local/Remote |
+|----------|-------------------|-----|---------------|-------------|
+| **Claude Code** | `claude -p "prompt"` or `claude -c` (interactive) | Anthropic API | Context window per session, handover-based continuity | Remote API, local CLI |
+| **OpenAI** | `openai` CLI (limited), Codex agent (unreleased), API function calling | OpenAI API | Conversation threads, Assistant API with persistent threads | Remote API |
+| **Ollama** | `ollama run model` (interactive REPL) | REST API (`/api/chat`, `/api/generate`) | Stateless per-request, no native session persistence | Local |
+| **Gemini** | `gemini` CLI (Google), API streaming | Gemini API | Context caching (paid), no native CLI agent mode | Remote API |
+| **Local (shell)** | `bash`, `zsh`, `fish` | PTY/WebSocket | OS process lifecycle, infinite persistence | Local |
 
-Claude Code is NOT a chat API — it's an agentic CLI tool with its own session management, tool use, and context. A web terminal that routes to Claude Code is fundamentally different from one that routes to the Claude API:
+**Key insight:** There is no uniform "agent session" API across providers. Each provider has:
+- Different invocation mechanisms (CLI binary, API call, REPL)
+- Different session persistence models (some stateless, some context-windowed, some thread-based)
+- Different cost models (per-token, per-request, free/local)
+- Different capability sets (tool use, file editing, code execution)
 
-| Aspect | Chat API (Claude/GPT/Gemini) | Claude Code CLI |
-|--------|------------------------------|-----------------|
-| Interface | HTTP API (request/response) | PTY (interactive terminal) |
-| State | Stateless (messages array) | Stateful (conversation context) |
-| Tools | API-defined tool use | File system, bash, MCP |
-| Session | Ephemeral (per-request) | Persistent (long-running process) |
+### 2.3 Abstraction Strategies
 
-**Design implication:** The web terminal must support TWO session types from day one:
-1. **PTY sessions** — interactive terminal processes (Claude Code, shell, future agentic CLIs)
-2. **API sessions** — stateless chat completions (Claude API, OpenAI API, Ollama)
+#### LiteLLM Pattern (API-Level Abstraction)
 
-TermLink already handles type 1. Type 2 is new.
+LiteLLM normalizes 100+ LLM providers behind OpenAI's chat completion interface. It translates `messages[]` + `model` into provider-specific API calls.
+
+**Relevance:** LiteLLM solves the chat/completion abstraction. It does NOT solve terminal session management. We could use it (or our existing `ProviderManager`) for the chat layer, but terminal sessions need a higher-level abstraction.
+
+**Verdict:** Useful for chat features in Watchtower, orthogonal to terminal session routing.
+
+#### AI Gateway Pattern (Proxy-Level Abstraction)
+
+AI Gateways (Portkey, Helicone, LiteLLM Proxy, Cloudflare AI Gateway) sit between the application and providers, adding:
+- Request routing (by model, cost, latency)
+- Caching (semantic dedup, prompt cache)
+- Rate limiting and cost controls
+- Observability (logging, metrics, tracing)
+- Fallback chains (try Claude -> fall back to GPT-4 -> fall back to local)
+
+**Relevance:** The gateway pattern is useful for cost control and observability across providers. But for terminal sessions, the "gateway" is not an HTTP proxy -- it's a process manager. The analog is our TermLink dispatch system.
+
+**Verdict:** Gateway-pattern thinking should inform the session manager (cost tracking, fallback, observability) but the implementation is process management, not HTTP proxying.
+
+#### Provider-Neutral Session Protocol (Our Approach)
+
+What we actually need is a **session envelope** that wraps provider-specific invocation:
+
+```
++----------------------------------------------+
+|  Session Envelope (provider-neutral)          |
+|  - ID, task, tags, status, cost               |
+|  - Capabilities (read-only, read-write)       |
+|  - Lifecycle (spawn, observe, kill)           |
++----------------------------------------------+
+|  Provider Adapter (provider-specific)         |
+|  - How to spawn (CLI binary, API call)        |
+|  - How to observe (PTY, API polling)          |
+|  - How to inject input (PTY, message)         |
+|  - How to get cost (API, estimate)            |
+|  - How to kill (SIGTERM, API cancel)          |
++----------------------------------------------+
+```
+
+This is the Strategy pattern at the session level, not the chat level.
 
 ---
 
-## 3. Session Data Model
+## 3. Terminal Session Data Model
 
-### 3.1 Proposed Session Schema
+### 3.1 Current TermLink Session Model
+
+TermLink dispatch workers store metadata in `/tmp/tl-dispatch/<name>/`:
+
+```
+/tmp/tl-dispatch/worker-1/
+  prompt.md       # Dispatch prompt
+  task            # T-XXX tag (single line)
+  meta.json       # { name, project, timeout, task, started, status }
+  run.sh          # Worker execution script
+  result.md       # Worker output
+  exit_code       # Completion marker (0 = success)
+  finished_at     # ISO timestamp
+  stderr.log      # Error output
+  window_id       # macOS terminal window tracking
+```
+
+**Strengths:**
+- File-based, inspectable, no database dependency
+- Task-tagged for traceability
+- Event-based completion signaling (`termlink event emit`)
+
+**Weaknesses:**
+- No provider metadata (always assumes `claude -p`)
+- No cost tracking
+- No capability declaration
+- No session type distinction (shell vs. AI agent vs. REPL)
+- Volatile (`/tmp/` -- lost on reboot)
+- No schema enforcement (ad-hoc files, not structured JSON)
+
+### 3.2 Proposed Session Schema
 
 ```json
 {
-  "session": {
-    "id": "S-20260406-1234",
-    "name": "auth-refactor",
-    "type": "pty | api | hybrid",
-    "status": "active | idle | completed | failed",
-    "created": "2026-04-06T12:34:00Z",
-    "last_activity": "2026-04-06T12:45:00Z",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TerminalSession",
+  "description": "Provider-neutral terminal session descriptor for Watchtower orchestrator",
+  "type": "object",
+  "required": ["id", "type", "provider", "status", "created"],
+  "properties": {
+
+    "id": {
+      "type": "string",
+      "description": "Unique session identifier",
+      "pattern": "^S-[0-9]{4}-[0-9]{4}-[A-Za-z0-9]{4}$",
+      "examples": ["S-2026-0406-a1b2"]
+    },
+
+    "type": {
+      "type": "string",
+      "enum": ["shell", "agent", "repl"],
+      "description": "Session type: shell (local PTY), agent (AI provider), repl (language REPL)"
+    },
 
     "provider": {
-      "name": "claude-code | claude-api | openai | ollama | shell",
-      "model": "claude-opus-4-6 | gpt-4.1 | llama3 | null",
-      "endpoint": "https://api.anthropic.com | http://localhost:11434 | null",
-      "version": "1.0.40"
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["local", "claude", "openai", "ollama", "gemini", "custom"],
+          "description": "Provider identifier"
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "Model ID if applicable (null for local shell)",
+          "examples": ["claude-opus-4-6", "gpt-4o", "llama3:70b", "gemini-2.5-pro"]
+        },
+        "endpoint": {
+          "type": ["string", "null"],
+          "description": "API endpoint or binary path",
+          "examples": ["https://api.anthropic.com", "/usr/local/bin/ollama", null]
+        },
+        "version": {
+          "type": ["string", "null"],
+          "description": "Provider CLI or API version",
+          "examples": ["1.0.47", "v1", null]
+        }
+      }
     },
 
     "task": {
-      "id": "T-042",
-      "name": "Add OAuth support",
-      "type": "build"
+      "type": ["string", "null"],
+      "description": "Framework task reference (null for ad-hoc sessions)",
+      "pattern": "^T-[0-9]+$",
+      "examples": ["T-962", null]
+    },
+
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Freeform tags for filtering and discovery",
+      "examples": [["inception", "research"], ["build", "frontend"]]
+    },
+
+    "status": {
+      "type": "string",
+      "enum": ["spawning", "active", "idle", "paused", "completed", "failed", "killed"],
+      "description": "Current session lifecycle state"
     },
 
     "capabilities": {
-      "tools": true,
-      "vision": true,
-      "code_execution": true,
-      "file_system": true,
-      "interactive": true,
-      "streaming": true
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["read-only", "read-write", "inject-only", "observe-only"],
+          "description": "What the operator can do with this session"
+        },
+        "file_edit": {
+          "type": "boolean",
+          "description": "Can this session edit files in the project?"
+        },
+        "tool_use": {
+          "type": "boolean",
+          "description": "Does this provider support tool/function calling?"
+        },
+        "streaming": {
+          "type": "boolean",
+          "description": "Does this provider support streaming output?"
+        },
+        "context_window": {
+          "type": ["integer", "null"],
+          "description": "Provider context window in tokens (null if not applicable)",
+          "examples": [300000, 128000, null]
+        },
+        "persistent_thread": {
+          "type": "boolean",
+          "description": "Does the provider maintain conversation state server-side?"
+        }
+      }
     },
 
-    "access": {
-      "mode": "read-write | read-only | inject-only",
-      "owner": "human",
-      "observers": []
+    "cost": {
+      "type": "object",
+      "description": "Token usage tracking (tokens only, never dollars)",
+      "properties": {
+        "input_tokens": { "type": "integer", "default": 0 },
+        "output_tokens": { "type": "integer", "default": 0 },
+        "cache_read_tokens": { "type": "integer", "default": 0 },
+        "cache_write_tokens": { "type": "integer", "default": 0 },
+        "total_tokens": { "type": "integer", "default": 0 },
+        "model": {
+          "type": ["string", "null"],
+          "description": "Model used for cost attribution"
+        }
+      }
     },
 
-    "metrics": {
-      "tokens_in": 0,
-      "tokens_out": 0,
-      "tool_calls": 0,
-      "duration_seconds": 0
+    "process": {
+      "type": "object",
+      "description": "OS-level process tracking (local sessions only)",
+      "properties": {
+        "pid": { "type": ["integer", "null"] },
+        "tty": { "type": ["string", "null"], "examples": ["/dev/pts/3"] },
+        "termlink_session": {
+          "type": ["string", "null"],
+          "description": "TermLink session name if registered"
+        },
+        "websocket_id": {
+          "type": ["string", "null"],
+          "description": "WebSocket connection ID for web terminal"
+        }
+      }
     },
 
-    "routing": {
-      "fallback_provider": null,
-      "max_tokens": null,
-      "temperature": null,
-      "tags": ["auth", "backend"]
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session creation timestamp (ISO 8601)"
     },
 
-    "termlink": {
-      "session_name": "worker-auth-refactor",
-      "pid": 12345,
-      "tty": "/dev/pts/3"
+    "last_activity": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Last observed activity (input or output)"
+    },
+
+    "finished": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Session end timestamp"
+    },
+
+    "exit_code": {
+      "type": ["integer", "null"],
+      "description": "Process exit code (null if still running or not applicable)"
+    },
+
+    "termination_reason": {
+      "type": ["string", "null"],
+      "enum": [null, "user_close", "task_complete", "timeout", "budget_exhausted", "error", "killed"],
+      "description": "Why the session ended"
+    },
+
+    "prompt": {
+      "type": ["string", "null"],
+      "description": "Initial prompt or command (for dispatch workers)"
+    },
+
+    "result_path": {
+      "type": ["string", "null"],
+      "description": "Path to result file (for dispatch workers)",
+      "examples": ["docs/reports/T-962-analysis.md", "/tmp/tl-dispatch/worker-1/result.md"]
+    },
+
+    "parent_session": {
+      "type": ["string", "null"],
+      "description": "ID of parent session (for nested/dispatched sessions)",
+      "pattern": "^S-[0-9]{4}-[0-9]{4}-[A-Za-z0-9]{4}$"
     }
   }
 }
 ```
 
-### 3.2 Field Rationale
+### 3.3 Schema Design Decisions
 
-| Field Group | v1 Use | v2+ Use |
-|-------------|--------|---------|
-| `id`, `name`, `status` | Session management | Same |
-| `type` | Distinguish shell vs Claude Code | Add API sessions |
-| `provider.name` | Always "claude-code" or "shell" | Route to any provider |
-| `provider.model` | Display only | Model selection UI |
-| `task` | Link to framework task | Auto-routing by task type |
-| `capabilities` | Feature detection | Capability-based routing |
-| `access.mode` | Observer vs interactive | Multi-user access control |
-| `metrics` | Display token counts | Cost optimization, budget enforcement |
-| `routing` | Not used in v1 | Fallback chains, load balancing |
-| `termlink` | PTY session metadata | Same (PTY sessions only) |
+| Decision | Rationale | Alternative Considered |
+|----------|-----------|----------------------|
+| **Session ID format `S-YYYY-MMDD-XXXX`** | Human-readable, sortable, avoids UUID opacity | UUIDs (too opaque for CLI use) |
+| **`type` enum: shell/agent/repl** | Covers all current use cases without over-engineering | Finer-grained types (ssh, docker, etc.) -- deferred |
+| **`provider.name` enum with `custom`** | Named providers get first-class support; `custom` is the escape hatch | Open string (no validation) |
+| **`capabilities.mode` not per-user** | Session capability is determined at spawn time, not per observer | Per-user RBAC (v2 concern) |
+| **`cost` in tokens, never dollars** | Framework convention (user preference); dollar conversion is display-layer | Mixed units |
+| **`process.termlink_session`** | TermLink is optional -- field is nullable | Requiring TermLink (breaks portability) |
+| **`parent_session`** | Enables dispatch tree reconstruction without a separate relationship table | Separate edges table (over-engineering) |
+| **No `output` field** | Session output goes to files (`result_path`) or PTY stream, not the schema | Inline output (context explosion) |
 
-### 3.3 Why These Fields Matter
+### 3.4 Session Lifecycle State Machine
 
-**`type` field:** The most important v1 decision. PTY sessions (Claude Code, shell) use terminal I/O. API sessions use HTTP streaming. The UI rendering, input handling, and lifecycle management are fundamentally different. Getting this distinction into the schema from day one prevents a rewrite.
+```
+                    +----------+
+                    | spawning |
+                    +----+-----+
+                         | process started / API connected
+                         v
+                    +----------+
+              +---->|  active  |<----+
+              |     +----+-----+     |
+              |          |           |
+              |    idle timeout      | user input / event
+              |          |           |
+              |          v           |
+              |     +--------+      |
+              |     |  idle  |------+
+              |     +----+---+
+              |          |
+              |    manual pause
+              |          |
+              |          v
+              |     +--------+
+              +-----|  paused | (resume -> active)
+                    +----+---+
+                         |
+          +--------------+--------------+
+          |              |              |
+     task_complete    timeout       error/kill
+          |              |              |
+          v              v              v
+    +-----------+  +-----------+  +--------+
+    | completed |  |  killed   |  | failed |
+    +-----------+  +-----------+  +--------+
+```
 
-**`provider` object:** Even in v1 (Claude-only), having `provider.name` and `provider.model` as structured fields means the UI can display "Claude Code (opus-4-6)" and the backend can route without parsing strings. When v2 adds OpenAI, no schema change needed.
-
-**`capabilities` flags:** Prevents the "does this session support file uploads?" problem. Instead of checking provider name, check `capabilities.vision`.
-
-**`access.mode`:** Three levels:
-- `read-write` — full interactive control (the session owner)
-- `read-only` — observe output only (Watchtower dashboard view)
-- `inject-only` — can send input but can't see output (automated dispatch)
+**Transition rules:**
+- `spawning -> active`: Process started, PTY connected, or API handshake complete
+- `active -> idle`: No I/O for configurable idle timeout (default: 300s)
+- `idle -> active`: Any user input or scheduled event
+- `active/idle -> paused`: Explicit user action (session preserved, resources held)
+- `paused -> active`: Explicit resume
+- `* -> completed`: Clean exit (exit code 0, task marked complete)
+- `* -> failed`: Non-zero exit, API error, unrecoverable state
+- `* -> killed`: User kill, budget exhaustion, timeout, SIGTERM
 
 ---
 
 ## 4. Architecture Layers
 
-```
-+--------------------------------------------------+
-|                    UI Layer                        |
-|  Watchtower Web UI (Flask + xterm.js + WebSocket) |
-|  - Session list with provider/status indicators   |
-|  - Terminal emulator (PTY sessions)               |
-|  - Chat interface (API sessions)                  |
-|  - Session creation wizard (provider + model)     |
-+--------------------------------------------------+
-                        |
-+--------------------------------------------------+
-|                 Routing Layer                      |
-|  Session Manager (Python)                         |
-|  - Create/destroy sessions                        |
-|  - Route input to correct backend                 |
-|  - Aggregate metrics                              |
-|  - [v2] Capability matching                       |
-|  - [v2] Load balancing / fallback                 |
-+--------------------------------------------------+
-                        |
-          +-------------+-------------+
-          |                           |
-+---------+----------+  +------------+---------+
-|   PTY Backend      |  |   API Backend        |
-|   (TermLink)       |  |   (v2 — LiteLLM)    |
-|                    |  |                      |
-| - Shell sessions   |  | - Claude API         |
-| - Claude Code      |  | - OpenAI API         |
-| - Future agentic   |  | - Ollama (local)     |
-|   CLIs             |  | - Gemini API         |
-+--------------------+  +----------------------+
-```
-
-### 4.1 Layer Responsibilities
-
-**UI Layer** (Watchtower):
-- Renders terminal (xterm.js) for PTY sessions
-- Renders chat UI for API sessions (v2)
-- Session list sidebar showing all active sessions with status badges
-- "New Session" dialog: select type (shell/Claude Code/[v2: API provider])
-- WebSocket for real-time terminal I/O
-
-**Routing Layer** (Session Manager):
-- Maintains session registry (in-memory + `.context/sessions/` on disk)
-- Creates sessions by dispatching to the correct backend
-- Proxies input/output between UI and backend
-- Tracks metrics (tokens, duration, tool calls)
-- [v2] Implements capability-based routing
-- [v2] Handles provider fallback chains
-
-**PTY Backend** (TermLink):
-- Manages actual terminal processes
-- Provides `spawn`, `interact`, `pty inject/output` primitives
-- Handles process lifecycle (start, monitor, kill)
-- Session discovery via tags
-
-**API Backend** (v2 — LiteLLM or direct):
-- Manages stateless chat completion sessions
-- Normalizes provider APIs to common format
-- Handles streaming (SSE)
-- Tracks token usage per request
-
-### 4.2 Data Flow: PTY Session
+### 4.1 Layer Diagram
 
 ```
-User types in xterm.js
-  → WebSocket message to Flask
-  → Session Manager looks up session by ID
-  → Routes to PTY backend (TermLink)
-  → termlink pty inject <session> <input>
-  → Process receives input
-  → Process writes output to PTY
-  → termlink pty output <session> (polled or event-driven)
-  → WebSocket message to xterm.js
-  → User sees output
++-------------------------------------------------------------+
+|                    Watchtower Web UI                         |
+|  +----------+  +----------+  +----------+  +------------+  |
+|  | Terminal  |  | Terminal  |  | Terminal  |  |  Session   |  |
+|  |  Tab 1    |  |  Tab 2    |  |  Tab 3    |  |  Manager   |  |
+|  | (xterm.js)|  | (xterm.js)|  | (xterm.js)|  |   Panel    |  |
+|  +-----+-----+  +-----+-----+  +-----+-----+  +-----+------+ |
+|        |              |              |              |        |
+|        +--------------+--------------+              |        |
+|                       | WebSocket                   | REST   |
++-------------------------------------------------------------+
+|                 L4: Transport Layer                          |
+|  +--------------------------------------------------------+ |
+|  |  WebSocket Router                                      | |
+|  |  /ws/terminal/<session-id> -> PTY bridge or API stream | |
+|  +--------------------------------------------------------+ |
++-------------------------------------------------------------+
+|                 L3: Session Manager                          |
+|  +--------------------------------------------------------+ |
+|  |  SessionRegistry                                       | |
+|  |  - CRUD sessions (create, list, get, update, delete)   | |
+|  |  - Lifecycle management (state transitions)            | |
+|  |  - Discovery (by task, tag, provider, status)          | |
+|  |  - Cost aggregation (per session, per task, per model) | |
+|  |  - Persistence (.context/sessions/ YAML files)         | |
+|  +--------------------------------------------------------+ |
++-------------------------------------------------------------+
+|                 L2: Provider Adapters                        |
+|  +----------+ +----------+ +----------+ +--------------+   |
+|  |  Local    | |  Claude   | |  Ollama   | |  Future:     |   |
+|  |  Shell    | |  Code     | |  Run      | |  OpenAI/     |   |
+|  |  Adapter  | |  Adapter  | |  Adapter  | |  Gemini/etc  |   |
+|  +----------+ +----------+ +----------+ +--------------+   |
+|  Each adapter implements: spawn(), observe(), inject(),     |
+|  kill(), get_cost(), capabilities()                         |
++-------------------------------------------------------------+
+|                 L1: Process Layer                            |
+|  +------------------+  +-------------------------------+    |
+|  |  PTY Manager      |  |  TermLink (optional)          |    |
+|  |  (pty.fork +      |  |  Session registration,        |    |
+|  |   subprocess)     |  |  cross-terminal discovery,    |    |
+|  |                   |  |  event signaling              |    |
+|  +------------------+  +-------------------------------+    |
++-------------------------------------------------------------+
 ```
 
-### 4.3 Data Flow: API Session (v2)
+### 4.2 Layer Responsibilities
 
+#### L1: Process Layer
+- **What:** OS-level process lifecycle (fork, exec, signal, wait)
+- **Components:** Python `pty` module, `subprocess`, optionally TermLink for registration/discovery
+- **v1 scope:** `pty.fork()` for local shells, `subprocess.Popen` for `claude -p` / `ollama run`
+- **TermLink role:** Optional enhancement -- if installed, sessions are registered for cross-terminal discovery. If not, sessions work fine but are invisible to other terminals.
+
+#### L2: Provider Adapters
+- **What:** Translate provider-neutral session operations into provider-specific invocations
+- **Interface:** Each adapter implements a `SessionAdapter` protocol:
+
+```python
+class SessionAdapter(Protocol):
+    """Provider-specific session management."""
+
+    name: str  # "local", "claude", "ollama", etc.
+
+    def spawn(self, config: dict) -> ProcessHandle:
+        """Start a session. Returns PID + PTY fd or stream handle."""
+        ...
+
+    def capabilities(self) -> dict:
+        """Declare what this provider supports."""
+        ...
+
+    def inject(self, handle: ProcessHandle, input: str) -> None:
+        """Send input to the session (PTY write or API message)."""
+        ...
+
+    def observe(self, handle: ProcessHandle) -> AsyncIterator[bytes]:
+        """Stream output from the session."""
+        ...
+
+    def kill(self, handle: ProcessHandle, signal: int = 15) -> None:
+        """Terminate the session."""
+        ...
+
+    def get_cost(self, handle: ProcessHandle) -> dict | None:
+        """Get current token usage (None for local shells)."""
+        ...
 ```
-User types in chat UI
-  → WebSocket message to Flask
-  → Session Manager looks up session by ID
-  → Routes to API backend
-  → HTTP POST to provider (streaming)
-  → SSE chunks arrive
-  → WebSocket messages to chat UI
-  → User sees response tokens
+
+- **v1 adapters:** `LocalShellAdapter` (bash/zsh via PTY), `ClaudeCodeAdapter` (claude -p via PTY)
+- **v2 adapters:** `OllamaAdapter` (ollama run via PTY), `OpenAIAdapter`, `GeminiAdapter`
+
+#### L3: Session Manager
+- **What:** Business logic for session lifecycle, routing, and state management
+- **Components:** `SessionRegistry` (CRUD + query), session state machine, cost aggregator
+- **Persistence:** YAML files in `.context/sessions/` (consistent with framework's file-based pattern)
+- **Discovery API:** Filter sessions by task, tag, provider, status -- used by both CLI and web UI
+- **v1 scope:** Create/list/get/delete sessions, basic lifecycle transitions
+
+#### L4: Transport Layer
+- **What:** WebSocket routing between browser terminals and backend sessions
+- **Components:** Flask-Sock WebSocket handler, connection multiplexer
+- **Pattern:** One WebSocket per terminal tab, routed to the correct session by ID
+- **v1 scope:** `/ws/terminal/<session-id>` endpoint, bidirectional byte stream
+
+### 4.3 Provider Adapter Details
+
+#### LocalShellAdapter (v1)
+
+```python
+class LocalShellAdapter:
+    name = "local"
+
+    def spawn(self, config):
+        # pty.fork() -> returns (pid, fd)
+        # Shell: config.get("shell", os.environ.get("SHELL", "/bin/bash"))
+        # Working directory: config.get("cwd", PROJECT_ROOT)
+        pid, fd = pty.fork()
+        if pid == 0:
+            os.execvp(shell, [shell])
+        return ProcessHandle(pid=pid, fd=fd)
+
+    def capabilities(self):
+        return {
+            "mode": "read-write",
+            "file_edit": True,   # it's a shell, it can do anything
+            "tool_use": False,
+            "streaming": True,
+            "context_window": None,  # no AI context
+            "persistent_thread": False,
+        }
+
+    def get_cost(self, handle):
+        return None  # local shells have no token cost
+```
+
+#### ClaudeCodeAdapter (v1)
+
+```python
+class ClaudeCodeAdapter:
+    name = "claude"
+
+    def spawn(self, config):
+        # Spawn claude -p "prompt" or claude -c (interactive) via PTY
+        # Unset CLAUDECODE env var (T-576: allow nested sessions)
+        # Set PROJECT_ROOT for framework hooks
+        cmd = ["claude"]
+        if prompt := config.get("prompt"):
+            cmd += ["-p", prompt, "--output-format", "text"]
+        else:
+            cmd += ["-c"]  # interactive/continue mode
+
+        pid, fd = pty.fork()
+        if pid == 0:
+            env = os.environ.copy()
+            env.pop("CLAUDECODE", None)
+            env["PROJECT_ROOT"] = config.get("cwd", PROJECT_ROOT)
+            os.execvpe(cmd[0], cmd, env)
+        return ProcessHandle(pid=pid, fd=fd, provider_meta={"model": "claude-opus-4-6"})
+
+    def capabilities(self):
+        return {
+            "mode": "read-write",
+            "file_edit": True,
+            "tool_use": True,
+            "streaming": True,
+            "context_window": 300000,  # FW_CONTEXT_WINDOW
+            "persistent_thread": False,
+        }
+
+    def get_cost(self, handle):
+        # Read from session JSONL transcript if available
+        return parse_claude_session_cost(handle.pid)
+```
+
+#### OllamaAdapter (v2)
+
+```python
+class OllamaAdapter:
+    name = "ollama"
+
+    def spawn(self, config):
+        model = config.get("model", "llama3:70b")
+        cmd = ["ollama", "run", model]
+        # Ollama run is an interactive REPL -- same PTY pattern as shell
+        pid, fd = pty.fork()
+        if pid == 0:
+            os.execvp(cmd[0], cmd)
+        return ProcessHandle(pid=pid, fd=fd, provider_meta={"model": model})
+
+    def capabilities(self):
+        return {
+            "mode": "read-write",
+            "file_edit": False,   # ollama run has no file editing
+            "tool_use": False,    # no tool use in REPL mode
+            "streaming": True,
+            "context_window": None,
+            "persistent_thread": False,
+        }
+
+    def get_cost(self, handle):
+        return {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0,
+                "model": handle.provider_meta["model"]}
 ```
 
 ---
 
 ## 5. Routing Patterns
 
-### 5.1 v1 — Human Selects
+### 5.1 Human Selects Provider (v1)
 
-The simplest pattern: human picks "Shell" or "Claude Code" when creating a session. No automated routing.
-
-```
-[New Session]
-  > Shell (bash)
-  > Claude Code
-```
-
-This is sufficient for v1 and matches how Claude Code is used today — the human decides when to use it.
-
-### 5.2 v2 — Human Selects Provider + Model
-
-Extend the selector with provider and model:
+The simplest routing: user picks from a dropdown when creating a new terminal tab.
 
 ```
-[New Session]
-  > Shell (bash)
-  > Claude Code (opus-4-6)
-  > Claude API (sonnet-4-6)
-  > OpenAI (gpt-4.1)
-  > Ollama (llama3 — local)
++-------------------------------------+
+|  New Terminal                       |
+|                                     |
+|  Provider: [Local Shell v]          |
+|            +------------------+     |
+|            | Local Shell      |     |
+|            | Claude Code      |     |
+|            | Ollama (llama3)  |     |
+|            +------------------+     |
+|                                     |
+|  Task: [T-962 v] (optional)        |
+|  Tags: [inception, research]        |
+|                                     |
+|  [Open Terminal]                    |
++-------------------------------------+
 ```
 
-The session schema already supports this — `provider.name` and `provider.model` are first-class fields.
+**Implementation:** Watchtower renders available providers from `SessionManager.list_adapters()`. User selects one, submits form. Backend calls `adapter.spawn()`, creates session record, returns WebSocket URL for the xterm.js client.
 
-### 5.3 v3 — Framework-Assisted Routing
+**Why v1:** Zero AI routing logic needed. Users know what they want. The session schema captures the choice for later analysis.
 
-The framework suggests the best agent based on task metadata:
+### 5.2 Task-Aware Dispatch (v2)
 
-```
-Task T-042 (type: build, tags: auth, backend)
-  → Framework suggests: Claude Code (opus) for code changes
-  → Alternatives: Claude API (sonnet) for quick questions
-
-Task T-043 (type: inception, tags: research)
-  → Framework suggests: Claude API (opus) for research
-  → Alternatives: OpenAI (gpt-4.1) for second opinion
-```
-
-This requires:
-- Agent capability registry (what can each provider/model do?)
-- Task-to-capability mapping (what does this task type need?)
-- Cost/performance heuristics (which option is cheapest for this capability?)
-
-### 5.4 v4 — Automatic Orchestration
-
-Full multi-agent orchestration: the framework decomposes a task and dispatches sub-tasks to the optimal agent/provider combination. This is where CrewAI/LangGraph patterns apply.
-
-**Not in scope for the web terminal inception.** But the session schema and routing layer should not block it.
-
----
-
-## 6. TermLink as Session Layer
-
-### 6.1 Current TermLink Session Model
-
-TermLink sessions today carry:
-- `name` — unique identifier (e.g., "worker-auth-refactor")
-- `tags` — key-value pairs (e.g., "task=T-042")
-- Events — inter-session signaling (e.g., "worker.done")
-- PTY access — inject input, read output
-
-The framework wrapper (`agents/termlink/termlink.sh`) adds:
-- Dispatch metadata: `meta.json` with name, project, timeout, task, started, status
-- Worker lifecycle: prompt file, result file, exit code, stderr log
-- Cleanup: orphan detection and kill
-
-### 6.2 Can TermLink Carry Provider Metadata?
-
-**Yes, via tags.** TermLink tags are arbitrary key-value pairs:
-
-```bash
-termlink spawn --name worker-1 --tags "task=T-042,provider=claude-code,model=opus-4-6"
-termlink discover --tags "provider=claude-code"
-```
-
-This works for PTY sessions. But API sessions don't have a terminal process — they can't be TermLink sessions.
-
-### 6.3 Recommendation: TermLink as PTY Backend, Not Session Registry
-
-TermLink is the right abstraction for PTY sessions. It should NOT be the universal session registry because:
-
-1. API sessions have no PTY — forcing them into TermLink would be a leaky abstraction
-2. TermLink's lifecycle is process-based (spawn/kill) — API sessions are request-based
-3. Session discovery needs to work across both types — a unified registry is simpler
-
-**Architecture:**
-```
-Session Registry (framework-level, in-memory + YAML)
-  ├── PTY sessions → TermLink backend
-  └── API sessions → HTTP backend (v2)
-```
-
-TermLink remains the PTY implementation layer. The Session Manager owns the unified registry.
-
----
-
-## 7. What v1 Needs to NOT Block v2
-
-These are the minimum data model decisions that must be made in v1 to avoid rewriting when multi-provider arrives.
-
-### 7.1 MUST DO in v1
-
-1. **Session schema includes `provider` and `type` fields** — even though v1 only has "shell" and "claude-code". The UI and backend code should reference `session.provider.name` not hardcoded strings.
-
-2. **Session registry is a separate concern from TermLink** — don't store session state only in TermLink tags. Maintain a `sessions.yaml` or in-memory dict that TermLink sessions sync to.
-
-3. **WebSocket protocol is session-type-aware** — messages include `session_id` and `type`. The frontend dispatches to xterm.js (PTY) or chat renderer (API) based on type. Even if v1 only has xterm.js, the protocol should carry the type field.
-
-4. **"New Session" UI is extensible** — use a provider registry (even if hardcoded to two entries) rather than an if/else for "shell" vs "claude-code".
-
-5. **Token metrics are per-session** — track `tokens_in`, `tokens_out` from the start, even for PTY sessions (parse from Claude Code output or estimate). This feeds v2 cost tracking.
-
-### 7.2 Provider Registry (v1 Implementation)
+The orchestrator suggests a provider based on task metadata:
 
 ```python
-PROVIDERS = {
-    "shell": {
-        "type": "pty",
-        "display_name": "Shell (bash)",
-        "command": ["bash"],
-        "capabilities": {"interactive": True, "streaming": True},
-    },
-    "claude-code": {
-        "type": "pty",
-        "display_name": "Claude Code",
-        "command": ["claude", "-p"],
-        "capabilities": {"tools": True, "code_execution": True, "interactive": True, "streaming": True},
-    },
-    # v2: add these entries, no structural change needed
-    # "claude-api": { "type": "api", "endpoint": "https://api.anthropic.com/...", ... },
-    # "openai": { "type": "api", "endpoint": "https://api.openai.com/...", ... },
-    # "ollama": { "type": "api", "endpoint": "http://localhost:11434/...", ... },
+def suggest_provider(task: dict) -> str:
+    """Suggest a provider based on task characteristics."""
+    wtype = task.get("workflow_type")
+
+    if wtype in ("build", "refactor", "test"):
+        return "claude"  # needs file editing + tool use
+    elif wtype == "inception":
+        return "claude"  # needs research + reasoning
+    elif wtype == "specification":
+        return "ollama"  # local model, cheaper for drafting
+    else:
+        return "local"   # default to shell
+```
+
+**Why v2:** Requires understanding of task semantics and provider capabilities. v1 collects the data; v2 analyzes it.
+
+### 5.3 Load Balancing / Fallback (v2+)
+
+Multiple sessions across providers with automatic fallback:
+
+```
+Primary: Claude Code (best quality, highest cost)
+    |
+    +-- Rate limited? -> Fall back to Gemini
+    +-- API down?     -> Fall back to Ollama (local)
+    +-- Budget exceeded? -> Fall back to Ollama (free)
+```
+
+**Why v2+:** Requires cost tracking, provider health monitoring, and fallback chain configuration. None of these are v1 priorities.
+
+### 5.4 Session Handoff (v3)
+
+Transfer a conversation from one provider to another mid-session:
+
+```
+Claude Code session (context at 280K)
+    -> Extract conversation summary (handover)
+    -> Spawn new session on Gemini (fresh context)
+    -> Inject summary as system prompt
+    -> Continue work seamlessly
+```
+
+**Why v3:** Requires conversation export, cross-provider prompt translation, and state reconciliation. Our handover system is a manual version of this for Claude Code -> Claude Code transfers. Generalizing it across providers is a research problem.
+
+---
+
+## 6. TermLink as Session Layer: Assessment
+
+### 6.1 What TermLink Provides
+
+| Primitive | What It Does | Terminal Session Use |
+|-----------|-------------|---------------------|
+| `termlink spawn` | Create named session with tags | Session registration |
+| `termlink interact` | Run command, get JSON output | Health checks, status queries |
+| `termlink pty inject` | Send input to session | Command injection |
+| `termlink pty output` | Read recent output | Session observation |
+| `termlink event emit/wait` | Inter-session signaling | Completion notification |
+| `termlink discover` | Find sessions by tags | Multi-session discovery |
+| `termlink attach` | Full TUI mirror | Remote session access |
+| `termlink list` | List all sessions | Session inventory |
+| `termlink clean` | Deregister stale sessions | Cleanup |
+
+### 6.2 TermLink Strengths for This Use Case
+
+1. **Cross-terminal discovery** -- Watchtower can find and display sessions that were started from the CLI, not just web-created sessions
+2. **Bidirectional attach** -- Remote observation of running sessions (the `attach` primitive)
+3. **Event system** -- Worker completion signaling without polling
+4. **Session tagging** -- Already supports `task=T-XXX` convention
+5. **Platform-tested** -- 264 tests, real-world use in dispatch scenarios
+
+### 6.3 TermLink Limitations
+
+1. **macOS-centric** -- Terminal window management uses AppleScript. The Linux server (LXC 170) runs headless -- no Terminal.app windows to manage.
+2. **PTY-only** -- TermLink manages terminal sessions (PTY processes). API-only providers (OpenAI, Gemini without CLI) don't have PTY sessions to manage.
+3. **No web transport** -- TermLink speaks PTY, not WebSocket. The web terminal needs a WebSocket bridge regardless.
+4. **No cost tracking** -- TermLink tracks process state, not token usage.
+5. **Optional dependency** -- Framework works without TermLink installed. The session layer can't require it.
+
+### 6.4 Verdict: TermLink as Optional Enhancement, Not Foundation
+
+**TermLink is the right tool for cross-terminal coordination but the wrong foundation for the session layer.**
+
+The session layer must:
+- Work without TermLink installed (portability -- Directive 4)
+- Handle both PTY sessions and API-only providers
+- Bridge to WebSocket for the web UI
+- Track cost and capabilities (TermLink doesn't do this)
+
+**Recommended architecture:**
+
+```
+SessionManager (L3) -- owns the session lifecycle
+    |
+    +-- Always: SessionRegistry (YAML files in .context/sessions/)
+    +-- Always: Provider Adapters (L2, spawn/observe/inject/kill)
+    +-- Always: WebSocket Bridge (L4, xterm.js <-> PTY/stream)
+    |
+    +-- Optional: TermLink Integration
+        +-- On session spawn: register with termlink (if installed)
+        +-- On session kill: deregister
+        +-- Enables: CLI discovery (termlink list shows web-created sessions)
+        +-- Enables: CLI attach (termlink attach for remote observation)
+        +-- Enables: Event-based completion signaling
+```
+
+TermLink enriches the session layer but doesn't define it. A session created from the web UI works fine without TermLink. If TermLink is installed, the session is additionally registered for cross-terminal visibility.
+
+---
+
+## 7. What v1 Needs to Not Block v2
+
+These are the architectural commitments v1 must make to keep the door open:
+
+### 7.1 Must Have (Architectural Commitments)
+
+| Commitment | Why | Cost |
+|------------|-----|------|
+| **Session schema with `provider` field** | v2 needs multi-provider sessions; v1 must not hardcode "local shell" assumptions | Low -- schema design, no runtime cost |
+| **Provider adapter interface** | v2 adds adapters; v1 must define the interface so adapters are drop-in | Low -- one Protocol class, two implementations |
+| **Session ID format** | v2 needs to reference sessions across systems; v1 must use a stable, unique ID format | Zero -- pick a format, use it |
+| **File-based session persistence** | v2 needs session history; v1 must write session records to `.context/sessions/` | Low -- YAML file per session |
+| **WebSocket per session** | v2 needs multiplexed sessions; v1 must not use a single shared WebSocket | Low -- URL routing by session ID |
+| **Capabilities declaration** | v2 routes by capability; v1 must capture what each session can do | Low -- static dict per adapter |
+| **Cost tracking stubs** | v2 optimizes by cost; v1 must have the `cost` field even if it's always zeros for local shells | Zero -- schema field, null for local |
+
+### 7.2 Should Have (Reduces v2 Risk)
+
+| Feature | Why | Cost |
+|---------|-----|------|
+| **Two adapters: LocalShell + ClaudeCode** | Proves the adapter interface works for real with two different providers | Medium -- second adapter implementation |
+| **Session list API** | v2 builds session management UI on top of list/filter APIs | Low -- CRUD endpoints |
+| **TermLink registration on spawn** | v2 needs cross-terminal visibility; v1 can register sessions if TermLink is available | Low -- optional `termlink spawn` call |
+| **Session state persistence across server restart** | v2 reconnects to surviving sessions; v1 must not lose session records on Watchtower restart (PTYs die, but records survive) | Low -- YAML file per session |
+
+### 7.3 Explicitly NOT v1 (Can Safely Ignore)
+
+| Feature | Why Not | v2+ Concern |
+|---------|---------|-------------|
+| **Auto-routing** | Users pick provider manually in v1 | v2: suggest based on task type |
+| **Load balancing** | Single provider per session in v1 | v2+: multi-provider fallback |
+| **Session handoff** | No cross-provider state transfer in v1 | v3: handover generalization |
+| **Cost optimization** | No provider cost comparison in v1 | v2: cheaper provider for cheaper tasks |
+| **Per-user RBAC** | Single-user in v1 (Watchtower is an ops tool) | v2+: if multi-user is needed |
+| **OpenAI/Gemini adapters** | v1 ships with local + claude only | v2: add when providers have CLI agents |
+| **Session recording/replay** | Not needed for v1 terminal | v2+: audit trail, debugging |
+| **Conversation export** | No cross-provider handoff in v1 | v3: session handoff prerequisite |
+| **AI-powered routing** | Human selection is fine for v1 | v2+: task-aware dispatch |
+| **Hub infrastructure** | TermLink hub adds operational complexity | v2+: only if 3+ machines need coordination |
+
+---
+
+## 8. Implementation Sketch: v1 Session Manager
+
+### 8.1 File Structure
+
+```
+web/
+  terminal/
+    __init__.py
+    session.py          # SessionManager, Session dataclass
+    registry.py         # SessionRegistry (CRUD, persistence)
+    adapters/
+      __init__.py
+      base.py           # SessionAdapter protocol
+      local_shell.py    # LocalShellAdapter (pty.fork)
+      claude_code.py    # ClaudeCodeAdapter (claude -p via PTY)
+    transport.py        # WebSocket handler (Flask-Sock)
+    routes.py           # REST API endpoints (/api/sessions/*)
+.context/
+  sessions/             # Session YAML files (persistent)
+    S-2026-0406-a1b2.yaml
+    S-2026-0406-c3d4.yaml
+```
+
+### 8.2 Key Integration Points
+
+#### With Existing Framework
+
+| Integration | How |
+|-------------|-----|
+| **Task system** | Session schema has `task` field -> links to `.tasks/active/T-XXX.md` |
+| **Context fabric** | Register `web/terminal/` components in `.fabric/components/` |
+| **Budget system** | ClaudeCode adapter reads `.context/working/.budget-status` |
+| **TermLink** | Optional: `termlink spawn` on session create, `termlink clean` on session destroy |
+| **Bus system** | Dispatch workers can post results via `fw bus post` from within their session |
+| **Watchtower UI** | New `/terminal` page with xterm.js tabs, session manager panel |
+
+#### With xterm.js (from v1 research)
+
+```javascript
+// Client-side: create terminal + connect to session
+async function openSession(sessionId) {
+    const term = new Terminal({ cursorBlink: true });
+    const fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(document.getElementById(`terminal-${sessionId}`));
+    fitAddon.fit();
+
+    const ws = new WebSocket(`ws://${location.host}/ws/terminal/${sessionId}`);
+    const attachAddon = new AttachAddon.AttachAddon(ws);
+    term.loadAddon(attachAddon);
+
+    // Handle resize
+    term.onResize(({ cols, rows }) => {
+        ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+    });
 }
 ```
 
-This is a dictionary lookup, not an if/else chain. Adding a provider means adding an entry.
+### 8.3 Minimal v1 API Surface
+
+```
+POST   /api/sessions          Create session (provider, task, tags)
+GET    /api/sessions          List sessions (filter by status, task, provider)
+GET    /api/sessions/<id>     Get session details
+DELETE /api/sessions/<id>     Kill and remove session
+PATCH  /api/sessions/<id>     Update session (tags, status)
+WS     /ws/terminal/<id>      WebSocket bridge to session PTY
+```
 
 ---
 
-## 8. What v1 Can IGNORE
+## 9. Risk Assessment
 
-These features are safely deferred without creating architectural debt, as long as the schema decisions in section 7 are respected.
-
-1. **API session backend** — v1 is PTY-only. The schema supports it; the backend doesn't exist yet.
-
-2. **Capability-based routing** — v1 is human-selects. The `capabilities` field exists in the schema but isn't used for routing.
-
-3. **Provider fallback chains** — v1 has one provider. The `routing.fallback_provider` field exists but is null.
-
-4. **Load balancing** — Single instance, no need for request distribution.
-
-5. **Cost tracking** — Token counts are captured in metrics, but no cost calculations. LiteLLM or manual mapping adds this in v2.
-
-6. **Multi-user access control** — v1 is single-user. The `access.mode` field exists but everything is `read-write`.
-
-7. **Agent auto-selection** — v1 is manual. The task-to-agent mapping is a v3 feature.
-
-8. **LiteLLM integration** — Not needed until API sessions are added in v2.
-
-9. **Session handoff** (start with Claude, continue with GPT) — Complex state migration problem. Defer entirely.
-
-10. **Chat UI component** — v1 is terminal-only (xterm.js). Chat rendering for API sessions comes with v2.
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| **PTY leaks** -- spawned processes not cleaned up on crash | Medium | High (zombie processes) | Session registry tracks PIDs; cleanup on startup; periodic reaper |
+| **WebSocket storms** -- many tabs, many connections | Low | Medium (resource exhaustion) | Max sessions config; idle timeout; connection limits |
+| **Provider API changes** -- Claude/OpenAI/Ollama CLI interfaces change | Medium | Medium (adapter breakage) | Adapter pattern isolates changes; version pinning |
+| **TermLink unavailable** -- headless Linux server, no TermLink installed | High (LXC 170) | Low (optional feature degrades gracefully) | All TermLink calls are conditional; session layer works without it |
+| **Context explosion** -- displaying session list with full metadata | Medium | High (if returned to AI context) | List API returns summary fields only; detail by explicit GET |
+| **Security** -- web terminal as attack surface | Medium | High | Auth required; session-scoped PTY; no shared shell; CSP headers |
 
 ---
 
-## 9. Design Principles (from Framework Analysis)
+## 10. Open Questions for Human Decision
 
-### 9.1 Design for N, Build for 1
+1. **Session storage location:** `.context/sessions/` (framework convention) or `web/data/sessions/` (web-specific)? Recommendation: `.context/sessions/` -- consistent with framework patterns, visible to CLI tooling.
 
-The session schema supports N providers. The v1 implementation handles 2 (shell, Claude Code). Adding provider 3 should require:
-- One entry in the provider registry
-- One backend adapter (PTY or API)
-- Zero schema changes
+2. **Multi-tab vs. multi-window:** Should Watchtower support multiple terminal tabs in one page (like VS Code) or one terminal per browser window? Recommendation: Multi-tab -- matches VS Code UX, enables session comparison, single WebSocket management point.
 
-### 9.2 Registry Over Routing Logic
+3. **Default provider:** When user opens a new terminal without selecting provider, should it default to local shell or Claude Code? Recommendation: Local shell -- lowest friction, no cost, no API dependency.
 
-All three frameworks (CrewAI, AutoGen, LangGraph) use an agent registry as the foundation. The routing logic reads from the registry. Our provider registry follows the same pattern — declarative data, not procedural routing.
+4. **Session persistence policy:** Should sessions survive Watchtower server restart? PTY processes will die, but should we attempt to re-spawn them? Recommendation: No auto-respawn. Mark sessions as `failed` with `termination_reason: "server_restart"`. User explicitly creates new sessions.
 
-### 9.3 State Separation
-
-LangGraph's immutable state pattern is instructive: session state should be separate from session I/O. The session schema (metadata, capabilities, metrics) lives in the registry. The session content (terminal output, chat history) lives in the backend (TermLink PTY buffer or API message array).
-
-### 9.4 Two Session Types, One Interface
-
-The web terminal must render both PTY and API sessions through a single session list. The UI treats them uniformly (name, status, provider badge, metrics). Only the rendering component differs (xterm.js vs chat). This is the AutoGen GroupChat insight: multiple agent types, one conversation space.
-
----
-
-## 10. Summary Table
-
-| Decision | v1 | v2 | v3+ |
-|----------|----|----|-----|
-| Session types | PTY only | PTY + API | PTY + API + hybrid |
-| Providers | shell, claude-code | + claude-api, openai, ollama | + gemini, bedrock, custom |
-| Routing | Human selects | Human selects from expanded list | Framework-assisted |
-| Session registry | In-memory + YAML | Same + provider metadata | Same + capability index |
-| TermLink role | PTY backend | PTY backend (unchanged) | PTY backend (unchanged) |
-| Provider abstraction | Hardcoded registry | LiteLLM for API sessions | LiteLLM + custom adapters |
-| Cost tracking | Token counts only | Token counts + cost mapping | Budget-aware routing |
-| Multi-agent | Single session | Multiple independent sessions | Orchestrated multi-agent |
+5. **TermLink registration scope:** Register all web-created sessions with TermLink, or only dispatch workers? Recommendation: All sessions -- enables `termlink list` to show the full picture.
 
 ---
 
 ## Sources
 
-- [CrewAI Documentation — Agents](https://docs.crewai.com/en/concepts/agents)
-- [AutoGen — Conversation Patterns](https://microsoft.github.io/autogen/0.2/docs/tutorial/conversation-patterns/)
-- [AutoGen — Group Chat](https://microsoft.github.io/autogen/stable//user-guide/core-user-guide/design-patterns/group-chat.html)
-- [LangGraph — Agent Orchestration Framework](https://www.langchain.com/langgraph)
-- [LiteLLM — Multi-Provider Gateway](https://docs.litellm.ai/)
-- [Multi-Agent Architecture: Patterns & Production Reality](https://www.truefoundry.com/blog/multi-agent-architecture)
-- [Google ADK — Multi-Agent Patterns](https://developers.googleblog.com/developers-guide-to-multi-agent-patterns-in-adk/)
-- [Best Multi-Agent Frameworks in 2026](https://gurusup.com/blog/best-multi-agent-frameworks-2026)
-- [Microsoft Multi-Agent Reference Architecture](https://microsoft.github.io/multi-agent-reference-architecture/docs/reference-architecture/Reference-Architecture.html)
+- CrewAI documentation and source (github.com/crewAIInc/crewAI)
+- AutoGen documentation (microsoft.github.io/autogen/)
+- LangGraph documentation (langchain-ai.github.io/langgraph/)
+- LiteLLM documentation (docs.litellm.ai)
+- Existing framework code: `web/llm/provider.py`, `agents/termlink/termlink.sh`, `lib/bus.sh`, `lib/dispatch.sh`
+- T-962 v1 report (OSS terminal libraries)
+- T-549 OpenClaw design patterns report
+- T-598 dispatch/TermLink bridge research
+- T-108 agent communication bus research

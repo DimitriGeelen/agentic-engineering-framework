@@ -1,484 +1,549 @@
-# T-962: Server-Side PTY Bridge Research (v2)
+# T-962: Server-Side PTY Bridge Libraries — Deep Analysis
 
-**Date:** 2026-04-06
 **Task:** T-962 (Inception — web terminal in Watchtower)
-**Goal:** Evaluate approaches for serving interactive terminal sessions from Flask to browsers via WebSocket.
+**Date:** 2026-04-06
+**Version:** v2 (supersedes skeleton)
+**Purpose:** Evaluate server-side PTY bridge approaches for connecting xterm.js to real shell sessions in Watchtower
+**Prerequisite:** v1 report selected xterm.js as frontend. This report evaluates the backend: PTY-to-browser bridging.
 
 ---
 
 ## Executive Summary
 
-Five approaches were evaluated for bridging server-side PTY processes to browser-based xterm.js terminals. The **recommended path** is a hybrid: use **Flask-SocketIO** as the WebSocket transport (minimal change to existing Flask stack) with a custom PTY manager based on pyxtermjs's pattern but extended for multi-session support. For production-grade needs or if async migration is acceptable, **ttyd as a sidecar** (reverse-proxied through existing Traefik) offers the most battle-tested solution with zero Python PTY code.
+**Flask-SocketIO with `pty.fork()` in threading mode is the simplest viable path.** It requires no architectural changes to Watchtower (stays WSGI/Flask), supports multi-session via Socket.IO rooms keyed by `request.sid`, and the core bridging logic is ~80 lines of Python. Terminado has the best PTY management code but its hard Tornado dependency makes Flask integration impractical. pyxtermjs is abandoned but serves as a clear reference implementation. websockify solves the wrong problem (TCP proxy, not PTY bridge). FastAPI/aiohttp offer superior async performance via `loop.add_reader()` but require WSGI-to-ASGI migration.
 
-| Approach | Flask Compat | Multi-Session | Maintenance | Complexity | Verdict |
-|----------|-------------|---------------|-------------|------------|---------|
-| terminado | None (Tornado-only) | Yes | Active (Jupyter) | High | Reject |
-| pyxtermjs | Native Flask | No (single PTY) | Stale (2023) | Low | Fork/adapt |
-| Flask-SocketIO + custom PTY | Native Flask | Yes (build it) | Active (SocketIO) | Medium | **Recommended** |
-| websockify | Sidecar only | N/A (TCP proxy) | Active | Low | Wrong tool |
-| ttyd sidecar | Via reverse proxy | Yes (native) | Active (C) | Low | **Alt recommended** |
-| FastAPI/aiohttp | Requires migration | Yes | Active | High | Future option |
+**Key decision:** Start with Flask-SocketIO + threading. If scale demands it later (>50 concurrent terminals), migrate the WebSocket layer to FastAPI mounted as the outer app with Flask via `WSGIMiddleware`.
+
+| Approach | Flask Compat | Multi-Session | Maintenance | LOC to Write | Verdict |
+|----------|-------------|---------------|-------------|--------------|---------|
+| Terminado | None (Tornado) | Yes (3 managers) | Maintenance mode | ~200 (reimpl protocol) | Reject (borrow patterns) |
+| pyxtermjs | Native | No (single PTY) | Abandoned | ~120 (refactor) | Reference only |
+| Flask-SocketIO + custom PTY | Drop-in | Yes (rooms/SID) | Active | ~80 | **Recommended** |
+| websockify | Separate server | N/A (TCP proxy) | Active | N/A | Wrong tool |
+| FastAPI/aiohttp | Requires ASGI migration | Yes (manual) | Active | ~60 + migration | Phase 2 option |
 
 ---
 
-## 1. terminado
+## 1. Terminado
 
-**Repo:** [jupyter/terminado](https://github.com/jupyter/terminado)
-**Version:** 0.18.1 (March 2024)
-**License:** BSD-2-Clause
-**Downloads:** ~7.5M/week (Jupyter dependency)
+| Attribute | Value |
+|-----------|-------|
+| Version | 0.18.1 (March 2024) |
+| Python | >= 3.8 |
+| License | BSD-2-Clause |
+| Maintainer | Project Jupyter |
+| GitHub stars | 375 |
+| PyPI downloads | ~7.5M/week (Jupyter dependency) |
+| Last commit | March 2024 (>2 years ago) |
+| Dependencies | `tornado >= 6.1.0`, `ptyprocess` (Linux/macOS), `pywinpty` (Windows) |
+| Status | **Maintenance mode** — stable but not evolving |
 
 ### Architecture
 
-Terminado is a Tornado WebSocket backend for xterm.js. It provides three modules:
-- `terminado.management` — PTY lifecycle (spawn, resize, kill, multi-terminal)
-- `terminado.websocket` — `TermSocket` handler (149 lines, subclass of `tornado.web.WebSocketHandler`)
-- `terminado.uimodule` — Tornado UI template integration
+Three modules:
 
-### Wire Protocol
+- **`management.py`** -- PTY process lifecycle (spawn, read, resize, kill). Uses Tornado's `IOLoop.add_handler()` for fd polling. Reads up to 64KB per 100ms cycle.
+- **`websocket.py`** -- `TermSocket(tornado.websocket.WebSocketHandler)` bridges WebSocket to PTY manager. ~149 lines.
+- **`uimodule.py`** -- Tornado UI module for template rendering.
 
-JSON arrays where the first element is the message type:
+Data flow: `Browser (xterm.js) <--WebSocket--> TermSocket <--fd read/write--> PTY process (ptyprocess/pywinpty)`
 
-```
-["setup", {}]                    # Server -> Client: connection established
-["stdout", "terminal output"]    # Server -> Client: PTY output
-["stdin", "user input"]          # Client -> Server: keyboard input
-["set_size", rows, cols]         # Client -> Server: resize
-["disconnect", 1]                # Server -> Client: PTY died
-```
+### WebSocket Protocol
 
-Supports alternative formats: MessagePack, LightPayload (reduced latency). Client can request format switch after connect.
+JSON arrays where index 0 is the message type:
+
+| Direction | Format | Purpose |
+|-----------|--------|---------|
+| Server -> Client | `["setup", {}]` | Connection established |
+| Server -> Client | `["stdout", text]` | PTY output |
+| Server -> Client | `["disconnect", 1]` | Terminal died |
+| Client -> Server | `["stdin", text]` | User input |
+| Client -> Server | `["set_size", cols, rows]` | Resize request |
+
+stdin writes are dispatched to a thread executor to avoid blocking the event loop.
 
 ### PTY Lifecycle
 
-- **Spawn:** `SingleTermManager` or `UniqueTermManager` (one PTY per WebSocket)
-- **Resize:** `terminal.resize_to_smallest()` — adjusts to smallest connected client
-- **Kill:** Deregisters client on WebSocket close, manager handles cleanup
-- **Reconnect:** `SingleTermManager` allows reconnection to existing PTY with buffered output replay
+- **Spawn:** `PtyProcessUnicode.spawn(argv, env, cwd)` via `ptyprocess` on POSIX, `pywinpty` on Windows. Non-UTF-8 output handled with replacement characters.
+- **Read:** Polls PTY fd via Tornado's `IOLoop`, 100ms timeout, 64KB read buffer. Distributes output to all connected clients on that terminal.
+- **Resize:** `resize_to_smallest()` -- syncs terminal dimensions to the smallest connected client via `setwinsize()/getwinsize()`. No per-client sizing.
+- **Kill:** Graceful signal escalation: `SIGHUP -> SIGCONT -> SIGINT -> SIGTERM -> SIGKILL` with `delayafterterminate` sleep between each. Windows uses `SIGINT -> SIGTERM`.
+- **Reconnect:** Deque buffer (maxlen=1000) stores historical output. On reconnect, buffered output drains to new client, providing session continuity.
 
-### Multi-Session
+### Multi-Session Support
 
-Yes — `UniqueTermManager` creates one PTY per connection. `SingleTermManager` shares one PTY across all connections (Jupyter notebook model).
+Three manager classes:
 
-### Flask Compatibility: NONE
+| Manager | Sessions | Disconnect behavior | Use case |
+|---------|----------|---------------------|----------|
+| `SingleTermManager` | 1 shared | Terminal persists | Shared demo terminal |
+| `UniqueTermManager` | 1 per connection | SIGHUP kills PTY | Isolated per-user terminals |
+| `NamedTermManager` | N named, persistent | Terminal persists by name | Jupyter-style named terminals |
 
-**Hard dependency on Tornado's event loop and WebSocket handler.** `TermSocket` extends `tornado.web.WebSocketHandler`. There is no adapter pattern — you would need to run Tornado alongside Flask (separate process/port) or rewrite the WebSocket handler. This defeats the purpose.
+`NamedTermManager` supports auto-numbering, explicit `kill(name)`/`terminate(name)`, and multiple clients viewing the same named terminal simultaneously. This is what Jupyter uses.
 
-### Verdict: REJECT for Watchtower
+Jupyter's integration pattern registers four route types:
+```
+/terminals/(\w+)            -> HTML page
+/terminals/websocket/(\w+)  -> WebSocket (TermSocket)
+/api/terminals              -> REST: list/create
+/api/terminals/(\w+)        -> REST: get/delete
+```
 
-The protocol design is excellent and worth studying, but the Tornado coupling makes it unusable in a Flask application without running a separate server. The 7.5M downloads are entirely from Jupyter — no evidence of standalone Flask integration in the wild.
+### Flask Integration: IMPRACTICAL
 
-**Salvageable:** The wire protocol (JSON arrays with type prefix) and `UniqueTermManager` pattern are worth borrowing for a custom implementation.
+**Hard coupling to Tornado.** Options and their costs:
+
+1. **Separate port** -- Tornado on :3001, Flask on :3000. Reverse proxy routes `/ws/terminal` to Tornado. Works but doubles process management, deployment complexity, and health checking.
+2. **WSGIContainer** -- Wrap Flask inside Tornado via `tornado.wsgi.WSGIContainer`. Serves both from one process but ties deployment to Tornado's event loop. Incompatible with gunicorn/uwsgi.
+3. **Reimplement protocol** -- The WebSocket protocol is 5 message types (trivial). The `management.py` Tornado coupling is limited to `IOLoop.add_handler()` for fd polling -- replaceable with `asyncio.loop.add_reader()`. This is feasible but you're essentially writing your own library.
+4. **flask-terminado** -- Exists (github.com/nathanielobrown/flask-terminado) but abandoned: last commit April 2017, 6 total commits. Replaces Flask's WSGI server with Tornado -- can't use gunicorn/uwsgi/waitress.
+
+**Key insight:** The protocol is trivial to reimplement. Terminado's value is the PTY management logic (spawn, resize, graceful kill, reconnect buffering), not the WebSocket handler. The management patterns are worth borrowing.
+
+### Known Issues
+
+- Python 3.14 build failure (#243, Feb 2025, no response)
+- No flow control mechanism for stdout floods (#162)
+- `resize_to_smallest` forces all clients to smallest viewport -- no per-client sizing
+- No authentication, rate limiting, or backpressure
+- No idle connection timeout by default (#56)
+
+### Verdict: REJECT for Direct Use, BORROW Patterns
+
+The Tornado dependency makes direct Flask integration impractical without running a separate server. However, three patterns are worth extracting:
+
+1. **Graceful kill escalation** (SIGHUP -> SIGCONT -> SIGINT -> SIGTERM -> SIGKILL)
+2. **Reconnect buffer** (deque maxlen for output replay)
+3. **NamedTermManager concept** (persistent named sessions with multi-client viewing)
 
 ---
 
 ## 2. pyxtermjs
 
-**Repo:** [cs01/pyxtermjs](https://github.com/cs01/pyxtermjs)
-**Version:** 0.5.0.2 (October 2022)
-**Last commit:** May 2023
-**License:** MIT
-**Total code:** ~152 lines (app.py)
+| Attribute | Value |
+|-----------|-------|
+| Version | 0.5.0.2 (October 2022) |
+| Python | >= 3.6 (classifiers list 3.6, 3.7 only) |
+| License | MIT |
+| Author | Chad Smith (cs01, also created pipx and gdbgui) |
+| GitHub stars | ~395 |
+| Total commits | 41 |
+| Dependent packages | 0 on PyPI |
+| Status | **Abandoned** -- no activity for 3+ years |
 
 ### Architecture
 
-Flask + Flask-SocketIO + Python `pty` module. Single-file application:
+Single Flask app (~120 lines in `app.py`):
 
-1. Browser connects via SocketIO to `/pty` namespace
-2. Server spawns bash via `pty.fork()`, stores `(child_pid, fd)` globally
-3. Background task polls PTY fd with `select.select()` every 10ms
-4. PTY output emitted as `pty-output` event
-5. Browser input received as `pty-input` event, written to fd via `os.write()`
-
-### Key Code Patterns
-
-```python
-# PTY spawn (on SocketIO connect)
-(child_pid, fd) = pty.fork()
-if child_pid == 0:
-    subprocess.run(app.config["cmd"])
-
-# PTY read loop (background task)
-while True:
-    socketio.sleep(0.01)  # 10ms poll interval
-    (data_ready, _, _) = select.select([fd], [], [], 0)
-    if data_ready:
-        output = os.read(fd, 1024 * 20).decode(errors="ignore")
-        socketio.emit("pty-output", {"output": output}, namespace="/pty")
-
-# Resize
-winsize = struct.pack("HHHH", row, col, 0, 0)
-fcntl.ioctl(fd, termios.TIOCSWINSZ, winsize)
+```
+Browser (xterm.js 4.11.0 + socket.io 4.0.1)
+    |  Socket.IO (/pty namespace)
+    v
+Flask 2.0.1 + Flask-SocketIO 5.1.1
+    |  pty.fork() + os.read/os.write
+    v
+PTY process (bash)
 ```
 
-### SocketIO Events
+Parent stores fd in `app.config["fd"]` (global). A background thread polls the fd via `select.select()` every 10ms, reads up to 20KB chunks, and emits `pty-output` events to all connected Socket.IO clients.
 
-| Event | Direction | Payload |
-|-------|-----------|---------|
-| `connect` | Client -> Server | Triggers PTY spawn |
-| `pty-input` | Client -> Server | `{"input": "ls\r"}` |
-| `pty-output` | Server -> Client | `{"output": "file1 file2\n"}` |
-| `resize` | Client -> Server | `{"cols": 80, "rows": 24}` |
-| `disconnect` | Client -> Server | (implicit) |
+### Protocol
+
+Three Socket.IO events on `/pty` namespace:
+
+| Event | Direction | Payload | Handler |
+|-------|-----------|---------|---------|
+| `pty-input` | client -> server | `{input: string}` | `os.write(fd, data)` |
+| `pty-output` | server -> client | `{output: string}` | `term.write(data)` |
+| `resize` | client -> server | `{cols: int, rows: int}` | `fcntl.ioctl(fd, TIOCSWINSZ, ...)` |
+
+No custom framing. Raw terminal data over Socket.IO JSON messages.
+
+### PTY Lifecycle
+
+- **Spawn:** `pty.fork()` on first Socket.IO connect. Child runs `subprocess.run(cmd)`. Initial size set to 50x50.
+- **Read:** Background thread: `select.select([fd], [], [], 0)` then `os.read(fd, 20480)`. 10ms sleep between iterations via `socketio.sleep(0.01)`.
+- **Resize:** `fcntl.ioctl(fd, TIOCSWINSZ, struct.pack("HHHH", rows, cols, 0, 0))`.
+- **Kill:** **None.** No cleanup on disconnect. No SIGCHLD handling. PTY process leaks if server doesn't exit.
+- **Reconnect:** **None.** Dropped WebSocket = lost output. Reconnecting shows blank terminal sharing same PTY.
 
 ### Multi-Session: NO
 
+Single global PTY:
 ```python
 if app.config["child_pid"]:
     return  # already started, don't start another
 ```
 
-Single global PTY. All connecting clients share the same terminal. No session isolation.
+All clients share one terminal. All see the same output (broadcast). No session isolation.
 
-### Limitations
+### Pinned Dependencies (all 2-4 versions behind current)
 
-1. **Single session only** — global state, no per-client PTY
-2. **No reconnection** — if WebSocket drops, PTY output is lost
-3. **10ms polling** — adds up to 10ms latency on every keystroke echo
-4. **No PTY cleanup** — child process not explicitly killed on disconnect
-5. **No error handling** — `os.read()` can raise `OSError` when PTY dies
-6. **Stale** — no updates since May 2023, 41 commits total
+| Package | Pinned | Current |
+|---------|--------|---------|
+| Flask | 2.0.1 | 3.1.x |
+| Flask-SocketIO | 5.1.1 | 5.6.x |
+| Werkzeug | 2.0.1 | 3.1.x |
+| xterm.js (CDN) | 4.11.0 | 6.0.x |
+| socket.io (CDN) | 4.0.1 | 4.7.x |
 
-### Verdict: USEFUL AS REFERENCE, NOT AS DEPENDENCY
+### Verdict: REFERENCE ARCHITECTURE ONLY
 
-The 152-line implementation is the clearest example of the Flask-SocketIO + PTY pattern. Worth forking the pattern (not the package) and extending with:
-- Per-session PTY tracking (dict keyed by SocketIO session ID)
-- Proper cleanup (`os.kill(pid, SIGTERM)` on disconnect)
-- Output buffering for reconnection
-- Error handling around `os.read()`
+The ~120-line implementation is the clearest example of the Flask + Socket.IO + `pty.fork()` pattern. Its value is showing HOW to wire the pieces together, not as production code. Use its patterns, discard its code.
+
+**What to borrow:** Event names, `pty.fork()` + `select.select()` pattern, resize ioctl.
+**What to replace:** Global state -> per-session dict, add cleanup, add reconnect buffer, update all deps.
 
 ---
 
-## 3. Flask-SocketIO + Custom PTY Manager (RECOMMENDED)
+## 3. Flask-SocketIO for PTY Bridging (RECOMMENDED)
 
-**Repo:** [miguelgrinberg/Flask-SocketIO](https://github.com/miguelgrinberg/Flask-SocketIO)
-**Version:** 5.x (actively maintained)
-**License:** MIT
+| Attribute | Value |
+|-----------|-------|
+| Version | 5.6.1 (February 2026) |
+| Python | >= 3.10 (CI dropped 3.8/3.9 in v5.6.0; likely still works on 3.9) |
+| License | MIT |
+| Maintainer | Miguel Grinberg |
+| Status | **Actively maintained** -- regular releases |
 
 ### Why This Approach
 
-Flask-SocketIO is the standard WebSocket library for Flask. It adds bidirectional real-time communication without replacing the web framework. Combined with Python's built-in `pty` module and the pyxtermjs pattern, this gives us native Flask integration with full control over the PTY lifecycle.
+Flask-SocketIO is the standard WebSocket library for Flask. Combined with Python's built-in `pty` module and the pyxtermjs event pattern, it provides native Flask integration with full control over PTY lifecycle in ~80 lines.
 
-### Architecture (Proposed)
-
-```
-Browser (xterm.js)
-    |
-    | SocketIO events (pty-input, pty-output, resize)
-    |
-Flask-SocketIO server
-    |
-    | Per-session PTY manager
-    |
-PTY process (bash/sh per session)
-```
-
-### What Flask-SocketIO Provides
-
-- WebSocket transport with automatic fallback to long-polling
-- Namespace support (isolate terminal events on `/terminal`)
-- Room/session management (built-in per-client tracking)
-- Background task support (`socketio.start_background_task()`)
-- Async modes: eventlet, gevent, or threading
-
-### What We Must Build (~200 lines estimated)
-
-**PTY Session Manager:**
-```python
-class PTYSession:
-    pid: int          # Child process PID
-    fd: int           # Master PTY file descriptor
-    cols: int         # Terminal width
-    rows: int         # Terminal height
-    created: float    # Timestamp
-    buffer: deque     # Recent output for reconnection (ring buffer)
-
-sessions: dict[str, PTYSession] = {}  # keyed by SocketIO sid
-```
-
-**Required handlers:**
-1. `on_connect` — spawn PTY via `pty.fork()`, store in sessions dict
-2. `on_pty_input` — `os.write(session.fd, data.encode())`
-3. `on_resize` — `fcntl.ioctl(session.fd, TIOCSWINSZ, struct.pack(...))`
-4. `on_disconnect` — `os.kill(session.pid, SIGTERM)`, cleanup fd
-5. Background reader — poll all active fds with `select.select()`, emit per-session
-
-**Key design decisions:**
-- One background task polling ALL fds (not one thread per PTY) — scales better
-- Ring buffer (e.g., last 4KB) per session for reconnection replay
-- `SIGCHLD` handler to detect dead PTYs and notify clients
-- Configurable shell command (default: `$SHELL` or `/bin/bash`)
-
-### Async Mode Considerations
-
-| Mode | WebSocket | PTY compat | Notes |
-|------|-----------|------------|-------|
-| threading | Via Werkzeug | Good | Simplest, `select()` works natively |
-| eventlet | Native | Needs monkey-patching | `eventlet.monkey_patch()` wraps `select` |
-| gevent | Native | Needs monkey-patching | Similar to eventlet |
-
-**Recommendation:** Start with **threading** mode for simplicity. Eventlet/gevent add complexity and can interfere with `pty.fork()` and `os.read()`. Threading mode supports real WebSockets (not just long-polling) when paired with `simple-websocket` package.
-
-### Integration with Watchtower
+### Production PTY Bridge Pattern
 
 ```python
-# In watchtower app factory or blueprint
+import pty, os, select, fcntl, struct, termios, signal
+from collections import deque
+from flask_socketio import SocketIO, emit
+from flask import request
+
+sessions = {}  # {sid: {'fd': int, 'pid': int, 'buffer': deque}}
+
+@socketio.on('connect', namespace='/terminal')
+def on_connect():
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.execvpe('/bin/bash', ['/bin/bash'], os.environ)
+    sessions[request.sid] = {
+        'fd': fd, 'pid': pid,
+        'buffer': deque(maxlen=1000)
+    }
+    socketio.start_background_task(read_pty, request.sid)
+
+@socketio.on('pty-input', namespace='/terminal')
+def on_input(data):
+    fd = sessions[request.sid]['fd']
+    os.write(fd, data['input'].encode())
+
+@socketio.on('resize', namespace='/terminal')
+def on_resize(data):
+    fd = sessions[request.sid]['fd']
+    fcntl.ioctl(fd, termios.TIOCSWINSZ,
+                struct.pack('HHHH', data['rows'], data['cols'], 0, 0))
+
+@socketio.on('disconnect', namespace='/terminal')
+def on_disconnect():
+    session = sessions.pop(request.sid, None)
+    if session:
+        try:
+            os.kill(session['pid'], signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        os.close(session['fd'])
+
+def read_pty(sid):
+    session = sessions.get(sid)
+    if not session:
+        return
+    fd = session['fd']
+    while sid in sessions:
+        try:
+            if select.select([fd], [], [], 0.01)[0]:
+                data = os.read(fd, 20480).decode('utf-8', errors='replace')
+                session['buffer'].append(data)
+                socketio.emit('pty-output', {'output': data},
+                              room=sid, namespace='/terminal')
+        except OSError:
+            socketio.emit('pty-exit', {}, room=sid, namespace='/terminal')
+            break
+        socketio.sleep(0.01)
+```
+
+### Threading Model
+
+| Mode | Transport | Concurrency | Recommendation |
+|------|-----------|-------------|----------------|
+| `threading` | simple-websocket | OS threads | **Use this** |
+| `eventlet` | native | green threads | **Deprecated** -- maintainer says "not a good option anymore" |
+| `gevent` | gevent-websocket | green threads | Risk: monkey-patching can interfere with `pty.fork()`, `select()`, `os.read()` |
+
+**Recommendation: `threading` mode.** PTY syscalls (`pty.fork`, `select`, `os.read/write`, `fcntl.ioctl`) are real OS calls that work cleanly without monkey-patching. For Watchtower's scale (<50 concurrent terminals), threading is sufficient.
+
+### Multi-Session Support
+
+Socket.IO provides the primitives natively:
+- **`request.sid`** -- unique session ID per connection
+- **Rooms** -- `emit(..., room=sid)` isolates output to specific client
+- **Namespaces** -- `/terminal` keeps PTY traffic separate from other uses
+- **Disconnect handler** -- cleanup PTY on disconnect
+
+Each `connect` spawns a new PTY. Each `disconnect` kills it. State stored in dict keyed by `request.sid`.
+
+### Integration with Existing Watchtower
+
+Drop-in compatible:
+
+```python
 from flask_socketio import SocketIO
-
 socketio = SocketIO(app, async_mode='threading')
-
-# Terminal blueprint
-from watchtower.terminal import register_terminal_handlers
-register_terminal_handlers(socketio)
-
-# Run with SocketIO instead of bare Flask
-socketio.run(app, host='0.0.0.0', port=3000)
+# All existing routes, Jinja2 templates, htmx behavior continue working
+# Add Socket.IO event handlers alongside regular routes
+socketio.run(app, host='0.0.0.0', port=3000)  # replaces app.run()
 ```
 
-**Breaking change:** `app.run()` must become `socketio.run()`. This is the main integration cost — all existing HTTP routes continue to work, but the server entry point changes.
+Jinja2 templates add `<script src="socket.io.min.js">` and xterm.js. No changes to existing routing, sessions, auth, or template rendering.
+
+**One breaking change:** `app.run()` must become `socketio.run()`. This is the sole integration cost.
 
 ### Dependencies Added
 
 ```
-flask-socketio>=5.3
-simple-websocket>=1.0  # For threading mode WebSocket support
+flask-socketio >= 5.3
+simple-websocket >= 1.0   # threading mode WebSocket support
 ```
 
-Both are pure Python, no C extensions needed. Total additional dependency footprint: ~3 packages.
+Both pure Python, no C extensions. Total: ~3 new packages.
 
-### Latency Characteristics
+### Performance
 
-- **Input:** Client -> SocketIO -> `os.write()` — near-instant (<1ms)
-- **Output:** PTY -> `select()` poll (configurable, 10ms default) -> SocketIO emit — 0-10ms
-- **Optimization:** Use `eventlet`/`gevent` for event-driven reads instead of polling (eliminates the 10ms)
-- **Practical:** 10ms is imperceptible for terminal use. Vim, htop, etc. work fine.
+- **Input latency:** Client -> SocketIO -> `os.write()` -- near-instant (<1ms)
+- **Output latency:** PTY -> `select()` poll (10ms default) -> SocketIO emit -- 0-10ms
+- **Throughput:** 20KB read buffer handles typical terminal output. For bulk output (`cat` of large file), WebSocket frame rate is the bottleneck, not PTY read.
+- **10ms floor is imperceptible** for terminal use. vim, htop, etc. work fine.
 
-### Verdict: RECOMMENDED PATH
+### Pros vs Pure WebSocket
 
-Lowest integration cost with existing Flask stack. ~200 lines of custom code. Well-maintained transport layer (Flask-SocketIO). Full control over PTY lifecycle. Multi-session by design.
+| Flask-SocketIO | Pure WebSocket |
+|----------------|----------------|
+| Auto-fallback to long-polling | Lower protocol overhead |
+| Built-in reconnection | Must implement yourself |
+| Rooms/namespaces for multi-terminal | Must implement yourself |
+| Integrates with existing Flask auth/sessions | Requires separate auth layer |
+| Socket.IO protocol overhead (~10-15%) | Full binary frame control |
+| Event-based API (`on("pty-input")`) | Raw message parsing |
+
+### Verdict: RECOMMENDED
+
+Lowest integration cost with existing Flask stack. ~80 lines of custom code for the PTY bridge. Well-maintained transport layer. Full control over PTY lifecycle. Multi-session by design via rooms. Socket.IO overhead is negligible for terminal data volumes.
 
 ---
 
 ## 4. websockify
 
-**Repo:** [novnc/websockify](https://github.com/novnc/websockify)
-**Version:** 0.13.0 (February 2025)
-**License:** LGPL-3.0
+| Attribute | Value |
+|-----------|-------|
+| Version | 0.13.0 (May 2025) |
+| Python | 3.6-3.12 |
+| License | **LGPL-3.0** |
+| Stars | 4.4k |
+| Maintainer | noVNC project |
+| Status | Actively maintained |
 
-### Architecture
+### What It Does
 
-WebSocket-to-TCP proxy. Accepts WebSocket connections from browsers, translates to raw TCP, and forwards to a target host:port. Primary use case: noVNC (browser VNC client).
+WebSocket-to-TCP proxy built for noVNC (browser VNC client). Accepts WebSocket connections, performs RFC 6455 handshake, bidirectionally forwards raw bytes to a TCP target. Supports binary and base64 subprotocols.
 
-### Program Wrapping
+### Can It Bridge PTY?
 
-Can launch a local program and proxy to it via `--wrap-mode`:
-```bash
-websockify 8080 -- ./my_program --port 5000
+Only indirectly. websockify bridges TCP sockets, not PTY file descriptors. For terminals you'd need:
+
 ```
-Uses `LD_PRELOAD` with `rebind.so` to intercept `bind()` calls and redirect to localhost.
+Browser -> WebSocket -> websockify -> TCP -> telnetd/sshd -> PTY
+```
+
+Has a `--wrap-mode` that launches programs via `LD_PRELOAD` (`rebind.so`) to intercept `bind()` calls, but this is for TCP-speaking programs, not interactive shells.
 
 ### Why It Doesn't Fit
 
-1. **TCP-oriented** — bridges WebSocket to TCP sockets, not to PTY file descriptors
-2. **Binary-only protocol** — since v0.5.0, only HyBi/IETF 6455 binary frames
-3. **No PTY awareness** — no resize, no signal handling, no terminal lifecycle
-4. **External process** — runs as standalone proxy, not embeddable in Flask
-5. **xterm.js incompatibility** — xterm.js `attach` addon expects text frames for terminal data; websockify sends binary
+1. **TCP-oriented** -- bridges WebSocket to TCP sockets, not file descriptors
+2. **Extra hop** -- every request traverses browser -> WS -> websockify -> TCP -> daemon -> PTY. Each hop adds latency and failure points.
+3. **No terminal semantics** -- no resize (SIGWINCH/TIOCSWINSZ), no signal handling, no terminal lifecycle management
+4. **Runs its own HTTP server** -- not embeddable in Flask as middleware
+5. **LGPL license** -- more restrictive than MIT/BSD
+6. **Overkill** -- using a VNC proxy as a dumb pipe adds complexity without benefit when direct PTY-to-WebSocket is simpler
 
 ### Verdict: WRONG TOOL
 
-Websockify solves WebSocket-to-TCP bridging (VNC, telnet). It has no concept of PTY terminals. You'd need a separate program that listens on a TCP port and bridges to a PTY, then websockify in front of that — adding unnecessary indirection. The `attach` addon protocol mismatch makes it even worse.
+websockify solves WebSocket-to-TCP proxying for VNC. It has no concept of PTY terminals. Every other option in this report connects PTY fd directly to WebSocket with less complexity.
 
 ---
 
-## 5. ttyd (Sidecar Approach — ALTERNATIVE RECOMMENDED)
+## 5. aiohttp / FastAPI Approaches
 
-**Repo:** [tsl0922/ttyd](https://github.com/tsl0922/ttyd)
-**Binary:** C implementation, ~2MB
-**License:** MIT
+### FastAPI PTY Bridge
 
-### Architecture
+```python
+@app.websocket("/ws/terminal")
+async def terminal(ws: WebSocket):
+    await ws.accept()
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.execvpe('/bin/bash', ['/bin/bash'], os.environ)
 
-Standalone web terminal server. C binary using libwebsockets + libuv + xterm.js:
+    loop = asyncio.get_event_loop()
+    queue = asyncio.Queue()
 
-```
-Browser (xterm.js, bundled)
-    |
-    | Native WebSocket
-    |
-ttyd (C binary, port 7681)
-    |
-    | PTY via forkpty()
-    |
-Shell process
-```
+    def on_pty_read():
+        data = os.read(fd, 4096)
+        queue.put_nowait(data)
 
-### Why Consider It
+    loop.add_reader(fd, on_pty_read)
 
-- **Battle-tested:** Used in production by thousands of projects
-- **Multi-session native:** Each WebSocket connection gets its own PTY
-- **Full terminal support:** Resize, colors, 256-color, true-color, Unicode, CJK
-- **Authentication:** Basic auth, OAuth2 (via headers)
-- **Read-only mode:** Viewers can watch without typing
-- **Minimal resource usage:** C binary, ~5MB RSS per session
-- **Reverse proxy friendly:** Works behind Nginx, Traefik, Caddy
+    async def writer():
+        while True:
+            data = await queue.get()
+            await ws.send_text(data.decode('utf-8', errors='replace'))
 
-### Integration Pattern
+    async def reader():
+        while True:
+            msg = await ws.receive_text()
+            os.write(fd, msg.encode())
 
-```
-Browser
-    |
-    |-- /terminal/* --> ttyd (port 7681)  [via Traefik]
-    |-- /*          --> Watchtower Flask (port 5050)  [via Traefik]
+    await asyncio.gather(writer(), reader())
 ```
 
-Watchtower embeds ttyd in an iframe or loads xterm.js pointing at the ttyd WebSocket endpoint. No Python PTY code needed.
+### Key Mechanism: `loop.add_reader(fd, callback)`
 
-**Traefik route (addition to existing config):**
-```yaml
-- rule: "Host(`watchtower.example.com`) && PathPrefix(`/terminal`)"
-  service: ttyd
-  middlewares:
-    - strip-terminal-prefix
-```
+Registers PTY master fd with the event loop's selector (epoll on Linux, kqueue on macOS). When child writes to terminal, master fd becomes readable, callback fires, `os.read()` gets data. Non-blocking, zero-copy at OS level. No polling loop, no 10ms latency floor.
 
-### Multi-Terminal Support
+### aiohttp Approach
 
-Start multiple ttyd instances on different ports, or use ttyd's built-in multi-client support (each connection gets a new PTY).
+Same pattern using `aiohttp.web.WebSocketResponse()` and `loop.add_reader()`. Slightly lower-level than FastAPI but gives direct event loop access.
 
-### Limitations
+### Performance Advantages Over Flask-SocketIO
 
-1. **Separate process** — not in-process with Flask, needs process management
-2. **Less control** — PTY lifecycle managed by ttyd, not by Watchtower
-3. **Session correlation** — harder to associate terminal sessions with Watchtower concepts (tasks, agents)
-4. **Authentication sync** — if Watchtower adds auth, must sync with ttyd
-5. **Installation** — requires C binary (apt/brew/docker, not pip)
+- Single-threaded, no GIL contention for I/O multiplexing
+- `add_reader` uses epoll/kqueue (O(1) per event) vs `select()` (O(n) per fd)
+- Event-driven -- zero latency floor (no polling)
+- Handles hundreds of concurrent terminals in one process
+- Direct PTY fd to WebSocket -- no serialization/deserialization overhead
+- No Socket.IO protocol layer (~10-15% overhead eliminated)
 
-### Verdict: BEST FOR PRODUCTION, IF INTEGRATION DEPTH IS LOW
+### Flask Integration Challenge
 
-If the terminal is primarily a "view" that shows output (like watching a build log or agent session), ttyd is the right choice — zero PTY code, battle-tested, low maintenance. If the terminal needs deep integration with Watchtower state (auto-connecting to specific PTYs, session management via Watchtower API, custom keybindings), the Flask-SocketIO approach gives more control.
+WSGI is synchronous and cannot handle WebSocket natively. Options:
 
----
+1. **FastAPI as outer app, Flask mounted inside** -- Use Starlette's `WSGIMiddleware` to mount Flask routes under FastAPI. WebSocket endpoints live in FastAPI natively. Cleanest migration path.
+2. **Separate ports** -- Flask on :3000, FastAPI on :3001. Reverse proxy routes `/ws/` to FastAPI.
+3. **Gradual migration** -- Start with Flask-SocketIO (Phase 1), migrate WebSocket layer to FastAPI when scale demands (Phase 2).
 
-## 6. FastAPI / aiohttp (Async Frameworks)
+### Notable Implementations for Reference
 
-### FastAPI + WebSocket
+- **ttyd** (C, 8.5k stars) -- libwebsockets + libuv + xterm.js. Production-grade gold standard.
+- **gotty** (Go) -- WebSocket + PTY + xterm.js. Mature but archived.
+- **webterm** (Python/FastAPI) -- Session management, timeouts, max-sessions config. ~200 lines.
 
-**Reference impl:** [abhishekkrthakur/webterm](https://github.com/abhishekkrthakur/webterm)
+### Verdict: BEST ARCHITECTURE, WORST MIGRATION COST
 
-WebTerm shows the FastAPI pattern:
-- `GET /ws/terminal` WebSocket endpoint
-- JSON messages: `{"type": "input|output|resize|stats", ...}`
-- PTY manager with session tracking (`WEBTERM_MAX_SESSIONS=10`)
-- Session timeout support (`WEBTERM_SESSION_TIMEOUT=3600`)
-- ~200 lines of Python for the terminal server
-
-**Advantages over Flask:**
-- Native `async/await` — no polling loop needed, use `asyncio.get_event_loop().add_reader(fd, callback)`
-- Native WebSocket support (no extra package)
-- Better performance under concurrent connections
-- Built-in JSON schema validation
-
-**Disadvantages:**
-- Requires migrating from Flask to FastAPI (or running both)
-- Different template engine (Jinja2 works but needs config)
-- Different extension ecosystem (no Flask-Login, Flask-Caching, etc.)
-
-### aiohttp
-
-Similar to FastAPI but lower-level. The `aiohttp.web.WebSocketResponse` can bridge PTY output using the same `add_reader` pattern. Less boilerplate than FastAPI but also less structure.
-
-### Verdict: NOT NOW, MAYBE LATER
-
-Migrating Watchtower from Flask to FastAPI is a separate architectural decision. If that migration happens, the WebSocket terminal becomes trivially easy. But doing it just for the terminal feature is overkill.
+Async PTY I/O via `add_reader` is objectively superior -- event-driven, no polling, no threading overhead. But it requires ASGI, which means either wrapping Flask inside FastAPI or running a separate service. Worth it at >50 concurrent terminals; overkill for Watchtower's initial deployment.
 
 ---
 
 ## Comparison Matrix
 
-| Feature | terminado | pyxtermjs | Flask-SocketIO+PTY | websockify | ttyd sidecar | FastAPI |
-|---------|-----------|-----------|-------------------|------------|-------------|---------|
-| Flask native | No | Yes | Yes | No | No (proxy) | No |
-| Multi-session | Yes | No | Yes (build) | N/A | Yes | Yes |
-| Resize | Yes | Yes | Yes (build) | No | Yes | Yes |
-| Reconnection | Yes (buffer) | No | Yes (build) | No | No | Possible |
-| Dependencies | tornado | flask-socketio | flask-socketio | standalone | C binary | uvicorn |
-| Code to write | 0 (but can't use) | ~50 (patch) | ~200 | 0 | 0 | ~150 |
-| Maintained | Active | Stale | Active | Active | Active | Active |
-| Protocol | JSON arrays | SocketIO events | SocketIO events | Binary TCP | Custom binary | JSON WS |
-| Latency | <1ms (event-driven) | ~10ms (polling) | ~10ms (polling) | <1ms | <1ms | <1ms |
-| Multi-platform | Linux/macOS | Linux/macOS | Linux/macOS | Linux/macOS | All | Linux/macOS |
+| Criterion | Terminado | pyxtermjs | Flask-SocketIO | websockify | FastAPI/aiohttp |
+|-----------|-----------|-----------|----------------|------------|-----------------|
+| **Flask integration** | Hard (Tornado dep) | Native (is Flask) | Drop-in | Separate server | Requires ASGI migration |
+| **Multi-session** | Yes (3 managers) | No (single global) | Yes (rooms/SID) | N/A (TCP proxy) | Yes (manual) |
+| **PTY lifecycle** | Excellent (all phases) | Minimal (spawn/resize) | Manual (~80 LOC) | N/A | Manual (~60 LOC) |
+| **Reconnect** | Yes (1000-msg buffer) | No | Socket.IO auto-reconnect + custom buffer | N/A | Manual |
+| **Resize** | Yes (resize_to_smallest) | Yes (TIOCSWINSZ) | Yes (TIOCSWINSZ) | No | Yes (TIOCSWINSZ) |
+| **Protocol overhead** | Minimal (JSON arrays) | Socket.IO (~10-15%) | Socket.IO (~10-15%) | Binary frames | Minimal (raw WS) |
+| **Output latency floor** | 100ms (poll cycle) | 10ms (poll cycle) | 10ms (poll cycle) | Extra TCP hop | 0ms (event-driven) |
+| **Concurrent terminals** | Hundreds (Tornado) | 1 | Tens (threading) | Hundreds | Hundreds (async) |
+| **Python 3.9+** | Yes (3.14 issues) | Untested | CI: 3.10+ | Yes | Yes |
+| **Maintenance** | Maintenance mode | Abandoned (3+ yrs) | Active (monthly) | Active | Active (frameworks) |
+| **License** | BSD-2 | MIT | MIT | LGPL-3 | MIT |
 
 ---
 
-## Recommendation
+## Recommendation for Watchtower
 
-### Primary: Flask-SocketIO + Custom PTY Manager
+### Phase 1: Flask-SocketIO + Threading (Simplest Path)
 
-**Why:** Minimum disruption to existing Watchtower stack. Flask-SocketIO adds WebSocket to Flask with 2 lines of setup. The PTY bridge is ~200 lines following the pyxtermjs pattern. Full control over session lifecycle, resize, cleanup. Can correlate terminal sessions with Watchtower task/agent state.
+**Why:** Zero architectural changes. Drop-in `SocketIO(app)` wrapper. Multi-session via `request.sid` + rooms. ~80 lines of PTY bridge code. Socket.IO client JS is a single `<script>` tag.
 
-**Effort estimate:** ~200 lines Python (PTY manager) + ~50 lines JavaScript (xterm.js setup) + ~20 lines template.
+**Implementation plan:**
+1. `pip install flask-socketio simple-websocket`
+2. Wrap app: `socketio = SocketIO(app, async_mode='threading')`
+3. Replace `app.run()` with `socketio.run(app)`
+4. Add `/terminal` namespace with 5 handlers (connect, disconnect, pty-input, pty-output, resize)
+5. Per-session PTY dict: `{sid: {fd, pid, buffer}}`
+6. Background read thread per session (10ms poll via `select.select()`)
+7. Cleanup: kill PTY + close fd on disconnect
 
-**Risk:** Threading mode has lower WebSocket throughput than eventlet/gevent. Acceptable for terminal use (low bandwidth). If scaling becomes an issue, switch async mode later without changing application code.
+**Borrow from terminado:**
+- Graceful kill escalation (SIGHUP -> SIGCONT -> SIGINT -> SIGTERM -> SIGKILL)
+- Reconnect buffer (deque maxlen=1000 for output replay)
+- Named terminal concept (for persistent sessions like TermLink)
 
-### Alternative: ttyd Sidecar
+**Security (non-negotiable):**
+- Authenticate at Socket.IO `connect` handler before spawning PTY
+- Rate-limit session creation
+- Set idle timeout (kill PTY after N minutes inactive)
+- Never run Watchtower as root
 
-**When to prefer:** If the terminal is view-only (watching output), if there's no need to correlate sessions with Watchtower state, or if time-to-working is critical (ttyd works out of the box).
+### Phase 2 (If Needed): FastAPI Outer Shell
 
-**Effort estimate:** `apt install ttyd`, one Traefik route, one iframe in template.
+**Trigger:** >50 concurrent terminals, or threading mode shows strain.
 
-### Do NOT Use
+**Migration path:**
+1. Mount Flask app inside FastAPI via `WSGIMiddleware`
+2. Move WebSocket endpoints to native FastAPI `@websocket` routes
+3. Replace `select.select()` polling with `loop.add_reader()` (event-driven, 0ms latency)
+4. All existing Flask routes continue working unchanged
 
-- **terminado** — Tornado lock-in, no Flask path
-- **websockify** — TCP proxy, wrong abstraction layer
-- **Full framework migration** (FastAPI/aiohttp) — disproportionate to the feature
+### What NOT to Use
+
+| Option | Reason |
+|--------|--------|
+| Terminado directly | Tornado dependency is a dealbreaker for Flask |
+| pyxtermjs as dependency | Abandoned, single-session, no cleanup, stale deps |
+| websockify | Wrong abstraction (TCP proxy, not PTY bridge), LGPL |
+| Full Flask-to-FastAPI migration | Disproportionate to the feature |
+| ttyd sidecar | Good if terminal is view-only, but loses integration depth with Watchtower state (tasks, agents, sessions) |
 
 ---
 
-## Key Implementation Notes
+## Key Implementation Risks
 
-### xterm.js Client Setup
+1. **Threading + PTY cleanup** -- Must handle `SIGCHLD` to detect dead children, or poll `os.waitpid(pid, WNOHANG)` periodically. Zombie processes accumulate if PTY children die without cleanup.
 
-For Flask-SocketIO approach, use xterm.js with Socket.IO directly (NOT the `attach` addon, which expects raw WebSocket):
+2. **Socket.IO reconnect vs PTY state** -- Socket.IO auto-reconnects the transport, but gets a new `sid`. Must implement output buffering (terminado's deque pattern) and a session persistence layer if reconnect should resume the same PTY.
 
-```javascript
-const term = new Terminal();
-const socket = io('/terminal');
+3. **macOS PTY differences** -- `pty.fork()` works on macOS but some behaviors differ. `termios.TIOCSWINSZ` is the same. `pty.openpty()` is more portable if `pty.fork()` issues arise. Basic functionality needs no platform-specific code.
 
-term.onData(data => socket.emit('pty-input', {input: data}));
-term.onResize(size => socket.emit('resize', {cols: size.cols, rows: size.rows}));
-socket.on('pty-output', data => term.write(data.output));
-```
+4. **Security** -- Every WebSocket connection spawns a shell process. Must authenticate at the Socket.IO `connect` handler using Watchtower's existing Flask session/auth. Consider restricting shell to specific commands.
 
-For ttyd sidecar, xterm.js is bundled — no client code needed.
+5. **`os.read()` after child dies** -- Raises `OSError`. Must wrap in try/except and emit `pty-exit` event to client. This is the most common bug in PTY bridge implementations.
 
-### PTY Gotchas (Python)
-
-1. **`pty.fork()` vs `pty.openpty()`:** Use `pty.fork()` — it forks and sets up the slave as the child's controlling terminal. `openpty()` just creates the pair without forking.
-2. **`os.read()` after child dies:** Raises `OSError` — always wrap in try/except.
-3. **`SIGCHLD` handling:** Register handler to detect dead children and clean up sessions.
-4. **File descriptor leaks:** Close master fd after child exits. Use `try/finally` or context manager.
-5. **macOS vs Linux:** `pty.fork()` works on both. `TIOCSWINSZ` ioctl works on both. No platform-specific code needed for basic functionality.
-
-### Security Considerations
-
-- Terminal sessions execute as the server process user — never run Watchtower as root
-- Consider restricting shell to specific commands (e.g., `ttyd bash -c "fw status"`)
-- Rate-limit new session creation
-- Set session timeout (kill idle PTYs after N minutes)
-- If exposed beyond localhost, require authentication
+6. **Gevent future** -- If Watchtower ever adopts gevent for other reasons, the PTY bridge must be tested carefully -- monkey-patching `select`, `os.read`, and `pty.fork` can cause subtle failures.
 
 ---
 
 ## Sources
 
-- [jupyter/terminado](https://github.com/jupyter/terminado) — Tornado terminal server
-- [cs01/pyxtermjs](https://github.com/cs01/pyxtermjs) — Flask terminal proof of concept
-- [Flask-SocketIO docs](https://flask-socketio.readthedocs.io/) — WebSocket for Flask
-- [novnc/websockify](https://github.com/novnc/websockify) — WebSocket-to-TCP proxy
-- [tsl0922/ttyd](https://github.com/tsl0922/ttyd) — C web terminal server
-- [abhishekkrthakur/webterm](https://github.com/abhishekkrthakur/webterm) — FastAPI terminal
-- [terminado PyPI](https://pypi.org/project/terminado/) — Package metadata
-- [xterm.js attach addon](https://github.com/xtermjs/xterm.js/tree/master/addons/addon-attach) — Client-side WebSocket attach
-- [Flask-SocketIO PTY gist](https://gist.github.com/phoemur/461c97aa5af5c785062b7b4db8ca79cd) — Basic webshell example
-- [xtermjs/xterm.js](https://github.com/xtermjs/xterm.js/) — Terminal emulator for the web
+- [jupyter/terminado](https://github.com/jupyter/terminado) -- websocket.py, management.py source
+- [terminado PyPI](https://pypi.org/project/terminado/) -- package metadata, downloads
+- [cs01/pyxtermjs](https://github.com/cs01/pyxtermjs) -- app.py source code
+- [Flask-SocketIO docs](https://flask-socketio.readthedocs.io/) -- API reference
+- [Flask-SocketIO PyPI](https://pypi.org/project/Flask-SocketIO/) -- version history
+- [Flask-SocketIO async mode discussion #2068](https://github.com/miguelgrinberg/Flask-SocketIO/discussions/2068) -- eventlet deprecation
+- [Flask-SocketIO discussion #1915](https://github.com/miguelgrinberg/Flask-SocketIO/discussions/1915) -- async mode comparison
+- [novnc/websockify](https://github.com/novnc/websockify) -- WebSocket-to-TCP proxy
+- [tsl0922/ttyd](https://github.com/tsl0922/ttyd) -- C web terminal (reference implementation)
+- [flask-terminado](https://github.com/nathanielobrown/flask-terminado) -- abandoned Flask wrapper (2017)
+- [terminado GitHub issues](https://github.com/jupyter/terminado/issues) -- known problems
+- [xterm.js addon-attach](https://github.com/xtermjs/xterm.js/tree/main/addons/addon-attach) -- WebSocket protocol reference
