@@ -20,7 +20,7 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Hardcoded 300K context window default doesn't adapt to model capabilities (Opus 4.6 supports 1M). Research artifact: `docs/reports/T-837-auto-detect-context-window.md`.
 
 ## Assumptions
 

@@ -20,7 +20,7 @@ date_finished: 2026-04-04T12:34:55Z
 
 ## Problem Statement
 
-Superseded by parent evaluation T-549/T-678. All P1-P4 patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md`. Extracted code: `docs/upstream-patterns/openclaw/session-key-utils.ts`, `config-diff.ts`, `skills-budget.ts`.
+Superseded by parent evaluation T-549/T-678. All P1-P4 patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md`. Extracted code: `docs/upstream-patterns/openclaw/session-key-utils.ts`, `config-diff.ts`, `skills-budget.ts`. Research artifact: see `docs/reports/T-549-openclaw-value-extraction.md`.
 
 ## Acceptance Criteria
 

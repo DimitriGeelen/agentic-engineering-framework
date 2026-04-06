@@ -20,7 +20,7 @@ date_finished: 2026-04-04T12:35:28Z
 
 ## Problem Statement
 
-Superseded by parent evaluation T-549/T-678. Security fuzzing patterns analyzed in evaluation summary — 6 attack vector categories documented. Suite test abstraction noted in quality assessment (gateway 76% coverage).
+Superseded by parent evaluation T-549/T-678. Security fuzzing patterns analyzed in evaluation summary — 6 attack vector categories documented. Suite test abstraction noted in quality assessment (gateway 76% coverage). Research artifact: see `docs/reports/T-549-openclaw-component-quality.md`.
 
 ## Recommendation
 

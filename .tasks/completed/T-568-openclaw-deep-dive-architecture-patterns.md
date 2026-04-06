@@ -20,7 +20,7 @@ date_finished: 2026-04-04T12:35:17Z
 
 ## Problem Statement
 
-Superseded by parent evaluation T-549/T-678. Architecture patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md` — RPC registry, ACLs, plugin system, config hot-reload all covered.
+Superseded by parent evaluation T-549/T-678. Architecture patterns analyzed in `docs/upstream-patterns/openclaw/EVALUATION-SUMMARY.md` — RPC registry, ACLs, plugin system, config hot-reload all covered. Research artifact: see `docs/reports/T-549-openclaw-design-patterns.md`.
 
 ## Recommendation
 
