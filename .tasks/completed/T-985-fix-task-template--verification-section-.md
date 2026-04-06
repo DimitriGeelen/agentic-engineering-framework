@@ -4,7 +4,7 @@ name: "Fix task template — verification section comments parsed as commands"
 description: >
   The default task template has HTML comments in the Verification section that get parsed as shell commands by the verification gate, causing false failures. Remove or restructure the comments.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T23:26:05Z
-last_update: 2026-04-06T23:26:05Z
-date_finished: null
+last_update: 2026-04-06T23:27:58Z
+date_finished: 2026-04-06T23:27:58Z
 ---
 
 # T-985: Fix task template — verification section comments parsed as commands
@@ -51,3 +51,6 @@ grep -q '^# Shell commands' .tasks/templates/inception.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-985-fix-task-template--verification-section-.md
 - **Context:** Initial task creation
+
+### 2026-04-06T23:27:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
