@@ -206,6 +206,18 @@ do_inception_decide() {
         exit 1
     fi
 
+    # Gate: require fw task review before accepting decision (T-973)
+    local review_marker="$PROJECT_ROOT/.context/working/.reviewed-$task_id"
+    if [ ! -f "$review_marker" ]; then
+        echo -e "${RED}ERROR: Task review required before decision${NC}" >&2
+        echo "" >&2
+        echo -e "Run this first:" >&2
+        echo -e "  cd $PROJECT_ROOT && bin/fw task review $task_id" >&2
+        echo "" >&2
+        echo -e "Then re-run the decide command." >&2
+        exit 1
+    fi
+
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     local decision_upper
@@ -267,6 +279,9 @@ EOF
         echo ""
         "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force --reason "Inception decision: $decision_upper" 2>&1
     fi
+
+    # Clean up review marker (T-973)
+    rm -f "$PROJECT_ROOT/.context/working/.reviewed-$task_id" 2>/dev/null || true
 
     echo ""
     echo -e "${GREEN}Inception decision recorded${NC}"

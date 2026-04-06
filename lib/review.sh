@@ -119,6 +119,19 @@ except ImportError:
     if $artifacts_found; then echo ""; fi
 
     echo -e "  Click the link or scan QR to review Human ACs"
+    echo ""
+
+    # Show decision command for inception tasks (T-973)
+    if [ "$workflow_type" = "inception" ]; then
+        echo -e "  ${BOLD}After review, run:${NC}"
+        echo "  cd $PROJECT_ROOT && bin/fw inception decide $task_id go --rationale \"your rationale\""
+        echo ""
+    fi
+
     echo -e "══════════════════════════════════════════════════"
     echo ""
+
+    # Mark task as reviewed — prerequisite gate for fw inception decide (T-973)
+    mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null
+    touch "$PROJECT_ROOT/.context/working/.reviewed-${task_id}" 2>/dev/null || true
 }
