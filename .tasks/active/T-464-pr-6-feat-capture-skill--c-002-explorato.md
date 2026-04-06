@@ -2,18 +2,8 @@
 id: T-464
 name: "PR #6: feat: /capture skill + C-002 Exploratory Conversation Guard"
 description: >
-  OneDev PR #6 (branch: feature/conversation-guard-capture-skill)
-
-## Problem
-
-Claude Code fires zero hooks for pure conversation sessions. A session that never touches a file can lose all content on context exhaustion (G-005).
-
-## Solution
-
-1. **C-002 rule** (CLAUDE.md): Stop at 3 substantive exchanges on untracked topic, create inception task, invoke /capture.
-2. **/capture skill**: Reads JSONL transcript, extracts current topic, writes structured artifact, commits.
-
-Contributed from 010-termlink project (T-108). Tested: 24 turns captured, topic boundary corr
+  OneDev PR #6 (branch: feature/conversation-guard-capture-skill).
+  C-002 rule + /capture skill for conversation persistence.
 
 status: started-work
 workflow_type: build
