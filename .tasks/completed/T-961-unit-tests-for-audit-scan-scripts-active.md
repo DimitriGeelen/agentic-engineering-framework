@@ -4,7 +4,7 @@ name: "Unit tests for audit scan scripts (active-task-scan.py, completed-task-sc
 description: >
   Unit tests for audit scan scripts (active-task-scan.py, completed-task-scan.py)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T13:14:35Z
-last_update: 2026-04-06T13:14:35Z
-date_finished: null
+last_update: 2026-04-06T13:16:02Z
+date_finished: 2026-04-06T13:16:02Z
 ---
 
 # T-961: Unit tests for audit scan scripts (active-task-scan.py, completed-task-scan.py)
@@ -77,3 +77,6 @@ bats tests/unit/audit_scan.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-961-unit-tests-for-audit-scan-scripts-active.md
 - **Context:** Initial task creation
+
+### 2026-04-06T13:16:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
