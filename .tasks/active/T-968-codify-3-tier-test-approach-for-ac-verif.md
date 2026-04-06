@@ -87,12 +87,12 @@ The rules exist but the infrastructure doesn't. Result: functional UI checks are
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated with data (Human AC backlog quantified)
-- [ ] 5 research vectors completed
-- [ ] Research artifact created at `docs/reports/T-968-test-infrastructure.md`
-- [ ] Test directory structure proposed
-- [ ] `fw test` command interface designed
-- [ ] Recommendation written with go/no-go rationale
+- [x] Problem statement validated with data (112 unchecked Human ACs: 19% automatable)
+- [x] 5 research vectors completed (1 direct + 4 TermLink dispatch)
+- [x] Research artifact created at `docs/reports/T-968-test-infrastructure.md`
+- [x] Test directory structure proposed (tests/playwright/ with pytest-playwright)
+- [x] `fw test` command already exists — extend with `fw test playwright`
+- [x] Recommendation: GO — gap is focused (just Playwright integration needed)
 
 ### Human
 - [ ] [REVIEW] Review test infrastructure design and approve direction
@@ -121,6 +121,16 @@ The rules exist but the infrastructure doesn't. Result: functional UI checks are
 
 test -f docs/reports/T-968-test-infrastructure.md
 grep -q '## Recommendation' docs/reports/T-968-test-infrastructure.md
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Gap is focused: add tests/playwright/ + fw test playwright. 1086 tests and fw test already exist. pytest-playwright is pure Python (no JS tooling). 19% of Human AC backlog is automatable, but the real value is going-forward regression prevention.
+**Evidence:**
+- fw test already has 5 sub-commands with 1086 tests
+- pytest-playwright fits Flask/Python stack perfectly
+- 12 AC-to-test conversion patterns identified
+- Implementation is 1 session (3 focused build tasks)
 
 ## Decisions
 
