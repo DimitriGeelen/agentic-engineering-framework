@@ -957,6 +957,13 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Commit changes | `fw git commit -m "T-XXX: ..."` | `./agents/git/git.sh commit -m "T-XXX: ..."` |
 | Task-aware status | `fw git status` | `./agents/git/git.sh status` |
 | Install git hooks | `fw git install-hooks` | `./agents/git/git.sh install-hooks` |
+| Run all tests | `fw test all` | _(fw only)_ |
+| Unit tests | `fw test unit` | _(bats)_ |
+| Integration tests | `fw test integration` | _(bats)_ |
+| Web tests | `fw test web` | _(pytest)_ |
+| Playwright UI tests | `fw test playwright` | _(pytest + playwright)_ |
+| Lint | `fw test lint` | _(shellcheck)_ |
+| Review for human | `fw task review T-XXX` | _(Watchtower URL + QR)_ |
 | Run audit | `fw audit` | `./agents/audit/audit.sh` |
 | Show gaps | `fw gaps` | _(fw only)_ |
 | Health check | `fw doctor` | _(fw only)_ |
