@@ -1,0 +1,17 @@
+id: tests/unit/docgen_component.bats
+name: docgen_component
+type: test
+subsystem: tests
+location: tests/unit/docgen_component.bats
+tags: [docgen, component, bats, unit-test]
+
+purpose: "Unit tests for agents/docgen/generate-component.sh (6 tests)"
+
+depends_on:
+  - target: agents/docgen/generate-component.sh
+    type: calls
+
+depended_by: []
+
+last_verified: 2026-04-06
+created_by: T-942
