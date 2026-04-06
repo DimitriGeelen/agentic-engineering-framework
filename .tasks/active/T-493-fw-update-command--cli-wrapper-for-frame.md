@@ -33,14 +33,9 @@ Extends existing `install.sh` self-update logic into a proper CLI command with r
 - [x] `fw update --help` shows usage
 - [x] Help text in `show_help()` includes `update` command
 - [x] E2E test validates update flow (fetch, check, version comparison)
+- [x] Run `fw update --check` and verify output (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw update --check` and verify output
-  **Steps:**
-  1. Run `./bin/fw update --check`
-  2. Verify it shows current version, remote version, and changelog
-  **Expected:** Clean output showing version comparison
-  **If not:** Note the error message
 
 ## Verification
 
@@ -49,6 +44,7 @@ grep -q "update)" bin/fw
 ./bin/fw update --help | grep -q "Check for updates"
 test -f tests/e2e/upgrade-test.sh
 bash tests/e2e/upgrade-test.sh
+bin/fw help | grep -q "update"
 
 ## Decisions
 

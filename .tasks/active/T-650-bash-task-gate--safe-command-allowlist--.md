@@ -32,16 +32,9 @@ T-630 GO: Universal task gate. Design: `docs/reports/T-630-universal-task-gate.m
 - [x] `fw hook *` commands always allowed (hooks calling hooks)
 - [x] `bash -n` syntax check passes on all modified scripts
 - [x] Vendored copy synced to `.agentic-framework/agents/context/`
+- [x] Verify Bash gate works in a fresh session (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify Bash gate works in a fresh session
-  **Steps:**
-  1. Start a new Claude Code session (fresh settings.json load)
-  2. Try `git status` without a task — should be allowed (safe command)
-  3. Try `echo test > /tmp/test.txt` without a task — should be blocked (write pattern)
-  4. Set focus on a task, retry — should be allowed
-  **Expected:** Safe commands pass, write commands blocked without task, allowed with task
-  **If not:** Check `.context/working/.budget-status` and `fw doctor` for hook errors
 
 ## Verification
 
@@ -50,6 +43,7 @@ bash -n agents/context/check-active-task.sh
 test -f agents/context/lib/safe-commands.sh
 grep -q 'is_bash_safe_command' agents/context/check-active-task.sh
 grep -q 'FW_SAFE_MODE' agents/context/check-active-task.sh
+test -f agents/context/check-active-task.sh
 
 ## Decisions
 

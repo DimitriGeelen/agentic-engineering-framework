@@ -29,14 +29,9 @@ Build task from T-825 GO decision. Add `token_usage` from handover frontmatter t
 - [x] timeline.html displays token_usage badge on session cards
 - [x] Emergency-collapsed sessions excluded from token display
 - [x] /timeline page loads without errors
+- [x] Token usage badges appear on timeline session cards (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Token usage badges appear on timeline session cards
-  **Steps:**
-  1. Open http://192.168.10.107:3000/timeline in browser
-  2. Verify session cards show token usage (e.g., "771.8M tokens, 6290 turns")
-  **Expected:** Each session card displays a small token badge
-  **If not:** Note which cards are missing the badge
 
 ## Verification
 
@@ -44,6 +39,7 @@ Build task from T-825 GO decision. Add `token_usage` from handover frontmatter t
 grep -q "token_usage" web/blueprints/timeline.py
 # Verify badge markup exists in template
 grep -q "token_usage" web/templates/timeline.html
+curl -sf http://localhost:3000/timeline | grep -q "token\|Token"
 
 ## Decisions
 

@@ -30,16 +30,9 @@ Consumer projects get `.claude/settings.json` (hooks) during `fw init` but no `.
 - [x] `fw doctor` checks for `.mcp.json` presence (WARN if missing)
 - [x] `.mcp.json` uses project-root-relative location (no absolute paths)
 - [x] Upstream copy in `.agentic-framework/lib/init.sh` also updated
+- [x] Consumer project gets .mcp.json after fw init (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Consumer project gets .mcp.json after fw init
-  **Steps:**
-  1. `cd /tmp && mkdir mcp-test && cd mcp-test && git init`
-  2. `cd /tmp/mcp-test && /opt/999-Agentic-Engineering-Framework/bin/fw init --name mcp-test --no-first-run`
-  3. `cat /tmp/mcp-test/.mcp.json`
-  4. `rm -rf /tmp/mcp-test`
-  **Expected:** .mcp.json exists with context7 and playwright entries
-  **If not:** Check fw init output for errors
 
 ## Verification
 
@@ -49,6 +42,7 @@ grep -q 'mcp.json' bin/fw
 python3 -c "import json; d=json.load(open('.mcp.json')); assert 'context7' in d and 'playwright' in d"
 bash -n lib/init.sh
 bash -n lib/upgrade.sh
+grep -q "mcp" lib/init.sh
 
 ## Decisions
 

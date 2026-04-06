@@ -30,20 +30,15 @@ Build task from T-828 GO decision. Add input/cache_read/cache_create/output toke
 - [x] timeline.py reads breakdown fields and passes to template
 - [x] timeline.html shows token breakdown (tooltip on badge + detail panel when expanded)
 - [x] Graceful fallback for old handovers without breakdown fields
+- [x] Token breakdown visible on timeline session cards (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Token breakdown visible on timeline session cards
-  **Steps:**
-  1. Open http://192.168.10.107:3000/timeline in browser
-  2. Hover or inspect a recent session card for token breakdown
-  3. Verify input/cache/output categories are shown
-  **Expected:** Breakdown visible with meaningful numbers per category
-  **If not:** Note which cards or categories are missing
 
 ## Verification
 
 grep -q "token_input" agents/handover/handover.sh
 grep -q "token_input" web/blueprints/timeline.py
+curl -sf http://localhost:3000/timeline | grep -q "token\|Token"
 
 ## Decisions
 

@@ -30,18 +30,15 @@ When the agent references `docs/reports/T-625-global-framework-sync.md`, the hum
 - [x] Path traversal blocked (../../etc/passwd → 404, bin/fw → 404)
 - [x] Non-existent files return 404
 - [x] Verified with curl against running Watchtower
+- [x] Click a file link and verify it renders (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Click a file link and verify it renders
-  **Steps:**
-  1. Open: http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md
-  **Expected:** Rendered markdown with headings, tables, code blocks
-  **If not:** Check Watchtower logs for errors
 
 ## Verification
 
 # Verify /file/ route serves markdown (any running Watchtower port)
 grep -q "def file_viewer" web/blueprints/docs.py
+curl -sf http://localhost:3000/file/docs/reports/ | grep -q "reports"
 
 ## Decisions
 

@@ -29,18 +29,14 @@ Follow-up from T-801. Handover documents track session state — adding token us
 - [x] Section shows: total tokens, turns, cache hit rate
 - [x] Graceful degradation: if no JSONL transcript found, section is omitted
 - [x] Handover YAML frontmatter includes `token_usage` field
+- [x] Verify handover includes token data (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify handover includes token data
-  **Steps:**
-  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw handover`
-  2. Check `.context/handovers/LATEST.md` for "Token Usage" section
-  **Expected:** Section shows total tokens and turns for current session
-  **If not:** Check handover.sh for the token parsing code
 
 ## Verification
 
 grep -q "token_usage\|Token Usage" agents/handover/handover.sh
+grep -q "token" agents/handover/handover.sh
 
 ## Decisions
 

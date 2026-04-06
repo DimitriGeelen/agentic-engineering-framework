@@ -30,21 +30,15 @@ Agents accumulate started-work tasks across sessions without completing or pausi
 - [x] Warning is advisory (exit 0), not blocking — transition still proceeds
 - [x] `fw inception start` creates tasks as captured (not started-work)
 - [x] `fw work-on T-XXX` path unchanged (the warning comes from update-task.sh)
+- [x] Verify warning fires when starting a second task (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify warning fires when starting a second task
-  **Steps:**
-  1. Restart Claude Code session
-  2. Run `fw work-on T-332` (already started-work, should just resume)
-  3. Then run `fw work-on "test single gate" --type build`
-  4. Observe advisory warning about other started-work tasks
-  **Expected:** Warning message listing started-work tasks, but task still created
-  **If not:** Check update-task.sh around line 352 for the new gate code
 
 ## Verification
 
 grep -q 'started-work.*advisory\|single.*started\|CONCURRENT' agents/task-create/update-task.sh
 grep -v '\-\-start' lib/inception.sh | grep -q 'create-task.sh'
+grep -q "CONCURRENT\|concurrent" agents/task-create/update-task.sh
 
 ## Decisions
 

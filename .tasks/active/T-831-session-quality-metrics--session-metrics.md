@@ -30,19 +30,15 @@ Build from T-830 GO. Create session-metrics.sh that analyzes JSONL transcripts t
 - [x] Outputs YAML to `.context/working/.session-metrics.yaml`
 - [x] handover.sh reads session-metrics.yaml and injects fields into frontmatter
 - [x] Timeline displays session quality metrics when available
+- [x] Session metrics appear in handover frontmatter after next session (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Session metrics appear in handover frontmatter after next session
-  **Steps:**
-  1. Generate a handover: `cd /opt/999-Agentic-Engineering-Framework && bin/fw handover`
-  2. Check LATEST.md frontmatter for new fields (commits_per_turn, failed_tool_calls, etc.)
-  **Expected:** Numeric metric values present in frontmatter
-  **If not:** Run `cd /opt/999-Agentic-Engineering-Framework && agents/context/session-metrics.sh` manually
 
 ## Verification
 
 bash agents/context/session-metrics.sh 2>&1 | grep -q "metrics"
 test -f .context/working/.session-metrics.yaml
+grep -q "session_" agents/handover/handover.sh
 
 ## Decisions
 

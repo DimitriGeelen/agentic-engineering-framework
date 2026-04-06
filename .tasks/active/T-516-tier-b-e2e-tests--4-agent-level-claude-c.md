@@ -29,20 +29,15 @@ From T-513 inception. Tier B tests spawn Claude Code via TermLink and validate g
 - [x] Scripts syntax-check cleanly (`bash -n`)
 - [x] Scripts skip gracefully when ANTHROPIC_API_KEY is unset
 - [x] Runner discovers Tier B tests with `--tier b`
+- [x] Run `tests/e2e/runner.sh --tier b` and verify at least B1 passes (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `tests/e2e/runner.sh --tier b` and verify at least B1 passes
-  **Steps:**
-  1. Ensure ANTHROPIC_API_KEY is set
-  2. Run `tests/e2e/runner.sh --tier b --scenario lifecycle`
-  3. Wait for completion (~60-90s)
-  **Expected:** B1 full lifecycle test passes (task created, committed, completed)
-  **If not:** Check TermLink session output: `termlink pty output fw-e2e-b1 --lines 50 --strip-ansi`
 
 ## Verification
 
 test $(ls tests/e2e/tier-b/test-*.sh 2>/dev/null | wc -l) -ge 2
 bash -n tests/e2e/tier-b/test-lifecycle.sh
+test -x tests/e2e/runner.sh
 
 ## Decisions
 

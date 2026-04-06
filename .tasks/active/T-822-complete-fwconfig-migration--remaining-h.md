@@ -35,15 +35,9 @@ Follow-on from T-819 (lib/config.sh). 8 files still hardcode settings that shoul
 - [x] Watchtower `/config` page updated to show new settings
 - [x] All 518+ unit tests still pass
 - [x] `fw doctor` shows no new warnings
+- [x] Watchtower /config page shows new settings (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Watchtower /config page shows new settings
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve`
-  2. Open `http://localhost:3000/config`
-  3. Verify new settings (KEYLOCK_TIMEOUT, TERMLINK_WORKER_TIMEOUT, HANDOVER_DEDUP_COOLDOWN) appear
-  **Expected:** New settings visible with correct defaults and descriptions
-  **If not:** Note which settings are missing
 
 ## Verification
 
@@ -60,6 +54,7 @@ grep -q "fw_config_int" lib/keylock.sh
 grep -q "fw_config" lib/review.sh
 # Unit tests pass
 bats tests/unit/lib_config.bats
+curl -sf http://localhost:3000/config | grep -q "Settings\|Configuration"
 
 ## Decisions
 

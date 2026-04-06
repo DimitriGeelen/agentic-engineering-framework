@@ -4,7 +4,7 @@ name: "Add AC classification guidance to CLAUDE.md — risk matrix for Human vs 
 description: >
   Add AC classification rule to CLAUDE.md Agent/Human AC Split section. Risk matrix: reversibility x subjectivity x blast radius x external visibility. Default RUBBER-STAMP functional tests to Agent ACs with verification commands. Keep sovereignty decisions, subjective reviews, irreversible external actions as Human. From T-954 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T12:11:30Z
-last_update: 2026-04-06T12:37:02Z
-date_finished: null
+last_update: 2026-04-06T12:38:09Z
+date_finished: 2026-04-06T12:38:09Z
 ---
 
 # T-957: Add AC classification guidance to CLAUDE.md — risk matrix for Human vs Agent ACs (T-954 Phase 1)
@@ -57,3 +57,6 @@ grep -qi "when in doubt" CLAUDE.md
 
 ### 2026-04-06T12:37:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T12:38:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

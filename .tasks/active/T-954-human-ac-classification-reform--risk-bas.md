@@ -4,7 +4,7 @@ name: "Human AC classification reform — risk-based AC assignment with programm
 description: >
   Inception: Human AC classification reform — risk-based AC assignment with programmatic, TermLink E2E, and Playwright verification tiers
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-823, T-193, T-325, T-358, T-373]
 created: 2026-04-06T11:49:04Z
-last_update: 2026-04-06T11:50:06Z
-date_finished: null
+last_update: 2026-04-06T12:11:48Z
+date_finished: 2026-04-06T12:11:48Z
 ---
 
 # T-954: Human AC classification reform — risk-based AC assignment with programmatic, TermLink E2E, and Playwright verification tiers
@@ -107,14 +107,11 @@ Human ACs are piling up across multiple projects (82 tasks, 12 waiting >14 days)
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: GO — reclassify deterministic RUBBER-STAMPs to Agent ACs, keep sovereignty and subjective reviews as Human
+
+**Date**: 2026-04-06T12:11:48Z
 
 ## Recommendation
 
@@ -129,7 +126,11 @@ Human ACs are piling up across multiple projects (82 tasks, 12 waiting >14 days)
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO — reclassify deterministic RUBBER-STAMPs to Agent ACs, keep sovereignty and subjective reviews as Human
+
+**Date**: 2026-04-06T12:11:48Z
 
 ## Updates
 
@@ -138,3 +139,12 @@ Human ACs are piling up across multiple projects (82 tasks, 12 waiting >14 days)
 
 ### 2026-04-06T11:50:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T12:11:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO — reclassify deterministic RUBBER-STAMPs to Agent ACs, keep sovereignty and subjective reviews as Human
+
+### 2026-04-06T12:11:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

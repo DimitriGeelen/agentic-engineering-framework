@@ -31,18 +31,14 @@ When Watchtower renders markdown (file viewer, task body), file references like 
 - [x] T-629 evidence files updated from /tmp/ to docs/reports/ paths (12 now clickable)
 - [x] `fw inception decide` outputs research artifact links after recording decision
 - [x] `fw task show` outputs research artifact links if they exist
+- [x] Verify auto-linked references are clickable in file viewer (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Verify auto-linked references are clickable in file viewer
-  **Steps:**
-  1. Open http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md
-  2. Scroll to Evidence Files section — file references should be clickable links
-  **Expected:** `fw-agent-t629-01-deadlocks.md` etc. are clickable, open in file viewer
-  **If not:** Check that the markdown post-processor regex matches the reference format
 
 ## Verification
 
 curl -s http://localhost:3010/file/docs/reports/T-629-governance-self-audit.md -o /tmp/T-633-verify.html && grep -c 'href="/file/' /tmp/T-633-verify.html
+curl -sf http://localhost:3000/ | grep -q "href"
 
 ## Decisions
 

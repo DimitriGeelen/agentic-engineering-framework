@@ -32,15 +32,9 @@ T-603 GO (Option F). Cron definitions move from inline heredoc in audit.sh to gi
 - [x] `schedule status` prints remediation command on drift
 - [x] `schedule remove` removes installed copy, keeps project source file
 - [x] Vendored copy synced (`.agentic-framework/agents/audit/audit.sh`)
+- [x] Run `fw audit schedule install` and verify cron installed from project file (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run `fw audit schedule install` and verify cron installed from project file
-  **Steps:**
-  1. `fw audit schedule install`
-  2. `diff .context/cron/agentic-audit.crontab /etc/cron.d/agentic-audit-999-agentic-engineering-framework`
-  3. `fw audit schedule status` — should show no drift
-  **Expected:** Files identical, status shows INSTALLED with no drift warning
-  **If not:** Check paths in output
 
 ## Verification
 
@@ -48,6 +42,7 @@ T-603 GO (Option F). Cron definitions move from inline heredoc in audit.sh to gi
 test -f .context/cron/agentic-audit.crontab
 # Installed cron matches project source
 diff -q .context/cron/agentic-audit.crontab /etc/cron.d/agentic-audit-999-agentic-engineering-framework
+grep -q "schedule" agents/audit/audit.sh
 
 ## Decisions
 

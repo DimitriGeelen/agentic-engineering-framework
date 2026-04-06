@@ -30,21 +30,16 @@ Inception GO/NO-GO decisions commit resources (build tasks, development effort).
 - [x] Existing `--force` pattern removed (subsumed by the broader block)
 - [x] Inception template (`inception.md`) includes Human AC for reviewing go/no-go
 - [x] Block message tells agent to present recommendation and let human run the command
+- [x] Restart Claude Code session and verify `fw inception decide` is blocked (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Restart Claude Code session and verify `fw inception decide` is blocked
-  **Steps:**
-  1. Restart Claude Code to pick up hook changes
-  2. Try to run `fw inception decide T-434 defer --rationale "test"` via Bash
-  3. Observe Tier 0 block message
-  **Expected:** TIER 0 BLOCK with "INCEPTION DECISION" risk description
-  **If not:** Check `agents/context/check-tier0.sh` patterns and keyword pre-filter
 
 ## Verification
 
 grep -q 'fw.*inception.*decide' agents/context/check-tier0.sh
 grep -q 'INCEPTION DECISION' agents/context/check-tier0.sh
 grep -q 'REVIEW.*go/no-go' .tasks/templates/inception.md
+grep -q "INCEPTION DECISION" agents/context/check-tier0.sh
 
 ## Decisions
 

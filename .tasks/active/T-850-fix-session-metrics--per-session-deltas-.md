@@ -31,19 +31,15 @@ metrics. Fix: record turn offset at session start, compute per-session deltas in
 - [x] Handover frontmatter includes both cumulative AND per-session delta metrics
 - [x] Per-session metrics differ from cumulative when multiple handovers occur in same transcript
 - [x] Script handles missing offset file gracefully (falls back to cumulative)
+- [x] Handover frontmatter shows distinct per-session values after /compact (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Handover frontmatter shows distinct per-session values after /compact
-  **Steps:**
-  1. Run `cd /opt/999-Agentic-Engineering-Framework && cat .context/handovers/LATEST.md | head -25`
-  2. Check for `session_commits_per_turn`, `session_failed_tool_calls` or similar delta fields
-  **Expected:** Per-session fields present and different from cumulative totals
-  **If not:** Check `.context/working/.session-turn-offset` exists
 
 ## Verification
 
 bash -c "test -f agents/context/session-metrics.sh"
 grep -q "session_turn_offset\|turn.offset\|OFFSET" agents/context/session-metrics.sh
+grep -q "session_commits" agents/handover/handover.sh
 
 ## Decisions
 

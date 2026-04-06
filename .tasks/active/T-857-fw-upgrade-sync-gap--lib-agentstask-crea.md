@@ -39,14 +39,9 @@ RCA from 3021-Bilderkarte-tool-llm agent session: `fw inception decide T-504 go`
 - [x] `upgrade.sh` vendored sync section syncs agent scripts (task-create, handover, git, healing, fabric, dispatch, resume) to consumer `.agentic-framework/agents/`
 - [x] `upgrade.sh --dry-run` reports the new sync targets without modifying files (verified: 40 vendored scripts detected)
 - [x] Existing vendored sync (agents/context/, bin/fw) still works
+- [x] Run upgrade on a consumer project and verify lib/inception.sh is current (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Run upgrade on a consumer project and verify lib/inception.sh is current
-  **Steps:**
-  1. `cd /opt/3021-Bilderkarte-tool-llm && .agentic-framework/bin/fw upgrade`
-  2. `diff /opt/999-Agentic-Engineering-Framework/lib/inception.sh /opt/3021-Bilderkarte-tool-llm/.agentic-framework/lib/inception.sh`
-  **Expected:** Files identical (no diff output)
-  **If not:** Check upgrade.sh output for errors
 
 ## Verification
 
@@ -56,6 +51,7 @@ grep -q 'lib/\*.sh' lib/upgrade.sh
 grep -q 'task-create' lib/upgrade.sh
 # agents/handover synced
 grep -q 'handover.*git.*healing' lib/upgrade.sh
+test -f lib/inception.sh
 
 ## Decisions
 

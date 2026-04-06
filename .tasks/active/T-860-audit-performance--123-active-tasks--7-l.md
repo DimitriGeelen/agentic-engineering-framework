@@ -4,16 +4,16 @@ name: "Audit performance — 123 active tasks × 7 loops × 15 Python calls = >9
 description: >
   Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T19:33:13Z
-last_update: 2026-04-06T09:57:10Z
-date_finished: null
+last_update: 2026-04-06T11:45:34Z
+date_finished: 2026-04-06T11:45:34Z
 ---
 
 # T-860: Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime
@@ -88,14 +88,11 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
+
+**Rationale**: Loop merge first, not --fast. Value analysis confirms expensive loops catch real issues.
+
+**Date**: 2026-04-06T11:45:34Z
 
 ## Recommendation
 
@@ -110,7 +107,11 @@ date_finished: null
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Loop merge first, not --fast. Value analysis confirms expensive loops catch real issues.
+
+**Date**: 2026-04-06T11:45:34Z
 
 ## Updates
 
@@ -123,3 +124,12 @@ date_finished: null
 ### 2026-04-05T12:16:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
+
+### 2026-04-06T11:45:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Loop merge first, not --fast. Value analysis confirms expensive loops catch real issues.
+
+### 2026-04-06T11:45:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

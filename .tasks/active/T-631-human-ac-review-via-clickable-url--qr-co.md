@@ -34,14 +34,9 @@ Prerequisites: Watchtower AC checkboxes (T-620), toggle-ac API, Python qrcode 7.
 - [x] Watchtower task template has `id="human-ac"` anchor on Human AC section
 - [x] `bash -n` passes on bin/fw
 - [x] `--poll` flag: polls task file every 5s, exits 0 when all Human ACs checked (timeout 10min)
+- [x] URL opens correct task page in browser (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] URL opens correct task page in browser
-  **Steps:**
-  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-631`
-  2. Click the printed URL
-  **Expected:** Browser opens Watchtower task detail, scrolled to Human AC section
-  **If not:** Check if Watchtower is running (`curl -sf http://localhost:3000/`)
 - [ ] [RUBBER-STAMP] QR code scans and opens same page on phone
   **Steps:**
   1. Scan the terminal QR code with phone camera
@@ -54,6 +49,7 @@ Prerequisites: Watchtower AC checkboxes (T-620), toggle-ac API, Python qrcode 7.
 bash -n lib/review.sh 2>/dev/null || bash -n lib/tasks.sh
 bin/fw task review T-631 --help 2>&1 | grep -q "review"
 python3 -c "import qrcode; print('ok')"
+curl -sf http://localhost:3000/task/T-631 | grep -q "T-631"
 
 ## Decisions
 

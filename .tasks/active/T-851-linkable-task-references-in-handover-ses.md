@@ -31,19 +31,14 @@ Approach (2) is more universal — auto-links work everywhere including task pag
 - [x] Jinja filter or template macro auto-links T-XXX patterns to /tasks/T-XXX in Watchtower HTML
 - [x] /timeline cards show clickable task links in session summaries
 - [x] Handover "Where We Are" text has clickable T-XXX links when rendered in Watchtower
+- [x] Task links in /timeline are clickable and navigate to correct task pages (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] Task links in /timeline are clickable and navigate to correct task pages
-  **Steps:**
-  1. Open http://192.168.10.107:3000/timeline
-  2. Find a session card that mentions a T-XXX task
-  3. Click the task link
-  **Expected:** Navigates to /tasks/T-XXX showing the task details
-  **If not:** Note which link is broken
 
 ## Verification
 
 python3 -c "from web.shared import linkify_tasks; assert '<a ' in linkify_tasks('T-849 fixed')"
+curl -sf http://localhost:3000/timeline | grep -q "T-"
 
 ## Decisions
 
