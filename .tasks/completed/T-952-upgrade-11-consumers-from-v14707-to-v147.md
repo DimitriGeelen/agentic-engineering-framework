@@ -1,33 +1,32 @@
 ---
-id: T-951
-name: "Session housekeeping — commit remaining generated docs and handovers"
+id: T-952
+name: "Upgrade 11 consumers from v1.4.707 to v1.4.718"
 description: >
-  Session housekeeping — commit remaining generated docs and handovers
+  Upgrade 11 consumers from v1.4.707 to v1.4.718
 
-status: started-work
-workflow_type: refactor
+status: work-completed
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-06T10:54:21Z
-last_update: 2026-04-06T10:55:13Z
-date_finished: null
+created: 2026-04-06T10:56:36Z
+last_update: 2026-04-06T10:58:05Z
+date_finished: 2026-04-06T10:58:05Z
 ---
 
-# T-951: Session housekeeping — commit remaining generated docs and handovers
+# T-952: Upgrade 11 consumers from v1.4.707 to v1.4.718
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+11 consumers at v1.4.707, framework at v1.4.718. Using TermLink batch upgrade.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] All 11 consumers upgraded to v1.4.718
+- [x] fw doctor reports all current
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -68,7 +67,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-06T10:54:21Z — task-created [task-create-agent]
+### 2026-04-06T10:56:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-951-session-housekeeping--commit-remaining-g.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-952-upgrade-11-consumers-from-v14707-to-v147.md
 - **Context:** Initial task creation
+
+### 2026-04-06T10:58:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
