@@ -83,12 +83,12 @@ The human works in terminals constantly. Watchtower is the governance dashboard 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] 7 research vectors completed (TermLink dispatch)
-- [ ] Research artifact created at `docs/reports/T-962-web-terminal-research.md`
-- [ ] Assumptions tested with evidence
-- [ ] Architecture recommendation with multi-session data model
-- [ ] Recommendation written with go/no-go rationale
+- [x] Problem statement validated
+- [x] 7 research vectors completed (TermLink dispatch)
+- [x] Research artifact created at `docs/reports/T-962-web-terminal-research.md`
+- [x] Assumptions tested with evidence (7/7 validated)
+- [x] Architecture recommendation with multi-session data model
+- [x] Recommendation written with go/no-go rationale
 
 ### Human
 - [ ] [REVIEW] Review research findings, architecture recommendation, and orchestrator design considerations
@@ -118,26 +118,43 @@ The human works in terminals constantly. Watchtower is the governance dashboard 
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
--->
+# Research artifact exists
+test -f docs/reports/T-962-web-terminal-research.md
+# All 7 vector reports exist
+test -f docs/reports/T-962-v1-oss-terminals.md
+test -f docs/reports/T-962-v2-pty-bridges.md
+test -f docs/reports/T-962-v3-full-solutions.md
+test -f docs/reports/T-962-v4-termlink-integration.md
+test -f docs/reports/T-962-v5-multi-session-ui.md
+test -f docs/reports/T-962-v6-security-model.md
+test -f docs/reports/T-962-v7-orchestrator-design.md
+# Recommendation section exists in main report
+grep -q '## Recommendation' docs/reports/T-962-web-terminal-research.md
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** All 7 assumptions validated. xterm.js (20.2k stars, MIT, zero deps) + Flask-SocketIO fits Watchtower stack with minimal new dependencies. Multi-session data model is orchestrator-ready. Security for LAN v1 is clean. All 4 constitutional directives net positive.
+**Evidence:**
+- V1: xterm.js is clear winner — framework-agnostic, proven at scale (VS Code)
+- V2: Flask-SocketIO + custom PTY manager is simplest path
+- V3: Build > Embed — ttyd capped at isolated iframes, xterm.js gives deep integration
+- V4: Hybrid TermLink — Flask-owned PTYs for interactive, TermLink polling for observation
+- V5: Tab bar + viewport pattern, session data model with provider/type fields
+- V6: Origin-checked WebSocket + CSRF sufficient for LAN v1
+- V7: Provider registry pattern prevents orchestrator rewrite
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-04-06 — Build vs Embed
+- **Chose:** Build with xterm.js + Flask-SocketIO
+- **Why:** Deep integration with Watchtower DOM, shared theming, programmatic session control, TermLink coordination, extensible to orchestrator
+- **Rejected:** Embed ttyd via iframe — simpler initially but hits hard ceiling (no shared state, no theme inheritance, no TermLink integration)
 
-## Decision
-
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+### 2026-04-06 — TermLink Integration Strategy
+- **Chose:** Hybrid — Flask-owned PTYs for interactive sessions, TermLink polling for observation
+- **Why:** TermLink polling (~50-200ms) adequate for monitoring but not interactive use. Direct PTY gives <10ms latency. Register Flask PTYs with TermLink for discoverability.
+- **Rejected:** Pure TermLink (too slow for interactive), Pure Flask (loses TermLink observability)
 
 ## Updates
 
