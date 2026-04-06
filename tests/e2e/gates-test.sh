@@ -78,6 +78,8 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 (cd "$TMPDIR" && git init -q && git config user.email "t@t" && git config user.name "t")
 "$FRAMEWORK_ROOT/bin/fw" init "$TMPDIR" >/dev/null 2>&1 || true
+# Mark onboarding complete so the onboarding gate doesn't block test writes
+touch "$TMPDIR/.context/working/.onboarding-complete"
 
 GATE_SCRIPT="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
 TIER0_SCRIPT="$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
