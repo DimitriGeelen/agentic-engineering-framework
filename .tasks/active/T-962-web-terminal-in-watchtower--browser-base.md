@@ -7,7 +7,7 @@ description: >
   convergence, multi-session UI patterns, security model, and orchestrator-aware design for
   future multi-agent/multi-provider routing. 7 parallel research vectors via TermLink dispatch.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T17:50:09Z
-last_update: 2026-04-06T17:50:09Z
-date_finished: null
+last_update: 2026-04-06T18:24:33Z
+date_finished: 2026-04-06T18:24:33Z
 ---
 
 # T-962: Web terminal in Watchtower — browser-based interactive terminal with TermLink integration, multi-session architecture for future orchestrator
@@ -146,17 +146,32 @@ grep -q '## Recommendation' docs/reports/T-962-web-terminal-research.md
 
 ## Decisions
 
-### 2026-04-06 — Build vs Embed
-- **Chose:** Build with xterm.js + Flask-SocketIO
-- **Why:** Deep integration with Watchtower DOM, shared theming, programmatic session control, TermLink coordination, extensible to orchestrator
-- **Rejected:** Embed ttyd via iframe — simpler initially but hits hard ceiling (no shared state, no theme inheritance, no TermLink integration)
+**Decision**: GO
 
-### 2026-04-06 — TermLink Integration Strategy
-- **Chose:** Hybrid — Flask-owned PTYs for interactive sessions, TermLink polling for observation
-- **Why:** TermLink polling (~50-200ms) adequate for monitoring but not interactive use. Direct PTY gives <10ms latency. Register Flask PTYs with TermLink for discoverability.
-- **Rejected:** Pure TermLink (too slow for interactive), Pure Flask (loses TermLink observability)
+**Rationale**: Recommendation: GO
+Rationale: All 7 assumptions validated. xterm.js (20.2k stars, MIT, zero deps) + Flask-SocketIO fits Watchtower stack with minimal new dependencies. Multi-session data model is orchestrator-ready. Security for LAN v1 is clean. All 4 constitutional directives net positive.
+Evidence:
+- V1: xterm.js is clear winner — framework-agnostic, proven at scale (VS Code)
+- V2: Flask-SocketIO + custom PTY manager is simplest path
+- V3: Build > Embed — ttyd capped at isolated iframes, xt...
+
+**Date**: 2026-04-06T18:24:33Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-06T18:24:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+Rationale: All 7 assumptions validated. xterm.js (20.2k stars, MIT, zero deps) + Flask-SocketIO fits Watchtower stack with minimal new dependencies. Multi-session data model is orchestrator-ready. Security for LAN v1 is clean. All 4 constitutional directives net positive.
+Evidence:
+- V1: xterm.js is clear winner — framework-agnostic, proven at scale (VS Code)
+- V2: Flask-SocketIO + custom PTY manager is simplest path
+- V3: Build > Embed — ttyd capped at isolated iframes, xt...
+
+### 2026-04-06T18:24:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
