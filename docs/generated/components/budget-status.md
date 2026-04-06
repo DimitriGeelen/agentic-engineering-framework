@@ -19,11 +19,11 @@
 ## Related
 
 ### Tasks
-- T-789: Add pickup CLI commands to CLAUDE.md quick reference
-- T-816: Null object fallback for hooks — fail-open resilience pattern
 - T-817: 3-tier config resolution — env var configuration layer for framework settings
 - T-833: Fix install.sh SIGPIPE exit 141 — head -1 in pipe with set -e
 - T-847: Session housekeeping — memory updates and handover
+- T-937: Commit pending handover checkpoints
+- T-938: Add more dynamic working files to .gitignore
 
 ---
 *Auto-generated from Component Fabric. Card: `budget-status.yaml`*

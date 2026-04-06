@@ -22,7 +22,7 @@ Added via: fw context add-learning "description" --task T-XXX
 ## Related
 
 ### Tasks
-- T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion
+- T-937: Commit pending handover checkpoints
 
 ---
 *Auto-generated from Component Fabric. Card: `learnings-data.yaml`*

@@ -32,8 +32,6 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 ## Related
 
 ### Tasks
-- T-708: lib/notify.sh — thin wrapper calling skills-manager alert dispatcher
-- T-710: fw notify CLI — setup, test, enable, disable commands
 - T-717: Sync vendor copy of lib/notify.sh with config file support
 - T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-848: Sync vendored .agentic-framework/ with all recent fixes

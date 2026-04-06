@@ -42,7 +42,6 @@ Flow:
 ## Related
 
 ### Tasks
-- T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 - T-821: Hook crash distinguishability — trap handlers + stderr headers for crash vs block
 
 ---
