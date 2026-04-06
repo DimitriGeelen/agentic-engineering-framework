@@ -4,16 +4,16 @@ name: "Watchtower sessions page — list active terminal sessions with status an
 description: >
   Add /sessions page to Watchtower showing active terminal sessions from SessionRegistry. Shows session ID, provider, status, profile, created time. Kill button for active sessions.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_sessions.py, web/blueprints/__init__.py, web/blueprints/sessions.py, web/templates/sessions.html]
 related_tasks: []
 created: 2026-04-06T23:21:13Z
-last_update: 2026-04-06T23:21:13Z
-date_finished: null
+last_update: 2026-04-06T23:23:39Z
+date_finished: 2026-04-06T23:23:39Z
 ---
 
 # T-983: Watchtower sessions page — list active terminal sessions with status and controls
@@ -35,12 +35,6 @@ T-967 added SessionRegistry with CRUD API at `/api/sessions`. This task adds a `
 
 curl -sf http://localhost:3000/sessions | grep -q 'session'
 grep -q 'sessions' web/blueprints/__init__.py
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
 
 ## Decisions
 
@@ -59,3 +53,6 @@ grep -q 'sessions' web/blueprints/__init__.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-983-watchtower-sessions-page--list-active-te.md
 - **Context:** Initial task creation
+
+### 2026-04-06T23:23:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
