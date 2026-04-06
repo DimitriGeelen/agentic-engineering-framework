@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T20:22:25Z
+# ============================================================================
+
+task_id: T-964
+task_name: "Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T18:25:12Z
+completed: 2026-04-06T19:13:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T20:25:51+02:00
+last_commit: 2026-04-06T20:39:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-962: Create 4 build tasks for web terminal implementation. Add web terminal to Watchtower — xterm.js + Flask-SocketIO PTY bridge. Agent ACs complete, fabric cards registered. Bump to v1.5.742 — web terminal in Watchtower. Add flask-socketio to web/requirements.txt
+
+# Key outcomes
+outcomes:
+  - "Flask-SocketIO dependency added and working"
+  - "`/terminal` page renders with xterm.js terminal"
+  - "WebSocket PTY bridge pipes keystrokes to shell and output to browser"
+  - "Terminal resizes correctly on browser window resize"
+  - "Navigation link added to Watchtower sidebar (Architecture group)"
+  - "Terminal page styled with PicoCSS dark theme (VS Code color scheme)"
+  - "[REVIEW] Terminal is interactive and responsive"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/web-blueprints-terminal.yaml"
+  - ".fabric/components/web-templates-terminal.yaml"
+  - ".fabric/components/web-terminal.yaml"
+  - ".tasks/active/T-964-watchtower-single-terminal--xtermjs--fla.md"
+  - ".tasks/active/T-965-multi-session-terminal-tabs--session-man.md"
+  - ".tasks/active/T-966-termlink-session-observation-in-watchtow.md"
+  - ".tasks/active/T-967-session-profiles--provider-registry-for-.md"
+  - "VERSION"
+  - "web/app.py"
+  - "web/blueprints/__init__.py"
+  - "web/blueprints/terminal.py"
+  - "web/requirements.txt"
+  - "web/shared.py"
+  - "web/templates/terminal.html"
+  - "web/terminal.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T20:25:51"
+    action: "T-962: Create 4 build tasks for web terminal implementation"
+  - time: "2026-04-06T20:30:02"
+    action: "T-964: Add web terminal to Watchtower — xterm.js + Flask-SocketIO PTY bridge"
+  - time: "2026-04-06T20:30:33"
+    action: "T-964: Agent ACs complete, fabric cards registered"
+  - time: "2026-04-06T20:34:36"
+    action: "T-964: Bump to v1.5.742 — web terminal in Watchtower"
+  - time: "2026-04-06T20:39:48"
+    action: "T-964: Add flask-socketio to web/requirements.txt"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 48
+  commits: 5
+  files_changed: 15
+  lines_added: 754
+  lines_removed: 36
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-964-watchtower-single-terminal--xtermjs--fla.md
+generated_by: context-agent-hybrid
