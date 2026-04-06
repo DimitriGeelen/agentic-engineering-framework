@@ -1,0 +1,131 @@
+<style>
+    .session-card {
+        padding: 1rem;
+        border-radius: 6px;
+        border: 1px solid var(--pico-muted-border-color);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .session-card .provider-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .session-card .session-meta {
+        flex: 1;
+    }
+    .session-card .session-id {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: var(--pico-primary);
+    }
+    .session-card .session-detail {
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+        margin-top: 0.2rem;
+    }
+    .session-card .session-status {
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-active { background: #1b5e20; color: #a5d6a7; }
+    .status-idle { background: #e65100; color: #ffcc80; }
+    .status-completed { background: #1565c0; color: #90caf9; }
+    .status-failed { background: #b71c1c; color: #ef9a9a; }
+    .status-killed { background: #4a148c; color: #ce93d8; }
+    .status-spawning { background: #f9a825; color: #333; }
+    .status-paused { background: #546e7a; color: #b0bec5; }
+    .session-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .session-actions button {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        margin: 0;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--pico-muted-color);
+    }
+    .summary-bar {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+    .summary-bar .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .summary-bar .stat-value {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="page-header">
+    <h1>Sessions</h1>
+    <p>Terminal session management — active and recent sessions from the SessionRegistry.</p>
+</div>
+
+<div class="summary-bar">
+    <div class="stat">
+        <span class="stat-value" id="active-count">{{ active_count }}</span>
+        <span>active</span>
+    </div>
+    <div class="stat">
+        <span class="stat-value" id="total-count">{{ total_count }}</span>
+        <span>total</span>
+    </div>
+    <div>
+        <a href="/terminal" role="button" class="outline" style="font-size: 0.8rem;">Open Terminal</a>
+    </div>
+</div>
+
+{% if sessions %}
+<div id="session-list">
+    {% for session in sessions %}
+    <div class="session-card" data-session-id="{{ session.id }}">
+        <span class="provider-dot" style="background: {% if session.provider.name == 'local' %}#4CAF50{% elif session.provider.name == 'claude' %}#D97706{% else %}#888{% endif %};"></span>
+        <div class="session-meta">
+            <div class="session-id">{{ session.id }}</div>
+            <div class="session-detail">
+                {{ session.provider.name }}
+                {% if session.profile %} &middot; {{ session.profile }}{% endif %}
+                {% if session.task %} &middot; {{ session.task }}{% endif %}
+                &middot; {{ session.created[:19] }}
+            </div>
+        </div>
+        <span class="session-status status-{{ session.status }}">{{ session.status }}</span>
+        {% if session.status in ('active', 'idle', 'paused') %}
+        <div class="session-actions">
+            <button class="outline secondary" onclick="killSession('{{ session.id }}')" title="Kill session">Kill</button>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No sessions found.</p>
+    <p><a href="/terminal">Open a terminal</a> to create your first session.</p>
+</div>
+{% endif %}
+
+<script>
+function killSession(sessionId) {
+    if (!confirm('Kill session ' + sessionId + '?')) return;
+    fetch('/api/sessions/' + sessionId, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(function() { location.reload(); })
+        .catch(function(err) { alert('Failed: ' + err); });
+}
+</script>
