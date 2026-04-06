@@ -25,12 +25,12 @@ Phase 1 of T-962 web terminal. See `docs/reports/T-962-web-terminal-research.md`
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Flask-SocketIO dependency added and working
-- [ ] `/terminal` page renders with xterm.js terminal
-- [ ] WebSocket PTY bridge pipes keystrokes to shell and output to browser
-- [ ] Terminal resizes correctly on browser window resize
-- [ ] Navigation link added to Watchtower sidebar
-- [ ] Terminal page styled with PicoCSS dark theme
+- [x] Flask-SocketIO dependency added and working
+- [x] `/terminal` page renders with xterm.js terminal
+- [x] WebSocket PTY bridge pipes keystrokes to shell and output to browser
+- [x] Terminal resizes correctly on browser window resize
+- [x] Navigation link added to Watchtower sidebar (Architecture group)
+- [x] Terminal page styled with PicoCSS dark theme (VS Code color scheme)
 
 ### Human
 - [ ] [REVIEW] Terminal is interactive and responsive
