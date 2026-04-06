@@ -116,7 +116,7 @@ def scan_active_tasks(tasks_dir, reports_dir):
             m = re.search(r"^description:\s*>\s*\n((?:\s+.*\n)*)", content, re.MULTILINE)
             if m:
                 desc = m.group(1).strip()
-        if len(desc) < 50:
+        if len(desc) < 30:  # T-956: raised from 50 (42-char descriptions are acceptable)
             quality_issues.append({"id": task_id, "issue": f"short description ({len(desc)} chars)", "file": fname})
             quality_issue_count += 1
 
@@ -133,7 +133,7 @@ def scan_active_tasks(tasks_dir, reports_dir):
                 created_str = created.split("T")[0]
                 created_dt = datetime.strptime(created_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
                 age_days = (now - created_dt).days
-                if age_days > 7 and status != "work-completed" and updates_count < 2:
+                if age_days > 14 and status != "work-completed" and updates_count < 2:  # T-956: raised from 7
                     quality_issues.append({"id": task_id, "issue": f"{age_days} days old with only {updates_count} updates", "file": fname})
                     quality_issue_count += 1
             except (ValueError, IndexError):
