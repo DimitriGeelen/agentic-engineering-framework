@@ -1,4 +1,5 @@
 flask>=3.0,<4.0
+flask-socketio>=5.0
 gunicorn>=22.0
 pyyaml>=6.0
 ruamel.yaml>=0.18
