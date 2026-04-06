@@ -8,10 +8,3 @@ learnings:
   date: 2026-04-06
   context: Added via context agent
   application: TBD
-- id: L-002
-  learning: "Bats tests that call scripts writing to PROJECT_ROOT must override PROJECT_ROOT to a temp dir in setup() to prevent test pollution of real data files"
-  source: P-001
-  task: T-943
-  date: 2026-04-06
-  context: Added via context agent
-  application: TBD
