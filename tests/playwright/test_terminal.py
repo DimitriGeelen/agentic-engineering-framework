@@ -56,3 +56,10 @@ class TestTerminalPage:
         page.wait_for_load_state("networkidle")
         content = page.content()
         assert "xterm" in content.lower(), "Terminal page should load xterm.js"
+
+    def test_terminal_has_profile_menu(self, page: Page):
+        """Profile selector menu exists in the DOM (T-980)."""
+        page.goto(_url("/terminal"))
+        page.wait_for_load_state("networkidle")
+        menu = page.locator("#profile-menu, .profile-menu")
+        assert menu.count() > 0, "Terminal page should have a profile selector menu"

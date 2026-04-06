@@ -57,6 +57,39 @@
         margin-left: 4px;
     }
     .new-session:hover { background: #2d2d2d; color: #ccc; border-color: #888; }
+    /* Profile selector dropdown (T-980) */
+    .profile-menu {
+        position: absolute;
+        background: #252526;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 4px 0;
+        min-width: 220px;
+        z-index: 100;
+        display: none;
+    }
+    .profile-menu.visible { display: block; }
+    .profile-item {
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .profile-item:hover { background: #2d2d2d; }
+    .profile-item .profile-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .profile-item .profile-desc {
+        font-size: 0.7rem;
+        color: #888;
+        margin-left: auto;
+    }
     .attach-menu {
         position: absolute;
         background: #252526;
@@ -141,6 +174,7 @@
 
 <div class="session-tabs" id="session-tabs">
     <button class="new-session" id="new-session" title="New terminal session">+ New</button>
+    <div class="profile-menu" id="profile-menu"></div>
     <button class="new-session" id="attach-termlink" title="Attach to TermLink session" style="border-color: #569cd6; color: #569cd6;">Attach</button>
     <div class="attach-menu" id="attach-menu"></div>
 </div>
@@ -171,6 +205,7 @@
     const sessions = {};  // { sessionId: { term, fitAddon, tabEl, viewportEl, name, state } }
     let activeSession = null;
     let sessionCounter = 0;
+    let profiles = {};  // Loaded from /api/sessions/profiles (T-980)
 
     // Shared terminal config
     const TERM_OPTS = {
@@ -197,9 +232,9 @@
     socket.on('connect', function() {
         statusDot.className = 'status-dot connected';
         statusText.textContent = 'Connected';
-        // Create first session on connect
+        // Create first session on connect (default profile)
         if (Object.keys(sessions).length === 0) {
-            createSession();
+            createSession('local-bash');
         }
     });
 
@@ -230,9 +265,11 @@
         }
     });
 
-    function createSession() {
+    function createSession(profileId) {
+        profileId = profileId || 'local-bash';
+        const profile = profiles[profileId] || { name: 'Shell', ui: { label: 'bash', color: '#4CAF50' } };
         sessionCounter++;
-        const name = 'bash-' + sessionCounter;
+        const name = (profile.ui && profile.ui.label || 'shell') + '-' + sessionCounter;
         const sessionId = 'ts-' + Math.random().toString(36).substr(2, 8);
 
         // Create viewport div
@@ -336,8 +373,59 @@
         }
     }
 
-    // New session button
-    newBtn.addEventListener('click', createSession);
+    // Profile selector (T-980)
+    const profileMenu = document.getElementById('profile-menu');
+
+    // Load profiles on startup
+    fetch('/api/sessions/profiles')
+        .then(r => r.json())
+        .then(function(data) {
+            profiles = data;
+            profileMenu.innerHTML = '';
+            Object.entries(data).forEach(function([id, p]) {
+                const item = document.createElement('div');
+                item.className = 'profile-item';
+                item.setAttribute('data-profile', id);
+                const color = (p.ui && p.ui.color) || '#888';
+                const label = (p.ui && p.ui.label) || p.name || id;
+                const desc = p.description || '';
+                item.innerHTML = '<span class="profile-dot" style="background:' + color + '"></span>'
+                    + '<span>' + label + '</span>'
+                    + '<span class="profile-desc">' + desc + '</span>';
+                item.addEventListener('click', function() {
+                    profileMenu.classList.remove('visible');
+                    createSession(id);
+                });
+                profileMenu.appendChild(item);
+            });
+        })
+        .catch(function() {
+            // Fallback: no profiles, create directly
+            profileMenu.innerHTML = '';
+        });
+
+    // New session button — show profile selector
+    newBtn.addEventListener('click', function(e) {
+        if (Object.keys(profiles).length === 0) {
+            createSession();
+            return;
+        }
+        if (profileMenu.classList.contains('visible')) {
+            profileMenu.classList.remove('visible');
+            return;
+        }
+        const rect = newBtn.getBoundingClientRect();
+        profileMenu.style.top = (rect.bottom + 2) + 'px';
+        profileMenu.style.left = rect.left + 'px';
+        profileMenu.classList.add('visible');
+    });
+
+    // Close profile menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!newBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+            profileMenu.classList.remove('visible');
+        }
+    });
 
     // Attach TermLink button (T-966)
     const attachBtn = document.getElementById('attach-termlink');
