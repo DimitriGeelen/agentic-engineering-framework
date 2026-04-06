@@ -99,13 +99,14 @@ date_finished: null
 
 ## Recommendation
 
-- **Recommendation:** GO (phased: --fast flag first, then loop merge)
-- **Rationale:** 3m56s audit runtime blocks cron and is growing. Phase 1 (`--fast` flag) is ~10 lines, gives immediate relief. Phase 2 (loop merge) reduces 10 loops to 3, cutting iterations from 3802 to ~1000. Both are safe, incremental changes.
+- **Recommendation:** GO (revised: loop merge first, NOT --fast flag)
+- **Rationale:** Value analysis of 50 audit snapshots shows the expensive loops (completed-task checks) are the ones that actually catch real issues — 6+ warnings acted on. A `--fast` flag skipping them would remove the audit's most valuable checks. The right fix is making iterations cheaper (merge loops, reduce subprocess spawning), not removing them. Phase 1: merge 10 loops into 3 passes. Phase 2: fix noisy Loop 2 thresholds.
 - **Evidence:**
   - 3m56s measured (reproducible), was 90s when task was created — 2.6× degradation
   - `sys 4m8s` confirms subprocess fork/exec is the bottleneck
   - 10 loops × avg 380 iterations = 3802 total, each spawning 2-5 subprocesses
   - Cron runs every 15 min — 4-minute audit leaves only 11 minutes between audits
+  - **Value data:** Loops 3/4/5/7 (completed + inception checks) produced warnings acted on 6+ times. Loop 2 (quality) produced warnings that persisted weeks without action — noise, not signal
 
 ## Decision
 
