@@ -30,26 +30,26 @@ observations:
     captured: 2026-04-05T16:29:52Z
     context_task: T-932
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-005
     text: "Tagged observation"
     captured: 2026-04-05T16:29:52Z
     context_task: T-932
     tags: [test]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-006
     text: "Test observation from bats"
     captured: 2026-04-05T16:30:18Z
     context_task: T-932
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-007
     text: "Tagged observation"
     captured: 2026-04-05T16:30:18Z
     context_task: T-932
     tags: [test]
-    status: pending
+    status: dismissed
     promoted_to: null
