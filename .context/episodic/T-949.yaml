@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-949: Fix fw self-test task-gate-allow failure — gate test expects exit 0, gets 2
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T11:35:20Z
+# ============================================================================
+
+task_id: T-949
+task_name: "Fix fw self-test task-gate-allow failure — gate test expects exit 0, gets 2"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:49:01Z
+completed: 2026-04-06T10:51:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:51:06+02:00
+last_commit: 2026-04-06T12:51:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix self-test task-gate-allow — add onboarding-complete marker in test setup. Complete — self-test gates all pass, plus state from T-947/T-948
+
+# Key outcomes
+outcomes:
+  - "gates-test.sh marks onboarding complete in test dir"
+  - "fw self-test gates all pass (5/5)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix self-test task-gate-allow — add onboarding-complete marker in test setup"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-947.yaml"
+  - ".context/episodic/T-948.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/completed/T-947-integration-tests-for-fw-costs-and-fw-se.md"
+  - ".tasks/completed/T-948-fix-t-464-invalid-yaml-frontmatter--brok.md"
+  - ".tasks/completed/T-949-fix-fw-self-test-task-gate-allow-failure.md"
+  - "tests/e2e/gates-test.sh"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:51:06"
+    action: "T-949: Fix self-test task-gate-allow — add onboarding-complete marker in test setup"
+  - time: "2026-04-06T12:51:58"
+    action: "T-949: Complete — self-test gates all pass, plus state from T-947/T-948"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 8
+  lines_added: 405
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-949-fix-fw-self-test-task-gate-allow-failure.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-951: Session housekeeping — commit remaining generated docs and handovers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T11:35:21Z
+# ============================================================================
+
+task_id: T-951
+task_name: "Session housekeeping — commit remaining generated docs and handovers"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T10:54:21Z
+completed: 2026-04-06T10:55:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T12:54:52+02:00
+last_commit: 2026-04-06T12:55:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Commit updated generated docs, handovers, and version. Final state cleanup — working memory and new generated docs. Final generated docs from new test files
+
+# Key outcomes
+outcomes:
+  - "All generated docs committed"
+  - "Working directory nearly clean"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-06.yaml"
+  - ".context/handovers/CHECKPOINT-S-2026-0214-2025.md"
+  - ".context/handovers/CHECKPOINT-S-2026-0405-1807.md"
+  - ".context/handovers/CHECKPOINT-S-2026-0405-1808.md"
+  - ".context/handovers/CHECKPOINT-S-2026-0405-1814.md"
+  - ".context/handovers/LATEST.md"
+  - ".context/handovers/S-2026-0406-1223.md"
+  - ".context/handovers/S-2026-0406-1224.md"
+  - ".context/handovers/S-2026-0406-1228.md"
+  - ".context/handovers/S-2026-0406-1229.md"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/generated/components/agents-context-check-tier0.md"
+  - "docs/generated/components/agents-context-post-compact-resume.md"
+  - "docs/generated/components/agents-task-create-update-task.md"
+  - "docs/generated/components/audit-yaml-validator.md"
+  - "docs/generated/components/budget-gate-counter.md"
+  - "docs/generated/components/budget-status.md"
+  - "docs/generated/components/context-project-metrics-history.md"
+  - "docs/generated/components/learnings-data.md"
+  - "docs/generated/components/lib-notify.md"
+  - "docs/generated/components/tests-integration-fw_costs.md"
+  - "docs/generated/components/tests-integration-fw_self_test.md"
+  - "docs/generated/components/tests-unit-docgen_article.md"
+  - "docs/generated/components/tests-unit-docgen_component.md"
+  - "docs/generated/components/tests-unit-handover.md"
+  - "docs/generated/components/tests-unit-lib_ask.md"
+  - "docs/generated/components/tests-unit-lib_first_run.md"
+  - "docs/generated/components/tests-unit-lib_validate_init.md"
+  - "docs/generated/components/tests-unit-observe.md"
+  - ".tasks/active/T-951-session-housekeeping--commit-remaining-g.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T12:54:52"
+    action: "T-951: Commit updated generated docs, handovers, and version"
+  - time: "2026-04-06T12:55:13"
+    action: "T-951: Final state cleanup — working memory and new generated docs"
+  - time: "2026-04-06T12:55:28"
+    action: "T-951: Final generated docs from new test files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 3
+  files_changed: 32
+  lines_added: 2973
+  lines_removed: 518
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-951-session-housekeeping--commit-remaining-g.md
+generated_by: context-agent-hybrid
