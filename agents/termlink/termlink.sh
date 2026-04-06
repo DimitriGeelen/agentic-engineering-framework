@@ -156,7 +156,10 @@ cmd_cleanup() {
             worker_pids=$(ps aux 2>/dev/null | grep "$wdir" | grep -v grep | awk '{print $2}' || true)
 
             if [ -n "$worker_pids" ]; then
-                # T-843: Check if a claude process is actively running — if so, skip (not orphaned)
+                # T-843/T-972: Check if a claude process is actively running — if so, skip (not orphaned)
+                # Must check BOTH the matched PIDs AND their child processes, because
+                # run.sh (matched by grep $wdir) spawns claude -p as a child process
+                # whose args don't contain $wdir.
                 local has_claude=false
                 for pid in $worker_pids; do
                     local cmd_line
@@ -165,6 +168,17 @@ cmd_cleanup() {
                         has_claude=true
                         break
                     fi
+                    # T-972: Also check child processes of this PID
+                    local child_pids
+                    child_pids=$(ps --ppid "$pid" -o pid= 2>/dev/null || true)
+                    for cpid in $child_pids; do
+                        local child_cmd
+                        child_cmd=$(ps -p "$cpid" -o args= 2>/dev/null || echo "")
+                        if echo "$child_cmd" | grep -q "claude"; then
+                            has_claude=true
+                            break 2
+                        fi
+                    done
                 done
 
                 if [ "$has_claude" = true ]; then
