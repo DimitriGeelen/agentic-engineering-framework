@@ -4,7 +4,7 @@ name: "Add fw test commands to CLAUDE.md Quick Reference"
 description: >
   Add fw test commands to CLAUDE.md Quick Reference
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T20:48:59Z
-last_update: 2026-04-06T20:48:59Z
-date_finished: null
+last_update: 2026-04-06T20:50:03Z
+date_finished: 2026-04-06T20:50:03Z
 ---
 
 # T-977: Add fw test commands to CLAUDE.md Quick Reference
@@ -52,3 +52,7 @@ grep -q 'fw task review' CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-977-add-fw-test-commands-to-claudemd-quick-r.md
 - **Context:** Initial task creation
+
+### 2026-04-06T20:50:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Test commands and task review added to Quick Reference

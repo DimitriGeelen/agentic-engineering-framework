@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-977: Add fw test commands to CLAUDE.md Quick Reference
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T20:50:56Z
+# ============================================================================
+
+task_id: T-977
+task_name: "Add fw test commands to CLAUDE.md Quick Reference"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T20:48:59Z
+completed: 2026-04-06T20:50:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T22:49:56+02:00
+last_commit: 2026-04-06T22:49:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw test and fw task review to CLAUDE.md Quick Reference
+
+# Key outcomes
+outcomes:
+  - "`fw test` commands added to CLAUDE.md Quick Reference table (all, unit, integration, web, playwright, lint)"
+  - "`fw task review` added to Quick Reference table"
+  - "Verification commands pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-977-add-fw-test-commands-to-claudemd-quick-r.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T22:49:56"
+    action: "T-977: Add fw test and fw task review to CLAUDE.md Quick Reference"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 61
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-977-add-fw-test-commands-to-claudemd-quick-r.md
+generated_by: context-agent-hybrid

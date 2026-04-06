@@ -4,16 +4,16 @@ name: "Pickup: TermLink cleanup kills active dispatch workers — fw termlink cl
 description: >
   Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-843. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: next
 tags: [pickup, bug-report]
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-04-06T19:42:04Z
-last_update: 2026-04-06T20:44:51Z
-date_finished: null
+last_update: 2026-04-06T20:47:14Z
+date_finished: 2026-04-06T20:47:14Z
 ---
 
 # T-972: Pickup: TermLink cleanup kills active dispatch workers — fw termlink cleanup treats running workers as orphans because they lack exit_code file (from 999-Agentic-Engineering-Framework)
@@ -42,3 +42,7 @@ grep -q 'ppid\|children\|child' agents/termlink/termlink.sh
 
 ### 2026-04-06T20:44:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T20:47:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Fixed child process detection in cleanup
