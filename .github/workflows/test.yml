@@ -95,3 +95,30 @@ jobs:
         run: |
           export PATH="$PWD/bin:$HOME/.cargo/bin:$PATH"
           bash tests/e2e/runner.sh --tier a
+
+  playwright:
+    name: Playwright UI Tests (Tier 3)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: |
+          pip install pyyaml flask markupsafe pytest playwright
+          if [ -f web/requirements.txt ]; then
+            pip install -r web/requirements.txt
+          fi
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        run: |
+          export PATH="$PWD/bin:$PATH"
+          python3 -m pytest tests/playwright/ -v
