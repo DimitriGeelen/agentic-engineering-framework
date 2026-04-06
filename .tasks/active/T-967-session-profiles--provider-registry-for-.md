@@ -4,7 +4,7 @@ name: "Session profiles + provider registry for orchestrator readiness (T-962 Ph
 description: >
   Phase 4: Add provider registry pattern (shell, claude-code, future providers), session profiles (named presets with shell/env/icon/color), per-session token tracking. The v1-to-v2 bridge — ensures multi-provider orchestrator expansion is structural, not rewrite. Depends on T-966.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T18:25:41Z
-last_update: 2026-04-06T18:25:41Z
+last_update: 2026-04-06T22:12:30Z
 date_finished: null
 ---
 
@@ -20,40 +20,43 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 4 of T-962 (web terminal in Watchtower). T-964 built the PTY manager (`web/terminal.py`), T-966 added TermLink attachment. This phase adds the provider abstraction layer: adapter interface, two concrete adapters (local shell, claude code), session registry with YAML persistence, and session profiles (named presets). Design: `docs/reports/T-962-v7-orchestrator-design.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `web/terminal/adapters/base.py` — `SessionAdapter` Protocol class with spawn/capabilities/inject/observe/kill/get_cost methods
+- [ ] `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)
+- [ ] `web/terminal/adapters/claude_code.py` — `ClaudeCodeAdapter` spawning `claude -p` via PTY
+- [ ] `web/terminal/registry.py` — `SessionRegistry` with CRUD, YAML persistence in `.context/sessions/`, query by task/tag/provider/status
+- [ ] `web/terminal/session.py` — `Session` dataclass matching T-962 v7 schema (id, type, provider, status, capabilities, cost, process)
+- [ ] `web/terminal/profiles.py` — Session profile loader: reads `web/terminal/profiles.yaml`, returns presets (local-bash, local-zsh, claude-code, claude-dispatch)
+- [ ] `web/terminal/profiles.yaml` — 4 default profiles with shell/env/icon/color/provider config
+- [ ] `web/blueprints/terminal.py` updated: `/api/sessions` CRUD endpoints using registry
+- [ ] `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls
+- [ ] Existing Playwright terminal tests still pass after refactor
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Terminal page still works end-to-end (spawn shell, type commands, see output)
+  **Steps:**
+  1. Open http://localhost:3000/terminal in browser
+  2. Terminal should auto-spawn a shell session
+  3. Type `ls` and verify directory listing appears
+  4. Open a second tab and verify independent session
+  **Expected:** Both sessions work independently, no lag or artifacts
+  **If not:** Check browser console and Flask logs for errors
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+python3 -c "from web.terminal.adapters.base import SessionAdapter"
+python3 -c "from web.terminal.adapters.local_shell import LocalShellAdapter"
+python3 -c "from web.terminal.adapters.claude_code import ClaudeCodeAdapter"
+python3 -c "from web.terminal.registry import SessionRegistry"
+python3 -c "from web.terminal.session import Session"
+python3 -c "from web.terminal.profiles import load_profiles; p = load_profiles(); assert len(p) >= 4, f'Expected 4+ profiles, got {len(p)}'"
+test -f web/terminal/profiles.yaml
+python3 -c "import yaml; yaml.safe_load(open('web/terminal/profiles.yaml'))"
+grep -q '/api/sessions' web/blueprints/terminal.py
 
 ## Decisions
 
@@ -72,3 +75,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-967-session-profiles--provider-registry-for-.md
 - **Context:** Initial task creation
+
+### 2026-04-06T22:12:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
