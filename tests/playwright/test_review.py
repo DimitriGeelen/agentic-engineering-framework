@@ -1,6 +1,7 @@
-"""Playwright tests for Review/Approval pages (T-970).
+"""Playwright tests for Review page (T-970, T-982).
 
-Covers: review page loads, AC checkboxes present, approvals list.
+Covers: review page loads, AC checkboxes present.
+Approvals page tests moved to test_approvals.py (T-981).
 """
 import pytest
 from playwright.sync_api import Page
@@ -10,20 +11,6 @@ TEST_URL = "http://localhost:3099"
 
 def _url(path: str) -> str:
     return f"{TEST_URL}{path}"
-
-
-class TestApprovalsPage:
-    """Approvals list page renders."""
-
-    def test_approvals_page_loads(self, page: Page):
-        resp = page.goto(_url("/approvals"))
-        assert resp.status == 200
-
-    def test_approvals_has_content(self, page: Page):
-        page.goto(_url("/approvals"))
-        page.wait_for_load_state("networkidle")
-        content = page.content()
-        assert "Approvals" in content or "approval" in content.lower()
 
 
 class TestReviewPage:
