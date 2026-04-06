@@ -30,7 +30,7 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `agents/task-create/update-task.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -38,12 +38,14 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `agents/git/lib/hooks.sh` | called_by |
 | `bin/fw` | called_by |
 | `agents/onboarding-test/test-onboarding.sh` | called_by |
+| `tests/unit/audit.bats` | tested_by |
 
 ## Related
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-955: Audit loop merge — combine 10 loops into 3 passes (T-860 Phase 1)
 
 ---
 *Auto-generated from Component Fabric. Card: `audit-yaml-validator.yaml`*

@@ -64,6 +64,7 @@ Adding a new blueprint: import it here and append to _BLUEPRINTS.
 
 ### Tasks
 - T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+- T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-__init__.yaml`*

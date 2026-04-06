@@ -21,11 +21,12 @@ Synthesizes current state from handover, working memory, git, and tasks
 |--------|-------------|
 | `lib/paths.sh` | calls |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/resume.bats` | tested_by |
 
 ## Related
 

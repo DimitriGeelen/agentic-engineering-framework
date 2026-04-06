@@ -20,11 +20,6 @@ fw context focus  — set/show current focus
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-738: Add integration tests for fw task and fw context commands
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_context.yaml`*
 *Last verified: 2026-03-29*

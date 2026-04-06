@@ -20,11 +20,6 @@ fw task list     — list active tasks
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-738: Add integration tests for fw task and fw context commands
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_task.yaml`*
 *Last verified: 2026-03-29*

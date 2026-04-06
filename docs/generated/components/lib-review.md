@@ -40,6 +40,7 @@ When agent ACs are complete and human ACs remain:
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-973: Review-before-decide gate — fw inception decide requires fw task review first
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-review.yaml`*

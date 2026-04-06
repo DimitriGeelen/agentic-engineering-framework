@@ -22,12 +22,13 @@ Origin: T-889 (foundation for T-885 service registry)
 |--------|-------------|
 | `lib/config-file.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `lib/config-file.sh` | called-by |
 | `tests/unit/lib_config_file.bats` | called-by |
+| `tests/integration/fw_config.bats` | tested_by |
 
 ## Related
 

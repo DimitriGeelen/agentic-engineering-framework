@@ -23,11 +23,6 @@ fw cron resume <id> — resume a paused job
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-725: Integration tests for fw version and fw cron CLI commands
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_cron.yaml`*
 *Last verified: 2026-03-29*

@@ -24,7 +24,6 @@ Part of: Agentic Engineering Framework (T-606)
 ## Related
 
 ### Tasks
-- T-724: Sync vendor copies — T-722 settings changes to .agentic-framework
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 

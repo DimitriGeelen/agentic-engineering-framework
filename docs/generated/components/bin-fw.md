@@ -73,7 +73,7 @@ fw task create --name "Fix bug" --type build --owner human
 | `bin/watchtower.sh` | calls |
 | `lib/build.sh` | calls |
 
-## Used By (42)
+## Used By (45)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -119,6 +119,9 @@ fw task create --name "Fix bug" --type build --owner human
 | `tests/integration/fw_onboarding.bats` | called-by |
 | `tests/integration/fw_hook.bats` | called-by |
 | `tests/integration/fw_traceability.bats` | called-by |
+| `tests/integration/fw_costs.bats` | tested_by |
+| `tests/integration/fw_self_test.bats` | tested_by |
+| `tests/integration/fw_config.bats` | tested_by |
 
 ## Documentation
 

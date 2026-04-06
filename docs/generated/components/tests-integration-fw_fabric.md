@@ -23,11 +23,6 @@ fw fabric get       — show full component card
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-737: Add integration tests for fw fabric commands
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_fabric.yaml`*
 *Last verified: 2026-03-29*

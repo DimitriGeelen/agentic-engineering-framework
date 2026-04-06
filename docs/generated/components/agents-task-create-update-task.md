@@ -27,13 +27,14 @@ Usage:
 | `lib/keylock.sh` | calls |
 | `lib/review.sh` | calls |
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
 | `bin/fw` | called_by |
 | `agents/audit/audit.sh` | called-by |
+| `tests/unit/update_task.bats` | tested_by |
 
 ## Documentation
 

@@ -34,6 +34,12 @@ When the active task has `workflow_type: inception`:
 | `bin/fw` | called_by |
 | `tests/unit/lib_inception.bats` | called-by |
 
+## Related
+
+### Tasks
+- T-973: Review-before-decide gate — fw inception decide requires fw task review first
+- T-974: Inception recommendation gate — require ## Recommendation before fw inception decide
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception.yaml`*
 *Last verified: 2026-02-20*

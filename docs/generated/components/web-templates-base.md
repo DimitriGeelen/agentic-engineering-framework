@@ -16,7 +16,6 @@
 ## Related
 
 ### Tasks
-- T-732: Remove unused Cytoscape.js vendor files from base.html
 - T-854: Pass project name to Watchtower templates — resolve from project root, display in header
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 
