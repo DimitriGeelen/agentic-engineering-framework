@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T12:11:32Z
-last_update: 2026-04-06T12:55:06Z
+last_update: 2026-04-06T12:58:33Z
 date_finished: null
 ---
 
@@ -33,18 +33,7 @@ Reclassify deterministic RUBBER-STAMP Human ACs to Agent ACs per T-954 GO decisi
 ## Verification
 
 # Count of unchecked Human ACs should be less than the starting 129
-python3 -c "
-import os, re
-count = 0
-for f in os.listdir('.tasks/active'):
-    if not f.endswith('.md'): continue
-    content = open(f'.tasks/active/{f}').read()
-    m = re.search(r'### Human\n(.*?)(?=\n## |\n### |\Z)', content, re.DOTALL)
-    if m:
-        count += len(re.findall(r'- \[ \]', m.group(1)))
-print(f'Human ACs: {count}')
-assert count < 129, f'Expected <129, got {count}'
-"
+python3 -c "import os,re; count=sum(len(re.findall(r'- \[ \]',m.group(1))) for f in os.listdir('.tasks/active') if f.endswith('.md') for m in [re.search(r'### Human\n(.*?)(?=\n## |\Z)',open(f'.tasks/active/{f}').read(),re.DOTALL)] if m); assert count<129, f'{count}>=129'"
 
 ## Decisions
 
