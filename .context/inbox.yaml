@@ -53,3 +53,31 @@ observations:
     tags: [test]
     status: dismissed
     promoted_to: null
+  - id: OBS-008
+    text: "Test observation from bats"
+    captured: 2026-04-06T10:25:07Z
+    context_task: T-001
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-009
+    text: "Tagged observation"
+    captured: 2026-04-06T10:25:07Z
+    context_task: T-001
+    tags: [test]
+    status: dismissed
+    promoted_to: null
+  - id: OBS-010
+    text: "Test observation from bats"
+    captured: 2026-04-06T10:29:43Z
+    context_task: T-001
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-011
+    text: "Tagged observation"
+    captured: 2026-04-06T10:29:43Z
+    context_task: T-001
+    tags: [test]
+    status: dismissed
+    promoted_to: null
