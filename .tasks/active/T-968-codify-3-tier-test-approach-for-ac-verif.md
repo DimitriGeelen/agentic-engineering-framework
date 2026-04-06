@@ -9,7 +9,7 @@ description: >
   the rules and the infrastructure — fw test command, tests/playwright/ directory, CI integration,
   AC-to-test conversion pipeline.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -17,8 +17,8 @@ tags: [testing, governance, infrastructure]
 components: []
 related_tasks: [T-954, T-823, T-516, T-158]
 created: 2026-04-06T19:21:20Z
-last_update: 2026-04-06T19:21:20Z
-date_finished: null
+last_update: 2026-04-06T19:37:23Z
+date_finished: 2026-04-06T19:37:23Z
 ---
 
 # T-968: Codify 3-tier test approach for AC verification — programmatic, TermLink E2E, Playwright regression
@@ -134,8 +134,35 @@ grep -q '## Recommendation' docs/reports/T-968-test-infrastructure.md
 
 ## Decisions
 
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+Rationale: Gap is focused: add tests/playwright/ + fw test playwright. 1086 tests and fw test already exist. pytest-playwright is pure Python (no JS tooling). 19% of Human AC backlog is automatable, but the real value is going-forward regression prevention.
+Evidence:
+- fw test already has 5 sub-commands with 1086 tests
+- pytest-playwright fits Flask/Python stack perfectly
+- 12 AC-to-test conversion patterns identified
+- Implementation is 1 session (3 focused build tasks)
+
+**Date**: 2026-04-06T19:37:23Z
+
 ## Updates
 
 ### 2026-04-06T19:21:20Z — task-created [task-create-agent]
 - **Action:** Created inception task for test infrastructure codification
 - **Context:** User feedback on T-959/T-964/T-965/T-966 — functional Human ACs should be automated tests
+
+### 2026-04-06T19:37:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+Rationale: Gap is focused: add tests/playwright/ + fw test playwright. 1086 tests and fw test already exist. pytest-playwright is pure Python (no JS tooling). 19% of Human AC backlog is automatable, but the real value is going-forward regression prevention.
+Evidence:
+- fw test already has 5 sub-commands with 1086 tests
+- pytest-playwright fits Flask/Python stack perfectly
+- 12 AC-to-test conversion patterns identified
+- Implementation is 1 session (3 focused build tasks)
+
+### 2026-04-06T19:37:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
