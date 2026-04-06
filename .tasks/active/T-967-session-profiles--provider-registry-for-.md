@@ -25,16 +25,16 @@ Phase 4 of T-962 (web terminal in Watchtower). T-964 built the PTY manager (`web
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/terminal/adapters/base.py` — `SessionAdapter` Protocol class with spawn/capabilities/inject/observe/kill/get_cost methods
-- [ ] `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)
-- [ ] `web/terminal/adapters/claude_code.py` — `ClaudeCodeAdapter` spawning `claude -p` via PTY
-- [ ] `web/terminal/registry.py` — `SessionRegistry` with CRUD, YAML persistence in `.context/sessions/`, query by task/tag/provider/status
-- [ ] `web/terminal/session.py` — `Session` dataclass matching T-962 v7 schema (id, type, provider, status, capabilities, cost, process)
-- [ ] `web/terminal/profiles.py` — Session profile loader: reads `web/terminal/profiles.yaml`, returns presets (local-bash, local-zsh, claude-code, claude-dispatch)
-- [ ] `web/terminal/profiles.yaml` — 4 default profiles with shell/env/icon/color/provider config
-- [ ] `web/blueprints/terminal.py` updated: `/api/sessions` CRUD endpoints using registry
-- [ ] `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls
-- [ ] Existing Playwright terminal tests still pass after refactor
+- [x] `web/terminal/adapters/base.py` — `SessionAdapter` Protocol class with spawn/capabilities/inject/observe/kill/get_cost methods
+- [x] `web/terminal/adapters/local_shell.py` — `LocalShellAdapter` using pty.fork (migrated from `web/terminal.py`)
+- [x] `web/terminal/adapters/claude_code.py` — `ClaudeCodeAdapter` spawning `claude -p` via PTY
+- [x] `web/terminal/registry.py` — `SessionRegistry` with CRUD, YAML persistence in `.context/sessions/`, query by task/tag/provider/status
+- [x] `web/terminal/session.py` — `Session` dataclass matching T-962 v7 schema (id, type, provider, status, capabilities, cost, process)
+- [x] `web/terminal/profiles.py` — Session profile loader: reads `web/terminal/profiles.yaml`, returns presets (local-bash, local-zsh, claude-code, claude-dispatch)
+- [x] `web/terminal/profiles.yaml` — 4 default profiles with shell/env/icon/color/provider config
+- [x] `web/blueprints/terminal.py` updated: `/api/sessions` CRUD endpoints using registry
+- [x] `web/terminal.py` refactored to use `LocalShellAdapter` instead of direct pty calls
+- [x] Existing Playwright terminal tests still pass after refactor (40/40 passed in 75s)
 
 ### Human
 - [ ] [REVIEW] Terminal page still works end-to-end (spawn shell, type commands, see output)
