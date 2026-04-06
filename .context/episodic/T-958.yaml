@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-958: Reclassify 29 deterministic RUBBER-STAMP Human ACs to Agent ACs with verification commands (T-954 Phase 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T12:59:13Z
+# ============================================================================
+
+task_id: T-958
+task_name: "Reclassify 29 deterministic RUBBER-STAMP Human ACs to Agent ACs with verification commands (T-954 Phase 2)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T12:11:32Z
+completed: 2026-04-06T12:59:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T14:58:33+02:00
+last_commit: 2026-04-06T14:59:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reclassify 19 RUBBER-STAMP Human ACs to Agent ACs with verification commands. Fix verification — single-line Python for P-011 gate
+
+# Key outcomes
+outcomes:
+  - "RUBBER-STAMP ACs with deterministic tests converted to Agent ACs (19 converted)"
+  - "Each converted AC has a verification command in ## Verification"
+  - "Human AC count reduced (19 converted, 14% reduction — remaining 17 need macOS/phone/live session)"
+  - "No subjective/judgment ACs reclassified (voice, tone, UX, inception go/no-go stay Human)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — single-line Python for P-011 gate"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-493-fw-update-command--cli-wrapper-for-frame.md"
+  - ".tasks/active/T-516-tier-b-e2e-tests--4-agent-level-claude-c.md"
+  - ".tasks/active/T-554-single-started-work-gate--enforce-one-ac.md"
+  - ".tasks/active/T-557-inception-go-decision-human-confirm-gate.md"
+  - ".tasks/active/T-604-cron-copy-on-change--git-tracked-cron-de.md"
+  - ".tasks/active/T-631-human-ac-review-via-clickable-url--qr-co.md"
+  - ".tasks/active/T-632-watchtower-file-viewer--clickable-links-.md"
+  - ".tasks/active/T-633-auto-link-file-references--fw-commands-a.md"
+  - ".tasks/active/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md"
+  - ".tasks/active/T-650-bash-task-gate--safe-command-allowlist--.md"
+  - ".tasks/active/T-805-handover-token-summary--include-session-.md"
+  - ".tasks/active/T-822-complete-fwconfig-migration--remaining-h.md"
+  - ".tasks/active/T-826-timeline-token-usage--add-per-session-to.md"
+  - ".tasks/active/T-827-timeline-per-session-token-delta--show-s.md"
+  - ".tasks/active/T-829-inputoutput-token-breakdown--enrich-hand.md"
+  - ".tasks/active/T-831-session-quality-metrics--session-metrics.md"
+  - ".tasks/active/T-850-fix-session-metrics--per-session-deltas-.md"
+  - ".tasks/active/T-851-linkable-task-references-in-handover-ses.md"
+  - ".tasks/active/T-857-fw-upgrade-sync-gap--lib-agentstask-crea.md"
+  - ".tasks/active/T-860-audit-performance--123-active-tasks--7-l.md"
+  - ".tasks/active/T-954-human-ac-classification-reform--risk-bas.md"
+  - ".tasks/active/T-958-reclassify-29-deterministic-rubber-stamp.md"
+  - ".tasks/completed/T-955-audit-loop-merge--combine-10-loops-into-.md"
+  - ".tasks/completed/T-957-add-ac-classification-guidance-to-claude.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T14:58:33"
+    action: "T-958: Reclassify 19 RUBBER-STAMP Human ACs to Agent ACs with verification commands"
+  - time: "2026-04-06T14:59:05"
+    action: "T-958: Fix verification — single-line Python for P-011 gate"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 47
+  commits: 2
+  files_changed: 23
+  lines_added: 121
+  lines_removed: 200
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-958-reclassify-29-deterministic-rubber-stamp.md
+generated_by: context-agent-hybrid

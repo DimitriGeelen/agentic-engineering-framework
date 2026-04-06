@@ -1,53 +1,57 @@
 # ============================================================================
 # EPISODIC MEMORY - T-860: Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime
 # ============================================================================
-# STATUS: REQUIRES ENRICHMENT
-# Limited data sources. Review and fill missing sections manually.
-# Generated: 2026-04-04T20:50:21Z
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T11:45:37Z
 # ============================================================================
 
 task_id: T-860
 task_name: "Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime"
 workflow_type: inception
-enrichment_status: pending  # No git commits or AC found — needs manual enrichment
+enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-04-04T19:33:13Z
-completed: 2026-04-04T19:34:28Z
-duration_days: 0
-updates_count: 1
+completed: 2026-04-06T11:45:34Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-04-05T14:23:10+02:00
+last_commit: 2026-04-06T13:43:30+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  Inception research — audit performance 3m56s, 10 loops, subprocess bottleneck (GO recommendation). Add value analysis — which audit loops catch real issues vs noise
 
 # Key outcomes
 outcomes:
-  - "Task completed"
+  - "Problem statement validated — 3m56s measured, 10 loops identified"
+  - "Assumptions tested — subprocess spawning confirmed as dominant cost"
+  - "Recommendation written with rationale (GO — Phase 1: --fast flag, Phase 2: merge loops)"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: "Add value analysis — which audit loops catch real issues vs noise"
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - "docs/reports/T-860-audit-performance.md"
+  - ".tasks/active/T-860-audit-performance--123-active-tasks--7-l.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-04-05T14:23:10"
+    action: "T-860: Inception research — audit performance 3m56s, 10 loops, subprocess bottleneck (GO recommendation)"
+  - time: "2026-04-06T13:43:30"
+    action: "T-860: Add value analysis — which audit loops catch real issues vs noise"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  - description: "[TODO: What worked well?]"
-    why: "[TODO: Why did it work?]"
+  # Completed successfully in 2 commit(s), 2412 min
 
 # Related tasks
 related_tasks:
@@ -60,11 +64,11 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 1
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  wall_clock_minutes: 2412
+  commits: 2
+  files_changed: 2
+  lines_added: 207
+  lines_removed: 35
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-860-audit-performance--123-active-tasks--7-l.md

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-955: Audit loop merge — combine 10 loops into 3 passes (T-860 Phase 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T12:55:01Z
+# ============================================================================
+
+task_id: T-955
+task_name: "Audit loop merge — combine 10 loops into 3 passes (T-860 Phase 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T11:50:10Z
+completed: 2026-04-06T12:54:50Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T14:54:05+02:00
+last_commit: 2026-04-06T14:54:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Merge 8 audit loops into 2 Python single-pass scans — 3m56s to 1m05s (3.6x speedup). Register active-task-scan.py and completed-task-scan.py fabric cards. Fix verification command — audit exit 1 (warnings) is expected
+
+# Key outcomes
+outcomes:
+  - "Active task loops (1,2,5,9,10) merged into single pass"
+  - "Completed task loops (3,4,7) merged into single pass"
+  - "All audit findings still produced (no checks lost)"
+  - "`fw audit` passes (exit 0 or 1, not 2)"
+  - "Audit output matches or improves on pre-merge output"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification command — audit exit 1 (warnings) is expected"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/active-task-scan.py"
+  - "agents/audit/audit.sh"
+  - "agents/audit/completed-task-scan.py"
+  - ".fabric/components/agents-audit-active-task-scan.yaml"
+  - ".fabric/components/agents-audit-completed-task-scan.yaml"
+  - ".tasks/active/T-955-audit-loop-merge--combine-10-loops-into-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T14:54:05"
+    action: "T-955: Merge 8 audit loops into 2 Python single-pass scans — 3m56s to 1m05s (3.6x speedup)"
+  - time: "2026-04-06T14:54:15"
+    action: "T-955: Register active-task-scan.py and completed-task-scan.py fabric cards"
+  - time: "2026-04-06T14:54:45"
+    action: "T-955: Fix verification command — audit exit 1 (warnings) is expected"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 64
+  commits: 3
+  files_changed: 6
+  lines_added: 562
+  lines_removed: 356
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-955-audit-loop-merge--combine-10-loops-into-.md
+generated_by: context-agent-hybrid

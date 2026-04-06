@@ -4,7 +4,7 @@ name: "Upgrade 11 consumers from v1.4.718 to v1.4.728 via TermLink"
 description: >
   Batch upgrade all consumer projects to latest framework version with TermLink parallel dispatch.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T13:04:19Z
-last_update: 2026-04-06T13:04:19Z
-date_finished: null
+last_update: 2026-04-06T13:06:15Z
+date_finished: 2026-04-06T13:06:15Z
 ---
 
 # T-960: Upgrade 11 consumers from v1.4.718 to v1.4.728 via TermLink
@@ -82,3 +82,6 @@ cat VERSION
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-960-upgrade-11-consumers-from-v14718-to-v147.md
 - **Context:** Initial task creation
+
+### 2026-04-06T13:06:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

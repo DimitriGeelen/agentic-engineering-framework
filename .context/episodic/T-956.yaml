@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-956: Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently (T-860 Phase 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T13:00:51Z
+# ============================================================================
+
+task_id: T-956
+task_name: "Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently (T-860 Phase 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T11:50:13Z
+completed: 2026-04-06T13:00:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T15:00:41+02:00
+last_commit: 2026-04-06T15:00:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Recalibrate audit quality thresholds — desc 50→30 chars, stale 7→14 days
+
+# Key outcomes
+outcomes:
+  - "Short description threshold raised from 50 to 30 chars"
+  - "Stale task threshold raised from 7 to 14 days"
+  - "Audit produces fewer noisy quality warnings"
+  - "No real quality issues masked by threshold changes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/active-task-scan.py"
+  - ".tasks/active/T-956-audit-loop-2-noise-fix--recalibrate-qual.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T15:00:41"
+    action: "T-956: Recalibrate audit quality thresholds — desc 50→30 chars, stale 7→14 days"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 70
+  commits: 1
+  files_changed: 2
+  lines_added: 14
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-956-audit-loop-2-noise-fix--recalibrate-qual.md
+generated_by: context-agent-hybrid
