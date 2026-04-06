@@ -117,6 +117,11 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Watchtower approval surface — unfakeable, <1s friction, mobile, solves Human   AC backlog
+
 ## Decisions
 
 **Decision**: GO

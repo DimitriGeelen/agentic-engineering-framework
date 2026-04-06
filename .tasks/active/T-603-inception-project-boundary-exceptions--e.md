@@ -139,6 +139,11 @@ T-602 fixed the multi-project collision symptom, but the boundary exception itse
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Option F (copy-on-change with drift detection) wins: cron definitions as git-tracked project artifacts in PROJECT_ROOT/.context/cron/, copied to /etc/cron.d/ with graceful sudo degradation and audit drift detection. Eliminates ongoing boundary violations, works cross-platform, handles non-root installs.
+
 ## Decisions
 
 **Decision**: GO

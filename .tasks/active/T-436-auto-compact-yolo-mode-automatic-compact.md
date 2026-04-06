@@ -150,6 +150,11 @@ unsupervised through context transitions." Not reckless — earned confidence.
 
 test -f docs/reports/T-436-yolo-mode-inception.md
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** PreCompact and SessionStart hooks fire reliably on auto-compact (A2, A3 confirmed); Budget reset works after auto-compact (no L-049 deadlock); D-027 concerns are addressed or no longer apply; Auton...
+
 ## Decisions
 
 **Decision**: GO

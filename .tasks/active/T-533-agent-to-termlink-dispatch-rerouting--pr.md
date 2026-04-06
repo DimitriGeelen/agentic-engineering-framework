@@ -87,6 +87,11 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Option D: Tier 0-style approval with session counter. PreToolUse on Agent tool, first 2 free, 3rd+ blocked. Graceful degradation when TermLink not installed.
+
 ## Decisions
 
 **Decision**: GO

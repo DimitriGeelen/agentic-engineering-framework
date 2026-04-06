@@ -114,6 +114,11 @@ T-660 made the problem worse by syncing MORE files to the global install during 
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** A path format exists that eliminates the global install for both framework and consumer projects; The migration is backward-compatible (existing users aren't broken immediately); Terminal UX has a ...
+
 ## Decisions
 
 **Decision**: GO

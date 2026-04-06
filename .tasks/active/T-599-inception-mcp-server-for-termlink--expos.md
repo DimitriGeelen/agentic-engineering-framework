@@ -83,6 +83,11 @@ TermLink commands are invoked via bash wrappers — opaque to MCP tool catalogs.
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** TermLink MCP server works reliably (needs testing); Minimal wiring is low-risk (one-line .mcp.json addition); D4 (Portability) justifies it
+
 ## Decisions
 
 **Decision**: GO

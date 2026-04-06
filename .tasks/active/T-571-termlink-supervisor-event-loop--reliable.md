@@ -85,6 +85,11 @@ Current `fw termlink dispatch` is fire-and-forget with file-based polling. Worke
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Crash detection can use existing TermLink primitives (discover, status) — no new infrastructure; Phase 1 fits in one build session (<4 hours); Current dispatch reliability is insufficient for >3 pa...
+
 ## Decisions
 
 **Decision**: GO

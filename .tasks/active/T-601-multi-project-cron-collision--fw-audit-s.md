@@ -71,6 +71,11 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Clear bug, clear fix (Option D: basename + collision warning), <50 lines, urgent
+
 ## Decisions
 
 **Decision**: GO

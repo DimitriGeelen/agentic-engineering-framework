@@ -75,6 +75,11 @@ The framework IS moving toward multi-agent:
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+**Rationale:** DEFER full dedup until TermLink Phase 2 ships. Exception: fix bus.sh ID generation now — only component designed for multi-agent with race condition in core operation. Steelman found 16 surfaces but strawman showed zero incidents in 530 tasks. Reactive fix for the rest is 2 hours when real failure shape is known.
+
 ## Decisions
 
 **Decision**: DEFER

@@ -84,6 +84,11 @@ None — research/analysis task, no code changes in this inception.
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** build measurement infrastructure
+
 ## Decisions
 
 **Decision**: GO

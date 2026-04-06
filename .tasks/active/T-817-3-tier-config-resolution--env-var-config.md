@@ -76,6 +76,11 @@ date_finished: 2026-04-03T21:36:02Z
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** pattern already exists ad-hoc, standardize with lib/config.sh + Watchtower config page
+
 ## Decisions
 
 **Decision**: GO

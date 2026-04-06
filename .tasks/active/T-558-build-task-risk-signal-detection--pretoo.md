@@ -82,6 +82,11 @@ Origin: T-549 steelman/strawman analysis concluded risk signals are valid but ap
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+**Rationale:** Existing 7 guards cover proposed risk signals, no concrete gap identified
+
 ## Decisions
 
 **Decision**: DEFER

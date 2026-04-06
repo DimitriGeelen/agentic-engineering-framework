@@ -75,6 +75,16 @@ CLAUDE.md is 800+ lines. Consumer projects need framework governance (universal)
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** NO-GO
+**Rationale:** Claude Code has no include/import mechanism for CLAUDE.md. Current fw upgrade merge works reliably (20+ upgrades). GO decision was corrupted (placeholder rationale). Research artifact supersedes it.
+**Evidence:**
+- A1 (multi-file CLAUDE.md) — INVALID: no include mechanism exists
+- A2 (fw upgrade insufficient) — INVALID: works reliably
+- Current approach (fw upgrade merge) covers the practical need
+- See `docs/reports/T-316-layered-claude-md.md`
+
 ## Decisions
 
 **Decision**: GO

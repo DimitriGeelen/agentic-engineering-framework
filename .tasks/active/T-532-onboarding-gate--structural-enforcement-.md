@@ -87,6 +87,11 @@ This means a freshly initialized project can immediately drift into ungoverned w
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Tag-based gate in check-active-task.sh + SessionStart injection. Marker exists on seed templates, backward compatible, minimal change surface. Escape hatch via fw onboarding skip.
+
 ## Decisions
 
 **Decision**: GO

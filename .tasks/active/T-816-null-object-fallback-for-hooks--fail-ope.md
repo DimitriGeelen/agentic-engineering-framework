@@ -76,6 +76,11 @@ date_finished: 2026-04-03T21:35:59Z
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** NO-GO
+**Rationale:** fail-closed correct for safety-critical hooks, carve-out for crash distinguishability is a small build   task
+
 ## Decisions
 
 **Decision**: NO-GO

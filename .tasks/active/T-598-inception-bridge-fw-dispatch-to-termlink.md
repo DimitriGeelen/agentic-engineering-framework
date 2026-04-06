@@ -85,6 +85,11 @@ date_finished: 2026-03-28T17:08:25Z
      For inception tasks, verification is often not needed (decisions, not code).
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** 3+ machines need to communicate regularly; SSH dispatch has hit concrete limitations (payload size, latency, reliability); T-600 (attach-self) is complete and TermLink deployed on remote machines; ...
+
 ## Decisions
 
 **Decision**: GO

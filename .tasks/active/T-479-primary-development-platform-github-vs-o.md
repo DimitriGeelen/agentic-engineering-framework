@@ -131,6 +131,11 @@ If both platforms remain active, what's the minimal sync strategy? Push to both 
 
 test -f docs/reports/T-479-platform-decision.md
 
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** want this see how we do it with termlink
+
 ## Decisions
 
 **Decision**: GO
