@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-968: Codify 3-tier test approach for AC verification — programmatic, TermLink E2E, Playwright regression
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T19:37:25Z
+# ============================================================================
+
+task_id: T-968
+task_name: "Codify 3-tier test approach for AC verification — programmatic, TermLink E2E, Playwright regression"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T19:21:20Z
+completed: 2026-04-06T19:37:23Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T21:28:19+02:00
+last_commit: 2026-04-06T21:35:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception task + research skeleton — 3-tier test infrastructure. Complete inception research — 3-tier test infrastructure GO
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with data (112 unchecked Human ACs: 19% automatable)"
+  - "5 research vectors completed (1 direct + 4 TermLink dispatch)"
+  - "Research artifact created at `docs/reports/T-968-test-infrastructure.md`"
+  - "Test directory structure proposed (tests/playwright/ with pytest-playwright)"
+  - "`fw test` command already exists — extend with `fw test playwright`"
+  - "Recommendation: GO — gap is focused (just Playwright integration needed)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-968-test-infrastructure.md"
+  - "docs/reports/T-968-v2-playwright-infra.md"
+  - "docs/reports/T-968-v3-termlink-e2e.md"
+  - "docs/reports/T-968-v4-fw-test-command.md"
+  - "docs/reports/T-968-v5-ac-to-test-pipeline.md"
+  - ".tasks/active/T-968-codify-3-tier-test-approach-for-ac-verif.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T21:28:19"
+    action: "T-968: Inception task + research skeleton — 3-tier test infrastructure"
+  - time: "2026-04-06T21:35:45"
+    action: "T-968: Complete inception research — 3-tier test infrastructure GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [testing, governance, infrastructure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 2
+  files_changed: 6
+  lines_added: 1888
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-968-codify-3-tier-test-approach-for-ac-verif.md
+generated_by: context-agent-hybrid

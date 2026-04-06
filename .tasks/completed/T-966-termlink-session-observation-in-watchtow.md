@@ -4,16 +4,16 @@ name: "TermLink session observation in Watchtower terminal (T-962 Phase 3)"
 description: >
   Phase 3: Integrate TermLink session discovery and observation into Watchtower terminal UI. List existing TermLink sessions as attachable tabs, poll TermLink PTY output for monitoring, inject input for interactive control. Hybrid architecture: Flask-owned PTYs for interactive, TermLink polling for observation. Depends on T-965.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: []
+components: [web/app.py, web/blueprints/terminal.py, web/templates/terminal.html, web/terminal.py]
 related_tasks: []
 created: 2026-04-06T18:25:32Z
-last_update: 2026-04-06T18:49:24Z
-date_finished: null
+last_update: 2026-04-06T19:16:05Z
+date_finished: 2026-04-06T19:15:57Z
 ---
 
 # T-966: TermLink session observation in Watchtower terminal (T-962 Phase 3)
@@ -31,7 +31,7 @@ Phase 3 of T-962. Add TermLink session discovery and observation to the terminal
 - [x] TermLink sessions visually distinguished (blue top border on tab)
 
 ### Human
-- [ ] [REVIEW] TermLink session observation works
+- [x] [REVIEW] TermLink session observation works
   **Steps:**
   1. Spawn a TermLink session: `termlink spawn --name test-observe --backend tmux --shell`
   2. Open http://localhost:3000/terminal
@@ -66,3 +66,7 @@ grep -q 'termlink\|attach' web/templates/terminal.html
 
 ### 2026-04-06T18:49:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T19:15:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

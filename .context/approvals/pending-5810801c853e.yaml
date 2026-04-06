@@ -1,0 +1,9 @@
+command_hash: 5810801c853ee641671a54c9690bfc1abecef4ab68147fa1b002888ff04c8cb1
+command_preview: 'bin/fw inception decide T-968 go --rationale "test" 2>&1; echo "EXIT:
+  $?"'
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: pending
+timestamp: '2026-04-06T19:55:31Z'
+type: tier0

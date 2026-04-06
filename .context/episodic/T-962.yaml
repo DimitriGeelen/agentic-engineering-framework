@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-962: Web terminal in Watchtower — browser-based interactive terminal with TermLink integration, multi-session architecture for future orchestrator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T18:24:36Z
+# ============================================================================
+
+task_id: T-962
+task_name: "Web terminal in Watchtower — browser-based interactive terminal with TermLink integration, multi-session architecture for future orchestrator"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T17:50:09Z
+completed: 2026-04-06T18:24:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T19:51:56+02:00
+last_commit: 2026-04-06T20:04:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception task + research skeleton — web terminal in Watchtower. Complete inception research — 7 vectors, GO recommendation
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "7 research vectors completed (TermLink dispatch)"
+  - "Research artifact created at `docs/reports/T-962-web-terminal-research.md`"
+  - "Assumptions tested with evidence (7/7 validated)"
+  - "Architecture recommendation with multi-session data model"
+  - "Recommendation written with go/no-go rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-961.yaml"
+  - "docs/reports/T-962-v1-oss-terminals.md"
+  - "docs/reports/T-962-v2-pty-bridges.md"
+  - "docs/reports/T-962-v3-full-solutions.md"
+  - "docs/reports/T-962-v4-termlink-integration.md"
+  - "docs/reports/T-962-v5-multi-session-ui.md"
+  - "docs/reports/T-962-v6-security-model.md"
+  - "docs/reports/T-962-v7-orchestrator-design.md"
+  - "docs/reports/T-962-web-terminal-research.md"
+  - ".tasks/active/T-962-web-terminal-in-watchtower--browser-base.md"
+  - ".tasks/completed/T-963-add-recommendation-sections-to-inception.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T19:51:56"
+    action: "T-962: Inception task + research skeleton — web terminal in Watchtower"
+  - time: "2026-04-06T20:04:18"
+    action: "T-962: Complete inception research — 7 vectors, GO recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 34
+  commits: 2
+  files_changed: 11
+  lines_added: 4052
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-962-web-terminal-in-watchtower--browser-base.md
+generated_by: context-agent-hybrid

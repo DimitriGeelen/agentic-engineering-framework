@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-966: TermLink session observation in Watchtower terminal (T-962 Phase 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T19:15:59Z
+# ============================================================================
+
+task_id: T-966
+task_name: "TermLink session observation in Watchtower terminal (T-962 Phase 3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T18:25:32Z
+completed: 2026-04-06T19:15:57Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-06T20:25:51+02:00
+last_commit: 2026-04-06T20:53:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-962: Create 4 build tasks for web terminal implementation. TermLink session observation in Watchtower terminal
+
+# Key outcomes
+outcomes:
+  - "TermLink session list endpoint (`/api/termlink/sessions`) returns active sessions as JSON"
+  - "Terminal page shows \"Attach\" button listing discovered TermLink sessions"
+  - "Attaching to a TermLink session opens observation tab with polled output"
+  - "TermLink sessions visually distinguished (blue top border on tab)"
+  - "[REVIEW] TermLink session observation works"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-964-watchtower-single-terminal--xtermjs--fla.md"
+  - ".tasks/active/T-965-multi-session-terminal-tabs--session-man.md"
+  - ".tasks/active/T-966-termlink-session-observation-in-watchtow.md"
+  - ".tasks/active/T-967-session-profiles--provider-registry-for-.md"
+  - "web/app.py"
+  - "web/blueprints/terminal.py"
+  - "web/templates/terminal.html"
+  - "web/terminal.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T20:25:51"
+    action: "T-962: Create 4 build tasks for web terminal implementation"
+  - time: "2026-04-06T20:53:37"
+    action: "T-966: TermLink session observation in Watchtower terminal"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 50
+  commits: 2
+  files_changed: 8
+  lines_added: 570
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-966-termlink-session-observation-in-watchtow.md
+generated_by: context-agent-hybrid

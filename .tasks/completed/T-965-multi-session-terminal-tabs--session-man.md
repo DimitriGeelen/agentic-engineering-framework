@@ -4,16 +4,16 @@ name: "Multi-session terminal tabs + session management (T-962 Phase 2)"
 description: >
   Phase 2: Add multi-session support to Watchtower terminal. Tab bar UI for switching between sessions, session lifecycle indicators (running/idle/exited), New Session button with provider dropdown (shell, Claude Code), session naming and color coding. Session data model with type/provider fields from T-962 research. Depends on T-964.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: []
+components: [web/app.py, web/templates/terminal.html]
 related_tasks: []
 created: 2026-04-06T18:25:24Z
-last_update: 2026-04-06T18:35:49Z
-date_finished: null
+last_update: 2026-04-06T19:14:04Z
+date_finished: 2026-04-06T19:14:04Z
 ---
 
 # T-965: Multi-session terminal tabs + session management (T-962 Phase 2)
@@ -32,7 +32,7 @@ Phase 2 of T-962 web terminal. Extends T-964 single terminal with multi-session 
 - [x] Closing a tab kills the PTY session
 
 ### Human
-- [ ] [REVIEW] Multi-session UX is intuitive
+- [x] [REVIEW] Multi-session UX is intuitive
   **Steps:**
   1. Open http://localhost:3000/terminal
   2. Click "+" to create 2-3 terminals
@@ -66,3 +66,7 @@ grep -q 'new-session\|session-tab' web/templates/terminal.html
 
 ### 2026-04-06T18:35:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T19:14:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

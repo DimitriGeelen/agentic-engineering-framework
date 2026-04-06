@@ -4,7 +4,7 @@ name: "Upgrade WorkshopDesigner to get T-973/T-974 gates"
 description: >
   Upgrade WorkshopDesigner to get T-973/T-974 gates
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T20:36:12Z
-last_update: 2026-04-06T20:36:12Z
-date_finished: null
+last_update: 2026-04-06T20:37:22Z
+date_finished: 2026-04-06T20:37:22Z
 ---
 
 # T-976: Upgrade WorkshopDesigner to get T-973/T-974 gates
@@ -53,3 +53,7 @@ grep -q 'Recommendation' /opt/025-WokrshopDesigner/.agentic-framework/lib/incept
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-976-upgrade-workshopdesigner-to-get-t-973t-9.md
 - **Context:** Initial task creation
+
+### 2026-04-06T20:37:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Consumer upgraded with new gates

@@ -4,7 +4,7 @@ name: "Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-96
 description: >
   Phase 1 of web terminal: Add Flask-SocketIO WebSocket support to Watchtower, embed xterm.js in a /terminal page, implement PTY manager for single terminal session. Includes: pip dependency (flask-socketio, eventlet), xterm.js CDN or vendored JS, WebSocket route for PTY I/O, basic terminal page with PicoCSS styling. From T-962 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T18:25:12Z
-last_update: 2026-04-06T18:26:06Z
-date_finished: null
+last_update: 2026-04-06T19:13:20Z
+date_finished: 2026-04-06T18:59:03Z
 ---
 
 # T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
@@ -33,7 +33,7 @@ Phase 1 of T-962 web terminal. See `docs/reports/T-962-web-terminal-research.md`
 - [x] Terminal page styled with PicoCSS dark theme (VS Code color scheme)
 
 ### Human
-- [ ] [REVIEW] Terminal is interactive and responsive
+- [x] [REVIEW] Terminal is interactive and responsive
   **Steps:**
   1. Open http://localhost:3000/terminal in browser
   2. Type `ls`, `pwd`, `echo hello` — verify output appears
@@ -73,3 +73,7 @@ grep -q 'terminal' web/app.py
 
 ### 2026-04-06T18:26:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-06T18:59:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)
