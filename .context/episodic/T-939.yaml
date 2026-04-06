@@ -1,0 +1,148 @@
+# ============================================================================
+# EPISODIC MEMORY - T-939: Housekeeping — episodic gaps, cron cleanup, observation triage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-06T09:55:11Z
+# ============================================================================
+
+task_id: T-939
+task_name: "Housekeeping — episodic gaps, cron cleanup, observation triage"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T09:48:41Z
+completed: 2026-04-06T09:55:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-06T11:54:35+02:00
+last_commit: 2026-04-06T11:54:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Clean stale cron audits, generate episodics, dismiss test observations
+
+# Key outcomes
+outcomes:
+  - "Episodic summaries generated for T-936, T-937, T-938"
+  - "Deleted cron audit files committed or cleaned from working tree"
+  - "Pending observations triaged via `fw note triage`"
+  - "Git working directory clean of task-related changes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/2026-03-28-1745.yaml"
+  - ".context/audits/cron/2026-03-28-1800.yaml"
+  - ".context/audits/cron/2026-03-28-1815.yaml"
+  - ".context/audits/cron/2026-03-28-1830.yaml"
+  - ".context/audits/cron/2026-03-28-1845.yaml"
+  - ".context/audits/cron/2026-03-28-1900.yaml"
+  - ".context/audits/cron/2026-03-28-1915.yaml"
+  - ".context/audits/cron/2026-03-28-1930.yaml"
+  - ".context/audits/cron/2026-03-28-1945.yaml"
+  - ".context/audits/cron/2026-03-28-2000.yaml"
+  - ".context/audits/cron/2026-03-28-2015.yaml"
+  - ".context/audits/cron/2026-03-28-2030.yaml"
+  - ".context/audits/cron/2026-03-28-2045.yaml"
+  - ".context/audits/cron/2026-03-28-2100.yaml"
+  - ".context/audits/cron/2026-03-28-2115.yaml"
+  - ".context/audits/cron/2026-03-28-2130.yaml"
+  - ".context/audits/cron/2026-03-28-2145.yaml"
+  - ".context/audits/cron/2026-03-28-2200.yaml"
+  - ".context/audits/cron/2026-03-28-2215.yaml"
+  - ".context/audits/cron/2026-03-28-2230.yaml"
+  - ".context/audits/cron/2026-03-28-2245.yaml"
+  - ".context/audits/cron/2026-03-28-2300.yaml"
+  - ".context/audits/cron/2026-03-28-2315.yaml"
+  - ".context/audits/cron/2026-03-28-2330.yaml"
+  - ".context/audits/cron/2026-03-28-2345.yaml"
+  - ".context/audits/cron/2026-03-29-0000.yaml"
+  - ".context/audits/cron/2026-03-29-0015.yaml"
+  - ".context/audits/cron/2026-03-29-0030.yaml"
+  - ".context/audits/cron/2026-03-29-0045.yaml"
+  - ".context/audits/cron/2026-03-29-0100.yaml"
+  - ".context/audits/cron/2026-03-29-0115.yaml"
+  - ".context/audits/cron/2026-03-29-0130.yaml"
+  - ".context/audits/cron/2026-03-29-0145.yaml"
+  - ".context/audits/cron/2026-03-29-0300.yaml"
+  - ".context/audits/cron/2026-03-29-0315.yaml"
+  - ".context/audits/cron/2026-03-29-0330.yaml"
+  - ".context/audits/cron/2026-03-29-0345.yaml"
+  - ".context/audits/cron/2026-03-29-0400.yaml"
+  - ".context/audits/cron/2026-03-29-0415.yaml"
+  - ".context/audits/cron/2026-03-29-0430.yaml"
+  - ".context/audits/cron/2026-03-29-0445.yaml"
+  - ".context/audits/cron/2026-03-29-0500.yaml"
+  - ".context/audits/cron/2026-03-29-0515.yaml"
+  - ".context/audits/cron/2026-03-29-0530.yaml"
+  - ".context/audits/cron/2026-03-29-0545.yaml"
+  - ".context/audits/cron/2026-03-29-0600.yaml"
+  - ".context/audits/cron/2026-03-29-0615.yaml"
+  - ".context/audits/cron/2026-03-29-0630.yaml"
+  - ".context/audits/cron/2026-03-29-0645.yaml"
+  - ".context/audits/cron/2026-03-29-0700.yaml"
+  - ".context/audits/cron/2026-03-29-0715.yaml"
+  - ".context/audits/cron/2026-03-29-0730.yaml"
+  - ".context/audits/cron/2026-03-29-0745.yaml"
+  - ".context/audits/cron/2026-03-29-0800.yaml"
+  - ".context/audits/cron/2026-03-29-0815.yaml"
+  - ".context/audits/cron/2026-03-29-0830.yaml"
+  - ".context/audits/cron/2026-03-29-0845.yaml"
+  - ".context/audits/cron/2026-03-29-0900.yaml"
+  - ".context/audits/cron/2026-03-29-0915.yaml"
+  - ".context/audits/cron/2026-03-29-0930.yaml"
+  - ".context/audits/cron/2026-03-29-0945.yaml"
+  - ".context/audits/cron/2026-03-29-1000.yaml"
+  - ".context/audits/cron/2026-03-29-1015.yaml"
+  - ".context/audits/cron/2026-03-29-1030.yaml"
+  - ".context/audits/cron/2026-03-29-1045.yaml"
+  - ".context/audits/cron/2026-03-29-1100.yaml"
+  - ".context/audits/cron/2026-03-29-1115.yaml"
+  - ".context/audits/cron/2026-03-29-1130.yaml"
+  - ".context/audits/cron/2026-03-29-1145.yaml"
+  - ".context/episodic/T-936.yaml"
+  - ".context/episodic/T-937.yaml"
+  - ".context/episodic/T-938.yaml"
+  - ".context/inbox.yaml"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T11:54:35"
+    action: "T-939: Clean stale cron audits, generate episodics, dismiss test observations"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 73
+  lines_added: 288
+  lines_removed: 2863
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-939-housekeeping--episodic-gaps-cron-cleanup.md
+generated_by: context-agent-hybrid
