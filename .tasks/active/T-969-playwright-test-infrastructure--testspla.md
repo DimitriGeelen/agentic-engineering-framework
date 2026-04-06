@@ -4,7 +4,7 @@ name: "Playwright test infrastructure — tests/playwright/ + fw test playwright
 description: >
   Add pytest-playwright to the framework. Create tests/playwright/ with conftest.py (server fixture, browser fixture), test_smoke.py (all routes 200), and fw test playwright sub-command. CI integration in GitHub Actions.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T19:37:58Z
-last_update: 2026-04-06T19:37:58Z
+last_update: 2026-04-06T20:05:58Z
 date_finished: null
 ---
 
@@ -20,40 +20,25 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-968 inception (GO) identified the gap: `fw test` has 5 sub-commands with 1086 tests but zero Playwright tests. This task adds `tests/playwright/` directory with conftest.py (server fixture, browser fixture), a smoke test, and `fw test playwright` sub-command. Design: `docs/reports/T-968-v2-playwright-infra.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `tests/playwright/conftest.py` exists with server fixture (start Watchtower on port 3099) and browser fixture
+- [x] `tests/playwright/test_smoke.py` exists with at least 3 route smoke tests (12 tests: 3 homepage, 6 core pages, 3 navigation)
+- [x] `fw test playwright` sub-command added to `bin/fw`
+- [x] `fw test all` includes playwright tests
+- [x] `fw test playwright` runs successfully — 12/12 passed
+- [x] Help text updated to show playwright option
+- [x] Verification commands pass
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     Examples:
-       python3 -c "import yaml; yaml.safe_load(open('path/to/file.yaml'))"
-       curl -sf http://localhost:3000/page
-       grep -q "expected_string" output_file.txt
--->
+test -f tests/playwright/conftest.py
+test -f tests/playwright/test_smoke.py
+python3 -c "import playwright; print('playwright installed')"
+grep -q 'playwright' bin/fw
 
 ## Decisions
 
@@ -72,3 +57,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-969-playwright-test-infrastructure--testspla.md
 - **Context:** Initial task creation
+
+### 2026-04-06T20:05:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

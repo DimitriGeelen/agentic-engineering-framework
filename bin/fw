@@ -3736,6 +3736,24 @@ PYPREDICT
                 echo -e "${BOLD}=== Web Tests (pytest) ===${NC}"
                 cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
                 ;;
+            --playwright|playwright|ui)
+                # Playwright UI tests (T-969)
+                if ! python3 -c "import playwright" 2>/dev/null; then
+                    echo -e "${RED}ERROR: playwright is not installed${NC}" >&2
+                    echo "  Install: pip install playwright && playwright install chromium"
+                    exit 1
+                fi
+                if ! python3 -c "import pytest" 2>/dev/null; then
+                    echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
+                    exit 1
+                fi
+                if [ ! -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    echo -e "${YELLOW}No Playwright tests found (tests/playwright/ missing)${NC}"
+                    exit 0
+                fi
+                echo -e "${BOLD}=== Playwright UI Tests ===${NC}"
+                cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                ;;
             all)
                 # Run everything
                 echo -e "${BOLD}=== Framework Test Suite ===${NC}"
@@ -3767,14 +3785,24 @@ PYPREDICT
                 else
                     echo -e "${YELLOW}SKIP: pytest not installed${NC}"
                 fi
+
+                # 4. Playwright UI tests (T-969)
+                if python3 -c "import playwright" 2>/dev/null && [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    echo -e "${BOLD}--- Playwright UI Tests ---${NC}"
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                    echo ""
+                else
+                    echo -e "${YELLOW}SKIP: playwright not installed or tests/playwright/ missing${NC}"
+                fi
                 ;;
             *)
-                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|lint]"
+                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|playwright|lint]"
                 echo ""
                 echo "  all           Run all tests (default)"
                 echo "  unit          Bats unit tests only"
                 echo "  integration   Bats integration tests only"
                 echo "  web           Pytest web tests only"
+                echo "  playwright    Playwright UI tests (alias: ui)"
                 echo "  lint          ShellCheck linting on all .sh files"
                 exit 0
                 ;;
