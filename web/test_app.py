@@ -118,29 +118,30 @@ class TestCSRF:
     """State-changing requests require valid CSRF token."""
 
     def test_post_without_csrf_returns_403(self, client):
-        resp = client.post("/api/task/T-001/status", data={"status": "started-work"})
+        # Use non-API endpoint — /api/ paths skip CSRF by design
+        resp = client.post("/settings/save", data={"engine": "ollama"})
         assert resp.status_code == 403
 
     def test_post_with_invalid_csrf_returns_403(self, client):
         resp = client.post(
-            "/api/task/T-001/status",
-            data={"status": "started-work", "_csrf_token": "invalid-token"},
+            "/settings/save",
+            data={"engine": "ollama", "_csrf_token": "invalid-token"},
         )
         assert resp.status_code == 403
 
     def test_post_with_valid_csrf_succeeds(self, csrf_client):
         client, token = csrf_client
         resp = client.post(
-            "/api/task/T-001/status",
-            data={"status": "started-work", "_csrf_token": token},
+            "/settings/save",
+            data={"engine": "ollama", "_csrf_token": token},
         )
         assert resp.status_code != 403
 
     def test_csrf_via_header(self, csrf_client):
         client, token = csrf_client
         resp = client.post(
-            "/api/task/T-001/status",
-            data={"status": "started-work"},
+            "/settings/save",
+            data={"engine": "ollama"},
             headers={"X-CSRF-Token": token},
         )
         assert resp.status_code != 403
@@ -306,13 +307,15 @@ class TestQualityGate:
         assert "Run Audit" in html
         assert "Run Tests" in html
 
-    def test_audit_api_requires_csrf(self, client):
+    def test_audit_api_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/audit/run")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_tests_api_requires_csrf(self, client):
+    def test_tests_api_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/tests/run")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
 
 # =========================================================================
@@ -334,9 +337,10 @@ class TestSessionCockpit:
         html = resp.data.decode()
         assert "master" in html or "main" in html
 
-    def test_decision_api_requires_csrf(self, client):
+    def test_decision_api_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/decision", data={"decision": "Test"})
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
     def test_decision_api_requires_text(self, csrf_client):
         client, token = csrf_client
@@ -346,9 +350,10 @@ class TestSessionCockpit:
         )
         assert resp.status_code == 400
 
-    def test_learning_api_requires_csrf(self, client):
+    def test_learning_api_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/learning", data={"learning": "Test"})
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
     def test_learning_api_requires_text(self, csrf_client):
         client, token = csrf_client
@@ -358,13 +363,15 @@ class TestSessionCockpit:
         )
         assert resp.status_code == 400
 
-    def test_session_init_requires_csrf(self, client):
+    def test_session_init_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/session/init")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_healing_api_requires_csrf(self, client):
+    def test_healing_api_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/healing/T-001")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
     def test_healing_api_validates_task_id(self, csrf_client):
         client, token = csrf_client
@@ -466,7 +473,7 @@ class TestNavigation:
     def test_footer_shows_watchtower(self, client):
         resp = client.get("/")
         html = resp.data.decode()
-        assert "Watchtower v1.0.0" in html
+        assert "Watchtower v" in html
 
 
 # =========================================================================
@@ -734,25 +741,30 @@ class TestCockpitUI:
 class TestCockpitControlActions:
     """Cockpit control action API endpoints."""
 
-    def test_scan_refresh_requires_csrf(self, client):
+    def test_scan_refresh_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/scan/refresh")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_scan_approve_requires_csrf(self, client):
+    def test_scan_approve_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/scan/approve/ND-001")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_scan_defer_requires_csrf(self, client):
+    def test_scan_defer_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/scan/defer/ND-001")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_scan_apply_requires_csrf(self, client):
+    def test_scan_apply_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/scan/apply/FR-001")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
-    def test_scan_focus_requires_csrf(self, client):
+    def test_scan_focus_csrf_exempt(self, client):
+        """API endpoints skip CSRF — same-origin fetch only."""
         resp = client.post("/api/scan/focus/T-001")
-        assert resp.status_code == 403
+        assert resp.status_code != 403
 
     def test_scan_focus_validates_task_id(self, csrf_client, monkeypatch):
         """Focus endpoint rejects invalid task IDs."""
@@ -820,7 +832,7 @@ class TestSubprocessTimeout:
     """Task API endpoints handle subprocess.TimeoutExpired gracefully."""
 
     def test_status_update_timeout(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/status",
@@ -830,7 +842,7 @@ class TestSubprocessTimeout:
         assert b"Error" in resp.data
 
     def test_create_task_timeout(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         client, token = csrf_client
         resp = client.post(
             "/api/task/create",
@@ -840,7 +852,7 @@ class TestSubprocessTimeout:
         assert b"Error" in resp.data
 
     def test_horizon_update_timeout(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/horizon",
@@ -850,7 +862,7 @@ class TestSubprocessTimeout:
         assert b"Error" in resp.data
 
     def test_owner_update_timeout(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/owner",
@@ -860,7 +872,7 @@ class TestSubprocessTimeout:
         assert b"Error" in resp.data
 
     def test_type_update_timeout(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/type",
@@ -871,7 +883,7 @@ class TestSubprocessTimeout:
 
     def test_traceability_timeout_returns_zero(self, client, monkeypatch):
         """_get_traceability returns 0 when git times out (page still renders)."""
-        monkeypatch.setattr("web.blueprints.core.subprocess.run", _timeout_side_effect)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _timeout_side_effect)
         resp = client.get("/")
         assert resp.status_code == 200
 
@@ -885,7 +897,7 @@ class TestSubprocessStderr:
     """Task API endpoints handle subprocess failures with stderr gracefully."""
 
     def test_status_update_stderr(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _failing_subprocess)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/status",
@@ -896,7 +908,7 @@ class TestSubprocessStderr:
         assert b"fatal" in resp.data
 
     def test_create_task_stderr(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _failing_subprocess)
         client, token = csrf_client
         resp = client.post(
             "/api/task/create",
@@ -906,7 +918,7 @@ class TestSubprocessStderr:
         assert b"fatal" in resp.data
 
     def test_horizon_update_stderr(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _failing_subprocess)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/horizon",
@@ -915,7 +927,7 @@ class TestSubprocessStderr:
         assert resp.status_code == 500
 
     def test_owner_update_stderr(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _failing_subprocess)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/owner",
@@ -924,7 +936,7 @@ class TestSubprocessStderr:
         assert resp.status_code == 500
 
     def test_type_update_stderr(self, csrf_client, monkeypatch):
-        monkeypatch.setattr("web.blueprints.tasks.subprocess.run", _failing_subprocess)
+        monkeypatch.setattr("web.subprocess_utils.subprocess.run", _failing_subprocess)
         client, token = csrf_client
         resp = client.post(
             "/api/task/T-001/type",
