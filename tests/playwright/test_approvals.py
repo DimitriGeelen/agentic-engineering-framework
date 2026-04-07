@@ -36,3 +36,17 @@ class TestApprovalsPage:
         page.wait_for_load_state("networkidle")
         heading = page.locator("h1, h2")
         assert heading.count() > 0, "Approvals page should have a heading"
+
+    def test_approvals_content_endpoint(self, page: Page):
+        """Approvals content endpoint returns HTML fragment (T-1019)."""
+        resp = page.goto(_url("/approvals/content"))
+        assert resp.status == 200
+        content = page.content()
+        assert len(content) > 100
+
+    def test_approvals_has_inception_section(self, page: Page):
+        """Approvals should show inception decisions section (T-1019)."""
+        page.goto(_url("/approvals"))
+        page.wait_for_load_state("networkidle")
+        content = page.content().lower()
+        assert "inception" in content
