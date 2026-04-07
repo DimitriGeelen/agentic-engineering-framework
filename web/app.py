@@ -261,6 +261,26 @@ def create_app() -> Flask:
         except Exception:
             result["embeddings"] = {"status": "unavailable"}
 
+        # Test infrastructure counts (T-1008)
+        try:
+            from web.shared import FRAMEWORK_ROOT
+            tests = {}
+            pw_dir = FRAMEWORK_ROOT / "tests" / "playwright"
+            if pw_dir.exists():
+                tests["playwright"] = len(list(pw_dir.glob("test_*.py")))
+            unit_dir = FRAMEWORK_ROOT / "tests" / "unit"
+            if unit_dir.exists():
+                tests["unit"] = len(list(unit_dir.glob("*.bats")))
+            int_dir = FRAMEWORK_ROOT / "tests" / "integration"
+            if int_dir.exists():
+                tests["integration"] = len(list(int_dir.glob("*.bats")))
+            web_test = FRAMEWORK_ROOT / "web" / "test_app.py"
+            if web_test.exists():
+                tests["web"] = 1
+            result["tests"] = tests
+        except Exception:
+            result["tests"] = {"status": "unavailable"}
+
         code = 200 if healthy else 503
         return jsonify(result), code
 
