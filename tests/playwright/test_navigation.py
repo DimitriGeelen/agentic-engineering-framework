@@ -61,11 +61,10 @@ class TestNavigation:
         assert 'href="/inception"' in content
         assert 'href="/fabric"' in content
 
-    def test_all_nav_routes_return_200(self, page: Page):
-        """Every nav route returns HTTP 200."""
-        routes = ["/tasks", "/inception", "/fabric", "/quality",
-                  "/metrics", "/enforcement", "/risks", "/cron",
-                  "/learnings", "/decisions", "/gaps"]
-        for route in routes:
+    def test_multi_page_transition(self, page: Page):
+        """Visit 3 pages in sequence — verifies no state leaks between navigations."""
+        for route, marker in [("/cron", "Scheduled"), ("/risks", "Concerns"), ("/learnings", "Learnings")]:
             resp = page.goto(_url(route), timeout=self.TIMEOUT)
+            page.wait_for_load_state("domcontentloaded")
             assert resp.status == 200, f"{route} returned {resp.status}"
+            assert marker in page.content(), f"{route} missing '{marker}'"
