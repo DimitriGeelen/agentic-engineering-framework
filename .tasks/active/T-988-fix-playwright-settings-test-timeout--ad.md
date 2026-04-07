@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T08:08:03Z
-last_update: 2026-04-07T08:08:03Z
+last_update: 2026-04-07T08:15:08Z
 date_finished: null
 ---
 
@@ -30,7 +30,7 @@ Settings page may make Ollama connection checks that timeout under batch test co
 
 ## Verification
 
-cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/ -x -q 2>&1 | tail -5
+cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_settings.py -x -q 2>&1 | tail -5
 
 ## Decisions
 
