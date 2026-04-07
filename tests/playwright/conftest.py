@@ -23,8 +23,11 @@ def watchtower_server():
     """Start Watchtower in a subprocess for the test session."""
     # Check if already running on test port
     try:
-        urllib.request.urlopen(f"{TEST_URL}/health", timeout=2)
+        urllib.request.urlopen(f"{TEST_URL}/health", timeout=5)
         yield None  # Server already running, don't manage it
+        return
+    except urllib.error.HTTPError:
+        yield None  # Server is up (503 = Ollama unreachable but app healthy)
         return
     except (urllib.error.URLError, ConnectionRefusedError, OSError):
         pass
@@ -49,8 +52,10 @@ def watchtower_server():
     # Wait for server ready (max 15s)
     for _ in range(30):
         try:
-            urllib.request.urlopen(f"{TEST_URL}/health", timeout=1)
+            urllib.request.urlopen(f"{TEST_URL}/health", timeout=2)
             break
+        except urllib.error.HTTPError:
+            break  # Server is up (503 = Ollama unreachable, app is still healthy)
         except (urllib.error.URLError, ConnectionRefusedError, OSError):
             time.sleep(0.5)
     else:

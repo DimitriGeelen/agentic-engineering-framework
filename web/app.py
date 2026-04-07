@@ -240,11 +240,14 @@ def create_app() -> Flask:
         result = {"app": "ok"}
         healthy = True
 
-        # Check Ollama connectivity
+        # Check Ollama connectivity (3s timeout prevents /health from hanging)
+        import concurrent.futures
         try:
-            ollama_client.list()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(ollama_client.list)
+                future.result(timeout=3)
             result["ollama"] = "ok"
-        except Exception as e:
+        except (concurrent.futures.TimeoutError, Exception):
             result["ollama"] = "unreachable"
             healthy = False
 

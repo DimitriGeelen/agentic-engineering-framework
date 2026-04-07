@@ -46,3 +46,10 @@ class TestLandingPage:
         page.wait_for_load_state("networkidle")
         content = page.content().lower()
         assert "approval" in content
+
+    def test_landing_has_test_counts(self, page: Page):
+        """Landing page should show test infrastructure counts (T-1010)."""
+        page.goto(_url("/"))
+        page.wait_for_load_state("networkidle")
+        content = page.content().lower()
+        assert "playwright" in content
