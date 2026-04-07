@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T12:29:39Z
-last_update: 2026-04-07T12:29:39Z
+last_update: 2026-04-07T12:32:19Z
 date_finished: null
 ---
 
@@ -25,11 +25,11 @@ Continues T-1025 Playwright expansion. Covers docs detail pages, review ACs htmx
 ## Acceptance Criteria
 
 ### Agent
-- [ ] test_docs_detail.py — /docs/generated/<card_name> detail page loads, nonexistent 404
-- [ ] test_review_acs.py — /review/<task_id>/acs returns AC fragment, invalid 404
-- [ ] test_api_task_mutations.py — POST endpoints return 400 for invalid input (create, horizon, status)
-- [ ] test_api_healing.py — /api/healing/<task_id> POST with invalid task returns error
-- [ ] All new tests pass
+- [x] test_docs_detail.py — /docs/generated/<card_name> detail page (4 tests)
+- [x] test_review_acs.py — /review/<task_id>/acs AC fragment (3 tests)
+- [x] test_api_task_mutations.py — POST error handling: create, horizon, status (5 tests)
+- [x] test_api_healing.py — /api/healing/<task_id> POST validation (2 tests)
+- [x] All 14 new tests pass
 
 ## Verification
 
