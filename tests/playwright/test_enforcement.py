@@ -20,7 +20,7 @@ class TestEnforcementPage:
 
     def test_enforcement_has_heading(self, page: Page):
         page.goto(_url("/enforcement"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Enforcement" in heading.first.text_content()
@@ -28,20 +28,20 @@ class TestEnforcementPage:
     def test_enforcement_has_hook_info(self, page: Page):
         """Enforcement page should show hook status."""
         page.goto(_url("/enforcement"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "hook" in content
 
     def test_enforcement_has_tier_info(self, page: Page):
         """Enforcement page should show enforcement tiers."""
         page.goto(_url("/enforcement"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "tier" in content
 
     def test_enforcement_has_git_hooks(self, page: Page):
         """Enforcement page should show git hook status."""
         page.goto(_url("/enforcement"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "git" in content

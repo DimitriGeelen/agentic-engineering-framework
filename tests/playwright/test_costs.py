@@ -20,20 +20,20 @@ class TestCostsPage:
 
     def test_costs_has_content(self, page: Page):
         page.goto(_url("/costs"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert len(content) > 500, "Costs page should have content"
 
     def test_costs_shows_token_info(self, page: Page):
         """Costs page should show token-related information."""
         page.goto(_url("/costs"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "token" in content or "cost" in content or "usage" in content, \
             "Costs page should show token/cost/usage information"
 
     def test_costs_has_heading(self, page: Page):
         page.goto(_url("/costs"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1, h2")
         assert heading.count() > 0, "Costs page should have a heading"

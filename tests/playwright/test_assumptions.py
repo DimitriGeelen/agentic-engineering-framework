@@ -20,7 +20,7 @@ class TestAssumptionsPage:
 
     def test_assumptions_has_heading(self, page: Page):
         page.goto(_url("/assumptions"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Assumption" in heading.first.text_content()
@@ -28,13 +28,13 @@ class TestAssumptionsPage:
     def test_assumptions_has_content(self, page: Page):
         """Assumptions page should list assumptions or show empty state."""
         page.goto(_url("/assumptions"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert len(content) > 500, "Assumptions page should have content"
 
     def test_assumptions_has_status_info(self, page: Page):
         """Assumptions page should show validation status."""
         page.goto(_url("/assumptions"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "validated" in content or "pending" in content or "invalidated" in content or "assumption" in content

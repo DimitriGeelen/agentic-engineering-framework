@@ -20,7 +20,7 @@ class TestLandingPage:
 
     def test_landing_has_heading(self, page: Page):
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Watchtower" in heading.first.text_content()
@@ -28,7 +28,7 @@ class TestLandingPage:
     def test_landing_has_status_sections(self, page: Page):
         """Landing page should show focus, audit, and metrics summaries."""
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "focus" in content
         assert "audit" in content
@@ -36,20 +36,20 @@ class TestLandingPage:
     def test_landing_has_task_info(self, page: Page):
         """Landing page should display active task information."""
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "active tasks" in content or "attention" in content
 
     def test_landing_has_approval_section(self, page: Page):
         """Landing page should have approval/action section."""
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "approval" in content
 
     def test_landing_has_test_counts(self, page: Page):
         """Landing page should show test infrastructure counts (T-1010)."""
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "playwright" in content

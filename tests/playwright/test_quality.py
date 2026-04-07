@@ -20,7 +20,7 @@ class TestQualityPage:
 
     def test_quality_has_heading(self, page: Page):
         page.goto(_url("/quality"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Quality" in heading.first.text_content()
@@ -28,21 +28,21 @@ class TestQualityPage:
     def test_quality_has_audit_info(self, page: Page):
         """Quality page should show audit status."""
         page.goto(_url("/quality"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "audit" in content
 
     def test_quality_has_traceability(self, page: Page):
         """Quality page should show traceability metrics."""
         page.goto(_url("/quality"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "traceability" in content
 
     def test_quality_has_status_indicator(self, page: Page):
         """Quality page should show pass/warn/fail status."""
         page.goto(_url("/quality"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "pass" in content or "warn" in content or "fail" in content
 

@@ -20,7 +20,7 @@ class TestDiscoveriesPage:
 
     def test_discoveries_has_heading(self, page: Page):
         page.goto(_url("/discoveries"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Discoveries" in heading.first.text_content()
@@ -28,13 +28,13 @@ class TestDiscoveriesPage:
     def test_discoveries_has_content(self, page: Page):
         """Discoveries page should show finding or discovery entries."""
         page.goto(_url("/discoveries"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "finding" in content or "discover" in content
 
     def test_discoveries_has_audit_context(self, page: Page):
         """Discoveries page should reference audit data."""
         page.goto(_url("/discoveries"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "audit" in content or "gap" in content

@@ -26,7 +26,7 @@ class TestTaskList:
 
     def test_tasks_has_table_or_list(self, page: Page):
         page.goto(_url("/tasks"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         # Tasks page should have task entries (table rows, cards, or list items)
         entries = page.locator("table tr, .task-card, article, .task-row")
         assert entries.count() > 0, "Task list should have at least one entry"
@@ -38,7 +38,7 @@ class TestTaskDetail:
     def test_task_detail_loads(self, page: Page):
         # Navigate to tasks list first, then find a task link
         page.goto(_url("/tasks"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         task_links = page.locator("a[href*='/tasks/T-']")
         if task_links.count() > 0:
             href = task_links.first.get_attribute("href")
@@ -48,12 +48,12 @@ class TestTaskDetail:
 
     def test_task_detail_has_status(self, page: Page):
         page.goto(_url("/tasks"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         task_links = page.locator("a[href*='/tasks/T-']")
         if task_links.count() > 0:
             href = task_links.first.get_attribute("href")
             page.goto(_url(href) if href.startswith("/") else href)
-            page.wait_for_load_state("networkidle")
+            page.wait_for_load_state("domcontentloaded")
             content = page.content().lower()
             # Should contain status info
             assert any(s in content for s in [

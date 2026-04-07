@@ -20,7 +20,7 @@ class TestMetricsPage:
 
     def test_metrics_has_heading(self, page: Page):
         page.goto(_url("/metrics"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Metrics" in heading.first.text_content()
@@ -28,20 +28,20 @@ class TestMetricsPage:
     def test_metrics_has_task_counts(self, page: Page):
         """Metrics page should show task statistics."""
         page.goto(_url("/metrics"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "task" in content
 
     def test_metrics_has_traceability(self, page: Page):
         """Metrics page should show traceability information."""
         page.goto(_url("/metrics"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "traceability" in content
 
     def test_metrics_has_knowledge_section(self, page: Page):
         """Metrics page should show knowledge/commit info."""
         page.goto(_url("/metrics"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "knowledge" in content or "commit" in content

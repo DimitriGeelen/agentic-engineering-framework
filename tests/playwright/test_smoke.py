@@ -33,7 +33,7 @@ class TestHomepage:
         errors = []
         page.on("pageerror", lambda err: errors.append(str(err)))
         page.goto(_url("/"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         # Filter out favicon 404 — cosmetic, not a real error
         real_errors = [e for e in errors if "favicon" not in e.lower()]
         assert len(real_errors) == 0, f"JS errors on homepage: {real_errors}"
@@ -67,15 +67,15 @@ class TestNavigation:
 
     def test_navigate_to_tasks(self, page: Page):
         page.goto(_url("/tasks"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         assert "Tasks" in page.content()
 
     def test_navigate_to_fabric(self, page: Page):
         page.goto(_url("/fabric"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         assert "Fabric" in page.content()
 
     def test_navigate_to_inception(self, page: Page):
         page.goto(_url("/inception"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         assert "Inception" in page.content()

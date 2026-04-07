@@ -20,7 +20,7 @@ class TestProjectPage:
 
     def test_project_has_heading(self, page: Page):
         page.goto(_url("/project"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Project" in heading.first.text_content() or "Documentation" in heading.first.text_content()
@@ -28,14 +28,14 @@ class TestProjectPage:
     def test_project_has_categories(self, page: Page):
         """Project page should show document categories."""
         page.goto(_url("/project"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert "Governance" in content or "Design" in content or "Agents" in content
 
     def test_project_has_document_links(self, page: Page):
         """Project page should have clickable document links."""
         page.goto(_url("/project"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         links = page.locator("a[href*='/project/']")
         assert links.count() > 0, "Project page should have document links"
 

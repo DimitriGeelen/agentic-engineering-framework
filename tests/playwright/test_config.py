@@ -21,7 +21,7 @@ class TestConfigPage:
     def test_config_has_settings(self, page: Page):
         """Config page should show framework configuration settings."""
         page.goto(_url("/config"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert "FW_" in content or "Context window" in content or "config" in content.lower(), \
             "Config page should display framework settings"
@@ -29,7 +29,7 @@ class TestConfigPage:
     def test_config_has_table_or_list(self, page: Page):
         """Config page should have a table or list of settings."""
         page.goto(_url("/config"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         table = page.locator("table")
         dl = page.locator("dl")
         assert table.count() > 0 or dl.count() > 0, \
@@ -38,7 +38,7 @@ class TestConfigPage:
     def test_config_shows_version(self, page: Page):
         """Config page should show framework version."""
         page.goto(_url("/config"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert "1." in content or "version" in content.lower(), \
             "Config page should show version information"

@@ -26,7 +26,7 @@ class TestInceptionList:
 
     def test_inception_has_task_entries(self, page: Page):
         page.goto(_url("/inception"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         # Should have inception task cards or table rows
         content = page.content()
         assert "T-" in content, "Inception page should list tasks with IDs"
@@ -37,7 +37,7 @@ class TestInceptionDetail:
 
     def test_inception_detail_loads(self, page: Page):
         page.goto(_url("/inception"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         # Find a link to an inception detail
         links = page.locator("a[href*='/inception/T-']")
         if links.count() > 0:
@@ -47,12 +47,12 @@ class TestInceptionDetail:
 
     def test_inception_detail_has_sections(self, page: Page):
         page.goto(_url("/inception"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         links = page.locator("a[href*='/inception/T-']")
         if links.count() > 0:
             href = links.first.get_attribute("href")
             page.goto(_url(href) if href.startswith("/") else href)
-            page.wait_for_load_state("networkidle")
+            page.wait_for_load_state("domcontentloaded")
             content = page.content().lower()
             # Should have key inception sections
             assert "problem statement" in content or "exploration" in content or "go/no-go" in content, (
@@ -61,12 +61,12 @@ class TestInceptionDetail:
 
     def test_inception_detail_has_decision_form(self, page: Page):
         page.goto(_url("/inception"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         links = page.locator("a[href*='/inception/T-']")
         if links.count() > 0:
             href = links.first.get_attribute("href")
             page.goto(_url(href) if href.startswith("/") else href)
-            page.wait_for_load_state("networkidle")
+            page.wait_for_load_state("domcontentloaded")
             # Decision form should have GO/NO-GO buttons or form
             content = page.content()
             has_form = "GO" in content or "Record Decision" in content or "decision" in content.lower()

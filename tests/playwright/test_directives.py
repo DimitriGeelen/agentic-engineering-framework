@@ -20,7 +20,7 @@ class TestDirectivesPage:
 
     def test_directives_has_heading(self, page: Page):
         page.goto(_url("/directives"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Directive" in heading.first.text_content()
@@ -28,7 +28,7 @@ class TestDirectivesPage:
     def test_directives_has_four_directives(self, page: Page):
         """Directives page should list all four constitutional directives."""
         page.goto(_url("/directives"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "antifragil" in content
         assert "reliab" in content
@@ -38,6 +38,6 @@ class TestDirectivesPage:
     def test_directives_has_constitutional_context(self, page: Page):
         """Directives page should reference constitutional framework."""
         page.goto(_url("/directives"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "constitutional" in content or "directive" in content

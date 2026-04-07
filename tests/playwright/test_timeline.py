@@ -26,19 +26,19 @@ class TestTimelinePage:
 
     def test_timeline_has_content(self, page: Page):
         page.goto(_url("/timeline"), timeout=self.TIMEOUT)
-        page.wait_for_load_state("networkidle", timeout=self.TIMEOUT)
+        page.wait_for_load_state("domcontentloaded", timeout=self.TIMEOUT)
         content = page.content()
         assert len(content) > 1000, "Timeline page should have substantial content"
 
     def test_timeline_has_session_entries(self, page: Page):
         """Timeline should show at least one session handover."""
         page.goto(_url("/timeline"), timeout=self.TIMEOUT)
-        page.wait_for_load_state("networkidle", timeout=self.TIMEOUT)
+        page.wait_for_load_state("domcontentloaded", timeout=self.TIMEOUT)
         content = page.content()
         assert "S-20" in content, "Timeline should show session entries"
 
     def test_timeline_has_heading(self, page: Page):
         page.goto(_url("/timeline"), timeout=self.TIMEOUT)
-        page.wait_for_load_state("networkidle", timeout=self.TIMEOUT)
+        page.wait_for_load_state("domcontentloaded", timeout=self.TIMEOUT)
         heading = page.locator("h1, h2")
         assert heading.count() > 0, "Timeline page should have a heading"

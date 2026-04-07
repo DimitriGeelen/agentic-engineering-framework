@@ -20,20 +20,20 @@ class TestApprovalsPage:
 
     def test_approvals_has_content(self, page: Page):
         page.goto(_url("/approvals"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert len(content) > 500, "Approvals page should have content"
 
     def test_approvals_has_task_references(self, page: Page):
         """Approvals page should show task references (T-XXX)."""
         page.goto(_url("/approvals"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert "T-" in content, "Approvals page should show task references"
 
     def test_approvals_has_heading(self, page: Page):
         page.goto(_url("/approvals"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1, h2")
         assert heading.count() > 0, "Approvals page should have a heading"
 
@@ -47,6 +47,6 @@ class TestApprovalsPage:
     def test_approvals_has_inception_section(self, page: Page):
         """Approvals should show inception decisions section (T-1019)."""
         page.goto(_url("/approvals"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "inception" in content

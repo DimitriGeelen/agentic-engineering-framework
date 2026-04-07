@@ -20,7 +20,7 @@ class TestPatternsPage:
 
     def test_patterns_has_heading(self, page: Page):
         page.goto(_url("/patterns"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Patterns" in heading.first.text_content()
@@ -28,14 +28,14 @@ class TestPatternsPage:
     def test_patterns_has_entries(self, page: Page):
         """Patterns page should display pattern entries."""
         page.goto(_url("/patterns"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "pattern" in content
 
     def test_patterns_has_types(self, page: Page):
         """Patterns page should show failure/success/workflow categories."""
         page.goto(_url("/patterns"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "failure" in content or "success" in content or "workflow" in content
 

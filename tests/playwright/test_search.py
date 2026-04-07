@@ -20,7 +20,7 @@ class TestSearchPage:
 
     def test_search_has_heading(self, page: Page):
         page.goto(_url("/search"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Search" in heading.first.text_content()
@@ -28,13 +28,13 @@ class TestSearchPage:
     def test_search_has_input(self, page: Page):
         """Search page should have a search input field."""
         page.goto(_url("/search"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         search_input = page.locator("input[type='text'], input[type='search'], input[name='q'], input[name='query']")
         assert search_input.count() > 0, "Search page should have an input field"
 
     def test_search_has_knowledge_context(self, page: Page):
         """Search page should reference knowledge base."""
         page.goto(_url("/search"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "knowledge" in content or "search" in content

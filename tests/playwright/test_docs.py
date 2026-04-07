@@ -20,7 +20,7 @@ class TestDocsPage:
 
     def test_docs_has_heading(self, page: Page):
         page.goto(_url("/docs/generated"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Component" in heading.first.text_content() or "Doc" in heading.first.text_content()
@@ -28,13 +28,13 @@ class TestDocsPage:
     def test_docs_has_component_list(self, page: Page):
         """Docs page should list component references."""
         page.goto(_url("/docs/generated"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "component" in content
 
     def test_docs_has_fabric_context(self, page: Page):
         """Docs page should reference fabric/card data."""
         page.goto(_url("/docs/generated"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "fabric" in content or "card" in content
