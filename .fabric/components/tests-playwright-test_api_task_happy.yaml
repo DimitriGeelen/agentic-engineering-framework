@@ -1,0 +1,18 @@
+id: tests/playwright/test_api_task_happy.py
+name: test_api_task_happy
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_api_task_happy.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for task API happy paths (T-1039)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent

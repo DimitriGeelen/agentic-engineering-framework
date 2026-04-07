@@ -1,7 +1,7 @@
 id: tests/playwright/test_approvals.py
 name: test_approvals
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_approvals.py
 tags: []
 

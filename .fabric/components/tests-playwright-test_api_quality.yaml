@@ -1,0 +1,18 @@
+id: tests/playwright/test_api_quality.py
+name: test_api_quality
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_api_quality.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for quality API endpoints (T-1030)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent

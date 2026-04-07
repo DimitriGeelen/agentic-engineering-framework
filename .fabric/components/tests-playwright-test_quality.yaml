@@ -1,7 +1,7 @@
 id: tests/playwright/test_quality.py
 name: test_quality
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_quality.py
 tags: []
 

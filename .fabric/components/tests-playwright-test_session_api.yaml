@@ -1,7 +1,7 @@
 id: tests/playwright/test_session_api.py
 name: test_session_api
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_session_api.py
 tags: []
 

@@ -1,0 +1,18 @@
+id: tests/playwright/test_settings_models.py
+name: test_settings_models
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_settings_models.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for settings models endpoint (T-1025)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent

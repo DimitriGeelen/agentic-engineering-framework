@@ -1,7 +1,7 @@
 id: tests/playwright/test_graduation.py
 name: test_graduation
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_graduation.py
 tags: []
 

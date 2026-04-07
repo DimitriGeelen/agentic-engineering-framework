@@ -1,7 +1,7 @@
 id: tests/playwright/test_settings.py
 name: test_settings
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_settings.py
 tags: []
 

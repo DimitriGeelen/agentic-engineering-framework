@@ -1,7 +1,7 @@
 id: tests/playwright/test_docs.py
 name: test_docs
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_docs.py
 tags: []
 

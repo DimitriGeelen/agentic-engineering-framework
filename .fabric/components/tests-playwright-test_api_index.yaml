@@ -1,0 +1,18 @@
+id: tests/playwright/test_api_index.py
+name: test_api_index
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_api_index.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for /api/v1 index endpoint (T-1034)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent

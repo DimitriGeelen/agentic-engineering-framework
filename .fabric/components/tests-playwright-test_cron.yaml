@@ -1,7 +1,7 @@
 id: tests/playwright/test_cron.py
 name: test_cron
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_cron.py
 tags: []
 

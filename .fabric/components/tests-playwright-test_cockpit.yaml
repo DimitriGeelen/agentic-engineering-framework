@@ -1,0 +1,18 @@
+id: tests/playwright/test_cockpit.py
+name: test_cockpit
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_cockpit.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for Cockpit dashboard (T-1018)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent

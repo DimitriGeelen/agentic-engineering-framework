@@ -1,7 +1,7 @@
 id: tests/playwright/test_interactions.py
 name: test_interactions
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_interactions.py
 tags: []
 

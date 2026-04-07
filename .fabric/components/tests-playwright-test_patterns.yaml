@@ -1,7 +1,7 @@
 id: tests/playwright/test_patterns.py
 name: test_patterns
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_patterns.py
 tags: []
 

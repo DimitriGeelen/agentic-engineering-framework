@@ -1,7 +1,7 @@
 id: tests/playwright/test_health.py
 name: test_health
 type: script
-subsystem: unknown
+subsystem: tests-playwright
 location: tests/playwright/test_health.py
 tags: []
 

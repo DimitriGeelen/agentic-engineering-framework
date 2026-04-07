@@ -1,0 +1,18 @@
+id: tests/playwright/test_review_page.py
+name: test_review_page
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_review_page.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for Task Review page (T-1020)."
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent
