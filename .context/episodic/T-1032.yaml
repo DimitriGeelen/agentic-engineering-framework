@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1032: Session housekeeping — version bump, episodic generation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:48:16Z
+# ============================================================================
+
+task_id: T-1032
+task_name: "Session housekeeping — version bump, episodic generation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T13:40:59Z
+completed: 2026-04-07T13:42:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T15:41:50+02:00
+last_commit: 2026-04-07T15:42:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session housekeeping — version bump to 1.5.82, episodic summaries. Complete — version 1.5.82, episodic generation
+
+# Key outcomes
+outcomes:
+  - "VERSION bumped to 1.5.82"
+  - "Episodics generated for T-1030, T-1031"
+  - "All changes committed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1030.yaml"
+  - ".context/episodic/T-1031.yaml"
+  - ".tasks/active/T-1032-session-housekeeping--version-bump-episo.md"
+  - ".tasks/completed/T-1032-session-housekeeping--version-bump-episo.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T15:41:50"
+    action: "T-1032: Session housekeeping — version bump to 1.5.82, episodic summaries"
+  - time: "2026-04-07T15:42:06"
+    action: "T-1032: Complete — version 1.5.82, episodic generation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 221
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1032-session-housekeeping--version-bump-episo.md
+generated_by: context-agent-hybrid
