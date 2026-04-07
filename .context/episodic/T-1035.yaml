@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1035: Playwright tests — settings API, config display
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:50:37Z
+# ============================================================================
+
+task_id: T-1035
+task_name: "Playwright tests — settings API, config display"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T13:48:35Z
+completed: 2026-04-07T13:50:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T15:50:09+02:00
+last_commit: 2026-04-07T15:50:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 6 Playwright tests — settings API, config page content. Complete — settings API and config page tests
+
+# Key outcomes
+outcomes:
+  - "test_api_settings.py — test-connection CSRF check, models HTML (3 tests)"
+  - "test_api_config.py — config page settings display (3 tests)"
+  - "All 6 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1035-playwright-tests--settings-api-config-di.md"
+  - ".tasks/completed/T-1035-playwright-tests--settings-api-config-di.md"
+  - "tests/playwright/test_api_config.py"
+  - "tests/playwright/test_api_settings.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T15:50:09"
+    action: "T-1035: Add 6 Playwright tests — settings API, config page content"
+  - time: "2026-04-07T15:50:25"
+    action: "T-1035: Complete — settings API and config page tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 4
+  lines_added: 126
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1035-playwright-tests--settings-api-config-di.md
+generated_by: context-agent-hybrid
