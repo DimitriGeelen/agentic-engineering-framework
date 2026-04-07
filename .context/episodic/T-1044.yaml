@@ -1,0 +1,132 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1044: Register fabric cards for new Playwright test files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T16:09:14Z
+# ============================================================================
+
+task_id: T-1044
+task_name: "Register fabric cards for new Playwright test files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T16:07:07Z
+completed: 2026-04-07T16:09:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T18:09:00+02:00
+last_commit: 2026-04-07T18:09:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register 35 fabric cards for Playwright test files
+
+# Key outcomes
+outcomes:
+  - "All unregistered test files in tests/playwright/ have fabric cards (35 created)"
+  - "All Playwright test cards have subsystem: tests-playwright (58 updated)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-playwright-test_api_approvals.yaml"
+  - ".fabric/components/tests-playwright-test_api_ask_stream.yaml"
+  - ".fabric/components/tests-playwright-test_api_config.yaml"
+  - ".fabric/components/tests-playwright-test_api_context_capture.yaml"
+  - ".fabric/components/tests-playwright-test_api_cron_jobs.yaml"
+  - ".fabric/components/tests-playwright-test_api_fabric_source.yaml"
+  - ".fabric/components/tests-playwright-test_api_healing.yaml"
+  - ".fabric/components/tests-playwright-test_api_health.yaml"
+  - ".fabric/components/tests-playwright-test_api_inception.yaml"
+  - ".fabric/components/tests-playwright-test_api_index.yaml"
+  - ".fabric/components/tests-playwright-test_api_quality.yaml"
+  - ".fabric/components/tests-playwright-test_api_scan_actions.yaml"
+  - ".fabric/components/tests-playwright-test_api_scan.yaml"
+  - ".fabric/components/tests-playwright-test_api_search.yaml"
+  - ".fabric/components/tests-playwright-test_api_session_init.yaml"
+  - ".fabric/components/tests-playwright-test_api_settings.yaml"
+  - ".fabric/components/tests-playwright-test_api_task_complete.yaml"
+  - ".fabric/components/tests-playwright-test_api_task_happy.yaml"
+  - ".fabric/components/tests-playwright-test_api_task_inline.yaml"
+  - ".fabric/components/tests-playwright-test_api_task_mutations.yaml"
+  - ".fabric/components/tests-playwright-test_api_termlink.yaml"
+  - ".fabric/components/tests-playwright-test_api_timeline_detail.yaml"
+  - ".fabric/components/tests-playwright-test_approvals.yaml"
+  - ".fabric/components/tests-playwright-test_ask.yaml"
+  - ".fabric/components/tests-playwright-test_assumptions.yaml"
+  - ".fabric/components/tests-playwright-test_cockpit.yaml"
+  - ".fabric/components/tests-playwright-test_config.yaml"
+  - ".fabric/components/tests-playwright-test_core.yaml"
+  - ".fabric/components/tests-playwright-test_costs.yaml"
+  - ".fabric/components/tests-playwright-test_cron.yaml"
+  - ".fabric/components/tests-playwright-test_directives.yaml"
+  - ".fabric/components/tests-playwright-test_discoveries.yaml"
+  - ".fabric/components/tests-playwright-test_discovery.yaml"
+  - ".fabric/components/tests-playwright-test_docs_detail.yaml"
+  - ".fabric/components/tests-playwright-test_docs.yaml"
+  - ".fabric/components/tests-playwright-test_enforcement.yaml"
+  - ".fabric/components/tests-playwright-test_fabric_detail.yaml"
+  - ".fabric/components/tests-playwright-test_file_viewer.yaml"
+  - ".fabric/components/tests-playwright-test_graduation.yaml"
+  - ".fabric/components/tests-playwright-test_health.yaml"
+  - ".fabric/components/tests-playwright-test_inception_page.yaml"
+  - ".fabric/components/tests-playwright-test_interactions.yaml"
+  - ".fabric/components/tests-playwright-test_metrics.yaml"
+  - ".fabric/components/tests-playwright-test_navigation.yaml"
+  - ".fabric/components/tests-playwright-test_patterns.yaml"
+  - ".fabric/components/tests-playwright-test_project.yaml"
+  - ".fabric/components/tests-playwright-test_quality.yaml"
+  - ".fabric/components/tests-playwright-test_review_acs.yaml"
+  - ".fabric/components/tests-playwright-test_review_page.yaml"
+  - ".fabric/components/tests-playwright-test_risks.yaml"
+  - ".fabric/components/tests-playwright-test_search_extended.yaml"
+  - ".fabric/components/tests-playwright-test_search.yaml"
+  - ".fabric/components/tests-playwright-test_session_api.yaml"
+  - ".fabric/components/tests-playwright-test_sessions.yaml"
+  - ".fabric/components/tests-playwright-test_settings_models.yaml"
+  - ".fabric/components/tests-playwright-test_settings.yaml"
+  - ".fabric/components/tests-playwright-test_task_detail.yaml"
+  - ".fabric/components/tests-playwright-test_timeline.yaml"
+  - ".tasks/active/T-1044-register-fabric-cards-for-new-playwright.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T18:09:00"
+    action: "T-1044: Register 35 fabric cards for Playwright test files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 59
+  lines_added: 706
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1044-register-fabric-cards-for-new-playwright.md
+generated_by: context-agent-hybrid
