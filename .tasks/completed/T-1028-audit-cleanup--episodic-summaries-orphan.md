@@ -4,7 +4,7 @@ name: "Audit cleanup — episodic summaries, orphaned fabric card"
 description: >
   Audit cleanup — episodic summaries, orphaned fabric card
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T13:27:06Z
-last_update: 2026-04-07T13:27:06Z
-date_finished: null
+last_update: 2026-04-07T13:31:30Z
+date_finished: 2026-04-07T13:31:30Z
 ---
 
 # T-1028: Audit cleanup — episodic summaries, orphaned fabric card
@@ -49,3 +49,6 @@ ls .context/episodic/T-1025.yaml .context/episodic/T-1026.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1028-audit-cleanup--episodic-summaries-orphan.md
 - **Context:** Initial task creation
+
+### 2026-04-07T13:31:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
