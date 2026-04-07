@@ -41,11 +41,16 @@ def watchtower_server():
         "FW_PORT": str(TEST_PORT),
         "FLASK_ENV": "testing",
     }
+    # Use DEVNULL for stdout/stderr to prevent pipe buffer deadlock.
+    # Flask logs every request to stderr; after ~150 requests the 64KB
+    # pipe buffer fills and the server blocks, causing all tests to timeout.
+    stderr_file = "/tmp/watchtower-test-stderr.log"
+    stderr_fh = open(stderr_file, "w")
     proc = subprocess.Popen(
         ["python3", "-m", "web.app", "--port", str(TEST_PORT)],
         env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=stderr_fh,
         cwd=project_root,
     )
 
@@ -60,11 +65,12 @@ def watchtower_server():
             time.sleep(0.5)
     else:
         proc.kill()
-        stdout, stderr = proc.communicate(timeout=5)
+        proc.wait(timeout=5)
+        stderr_fh.close()
+        stderr_content = open(stderr_file).read()[:500]
         raise RuntimeError(
             f"Watchtower failed to start on port {TEST_PORT}.\n"
-            f"stdout: {stdout.decode()[:500]}\n"
-            f"stderr: {stderr.decode()[:500]}"
+            f"stderr: {stderr_content}"
         )
 
     yield proc
@@ -75,6 +81,7 @@ def watchtower_server():
     except subprocess.TimeoutExpired:
         proc.kill()
         proc.wait(timeout=3)
+    stderr_fh.close()
 
 
 @pytest.fixture(scope="session")
