@@ -66,3 +66,33 @@ class TestTestSummaryAPI:
         data = json.loads(text)
         assert "playwright" in data["suites"]
         assert data["suites"]["playwright"]["files"] > 0
+
+
+class TestConcernsAPI:
+    """Concerns API returns structured data (T-1022)."""
+
+    def test_concerns_returns_json(self, page: Page):
+        import json
+        page.goto(_url("/api/concerns"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "concerns" in data
+        assert "total" in data
+        assert "by_severity" in data
+        assert "by_status" in data
+
+    def test_concerns_has_items(self, page: Page):
+        import json
+        page.goto(_url("/api/concerns"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert data["total"] > 0
+        assert len(data["concerns"]) > 0
+
+    def test_concerns_has_severity_counts(self, page: Page):
+        import json
+        page.goto(_url("/api/concerns"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        total_by_severity = sum(data["by_severity"].values())
+        assert total_by_severity == data["total"]

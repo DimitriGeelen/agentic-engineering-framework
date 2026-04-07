@@ -160,6 +160,29 @@ def run_tests():
     return html
 
 
+@bp.route("/api/concerns")
+def concerns_api():
+    """Return concerns/gaps register as JSON (T-1022).
+
+    Includes items, counts by severity and status.
+    """
+    from web.context_loader import load_concerns
+    items = load_concerns()
+    severity_counts = {}
+    status_counts = {}
+    for item in items:
+        sev = item.get("severity", "unknown")
+        stat = item.get("status", "open")
+        severity_counts[sev] = severity_counts.get(sev, 0) + 1
+        status_counts[stat] = status_counts.get(stat, 0) + 1
+    return jsonify({
+        "concerns": items,
+        "total": len(items),
+        "by_severity": severity_counts,
+        "by_status": status_counts,
+    })
+
+
 @bp.route("/api/test-summary")
 def test_summary():
     """Return test infrastructure summary as JSON (T-1016).
