@@ -1,0 +1,17 @@
+id: S-2026-0407-hlvv
+type: shell
+provider:
+  name: local
+status: active
+created: '2026-04-07T16:09:59.005780+00:00'
+capabilities:
+  mode: read-write
+  file_edit: true
+  tool_use: false
+  streaming: true
+  context_window: null
+  persistent_thread: false
+process:
+  pid: 700548
+last_activity: '2026-04-07T16:09:59.016293+00:00'
+profile: local-bash

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1045: Fix Playwright test server — enable Flask threaded mode to prevent sequential request starvation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T16:44:54Z
+# ============================================================================
+
+task_id: T-1045
+task_name: "Fix Playwright test server — enable Flask threaded mode to prevent sequential request starvation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T16:37:38Z
+completed: 2026-04-07T16:44:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T18:40:03+02:00
+last_commit: 2026-04-07T18:40:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix pipe buffer deadlock — redirect Flask stderr to file
+
+# Key outcomes
+outcomes:
+  - "conftest.py redirects Flask stderr to file instead of PIPE (prevents buffer deadlock)"
+  - "conftest.py stdout redirected to DEVNULL (not needed after startup)"
+  - "Test collection still succeeds (305 tests)"
+  - "Full suite: 305 passed, 0 failed in 4m29s (was 158/133 in 79 min)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix pipe buffer deadlock — redirect Flask stderr to file"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1045-fix-playwright-test-server--enable-flask.md"
+  - "tests/playwright/conftest.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T18:40:03"
+    action: "T-1045: Fix pipe buffer deadlock — redirect Flask stderr to file"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 2
+  lines_added: 66
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1045-fix-playwright-test-server--enable-flask.md
+generated_by: context-agent-hybrid

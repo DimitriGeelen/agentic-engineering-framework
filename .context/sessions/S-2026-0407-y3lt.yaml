@@ -1,0 +1,17 @@
+id: S-2026-0407-y3lt
+type: shell
+provider:
+  name: local
+status: active
+created: '2026-04-07T16:08:28.523413+00:00'
+capabilities:
+  mode: read-write
+  file_edit: true
+  tool_use: false
+  streaming: true
+  context_window: null
+  persistent_thread: false
+process:
+  pid: 693245
+last_activity: '2026-04-07T16:08:28.532296+00:00'
+profile: local-bash

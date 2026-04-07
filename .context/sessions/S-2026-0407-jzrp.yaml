@@ -1,0 +1,17 @@
+id: S-2026-0407-jzrp
+type: shell
+provider:
+  name: local
+status: active
+created: '2026-04-07T16:07:58.380979+00:00'
+capabilities:
+  mode: read-write
+  file_edit: true
+  tool_use: false
+  streaming: true
+  context_window: null
+  persistent_thread: false
+process:
+  pid: 692638
+last_activity: '2026-04-07T16:07:58.402714+00:00'
+profile: local-bash

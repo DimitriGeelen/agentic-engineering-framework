@@ -1,0 +1,17 @@
+id: S-2026-0407-wdkl
+type: shell
+provider:
+  name: local
+status: active
+created: '2026-04-07T16:08:58.690045+00:00'
+capabilities:
+  mode: read-write
+  file_edit: true
+  tool_use: false
+  streaming: true
+  context_window: null
+  persistent_thread: false
+process:
+  pid: 694566
+last_activity: '2026-04-07T16:08:58.699290+00:00'
+profile: local-bash
