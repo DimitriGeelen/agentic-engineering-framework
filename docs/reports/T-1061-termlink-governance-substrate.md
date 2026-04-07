@@ -20,40 +20,48 @@ TermLink's PTY ownership provides **deterministic enforcement** of the prime dir
 
 **Principle:** Constitutional rules belong at the lowest enforceable layer. The PTY is that layer.
 
-## Architecture: Four Dimensions of the Agentic Framework
+## Architecture: TermLink Through the Four Constitutional Directives
 
-### 1. Task Dimension
-- Every visible pane is owned by a task — no orphan terminals
-- Task state visible in terminal chrome: active, blocked, waiting, failed
-- Task hierarchy — parent tasks spawning child agent tasks
+### 1. Antifragility — System strengthens under stress
+- **Task governance as learning loop:** Every task failure passes through TermLink's hub, feeding the healing agent and pattern library
+- **PTY-level failure capture:** Tool call failures, crashes, and timeouts are captured at the transport layer — nothing is silently swallowed
+- **Metadata as antifragile signal:** Tool call failure patterns, latency spikes, and cost anomalies feed back into routing decisions — the system gets smarter from stress
 
-### 2. Context Dimension
-- Context fabric visualized — what knowledge is loaded for this task
-- Context drift detection — alert when agent operates outside expected context boundaries
-- Session continuity guaranteed — task context survives terminal crash
+### 2. Reliability — Predictable, observable, auditable execution
+- **Deterministic enforcement:** PTY ownership guarantees the prime directive — no bypass path, no stochastic callbacks
+- **Task state in terminal chrome:** Active, blocked, waiting, failed — visible at all times, not buried in logs
+- **Monitor/management surface:** Real-time view across all active tasks and agents — which agent is doing what, for how long. Pause, redirect, or kill without guessing
+- **Audit trail at transport layer:** Every tool call, every model invocation, every byte passes through TermLink — complete observability by default
 
-### 3. Component Dimension
-- Which prompt components were assembled for this task
-- Component version tracking — did this task use a different system prompt than last run?
-- Blast radius visualization when you change a component
+### 3. Usability — Joy to use/extend/debug
+- **Task-aware terminal chrome:** No orphan terminals — every pane is owned by a task with visible state
+- **Context fabric visualization:** What knowledge is loaded for this task, displayed alongside agent output
+- **Multi-LLM routing (transparent):** TermLink hub intercepts tasks and routes to optimal model (reasoning → Opus, routine → Haiku, review → Sonnet) — user doesn't manage this manually
+- **Fallback routing:** When a model is unavailable or rate-limited, automatic reroute — no broken sessions
 
-### 4. Execution Dimension (new features)
+### 4. Portability — No provider/language/environment lock-in
+- **Agent-agnostic:** PTY interception works with Claude Code, Cursor, any terminal-based agent — not locked to Anthropic's hook API
+- **Substrate stability:** PTY/Unix sockets are decades-stable infrastructure vs. vendor APIs that change every sprint
+- **Multi-LLM routing as portability feature:** Hub-level routing means switching models is a configuration change, not an architecture change
+- **Standards-based:** PTY protocol, JSON-RPC control plane, HMAC security — no proprietary lock-in
 
-#### Multi-LLM Routing
-- TermLink hub intercepts the task before it reaches Claude Code
+## Execution Features (Mapped to Directives Above)
+
+### Multi-LLM Routing (Usability + Portability)
+- TermLink hub intercepts the task before it reaches the agent
 - Routes based on task type, cost, capability requirements
 - Expensive reasoning → Opus, routine files → Haiku, code review → Sonnet
 - Deterministic because routing happens at the hub, not inside the agent
 - Fallback routing when a model is unavailable or rate-limited
 
-#### Monitor/Management Surface
+### Monitor/Management Surface (Reliability + Usability)
 - Real-time view across all active tasks and their agents
 - Which agent is doing what, for how long
 - Pause, redirect, or kill a specific agent without killing others
 - Task dependency graph — visualize blockers
 - Situational awareness, not just logging
 
-#### Metadata Management
+### Metadata Management (Antifragility + Reliability)
 - Tool call log per task — what was called, when, success/failure rate
 - Token utilization per task, per model, per session
 - Tool call failure patterns — which tools fail most, under what conditions

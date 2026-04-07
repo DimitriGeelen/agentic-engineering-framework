@@ -50,7 +50,7 @@ Can TermLink's PTY ownership replace Claude Code hooks as the enforcement layer 
 
 ## Scope Fence
 
-**IN:** PTY enforcement architecture, custom terminal evaluation, multi-LLM routing design, metadata collection architecture, four-dimension mapping
+**IN:** PTY enforcement architecture, custom terminal evaluation, multi-LLM routing design, metadata collection architecture, mapping through four constitutional directives (antifragility, reliability, usability, portability)
 **OUT:** Building a terminal emulator, implementing multi-LLM routing, production PTY flow control
 
 ## Acceptance Criteria
