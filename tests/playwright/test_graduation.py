@@ -20,7 +20,7 @@ class TestGraduationPage:
 
     def test_graduation_has_heading(self, page: Page):
         page.goto(_url("/graduation"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         heading = page.locator("h1")
         assert heading.count() > 0
         assert "Graduation" in heading.first.text_content()
@@ -28,13 +28,13 @@ class TestGraduationPage:
     def test_graduation_has_content(self, page: Page):
         """Graduation page should show candidate or directive info."""
         page.goto(_url("/graduation"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "candidate" in content or "directive" in content or "learning" in content
 
     def test_graduation_has_directive_context(self, page: Page):
         """Graduation page should reference constitutional directives."""
         page.goto(_url("/graduation"))
-        page.wait_for_load_state("networkidle")
+        page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "directive" in content or "graduat" in content
