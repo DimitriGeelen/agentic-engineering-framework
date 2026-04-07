@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-979: Playwright tests for web terminal session API (T-967 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T07:57:27Z
+# ============================================================================
+
+task_id: T-979
+task_name: "Playwright tests for web terminal session API (T-967 follow-up)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T22:32:24Z
+completed: 2026-04-06T22:34:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T00:33:59+02:00
+last_commit: 2026-04-07T00:34:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 12 Playwright tests for session API (T-967 follow-up). Complete — 12 session API Playwright tests, register fabric component
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_session_api.py` — tests for /api/sessions (GET empty, POST create, GET by id, DELETE), /api/sessions/profiles (12 tests)"
+  - "All new tests pass (12/12 in 1.94s)"
+  - "Existing 40 Playwright tests still pass (52 total collected)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-playwright-test_session_api.yaml"
+  - ".tasks/active/T-979-playwright-tests-for-web-terminal-sessio.md"
+  - ".tasks/completed/T-979-playwright-tests-for-web-terminal-sessio.md"
+  - "tests/playwright/test_session_api.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T00:33:59"
+    action: "T-979: Add 12 Playwright tests for session API (T-967 follow-up)"
+  - time: "2026-04-07T00:34:20"
+    action: "T-979: Complete — 12 session API Playwright tests, register fabric component"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 4
+  lines_added: 284
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-979-playwright-tests-for-web-terminal-sessio.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1024: Add /api/patterns endpoint — JSON API for failure/success/workflow patterns
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:45:25Z
+# ============================================================================
+
+task_id: T-1024
+task_name: "Add /api/patterns endpoint — JSON API for failure/success/workflow patterns"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T11:43:59Z
+completed: 2026-04-07T11:45:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T13:45:06+02:00
+last_commit: 2026-04-07T13:45:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add /api/patterns endpoint — complete context fabric API trio + 2 Playwright tests
+
+# Key outcomes
+outcomes:
+  - "`/api/patterns` endpoint returns JSON with grouped patterns and counts"
+  - "Playwright tests cover the endpoint (2 tests)"
+  - "All tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1024-add-apipatterns-endpoint--json-api-for-f.md"
+  - "tests/playwright/test_patterns.py"
+  - "web/blueprints/discovery.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T13:45:06"
+    action: "T-1024: Add /api/patterns endpoint — complete context fabric API trio + 2 Playwright tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 109
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1024-add-apipatterns-endpoint--json-api-for-f.md
+generated_by: context-agent-hybrid

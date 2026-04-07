@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-986: Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T08:02:48Z
+# ============================================================================
+
+task_id: T-986
+task_name: "Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T07:58:32Z
+completed: 2026-04-07T08:02:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T10:02:03+02:00
+last_commit: 2026-04-07T10:02:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 37 Playwright tests for 7 untested Watchtower pages
+
+# Key outcomes
+outcomes:
+  - "test_core.py covers landing page load, heading, content sections"
+  - "test_discovery.py covers learnings, decisions, gaps pages"
+  - "test_metrics.py covers metrics page load and content"
+  - "test_quality.py covers quality gate page load and content"
+  - "test_enforcement.py covers enforcement dashboard load and content"
+  - "test_risks.py covers risk register page load and content"
+  - "test_cron.py covers cron registry page load and content"
+  - "All new tests pass with `cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/ -x -q`"
+  - "Fabric cards registered for all new test files"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-986-playwright-tests-for-untested-watchtower.md"
+  - "tests/playwright/test_core.py"
+  - "tests/playwright/test_cron.py"
+  - "tests/playwright/test_discovery.py"
+  - "tests/playwright/test_enforcement.py"
+  - "tests/playwright/test_metrics.py"
+  - "tests/playwright/test_quality.py"
+  - "tests/playwright/test_risks.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T10:02:03"
+    action: "T-986: Add 37 Playwright tests for 7 untested Watchtower pages"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 8
+  lines_added: 405
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-986-playwright-tests-for-untested-watchtower.md
+generated_by: context-agent-hybrid

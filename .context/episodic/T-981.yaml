@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-981: Playwright tests for untested Watchtower pages (timeline, config, costs, approvals)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T07:57:28Z
+# ============================================================================
+
+task_id: T-981
+task_name: "Playwright tests for untested Watchtower pages (timeline, config, costs, approvals)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T22:46:09Z
+completed: 2026-04-06T22:50:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T00:49:42+02:00
+last_commit: 2026-04-07T00:51:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 16 Playwright tests for timeline, config, costs, approvals pages. Complete — 16 new Playwright tests for 4 pages, register fabric
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_timeline.py` — timeline page tests (4 tests)"
+  - "`tests/playwright/test_config.py` — config page tests (4 tests)"
+  - "`tests/playwright/test_costs.py` — costs page tests (4 tests)"
+  - "`tests/playwright/test_approvals.py` — approvals page tests (4 tests)"
+  - "All new tests pass (16/16 in 52s)"
+  - "Total Playwright test count: 69 (up from 53)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-playwright-test_approvals.yaml"
+  - ".fabric/components/tests-playwright-test_config.yaml"
+  - ".fabric/components/tests-playwright-test_costs.yaml"
+  - ".fabric/components/tests-playwright-test_timeline.yaml"
+  - ".tasks/active/T-981-playwright-tests-for-untested-watchtower.md"
+  - ".tasks/completed/T-981-playwright-tests-for-untested-watchtower.md"
+  - "tests/playwright/test_approvals.py"
+  - "tests/playwright/test_config.py"
+  - "tests/playwright/test_costs.py"
+  - "tests/playwright/test_timeline.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T00:49:42"
+    action: "T-981: Add 16 Playwright tests for timeline, config, costs, approvals pages"
+  - time: "2026-04-07T00:51:05"
+    action: "T-981: Complete — 16 new Playwright tests for 4 pages, register fabric"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 10
+  lines_added: 310
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-981-playwright-tests-for-untested-watchtower.md
+generated_by: context-agent-hybrid

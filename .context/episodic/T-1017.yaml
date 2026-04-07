@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1017: Test task pollution — E2E and integration tests leaking task files into real .tasks/active/ directory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:16:19Z
+# ============================================================================
+
+task_id: T-1017
+task_name: "Test task pollution — E2E and integration tests leaking task files into real .tasks/active/ directory"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T11:02:23Z
+completed: 2026-04-07T11:16:17Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-07T13:12:17+02:00
+last_commit: 2026-04-07T13:12:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — test task pollution RCA (non-reproducible, structural blindness confirmed, GO with A+B)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated — 16 orphan tasks documented with evidence"
+  - "Assumptions tested — 5 reproduction attempts, 0 leaks; isolation code confirmed correct"
+  - "Recommendation written with rationale — GO with A+B (audit detection + test_helper guard)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1017-test-task-pollution.md"
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T13:12:17"
+    action: "T-1017: Inception research — test task pollution RCA (non-reproducible, structural blindness confirmed, GO with A+B)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 2
+  lines_added: 245
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1017-test-task-pollution--e2e-and-integration.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1010: Add test health widget to Watchtower landing page — show test counts from /health
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T10:24:50Z
+# ============================================================================
+
+task_id: T-1010
+task_name: "Add test health widget to Watchtower landing page — show test counts from /health"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T10:17:31Z
+completed: 2026-04-07T10:24:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T12:24:40+02:00
+last_commit: 2026-04-07T12:24:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add test counts to landing page + fix /health Ollama timeout + fix conftest 503 handling
+
+# Key outcomes
+outcomes:
+  - "Landing page System Health section shows test file counts"
+  - "Test counts display correctly (Playwright, unit, integration, web)"
+  - "Playwright test verifies test counts appear on landing page"
+  - "/health endpoint Ollama check has 3s timeout (prevents test infrastructure from hanging)"
+  - "conftest.py handles 503 health response (Ollama unreachable but app healthy)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add test counts to landing page + fix /health Ollama timeout + fix conftest 503 handling"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1010-add-test-health-widget-to-watchtower-lan.md"
+  - "tests/playwright/conftest.py"
+  - "tests/playwright/test_core.py"
+  - "tests/playwright/test_health.py"
+  - "web/app.py"
+  - "web/blueprints/cockpit.py"
+  - "web/templates/cockpit.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T12:24:40"
+    action: "T-1010: Add test counts to landing page + fix /health Ollama timeout + fix conftest 503 handling"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 7
+  lines_added: 100
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1010-add-test-health-widget-to-watchtower-lan.md
+generated_by: context-agent-hybrid

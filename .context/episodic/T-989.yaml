@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-989: Playwright tests for patterns and graduation pages
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T08:24:35Z
+# ============================================================================
+
+task_id: T-989
+task_name: "Playwright tests for patterns and graduation pages"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T08:23:00Z
+completed: 2026-04-07T08:24:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T10:24:21+02:00
+last_commit: 2026-04-07T10:24:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add Playwright tests for patterns and graduation pages
+
+# Key outcomes
+outcomes:
+  - "test_patterns.py covers patterns page load, heading, and content"
+  - "test_graduation.py covers graduation page load, heading, and content"
+  - "All new tests pass (8/8)"
+  - "Fabric cards registered"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-playwright-test_graduation.yaml"
+  - ".fabric/components/tests-playwright-test_patterns.yaml"
+  - ".tasks/active/T-989-playwright-tests-for-patterns-and-gradua.md"
+  - "tests/playwright/test_graduation.py"
+  - "tests/playwright/test_patterns.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T10:24:21"
+    action: "T-989: Add Playwright tests for patterns and graduation pages"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 5
+  lines_added: 174
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-989-playwright-tests-for-patterns-and-gradua.md
+generated_by: context-agent-hybrid

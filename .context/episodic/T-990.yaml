@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-990: Playwright tests for directives and search pages
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T08:28:59Z
+# ============================================================================
+
+task_id: T-990
+task_name: "Playwright tests for directives and search pages"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T08:26:34Z
+completed: 2026-04-07T08:28:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T10:28:35+02:00
+last_commit: 2026-04-07T10:28:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add Playwright tests for directives and search pages
+
+# Key outcomes
+outcomes:
+  - "test_directives.py covers directives page load, heading, and constitutional directive content"
+  - "test_search.py covers search page load and search functionality"
+  - "All new tests pass (8/8)"
+  - "Fabric cards registered"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/tests-playwright-test_directives.yaml"
+  - ".fabric/components/tests-playwright-test_search.yaml"
+  - ".tasks/active/T-990-playwright-tests-for-directives-and-sear.md"
+  - "tests/playwright/test_directives.py"
+  - "tests/playwright/test_search.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T10:28:35"
+    action: "T-990: Add Playwright tests for directives and search pages"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 5
+  lines_added: 176
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-990-playwright-tests-for-directives-and-sear.md
+generated_by: context-agent-hybrid
