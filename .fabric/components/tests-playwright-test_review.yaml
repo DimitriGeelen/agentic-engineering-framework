@@ -5,7 +5,7 @@ subsystem: testing
 location: tests/playwright/test_review.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Review page (T-970, T-982)"
 
 depends_on:
   # Format: - target: <relative-path>

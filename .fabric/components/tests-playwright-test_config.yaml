@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_config.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Config page (T-981)"
 
 depends_on:
   # Format: - target: <relative-path>

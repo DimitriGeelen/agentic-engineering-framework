@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_quality.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Quality Gate page (T-986)"
 
 depends_on:
   # Format: - target: <relative-path>

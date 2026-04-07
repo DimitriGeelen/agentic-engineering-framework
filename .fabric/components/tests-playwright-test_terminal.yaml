@@ -5,7 +5,7 @@ subsystem: testing
 location: tests/playwright/test_terminal.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Terminal page (T-970)"
 
 depends_on:
   # Format: - target: <relative-path>

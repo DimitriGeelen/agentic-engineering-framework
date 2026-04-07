@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_discoveries.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Discoveries dashboard (T-987)"
 
 depends_on:
   # Format: - target: <relative-path>

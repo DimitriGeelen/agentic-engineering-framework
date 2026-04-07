@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_sessions.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Sessions page (T-983)"
 
 depends_on:
   # Format: - target: <relative-path>

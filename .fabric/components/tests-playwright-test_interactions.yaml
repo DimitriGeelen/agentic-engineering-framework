@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_interactions.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright interaction tests — dark mode, search, task filtering (T-1015)"
 
 depends_on:
   # Format: - target: <relative-path>

@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_core.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Watchtower landing page (T-986)"
 
 depends_on:
   # Format: - target: <relative-path>

@@ -5,7 +5,7 @@ subsystem: testing
 location: tests/playwright/conftest.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright test fixtures for Watchtower (T-969)"
 
 depends_on:
   # Format: - target: <relative-path>

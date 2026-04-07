@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_health.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for /health endpoint (T-1008)"
 
 depends_on:
   # Format: - target: <relative-path>

@@ -5,7 +5,7 @@ subsystem: tests-playwright
 location: tests/playwright/test_search.py
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "Playwright tests for Search page (T-990)"
 
 depends_on:
   # Format: - target: <relative-path>
