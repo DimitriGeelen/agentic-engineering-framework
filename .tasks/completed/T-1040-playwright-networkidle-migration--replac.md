@@ -4,16 +4,16 @@ name: "Playwright networkidle migration — replace networkidle with domcontentl
 description: >
   Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_approvals.py, tests/playwright/test_assumptions.py, tests/playwright/test_cockpit.py, tests/playwright/test_config.py, tests/playwright/test_core.py, tests/playwright/test_costs.py, tests/playwright/test_cron.py, tests/playwright/test_directives.py, tests/playwright/test_discoveries.py, tests/playwright/test_discovery.py, tests/playwright/test_docs.py, tests/playwright/test_enforcement.py, tests/playwright/test_fabric.py, tests/playwright/test_inception.py, tests/playwright/test_metrics.py, tests/playwright/test_patterns.py, tests/playwright/test_project.py, tests/playwright/test_quality.py, tests/playwright/test_review.py, tests/playwright/test_risks.py, tests/playwright/test_search.py, tests/playwright/test_sessions.py, tests/playwright/test_smoke.py, tests/playwright/test_tasks.py, tests/playwright/test_terminal.py, tests/playwright/test_timeline.py]
 related_tasks: []
 created: 2026-04-07T15:13:51Z
-last_update: 2026-04-07T15:13:51Z
-date_finished: null
+last_update: 2026-04-07T16:37:09Z
+date_finished: 2026-04-07T16:37:09Z
 ---
 
 # T-1040: Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures
@@ -25,9 +25,9 @@ Full Playwright suite (291 tests, 61 files) has 132 timeout failures. Root cause
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All `networkidle` references in tests/playwright/ replaced with `domcontentloaded`
-- [ ] Zero occurrences of `networkidle` remain in tests/playwright/
-- [ ] Playwright test collection succeeds (no import/syntax errors)
+- [x] All `networkidle` references in tests/playwright/ replaced with `domcontentloaded` (102 occurrences across 26 files)
+- [x] Zero occurrences of `networkidle` remain in tests/playwright/
+- [x] Playwright test collection succeeds (305 tests, no errors)
 
 ## Verification
 
@@ -53,3 +53,6 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1040-playwright-networkidle-migration--replac.md
 - **Context:** Initial task creation
+
+### 2026-04-07T16:37:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

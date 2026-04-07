@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1040: Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T16:37:16Z
+# ============================================================================
+
+task_id: T-1040
+task_name: "Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T15:13:51Z
+completed: 2026-04-07T16:37:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T17:15:27+02:00
+last_commit: 2026-04-07T17:15:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace networkidle with domcontentloaded in 26 Playwright test files
+
+# Key outcomes
+outcomes:
+  - "All `networkidle` references in tests/playwright/ replaced with `domcontentloaded` (102 occurrences across 26 files)"
+  - "Zero occurrences of `networkidle` remain in tests/playwright/"
+  - "Playwright test collection succeeds (305 tests, no errors)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "tests/playwright/test_approvals.py"
+  - "tests/playwright/test_assumptions.py"
+  - "tests/playwright/test_cockpit.py"
+  - "tests/playwright/test_config.py"
+  - "tests/playwright/test_core.py"
+  - "tests/playwright/test_costs.py"
+  - "tests/playwright/test_cron.py"
+  - "tests/playwright/test_directives.py"
+  - "tests/playwright/test_discoveries.py"
+  - "tests/playwright/test_discovery.py"
+  - "tests/playwright/test_docs.py"
+  - "tests/playwright/test_enforcement.py"
+  - "tests/playwright/test_fabric.py"
+  - "tests/playwright/test_inception.py"
+  - "tests/playwright/test_metrics.py"
+  - "tests/playwright/test_patterns.py"
+  - "tests/playwright/test_project.py"
+  - "tests/playwright/test_quality.py"
+  - "tests/playwright/test_review.py"
+  - "tests/playwright/test_risks.py"
+  - "tests/playwright/test_search.py"
+  - "tests/playwright/test_sessions.py"
+  - "tests/playwright/test_smoke.py"
+  - "tests/playwright/test_tasks.py"
+  - "tests/playwright/test_terminal.py"
+  - "tests/playwright/test_timeline.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T17:15:27"
+    action: "T-1040: Replace networkidle with domcontentloaded in 26 Playwright test files"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 83 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 83
+  commits: 1
+  files_changed: 26
+  lines_added: 102
+  lines_removed: 102
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1040-playwright-networkidle-migration--replac.md
+generated_by: context-agent-hybrid
