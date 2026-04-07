@@ -1,22 +1,22 @@
 ---
-id: T-1024
-name: "Add /api/patterns endpoint — JSON API for failure/success/workflow patterns"
+id: T-1023
+name: "Add /api/learnings and /api/decisions endpoints — JSON APIs for context fabric"
 description: >
-  Complete context fabric API trio: concerns (T-1022), learnings+decisions (T-1023), patterns
+  Expose learnings and decisions data as JSON APIs for programmatic access
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_discovery.py, C-003]
 related_tasks: []
-created: 2026-04-07T11:43:59Z
-last_update: 2026-04-07T11:43:59Z
-date_finished: null
+created: 2026-04-07T11:42:19Z
+last_update: 2026-04-07T11:43:42Z
+date_finished: 2026-04-07T11:43:42Z
 ---
 
-# T-1024: Add /api/patterns endpoint — JSON API for failure/success/workflow patterns
+# T-1023: Add /api/learnings and /api/decisions endpoints — JSON APIs for context fabric
 
 ## Context
 
@@ -25,12 +25,13 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] `/api/patterns` endpoint returns JSON with grouped patterns and counts
-- [x] Playwright tests cover the endpoint (2 tests)
+- [x] `/api/learnings` endpoint returns JSON with learnings data and counts
+- [x] `/api/decisions` endpoint returns JSON with decisions data and counts
+- [x] Playwright tests cover both endpoints (4 tests)
 - [x] All tests pass
 
 ### Human
-<!-- No human ACs needed
+<!-- No human ACs needed — API endpoints with deterministic output
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
      Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
      Example:
@@ -62,7 +63,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-07T11:43:59Z — task-created [task-create-agent]
+### 2026-04-07T11:42:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1024-add-apipatterns-endpoint--json-api-for-f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1023-add-apilearnings-and-apidecisions-endpoi.md
 - **Context:** Initial task creation
+
+### 2026-04-07T11:43:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

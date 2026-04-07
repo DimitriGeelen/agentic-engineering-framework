@@ -4,16 +4,16 @@ name: "Playwright tests for directives and search pages"
 description: >
   Playwright tests for directives and search pages
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_directives.py, tests/playwright/test_search.py]
 related_tasks: []
 created: 2026-04-07T08:26:34Z
-last_update: 2026-04-07T08:26:34Z
-date_finished: null
+last_update: 2026-04-07T08:28:40Z
+date_finished: 2026-04-07T08:28:40Z
 ---
 
 # T-990: Playwright tests for directives and search pages
@@ -51,3 +51,6 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-990-playwright-tests-for-directives-and-sear.md
 - **Context:** Initial task creation
+
+### 2026-04-07T08:28:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

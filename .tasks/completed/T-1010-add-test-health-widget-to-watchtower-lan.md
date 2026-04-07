@@ -4,16 +4,16 @@ name: "Add test health widget to Watchtower landing page — show test counts fr
 description: >
   Add test health widget to Watchtower landing page — show test counts from /health
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/conftest.py, tests/playwright/test_core.py, tests/playwright/test_health.py, web/app.py, web/blueprints/cockpit.py, web/templates/cockpit.html]
 related_tasks: []
 created: 2026-04-07T10:17:31Z
-last_update: 2026-04-07T10:21:44Z
-date_finished: null
+last_update: 2026-04-07T10:24:46Z
+date_finished: 2026-04-07T10:24:46Z
 ---
 
 # T-1010: Add test health widget to Watchtower landing page — show test counts from /health
@@ -52,3 +52,6 @@ cd /opt/999-Agentic-Engineering-Framework && curl -sf http://localhost:3000/ -o 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1010-add-test-health-widget-to-watchtower-lan.md
 - **Context:** Initial task creation
+
+### 2026-04-07T10:24:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

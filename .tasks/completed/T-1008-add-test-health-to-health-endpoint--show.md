@@ -4,7 +4,7 @@ name: "Add test health to /health endpoint — show Playwright/unit/web test cou
 description: >
   Add test health to /health endpoint — show Playwright/unit/web test counts
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T10:14:32Z
-last_update: 2026-04-07T10:14:32Z
-date_finished: null
+last_update: 2026-04-07T10:17:09Z
+date_finished: 2026-04-07T10:17:09Z
 ---
 
 # T-1008: Add test health to /health endpoint — show Playwright/unit/web test counts
@@ -50,3 +50,6 @@ cd /opt/999-Agentic-Engineering-Framework && curl -sf http://localhost:3000/heal
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1008-add-test-health-to-health-endpoint--show.md
 - **Context:** Initial task creation
+
+### 2026-04-07T10:17:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

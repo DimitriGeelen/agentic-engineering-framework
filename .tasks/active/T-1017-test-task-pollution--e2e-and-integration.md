@@ -4,7 +4,7 @@ name: "Test task pollution — E2E and integration tests leaking task files into
 description: >
   Inception: Test task pollution — E2E and integration tests leaking task files into real .tasks/active/ directory
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T11:02:23Z
-last_update: 2026-04-07T11:02:30Z
-date_finished: null
+last_update: 2026-04-07T11:16:17Z
+date_finished: 2026-04-07T11:16:17Z
 ---
 
 # T-1017: Test task pollution — E2E and integration tests leaking task files into real .tasks/active/ directory
@@ -88,18 +88,32 @@ Research artifact: `docs/reports/T-1017-test-task-pollution.md`
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO (Option A+B)
+
+Rationale: The root cause is non-reproducible but the structural blindness is proven — 5 detection layers missed 16 orphan tasks. Option A (audit check) catches future leaks. Option B (test_helper guard) prevents them structurally. Both are low-complexity, high-value additions.
+
+Evidence:
+- 16 orphan tasks with test descriptions ("Test", "Created by E2E test") in real `.tasks/active/`
+- 5/5 reproduction attempts showed no leaks — isolation code is correct NOW
+...
+
+**Date**: 2026-04-07T11:16:16Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (Option A+B)
+
+Rationale: The root cause is non-reproducible but the structural blindness is proven — 5 detection layers missed 16 orphan tasks. Option A (audit check) catches future leaks. Option B (test_helper guard) prevents them structurally. Both are low-complexity, high-value additions.
+
+Evidence:
+- 16 orphan tasks with test descriptions ("Test", "Created by E2E test") in real `.tasks/active/`
+- 5/5 reproduction attempts showed no leaks — isolation code is correct NOW
+...
+
+**Date**: 2026-04-07T11:16:16Z
 
 ## Updates
 
@@ -108,3 +122,19 @@ Research artifact: `docs/reports/T-1017-test-task-pollution.md`
 
 ### 2026-04-07T11:02:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-07T11:16:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (Option A+B)
+
+Rationale: The root cause is non-reproducible but the structural blindness is proven — 5 detection layers missed 16 orphan tasks. Option A (audit check) catches future leaks. Option B (test_helper guard) prevents them structurally. Both are low-complexity, high-value additions.
+
+Evidence:
+- 16 orphan tasks with test descriptions ("Test", "Created by E2E test") in real `.tasks/active/`
+- 5/5 reproduction attempts showed no leaks — isolation code is correct NOW
+...
+
+### 2026-04-07T11:16:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4,16 +4,16 @@ name: "Playwright tests for untested Watchtower pages — discovery, metrics, qu
 description: >
   Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_core.py, tests/playwright/test_cron.py, tests/playwright/test_discovery.py, tests/playwright/test_enforcement.py, tests/playwright/test_metrics.py, tests/playwright/test_quality.py, tests/playwright/test_risks.py]
 related_tasks: []
 created: 2026-04-07T07:58:32Z
-last_update: 2026-04-07T07:58:32Z
-date_finished: null
+last_update: 2026-04-07T08:02:11Z
+date_finished: 2026-04-07T08:02:11Z
 ---
 
 # T-986: Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core
@@ -56,3 +56,6 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-986-playwright-tests-for-untested-watchtower.md
 - **Context:** Initial task creation
+
+### 2026-04-07T08:02:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

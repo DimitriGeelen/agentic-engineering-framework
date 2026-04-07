@@ -1,22 +1,22 @@
 ---
-id: T-1021
-name: "Clean up 16 orphan test tasks from .tasks/active/"
+id: T-1022
+name: "Add /api/concerns endpoint — JSON API for gaps register"
 description: >
-  Remove 16 test-generated task files that leaked into real .tasks/active/ directory (T-1017 finding)
+  Add JSON API endpoint for the concerns/gaps register to make the data accessible to the cockpit and other API consumers
 
-status: started-work
-workflow_type: refactor
+status: work-completed
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_quality.py, web/blueprints/quality.py]
 related_tasks: []
-created: 2026-04-07T11:34:40Z
-last_update: 2026-04-07T11:34:40Z
-date_finished: null
+created: 2026-04-07T11:40:41Z
+last_update: 2026-04-07T11:42:06Z
+date_finished: 2026-04-07T11:42:06Z
 ---
 
-# T-1021: Clean up 16 orphan test tasks from .tasks/active/
+# T-1022: Add /api/concerns endpoint — JSON API for gaps register
 
 ## Context
 
@@ -25,12 +25,13 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [x] All 16 orphan test task files removed from .tasks/active/
-- [x] No real tasks affected (only test artifacts with descriptions like "Test", "Created by E2E test")
-- [x] Active task count reduced by 16 (161 → 145)
+- [x] `/api/concerns` endpoint returns JSON with concerns data
+- [x] Response includes counts by severity and status
+- [x] Playwright test covers the endpoint (3 tests)
+- [x] Endpoint accessible and returns valid JSON
 
 ### Human
-<!-- No human ACs — purely mechanical cleanup of confirmed test artifacts
+<!-- No human ACs needed — API endpoint with deterministic output
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
      Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
      Example:
@@ -62,7 +63,10 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-07T11:34:40Z — task-created [task-create-agent]
+### 2026-04-07T11:40:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1021-clean-up-16-orphan-test-tasks-from-tasks.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1022-add-apiconcerns-endpoint--json-api-for-g.md
 - **Context:** Initial task creation
+
+### 2026-04-07T11:42:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

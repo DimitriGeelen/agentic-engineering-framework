@@ -4,7 +4,7 @@ name: "Playwright test expansion — untested page routes and GET APIs"
 description: >
   Playwright test expansion — untested page routes and GET APIs
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T12:20:37Z
-last_update: 2026-04-07T12:20:37Z
-date_finished: null
+last_update: 2026-04-07T12:28:30Z
+date_finished: 2026-04-07T12:28:30Z
 ---
 
 # T-1025: Playwright test expansion — untested page routes and GET APIs
@@ -39,7 +39,7 @@ Expand Playwright regression test coverage to untested Watchtower routes. Previo
 # All new test files exist
 ls tests/playwright/test_ask.py tests/playwright/test_file_viewer.py tests/playwright/test_search_extended.py tests/playwright/test_api_fabric_source.py tests/playwright/test_api_timeline_detail.py tests/playwright/test_api_termlink.py tests/playwright/test_settings_models.py
 # Tests pass
-cd /opt/999-Agentic-Engineering-Framework && python -m pytest tests/playwright/test_ask.py tests/playwright/test_file_viewer.py tests/playwright/test_search_extended.py tests/playwright/test_api_fabric_source.py tests/playwright/test_api_timeline_detail.py tests/playwright/test_api_termlink.py tests/playwright/test_settings_models.py -x -q 2>&1 | tail -5
+cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_ask.py tests/playwright/test_file_viewer.py tests/playwright/test_search_extended.py tests/playwright/test_api_fabric_source.py tests/playwright/test_api_timeline_detail.py tests/playwright/test_api_termlink.py tests/playwright/test_settings_models.py -x -q 2>&1 | tail -5
 
 ## Decisions
 
@@ -58,3 +58,6 @@ cd /opt/999-Agentic-Engineering-Framework && python -m pytest tests/playwright/t
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1025-playwright-test-expansion--untested-page.md
 - **Context:** Initial task creation
+
+### 2026-04-07T12:28:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
