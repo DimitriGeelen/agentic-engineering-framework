@@ -6,6 +6,8 @@
 
 ## What It Does
 
+Singleton registry and adapter map (initialized on first use)
+
 ## Related
 
 ### Tasks

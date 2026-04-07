@@ -5,6 +5,6 @@ decisions:
   - id: D-001
     decision: "Use YAML for config"
     scope: project
-    date: 2026-04-06
+    date: 2026-04-07
     task: unknown
     rationale: "Not specified"

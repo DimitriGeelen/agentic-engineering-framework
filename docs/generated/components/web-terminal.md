@@ -6,8 +6,6 @@
 
 ## What It Does
 
-Active PTY sessions: {sid: {"fd": int, "pid": int}}
-
 ## Related
 
 ### Tasks

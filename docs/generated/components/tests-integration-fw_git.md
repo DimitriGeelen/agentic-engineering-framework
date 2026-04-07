@@ -20,11 +20,6 @@ fw git help    — show help
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-744: Commit untracked research artifacts and clean up git state
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_git.yaml`*
 *Last verified: 2026-03-30*
