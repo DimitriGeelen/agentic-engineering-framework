@@ -91,6 +91,8 @@ def page(browser_instance, watchtower_server):
     """Fresh browser page for each test."""
     context = browser_instance.new_context()
     pg = context.new_page()
+    pg.set_default_timeout(10_000)  # 10s instead of 30s default
+    pg.set_default_navigation_timeout(15_000)  # 15s for page.goto
     yield pg
     context.close()
 
