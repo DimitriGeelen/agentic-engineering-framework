@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1030: Playwright tests — test-summary, audit-run, tests-run APIs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:41:37Z
+# ============================================================================
+
+task_id: T-1030
+task_name: "Playwright tests — test-summary, audit-run, tests-run APIs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T13:35:05Z
+completed: 2026-04-07T13:37:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T15:37:21+02:00
+last_commit: 2026-04-07T15:37:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 8 Playwright tests — test-summary JSON, decision/learning POST validation. Complete — 8 Playwright tests for test-summary and context capture APIs
+
+# Key outcomes
+outcomes:
+  - "test_api_quality.py — test-summary JSON structure and suite data (4 tests)"
+  - "test_api_context_capture.py — decision and learning POST validation (4 tests)"
+  - "All 8 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1029.yaml"
+  - ".tasks/active/T-1030-playwright-tests--test-summary-audit-run.md"
+  - ".tasks/completed/T-1030-playwright-tests--test-summary-audit-run.md"
+  - "tests/playwright/test_api_context_capture.py"
+  - "tests/playwright/test_api_quality.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T15:37:21"
+    action: "T-1030: Add 8 Playwright tests — test-summary JSON, decision/learning POST validation"
+  - time: "2026-04-07T15:37:38"
+    action: "T-1030: Complete — 8 Playwright tests for test-summary and context capture APIs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 5
+  lines_added: 240
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1030-playwright-tests--test-summary-audit-run.md
+generated_by: context-agent-hybrid
