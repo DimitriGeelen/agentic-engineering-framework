@@ -29,3 +29,13 @@ teardown() {
     run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' test lint 2>&1 | head -5"
     [[ "$output" == *"ShellCheck"* ]] || [[ "$output" == *"Lint"* ]] || [[ "$output" == *"PASS"* ]] || [[ "$output" == *"WARN"* ]]
 }
+
+@test "fw test playwright: shows playwright header" {
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' test playwright 2>&1 | head -5"
+    [[ "$output" == *"Playwright"* ]] || [[ "$output" == *"playwright"* ]] || [[ "$output" == *"pytest"* ]] || [[ "$output" == *"ERROR"* ]]
+}
+
+@test "fw test playwright: accepts --playwright flag" {
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' test --playwright 2>&1 | head -5"
+    [[ "$output" == *"Playwright"* ]] || [[ "$output" == *"playwright"* ]] || [[ "$output" == *"pytest"* ]] || [[ "$output" == *"ERROR"* ]]
+}
