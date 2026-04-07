@@ -38,3 +38,25 @@ class TestPatternsPage:
         page.wait_for_load_state("networkidle")
         content = page.content().lower()
         assert "failure" in content or "success" in content or "workflow" in content
+
+
+class TestPatternsAPI:
+    """Patterns API returns structured data (T-1024)."""
+
+    def test_patterns_api_returns_json(self, page: Page):
+        import json
+        page.goto(_url("/api/patterns"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "patterns" in data
+        assert "total" in data
+        assert "by_type" in data
+
+    def test_patterns_api_has_grouped_data(self, page: Page):
+        import json
+        page.goto(_url("/api/patterns"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "failure" in data["patterns"]
+        assert "success" in data["patterns"]
+        assert data["total"] > 0

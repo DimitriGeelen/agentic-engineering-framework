@@ -563,6 +563,25 @@ def patterns():
     )
 
 
+@bp.route("/api/patterns")
+def patterns_api():
+    """Return patterns as JSON (T-1024)."""
+    from flask import jsonify
+    pdata = load_patterns()
+    grouped = {
+        "failure": pdata.get("failure_patterns", []),
+        "success": pdata.get("success_patterns", []),
+        "antifragile": pdata.get("antifragile_patterns", []),
+        "workflow": pdata.get("workflow_patterns", []),
+    }
+    total = sum(len(v) for v in grouped.values())
+    return jsonify({
+        "patterns": grouped,
+        "total": total,
+        "by_type": {k: len(v) for k, v in grouped.items()},
+    })
+
+
 def _count_applications(learning_id):
     """Count how many distinct tasks/episodics reference this learning ID."""
     referenced = set()
