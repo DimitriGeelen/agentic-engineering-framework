@@ -1,0 +1,159 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1026: Playwright tests — docs detail, review ACs, POST error handling
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:27:42Z
+# ============================================================================
+
+task_id: T-1026
+task_name: "Playwright tests — docs detail, review ACs, POST error handling"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T12:29:39Z
+completed: 2026-04-07T12:33:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T14:32:18+02:00
+last_commit: 2026-04-07T14:34:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session housekeeping — context state, completed task moves, fabric components. Add 14 Playwright tests — docs detail, review ACs, POST error handling, healing API. Complete — 14 Playwright tests for docs detail, review ACs, POST error handling
+
+# Key outcomes
+outcomes:
+  - "test_docs_detail.py — /docs/generated/<card_name> detail page (4 tests)"
+  - "test_review_acs.py — /review/<task_id>/acs AC fragment (3 tests)"
+  - "test_api_task_mutations.py — POST error handling: create, horizon, status (5 tests)"
+  - "test_api_healing.py — /api/healing/<task_id> POST validation (2 tests)"
+  - "All 14 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — 14 Playwright tests for docs detail, review ACs, POST error handling"
+    source: git-mined
+  - description: "Add 14 Playwright tests — docs detail, review ACs, POST error handling, healing API"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/approvals/pending-5810801c853e.yaml"
+  - ".context/audits/2026-04-06.yaml"
+  - ".context/audits/2026-04-07.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/handovers/CHECKPOINT-S-2026-0407-1217.md"
+  - ".context/handovers/CHECKPOINT-S-2026-0407-1230.md"
+  - ".context/handovers/S-2026-0407-1204.md"
+  - ".context/handovers/S-2026-0407-1240.md"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.gitignore"
+  - ".context/working/.reviewed-T-1017"
+  - ".context/working/.reviewed-T-967"
+  - ".context/working/.reviewed-T-980"
+  - ".context/working/.reviewed-T-993"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - "docs/generated/components/tests-integration-fw_git.md"
+  - "docs/generated/components/tests-integration-fw_healing.md"
+  - "docs/generated/components/tests-integration-fw_work_on.md"
+  - "docs/generated/components/tests-playwright-test_approvals.md"
+  - "docs/generated/components/tests-playwright-test_config.md"
+  - "docs/generated/components/tests-playwright-test_core.md"
+  - "docs/generated/components/tests-playwright-test_costs.md"
+  - "docs/generated/components/tests-playwright-test_cron.md"
+  - "docs/generated/components/tests-playwright-test_directives.md"
+  - "docs/generated/components/tests-playwright-test_discoveries.md"
+  - "docs/generated/components/tests-playwright-test_discovery.md"
+  - "docs/generated/components/tests-playwright-test_docs.md"
+  - "docs/generated/components/tests-playwright-test_enforcement.md"
+  - "docs/generated/components/tests-playwright-test_graduation.md"
+  - "docs/generated/components/tests-playwright-test_health.md"
+  - "docs/generated/components/tests-playwright-test_interactions.md"
+  - "docs/generated/components/tests-playwright-test_metrics.md"
+  - "docs/generated/components/tests-playwright-test_navigation.md"
+  - "docs/generated/components/tests-playwright-test_patterns.md"
+  - "docs/generated/components/tests-playwright-test_quality.md"
+  - "docs/generated/components/tests-playwright-test_review.md"
+  - "docs/generated/components/tests-playwright-test_risks.md"
+  - "docs/generated/components/tests-playwright-test_search.md"
+  - "docs/generated/components/tests-playwright-test_session_api.md"
+  - "docs/generated/components/tests-playwright-test_sessions.md"
+  - "docs/generated/components/tests-playwright-test_settings.md"
+  - "docs/generated/components/tests-playwright-test_terminal.md"
+  - "docs/generated/components/tests-playwright-test_timeline.md"
+  - "docs/generated/components/web-blueprints-__init__.md"
+  - "docs/generated/components/web-blueprints-sessions.md"
+  - "docs/generated/components/web-blueprints-terminal.md"
+  - "docs/generated/components/web-shared.md"
+  - "docs/generated/components/web-templates-sessions.md"
+  - "docs/generated/components/web-templates-terminal.md"
+  - "docs/generated/components/web-terminal-adapters-base.md"
+  - "docs/generated/components/web-terminal-adapters-claude_code.md"
+  - "docs/generated/components/web-terminal-adapters-local_shell.md"
+  - "docs/generated/components/web-terminal-__init__.md"
+  - "docs/generated/components/web-terminal.md"
+  - "docs/generated/components/web-terminal-profiles.md"
+  - "docs/generated/components/web-terminal-registry.md"
+  - "docs/generated/components/web-terminal-session.md"
+  - ".fabric/components/tests-playwright-test_core.yaml"
+  - ".fabric/components/tests-playwright-test_cron.yaml"
+  - ".fabric/components/tests-playwright-test_discovery.yaml"
+  - ".fabric/components/tests-playwright-test_enforcement.yaml"
+  - ".fabric/components/tests-playwright-test_metrics.yaml"
+  - ".fabric/components/tests-playwright-test_quality.yaml"
+  - ".fabric/components/tests-playwright-test_risks.yaml"
+  - ".tasks/active/T-1026-playwright-tests--docs-detail-review-acs.md"
+  - ".tasks/completed/T-1026-playwright-tests--docs-detail-review-acs.md"
+  - "tests/playwright/test_api_healing.py"
+  - "tests/playwright/test_api_task_mutations.py"
+  - "tests/playwright/test_docs_detail.py"
+  - "tests/playwright/test_review_acs.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T14:32:18"
+    action: "T-1026: Session housekeeping — context state, completed task moves, fabric components"
+  - time: "2026-04-07T14:33:45"
+    action: "T-1026: Add 14 Playwright tests — docs detail, review ACs, POST error handling, healing API"
+  - time: "2026-04-07T14:34:13"
+    action: "T-1026: Complete — 14 Playwright tests for docs detail, review ACs, POST error handling"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 3
+  files_changed: 76
+  lines_added: 11049
+  lines_removed: 6479
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1026-playwright-tests--docs-detail-review-acs.md
+generated_by: context-agent-hybrid

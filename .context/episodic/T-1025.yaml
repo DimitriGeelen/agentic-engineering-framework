@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1025: Playwright test expansion — untested page routes and GET APIs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:27:41Z
+# ============================================================================
+
+task_id: T-1025
+task_name: "Playwright test expansion — untested page routes and GET APIs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T12:20:37Z
+completed: 2026-04-07T12:28:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T14:28:06+02:00
+last_commit: 2026-04-07T14:28:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 18 Playwright tests — ask API, file viewer, search sub-pages, fabric source, timeline detail, termlink sessions, settings models. Complete — 18 Playwright tests for 7 untested routes (TermLink dispatched)
+
+# Key outcomes
+outcomes:
+  - "test_ask.py — /api/v1/ask endpoint returns JSON with query/error fields (2 tests)"
+  - "test_file_viewer.py — /file/<path> renders markdown, blocks traversal (4 tests)"
+  - "test_search_extended.py — /search/conversations and /search/feedback/analytics (3 tests)"
+  - "test_api_fabric_source.py — /api/fabric/source and /api/fabric/report (4 tests)"
+  - "test_api_timeline_detail.py — /api/timeline/task/<id> returns HTML (3 tests)"
+  - "test_api_termlink.py — /api/termlink/sessions returns JSON array (1 test)"
+  - "test_settings_models.py — /settings/models returns response (1 test)"
+  - "All 18 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/active/T-1025-playwright-test-expansion--untested-page.md"
+  - ".tasks/active/T-969-playwright-test-infrastructure--testspla.md"
+  - ".tasks/active/T-992-batch-horizon-cleanup--move-work-complet.md"
+  - ".tasks/completed/T-1003-playwright-navigation-test--verify-htmx-.md"
+  - ".tasks/completed/T-1008-add-test-health-to-health-endpoint--show.md"
+  - ".tasks/completed/T-1010-add-test-health-widget-to-watchtower-lan.md"
+  - ".tasks/completed/T-1014-fix-playwright-navigation-test-timeout--.md"
+  - ".tasks/completed/T-1015-playwright-interaction-tests--dark-mode-.md"
+  - ".tasks/completed/T-1016-watchtower-apitest-summary-endpoint--las.md"
+  - ".tasks/completed/T-1018-playwright-tests-for-cockpit-scan-dashbo.md"
+  - ".tasks/completed/T-1019-playwright-tests-for-task-detail-approva.md"
+  - ".tasks/completed/T-1020-playwright-tests-for-review-page-and-ass.md"
+  - ".tasks/completed/T-1021-clean-up-16-orphan-test-tasks-from-tasks.md"
+  - ".tasks/completed/T-1022-add-apiconcerns-endpoint--json-api-for-g.md"
+  - ".tasks/completed/T-1023-add-apilearnings-and-apidecisions-endpoi.md"
+  - ".tasks/completed/T-1024-add-apipatterns-endpoint--json-api-for-f.md"
+  - ".tasks/completed/T-1025-playwright-test-expansion--untested-page.md"
+  - ".tasks/completed/T-986-playwright-tests-for-untested-watchtower.md"
+  - ".tasks/completed/T-987-playwright-tests-for-remaining-pages--di.md"
+  - ".tasks/completed/T-988-fix-playwright-settings-test-timeout--ad.md"
+  - ".tasks/completed/T-989-playwright-tests-for-patterns-and-gradua.md"
+  - ".tasks/completed/T-990-playwright-tests-for-directives-and-sear.md"
+  - ".tasks/completed/T-991-fix-web-test-failures--update-monkeypatc.md"
+  - ".tasks/completed/T-994-integration-test-for-fw-test-playwright-.md"
+  - "tests/playwright/test_api_fabric_source.py"
+  - "tests/playwright/test_api_termlink.py"
+  - "tests/playwright/test_api_timeline_detail.py"
+  - "tests/playwright/test_ask.py"
+  - "tests/playwright/test_file_viewer.py"
+  - "tests/playwright/test_search_extended.py"
+  - "tests/playwright/test_settings_models.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T14:28:06"
+    action: "T-1025: Add 18 Playwright tests — ask API, file viewer, search sub-pages, fabric source, timeline detail, termlink sessions, settings models"
+  - time: "2026-04-07T14:28:41"
+    action: "T-1025: Complete — 18 Playwright tests for 7 untested routes (TermLink dispatched)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 12
+  lines_added: 515
+  lines_removed: 89
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1025-playwright-test-expansion--untested-page.md
+generated_by: context-agent-hybrid
