@@ -1,0 +1,18 @@
+id: tests/playwright/test_docs_count.py
+name: test_docs_count
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_docs_count.py
+tags: [playwright, test]
+
+purpose: "Playwright tests for docs generated page coverage (T-1054)"
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent
