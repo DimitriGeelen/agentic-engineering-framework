@@ -1,0 +1,54 @@
+---
+id: T-1018
+name: "Playwright tests for cockpit scan dashboard — scan refresh, approve, defer, apply"
+description: >
+  Add Playwright regression tests for cockpit.py blueprint routes — scan dashboard, approval/deferral flows, focus actions
+
+status: started-work
+workflow_type: test
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-07T11:19:41Z
+last_update: 2026-04-07T11:19:41Z
+date_finished: null
+---
+
+# T-1018: Playwright tests for cockpit scan dashboard — scan refresh, approve, defer, apply
+
+## Context
+
+Cockpit blueprint (`web/blueprints/cockpit.py`) has zero Playwright test coverage. It's the main landing page with scan dashboard, approval flows, and system health.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `tests/playwright/test_cockpit.py` exists with tests for cockpit page
+- [x] Tests cover: page load, heading, scan meta, action summary, system health, test counts
+- [x] Tests cover: API endpoints return expected status codes
+- [x] All tests pass: `cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_cockpit.py -v`
+
+## Verification
+
+test -f tests/playwright/test_cockpit.py
+cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_cockpit.py -v
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-07T11:19:41Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1018-playwright-tests-for-cockpit-scan-dashbo.md
+- **Context:** Initial task creation

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-991: Fix web test failures — update monkeypatch paths after subprocess_utils refactor
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:16:47Z
+# ============================================================================
+
+task_id: T-991
+task_name: "Fix web test failures — update monkeypatch paths after subprocess_utils refactor"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T08:51:22Z
+completed: 2026-04-07T09:43:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T11:43:05+02:00
+last_commit: 2026-04-07T11:43:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix 25 web test failures — monkeypatch paths, CSRF exemptions, terminal package conflict
+
+# Key outcomes
+outcomes:
+  - "TestSubprocessStderr tests pass after monkeypatch path update"
+  - "CSRF tests fixed — /api/ paths skip CSRF by design, tests updated"
+  - "Footer version test fixed — no longer hardcodes v1.0.0"
+  - "terminal.py/terminal/ package conflict resolved — PTY manager in __init__.py"
+  - "All web tests pass (142/142, 0 failures)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 25 web test failures — monkeypatch paths, CSRF exemptions, terminal package conflict"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-991-fix-web-test-failures--update-monkeypatc.md"
+  - "web/terminal/__init__.py"
+  - "web/terminal.py"
+  - "web/test_app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T11:43:05"
+    action: "T-991: Fix 25 web test failures — monkeypatch paths, CSRF exemptions, terminal package conflict"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 51
+  commits: 1
+  files_changed: 4
+  lines_added: 250
+  lines_removed: 180
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-991-fix-web-test-failures--update-monkeypatc.md
+generated_by: context-agent-hybrid

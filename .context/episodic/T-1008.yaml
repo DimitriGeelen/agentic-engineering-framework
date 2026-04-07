@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1008: Add test health to /health endpoint — show Playwright/unit/web test counts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:16:48Z
+# ============================================================================
+
+task_id: T-1008
+task_name: "Add test health to /health endpoint — show Playwright/unit/web test counts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T10:14:32Z
+completed: 2026-04-07T10:17:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T12:17:03+02:00
+last_commit: 2026-04-07T12:17:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add test infrastructure counts to /health endpoint + Playwright tests
+
+# Key outcomes
+outcomes:
+  - "/health endpoint includes `tests` section with file counts per suite (playwright:27, unit:58, integration:69, web:1)"
+  - "Playwright test for /health endpoint verifying test data presence (4 tests)"
+  - "All tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".fabric/components/tests-playwright-test_health.yaml"
+  - ".tasks/active/T-1008-add-test-health-to-health-endpoint--show.md"
+  - "tests/playwright/test_health.py"
+  - "VERSION"
+  - "web/app.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T12:17:03"
+    action: "T-1008: Add test infrastructure counts to /health endpoint + Playwright tests"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 143
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1008-add-test-health-to-health-endpoint--show.md
+generated_by: context-agent-hybrid
