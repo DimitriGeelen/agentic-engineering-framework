@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1042: Playwright test speedup — reduce default timeout and add pytest configuration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T15:50:44Z
+# ============================================================================
+
+task_id: T-1042
+task_name: "Playwright test speedup — reduce default timeout and add pytest configuration"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T15:45:51Z
+completed: 2026-04-07T15:50:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T17:46:52+02:00
+last_commit: 2026-04-07T17:46:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Reduce Playwright default timeout from 30s to 10s/15s
+
+# Key outcomes
+outcomes:
+  - "conftest.py sets Playwright default timeout to 10s for page and context"
+  - "pytest.ini or conftest sets per-test timeout marker (pytest-timeout not available, using Playwright native timeouts)"
+  - "Test collection still succeeds (305 tests collected)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "tests/playwright/conftest.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T17:46:52"
+    action: "T-1042: Reduce Playwright default timeout from 30s to 10s/15s"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 1
+  lines_added: 2
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1042-playwright-test-speedup--reduce-default-.md
+generated_by: context-agent-hybrid
