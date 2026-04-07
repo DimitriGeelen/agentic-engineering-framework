@@ -121,3 +121,21 @@ assumptions:
   linked_task: T-191
   created: '2026-02-19'
   resolved_date: null
+- id: A-014
+  statement: Batch operations (>3 same operation in a loop) are the dangerous pattern,
+    not individual changes
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-993
+  created: '2026-04-07'
+  resolved_date: null
+- id: A-015
+  statement: Requiring --reason on horizon changes provides audit trail without blocking
+    legitimate use
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-993
+  created: '2026-04-07'
+  resolved_date: null
