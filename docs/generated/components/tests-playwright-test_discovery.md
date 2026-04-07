@@ -2,7 +2,7 @@
 
 > TODO: describe what this component does
 
-**Type:** script | **Subsystem:** unknown | **Location:** `tests/playwright/test_discovery.py`
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_discovery.py`
 
 ## What It Does
 

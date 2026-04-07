@@ -8,6 +8,11 @@
 
 Singleton adapter for backward compatibility
 
+## Related
+
+### Tasks
+- T-991: Fix web test failures — update monkeypatch paths after subprocess_utils refactor
+
 ---
 *Auto-generated from Component Fabric. Card: `web-terminal-__init__.yaml`*
 *Last verified: 2026-04-06*
