@@ -108,3 +108,26 @@ def page(browser_instance, watchtower_server):
 def base_url():
     """Base URL for the test server."""
     return TEST_URL
+
+
+# --- Timing report hook ---
+
+_test_durations = []
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Record test duration for slow test reporting."""
+    outcome = yield
+    report = outcome.get_result()
+    if report.when == "call":
+        _test_durations.append((item.nodeid, report.duration))
+
+
+def pytest_terminal_summary(terminalreporter, config):
+    """Print the 10 slowest tests at session end."""
+    if not _test_durations:
+        return
+    terminalreporter.section("slowest 10 tests")
+    for nodeid, duration in sorted(_test_durations, key=lambda x: -x[1])[:10]:
+        terminalreporter.write_line(f"  {duration:6.2f}s  {nodeid}")

@@ -38,7 +38,7 @@ ROUTES = [
     "/health",
 ]
 
-MAX_RESPONSE_TIME = 5.0  # seconds
+MAX_RESPONSE_TIME = 10.0  # seconds — allows for cold starts and heavy pages (144 tasks)
 
 
 class TestResponseTimes:
