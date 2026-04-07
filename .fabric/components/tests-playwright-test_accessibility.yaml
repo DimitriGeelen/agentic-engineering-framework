@@ -1,0 +1,18 @@
+id: tests/playwright/test_accessibility.py
+name: test_accessibility
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_accessibility.py
+tags: [playwright, test, accessibility]
+
+purpose: "Playwright accessibility tests for Watchtower (T-1059)"
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent
