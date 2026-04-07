@@ -45,3 +45,24 @@ class TestQualityPage:
         page.wait_for_load_state("networkidle")
         content = page.content().lower()
         assert "pass" in content or "warn" in content or "fail" in content
+
+
+class TestTestSummaryAPI:
+    """Test summary API returns structured data (T-1016)."""
+
+    def test_api_returns_json(self, page: Page):
+        import json
+        page.goto(_url("/api/test-summary"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "suites" in data
+        assert "total_files" in data
+        assert data["total_files"] > 0
+
+    def test_api_has_playwright_suite(self, page: Page):
+        import json
+        page.goto(_url("/api/test-summary"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "playwright" in data["suites"]
+        assert data["suites"]["playwright"]["files"] > 0

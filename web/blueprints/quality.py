@@ -2,7 +2,7 @@
 
 import re as re_mod
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, jsonify, render_template, request
 
 from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml, load_latest_audit
 from web.subprocess_utils import run_fw_command, run_git_command
@@ -158,3 +158,28 @@ def run_tests():
 
     html += "</article>"
     return html
+
+
+@bp.route("/api/test-summary")
+def test_summary():
+    """Return test infrastructure summary as JSON (T-1016).
+
+    Counts test files per suite without running them.
+    """
+    from web.shared import FRAMEWORK_ROOT
+    suites = {}
+    for name, subdir, pattern in [
+        ("playwright", "tests/playwright", "test_*.py"),
+        ("unit", "tests/unit", "*.bats"),
+        ("integration", "tests/integration", "*.bats"),
+    ]:
+        d = FRAMEWORK_ROOT / subdir
+        if d.exists():
+            files = list(d.glob(pattern))
+            suites[name] = {"files": len(files)}
+    # Web tests (single file)
+    web_test = FRAMEWORK_ROOT / "web" / "test_app.py"
+    if web_test.exists():
+        suites["web"] = {"files": 1}
+    total_files = sum(s["files"] for s in suites.values())
+    return jsonify({"suites": suites, "total_files": total_files})
