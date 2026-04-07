@@ -1,0 +1,18 @@
+id: tests/playwright/test_task_detail_enhanced.py
+name: test_task_detail_enhanced
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_task_detail_enhanced.py
+tags: [playwright, test, tasks]
+
+purpose: "Playwright tests for enhanced task detail page (T-1056)"
+
+depends_on:
+  - target: tests/playwright/conftest.py
+    type: calls
+
+depended_by:
+  []
+
+last_verified: 2026-04-07
+created_by: agent
