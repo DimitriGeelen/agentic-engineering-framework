@@ -114,6 +114,28 @@ def gaps():
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
 
 
+@bp.route("/api/learnings")
+def learnings_api():
+    """Return learnings as JSON (T-1023)."""
+    from flask import jsonify
+    items = load_learnings()
+    return jsonify({
+        "learnings": items,
+        "total": len(items),
+    })
+
+
+@bp.route("/api/decisions")
+def decisions_api():
+    """Return decisions as JSON (T-1023)."""
+    from flask import jsonify
+    items = load_decisions()
+    return jsonify({
+        "decisions": items,
+        "total": len(items),
+    })
+
+
 def _execute_search(query, mode):
     """Run search with mode selection and vector fallback. Returns (results, stats, vec_stats)."""
     from web.search import search as bm25_search, index_stats

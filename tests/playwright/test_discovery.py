@@ -76,3 +76,41 @@ class TestGapsPage:
         page.wait_for_load_state("networkidle")
         content = page.content().lower()
         assert "gap" in content or "concern" in content
+
+
+class TestLearningsAPI:
+    """Learnings API returns structured data (T-1023)."""
+
+    def test_learnings_api_returns_json(self, page: Page):
+        import json
+        page.goto(_url("/api/learnings"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "learnings" in data
+        assert "total" in data
+
+    def test_learnings_api_has_items(self, page: Page):
+        import json
+        page.goto(_url("/api/learnings"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert data["total"] > 0
+
+
+class TestDecisionsAPI:
+    """Decisions API returns structured data (T-1023)."""
+
+    def test_decisions_api_returns_json(self, page: Page):
+        import json
+        page.goto(_url("/api/decisions"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert "decisions" in data
+        assert "total" in data
+
+    def test_decisions_api_has_items(self, page: Page):
+        import json
+        page.goto(_url("/api/decisions"))
+        text = page.locator("body").text_content()
+        data = json.loads(text)
+        assert data["total"] > 0
