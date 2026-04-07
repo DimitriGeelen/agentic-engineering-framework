@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1029: Playwright tests — scan API, task inline edit, session init
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T13:34:47Z
+# ============================================================================
+
+task_id: T-1029
+task_name: "Playwright tests — scan API, task inline edit, session init"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T13:31:49Z
+completed: 2026-04-07T13:34:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T15:34:02+02:00
+last_commit: 2026-04-07T15:34:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 15 Playwright tests — scan API, task inline edit, session init. Complete — 15 Playwright tests for scan API, task inline edit, session init
+
+# Key outcomes
+outcomes:
+  - "test_api_scan.py — scan/focus validates task ID, scan/refresh works (3 tests)"
+  - "test_api_task_inline.py — name/description/toggle-ac/owner/type error handling (11 tests)"
+  - "test_api_session_init.py — session init POST returns HTML (1 test)"
+  - "All 15 new tests pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1029-playwright-tests--scan-api-task-inline-e.md"
+  - ".tasks/completed/T-1029-playwright-tests--scan-api-task-inline-e.md"
+  - "tests/playwright/test_api_scan.py"
+  - "tests/playwright/test_api_session_init.py"
+  - "tests/playwright/test_api_task_inline.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T15:34:02"
+    action: "T-1029: Add 15 Playwright tests — scan API, task inline edit, session init"
+  - time: "2026-04-07T15:34:31"
+    action: "T-1029: Complete — 15 Playwright tests for scan API, task inline edit, session init"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 5
+  lines_added: 222
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1029-playwright-tests--scan-api-task-inline-e.md
+generated_by: context-agent-hybrid
