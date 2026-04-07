@@ -1,0 +1,53 @@
+---
+id: T-1035
+name: "Playwright tests — settings API, config display"
+description: >
+  Playwright tests — settings API, config display
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-07T13:48:35Z
+last_update: 2026-04-07T13:48:35Z
+date_finished: null
+---
+
+# T-1035: Playwright tests — settings API, config display
+
+## Context
+
+Settings test-connection API, config page data.
+
+## Acceptance Criteria
+
+### Agent
+- [x] test_api_settings.py — test-connection CSRF check, models HTML (3 tests)
+- [x] test_api_config.py — config page settings display (3 tests)
+- [x] All 6 new tests pass
+
+## Verification
+
+ls tests/playwright/test_api_settings.py tests/playwright/test_api_config.py
+cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_api_settings.py tests/playwright/test_api_config.py -x -q 2>&1 | tail -5
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-07T13:48:35Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1035-playwright-tests--settings-api-config-di.md
+- **Context:** Initial task creation
