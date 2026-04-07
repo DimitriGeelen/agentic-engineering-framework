@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1018: Playwright tests for cockpit scan dashboard — scan refresh, approve, defer, apply
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:37:25Z
+# ============================================================================
+
+task_id: T-1018
+task_name: "Playwright tests for cockpit scan dashboard — scan refresh, approve, defer, apply"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T11:19:41Z
+completed: 2026-04-07T11:23:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T13:23:02+02:00
+last_commit: 2026-04-07T13:23:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 10 Playwright tests for cockpit dashboard — scan meta, health, API endpoints
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_cockpit.py` exists with tests for cockpit page"
+  - "Tests cover: page load, heading, scan meta, action summary, system health, test counts"
+  - "Tests cover: API endpoints return expected status codes"
+  - "All tests pass: `cd /opt/999-Agentic-Engineering-Framework && python3 -m pytest tests/playwright/test_cockpit.py -v`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1008.yaml"
+  - ".context/episodic/T-1014.yaml"
+  - ".context/episodic/T-991.yaml"
+  - ".context/episodic/T-994.yaml"
+  - ".tasks/active/T-1018-playwright-tests-for-cockpit-scan-dashbo.md"
+  - "tests/playwright/test_cockpit.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T13:23:02"
+    action: "T-1018: Add 10 Playwright tests for cockpit dashboard — scan meta, health, API endpoints"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 6
+  lines_added: 454
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1018-playwright-tests-for-cockpit-scan-dashbo.md
+generated_by: context-agent-hybrid

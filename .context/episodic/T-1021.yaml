@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1021: Clean up 16 orphan test tasks from .tasks/active/
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-07T11:37:26Z
+# ============================================================================
+
+task_id: T-1021
+task_name: "Clean up 16 orphan test tasks from .tasks/active/"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T11:34:40Z
+completed: 2026-04-07T11:35:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-07T13:35:24+02:00
+last_commit: 2026-04-07T13:35:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove 16 orphan test tasks from .tasks/active/ (T-1017 finding)
+
+# Key outcomes
+outcomes:
+  - "All 16 orphan test task files removed from .tasks/active/"
+  - "No real tasks affected (only test artifacts with descriptions like \"Test\", \"Created by E2E test\")"
+  - "Active task count reduced by 16 (161 → 145)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1021-clean-up-16-orphan-test-tasks-from-tasks.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T13:35:24"
+    action: "T-1021: Remove 16 orphan test tasks from .tasks/active/ (T-1017 finding)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 1
+  lines_added: 68
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1021-clean-up-16-orphan-test-tasks-from-tasks.md
+generated_by: context-agent-hybrid

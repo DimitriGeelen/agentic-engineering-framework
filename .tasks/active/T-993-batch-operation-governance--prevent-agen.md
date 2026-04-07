@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T09:53:46Z
-last_update: 2026-04-07T09:54:08Z
+last_update: 2026-04-07T09:57:04Z
 date_finished: null
 ---
 
@@ -21,6 +21,8 @@ date_finished: null
 ## Problem Statement
 
 Agent batch-moved ~30 tasks' horizons without per-task justification (T-992). User intervened. No structural gate prevents this. The framework prevents agents from completing tasks without evidence (sovereignty gate) and from making GO/NO-GO decisions (Tier 0), but horizon/tag/metadata batch changes have zero enforcement.
+
+Research artifact: `docs/reports/T-993-batch-operation-governance.md`
 
 ## Assumptions
 
