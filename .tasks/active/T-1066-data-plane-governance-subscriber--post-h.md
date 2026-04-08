@@ -4,7 +4,7 @@ name: "Data plane governance subscriber — post-hoc pattern detection on PTY ou
 description: >
   Phase 5 from T-1061 (only if validated): Data plane governance subscriber for post-hoc pattern detection on Output frames. Not blocking, not deterministic — useful for audit/metrics. 4-8 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: later
@@ -12,7 +12,7 @@ tags: [termlink, data-plane, audit]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:32Z
-last_update: 2026-04-08T05:32:32Z
+last_update: 2026-04-08T06:55:34Z
 date_finished: null
 ---
 
@@ -29,13 +29,13 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 ## Acceptance Criteria
 
 ### Agent
-- [ ] New Governance frame type (0x8) added to binary frame protocol
-- [ ] Data plane subscriber can receive Output frames and match configurable patterns
-- [ ] Pattern matches emit Governance frames back to the session
-- [ ] Subscriber is opt-in (not attached by default)
-- [ ] Subscriber does NOT block data plane throughput (async, non-blocking)
-- [ ] Tests: pattern matching, governance frame emission, throughput non-regression
-- [ ] All existing tests pass (`cargo test`)
+- [x] New Governance frame type (0x8) added to binary frame protocol
+- [x] Data plane subscriber can receive Output frames and match configurable patterns
+- [x] Pattern matches emit Governance frames back to the session
+- [x] Subscriber is opt-in (not attached by default)
+- [x] Subscriber does NOT block data plane throughput (async, non-blocking)
+- [x] Tests: pattern matching, governance frame emission, throughput non-regression
+- [x] All existing tests pass (`cargo test`) — 250 session + 92 protocol pass
 
 ### Human
 - [ ] [REVIEW] Data plane governance design — pattern detection is useful and doesn't degrade performance
@@ -53,16 +53,24 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 # cd /opt/termlink && cargo build
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
+## Recommendation
+
+**Recommendation:** Agent ACs complete — ready for human design review
+**Rationale:** TermLink worker (T-905 in /opt/termlink) added Governance frame type and subscriber. Non-blocking bounded channel, ANSI stripping, regex matching. 9 new tests, all 342 pass.
+**Evidence:**
+- Worker exit code: 0
+- Tests: 250 session + 92 protocol = 342 pass (9 new governance-specific)
+- Report: `/opt/termlink/docs/reports/T-905-data-plane-governance.md`
+- Architecture: broadcast channel -> ANSI strip -> regex match -> mpsc Governance frame
+- New files: `governance.rs` (protocol), `governance_subscriber.rs` (session)
+- New dependency: `regex = "1"` (workspace)
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-04-08 — Subscriber channel architecture
+- **Chose:** Broadcast channel for input, bounded mpsc (256) for output
+- **Why:** Broadcast gives subscriber a copy without blocking data plane; bounded mpsc prevents memory leak if nobody reads governance frames
+- **Rejected:** Unbounded channels (memory risk), direct write to data plane (blocking risk)
 
 ## Updates
 
@@ -70,3 +78,6 @@ Phase 5 from T-1061 inception (GO, only if validated). Data plane governance sub
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1066-data-plane-governance-subscriber--post-h.md
 - **Context:** Initial task creation
+
+### 2026-04-08T06:55:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
