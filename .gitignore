@@ -9,6 +9,7 @@ __pycache__/
 .context/working/.compact-log
 .context/working/.restart-requested
 .playwright-mcp/
+.termlink-task
 .context/bus/
 .context/locks/
 .context/secrets/
