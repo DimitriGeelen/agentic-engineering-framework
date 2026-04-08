@@ -4,7 +4,7 @@ name: "WezTerm task-aware terminal chrome via TermLink RPC"
 description: >
   Phase 1 from T-1061: WezTerm Lua plugin querying existing TermLink RPC APIs for task state in terminal chrome. Zero new TermLink code needed. 3-6 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-04-08T05:32:02Z
+last_update: 2026-04-08T05:46:01Z
 date_finished: null
 ---
 
@@ -27,12 +27,12 @@ Phase 1 from T-1061 inception (GO). WezTerm Lua plugin that queries existing Ter
 ## Acceptance Criteria
 
 ### Agent
-- [ ] WezTerm Lua plugin file created at `plugins/wezterm/termlink-chrome.lua`
-- [ ] Plugin queries `termlink list --json` for active sessions
-- [ ] Plugin displays task ID and status from session tags in WezTerm tab/status bar
-- [ ] Plugin handles no-sessions gracefully (TermLink not running)
-- [ ] README in `plugins/wezterm/` with install instructions
-- [ ] Plugin registered in component fabric
+- [x] WezTerm Lua plugin file created at `plugins/wezterm/termlink-chrome.lua`
+- [x] Plugin queries `termlink list --json` for active sessions
+- [x] Plugin displays task ID and status from session tags in WezTerm tab/status bar
+- [x] Plugin handles no-sessions gracefully (TermLink not running)
+- [x] README in `plugins/wezterm/` with install instructions
+- [x] Plugin registered in component fabric
 
 ### Human
 - [ ] [REVIEW] Terminal chrome displays task state correctly when TermLink sessions are active
@@ -68,3 +68,6 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md
 - **Context:** Initial task creation
+
+### 2026-04-08T05:46:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
