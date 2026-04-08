@@ -1,0 +1,19 @@
+id: plugins/wezterm/README.md
+name: README
+type: documentation
+subsystem: termlink-integration
+location: plugins/wezterm/README.md
+tags: [wezterm, termlink, documentation]
+
+purpose: "Installation guide and configuration reference for the WezTerm TermLink chrome plugin"
+
+depends_on:
+  - target: plugins/wezterm/termlink-chrome.lua
+    type: reads
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-04-08
+created_by: unknown
