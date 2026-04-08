@@ -480,7 +480,8 @@ cmd_help() {
     echo -e "  ${GREEN}exec${NC} <session> <command>      Run command in session (structured output)"
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
-    echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal"
+    echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
+                                     [--project DIR] [--timeout S]"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
@@ -489,7 +490,8 @@ cmd_help() {
     echo "  fw termlink check"
     echo "  fw termlink spawn --task T-042 --name test-runner"
     echo "  fw termlink exec test-runner 'pytest tests/'"
-    echo "  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'"
+    echo "  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'
+  fw termlink dispatch --task T-042 --name tl-worker --project /opt/termlink --prompt '...'"
     echo "  fw termlink wait --all --timeout 300"
     echo "  fw termlink cleanup"
 }
