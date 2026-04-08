@@ -4,7 +4,7 @@ name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
 description: >
   Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model workers. Extends Phase 3 orchestrator routing. 2-3 months.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: later
@@ -12,7 +12,7 @@ tags: [termlink, multi-llm, routing]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:25Z
-last_update: 2026-04-08T05:32:25Z
+last_update: 2026-04-08T06:54:54Z
 date_finished: null
 ---
 
@@ -29,13 +29,13 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `termlink_dispatch` MCP tool accepts `model` parameter (e.g., "opus", "sonnet", "haiku")
-- [ ] Dispatch system spawns workers with model-specific configuration
-- [ ] Route cache tracks model -> task-type success rates
-- [ ] Circuit breaker handles model unavailability with fallback to next model
-- [ ] Default behavior (no model specified) is unchanged
-- [ ] Tests: model dispatch, model fallback, success rate tracking
-- [ ] All existing tests pass (`cargo test`)
+- [x] `termlink_dispatch` MCP tool accepts `model` parameter (e.g., "opus", "sonnet", "haiku")
+- [x] Dispatch system spawns workers with model-specific configuration
+- [ ] Route cache tracks model -> task-type success rates (future — not part of model passthrough)
+- [ ] Circuit breaker handles model unavailability with fallback to next model (future)
+- [x] Default behavior (no model specified) is unchanged
+- [x] Tests: model dispatch (3 tests pass: opus, sonnet, absent)
+- [x] All existing tests pass (`cargo test`)
 
 ### Human
 - [ ] [REVIEW] Multi-LLM routing design — model selection strategy is sound and cost-effective
@@ -53,16 +53,23 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 # cd /opt/termlink && cargo build
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
+## Recommendation
+
+**Recommendation:** Partial complete — model passthrough done, routing intelligence deferred
+**Rationale:** The model parameter was already implemented in TermLink's dispatch system (CLI --model flag, MCP model param, TERMLINK_MODEL env var, manifest recording). Route cache model tracking and circuit breaker model fallback remain as future work.
+**Evidence:**
+- Worker exit code: 0
+- Report: `/opt/termlink/docs/reports/T-906-model-param-dispatch.md`
+- 5 integration points verified: MCP param, MCP env, CLI flag, CLI env, manifest
+- 3 tests pass: dispatch with opus, dispatch with sonnet, dispatch without model
+- Route cache + circuit breaker model intelligence not yet implemented (separate task)
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-04-08 — Model routing scope split
+- **Chose:** Model passthrough first, routing intelligence later
+- **Why:** Model passthrough is the foundation. Route cache model tracking and circuit breaker fallback are separate concerns that build on it.
+- **Rejected:** Implementing full model routing in one task (timed out on first attempt, scope too large)
 
 ## Updates
 
@@ -70,3 +77,6 @@ Phase 4 from T-1061 inception (GO). Task-aware model selection: dispatch system 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md
 - **Context:** Initial task creation
+
+### 2026-04-08T06:54:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
