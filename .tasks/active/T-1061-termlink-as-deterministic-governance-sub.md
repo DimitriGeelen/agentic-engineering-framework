@@ -4,7 +4,7 @@ name: "TermLink as deterministic governance substrate — PTY-level enforcement 
 description: >
   Inception: TermLink as deterministic governance substrate — PTY-level enforcement vs Claude Code hooks, custom terminal evaluation, multi-LLM routing
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T20:51:33Z
-last_update: 2026-04-07T20:52:45Z
-date_finished: null
+last_update: 2026-04-08T05:30:50Z
+date_finished: 2026-04-08T05:30:50Z
 ---
 
 # T-1061: TermLink as deterministic governance substrate — PTY-level enforcement vs Claude Code hooks, custom terminal evaluation, multi-LLM routing
@@ -56,9 +56,9 @@ Can TermLink's PTY ownership replace Claude Code hooks as the enforcement layer 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -89,30 +89,51 @@ Can TermLink's PTY ownership replace Claude Code hooks as the enforcement layer 
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** TermLink's governance substrate thesis is validated — but the mechanism is MCP + hub orchestrator + data plane, NOT PTY byte stream parsing. The TermLink project itself reviewed the document (19KB, code-path-specific corrections) and confirmed: governance at the structured API layer is feasible and architecturally correct. PTY parsing is rejected as infeasible (deadlock risk, terminal emulator trap, coupled to output format).
+
+**Evidence:**
+- TermLink already has governance primitives: bypass registry, route cache, circuit breaker (`bypass.rs`, `route_cache.rs`, `circuit_breaker.rs`)
+- MCP server (4378 lines, 40+ tools) is loaded INTO Claude Code — governance checks can be added at MCP tool level (structured, reliable, blockable)
+- `orchestrator.route` chain (`router.rs:640-1000+`) already implements discover -> forward -> failover -> bypass registry -> route cache -> circuit breaker
+- PTY read loop (`pty.rs:171-219`) is fire-and-forget — no buffer/pause API exists, pre-hook via buffer hold is architecturally unsound
+- Task-aware terminal chrome via WezTerm Lua plugin requires zero new TermLink code (3-6 weeks)
+- 15 Claude Code hooks have documented gaps (G-011, G-015, G-017) that MCP-level governance can address for cross-session operations
+
+**Implementation path:** Phase 1 WezTerm chrome (3-6 weeks) -> Phase 2 MCP governance (2-4 weeks) -> Phase 3 orchestrator routing (2-4 weeks) -> Phase 4 multi-LLM routing (2-3 months)
+
+**GO criteria assessment:**
+- PTY intercept can reliably detect tool calls: NO (corrected — use MCP instead, which is reliable)
+- Terminal project supports task chrome: YES (WezTerm Lua API, zero TermLink changes)
+- Multi-LLM routing feasible: YES (2-3 months, extending existing orchestrator)
+
+**Research artifacts:** `docs/reports/T-1061-termlink-governance-substrate.md`, `docs/reports/T-1061-termlink-review-feedback.md`
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: TermLink's governance substrate thesis is validated — but the mechanism is MCP + hub orchestrator + data plane, NOT PTY byte stream parsing. The TermLink project itself reviewed the document (19KB, code-path-specific corrections) and confirmed: governance at the structured API layer is feasible and architecturally correct. PTY parsing is rejected as infeasible (deadlock risk, terminal emulator trap, coupled to output format).
+
+Evidence:
+- TermLink already has go...
+
+**Date**: 2026-04-08T05:30:50Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: TermLink's governance substrate thesis is validated — but the mechanism is MCP + hub orchestrator + data plane, NOT PTY byte stream parsing. The TermLink project itself reviewed the document (19KB, code-path-specific corrections) and confirmed: governance at the structured API layer is feasible and architecturally correct. PTY parsing is rejected as infeasible (deadlock risk, terminal emulator trap, coupled to output format).
+
+Evidence:
+- TermLink already has go...
+
+**Date**: 2026-04-08T05:30:50Z
 
 ## Updates
 
@@ -121,3 +142,17 @@ Can TermLink's PTY ownership replace Claude Code hooks as the enforcement layer 
 
 ### 2026-04-07T20:52:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-08T05:30:50Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: TermLink's governance substrate thesis is validated — but the mechanism is MCP + hub orchestrator + data plane, NOT PTY byte stream parsing. The TermLink project itself reviewed the document (19KB, code-path-specific corrections) and confirmed: governance at the structured API layer is feasible and architecturally correct. PTY parsing is rejected as infeasible (deadlock risk, terminal emulator trap, coupled to output format).
+
+Evidence:
+- TermLink already has go...
+
+### 2026-04-08T05:30:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

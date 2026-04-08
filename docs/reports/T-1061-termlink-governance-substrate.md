@@ -2,11 +2,11 @@
 
 ## Research Origin
 
-Dialogue between Dimitri and Claude (external session, 2026-04-07). Enhanced with evidence from 880+ completed tasks, 15 enforcement hooks, 11 tracked concerns, and 2557 traced commits across the Agentic Engineering Framework.
+Dialogue between Dimitri and Claude (external session, 2026-04-07). Enhanced with evidence from 880+ completed tasks, 15 enforcement hooks, 11 tracked concerns, and 2557 traced commits across the Agentic Engineering Framework. **Reviewed and corrected** by Claude Code session running inside the TermLink project (`/opt/termlink`) with full access to TermLink's context fabric, component cards, and codebase — citing specific code paths.
 
 ## Core Thesis
 
-TermLink's PTY ownership provides **deterministic enforcement** of the prime directive ("nothing gets done without a task"), whereas Claude Code hooks provide only **stochastic enforcement** that is bypassable. This is not speculation — the framework has 8 months of evidence documenting exactly where application-layer hooks fail.
+TermLink provides **deterministic governance** of the prime directive ("nothing gets done without a task") through its **MCP tool interface, hub orchestrator, and data plane** — not through PTY byte stream parsing. Claude Code hooks provide only **stochastic enforcement** that is bypassable. This is not speculation — the framework has 8 months of evidence documenting exactly where application-layer hooks fail, and the TermLink project has confirmed which governance mechanisms are architecturally sound versus which are infeasible.
 
 ## The Problem: Application-Layer Enforcement Has Known Holes
 
@@ -35,7 +35,7 @@ The Agentic Engineering Framework currently enforces governance through **15 Cla
 
 **T-061 (founding incident):** Third-party plugins acted as a "second agent" and bypassed task creation entirely. 0/20 loaded skills were task-aware. The investigation required 4 parallel analysis agents to diagnose. Root cause: skills don't know about the framework's governance model. The hooks were added *in response* to this incident — they're patches on a fundamentally leaky layer.
 
-**T-577 (orphan processes):** `termlink run --timeout` deregisters the session but doesn't kill the process. A `claude -p` agent wrote output **65 minutes after** a 900-second timeout. The process was invisible to TermLink, invisible to the framework, still consuming resources. Fixed with a kill watchdog in `fw termlink dispatch`, but the root cause is: session deregistration ≠ process governance.
+**T-577 (orphan processes):** `termlink run --timeout` deregisters the session but doesn't kill the process. A `claude -p` agent wrote output **65 minutes after** a 900-second timeout. The process was invisible to TermLink, invisible to the framework, still consuming resources. Fixed with a kill watchdog in `fw termlink dispatch`, but the root cause is: session deregistration != process governance.
 
 ## The Architectural Insight
 
@@ -49,188 +49,260 @@ The framework has spent 8 months building increasingly sophisticated application
 - Sub-agents inherit zero governance from the parent session
 - `--no-verify` on git, `--force` on task completion — bypass paths exist because the substrate allows them
 
-**TermLink PTY ownership inverts this.** The byte stream *must* pass through TermLink. There is no `--no-verify` equivalent for a PTY. The agent cannot reason, plan, or act without its output passing through the governance layer.
+**The right solution is governance at TermLink's structured interfaces — MCP tools, RPC methods, and hub orchestrator — not at the PTY byte stream level.** The agent operates *through* these interfaces. Governance checks at this layer are structured, reliable, and blockable.
 
-## Key Comparison: Deterministic vs Stochastic Enforcement
+## What the TermLink Project Review Corrected
 
-| Property | TermLink PTY | Claude Code Hooks |
-|----------|-------------|-------------------|
-| Enforcement model | Deterministic — byte stream ownership | Stochastic — callback fires if API works |
-| Bypass possible | No — transport layer | Yes — `--no-verify`, env vars, API changes |
-| Substrate stability | PTY/Unix sockets (decades) | Claude Code API (changes per sprint) |
-| Prime directive | Structural guarantee | Best-effort policy |
-| Agent-agnostic | Yes — any terminal agent | No — Claude Code specific |
-| Sub-agent governance | Hub sees all sessions | Sub-agents bypass parent hooks |
-| Context cost | Zero — operates below the LLM layer | Non-zero — hooks consume context budget |
-| Failure mode | Process-level (detectable, recoverable) | Silent (G-011: advisory-only PostToolUse) |
+The initial version of this document proposed PTY byte stream parsing as the governance mechanism. The TermLink project review (conducted by Claude Code with full access to TermLink's context fabric and component cards) identified five fundamental corrections:
 
-**Principle:** Constitutional rules belong at the lowest enforceable layer. For "nothing gets done without a task," the PTY is that layer — not the application callback.
+### Correction 1: TermLink Does NOT Parse the PTY Byte Stream
+
+The PTY read loop (`pty.rs:171-219`) is fire-and-forget. The **only** pattern matching on the stream is scanning for 9-byte alternate screen escape sequences (`\x1b[?1049h` / `\x1b[?1049l`) in `pty.rs:350-371`. No tool call detection. No "Running bash..." parsing. No structured signal extraction.
+
+Claude Code's terminal output is ANSI-formatted, color-coded, cursor-positioned rendered text — not structured data. Parsing "Running bash..." from a stream interleaved with SGR codes (`\x1b[38;5;214m`), OSC sequences, cursor movements, and partial multi-byte reads is fundamentally harder than reading structured JSONL. It would require building half a terminal emulator — precisely the trap the document warned against.
+
+### Correction 2: "Buffer/Pause the Stream" Does Not Exist
+
+The scrollback buffer (`scrollback.rs`) is a `VecDeque<u8>` ring buffer with FIFO eviction. No pause/resume API. The broadcast channel uses `tx.send()` which never blocks the sender. To "hold the buffer," you'd have to stop calling `libc::read()` on the master FD, filling the kernel's ~4KB PTY buffer, eventually blocking the child's `write()` syscalls. This isn't governance — it's a deadlock. There's no way to "hold, check, release" atomically.
+
+### Correction 3: Sub-Agent Governance Is Not Solved by Hub Visibility
+
+G-015 is about Claude Code's `Task` tool creating **in-process sub-agents** (threads inside the Claude Code process), not separate terminal sessions. They don't register with any hub. They don't create PTY sessions. They write to the filesystem via `write()` syscalls that bypass the PTY entirely. PTY ownership gives you the byte stream, not the process's syscalls. Governing those would require syscall interception (seccomp, ptrace) or filesystem-level enforcement (FUSE) — none of which are in TermLink's scope.
+
+### Correction 4: Multi-LLM Routing Conflates Two Problems
+
+The existing `orchestrator.route` (`router.rs:640-1000+`) routes **RPC methods to specialist sessions** based on tags/roles/capabilities — not models. Model routing would require managing multiple agent processes per model and directing work to the right one. The dispatch system has spawn/collect primitives but not the intelligence layer. This is achievable (2-3 months), but it's a new capability, not an extension of existing routing.
+
+### Correction 5: The Kernel Analogy Was Misapplied
+
+The kernel enforces memory protection not by parsing the byte stream of program output, but by **controlling the syscall interface**. TermLink's "syscall interface" is MCP + RPC, not the PTY byte stream. Govern there.
+
+## The Three Governance Layers
+
+After the TermLink project review, the correct architectural picture has three layers:
+
+| Layer | Mechanism | Enforcement Model | What It Governs |
+|-------|-----------|-------------------|-----------------|
+| **MCP Tools** | TermLink MCP server (4378 lines, 40+ tools) loaded INTO Claude Code | Structured JSON, reliable, blockable | Cross-session operations via TermLink |
+| **Hub Orchestrator** | `orchestrator.route` chain + bypass registry + circuit breaker | Deterministic RPC routing with learning | Inter-session routing, failover, promotion |
+| **Data Plane** | Binary frame protocol (8 frame types, 22-byte headers) | High-throughput streaming | Real-time output, file transfer, governance frames (future) |
+
+### Layer 1: MCP as Governance Interface
+
+TermLink's MCP server is loaded INTO Claude Code. Every `termlink_exec`, `termlink_inject`, `termlink_interact` call goes through TermLink's code. Governance checks can be added at MCP tool level:
+
+- Before executing `termlink_exec`, check if a task exists
+- Before `termlink_spawn`, validate against task scope
+- Before `termlink_dispatch`, enforce concurrency limits
+
+This is structured (JSON parameters), reliable (MCP protocol), and doesn't require parsing terminal output. The limitation: it only governs operations that go through TermLink MCP tools — not Claude Code's native Write/Edit/Bash. But for cross-session orchestration governance, MCP IS the interface.
+
+### Layer 2: Hub Orchestrator (Already Exists)
+
+The document initially overlooked that TermLink already has governance primitives at the RPC layer:
+
+- **Bypass registry** (`bypass.rs`): Commands promoted to Tier 3 after `PROMOTION_THRESHOLD` (5) successful orchestrated runs. Denylist patterns prevent dangerous commands from ever being promoted. Failed bypass executions de-promote. This IS deterministic governance.
+- **Route cache** (`route_cache.rs`): Caches method -> specialist mappings with confidence scores and hit counts. Stale entries expire. Failed cached routes fall through to full discovery.
+- **Circuit breaker** (`circuit_breaker.rs`): Per-session, opens after 3 consecutive transport failures, 60-second cooldown, half-open probing. Prevents routing to dead specialists.
+
+The full orchestrator route chain:
+```
+orchestrator.route request
+  -> bypass registry check (Tier 3 shortcut)
+  -> route cache check (learned specialist routing)
+  -> session.discover (find matching specialists)
+  -> forward + failover (with circuit breaker)
+  -> success/failure tracking (bypass promotion, cache update)
+```
+
+This is already deterministic, already at the hub level, already provides failover, learning (bypass promotion after 5 successes), and protection (circuit breaker, denylist).
+
+### Layer 3: Data Plane (Future Governance Extension)
+
+The binary frame protocol (`data.rs`) has frame types including Signal (0x3). A governance-aware data plane subscriber could: receive Output frames -> parse for patterns -> emit Governance frames back to the session -> session handler blocks/allows based on governance frame. This preserves the existing architecture while adding an interception point — but it remains post-hoc, not blocking, and should not be confused with "deterministic" enforcement.
+
+## Key Comparison: Three-Layer Governance
+
+| Property | TermLink MCP + Hub | Claude Code Hooks | PTY Parsing (rejected) |
+|----------|-------------------|-------------------|----------------------|
+| Enforcement model | Structured API — blockable | Callback — bypassable | Heuristic — unreliable |
+| Bypass possible | No — tool code runs governance | Yes — `--no-verify`, API changes | N/A — parsing fails silently |
+| Substrate stability | MCP protocol (standard) | Claude Code API (changes per sprint) | ANSI output (changes per release) |
+| What it governs | Cross-session operations | Native tool calls | Nothing reliably |
+| Agent-agnostic | Yes — any MCP client | No — Claude Code specific | Coupled to output format |
+| Failure mode | Structured error (JSON) | Silent (G-011: advisory PostToolUse) | False positives/negatives |
+| Implementation effort | Weeks (MCP hooks exist) | Done (15 hooks) | Months (terminal parser) |
 
 ## Architecture: TermLink Through the Four Constitutional Directives
 
 ### 1. Antifragility — System strengthens under stress
 
-**Current state:** The framework's healing loop (diagnose → classify → suggest → resolve) feeds `patterns.yaml` and `learnings.yaml`. But the loop depends on the agent *choosing* to invoke it. When the agent crashes, ignores an error (G-011), or runs out of context, the learning event is lost.
+**Current state:** The framework's healing loop (diagnose -> classify -> suggest -> resolve) feeds `patterns.yaml` and `learnings.yaml`. But the loop depends on the agent *choosing* to invoke it. When the agent crashes, ignores an error (G-011), or runs out of context, the learning event is lost.
 
-**With PTY governance:**
-- **Every failure is captured at the transport layer** — tool call failures, crashes, timeouts, and silent errors all pass through the PTY stream before reaching the agent. Nothing is silently swallowed because nothing leaves the pipe unobserved.
-- **Metadata as antifragile signal:** Tool call failure patterns, latency spikes, and cost anomalies feed routing decisions. The system's routing improves *from* stress — model X fails at task type Y → route Y to model Z.
-- **Session continuity across crashes:** TermLink sessions persist across process restarts (T-179 auto-restart already leverages this). The task context survives terminal crashes because it lives in the hub, not in the agent's context window.
-- **Evidence:** T-577 showed that timeout != governance. The orphaned `claude -p` process operated for 65 minutes with zero oversight. PTY ownership means: if TermLink can't see the process, the process can't act.
+**With MCP + Hub governance:**
+- **Bypass registry as antifragile learning:** Commands that succeed 5 times get promoted to Tier 3 (fast path). Commands that fail get de-promoted. The system literally learns which operations are safe from experience — the definition of antifragility.
+- **Circuit breaker protects against cascading failure:** Per-session circuit breaker opens after 3 consecutive transport failures. The system degrades gracefully, not catastrophically.
+- **Session continuity across crashes:** TermLink sessions persist across process restarts (T-179 auto-restart already leverages this). Task context survives terminal crashes because it lives in the hub, not in the agent's context window.
+- **Evidence:** T-577 showed that timeout != governance. PTY ownership means: if TermLink can't see the process, the process can't act. The kill watchdog in `fw termlink dispatch` enforces this at process level.
 
 ### 2. Reliability — Predictable, observable, auditable execution
 
-**Current state:** 15 hooks provide strong enforcement but with documented holes. PreToolUse can block Write/Edit/Bash. PostToolUse can warn but not block (G-011). Budget gate reads JSONL transcripts for token counting but depends on file availability. The enforcement is reliable when all preconditions hold — and unreliable when they don't.
+**Current state:** 15 hooks provide strong enforcement but with documented holes. PreToolUse can block Write/Edit/Bash. PostToolUse can warn but not block (G-011). Budget gate reads JSONL transcripts for token counting but depends on file availability.
 
-**With PTY governance:**
-- **Deterministic enforcement:** PTY ownership is a structural invariant, not a runtime check. The prime directive becomes a property of the system topology, not a property of the agent's compliance.
-- **Complete audit trail:** Every tool call, every model invocation, every byte passes through TermLink. The current `budget-gate.sh` reads the JSONL transcript *after the fact* — PTY governance observes in real-time.
-- **No advisory-only gap:** G-011 (PostToolUse cannot block) ceases to exist at the PTY layer. If TermLink decides to block, the bytes don't flow. There is no "exit 0 always" constraint.
-- **Sub-agent governance solved:** G-015 (sub-agent results bypass task gate) exists because sub-agents write to `/tmp/` outside the hook's scope. TermLink hub sees all sessions — parent and child — because they all run in PTY sessions registered with the hub.
+**With MCP + Hub governance:**
+- **MCP-level enforcement is structural:** When `termlink_exec` checks for a task before executing, there is no advisory-only gap. The MCP tool either proceeds or returns an error. G-011 ceases to exist at this layer.
+- **Complete audit trail via hub:** Every RPC method, every event, every route decision passes through the hub. The orchestrator chain already tracks success/failure for bypass promotion — extending to full audit is natural.
+- **Dual-channel architecture ensures separation:** Control plane (JSON-RPC 2.0, structured, moderate latency) for governance decisions. Data plane (binary frames, high-throughput, low-latency) for streaming. Governance decisions don't compete with data throughput.
+- **Caveat on G-015:** Sub-agent governance (in-process threads writing to `/tmp/`) remains unsolved at the TermLink layer. This requires Claude Code-level changes or filesystem enforcement — outside TermLink's architectural scope.
 
 ### 3. Usability — Joy to use/extend/debug
 
-**Current state:** The Watchtower web UI provides visibility into tasks, timeline, costs, fabric, and more (34 endpoints, all healthy). But the *operational* experience — what's happening right now across active agents — requires terminal switching, `termlink list`, `termlink pty output`, etc.
+**Current state:** The Watchtower web UI provides visibility into tasks, timeline, costs, fabric, and more (34+ endpoints). But operational experience — what's happening right now across active agents — requires terminal switching.
 
-**With PTY governance + terminal chrome:**
-- **Task-aware terminal panes:** No orphan terminals. Every pane is owned by a task with visible state (active, blocked, waiting, failed) in the terminal chrome. This is what Watchtower does for the web — TermLink does it for the terminal.
-- **Context fabric visualization:** What knowledge is loaded for this task, displayed alongside agent output. Currently this information exists only in `.context/working/focus.yaml` — invisible during active work.
-- **Multi-LLM routing (transparent):** TermLink hub intercepts tasks and routes to optimal model. Expensive reasoning → Opus, routine file operations → Haiku, code review → Sonnet. The user doesn't manually manage this. Current state: model selection is hardcoded per session (`claude --model`).
-- **Fallback routing:** When a model is unavailable or rate-limited, automatic reroute. Current state: rate limits crash the session. TermLink can retry with a fallback model.
+**With task-aware terminal chrome:**
+- **WezTerm + TermLink RPC:** Session metadata (tags, roles, status, KV store) is already available via RPC. A WezTerm Lua plugin querying `termlink list --json` and `termlink status` can display task state in terminal chrome — zero new TermLink code needed.
+- **Multi-pane task governance UI:** No orphan terminals. Every pane owned by a task with visible state.
+- **Context fabric visualization:** What knowledge is loaded for this task, displayed alongside agent output.
+- **Dispatch system as multi-agent UX:** `termlink dispatch` already provides atomic spawn, worktree isolation, result collection via events. Extending with task-awareness (each worker gets task assignment, reports via events) is 2-4 weeks.
 
 ### 4. Portability — No provider/language/environment lock-in
 
-**Current state:** The framework is designed for portability (D4: "No provider/language/environment lock-in; prefer standards"). But enforcement is 100% Claude Code specific — `.claude/settings.json` hooks, Claude Code's PreToolUse/PostToolUse API, CLAUDECODE env var detection. If the user switches to Cursor, Windsurf, or a future agent, all 15 hooks stop working.
+**Current state:** Enforcement is 100% Claude Code specific — `.claude/settings.json` hooks, Claude Code's PreToolUse/PostToolUse API. If the user switches to Cursor, Windsurf, or a future agent, all 15 hooks stop working.
 
-**With PTY governance:**
-- **Agent-agnostic:** PTY interception works with Claude Code, Cursor, Aider, any terminal-based agent. The governance layer doesn't know or care what agent runs inside the PTY — it governs the *byte stream*, not the *application*.
-- **Substrate stability:** PTY and Unix sockets have been stable for decades. Claude Code's hook API changes every release. FP-011 (CLAUDECODE env var) is a concrete example: a vendor env var broke framework dispatch. PTY-level governance is immune to vendor-specific env var changes.
-- **Multi-LLM routing as portability:** Hub-level model routing means switching from Anthropic to OpenAI to local models is a configuration change at the hub level, not an architecture change in the agent integration.
-- **Standards-based stack:** PTY protocol, JSON-RPC control plane (TermLink's existing architecture), HMAC security — no proprietary lock-in at any layer.
+**With MCP + Hub governance:**
+- **Agent-agnostic via MCP standard:** Any MCP-capable agent can use TermLink's 40+ tools. Governance checks in MCP tools work regardless of which agent calls them.
+- **Substrate stability:** MCP protocol is a standard. TermLink's RPC is JSON-RPC 2.0 (decades old). Neither changes when Claude Code updates. FP-011 (CLAUDECODE env var breaking dispatch) is a concrete example of vendor-specific fragility.
+- **Multi-LLM routing as portability:** Hub-level specialist routing means switching providers is configuration, not architecture. The dispatch system can spawn workers with different model configs.
+- **Standards-based stack:** PTY protocol, JSON-RPC control plane, MCP tool interface, HMAC security — no proprietary lock-in at any layer.
 
 ## Execution Features
 
 ### Multi-LLM Routing (Usability + Portability)
 
-**Current state:** Model selection is per-session (`claude --model sonnet`). No task-aware routing. All tasks in a session use the same model regardless of complexity. Token costs scale linearly with model capability, even for simple file operations.
+**Current state:** Model selection is per-session (`claude --model sonnet`). No task-aware routing.
 
-**Proposed:**
-- TermLink hub intercepts the task *before* it reaches the agent
-- Routes based on task type (`inception` → Opus, `build` → Sonnet, `refactor` → Haiku), estimated complexity, and cost budget
-- Deterministic because routing happens at the hub, not inside the agent — the agent doesn't choose its own model
-- Fallback routing when a model is unavailable or rate-limited — session doesn't die
-- **Evidence for value:** The framework tracks token usage per session (handover frontmatter: `token_input`, `token_cache_read`, `token_output`). Current session: 2.4B cached tokens, 2.7M output tokens. Routing simple tasks to Haiku could reduce costs by 60-80% on routine work.
+**Proposed (corrected):**
+- Extend `orchestrator.route` with task-type-based routing and model-aware specialist selection
+- Dispatch system spawns workers with specific model configs: `fw termlink dispatch --model haiku --prompt "..."` 
+- Route cache learns which models succeed for which task types (bypass promotion pattern)
+- Circuit breaker provides automatic fallback when a model is unavailable
+- **Timeline:** 2-3 months — new capability building on existing orchestrator primitives
+- **Evidence for value:** Current session: 2.8B cached tokens, 3.1M output tokens. Routing routine tasks to Haiku could reduce costs 60-80%.
 
 ### Monitor/Management Surface (Reliability + Usability)
 
-**Current state:** `termlink list` shows sessions. `termlink pty output <session>` shows recent output. Watchtower `/sessions` page shows session history. But there's no real-time cross-agent dashboard.
+**Current state:** `termlink list`, `termlink pty output`, Watchtower `/sessions` — no real-time cross-agent dashboard.
 
 **Proposed:**
-- Real-time view across all active tasks and their agents — which agent is doing what, for how long
+- Real-time view across all active tasks and their agents
 - Pause, redirect, or kill a specific agent without killing others
-- Task dependency graph — visualize blockers
-- **This is where a custom terminal or WezTerm plugin earns its value** — not rendering text, but providing situational awareness across multiple agents working in parallel
+- Session lifecycle metrics, event throughput, RPC latency already available at hub level
+- **WezTerm plugin is the natural UI** — queries TermLink RPC, no new TermLink code needed, 3-6 weeks
 
-### Metadata Management (Antifragility + Reliability)
+### Metadata Collection (Antifragility + Reliability)
 
-**Current state:** Session metrics (`session-metrics.yaml`) track cumulative stats: commits-per-turn, failed tool call rate, productive turns ratio. Token costs tracked via `fw costs`. But this is all *after-the-fact* analysis.
+**Current state:** Session metrics track cumulative stats. Token costs tracked via `fw costs`. After-the-fact analysis only.
 
-**Proposed:**
-- **Real-time** tool call log per task — what was called, when, success/failure rate
-- Token utilization per task, per model, per session — not just session-level aggregates
-- Tool call failure patterns — which tools fail most, under what conditions (currently: 710 failed tool calls across 17K+ turns, but no per-tool breakdown)
-- Cost accounting at task level — not just session level
-- Latency distribution — where is time actually going
-- **Key insight:** This metadata collection is essentially free at the PTY layer. TermLink is already in the byte stream. Parsing tool calls from the stream adds negligible overhead compared to the current approach (reading JSONL transcripts after the fact via `budget-gate.sh`).
+**Proposed (corrected feasibility):**
+- **Easy (existing):** Session lifecycle metrics, event throughput, RPC latency, route cache statistics, circuit breaker states — all available now at hub level
+- **Hard (requires new parsing):** Per-tool failure rates, model token usage, tool call counts — all require parsing tool calls from either JSONL transcripts or PTY output. No shortcut exists.
+- **Recommended approach:** Instrument MCP tools for the cross-session operations TermLink handles. For native Claude Code operations (Write/Edit/Bash), continue using JSONL transcript analysis (the current approach works, it's just after-the-fact).
 
-## Custom Terminal Evaluation
+## Terminal Chrome Evaluation
 
 ### Why Not Build a Terminal Emulator
 - VT100/ANSI/xterm compatibility alone is months of undifferentiated engineering
-- TermLink already wraps PTY — the enforcement interception point already exists
-- A custom terminal gives *display* ownership, not additional *enforcement* power beyond what TermLink's PTY wrapper already provides
+- TermLink's value is in the governance primitives, not in rendering text
 
-### Middle Ground: Terminal Shell (Not Emulator)
-A custom shell/chrome that wraps PTY management and adds task-aware UX:
-- Task state in terminal chrome (not text output)
+### Middle Ground: WezTerm Plugin (Recommended)
+A Lua plugin that adds task-aware UX by querying existing TermLink APIs:
+- Task state in terminal chrome (tags, roles, status from session metadata)
 - Multi-pane task governance UI without depending on tmux/screen
-- First-class context fabric display alongside agent output
 - Session history with task-level drill-down
+- **Zero new TermLink code required** — reads from existing RPC endpoints
+- **Timeline:** 3-6 weeks
 
-### Open Source Candidates for Adaptation
+### Zellij Alternative
+- WASM plugin system — architecturally cleaner for isolation
+- Task governance as a WASM plugin
+- But Zellij is a multiplexer, not an emulator — still depends on underlying terminal
+- Evaluate if WezTerm's Lua API proves insufficient
 
-1. **WezTerm** (Rust, 21k+ stars) — GPU-accelerated, cross-platform, Lua scripting API with event hooks. The multiplexer capability aligns with TermLink's hub architecture. Most viable for integration: embed task governance as Lua events.
-2. **Zellij** (Rust) — WASM plugin system, multi-pane, session persistence. Plugin architecture is cleaner for isolation — task governance as a WASM plugin is architecturally elegant. But Zellij is a multiplexer, not an emulator — still depends on underlying terminal.
-3. **par-term-emu-core-rust** — Rust terminal emulator library with VT100/VT220/VT320/VT420 compatibility. Could be embedded directly into TermLink as a crate for deep integration — but adds the VT compat maintenance burden.
+**Recommendation:** WezTerm for immediate value. Zellij's WASM plugin system for cleaner long-term architecture.
 
-**Recommendation:** WezTerm for immediate value (Lua event API), evaluate Zellij's WASM plugin system for cleaner long-term architecture.
+## Feasibility Assessment (from TermLink Project Review)
 
-## PTY Intercept Mechanics
+| Capability | Rating | Timeline | Rationale |
+|------------|--------|----------|-----------|
+| Task-aware terminal chrome | **Medium** | 3-6 weeks | Session metadata already available via RPC. WezTerm Lua plugin is straightforward. |
+| MCP-level governance | **Medium** | 2-4 weeks | Add task-gate checks to existing MCP tools. Structured, reliable. |
+| Extend orchestrator routing | **Medium** | 2-4 weeks | Natural evolution of existing `orchestrator.route` chain. |
+| Multi-LLM routing | **Hard** | 2-3 months | New capability: multiple agent processes per model, task classification logic, result aggregation. |
+| Data plane governance subscriber | **Medium** | 4-8 weeks | Post-hoc pattern detection on Output frames. Not blocking, useful for audit/metrics. |
+| PTY tool call parsing | **Hard** | 2-4 months | Requires terminal output parser. Patterns change per release. Heuristic, not deterministic. |
+| Pre-hook via PTY buffer hold | **Rejected** | Never | Architecture doesn't support it safely. Deadlock risk. MCP governance is strictly superior. |
 
-### What Claude Code Emits (Parseable Signals)
+## Implementation Path (Corrected)
 
-Claude Code announces tool use in its output stream before executing. These are structured signals, not random text:
-- Tool call start: `"Running bash..."`, `"Writing file..."`, `"Reading file..."`
-- Tool results: exit codes, file contents, error messages
-- Context budget markers: token counts in JSONL transcript
-- Session lifecycle: compaction, handover, restart signals
+1. **Phase 1 (now, 3-6 weeks):** Task-aware terminal chrome via WezTerm plugin querying existing TermLink RPC APIs. Zero new TermLink code.
 
-**Current framework approach:** Parse these signals *after the fact* from the JSONL transcript (`budget-gate.sh` reads `~/.claude/projects/*/sessions/*.jsonl`).
+2. **Phase 2 (weeks, 2-4 weeks):** MCP-level governance — add task-gate checks to TermLink MCP tools so cross-session operations are governed. Structured, reliable, blockable.
 
-**PTY approach:** Parse in real-time from the byte stream. Same signals, zero latency, no file I/O.
+3. **Phase 3 (weeks, 2-4 weeks):** Extend `orchestrator.route` with task-type-based routing and model-aware specialist selection. Natural evolution of existing code.
 
-### Pre-hook Equivalent
-- Detect tool call announcement in the PTY output stream
-- Buffer/pause the stream before the tool executes
-- Run governance logic (task gate, tier 0 check, budget check)
-- Release the buffer to continue, or inject a cancel signal
-- **Advantage over current hooks:** PreToolUse hooks run as shell scripts and add latency (50-200ms per call). PTY parsing can be sub-millisecond in Rust.
+4. **Phase 4 (months, 2-3 months):** Multi-LLM routing — task-aware model selection with dispatch system spawning per-model workers. Builds on Phase 3.
 
-### Post-hook Equivalent
-- Detect tool completion markers in output
-- Trigger downstream actions (error watchdog, dispatch check, loop detection)
-- Fire-and-observe, non-blocking — but unlike G-011, can *also* block if needed
-- **Key difference from current PostToolUse:** At the PTY layer, "post" hooks can still block the next action by holding the buffer. G-011 ceases to exist.
+5. **Phase 5 (months, only if validated):** Data plane governance subscriber for post-hoc pattern detection on PTY output. Not blocking, not "deterministic" — but useful for audit/metrics.
 
-### Challenge: True Blocking Pre-hooks
-- PTY is a stream — holding the read buffer without forwarding works for pre-hooks before Claude acts
-- Need a proxy PTY layer: TermLink sits between Claude Code's actual PTY and the terminal, acting as a man-in-the-middle governance proxy
-- TermLink already does this for `pty inject` and `pty output` — extending to full interception is an engineering step, not an architecture change
+6. **Never:** Pre-hook blocking via PTY buffer hold. MCP-level governance is strictly superior for structured operations.
 
-### Pragmatic Path
-1. **Phase 1:** Post-hook equivalents (non-blocking, immediately useful) — parse tool completions, log metadata, detect failures
-2. **Phase 2:** Pre-hook equivalents for critical gates (task gate, tier 0) — buffer-and-gate on tool call announcements
-3. **Phase 3:** Full flow control proxy — deterministic equivalent of all 15 current hooks
-4. **Phase 4:** Multi-LLM routing — task-aware model selection at the hub level
+## What TermLink Actually Is
 
-## What This Actually Is
+TermLink is not "tmux for AI agents." It is not a PTY parser. It is a **structured governance substrate for AI agents** operating through three mechanisms:
 
-TermLink is being described as a "cross-terminal session communication tool." That description undersells it by an order of magnitude.
+1. **MCP tools** — loaded into the agent, governing cross-session operations at the structured API level
+2. **Hub orchestrator** — routing, failover, learning, and protection at the inter-session level
+3. **Data plane** — high-throughput streaming with future governance frame capability
 
-**TermLink is a deterministic governance substrate for AI agents.**
+The analogy is: **the kernel controls the syscall interface, not program output.** TermLink's syscall interface is MCP + RPC. Govern there — not at the byte stream.
 
-The coordination features (hub, sessions, events, file transfer) are useful. But the core value — the thing that no application-layer hook system can match — is **PTY-level enforcement of constitutional rules**.
-
-The analogy is not "tmux for AI agents." The analogy is: **the kernel enforces memory protection, not the application.** TermLink enforces the prime directive at the transport layer, not at the application layer.
-
-Current ecosystem tools (Claude Code hooks, Cursor rules, IDE extensions) all enforce at the application layer. They're valuable, but bypassable by design. TermLink is the only project in the ecosystem that operates below the application layer.
-
-That's a genuinely differentiated architectural position. Nobody else has this.
+Current ecosystem tools (Claude Code hooks, Cursor rules, IDE extensions) all enforce at the application layer. They're valuable, but bypassable by design. TermLink operates at the structured interface layer — below the application, above the OS. That's a genuinely differentiated architectural position.
 
 ## Dialogue Log
 
 1. **Q:** Can TermLink replace Claude Code hooks via PTY hacking?
-   **A:** Yes, feasible. PTY ownership gives byte stream interception. Pre-hooks via pattern matching, post-hooks via completion markers.
+   **A (initial):** Yes, feasible via byte stream interception.
+   **A (corrected by TermLink review):** No for PTY parsing. Yes via MCP + hub orchestrator. The PTY read loop is fire-and-forget (`pty.rs:171-219`), no buffer/pause API exists, and parsing ANSI output reliably requires building half a terminal emulator.
 
 2. **Q:** TermLink PTY vs Claude Code native hooks for reliability?
    **A (initial):** Hybrid — native hooks for mechanics, TermLink for governance.
-   **A (revised after critical analysis):** TermLink PTY is architecturally correct for reliability because invariant enforcement > mechanical reliability. Making TermLink subordinate to Claude Code hooks inverts the dependency and makes the prime directive advisory, not enforced.
+   **A (revised):** MCP-level governance is architecturally correct for cross-session operations. Claude Code hooks remain necessary for native tool calls (Write/Edit/Bash) until an alternative enforcement point exists.
 
 3. **Q:** Key distinction?
-   **A:** PTY ownership = deterministic. Hook callbacks = stochastic and bypassable. Constitutional rules belong at the lowest enforceable layer.
+   **A:** Constitutional rules belong at the lowest enforceable **structured** layer. For cross-session governance, that's MCP + hub orchestrator. For native tool calls, Claude Code hooks remain the enforcement point (with known gaps G-011, G-015, G-017).
 
 4. **Q:** Value in building a custom terminal?
-   **A:** No for emulator (VT compat is a trap). Yes for shell/chrome that adds task-aware UX. Adapt WezTerm or Zellij rather than building from scratch.
+   **A:** No for emulator (VT compat is a trap). Yes for WezTerm Lua plugin querying existing TermLink RPC — zero new TermLink code, 3-6 weeks.
 
-5. **Q:** Map through the four constitutional directives + features?
-   **A:** TermLink hub is not just a message router — it's a telemetry collection point. Every event passes through it. The terminal becomes a query interface for live operational visibility. "The kernel for AI agent governance, not a terminal emulator."
+5. **Q:** Map through the four constitutional directives?
+   **A:** Antifragility (bypass registry learns from experience), Reliability (MCP enforcement has no advisory-only gap), Usability (WezTerm chrome + dispatch multi-agent UX), Portability (MCP standard, JSON-RPC 2.0, agent-agnostic).
+
+6. **Q (TermLink project):** Is TermLink-as-governance-substrate the right direction?
+   **A:** Partially yes, but not via PTY parsing. The core insight is correct: governance belongs below the application layer. The mechanism is MCP + orchestrator + data plane, not the byte stream. The orchestrator already has governance primitives (bypass registry, route cache, circuit breaker). Extend those.
+
+## Appendix: TermLink Architecture Details
+
+### Control Plane / Data Plane Separation
+
+TermLink has a deliberate dual-channel architecture:
+
+- **Control plane:** JSON-RPC 2.0 over Unix sockets. Methods like `query.output`, `command.inject`, `event.emit`. Structured, request-response, moderate latency.
+- **Data plane:** Binary frame protocol over separate Unix sockets. Frame types: Output (0x0), Input (0x1), Resize (0x2), Signal (0x3), Transfer (0x4), Ping (0x5), Pong (0x6), Close (0x7). 22-byte headers with magic, sequence numbers, channel IDs. High-throughput, streaming, low-latency.
+
+### Session Types Are Not Uniform
+
+Not all TermLink sessions are PTY-backed. `SessionContext` has `pty: Option<Arc<PtySession>>`. Sessions created with `termlink register` (no `--shell`) are endpoint-only: RPC, events, KV — no PTY, no scrollback. MCP-registered endpoints are also non-PTY. The governance substrate must work for both PTY and non-PTY sessions — which is why MCP + orchestrator governance is architecturally superior to PTY-level governance.
+
+### TermLink Project Review Source
+
+Full review: `docs/reports/T-1061-termlink-review-feedback.md` (19KB, code-path-specific corrections from Claude Code session in /opt/termlink with full context fabric access).
