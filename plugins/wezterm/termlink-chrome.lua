@@ -45,29 +45,34 @@ local cache = {
 }
 
 -- Parse task ID from session tags
--- Convention: tags contain "task:T-XXX" for task-tagged sessions
+-- Convention: tags contain "task:T-XXX" or "task=T-XXX" for task-tagged sessions
 local function extract_task(tags)
   if not tags then return nil end
   if type(tags) == "table" then
     for _, tag in ipairs(tags) do
-      local task_id = string.match(tag, "^task:(T%-%d+)$")
+      local task_id = string.match(tag, "^task[:=](T%-%d+)$")
       if task_id then return task_id end
     end
   elseif type(tags) == "string" then
-    return string.match(tags, "task:(T%-%d+)")
+    return string.match(tags, "task[:=](T%-%d+)")
   end
   return nil
 end
 
 -- Parse role from session tags or registration
 local function extract_role(session)
+  -- Check roles array (TermLink returns roles: [])
+  if session.roles and type(session.roles) == "table" and #session.roles > 0 then
+    return session.roles[1]
+  end
+  -- Fallback to single role field
   if session.role and session.role ~= "" then
     return session.role
   end
   if session.tags then
     if type(session.tags) == "table" then
       for _, tag in ipairs(session.tags) do
-        local role = string.match(tag, "^role:(.+)$")
+        local role = string.match(tag, "^role[:=](.+)$")
         if role then return role end
       end
     end
@@ -100,9 +105,15 @@ local function query_termlink()
     return nil
   end
 
-  cache.data = parsed
+  -- TermLink returns {ok: bool, sessions: [...]} wrapper
+  local sessions_list = parsed
+  if type(parsed) == "table" and parsed.sessions then
+    sessions_list = parsed.sessions
+  end
+
+  cache.data = sessions_list
   cache.last_update = now
-  return parsed
+  return sessions_list
 end
 
 -- Build status bar elements from TermLink sessions
