@@ -265,7 +265,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT"
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -275,6 +275,7 @@ cmd_dispatch() {
             --prompt-file) prompt_file="$2"; shift 2 ;;
             --project) project_dir="$2"; shift 2 ;;
             --timeout) timeout="$2"; shift 2 ;;
+            --model) model="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -301,6 +302,7 @@ cmd_dispatch() {
   "project": "$project_dir",
   "timeout": $timeout,
   "task": "${task:-}",
+  "model": "${model:-}",
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -310,7 +312,7 @@ METAEOF
     # Adapted from tl-dispatch.sh — battle-tested with 3 parallel workers
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
-WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"
+WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
@@ -324,8 +326,14 @@ fi
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
 unset CLAUDECODE 2>/dev/null || true
 
+# T-1065: Build model flag if specified
+MODEL_FLAG=""
+if [ -n "$MODEL" ]; then
+    MODEL_FLAG="--model $MODEL"
+fi
+
 # Background process + kill watchdog (macOS has no `timeout` command)
-claude -p "$(cat "$WDIR/prompt.md")" --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
+claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!
 (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" > "$WDIR/stderr.log") &
 WATCHDOG_PID=$!
@@ -349,7 +357,7 @@ RUNEOF
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
     sleep 1
-    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout'" --enter >/dev/null 2>&1
+    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model'" --enter >/dev/null 2>&1
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }
@@ -481,7 +489,7 @@ cmd_help() {
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
-                                     [--project DIR] [--timeout S]"
+                                     [--project DIR] [--model M] [--timeout S]"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
