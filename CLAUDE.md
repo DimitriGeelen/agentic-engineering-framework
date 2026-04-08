@@ -1067,6 +1067,17 @@ and cleanup tracking while delegating all real work to the `termlink` binary.
 
 `fw termlink cleanup` detects and terminates orphaned dispatch processes.
 
+### MCP Task Governance (T-1063)
+
+When `TERMLINK_TASK_GOVERNANCE=1` is set (configured in `.mcp.json`), TermLink MCP tools require a `task_id` parameter. **Always pass the current task ID** when calling TermLink MCP tools:
+
+- `termlink_exec`: `{"command": "...", "session": "...", "task_id": "T-XXX"}`
+- `termlink_spawn`: `{"name": "...", "task_id": "T-XXX"}`
+- `termlink_interact`: `{"session": "...", "command": "...", "task_id": "T-XXX"}`
+- `termlink_dispatch`: `{"name": "...", "prompt": "...", "task_id": "T-XXX"}`
+
+The task_id is the current task from `focus.yaml`. When task_id is passed, it propagates to session tags as `task:T-XXX` for observability.
+
 ### Budget Rules
 
 - **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget

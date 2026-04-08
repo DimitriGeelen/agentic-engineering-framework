@@ -18,7 +18,10 @@
     "args": [
       "mcp",
       "serve"
-    ]
+    ],
+    "env": {
+      "TERMLINK_TASK_GOVERNANCE": "1"
+    }
   },
   "skills": {
     "command": "python3",
