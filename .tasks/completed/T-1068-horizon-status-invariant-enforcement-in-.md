@@ -4,7 +4,7 @@ name: "Horizon-status invariant enforcement in update-task.sh"
 description: >
   Add auto-sync logic: started-work auto-sets horizon:now, horizon next/later auto-demotes started-work to captured. Update tests and CLAUDE.md. Origin: T-1067 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-08T10:32:30Z
-last_update: 2026-04-08T10:32:30Z
-date_finished: null
+last_update: 2026-04-08T10:36:24Z
+date_finished: 2026-04-08T10:36:24Z
 ---
 
 # T-1068: Horizon-status invariant enforcement in update-task.sh
@@ -53,3 +53,6 @@ bats tests/unit/update_task.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1068-horizon-status-invariant-enforcement-in-.md
 - **Context:** Initial task creation
+
+### 2026-04-08T10:36:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

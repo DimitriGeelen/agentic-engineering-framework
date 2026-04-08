@@ -4,7 +4,7 @@ name: "MCP-level governance — task-gate checks in TermLink MCP tools"
 description: >
   Phase 2 from T-1061: Add task-gate checks to TermLink MCP tools (termlink_exec, termlink_spawn, termlink_dispatch) so cross-session operations are governed. Structured, reliable, blockable. 2-4 weeks.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

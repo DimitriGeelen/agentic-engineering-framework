@@ -4,7 +4,7 @@ name: "Spike: layered CLAUDE.md (framework base + project overrides)"
 description: >
   Test whether Claude Code supports multi-file CLAUDE.md loading or include patterns. If yes: design framework-owned base (12 universal sections, always current) + project-owned overrides (5 project-specific sections). If no: accept fw upgrade as permanent solution. Source: T-306 investigation, Agent 8 findings.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

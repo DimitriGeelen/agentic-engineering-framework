@@ -4,7 +4,7 @@ name: "Submit to awesome lists (awesome-ai-agents, awesome-agents, awesome-copil
 description: >
   Submit PRs to: (1) e2b-dev/awesome-ai-agents, (2) kyrolabs/awesome-agents, (3) github/awesome-copilot agents section. One-line description, correct alphabetical position, link to GitHub repo. Requires 30+ stars for some lists. Ref: docs/reports/T-327-visibility-strategy.md
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

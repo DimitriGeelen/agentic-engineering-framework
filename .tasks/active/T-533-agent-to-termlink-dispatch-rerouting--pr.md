@@ -4,7 +4,7 @@ name: "Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLi
 description: >
   Inception: Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

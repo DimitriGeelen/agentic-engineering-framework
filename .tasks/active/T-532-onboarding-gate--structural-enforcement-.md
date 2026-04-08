@@ -4,7 +4,7 @@ name: "Onboarding gate — structural enforcement that setup tasks complete befo
 description: >
   Inception: Onboarding gate — structural enforcement that setup tasks complete before other work
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

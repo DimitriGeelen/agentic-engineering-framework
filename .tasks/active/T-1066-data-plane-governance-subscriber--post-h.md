@@ -4,7 +4,7 @@ name: "Data plane governance subscriber — post-hoc pattern detection on PTY ou
 description: >
   Phase 5 from T-1061 (only if validated): Data plane governance subscriber for post-hoc pattern detection on Output frames. Not blocking, not deterministic — useful for audit/metrics. 4-8 weeks.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: later

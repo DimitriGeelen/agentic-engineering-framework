@@ -4,7 +4,7 @@ name: "Create TermLink Homebrew tap with GitHub Actions builds"
 description: >
   Create TermLink Homebrew tap with GitHub Actions builds
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

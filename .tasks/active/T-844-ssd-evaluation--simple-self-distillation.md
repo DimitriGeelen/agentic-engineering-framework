@@ -4,7 +4,7 @@ name: "SSD evaluation — Simple Self-Distillation for code generation (arxiv 26
 description: >
   Inception: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

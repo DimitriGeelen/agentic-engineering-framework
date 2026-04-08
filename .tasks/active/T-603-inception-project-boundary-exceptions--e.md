@@ -4,7 +4,7 @@ name: "Inception: Project boundary exceptions — /etc/cron.d and other legitima
 description: >
   T-602 fixed the cron collision symptom, but the boundary exception itself is unexamined. The project boundary gate (T-559) blocks writes outside PROJECT_ROOT, yet /etc/cron.d/ is a legitimate exception. Questions: (1) Is /etc/cron.d/ the only legitimate outside-boundary write? (2) How should T-559 gate coexist with this exception — whitelist, escape hatch, or structural carve-out? (3) What is the attack surface if agents learn 'some outside writes are OK'? (4) Do the cron-triggered audits cover the full project scope (confirmed: yes via PROJECT_ROOT), and is this documented? Related: T-559, T-602, G-022.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

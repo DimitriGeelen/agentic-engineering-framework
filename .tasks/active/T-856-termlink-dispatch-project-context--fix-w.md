@@ -4,7 +4,7 @@ name: "TermLink dispatch project context — fix worker CWD resolution so hooks 
 description: >
   Inception: TermLink dispatch project context — fix worker CWD resolution so hooks find correct PROJECT_ROOT
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

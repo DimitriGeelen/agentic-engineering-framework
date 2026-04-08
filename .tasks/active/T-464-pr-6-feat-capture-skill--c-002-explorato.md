@@ -5,7 +5,7 @@ description: >
   OneDev PR #6 (branch: feature/conversation-guard-capture-skill).
   C-002 rule + /capture skill for conversation persistence.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

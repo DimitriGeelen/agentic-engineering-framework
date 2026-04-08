@@ -4,7 +4,7 @@ name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
 description: >
   Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model workers. Extends Phase 3 orchestrator routing. 2-3 months.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: later

@@ -4,7 +4,7 @@ name: "npm install pathway — evaluate whether to build npm-based framework ins
 description: >
   Inception: npm install pathway — evaluate whether to build npm-based framework installation
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

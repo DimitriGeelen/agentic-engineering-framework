@@ -4,7 +4,7 @@ name: "Composition-based adapter pattern — evaluate for agent provider and Ter
 description: >
   OpenClaw uses a composition-with-optional-slots pattern for 17+ channel integrations instead of inheritance. Evaluate whether this pattern applies to: (1) agent provider abstraction (Claude Code, Cursor, Windsurf, Copilot), (2) TermLink backend types (tmux, screen, SSH, containers). Source: T-549 OpenClaw evaluation, P5 channel abstraction finding. Low urgency — no multi-adapter problem exists today.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

@@ -4,7 +4,7 @@ name: "Extend orchestrator.route with task-type routing and model-aware speciali
 description: >
   Phase 3 from T-1061: Extend orchestrator.route chain with task-type-based routing and model-aware specialist selection. Natural evolution of existing router.rs code. 2-4 weeks.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

@@ -4,7 +4,7 @@ name: "OpenClaw deep-dive — ingest existing project, evaluate architecture, ex
 description: >
   Inception: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

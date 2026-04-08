@@ -4,7 +4,7 @@ name: "KCP integration — knowledge.yaml generation from fabric/context + MCP b
 description: >
   Evaluate adopting KCP (Knowledge Context Protocol) from Cantara. Generate knowledge.yaml from existing fabric cards + context data. Add kcp-mcp bridge to default MCP config. Stay on KCP upgrade path — become adopter, contribute upstream. Thor Henning Hetland actively developing. Source: T-697 deep-dive, T-487 spec research.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

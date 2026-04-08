@@ -4,7 +4,7 @@ name: "Inception GO decision human-confirm gate — block fw inception decide fo
 description: >
   All inception GO/NO-GO decisions require human confirmation. Block agents from running fw inception decide directly — add to check-tier0.sh as Tier 0 operation. Agent writes research + recommendation with PENDING HUMAN CONFIRMATION in Decision section. Human runs fw inception decide T-XXX go. Add Human AC to inception template: [REVIEW] Review exploration findings and approve go/no-go. Keep default owner: agenthuman for all inceptions. Origin: T-549 eval + 3-agent authority analysis. Evidence: Authority Model says agent=initiative not authority. GO decisions commit resources = authority. All historical inception decision commits were human-authored.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
 horizon: next

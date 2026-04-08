@@ -4,7 +4,7 @@ name: "Multi-project cron collision — fw audit schedule install overwrites sin
 description: >
   Inception: Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit, silently disabling all other projects
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

@@ -4,7 +4,7 @@ name: "Auto-detect context window from model — eliminate hardcoded CONTEXT_WIN
 description: >
   Inception: Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

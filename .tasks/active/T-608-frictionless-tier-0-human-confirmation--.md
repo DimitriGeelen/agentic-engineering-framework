@@ -8,7 +8,7 @@ description: >
   web UI approval button, TermLink out-of-band channel. Hard constraint: agent must not be able to
   bypass or fake the confirmation. Related: T-557 (inception decide gate), T-559 (boundary gate).
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

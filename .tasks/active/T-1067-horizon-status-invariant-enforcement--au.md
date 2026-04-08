@@ -4,7 +4,7 @@ name: "Horizon-status invariant enforcement — auto-sync horizon and status in 
 description: >
   Inception: Horizon-status invariant enforcement — auto-sync horizon and status in update-task.sh
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-08T10:18:04Z
-last_update: 2026-04-08T10:19:47Z
-date_finished: null
+last_update: 2026-04-08T10:31:50Z
+date_finished: 2026-04-08T10:31:50Z
 ---
 
 # T-1067: Horizon-status invariant enforcement — auto-sync horizon and status in update-task.sh
@@ -105,18 +105,30 @@ None — this is pure bash in an existing script. No platform, network, or API c
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: The deficiency is clear (61+ inconsistent tasks), the fix is small (~20 lines in update-task.sh), all assumptions validated, and the approach follows established SP-004 graduated enforcement pattern. No legitimate use case for the contradictory states exists. One existing test (test 7: "changes horizon") will need updating to expect the auto-demotion behavior.
+
+Evidence:
+- 28 started-work tasks with horizon != now (should be now or status should be captured)
+- 1...
+
+**Date**: 2026-04-08T10:31:50Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The deficiency is clear (61+ inconsistent tasks), the fix is small (~20 lines in update-task.sh), all assumptions validated, and the approach follows established SP-004 graduated enforcement pattern. No legitimate use case for the contradictory states exists. One existing test (test 7: "changes horizon") will need updating to expect the auto-demotion behavior.
+
+Evidence:
+- 28 started-work tasks with horizon != now (should be now or status should be captured)
+- 1...
+
+**Date**: 2026-04-08T10:31:50Z
 
 ## Updates
 
@@ -125,3 +137,18 @@ None — this is pure bash in an existing script. No platform, network, or API c
 
 ### 2026-04-08T10:19:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-08T10:31:50Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The deficiency is clear (61+ inconsistent tasks), the fix is small (~20 lines in update-task.sh), all assumptions validated, and the approach follows established SP-004 graduated enforcement pattern. No legitimate use case for the contradictory states exists. One existing test (test 7: "changes horizon") will need updating to expect the auto-demotion behavior.
+
+Evidence:
+- 28 started-work tasks with horizon != now (should be now or status should be captured)
+- 1...
+
+### 2026-04-08T10:31:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

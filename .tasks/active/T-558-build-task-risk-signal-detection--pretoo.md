@@ -4,7 +4,7 @@ name: "Build task risk signal detection — PreToolUse gate requiring inception 
 description: >
   Apply structural risk signals as PreToolUse gate on BUILD tasks (not inception creation). When a build task edits files that trigger risk signals (new subsystem via fabric, cross-subsystem impact >3 dependents, external system files in deploy/infrastructure/, governance layer files, irreversible operations), warn or block: 'This build touches 3 subsystems — did you do inception first?' Signals are observable at build time (unlike inception creation time where future is unknown). Extends check-active-task.sh with ~60 lines. Precedent: budget gate, task gate, build readiness gate. Origin: T-549 steelman/strawman analysis — steelman signals valid but apply to builds not inceptions.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later

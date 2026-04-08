@@ -4,7 +4,7 @@ name: "Language strategy — TypeScript adoption for new framework components vs
 description: >
   Fundamental architectural decision: should new framework components (loop detection, health checks, event loops, session management, token budget) be written in TypeScript instead of the current bash+Python hybrid? The framework is already three languages (bash orchestration, Python data processing, Python/Flask web). Every non-trivial hook shells out to Python. Patterns extracted from OpenClaw are all TypeScript requiring rewrite. This is a multi-session inception spanning language audit, prototype spikes, migration path analysis, and constitutional directive review.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: later
