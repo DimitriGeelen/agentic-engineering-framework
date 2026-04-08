@@ -1031,7 +1031,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | TermLink check | `fw termlink check` | Verify TermLink installation |
 | TermLink spawn | `fw termlink spawn --task T-XXX` | Open tagged terminal session |
 | TermLink exec | `fw termlink exec <session> <cmd>` | Run command in session (JSON output) |
-| TermLink dispatch | `fw termlink dispatch --name N --prompt P` | Spawn claude -p worker in terminal |
+| TermLink dispatch | `fw termlink dispatch --name N --prompt P [--project DIR]` | Spawn claude -p worker in terminal |
 | TermLink wait | `fw termlink wait --name N` | Wait for worker completion |
 | TermLink status | `fw termlink status` | List active TermLink sessions |
 | TermLink cleanup | `fw termlink cleanup` | Deregister sessions, close windows |
