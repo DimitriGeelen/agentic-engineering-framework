@@ -258,13 +258,13 @@ A Lua plugin that adds task-aware UX by querying existing TermLink APIs:
 
 ### Execution Status (2026-04-08)
 
-| Phase | Task | TermLink Task | Status |
-|-------|------|---------------|--------|
-| 1 | T-1062 | — (framework) | Agent ACs done, human review pending |
-| 2 | T-1063 | T-902 | Agent ACs done, human review pending |
-| 3 | T-1064 | T-903 | Agent ACs done, human review pending |
-| 4 | T-1065 | T-904 (TBD) | In progress (dispatch) |
-| 5 | T-1066 | T-905 | Agent ACs done, human review pending |
+| Phase | Task | TermLink Task | Status | Tests |
+|-------|------|---------------|--------|-------|
+| 1 | T-1062 | — (framework) | Agent ACs done, human review pending | — |
+| 2 | T-1063 | T-902 | Agent ACs done, human review pending | 16 new, 174 pass |
+| 3 | T-1064 | T-903 | Agent ACs done, human review pending | 3 new, 155 pass |
+| 4 | T-1065 | T-906 | Partial (model passthrough existed) | 3 existing |
+| 5 | T-1066 | T-905 | Agent ACs done, human review pending | 9 new, 342 pass |
 
 All TermLink tasks dispatched via `fw termlink dispatch --project /opt/termlink`. Worker sessions created their own tasks in the TermLink project's framework instance. Results verified and updated in framework task files.
 
