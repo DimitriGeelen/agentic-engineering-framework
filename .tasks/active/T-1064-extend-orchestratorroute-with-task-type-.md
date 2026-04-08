@@ -20,34 +20,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 3 from T-1061 inception (GO). Extend TermLink's `orchestrator.route` chain (`router.rs:640-1000+`) with task-type-based routing. Currently routes RPC methods to specialist sessions by tags/roles/capabilities. Extension: add task-type awareness so the orchestrator can route different task types (build, test, audit) to specialists configured for those types. Depends on T-1063 (MCP governance) establishing task context. Research: `docs/reports/T-1061-termlink-governance-substrate.md`.
+
+**Repo:** TermLink (`/opt/termlink`) — changes in `crates/termlink-hub/src/router.rs`
+**Depends on:** T-1063 (task context must flow through MCP tools first)
+**Dispatch:** Execute in TermLink project via `fw termlink dispatch`
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `orchestrator.route` accepts optional `task_type` field in route requests
+- [ ] Route cache learns task-type -> specialist mappings alongside method -> specialist
+- [ ] Bypass registry considers task-type in promotion decisions
+- [ ] Existing routing (method-based) continues to work unchanged when task_type is absent
+- [ ] Tests: task-type routing selects correct specialist, fallback to method routing when no type match
+- [ ] All existing tests pass (`cargo test`)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Routing design review — task-type integration is clean and doesn't complicate the existing route chain
+  **Steps:**
+  1. Review the router.rs changes in the TermLink repo
+  2. Check that task-type routing is additive (no breaking changes to existing flow)
+  3. Verify the route cache schema evolution is backward-compatible
+  **Expected:** Clean additive extension, no regressions
+  **If not:** Note where the abstraction leaks or complicates the existing chain
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
+# Runs in /opt/termlink
+# cd /opt/termlink && cargo test
+# cd /opt/termlink && cargo build
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
 ## Decisions

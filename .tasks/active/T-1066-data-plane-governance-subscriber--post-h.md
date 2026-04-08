@@ -20,34 +20,37 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 5 from T-1061 inception (GO, only if validated). Data plane governance subscriber that receives Output frames from TermLink's binary frame protocol and performs post-hoc pattern detection. NOT blocking, NOT "deterministic" — useful for audit trail and metrics collection. The data plane already has frame types including Signal (0x3); could add a Governance frame type. Research: `docs/reports/T-1061-termlink-governance-substrate.md`.
+
+**Repo:** TermLink (`/opt/termlink`) — changes in `crates/termlink-session/src/data_server.rs` + `crates/termlink-protocol/src/data.rs`
+**Depends on:** T-1063 (MCP governance), validated need for post-hoc detection
+**Dispatch:** Execute in TermLink project via `fw termlink dispatch`
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] New Governance frame type (0x8) added to binary frame protocol
+- [ ] Data plane subscriber can receive Output frames and match configurable patterns
+- [ ] Pattern matches emit Governance frames back to the session
+- [ ] Subscriber is opt-in (not attached by default)
+- [ ] Subscriber does NOT block data plane throughput (async, non-blocking)
+- [ ] Tests: pattern matching, governance frame emission, throughput non-regression
+- [ ] All existing tests pass (`cargo test`)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Data plane governance design — pattern detection is useful and doesn't degrade performance
+  **Steps:**
+  1. Review the subscriber architecture and frame protocol changes
+  2. Run benchmarks to verify no throughput regression
+  3. Evaluate whether detected patterns are actionable
+  **Expected:** Non-blocking subscriber, useful pattern detection, no performance impact
+  **If not:** Note performance concerns or patterns that aren't actionable
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
+# Runs in /opt/termlink
+# cd /opt/termlink && cargo test
+# cd /opt/termlink && cargo build
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 
 ## Decisions

@@ -20,35 +20,35 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink's MCP tools so cross-session operations are governed at the structured API level. When an agent calls `termlink_exec`, `termlink_spawn`, or `termlink_dispatch` via MCP, TermLink checks for an active task context before executing. Research: `docs/reports/T-1061-termlink-governance-substrate.md`, `docs/reports/T-1061-termlink-review-feedback.md`.
+
+**Repo:** TermLink (`/opt/termlink`) — changes in `crates/termlink-mcp/src/tools.rs`
+**Dispatch:** This task should be executed in the TermLink project via `fw termlink dispatch`
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] MCP tools `termlink_exec`, `termlink_spawn`, `termlink_dispatch` accept optional `task_id` parameter
+- [ ] When task governance is enabled (env var or config), tools without `task_id` return structured error
+- [ ] Governance mode is opt-in (default: no enforcement) to avoid breaking existing usage
+- [ ] Task context passed through to session tags for observability
+- [ ] Existing tests still pass (`cargo test`)
+- [ ] New tests for governance gate: with task_id passes, without task_id in strict mode fails
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Governance integration design review — opt-in model is appropriate, error messages are actionable
+  **Steps:**
+  1. Read the implementation PR/diff in the TermLink repo
+  2. Check that opt-in mechanism is clean (env var or config, not hardcoded)
+  3. Verify error messages tell the agent what to do (not just "denied")
+  **Expected:** Clean opt-in design, actionable errors, no breaking changes
+  **If not:** Note specific concerns for revision
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Verification runs in /opt/termlink, not here
+# cd /opt/termlink && cargo test
+# cd /opt/termlink && cargo build
 
 ## Decisions
 

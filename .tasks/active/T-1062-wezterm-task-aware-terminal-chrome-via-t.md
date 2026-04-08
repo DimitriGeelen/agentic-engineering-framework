@@ -20,35 +20,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Phase 1 from T-1061 inception (GO). WezTerm Lua plugin that queries existing TermLink RPC APIs to display task-aware metadata in the terminal chrome. Zero new TermLink code needed — reads session metadata (tags, roles, status, KV store) via `termlink list --json` and `termlink status`. Research: `docs/reports/T-1061-termlink-governance-substrate.md`.
+
+**Repo:** Framework (plugin code lives here, no TermLink changes)
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] WezTerm Lua plugin file created at `plugins/wezterm/termlink-chrome.lua`
+- [ ] Plugin queries `termlink list --json` for active sessions
+- [ ] Plugin displays task ID and status from session tags in WezTerm tab/status bar
+- [ ] Plugin handles no-sessions gracefully (TermLink not running)
+- [ ] README in `plugins/wezterm/` with install instructions
+- [ ] Plugin registered in component fabric
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [ ] [REVIEW] Terminal chrome displays task state correctly when TermLink sessions are active
+  **Steps:**
+  1. Install plugin: `cp plugins/wezterm/termlink-chrome.lua ~/.config/wezterm/`
+  2. Add `require("termlink-chrome")` to `~/.wezterm.lua`
+  3. Start a TermLink session: `termlink spawn --name test --shell --tags "task:T-1062"`
+  4. Verify task info appears in WezTerm status bar
+  **Expected:** Task ID and status visible in terminal chrome
+  **If not:** Check WezTerm debug overlay (Ctrl+Shift+L) for Lua errors
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+termlink list --json > /dev/null 2>&1 || echo "SKIP: TermLink not running"
+test -f plugins/wezterm/termlink-chrome.lua
+test -f plugins/wezterm/README.md
+grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ## Decisions
 
