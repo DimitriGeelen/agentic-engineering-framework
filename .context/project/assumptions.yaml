@@ -139,3 +139,42 @@ assumptions:
   linked_task: T-993
   created: '2026-04-07'
   resolved_date: null
+- id: A-016
+  statement: No workflow intentionally uses started-work + horizon:later — these are
+    orphaned state transitions
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: Git log shows no commits with both 'horizon later' and 'started-work'
+      in same update. All 28 cases are tasks that had status set to started-work first,
+      then horizon changed later (or vice versa) without coordinating the other field.
+    date: '2026-04-08'
+  linked_task: T-1067
+  created: '2026-04-08'
+  resolved_date: '2026-04-08'
+- id: A-017
+  statement: Auto-sync (fix automatically with info message) is preferable to blocking
+    (reject update)
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: SP-004 pattern (graduated enforcement) supports auto-sync. Blocking would
+      require two commands where one suffices. User's original observation implied
+      fix-it-for-me, not reject-my-input.
+    date: '2026-04-08'
+  linked_task: T-1067
+  created: '2026-04-08'
+  resolved_date: '2026-04-08'
+- id: A-018
+  statement: Work-completed tasks in active/ are partial-completes (Human ACs pending)
+    — 76 of 100 confirmed; 24 are stuck due to no re-run of completion handler
+  status: validated
+  validation_method: TBD
+  evidence:
+  - outcome: 76/100 work-completed in active/ have unchecked Human ACs (legitimate
+      partial-complete per T-193). 24/100 have all ACs checked — these should have
+      moved but didn't (likely manual edits or edge cases in completion handler).
+    date: '2026-04-08'
+  linked_task: T-1067
+  created: '2026-04-08'
+  resolved_date: '2026-04-08'
