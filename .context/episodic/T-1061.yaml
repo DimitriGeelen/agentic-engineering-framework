@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1061: TermLink as deterministic governance substrate — PTY-level enforcement vs Claude Code hooks, custom terminal evaluation, multi-LLM routing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-08T05:30:53Z
+# ============================================================================
+
+task_id: T-1061
+task_name: "TermLink as deterministic governance substrate — PTY-level enforcement vs Claude Code hooks, custom terminal evaluation, multi-LLM routing"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T20:51:33Z
+completed: 2026-04-08T05:30:50Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-04-07T22:54:35+02:00
+last_commit: 2026-04-07T23:07:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — TermLink as deterministic governance substrate. Fix research artifact — map through four constitutional directives
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix research artifact — map through four constitutional directives"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1061-termlink-governance-substrate.md"
+  - ".tasks/active/T-1061-termlink-as-deterministic-governance-sub.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T22:54:35"
+    action: "T-1061: Inception — TermLink as deterministic governance substrate"
+  - time: "2026-04-07T23:07:23"
+    action: "T-1061: Fix research artifact — map through four constitutional directives"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 519 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 519
+  commits: 2
+  files_changed: 2
+  lines_added: 280
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1061-termlink-as-deterministic-governance-sub.md
+generated_by: context-agent-hybrid
