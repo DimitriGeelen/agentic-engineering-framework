@@ -1,0 +1,55 @@
+---
+id: T-1068
+name: "Horizon-status invariant enforcement in update-task.sh"
+description: >
+  Add auto-sync logic: started-work auto-sets horizon:now, horizon next/later auto-demotes started-work to captured. Update tests and CLAUDE.md. Origin: T-1067 GO.
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-08T10:32:30Z
+last_update: 2026-04-08T10:32:30Z
+date_finished: null
+---
+
+# T-1068: Horizon-status invariant enforcement in update-task.sh
+
+## Context
+
+Origin: T-1067 GO. Research: `docs/reports/T-1067-horizon-status-invariants.md`
+
+## Acceptance Criteria
+
+### Agent
+- [x] Invariant 1: `--status started-work` auto-sets horizon to `now` with info message
+- [x] Invariant 2: `--horizon next/later` on a `started-work` task auto-demotes status to `captured` with info message
+- [x] Existing test 7 updated for new invariant behavior (sets captured first to test pure horizon change)
+- [x] New tests cover both invariant paths (4 tests: promote, demote-later, demote-next, no-demote-issues)
+- [x] All update_task.bats tests pass (15/15)
+- [x] CLAUDE.md documents the invariant rules (Horizon section)
+
+## Verification
+
+bats tests/unit/update_task.bats
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-08T10:32:30Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1068-horizon-status-invariant-enforcement-in-.md
+- **Context:** Initial task creation

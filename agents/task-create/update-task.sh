@@ -438,6 +438,17 @@ if [ -n "$NEW_STATUS" ]; then
         _sed_i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")
+
+        # === Invariant: started-work → horizon: now (T-1068) ===
+        # Starting work means it's active NOW. Auto-promote horizon.
+        if [ "$NEW_STATUS" = "started-work" ] && [ -z "$NEW_HORIZON" ]; then
+            _current_horizon=$(grep "^horizon:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/horizon:[[:space:]]*//' || true)
+            if [ -n "$_current_horizon" ] && [ "$_current_horizon" != "now" ]; then
+                _sed_i "s/^horizon:.*/horizon: now/" "$TASK_FILE"
+                echo -e "${CYAN}Horizon: $_current_horizon → now (auto-sync: started-work implies now)${NC}"
+                CHANGES+=("horizon: $_current_horizon → now (auto-sync)")
+            fi
+        fi
     fi
 fi
 
@@ -490,6 +501,17 @@ horizon: $NEW_HORIZON" "$TASK_FILE"
     fi
     echo "Horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON"
     CHANGES+=("horizon: ${OLD_HORIZON:-unset} → $NEW_HORIZON")
+
+    # === Invariant: horizon next/later + started-work → captured (T-1068) ===
+    # Shelving a task means you stopped working on it. Auto-demote status.
+    if [ "$NEW_HORIZON" != "now" ] && [ -z "$NEW_STATUS" ]; then
+        _current_status=$(grep "^status:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//' || true)
+        if [ "$_current_status" = "started-work" ]; then
+            _sed_i "s/^status:.*/status: captured/" "$TASK_FILE"
+            echo -e "${CYAN}Status:  started-work → captured (auto-sync: horizon $NEW_HORIZON implies not active)${NC}"
+            CHANGES+=("status: started-work → captured (auto-sync)")
+        fi
+    fi
 fi
 
 # Update tags (replace or add)

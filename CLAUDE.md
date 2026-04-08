@@ -82,6 +82,11 @@ The `horizon` field controls when a task should be considered for work:
 - Use `fw task update T-XXX --horizon now` to promote a backlog task
 - The handover agent sorts tasks by horizon and instructs the enricher to skip `later` tasks in suggestions
 
+**Invariants (T-1068):** `update-task.sh` enforces consistency between status and horizon:
+- `--status started-work` → auto-sets `horizon: now` (starting work means it's active now)
+- `--horizon next/later` on a `started-work` task → auto-demotes `status: captured` (shelving means you stopped)
+- Both produce an info message. No override needed — if you want to start work, it's `now`; if you shelve it, it's not `started-work`.
+
 **Body sections:**
 - Context (brief, link to design docs for substantial tasks)
 - Acceptance Criteria (checkboxes — completion gate P-010)

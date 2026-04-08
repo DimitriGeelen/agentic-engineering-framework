@@ -75,6 +75,8 @@ teardown() {
 }
 
 @test "update-task changes horizon" {
+    # First set status to captured (not started-work) to test pure horizon change
+    "$UPDATE_TASK" "$TASK_ID" --status captured 2>/dev/null
     run "$UPDATE_TASK" "$TASK_ID" --horizon later
     [ "$status" -eq 0 ]
     grep -q "horizon: later" "$TASK_FILE"
@@ -84,6 +86,48 @@ teardown() {
     run "$UPDATE_TASK" "$TASK_ID" --add-tag "ui"
     [ "$status" -eq 0 ]
     grep -q "ui" "$TASK_FILE"
+}
+
+# --- Horizon-status invariants (T-1068) ---
+
+@test "invariant: started-work auto-promotes horizon to now" {
+    # Set horizon to later, status to captured
+    "$UPDATE_TASK" "$TASK_ID" --status captured 2>/dev/null
+    "$UPDATE_TASK" "$TASK_ID" --horizon later 2>/dev/null
+    grep -q "horizon: later" "$TASK_FILE"
+    # Now start work — horizon should auto-promote to now
+    run "$UPDATE_TASK" "$TASK_ID" --status started-work
+    [ "$status" -eq 0 ]
+    grep -q "status: started-work" "$TASK_FILE"
+    grep -q "horizon: now" "$TASK_FILE"
+}
+
+@test "invariant: horizon later auto-demotes started-work to captured" {
+    # Task starts as started-work (from setup)
+    grep -q "status: started-work" "$TASK_FILE"
+    # Set horizon to later — status should auto-demote to captured
+    run "$UPDATE_TASK" "$TASK_ID" --horizon later
+    [ "$status" -eq 0 ]
+    grep -q "horizon: later" "$TASK_FILE"
+    grep -q "status: captured" "$TASK_FILE"
+}
+
+@test "invariant: horizon next auto-demotes started-work to captured" {
+    grep -q "status: started-work" "$TASK_FILE"
+    run "$UPDATE_TASK" "$TASK_ID" --horizon next
+    [ "$status" -eq 0 ]
+    grep -q "horizon: next" "$TASK_FILE"
+    grep -q "status: captured" "$TASK_FILE"
+}
+
+@test "invariant: horizon later does not demote non-started-work status" {
+    # Set to issues first
+    "$UPDATE_TASK" "$TASK_ID" --status issues --reason "test" 2>/dev/null
+    grep -q "status: issues" "$TASK_FILE"
+    # Set horizon to later — status should NOT change (issues is not started-work)
+    run "$UPDATE_TASK" "$TASK_ID" --horizon later
+    [ "$status" -eq 0 ]
+    grep -q "status: issues" "$TASK_FILE"
 }
 
 # --- Invalid values ---
