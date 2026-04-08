@@ -176,3 +176,10 @@ workflow_patterns:
     escalation_step: A
     occurrences_at_step: 0
     last_escalated: null
+  - id: WP-003
+    pattern: "Cross-project TermLink dispatch for TermLink governance substrate tasks"
+    description: "Cross-project TermLink dispatch for TermLink governance substrate tasks"
+    scope: project
+    learned_from: T-1061
+    date_learned: 2026-04-08
+    context: "Added via context agent"
