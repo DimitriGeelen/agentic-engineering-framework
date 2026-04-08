@@ -4,7 +4,7 @@ name: "MCP-level governance — task-gate checks in TermLink MCP tools"
 description: >
   Phase 2 from T-1061: Add task-gate checks to TermLink MCP tools (termlink_exec, termlink_spawn, termlink_dispatch) so cross-session operations are governed. Structured, reliable, blockable. 2-4 weeks.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: next
@@ -12,7 +12,7 @@ tags: [termlink, governance, mcp]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:10Z
-last_update: 2026-04-08T05:32:10Z
+last_update: 2026-04-08T05:51:52Z
 date_finished: null
 ---
 
@@ -28,12 +28,13 @@ Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink'
 ## Acceptance Criteria
 
 ### Agent
-- [ ] MCP tools `termlink_exec`, `termlink_spawn`, `termlink_dispatch` accept optional `task_id` parameter
-- [ ] When task governance is enabled (env var or config), tools without `task_id` return structured error
-- [ ] Governance mode is opt-in (default: no enforcement) to avoid breaking existing usage
-- [ ] Task context passed through to session tags for observability
-- [ ] Existing tests still pass (`cargo test`)
-- [ ] New tests for governance gate: with task_id passes, without task_id in strict mode fails
+- [x] MCP tools `termlink_exec`, `termlink_spawn`, `termlink_dispatch` accept optional `task_id` parameter
+- [x] When task governance is enabled (env var or config), tools without `task_id` return structured error
+- [x] Governance mode is opt-in (default: no enforcement) to avoid breaking existing usage
+- [x] Task context passed through to session tags for observability
+- [x] Existing tests still pass (`cargo test`)
+- [x] New tests for governance gate: with task_id passes, without task_id in strict mode fails
+- [x] `termlink_interact` also governed (bonus — 4 tools total)
 
 ### Human
 - [ ] [REVIEW] Governance integration design review — opt-in model is appropriate, error messages are actionable
@@ -50,16 +51,23 @@ Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink'
 # cd /opt/termlink && cargo test
 # cd /opt/termlink && cargo build
 
+## Recommendation
+
+**Recommendation:** Agent ACs complete — ready for human design review
+**Rationale:** TermLink dispatch worker (T-902 in /opt/termlink) successfully implemented MCP task governance. 16 new tests added, all 174 pass. Opt-in via `TERMLINK_TASK_GOVERNANCE=1`, backward compatible, actionable error messages.
+**Evidence:**
+- Worker exit code: 0
+- Tests: 76 unit + 98 integration = 174 pass (16 new)
+- Report: `/opt/termlink/docs/reports/T-902-mcp-governance.md`
+- 4 tools governed: termlink_exec, termlink_spawn, termlink_interact, termlink_dispatch
+- Task IDs propagate to session tags as `task:<id>`
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-04-08 — Governance activation mechanism
+- **Chose:** Environment variable `TERMLINK_TASK_GOVERNANCE=1`
+- **Why:** Env vars are standard, no config file dependency, easy to set per-session or globally
+- **Rejected:** Config file (adds TermLink config schema dependency), always-on (breaks existing usage)
 
 ## Updates
 
@@ -67,3 +75,6 @@ Phase 2 from T-1061 inception (GO). Add task-gate governance checks to TermLink'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md
 - **Context:** Initial task creation
+
+### 2026-04-08T05:51:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
