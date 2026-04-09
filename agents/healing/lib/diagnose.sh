@@ -8,10 +8,16 @@ CLASSIFY_ORDER=(dependency external environment design code)
 
 # Failure type keywords — parallel arrays (POSIX-safe, no declare -A needed)
 # Index-aligned with CLASSIFY_ORDER above
+# shellcheck disable=SC2034
+# Variables used via indirect expansion: ${!FAILURE_KEYWORDS_${type}} on line 27
 FAILURE_KEYWORDS_dependency="dependency|package|module|import|require|version.conflict|pip.install|npm.install|missing.module"
+# shellcheck disable=SC2034
 FAILURE_KEYWORDS_external="api|service|network|third-party|external|upstream|rate.limit|endpoint"
+# shellcheck disable=SC2034
 FAILURE_KEYWORDS_environment="environment|config|\.env|path.not.found|permission.denied|access.denied|connection.refused"
+# shellcheck disable=SC2034
 FAILURE_KEYWORDS_design="design|architecture|approach|refactor|rethink|redesign|wrong.approach"
+# shellcheck disable=SC2034
 FAILURE_KEYWORDS_code="error|exception|bug|syntax|compile|runtime|crash|null|undefined|traceback"
 
 classify_failure() {
