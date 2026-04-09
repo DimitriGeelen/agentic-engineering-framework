@@ -323,6 +323,9 @@ if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         AUDIT_SCRIPT="$FW_PATH/agents/audit/audit.sh"
     fi
 fi
+if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh" ]; then
+    AUDIT_SCRIPT="$PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
+fi
 if [ -z "$AUDIT_SCRIPT" ] && [ -f "$PROJECT_ROOT/agents/audit/audit.sh" ]; then
     AUDIT_SCRIPT="$PROJECT_ROOT/agents/audit/audit.sh"
 fi
@@ -331,6 +334,7 @@ fi
 if [ -z "$AUDIT_SCRIPT" ]; then
     echo "ERROR: Audit script not found"
     echo "  Checked: .framework.yaml -> framework_path"
+    echo "  Checked: $PROJECT_ROOT/.agentic-framework/agents/audit/audit.sh"
     echo "  Checked: $PROJECT_ROOT/agents/audit/audit.sh"
     echo "  Push blocked — fix framework path or install audit agent"
     exit 1
