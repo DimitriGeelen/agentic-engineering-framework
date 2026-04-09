@@ -184,3 +184,30 @@ run_other_hook() {
     run bash -c "echo 'not json' | PROJECT_ROOT='$PROJECT_ROOT' '$HOOK'"
     [ "$status" -eq 0 ]
 }
+
+# ── TermLink exception (T-1075) ──
+
+@test "Bash termlink at start: allowed" {
+    run_bash_hook "termlink pty inject worker 'cd /opt/other && ls' --enter"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash termlink in for loop: allowed" {
+    run_bash_hook "for n in foo bar; do termlink pty inject worker \"cd /opt/\$n && ls\" --enter; done"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash termlink after semicolon: allowed" {
+    run_bash_hook "echo start; termlink interact worker 'cd /opt/other && git status' --json"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash termlink after &&: allowed" {
+    run_bash_hook "echo start && termlink pty inject worker 'cd /opt/other' --enter"
+    [ "$status" -eq 0 ]
+}
+
+@test "Bash fw termlink dispatch: allowed" {
+    run_bash_hook "fw termlink dispatch --name worker --prompt 'cd /opt/other && build'"
+    [ "$status" -eq 0 ]
+}
