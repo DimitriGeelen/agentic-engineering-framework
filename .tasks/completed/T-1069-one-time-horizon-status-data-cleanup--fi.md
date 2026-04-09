@@ -4,7 +4,7 @@ name: "One-time horizon-status data cleanup — fix 52 inconsistent tasks"
 description: >
   Move 24 stuck work-completed tasks to completed/. Fix 28 started-work tasks with wrong horizon (demote to captured). Origin: T-1067 GO.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-08T10:32:46Z
-last_update: 2026-04-08T10:38:05Z
-date_finished: null
+last_update: 2026-04-08T10:39:19Z
+date_finished: 2026-04-08T10:39:19Z
 ---
 
 # T-1069: One-time horizon-status data cleanup — fix 52 inconsistent tasks
@@ -56,3 +56,6 @@ test $(for f in .tasks/active/T-*.md; do s=$(grep '^status:' "$f" | head -1 | se
 ### 2026-04-08T10:38:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-08T10:39:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

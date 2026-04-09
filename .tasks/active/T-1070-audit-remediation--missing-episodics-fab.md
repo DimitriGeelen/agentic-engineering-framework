@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-09T12:09:21Z
-last_update: 2026-04-09T12:09:21Z
+last_update: 2026-04-09T12:10:18Z
 date_finished: null
 ---
 
@@ -20,35 +20,19 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Remediate 18 WARN findings from 2026-04-09 audit. Prior audit: 232 pass, 18 warn, 0 fail.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] 9 missing episodic summaries generated
+- [x] 50 edgeless fabric cards enriched
+- [x] Audit re-run shows reduced warnings (18→10 WARN, 3 unchecked ACs fixed)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Audit runs without failures
+bin/fw audit 2>&1 | grep -q "fail: 0"
 
 ## Decisions
 
