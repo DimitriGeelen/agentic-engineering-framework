@@ -1,0 +1,189 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1070: Audit remediation — missing episodics, fabric drift, orphaned data, stale inception tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:26:53Z
+# ============================================================================
+
+task_id: T-1070
+task_name: "Audit remediation — missing episodics, fabric drift, orphaned data, stale inception tasks"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-09T12:09:21Z
+completed: 2026-04-09T12:26:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-09T14:10:18+02:00
+last_commit: 2026-04-09T14:17:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Generate 9 missing episodics, enrich 50 edgeless fabric cards. Fix 3 unchecked ACs in completed tasks, mark remediation ACs done
+
+# Key outcomes
+outcomes:
+  - "9 missing episodic summaries generated"
+  - "50 edgeless fabric cards enriched"
+  - "Audit re-run shows reduced warnings (18→10 WARN, 3 unchecked ACs fixed)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix 3 unchecked ACs in completed tasks, mark remediation ACs done"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1067.yaml"
+  - ".context/episodic/T-1068.yaml"
+  - ".context/episodic/T-1069.yaml"
+  - ".context/episodic/T-632.yaml"
+  - ".context/episodic/T-634.yaml"
+  - ".context/episodic/T-646.yaml"
+  - ".context/episodic/T-648.yaml"
+  - ".context/episodic/T-650.yaml"
+  - ".context/episodic/T-822.yaml"
+  - ".context/episodic/T-824.yaml"
+  - ".context/episodic/T-831.yaml"
+  - ".fabric/components/agents-audit-active-task-scan.yaml"
+  - ".fabric/components/agents-audit-completed-task-scan.yaml"
+  - ".fabric/components/agents-context-check-active-task.yaml"
+  - ".fabric/components/agents-context-check-agent-dispatch.yaml"
+  - ".fabric/components/agents-context-check-project-boundary.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-lib-init.yaml"
+  - ".fabric/components/agents-context-pre-compact.yaml"
+  - ".fabric/components/agents-context-session-metrics.yaml"
+  - ".fabric/components/agents-docgen-generate-article.yaml"
+  - ".fabric/components/agents-docgen-generate-component.yaml"
+  - ".fabric/components/agents-fabric-fabric.yaml"
+  - ".fabric/components/agents-git-git.yaml"
+  - ".fabric/components/agents-handover-handover.yaml"
+  - ".fabric/components/agents-healing-healing.yaml"
+  - ".fabric/components/agents-observe-observe.yaml"
+  - ".fabric/components/agents-resume-resume.yaml"
+  - ".fabric/components/agents-task-create-create-task.yaml"
+  - ".fabric/components/agents-task-create-update-task.yaml"
+  - ".fabric/components/agents-termlink-termlink.yaml"
+  - ".fabric/components/audit-yaml-validator.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/bin-watchtower.yaml"
+  - ".fabric/components/budget-gate.yaml"
+  - ".fabric/components/checkpoint.yaml"
+  - ".fabric/components/learnings-template.yaml"
+  - ".fabric/components/lib-ask.yaml"
+  - ".fabric/components/lib-assumption.yaml"
+  - ".fabric/components/lib-build.yaml"
+  - ".fabric/components/lib-bus.yaml"
+  - ".fabric/components/lib-colors.yaml"
+  - ".fabric/components/lib-compat.yaml"
+  - ".fabric/components/lib-config-file.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-costs.yaml"
+  - ".fabric/components/lib-dispatch.yaml"
+  - ".fabric/components/lib-enums.yaml"
+  - ".fabric/components/lib-errors.yaml"
+  - ".fabric/components/lib-firewall.yaml"
+  - ".fabric/components/lib-first-run.yaml"
+  - ".fabric/components/lib-harvest.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-init.yaml"
+  - ".fabric/components/lib-keylock.yaml"
+  - ".fabric/components/lib-notify.yaml"
+  - ".fabric/components/lib-paths.yaml"
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/lib-preflight.yaml"
+  - ".fabric/components/lib-promote.yaml"
+  - ".fabric/components/lib-review.yaml"
+  - ".fabric/components/lib-runtime.yaml"
+  - ".fabric/components/lib-setup.yaml"
+  - ".fabric/components/lib-tasks.yaml"
+  - ".fabric/components/lib-update.yaml"
+  - ".fabric/components/lib-upgrade.yaml"
+  - ".fabric/components/lib-upstream.yaml"
+  - ".fabric/components/lib-validate-init.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/lib-version.yaml"
+  - ".fabric/components/lib-yaml.yaml"
+  - ".fabric/components/plugins-wezterm-termlink-chrome.yaml"
+  - ".fabric/components/tests-playwright-conftest.yaml"
+  - ".fabric/components/web-app.yaml"
+  - ".fabric/components/web-blueprints-config.yaml"
+  - ".fabric/components/web-blueprints-core.yaml"
+  - ".fabric/components/web-blueprints-costs.yaml"
+  - ".fabric/components/web-blueprints-discovery.yaml"
+  - ".fabric/components/web-blueprints-fabric.yaml"
+  - ".fabric/components/web-blueprints-__init__.yaml"
+  - ".fabric/components/web-blueprints-quality.yaml"
+  - ".fabric/components/web-blueprints-review.yaml"
+  - ".fabric/components/web-blueprints-sessions.yaml"
+  - ".fabric/components/web-blueprints-terminal.yaml"
+  - ".fabric/components/web-context_loader.yaml"
+  - ".fabric/components/web-embeddings.yaml"
+  - ".fabric/components/web-search_utils.yaml"
+  - ".fabric/components/web-search.yaml"
+  - ".fabric/components/web-shared.yaml"
+  - ".fabric/components/web-templates-base.yaml"
+  - ".fabric/components/web-templates-config.yaml"
+  - ".fabric/components/web-templates-costs.yaml"
+  - ".fabric/components/web-templates-decisions.yaml"
+  - ".fabric/components/web-templates-fabric_explorer.yaml"
+  - ".fabric/components/web-templates-gaps.yaml"
+  - ".fabric/components/web-templates-graduation.yaml"
+  - ".fabric/components/web-templates-patterns.yaml"
+  - ".fabric/components/web-templates-search.yaml"
+  - ".fabric/components/web-templates-sessions.yaml"
+  - ".fabric/components/web-templates-terminal.yaml"
+  - ".fabric/components/web-terminal-adapters-claude_code.yaml"
+  - ".fabric/components/web-terminal-adapters-local_shell.yaml"
+  - ".fabric/components/web-terminal-__init__.yaml"
+  - ".fabric/components/web-terminal-profiles.yaml"
+  - ".fabric/components/web-terminal-registry.yaml"
+  - ".fabric/components/web-terminal-session.yaml"
+  - ".fabric/components/web-test_costs.yaml"
+  - ".tasks/active/T-1070-audit-remediation--missing-episodics-fab.md"
+  - ".tasks/completed/T-1069-one-time-horizon-status-data-cleanup--fi.md"
+  - ".tasks/completed/T-451-upstream-contribution-pipeline-safe-issu.md"
+  - ".tasks/completed/T-534-well-known-priority-tags--criticalurgent.md"
+  - ".tasks/completed/T-614-termlink-consumer-project-governance-byp.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-09T14:10:18"
+    action: "T-1070: Generate 9 missing episodics, enrich 50 edgeless fabric cards"
+  - time: "2026-04-09T14:17:26"
+    action: "T-1070: Fix 3 unchecked ACs in completed tasks, mark remediation ACs done"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 112
+  lines_added: 1856
+  lines_removed: 361
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1070-audit-remediation--missing-episodics-fab.md
+generated_by: context-agent-hybrid
