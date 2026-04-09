@@ -17,6 +17,8 @@ depended_by:
   type: called_by
 - target: tests/unit/docgen_component.bats
   type: tested_by
+- target: tests/unit/docgen_component.bats
+  type: called_by
 last_verified: 2026-03-11
 created_by: T-364
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

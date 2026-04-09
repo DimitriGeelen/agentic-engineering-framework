@@ -7,8 +7,8 @@ tags:
 - lib
 - fw-subcommand
 - onboarding
-purpose: 'First-run experience walkthrough after fw init. Guides new users through
-  governance cycle: create task, make commit, run audit. Auto-triggered when TTY detected.'
+purpose: 'First-run experience walkthrough after fw init. Guides new users through governance cycle: create task, make commit,
+  run audit. Auto-triggered when TTY detected.'
 depends_on:
 - id: lib/init.sh
   relationship: invoked-by
@@ -17,3 +17,6 @@ created_by: T-322
 depended_by:
 - target: tests/unit/lib_first_run.bats
   type: called-by
+- target: tests/unit/lib_first_run.bats
+  type: called_by
+last_enriched: '2026-04-09'

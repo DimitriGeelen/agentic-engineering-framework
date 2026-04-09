@@ -15,7 +15,9 @@ depended_by:
   type: used-by
 - target: agents/context/context.sh
   type: called-by
-last_enriched: '2026-02-21'
+- target: agents/context/session-metrics.sh
+  type: read_by
+last_enriched: '2026-04-09'
 docs:
 - path: docs/articles/deep-dives/04-three-layer-memory.md
   title: 'Deep Dive: Three-Layer Memory'

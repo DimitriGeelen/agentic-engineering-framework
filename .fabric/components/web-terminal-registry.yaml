@@ -4,17 +4,15 @@ type: script
 subsystem: watchtower
 location: web/terminal/registry.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: web/terminal/session.py
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/blueprints/sessions.py
+  type: called_by
+- target: web/blueprints/terminal.py
+  type: called_by
 last_verified: 2026-04-06
 created_by: unknown
+last_enriched: '2026-04-09'

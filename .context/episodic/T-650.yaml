@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-650: Bash task gate — safe-command allowlist + write-pattern detection in check-active-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:02Z
+# ============================================================================
+
+task_id: T-650
+task_name: "Bash task gate — safe-command allowlist + write-pattern detection in check-active-task.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-28T09:39:20Z
+completed: 2026-04-06T22:29:19Z
+duration_days: 8
+updates_count: 3
+first_commit: 2026-03-28T10:44:22+01:00
+last_commit: 2026-03-28T10:44:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Bash task gate — safe-command allowlist + write-pattern detection + FW_SAFE_MODE escape hatch. Register safe-commands.sh fabric card, partial-complete (human AC pending)
+
+# Key outcomes
+outcomes:
+  - "`agents/context/lib/safe-commands.sh` exists with `is_bash_safe_command()` function"
+  - "Safe-command allowlist covers 6 categories (git read-only, file reading, searching, fw diagnostics, system, validation)"
+  - "`check-active-task.sh` handles Bash tool: extracts command, checks safe-command allowlist, detects write patterns"
+  - "FW_SAFE_MODE escape hatch at top of check-active-task.sh (3 lines)"
+  - "`fw hook *` commands always allowed (hooks calling hooks)"
+  - "`bash -n` syntax check passes on all modified scripts"
+  - "Vendored copy synced to `.agentic-framework/agents/context/`"
+  - "Verify Bash gate works in a fresh session (reclassified from Human RUBBER-STAMP per T-954)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Check write patterns BEFORE safe-command allowlist"
+    rationale: "`cat <<EOF > file` has `cat` in safe list but is a write operation. Write-pattern detection must take priority."
+    alternatives_rejected: ["Check safe first, then write — would miss redirected safe commands"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/check-active-task.sh"
+  - ".agentic-framework/agents/context/lib/safe-commands.sh"
+  - "agents/context/check-active-task.sh"
+  - "agents/context/lib/safe-commands.sh"
+  - ".fabric/components/agents-context-lib-safe-commands.yaml"
+  - ".tasks/active/T-650-bash-task-gate--safe-command-allowlist--.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-28T10:44:22"
+    action: "T-650: Bash task gate — safe-command allowlist + write-pattern detection + FW_SAFE_MODE escape hatch"
+  - time: "2026-03-28T10:44:44"
+    action: "T-650: Register safe-commands.sh fabric card, partial-complete (human AC pending)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13729 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13729
+  commits: 2
+  files_changed: 6
+  lines_added: 546
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-650-bash-task-gate--safe-command-allowlist--.md
+generated_by: context-agent-hybrid

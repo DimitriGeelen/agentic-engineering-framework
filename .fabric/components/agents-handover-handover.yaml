@@ -14,9 +14,17 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: lib/costs.sh
+  type: calls
+- target: lib/colors.sh
+  type: calls
+- target: agents/context/session-metrics.sh
+  type: calls
+- target: lib/notify.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -30,6 +38,8 @@ depended_by:
   type: called-by
 - target: tests/unit/handover.bats
   type: tested_by
+- target: tests/unit/handover.bats
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

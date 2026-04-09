@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-632: Watchtower file viewer — clickable links to docs/reports and task files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:01Z
+# ============================================================================
+
+task_id: T-632
+task_name: "Watchtower file viewer — clickable links to docs/reports and task files"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-26T22:28:28Z
+completed: 2026-03-27T18:30:20Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-03-26T23:30:38+01:00
+last_commit: 2026-03-26T23:34:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add /file/<path> route — clickable links to project markdown files. Fix clickable links + add research artifacts to task detail
+
+# Key outcomes
+outcomes:
+  - "`/file/<path>` route serves markdown files rendered as HTML"
+  - "Only safe directories viewable (docs/, .tasks/, .context/handovers/, .context/episodic/)"
+  - "Path traversal blocked (../../etc/passwd → 404, bin/fw → 404)"
+  - "Non-existent files return 404"
+  - "Verified with curl against running Watchtower"
+  - "Click a file link and verify it renders (reclassified from Human RUBBER-STAMP per T-954)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix clickable links + add research artifacts to task detail"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-632-watchtower-file-viewer--clickable-links-.md"
+  - "web/blueprints/docs.py"
+  - "web/blueprints/tasks.py"
+  - "web/templates/task_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-26T23:30:38"
+    action: "T-632: Add /file/<path> route — clickable links to project markdown files"
+  - time: "2026-03-26T23:34:41"
+    action: "T-632: Fix clickable links + add research artifacts to task detail"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1201 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1201
+  commits: 3
+  files_changed: 15
+  lines_added: 363
+  lines_removed: 195
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-632-watchtower-file-viewer--clickable-links-.md
+generated_by: context-agent-hybrid

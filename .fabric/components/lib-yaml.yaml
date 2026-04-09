@@ -4,14 +4,15 @@ type: script
 subsystem: framework-core
 location: lib/yaml.sh
 tags: []
-purpose: 'YAML manipulation helpers: Python-based read/write for YAML frontmatter
-  in task files. Used by update-task.sh.'
+purpose: 'YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh.'
 depends_on: []
 depended_by:
 - target: lib/paths.sh
   type: called_by
 - target: tests/unit/lib_yaml.bats
   type: called-by
+- target: tests/unit/lib_yaml.bats
+  type: called_by
 last_verified: 2026-03-11
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

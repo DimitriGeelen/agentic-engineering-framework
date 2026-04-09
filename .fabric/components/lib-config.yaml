@@ -17,5 +17,38 @@ depended_by:
   type: used-by
 - target: lib/config.sh
   type: called-by
+- target: agents/context/check-active-task.sh
+  type: called_by
+- target: agents/context/check-agent-dispatch.sh
+  type: called_by
+- target: agents/context/check-project-boundary.sh
+  type: called_by
+- target: agents/context/check-tier0.sh
+  type: called_by
+- target: agents/context/pre-compact.sh
+  type: called_by
+- target: agents/termlink/termlink.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: bin/watchtower.sh
+  type: called_by
+- target: C-007
+  type: called_by
+- target: C-008
+  type: called_by
+- target: lib/keylock.sh
+  type: called_by
+- target: lib/config.sh
+  type: called_by
+- target: lib/verify-acs.sh
+  type: called_by
+- target: tests/unit/lib_config.bats
+  type: called_by
+- target: web/templates/config.html
+  type: read_by
 last_verified: 2026-04-03
 created_by: unknown
+last_enriched: '2026-04-09'

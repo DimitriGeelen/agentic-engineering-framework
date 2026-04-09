@@ -4,14 +4,15 @@ type: script
 subsystem: framework-core
 location: lib/build.sh
 tags: []
-purpose: 'fw build subcommand: placeholder for future build orchestration. Currently
-  unused.'
+purpose: 'fw build subcommand: placeholder for future build orchestration. Currently unused.'
 depends_on: []
 depended_by:
 - target: bin/fw
   type: called_by
 - target: tests/unit/lib_build.bats
   type: called-by
+- target: tests/unit/lib_build.bats
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

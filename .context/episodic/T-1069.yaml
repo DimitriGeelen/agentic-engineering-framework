@@ -1,0 +1,132 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1069: One-time horizon-status data cleanup — fix 52 inconsistent tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-08T10:39:22Z
+# ============================================================================
+
+task_id: T-1069
+task_name: "One-time horizon-status data cleanup — fix 52 inconsistent tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T10:32:46Z
+completed: 2026-04-08T10:39:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-08T12:39:15+02:00
+last_commit: 2026-04-08T12:39:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Data cleanup — demote 28 parked tasks, move 24 stuck completed tasks
+
+# Key outcomes
+outcomes:
+  - "28 started-work + horizon:next/later tasks demoted to captured"
+  - "24 stuck work-completed tasks (all ACs checked) moved to completed/"
+  - "No started-work tasks with horizon != now remain (0 violations)"
+  - "No work-completed tasks with all ACs checked remain in active/ (77 remaining are legitimate partial-completes)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/active/T-1061-termlink-as-deterministic-governance-sub.md"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1063-mcp-level-governance--task-gate-checks-i.md"
+  - ".tasks/active/T-1064-extend-orchestratorroute-with-task-type-.md"
+  - ".tasks/active/T-1065-multi-llm-routing--task-aware-model-sele.md"
+  - ".tasks/active/T-1066-data-plane-governance-subscriber--post-h.md"
+  - ".tasks/active/T-1067-horizon-status-invariant-enforcement--au.md"
+  - ".tasks/active/T-1069-one-time-horizon-status-data-cleanup--fi.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+  - ".tasks/active/T-332-submit-to-awesome-lists-awesome-ai-agent.md"
+  - ".tasks/active/T-334-execute-launch-sequence-rclaudeai-soft-l.md"
+  - ".tasks/active/T-432-re-evaluate-skip-refactoring-findings-27.md"
+  - ".tasks/active/T-464-pr-6-feat-capture-skill--c-002-explorato.md"
+  - ".tasks/active/T-532-onboarding-gate--structural-enforcement-.md"
+  - ".tasks/active/T-533-agent-to-termlink-dispatch-rerouting--pr.md"
+  - ".tasks/active/T-544-create-termlink-homebrew-tap-with-github.md"
+  - ".tasks/active/T-548-npm-install-pathway--evaluate-whether-to.md"
+  - ".tasks/active/T-549-openclaw-deep-dive--ingest-existing-proj.md"
+  - ".tasks/active/T-550-composition-based-adapter-pattern--evalu.md"
+  - ".tasks/active/T-554-single-started-work-gate--enforce-one-ac.md"
+  - ".tasks/active/T-557-inception-go-decision-human-confirm-gate.md"
+  - ".tasks/active/T-558-build-task-risk-signal-detection--pretoo.md"
+  - ".tasks/active/T-586-language-strategy--typescript-adoption-f.md"
+  - ".tasks/active/T-601-multi-project-cron-collision--fw-audit-s.md"
+  - ".tasks/active/T-603-inception-project-boundary-exceptions--e.md"
+  - ".tasks/active/T-604-cron-copy-on-change--git-tracked-cron-de.md"
+  - ".tasks/active/T-608-frictionless-tier-0-human-confirmation--.md"
+  - ".tasks/active/T-705-kcp-integration--knowledgeyaml-generatio.md"
+  - ".tasks/active/T-837-auto-detect-context-window-from-model--e.md"
+  - ".tasks/active/T-844-ssd-evaluation--simple-self-distillation.md"
+  - ".tasks/active/T-856-termlink-dispatch-project-context--fix-w.md"
+  - ".tasks/completed/T-1068-horizon-status-invariant-enforcement-in-.md"
+  - ".tasks/completed/T-476-github-actions-workflow-for-bats-tests.md"
+  - ".tasks/completed/T-483-fix-python-39-compat--replace-union-type.md"
+  - ".tasks/completed/T-493-fw-update-command--cli-wrapper-for-frame.md"
+  - ".tasks/completed/T-516-tier-b-e2e-tests--4-agent-level-claude-c.md"
+  - ".tasks/completed/T-602-fix-multi-project-cron-collision--projec.md"
+  - ".tasks/completed/T-614-termlink-consumer-project-governance-byp.md"
+  - ".tasks/completed/T-621-fw-serve-command--start-watchtower-with-.md"
+  - ".tasks/completed/T-632-watchtower-file-viewer--clickable-links-.md"
+  - ".tasks/completed/T-633-auto-link-file-references--fw-commands-a.md"
+  - ".tasks/completed/T-634-deterministic-human-review--shared-emitr.md"
+  - ".tasks/completed/T-640-complete-task-button--show-when-all-huma.md"
+  - ".tasks/completed/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md"
+  - ".tasks/completed/T-648-bump-version-to-v140.md"
+  - ".tasks/completed/T-650-bash-task-gate--safe-command-allowlist--.md"
+  - ".tasks/completed/T-664-project-detecting-fw-shim--replace-globa.md"
+  - ".tasks/completed/T-822-complete-fwconfig-migration--remaining-h.md"
+  - ".tasks/completed/T-824-fw-verify-acs-cli--automated-human-ac-ev.md"
+  - ".tasks/completed/T-826-timeline-token-usage--add-per-session-to.md"
+  - ".tasks/completed/T-827-timeline-per-session-token-delta--show-s.md"
+  - ".tasks/completed/T-829-inputoutput-token-breakdown--enrich-hand.md"
+  - ".tasks/completed/T-831-session-quality-metrics--session-metrics.md"
+  - ".tasks/completed/T-850-fix-session-metrics--per-session-deltas-.md"
+  - ".tasks/completed/T-851-linkable-task-references-in-handover-ses.md"
+  - ".tasks/completed/T-857-fw-upgrade-sync-gap--lib-agentstask-crea.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T12:39:15"
+    action: "T-1069: Data cleanup — demote 28 parked tasks, move 24 stuck completed tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 33
+  lines_added: 92
+  lines_removed: 70
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1069-one-time-horizon-status-data-cleanup--fi.md
+generated_by: context-agent-hybrid

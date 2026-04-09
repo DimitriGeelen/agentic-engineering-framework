@@ -7,8 +7,7 @@ tags:
 - flask
 - web-ui
 - entrypoint
-purpose: Flask application entrypoint — creates app, registers all blueprints, serves
-  Watchtower web UI on configurable port
+purpose: Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port
 depends_on:
 - target: web/shared.py
   type: calls
@@ -68,9 +67,13 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: T-227
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: bin/fw
   type: called_by
 - target: web/templates/_partials/badge.html
   type: used-by
+- target: web/test_costs.py
+  type: called_by
+- target: web/templates/_partials/badge.html
+  type: used-by_by

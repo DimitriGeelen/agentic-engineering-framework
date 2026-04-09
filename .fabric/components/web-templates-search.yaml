@@ -15,4 +15,6 @@ depended_by:
   type: rendered_by
 - target: web/templates/_partials/chat_tab.html
   type: rendered_by
-last_enriched: '2026-03-28'
+- target: web/blueprints/discovery.py
+  type: rendered_by
+last_enriched: '2026-04-09'

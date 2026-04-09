@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1067: Horizon-status invariant enforcement — auto-sync horizon and status in update-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-08T10:31:53Z
+# ============================================================================
+
+task_id: T-1067
+task_name: "Horizon-status invariant enforcement — auto-sync horizon and status in update-task.sh"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T10:18:04Z
+completed: 2026-04-08T10:31:50Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-08T12:31:02+02:00
+last_commit: 2026-04-08T12:31:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — horizon-status invariant research, 61 inconsistent tasks found
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated with data (151 active, 100 work-completed, 28 wrong-horizon started-work, 24 stuck completed)"
+  - "Assumptions A-016 through A-018 tested with evidence (all validated)"
+  - "No existing workflow broken by auto-sync (11/11 update_task.bats pass; test 7 will need update for new invariant)"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/assumptions.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/T-1067-horizon-status-invariants.md"
+  - ".tasks/active/T-1067-horizon-status-invariant-enforcement--au.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T12:31:02"
+    action: "T-1067: Inception — horizon-status invariant research, 61 inconsistent tasks found"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 5
+  lines_added: 280
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1067-horizon-status-invariant-enforcement--au.md
+generated_by: context-agent-hybrid

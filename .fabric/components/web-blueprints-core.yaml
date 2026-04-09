@@ -30,9 +30,13 @@ depends_on:
   type: calls
 - target: web/blueprints/approvals.py
   type: registers
+- target: web/blueprints/costs.py
+  type: calls
+- target: web/blueprints/costs.py
+  type: registers
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: web/app.py
   type: called_by

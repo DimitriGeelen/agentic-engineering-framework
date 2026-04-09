@@ -7,8 +7,7 @@ tags:
 - lib
 - fw-subcommand
 - interactive
-purpose: fw ask subcommand. Provides interactive question/answer prompts for framework
-  configuration and user input collection.
+purpose: fw ask subcommand. Provides interactive question/answer prompts for framework configuration and user input collection.
 depends_on:
 - id: bin/fw
   relationship: invoked-by
@@ -16,9 +15,11 @@ depends_on:
   type: calls
 last_verified: 2026-03-04
 created_by: T-322
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: bin/fw
   type: called_by
 - target: tests/unit/lib_ask.bats
   type: tested_by
+- target: tests/unit/lib_ask.bats
+  type: called_by

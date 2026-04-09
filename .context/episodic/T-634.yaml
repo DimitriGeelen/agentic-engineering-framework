@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-634: Deterministic human review — shared _emit_review helper, auto-emit on partial-complete and inception decide, /review skill
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:03Z
+# ============================================================================
+
+task_id: T-634
+task_name: "Deterministic human review — shared _emit_review helper, auto-emit on partial-complete and inception decide, /review skill"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-27T06:53:56Z
+completed: 2026-04-06T22:29:19Z
+duration_days: 9
+updates_count: 3
+first_commit: 2026-03-27T09:25:35+01:00
+last_commit: 2026-03-27T09:35:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Deterministic human review — shared emit_review, auto-emit on partial-complete + inception decide, /review skill. Fix verification commands — correct function name and skill path
+
+# Key outcomes
+outcomes:
+  - "Shared `_emit_review()` bash function in `lib/review.sh` (URL detection, QR, artifacts, human AC count)"
+  - "`fw inception decide` calls `_emit_review()` after recording decision"
+  - "`fw task update --status work-completed` calls `_emit_review()` when human ACs are pending (partial-complete)"
+  - "`fw task review` refactored to use shared `_emit_review()`"
+  - "`/review` skill created — lists all tasks with pending human ACs, calls `fw task review` for each"
+  - "[RUBBER-STAMP] Verify review output appears on partial-complete"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification commands — correct function name and skill path"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "bin/fw"
+  - ".claude/commands/review.md"
+  - "lib/inception.sh"
+  - "lib/review.sh"
+  - ".tasks/active/T-634-deterministic-human-review--shared-emitr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T09:25:35"
+    action: "T-634: Deterministic human review — shared emit_review, auto-emit on partial-complete + inception decide, /review skill"
+  - time: "2026-03-27T09:35:23"
+    action: "T-634: Fix verification commands — correct function name and skill path"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15335 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15335
+  commits: 3
+  files_changed: 49
+  lines_added: 595
+  lines_removed: 185
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-634-deterministic-human-review--shared-emitr.md
+generated_by: context-agent-hybrid

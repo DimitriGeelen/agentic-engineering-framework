@@ -4,14 +4,18 @@ type: script
 subsystem: unknown
 location: agents/termlink/termlink.sh
 tags: []
-purpose: 'TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds
-  task-tagging and budget checks around the termlink binary.'
-depends_on: []
+purpose: 'TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around
+  the termlink binary.'
+depends_on:
+- target: lib/config.sh
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
 - target: tests/unit/termlink.bats
   type: tested_by
+- target: tests/unit/termlink.bats
+  type: called_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

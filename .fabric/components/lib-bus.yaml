@@ -17,4 +17,6 @@ depended_by:
   type: read_by
 - target: tests/unit/lib_bus.bats
   type: called-by
-last_enriched: '2026-03-28'
+- target: tests/unit/lib_bus.bats
+  type: called_by
+last_enriched: '2026-04-09'

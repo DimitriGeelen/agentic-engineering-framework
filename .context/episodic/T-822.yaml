@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:03Z
+# ============================================================================
+
+task_id: T-822
+task_name: "Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T22:51:09Z
+completed: 2026-04-03T23:10:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T01:10:10+02:00
+last_commit: 2026-04-04T01:10:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Complete fw_config migration — 6 files, 3 new registry settings
+
+# Key outcomes
+outcomes:
+  - "`bin/watchtower.sh` uses `fw_config \"PORT\" 3000` for port default"
+  - "`lib/keylock.sh` uses `fw_config_int \"KEYLOCK_TIMEOUT\" 300`"
+  - "`lib/review.sh` uses `fw_config \"PORT\" 3000` for Watchtower URL fallback"
+  - "`agents/termlink/termlink.sh` uses `fw_config_int` for spawn/worker timeouts"
+  - "`agents/context/pre-compact.sh` uses `fw_config_int` for handover dedup cooldown"
+  - "`agents/audit/audit.sh` uses `fw_config` for health check port"
+  - "`FW_CONFIG_REGISTRY` updated with new settings (KEYLOCK_TIMEOUT, TERMLINK_WORKER_TIMEOUT, HANDOVER_DEDUP_COOLDOWN)"
+  - "Watchtower `/config` page updated to show new settings"
+  - "All 518+ unit tests still pass"
+  - "`fw doctor` shows no new warnings"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "agents/context/pre-compact.sh"
+  - "agents/termlink/termlink.sh"
+  - "bin/watchtower.sh"
+  - "CLAUDE.md"
+  - "lib/config.sh"
+  - "lib/keylock.sh"
+  - "lib/review.sh"
+  - ".tasks/active/T-822-complete-fwconfig-migration--remaining-h.md"
+  - ".tasks/active/T-823-automated-human-ac-verification--program.md"
+  - "web/blueprints/config.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T01:10:10"
+    action: "T-822: Complete fw_config migration — 6 files, 3 new registry settings"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 11
+  lines_added: 90
+  lines_removed: 33
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-822-complete-fwconfig-migration--remaining-h.md
+generated_by: context-agent-hybrid

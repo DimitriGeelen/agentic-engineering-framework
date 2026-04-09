@@ -15,5 +15,10 @@ depended_by:
   type: called-by
 - target: tests/unit/verify_acs.bats
   type: called-by
+- target: lib/verify-acs.sh
+  type: called_by
+- target: tests/unit/verify_acs.bats
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
+last_enriched: '2026-04-09'

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1068: Horizon-status invariant enforcement in update-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:01Z
+# ============================================================================
+
+task_id: T-1068
+task_name: "Horizon-status invariant enforcement in update-task.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-08T10:32:30Z
+completed: 2026-04-08T10:36:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-08T12:36:17+02:00
+last_commit: 2026-04-08T12:36:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Horizon-status invariant enforcement — auto-sync in update-task.sh, 15/15 tests pass
+
+# Key outcomes
+outcomes:
+  - "Invariant 1: `--status started-work` auto-sets horizon to `now` with info message"
+  - "Invariant 2: `--horizon next/later` on a `started-work` task auto-demotes status to `captured` with info message"
+  - "Existing test 7 updated for new invariant behavior (sets captured first to test pure horizon change)"
+  - "New tests cover both invariant paths (4 tests: promote, demote-later, demote-next, no-demote-issues)"
+  - "All update_task.bats tests pass (15/15)"
+  - "CLAUDE.md documents the invariant rules (Horizon section)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "CLAUDE.md"
+  - ".tasks/active/T-1068-horizon-status-invariant-enforcement-in-.md"
+  - ".tasks/active/T-1069-one-time-horizon-status-data-cleanup--fi.md"
+  - "tests/unit/update_task.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-08T12:36:17"
+    action: "T-1068: Horizon-status invariant enforcement — auto-sync in update-task.sh, 15/15 tests pass"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 195
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1068-horizon-status-invariant-enforcement-in-.md
+generated_by: context-agent-hybrid

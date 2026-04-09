@@ -8,6 +8,10 @@ purpose: Tier 0 Enforcement Hook — PreToolUse gate for Bash tool
 depends_on:
 - target: lib/paths.sh
   type: calls
+- target: lib/config.sh
+  type: calls
+- target: lib/notify.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -23,7 +27,7 @@ depended_by:
   type: used-by
 - target: agents/audit/audit.sh
   type: called-by
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

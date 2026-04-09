@@ -4,17 +4,11 @@ type: script
 subsystem: watchtower
 location: web/terminal/__init__.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: web/terminal/adapters/local_shell.py
+  type: calls
+depended_by: []
 last_verified: 2026-04-06
 created_by: unknown
+last_enriched: '2026-04-09'

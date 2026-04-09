@@ -28,6 +28,8 @@ depends_on:
 depended_by:
 - target: C-003
   type: rendered_by
+- target: web/blueprints/discovery.py
+  type: rendered_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-02-21'
+last_enriched: '2026-04-09'

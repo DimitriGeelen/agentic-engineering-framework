@@ -4,14 +4,13 @@ type: template
 subsystem: watchtower
 location: web/templates/costs.html
 tags: []
-
-purpose: "Jinja2 template for token usage dashboard — summary cards, breakdown bar, session table (T-802)"
-
+purpose: Jinja2 template for token usage dashboard — summary cards, breakdown bar, session table (T-802)
 depends_on: []
-
 depended_by:
-  - target: web/blueprints/costs.py
-    type: renders
-
+- target: web/blueprints/costs.py
+  type: renders
+- target: web/blueprints/costs.py
+  type: rendered_by
 last_verified: 2026-04-03
 created_by: unknown
+last_enriched: '2026-04-09'

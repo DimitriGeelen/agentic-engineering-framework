@@ -11,4 +11,6 @@ created_by: unknown
 depended_by:
 - target: C-003
   type: rendered_by
-last_enriched: '2026-02-21'
+- target: web/blueprints/discovery.py
+  type: rendered_by
+last_enriched: '2026-04-09'

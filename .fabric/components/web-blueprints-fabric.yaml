@@ -16,7 +16,7 @@ depends_on:
   type: renders
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -28,3 +28,5 @@ depended_by:
   type: registered_by
 - target: web/templates/fabric_explorer.html
   type: used-by
+- target: web/templates/fabric_explorer.html
+  type: rendered_by_by

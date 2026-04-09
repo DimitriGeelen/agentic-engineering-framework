@@ -13,5 +13,12 @@ depended_by:
   type: called-by
 - target: lib/firewall.sh
   type: called-by
+- target: bin/watchtower.sh
+  type: called_by
+- target: lib/firewall.sh
+  type: called_by
+- target: tests/unit/lib_firewall.bats
+  type: called_by
 last_verified: 2026-04-05
 created_by: unknown
+last_enriched: '2026-04-09'

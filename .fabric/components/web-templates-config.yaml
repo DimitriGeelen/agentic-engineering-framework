@@ -4,18 +4,17 @@ type: template
 subsystem: watchtower
 location: web/templates/config.html
 tags: []
-
-purpose: "Watchtower /config page — show all FW_* settings with current values and sources"
-
+purpose: Watchtower /config page — show all FW_* settings with current values and sources
 depends_on:
-  - target: web/blueprints/config.py
-    type: renders
-  - target: lib/config.sh
-    type: reads
-  - target: web/templates/base.html
-    type: renders
-
-depended_by: []
-
+- target: web/blueprints/config.py
+  type: renders
+- target: lib/config.sh
+  type: reads
+- target: web/templates/base.html
+  type: renders
+depended_by:
+- target: web/blueprints/config.py
+  type: rendered_by
 last_verified: 2026-04-04
 created_by: unknown
+last_enriched: '2026-04-09'

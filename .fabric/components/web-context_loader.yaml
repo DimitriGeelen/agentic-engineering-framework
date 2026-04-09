@@ -31,6 +31,10 @@ depended_by:
   type: called_by
 - target: web/blueprints/risks.py
   type: called_by
+- target: web/blueprints/quality.py
+  type: called_by
+- target: web/blueprints/discovery.py
+  type: called_by
 last_verified: 2026-03-11
 created_by: T-416
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

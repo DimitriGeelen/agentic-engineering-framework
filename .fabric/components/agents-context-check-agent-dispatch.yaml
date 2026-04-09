@@ -14,7 +14,9 @@ depends_on:
   type: calls
 - target: lib/paths.sh
   type: calls
+- target: lib/config.sh
+  type: calls
 depended_by: []
 last_verified: '2026-03-23'
 created_by: T-533
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

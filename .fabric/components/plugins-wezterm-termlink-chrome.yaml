@@ -3,18 +3,17 @@ name: termlink-chrome
 type: plugin
 subsystem: termlink-integration
 location: plugins/wezterm/termlink-chrome.lua
-tags: [wezterm, termlink, ui, status-bar]
-
-purpose: "WezTerm Lua plugin that queries TermLink RPC (termlink list --json) to display task-aware session metadata in the terminal status bar. Groups sessions by task ID, shows roles and counts."
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+tags:
+- wezterm
+- termlink
+- ui
+- status-bar
+purpose: WezTerm Lua plugin that queries TermLink RPC (termlink list --json) to display task-aware session metadata in the
+  terminal status bar. Groups sessions by task ID, shows roles and counts.
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: plugins/wezterm/README.md
+  type: read_by
 last_verified: 2026-04-08
 created_by: unknown
+last_enriched: '2026-04-09'

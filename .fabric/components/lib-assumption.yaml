@@ -13,4 +13,6 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_assumption.bats
   type: called-by
-last_enriched: '2026-02-21'
+- target: tests/unit/lib_assumption.bats
+  type: called_by
+last_enriched: '2026-04-09'

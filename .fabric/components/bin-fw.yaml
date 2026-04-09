@@ -4,9 +4,8 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: Single entry point for all framework operations. Reads .framework.yaml from
-  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
-  agent. Supports both in-repo and shared tooling modes.
+purpose: Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT,
+  then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -82,9 +81,17 @@ depends_on:
   type: calls
 - target: lib/build.sh
   type: calls
+- target: lib/pickup.sh
+  type: calls
+- target: lib/colors.sh
+  type: calls
+- target: lib/costs.sh
+  type: calls
+- target: lib/config.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -183,3 +190,87 @@ depended_by:
   type: tested_by
 - target: tests/integration/fw_config.bats
   type: tested_by
+- target: bin/fw-shim
+  type: called_by
+- target: tests/integration/fw_approvals.bats
+  type: called_by
+- target: tests/integration/fw_assumption.bats
+  type: called_by
+- target: tests/integration/fw_audit.bats
+  type: called_by
+- target: tests/integration/fw_bus.bats
+  type: called_by
+- target: tests/integration/fw_config.bats
+  type: called_by
+- target: tests/integration/fw_context.bats
+  type: called_by
+- target: tests/integration/fw_costs.bats
+  type: called_by
+- target: tests/integration/fw_cron.bats
+  type: called_by
+- target: tests/integration/fw_decisions.bats
+  type: called_by
+- target: tests/integration/fw_doctor.bats
+  type: called_by
+- target: tests/integration/fw_fabric.bats
+  type: called_by
+- target: tests/integration/fw_fix_learned.bats
+  type: called_by
+- target: tests/integration/fw_gaps.bats
+  type: called_by
+- target: tests/integration/fw_git.bats
+  type: called_by
+- target: tests/integration/fw_handover.bats
+  type: called_by
+- target: tests/integration/fw_harvest.bats
+  type: called_by
+- target: tests/integration/fw_healing.bats
+  type: called_by
+- target: tests/integration/fw_help.bats
+  type: called_by
+- target: tests/integration/fw_hook.bats
+  type: called_by
+- target: tests/integration/fw_inception.bats
+  type: called_by
+- target: tests/integration/fw_init.bats
+  type: called_by
+- target: tests/integration/fw_learnings.bats
+  type: called_by
+- target: tests/integration/fw_metrics.bats
+  type: called_by
+- target: tests/integration/fw_notify.bats
+  type: called_by
+- target: tests/integration/fw_onboarding.bats
+  type: called_by
+- target: tests/integration/fw_patterns.bats
+  type: called_by
+- target: tests/integration/fw_practices.bats
+  type: called_by
+- target: tests/integration/fw_preflight.bats
+  type: called_by
+- target: tests/integration/fw_promote.bats
+  type: called_by
+- target: tests/integration/fw_resume.bats
+  type: called_by
+- target: tests/integration/fw_search.bats
+  type: called_by
+- target: tests/integration/fw_self_test.bats
+  type: called_by
+- target: tests/integration/fw_task.bats
+  type: called_by
+- target: tests/integration/fw_tier0.bats
+  type: called_by
+- target: tests/integration/fw_timeline.bats
+  type: called_by
+- target: tests/integration/fw_traceability.bats
+  type: called_by
+- target: tests/integration/fw_upstream.bats
+  type: called_by
+- target: tests/integration/fw_validate_init.bats
+  type: called_by
+- target: tests/integration/fw_vendor.bats
+  type: called_by
+- target: tests/integration/fw_version.bats
+  type: called_by
+- target: tests/integration/fw_work_on.bats
+  type: called_by

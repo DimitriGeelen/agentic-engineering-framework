@@ -17,9 +17,11 @@ depends_on:
   type: related
 - target: lib/paths.sh
   type: calls
+- target: lib/config.sh
+  type: calls
 depended_by:
 - target: .claude/settings.json
   type: triggers
 last_verified: 2026-03-28
 created_by: T-559
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

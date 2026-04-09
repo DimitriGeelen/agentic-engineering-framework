@@ -18,7 +18,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
@@ -28,6 +28,10 @@ depended_by:
   type: called-by
 - target: tests/unit/healing_suggest.bats
   type: called-by
+- target: tests/unit/healing_diagnose.bats
+  type: called_by
+- target: tests/unit/healing_suggest.bats
+  type: called_by
 docs:
 - path: docs/articles/deep-dives/05-healing-loop.md
   title: 'Deep Dive: The Healing Loop'

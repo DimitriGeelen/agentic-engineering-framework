@@ -82,6 +82,26 @@ depends_on:
   type: registers
 - target: web/blueprints/review.py
   type: registers
+- target: web/blueprints/discovery.py
+  type: calls
+- target: web/blueprints/costs.py
+  type: calls
+- target: web/blueprints/config.py
+  type: calls
+- target: web/blueprints/terminal.py
+  type: calls
+- target: web/blueprints/sessions.py
+  type: calls
+- target: web/blueprints/discovery.py
+  type: registers
+- target: web/blueprints/costs.py
+  type: registers
+- target: web/blueprints/config.py
+  type: registers
+- target: web/blueprints/terminal.py
+  type: registers
+- target: web/blueprints/sessions.py
+  type: registers
 depended_by:
 - target: web/app.py
   type: imported_by
@@ -90,4 +110,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-01
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

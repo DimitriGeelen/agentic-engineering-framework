@@ -12,9 +12,11 @@ depends_on:
   type: renders
 - target: web/subprocess_utils.py
   type: calls
+- target: web/context_loader.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: web/app.py
   type: called_by

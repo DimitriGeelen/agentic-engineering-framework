@@ -25,6 +25,8 @@ depends_on:
   contract: Text integer — invocation counter for recheck interval
 - target: lib/paths.sh
   type: calls
+- target: lib/config.sh
+  type: calls
 depended_by:
 - target: C-009
   type: triggers
@@ -47,4 +49,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'

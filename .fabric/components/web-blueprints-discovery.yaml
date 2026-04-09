@@ -16,10 +16,39 @@ depends_on:
   type: calls
 - target: web/shared.py
   type: calls
+- target: web/embeddings.py
+  type: calls
+- target: web/search.py
+  type: calls
+- target: web/search_utils.py
+  type: calls
+- target: web/templates/decisions.html
+  type: renders
+- target: C-006
+  type: renders
+- target: web/templates/gaps.html
+  type: renders
+- target: web/templates/search.html
+  type: renders
+- target: web/templates/feedback_analytics.html
+  type: renders
+- target: web/templates/patterns.html
+  type: renders
+- target: web/templates/graduation.html
+  type: renders
 depended_by:
 - target: web/search.py
   type: used-by
 - target: web/static/js/chat.js
   type: called-by
+- target: web/blueprints/__init__.py
+  type: called_by
+- target: web/blueprints/__init__.py
+  type: registered_by
+- target: web/search.py
+  type: imported_by_by
+- target: web/static/js/chat.js
+  type: called_by
 last_verified: 2026-04-05
 created_by: T-917
+last_enriched: '2026-04-09'

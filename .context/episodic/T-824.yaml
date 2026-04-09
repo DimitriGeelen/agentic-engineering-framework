@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-824: fw verify-acs CLI — automated Human AC evidence collection for stale tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:02Z
+# ============================================================================
+
+task_id: T-824
+task_name: "fw verify-acs CLI — automated Human AC evidence collection for stale tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T23:11:43Z
+completed: 2026-04-03T23:18:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-04T01:18:46+02:00
+last_commit: 2026-04-04T01:18:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw verify-acs CLI — automated Human AC evidence collection
+
+# Key outcomes
+outcomes:
+  - "`fw verify-acs` command exists and runs without errors"
+  - "Scans all work-completed tasks with unchecked Human ACs"
+  - "Identifies RUBBER-STAMP vs REVIEW ACs"
+  - "Runs HTTP checks for Watchtower-related ACs (page loads, elements present)"
+  - "Runs shell command checks for CLI-related ACs"
+  - "Outputs per-task PASS/FAIL/SKIP with evidence"
+  - "Shows summary with counts and Watchtower review links"
+  - "Added to CLAUDE.md quick reference table"
+  - "Unit tests for verification logic (6 bats tests)"
+  - "[RUBBER-STAMP] Run `fw verify-acs` and verify output makes sense"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "CLAUDE.md"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - "lib/verify-acs.sh"
+  - ".tasks/active/T-824-fw-verify-acs-cli--automated-human-ac-ev.md"
+  - "tests/unit/verify_acs.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T01:18:46"
+    action: "T-824: Add fw verify-acs CLI — automated Human AC evidence collection"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 15
+  lines_added: 875
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-824-fw-verify-acs-cli--automated-human-ac-ev.md
+generated_by: context-agent-hybrid

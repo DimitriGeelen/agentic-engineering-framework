@@ -20,11 +20,13 @@ depends_on:
   type: calls
 last_verified: 2026-02-22
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-09'
 depended_by:
 - target: C-003
   type: called_by
 - target: web/app.py
   type: called_by
 - target: web/blueprints/api.py
+  type: called_by
+- target: web/blueprints/discovery.py
   type: called_by

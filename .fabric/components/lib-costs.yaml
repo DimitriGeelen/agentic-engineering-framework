@@ -4,8 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/costs.sh
 tags: []
-purpose: Token usage tracking from JSONL transcripts — parses Claude Code session
-  data for cost reporting (T-801)
+purpose: Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801)
 depends_on:
 - target: lib/colors.sh
   type: calls
@@ -18,5 +17,12 @@ depended_by:
   type: calls
 - target: tests/unit/lib_costs.bats
   type: called-by
+- target: agents/handover/handover.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: tests/unit/lib_costs.bats
+  type: called_by
 last_verified: 2026-04-03
 created_by: unknown
+last_enriched: '2026-04-09'

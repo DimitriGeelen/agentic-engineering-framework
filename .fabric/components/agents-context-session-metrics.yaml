@@ -4,18 +4,19 @@ type: script
 subsystem: context-fabric
 location: agents/context/session-metrics.sh
 tags: []
-
-purpose: "Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript"
-
+purpose: Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript
 depends_on:
-  - target: agents/context/checkpoint.sh
-    type: calls
-  - target: agents/context/lib/init.sh
-    type: reads
-
+- target: agents/context/checkpoint.sh
+  type: calls
+- target: agents/context/lib/init.sh
+  type: reads
+- target: lib/paths.sh
+  type: calls
 depended_by:
-  - target: agents/handover/handover.sh
-    type: calls
-
+- target: agents/handover/handover.sh
+  type: calls
+- target: agents/handover/handover.sh
+  type: called_by
 last_verified: 2026-04-04
 created_by: unknown
+last_enriched: '2026-04-09'

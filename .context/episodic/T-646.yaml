@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-646: MCP auto-config — seed .mcp.json during fw init and reconcile during fw upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-09T12:10:01Z
+# ============================================================================
+
+task_id: T-646
+task_name: "MCP auto-config — seed .mcp.json during fw init and reconcile during fw upgrade"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-27T13:33:54Z
+completed: 2026-04-06T22:29:19Z
+duration_days: 9
+updates_count: 3
+first_commit: 2026-03-27T14:49:13+01:00
+last_commit: 2026-03-27T14:49:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  MCP auto-config — seed .mcp.json during fw init, reconcile during fw upgrade
+
+# Key outcomes
+outcomes:
+  - "`lib/init.sh` `generate_claude_code_config()` creates `.mcp.json` with context7 + playwright"
+  - "`lib/upgrade.sh` reconciles `.mcp.json` — adds missing servers, preserves custom ones"
+  - "`fw doctor` checks for `.mcp.json` presence (WARN if missing)"
+  - "`.mcp.json` uses project-root-relative location (no absolute paths)"
+  - "Upstream copy in `.agentic-framework/lib/init.sh` also updated"
+  - "Consumer project gets .mcp.json after fw init (reclassified from Human RUBBER-STAMP per T-954)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/bin/claude-fw"
+  - ".agentic-framework/bin/fw"
+  - ".agentic-framework/lib/init.sh"
+  - ".agentic-framework/lib/upgrade.sh"
+  - "bin/fw"
+  - "lib/init.sh"
+  - "lib/upgrade.sh"
+  - ".mcp.json"
+  - ".tasks/active/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-27T14:49:13"
+    action: "T-646: MCP auto-config — seed .mcp.json during fw init, reconcile during fw upgrade"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14935 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14935
+  commits: 2
+  files_changed: 51
+  lines_added: 4949
+  lines_removed: 94
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-646-mcp-auto-config--seed-mcpjson-during-fw-.md
+generated_by: context-agent-hybrid
