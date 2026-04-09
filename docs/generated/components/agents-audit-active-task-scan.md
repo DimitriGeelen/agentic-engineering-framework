@@ -8,6 +8,12 @@
 
 Results
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `C-004` | called_by |
+
 ## Related
 
 ### Tasks

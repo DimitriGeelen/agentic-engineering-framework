@@ -17,12 +17,13 @@ For Bash: checks tool_input.command against safe-command allowlist (T-650)
 Exempt paths (framework operations that don't need task context):
 .context/   — Context fabric management
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/lib/safe-commands.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Used By (7)
 

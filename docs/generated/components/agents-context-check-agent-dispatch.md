@@ -19,12 +19,13 @@ Enforcement:
 3. 3rd+ dispatch: blocked unless approved or TermLink unavailable
 4. Approval via: fw dispatch approve (5-min TTL, like Tier 0)
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/dispatch.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Related
 

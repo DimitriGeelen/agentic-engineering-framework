@@ -5,13 +5,6 @@ learnings:
   learning: "First learning"
   source: unknown
   task: unknown
-  date: 2026-04-08
-  context: Added via context agent
-  application: TBD
-- id: L-002
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
   date: 2026-04-09
   context: Added via context agent
   application: TBD

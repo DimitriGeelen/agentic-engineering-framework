@@ -5,13 +5,6 @@ decisions:
   - id: D-001
     decision: "Use YAML for config"
     scope: project
-    date: 2026-04-08
-    task: unknown
-    rationale: "Not specified"
-
-  - id: D-002
-    decision: "Test decision from Playwright"
-    scope: project
     date: 2026-04-09
-    task: T-1030
+    task: unknown
     rationale: "Not specified"

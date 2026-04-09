@@ -1,22 +1,22 @@
 ---
-id: T-1073
-name: "Fix Playwright test suite — mass failures across API and UI tests"
+id: T-1074
+name: "Session housekeeping — commit working state and generated artifacts"
 description: >
-  373 Playwright tests collected, majority failing. Likely common root cause (port, config, or test infrastructure issue). Needs investigation and fix.
+  Session housekeeping — commit working state and generated artifacts
 
-status: captured
-workflow_type: build
+status: started-work
+workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-09T13:04:38Z
-last_update: 2026-04-09T13:04:46Z
+created: 2026-04-09T13:05:21Z
+last_update: 2026-04-09T13:05:21Z
 date_finished: null
 ---
 
-# T-1073: Fix Playwright test suite — mass failures across API and UI tests
+# T-1074: Session housekeeping — commit working state and generated artifacts
 
 ## Context
 
@@ -63,7 +63,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-04-09T13:04:38Z — task-created [task-create-agent]
+### 2026-04-09T13:05:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1073-fix-playwright-test-suite--mass-failures.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1074-session-housekeeping--commit-working-sta.md
 - **Context:** Initial task creation

@@ -19,13 +19,14 @@ Allowed exceptions:
 /tmp/**                — Agent dispatch working files
 /root/.claude/**       — Claude Code memory/settings
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/context/check-tier0.sh` | related |
 | `agents/context/check-active-task.sh` | related |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Used By (1)
 
