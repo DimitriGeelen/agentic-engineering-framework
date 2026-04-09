@@ -8,3 +8,10 @@ learnings:
   date: 2026-04-09
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "Project boundary hook TermLink exception only matched commands starting with termlink — missed TermLink commands inside loops/pipes. Fix: match anywhere in command with word-boundary anchors."
+  source: R-037
+  task: T-1075
+  date: 2026-04-09
+  context: Added via context agent
+  application: TBD

@@ -4,7 +4,7 @@ name: "Fix project boundary false positive — TermLink commands inside loops/pi
 description: >
   Fix project boundary false positive — TermLink commands inside loops/pipes
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-09T13:06:31Z
-last_update: 2026-04-09T13:06:31Z
-date_finished: null
+last_update: 2026-04-09T13:08:28Z
+date_finished: 2026-04-09T13:08:28Z
 ---
 
 # T-1075: Fix project boundary false positive — TermLink commands inside loops/pipes
@@ -51,3 +51,6 @@ bats tests/integration/check_project_boundary.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1075-fix-project-boundary-false-positive--ter.md
 - **Context:** Initial task creation
+
+### 2026-04-09T13:08:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
