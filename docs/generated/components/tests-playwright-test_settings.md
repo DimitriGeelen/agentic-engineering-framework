@@ -1,6 +1,6 @@
 # test_settings
 
-> TODO: describe what this component does
+> Playwright tests for Settings page (T-987)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_settings.py`
 

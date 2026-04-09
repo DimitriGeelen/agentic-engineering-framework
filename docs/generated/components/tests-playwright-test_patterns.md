@@ -1,6 +1,6 @@
 # test_patterns
 
-> TODO: describe what this component does
+> Playwright tests for Patterns page (T-989)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_patterns.py`
 

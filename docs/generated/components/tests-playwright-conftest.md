@@ -1,6 +1,6 @@
 # conftest
 
-> TODO: describe what this component does
+> Playwright test fixtures for Watchtower (T-969)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/conftest.py`
 

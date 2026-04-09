@@ -1,6 +1,6 @@
 # test_smoke
 
-> TODO: describe what this component does
+> Playwright smoke tests — all major routes render (T-969)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/test_smoke.py`
 

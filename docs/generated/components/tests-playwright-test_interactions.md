@@ -1,6 +1,6 @@
 # test_interactions
 
-> TODO: describe what this component does
+> Playwright interaction tests — dark mode, search, task filtering (T-1015)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_interactions.py`
 

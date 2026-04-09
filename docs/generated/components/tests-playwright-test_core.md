@@ -1,6 +1,6 @@
 # test_core
 
-> TODO: describe what this component does
+> Playwright tests for Watchtower landing page (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_core.py`
 

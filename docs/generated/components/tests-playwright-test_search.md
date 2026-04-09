@@ -1,6 +1,6 @@
 # test_search
 
-> TODO: describe what this component does
+> Playwright tests for Search page (T-990)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_search.py`
 

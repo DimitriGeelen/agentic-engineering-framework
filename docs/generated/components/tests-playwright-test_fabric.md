@@ -1,6 +1,6 @@
 # test_fabric
 
-> TODO: describe what this component does
+> Playwright tests for Fabric pages (T-970)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/test_fabric.py`
 

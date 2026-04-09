@@ -1,6 +1,6 @@
 # test_terminal
 
-> TODO: describe what this component does
+> Playwright tests for Terminal page (T-970)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/test_terminal.py`
 

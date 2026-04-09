@@ -1,6 +1,6 @@
 # test_cron
 
-> TODO: describe what this component does
+> Playwright tests for Cron Registry page (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_cron.py`
 

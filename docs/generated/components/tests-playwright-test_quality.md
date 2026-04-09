@@ -1,6 +1,6 @@
 # test_quality
 
-> TODO: describe what this component does
+> Playwright tests for Quality Gate page (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_quality.py`
 

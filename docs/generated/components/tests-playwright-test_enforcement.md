@@ -1,6 +1,6 @@
 # test_enforcement
 
-> TODO: describe what this component does
+> Playwright tests for Enforcement dashboard (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_enforcement.py`
 

@@ -1,6 +1,6 @@
 # test_metrics
 
-> TODO: describe what this component does
+> Playwright tests for Metrics page (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_metrics.py`
 

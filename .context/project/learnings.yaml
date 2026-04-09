@@ -5,27 +5,13 @@ learnings:
   learning: "First learning"
   source: unknown
   task: unknown
-  date: 2026-04-07
+  date: 2026-04-08
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "TermLink dispatch cross-project pattern: use --project flag to target a different repo. The worker runs claude -p with PROJECT_ROOT set to the target. Without --project, defaults to cwd (wrong for cross-repo work). T-1063 first dispatch failed this way."
-  source: T-1061
-  task: T-1063
-  date: 2026-04-08
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "TermLink dispatch timeout: complex Rust coding tasks (modifying multiple crates, writing tests) can exceed the default 600s timeout. Use --timeout 900 for large tasks. If task times out, re-dispatch with simpler scope — split into minimal change + future enhancement."
-  source: T-1061
-  task: T-1065
-  date: 2026-04-08
-  context: Added via context agent
-  application: TBD
-- id: L-004
   learning: "Test learning from Playwright"
   source: unknown
   task: T-1030
-  date: 2026-04-08
+  date: 2026-04-09
   context: Added via context agent
   application: TBD

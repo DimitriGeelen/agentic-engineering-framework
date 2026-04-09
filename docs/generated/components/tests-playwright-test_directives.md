@@ -1,6 +1,6 @@
 # test_directives
 
-> TODO: describe what this component does
+> Playwright tests for Constitutional Directives page (T-990)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_directives.py`
 

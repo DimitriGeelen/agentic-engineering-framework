@@ -1,6 +1,6 @@
 # test_config
 
-> TODO: describe what this component does
+> Playwright tests for Config page (T-981)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_config.py`
 

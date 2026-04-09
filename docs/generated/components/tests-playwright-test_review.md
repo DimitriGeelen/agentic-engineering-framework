@@ -1,6 +1,6 @@
 # test_review
 
-> TODO: describe what this component does
+> Playwright tests for Review page (T-970, T-982)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/test_review.py`
 

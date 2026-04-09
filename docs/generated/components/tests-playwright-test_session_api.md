@@ -1,6 +1,6 @@
 # test_session_api
 
-> TODO: describe what this component does
+> Playwright tests for web terminal session API (T-979)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_session_api.py`
 

@@ -1,6 +1,6 @@
 # test_docs
 
-> TODO: describe what this component does
+> Playwright tests for Generated Docs page (T-987)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_docs.py`
 

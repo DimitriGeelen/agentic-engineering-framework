@@ -1,6 +1,6 @@
 # test_sessions
 
-> TODO: describe what this component does
+> Playwright tests for Sessions page (T-983)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_sessions.py`
 

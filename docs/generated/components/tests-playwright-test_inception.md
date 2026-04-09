@@ -1,6 +1,6 @@
 # test_inception
 
-> TODO: describe what this component does
+> Playwright tests for Inception pages (T-970)
 
 **Type:** script | **Subsystem:** testing | **Location:** `tests/playwright/test_inception.py`
 

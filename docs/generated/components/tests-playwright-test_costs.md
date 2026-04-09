@@ -1,6 +1,6 @@
 # test_costs
 
-> TODO: describe what this component does
+> Playwright tests for Costs page (T-981)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_costs.py`
 

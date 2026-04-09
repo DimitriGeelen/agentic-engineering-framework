@@ -1,6 +1,6 @@
 # test_discoveries
 
-> TODO: describe what this component does
+> Playwright tests for Discoveries dashboard (T-987)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_discoveries.py`
 

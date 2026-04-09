@@ -1,6 +1,6 @@
 # test_risks
 
-> TODO: describe what this component does
+> Playwright tests for Risk Register / Concerns page (T-986)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_risks.py`
 

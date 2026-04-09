@@ -1,6 +1,6 @@
 # test_timeline
 
-> TODO: describe what this component does
+> Playwright tests for Timeline page (T-981)
 
 **Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_timeline.py`
 
