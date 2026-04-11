@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1106: ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T20:10:58Z
+# ============================================================================
+
+task_id: T-1106
+task_name: "ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T13:30:22Z
+completed: 2026-04-11T20:10:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-11T15:31:43+02:00
+last_commit: 2026-04-11T16:33:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register ULTRA-HIGH inception — fw task review URL defaults to :3000, serves wrong-project content via task-ID collision. Structural upgrade — chokepoint+invariant tests for Watchtower port bleed
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1093.yaml"
+  - "docs/reports/T-1106-watchtower-port-bleed-rca.md"
+  - ".tasks/active/T-1106-ultra-high-priority-fw-task-review-url-d.md"
+  - ".tasks/completed/T-1087-budget-gate-post-compact-stale-read--saf.md"
+  - ".tasks/completed/T-1089-project-boundary-gate-mentions-termlink-.md"
+  - ".tasks/completed/T-1090-fw-task-review-announces-review-marker-c.md"
+  - ".tasks/completed/T-1091-watchtower-inception-detail-page-removes.md"
+  - ".tasks/completed/T-1093-register-g-025g-030-from-ring20-dashboar.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T15:31:43"
+    action: "T-1106: Register ULTRA-HIGH inception — fw task review URL defaults to :3000, serves wrong-project content via task-ID collision"
+  - time: "2026-04-11T16:33:51"
+    action: "T-1106: Structural upgrade — chokepoint+invariant tests for Watchtower port bleed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 400 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 400
+  commits: 2
+  files_changed: 8
+  lines_added: 924
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1106-ultra-high-priority-fw-task-review-url-d.md
+generated_by: context-agent-hybrid
