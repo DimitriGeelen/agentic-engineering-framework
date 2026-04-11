@@ -15,3 +15,10 @@ learnings:
   date: 2026-04-11
   context: Added via context agent
   application: TBD
+- id: L-003
+  learning: "Hook templates that resolve framework scripts must include .agentic-framework/ path — consumer projects store the framework under that subdirectory, and omitting it means the hook silently fails for every consumer even after T-498 removed framework_path from .framework.yaml. Rule: any bin/fw subcommand or hook template that does path resolution on behalf of a consumer must try .agentic-framework/ before bare PROJECT_ROOT/ paths."
+  source: P-001
+  task: T-1078
+  date: 2026-04-11
+  context: Added via context agent
+  application: TBD

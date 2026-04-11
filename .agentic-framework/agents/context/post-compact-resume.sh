@@ -137,8 +137,10 @@ CONTEXT="${CONTEXT}
 "
 
 # Fabric topology overview (T-213 — spatial memory injection)
+# T-1083: use FRAMEWORK_ROOT for script, PROJECT_ROOT for data — the consumer
+# has .fabric/ but fabric.sh lives in .agentic-framework/.
 if [ -f "$PROJECT_ROOT/.fabric/subsystems.yaml" ]; then
-    FABRIC_OVERVIEW=$("$PROJECT_ROOT/agents/fabric/fabric.sh" overview 2>/dev/null)
+    FABRIC_OVERVIEW=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/fabric/fabric.sh" overview 2>/dev/null)
     if [ -n "$FABRIC_OVERVIEW" ]; then
         CONTEXT="${CONTEXT}
 
