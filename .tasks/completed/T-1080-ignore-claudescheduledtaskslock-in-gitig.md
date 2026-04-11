@@ -4,7 +4,7 @@ name: "Ignore .claude/scheduled_tasks.lock in gitignore"
 description: >
   Ignore .claude/scheduled_tasks.lock in gitignore
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T08:30:36Z
-last_update: 2026-04-11T08:30:36Z
-date_finished: null
+last_update: 2026-04-11T08:31:27Z
+date_finished: 2026-04-11T08:31:27Z
 ---
 
 # T-1080: Ignore .claude/scheduled_tasks.lock in gitignore
@@ -66,3 +66,6 @@ grep -q 'scheduled_tasks.lock' .gitignore
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1080-ignore-claudescheduledtaskslock-in-gitig.md
 - **Context:** Initial task creation
+
+### 2026-04-11T08:31:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
