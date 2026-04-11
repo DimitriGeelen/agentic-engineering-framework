@@ -1084,3 +1084,32 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1108
+- id: G-037
+  type: gap
+  title: 'Enumeration-divergence between do_vendor and do_update excludes lists (L-006 pattern, second instance)'
+  description: 'Found while investigating T-1109 (G-024 RCA). `bin/fw:181-190` do_vendor and `lib/update.sh:183-192` do_update
+    both maintain their own includes=() and excludes=() arrays. The includes lists currently match (`bin lib agents web docs
+    .tasks/templates FRAMEWORK.md metrics.sh`) but the excludes lists already drift: do_vendor excludes 7 items (including
+    `lib/ts/src`, `lib/ts/tsconfig.json`, `lib/ts/package.json`, `lib/ts/package-lock.json`) while do_update excludes only
+    3 (`__pycache__`, `*.pyc`, `.DS_Store`). Consumers upgraded via `fw update` (GitHub upstream_repo path) will receive the
+    lib/ts/* source files that consumers initialized via `fw init` / `fw vendor` never got. No functional bug today because
+    lib/ts/ is empty/unused, but this is precisely the L-006 enumeration-divergence pattern that caused T-1109. A future
+    addition to one list without the other will bite silently. Structural fix: collapse do_update to call do_vendor — same
+    chokepoint pattern proposed for do_upgrade in T-1109.'
+  spec_reference: bin/fw:181-200 (do_vendor), lib/update.sh:183-202 (do_update), L-006
+  severity: low
+  likelihood: 3
+  impact: 2
+  score: 6
+  ranking: low
+  evidence:
+  - 'Diff of the two blocks: includes identical, excludes differ by 4 lines (do_vendor adds lib/ts/* exclusions, do_update
+    does not).'
+  - 'Discovery context: during T-1109 RCA, L-006 (enumeration-divergence) was named as a class. Local grep for similar parallel
+    lists in lib/ and bin/fw found this exact pattern at the do_vendor/do_update boundary.'
+  - 'Related: T-1109 (collapses do_upgrade into do_vendor), L-006 (enumeration-divergence class), G-024 (original T-1109 trigger).'
+  trigger: Anyone adds a new include (e.g., `deploy/`, `.fabric/`) to do_vendor or do_update without updating the other.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
