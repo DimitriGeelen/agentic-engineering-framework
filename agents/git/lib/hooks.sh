@@ -47,7 +47,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.5
+# VERSION=1.6
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -72,11 +72,11 @@ if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
     echo "To fix:"
     echo "  1. Add task reference: git commit -m \"T-XXX: your message\""
     echo "  2. Create a task: ./agents/task-create/create-task.sh"
-    echo "  3. Emergency bypass (human only):"
-    echo "       fw tier0 approve"
-    echo "       git commit --no-verify"
     echo ""
-    echo "Note: --no-verify is Tier 0 protected. Bypasses are logged."
+    echo "Bypass: git commit --no-verify"
+    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+    echo ""
+    echo "Bypasses are logged."
     exit 1
 fi
 
@@ -122,12 +122,12 @@ if [ -n "$TASK_REF" ]; then
                 echo "Inception tasks allow 2 exploration commits, then require a decision."
                 echo ""
                 echo "Record a decision:"
-                echo "  fw inception decide $TASK_REF go --rationale 'reason'"
-                echo "  fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo "  1. Review: fw task review $TASK_REF  (creates review marker)"
+                echo "  2. Decide: fw inception decide $TASK_REF go --rationale 'reason'"
+                echo "          or fw inception decide $TASK_REF no-go --rationale 'reason'"
                 echo ""
-                echo "Emergency bypass (human only):"
-                echo "  fw tier0 approve"
-                echo "  git commit --no-verify"
+                echo "Bypass: git commit --no-verify"
+                echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
                 exit 1
             else
                 echo ""
@@ -192,7 +192,7 @@ HOOK_EOF
 # post-commit hook - Bypass Detection + Context Checkpoint
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.5
+# VERSION=1.6
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -374,9 +374,9 @@ if [ $audit_exit -eq 2 ]; then
     echo "ERROR: Push blocked - audit has FAILURES"
     echo ""
     echo "Fix the issues above before pushing."
-    echo "Emergency bypass (human only):"
-    echo "  fw tier0 approve"
-    echo "  git push --no-verify"
+    echo ""
+    echo "Bypass: git push --no-verify"
+    echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
     echo ""
     exit 1
 elif [ $audit_exit -eq 1 ]; then

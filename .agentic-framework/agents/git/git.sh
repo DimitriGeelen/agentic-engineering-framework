@@ -16,7 +16,7 @@ source "$LIB_DIR/common.sh"
 # Bump this when ANY hook template in lib/hooks.sh changes — the value must match
 # the commit-msg template's `# VERSION=X.Y` marker or install-hooks gets confused
 # (T-1079: previous drift left consumers silently on old hooks).
-VERSION="1.5"
+VERSION="1.6"
 
 show_help() {
     cat << EOF
