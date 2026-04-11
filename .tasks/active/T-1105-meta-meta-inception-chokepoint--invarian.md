@@ -116,15 +116,66 @@ A-5: The discipline does NOT apply to one-off bug fixes (single-incident, no cla
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — codify the chokepoint+invariant-test discipline as a CLAUDE.md governance rule
+
+**Rationale:** The discipline emerged empirically on 2026-04-11 when 5 same-day inception RCAs (T-1100..T-1104) all surfaced recurring framework bug classes. In every case, the RCA worker proposed a tactical patch (one call site, one conditional, one helper function) that left the bug class free to recur. In every case, the human pushed back with "can we make the fix more reliable/structural?" and the answer was the same: add a chokepoint (single legal mutation path) and an invariant test (CI-enforced "no bypass" assertion). The pattern worked — each RCA got a structural upgrade section that converted its tactical fix into a chokepoint+test pair. Without codifying this as a governance rule, every future bug-class fix defaults back to tactical, and the human has to repeat the same correction conversation. Five repetitions in one day is the evidence that the rule needs to be structural, not discretionary.
+
+**Additional evidence from the next six hours:** After the T-1100..T-1104 discipline pass, the pattern continued to prove valuable:
+- **T-1106** (Watchtower port bleed) — worker's Option D was already chokepoint-shaped, but the structural upgrade added 4 invariant tests (no-rogue-url-construction, review-url-identity-check, pid-path-consistency, no-default-port-fallback) and made the PID path unification explicit
+- **T-1092** (dispatch payload profiles) — research task, but structural upgrade pre-committed future build tasks to chokepoint+test discipline via `load_profile_for_worker()` + 3 invariant tests (no-inline-worker-prompts, profile-token-budget, profile-governance-floor)
+- **T-1108** (Watchtower inception page renderer) — a build task fixing G-036 where the structural upgrade exposed the underlying architectural gap (hardcoded section allowlist) and registered it as its own follow-up class
+- **T-1109** (fw upgrade web/ sync) — pre-investigation identified do_upgrade vs do_update divergence; chokepoint recommendation (collapse handcrafted sync into do_vendor() call) is exactly the T-1105 pattern applied to a just-discovered bug
+
+Six same-day applications of the pattern is sufficient evidence that the rule is load-bearing.
+
+**Evidence:**
+- T-1101: tactical fix = replace `--force` with `--skip-sovereignty` flag at one call site. Structural upgrade = decompose `--force` into 4 narrow flags + lint forbidding `--force` in framework callers + audit log.
+- T-1102: tactical fix = extract `_fw_cmd_for_user()` helper, fix 3 BUG sites. Structural upgrade = `_emit_user_command()` chokepoint + `tests/lint/no-hardcoded-fw-paths.bats` invariant test + pre-commit hook.
+- T-1103: tactical fix = add `PARTIAL_COMPLETE` guard at `update-task.sh:792`. Structural upgrade = move episodic trigger to file-move event + `tests/lint/no-orphan-episodics.bats`.
+- T-1100: tactical fix = document Pattern 2 as canonical + init guard for Pattern 6. Structural upgrade = `do_vendor()` as the only legal mutation path + `isolation_mode` field in `.framework.yaml` + state-consistency bats test.
+- T-1104: tactical fix = `fw doctor` doc-drift check + canonical-form comments. Structural upgrade = auto-generate CLAUDE.md Quick Reference from `bin/fw` introspection + `quick-reference-fresh.bats` + `all-fw-subcommands-documented.bats`.
+- **Pattern consistency:** Every structural upgrade has the same shape — a single function that's the only legal way to perform the operation, plus a test that asserts no code bypasses the chokepoint. This is evidence the pattern is generalizable, not an artifact of one bug.
+- **Framework precedent:** T-559 boundary hook, T-063 task gate hook, T-092 Tier 0 enforcement — these existing controls ARE chokepoint+test pairs, but the discipline was implicit. Formalizing it makes new bug-class fixes inherit the pattern automatically.
+- **Human correction cost:** The "make it structural" conversation happened 5 times in one day. Without a rule, it'll happen on every future bug-class fix. A single CLAUDE.md governance section eliminates the recurring conversation permanently.
+
+**Proposed CLAUDE.md addition (sketch for build task):**
+
+> ### Recurring Bug Class Fix Discipline
+>
+> When fixing a bug that is registered as a gap class (G-XXX in `concerns.yaml`) or has recurred 3+ times, the fix MUST land via:
+>
+> 1. **Chokepoint** — a single function or code path that is the only legal way to perform the operation. All existing call sites must be migrated to use it. No other code path may bypass it.
+> 2. **Invariant test** — a bats test (or equivalent) that asserts no code bypasses the chokepoint. This test runs in CI on every PR.
+>
+> Tactical patches (fixing the current call site without adding a chokepoint) are insufficient for recurring bug classes. They leave the class free to recur.
+>
+> **Trigger:** Any bug where:
+> - The bug is registered as G-XXX in `concerns.yaml`, OR
+> - The same root cause has been fixed 3+ times across tasks/sessions, OR
+> - The bug's task description references a class-mate of an existing G-XXX
+>
+> **Below the threshold:** Tactical fixes are fine. Demanding chokepoint+test for every bug would slow the framework to a crawl.
+>
+> **Enforcement:** Task acceptance criteria template for build tasks descended from G-XXX gaps MUST include:
+> - [ ] Chokepoint identified and documented
+> - [ ] Invariant test added (link to test file)
+>
+> `fw task verify` checks these ACs explicitly.
+
+**Trigger criteria summary:**
+| Condition | Discipline applies? |
+|---|---|
+| Bug registered as G-XXX in concerns.yaml | Yes |
+| Same root cause fixed 3+ times | Yes |
+| Bug is a class-mate of an existing G-XXX | Yes |
+| One-off bug, single incident, no class registered | No (tactical fix is fine) |
+
+**Build decomposition (when GO confirmed):**
+1. **T-1105a** — Add "Recurring Bug Class Fix Discipline" section to CLAUDE.md (~50 lines, 1 file)
+2. **T-1105b** — Update task template (`.tasks/templates/zzz-default.md`) to include chokepoint+test ACs when task description references a G-XXX gap
+3. **T-1105c** — Add `fw task verify --chokepoint` flag that checks for chokepoint+test ACs on G-descended build tasks, warns if missing
+4. **T-1105d** — Backport discipline check to `fw audit` — flag any G-XXX gap whose remediation task lacks chokepoint+test ACs
+5. **T-1105e** — Update `agents/task-create/AGENT.md` to emit chokepoint+test ACs by default for build tasks descended from gaps
 
 ## Decisions
 
