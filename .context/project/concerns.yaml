@@ -683,3 +683,28 @@ concerns:
     (2026-04-04): fw upgrade now syncs lib/*.sh, 9 agent directories, and VERSION file to consumer vendored dirs. T-859: VERSION
     file sync prevents stale version detection after upgrade. All 9 consumers upgraded 2026-04-05. Gap remaining: no automated
     trigger for upgrades — relies on human running fw doctor.'
+- id: G-024
+  type: gap
+  title: fw upgrade does not sync web/blueprints/ — consumer web code can drift silently
+  description: 'fw upgrade syncs lib/*.sh, agents/, bin/fw, CLAUDE.md, and VERSION but not web/blueprints/ or web/templates/.
+    Consumers that were initialized at a point in time retain their original blueprint files forever. Low impact today because
+    consumers typically do not run their own Watchtower (it runs from the framework repo or in LXC 170), but the drift exists
+    and will bite if any consumer starts running its own Watchtower against the framework''s local tooling.
+
+    '
+  spec_reference: lib/upgrade.sh, web/blueprints/
+  severity: low
+  likelihood: 2
+  impact: 1
+  score: 2
+  ranking: low
+  evidence:
+  - 'T-1091 (2026-04-11): rationale_hint truncation fix propagated to 11 consumers via fw upgrade. 4/11 still had outdated
+    inception.py (025-WokrshopDesigner, 051-Vinix24, 052-KCP, 053-ntfy) with file mtimes from Mar 28–Apr 4. The other 7 passed
+    only because they lacked inception.py at all or had it missing the truncation pattern.'
+  - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync)'
+  trigger: A consumer starts running its own Watchtower instance and encounters a bug already fixed in the canonical copy.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1091
