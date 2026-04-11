@@ -1145,3 +1145,36 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+- id: G-039
+  type: gap
+  title: 'Config registry triple-mirror — lib/config.sh, web/blueprints/config.py, CLAUDE.md all hand-maintained'
+  description: 'The framework config registry is enumerated in THREE places: (1) `lib/config.sh:130-148` FW_CONFIG_REGISTRY
+    (17 entries, format KEY|DEFAULT|DESCRIPTION, the bash canonical); (2) `web/blueprints/config.py:14-32` SETTINGS (17 entries,
+    Python tuples, comment explicitly says "mirrors lib/config.sh FW_CONFIG_REGISTRY"); (3) CLAUDE.md config table (17 entries,
+    human-readable markdown, includes FW_ env-var prefix and human-readable name). All three currently match exactly, but
+    adding a new config setting requires touching all three with no structural link between them. This is the fourth confirmed
+    L-006 instance found in a 30-minute scan of the framework — pattern density is high enough to warrant a dedicated systematic
+    sweep. Intersects with G-035 (CLAUDE.md/fw help/code drift) as the CLAUDE.md side of the mirror. Structural fix options:
+    (A) Generate CLAUDE.md table + config.py SETTINGS from lib/config.sh at build time (chokepoint = lib/config.sh); (B) Move
+    FW_CONFIG_REGISTRY into a YAML file readable by all three (config/settings.yaml, like status-transitions.yaml solved
+    T-588); (C) `fw doctor` invariant check that diffs the 17 keys across all three sources.'
+  spec_reference: lib/config.sh:130-148, web/blueprints/config.py:14-32, CLAUDE.md config table, L-006, G-035
+  severity: medium
+  likelihood: 4
+  impact: 2
+  score: 8
+  ranking: medium
+  evidence:
+  - 'Manual cross-check: all 17 keys in lib/config.sh and web/blueprints/config.py match exactly (BASH_TIMEOUT, BUDGET_RECHECK_INTERVAL,
+    ... HANDOVER_DEDUP_COOLDOWN). CLAUDE.md lists the same 17 with FW_ prefix and human-readable names.'
+  - 'config.py:13 comment explicitly states "mirrors lib/config.sh FW_CONFIG_REGISTRY" — self-documented divergence risk.'
+  - 'G-035 (doc/code drift) is the parent class. G-039 is the config-registry instance. T-588 precedent (status-transitions.yaml)
+    shows the Option B pattern works.'
+  - 'Related: L-006 (enumeration-divergence class), G-035 (doc parity parent), G-024/G-037/G-038 (other L-006 instances),
+    T-588 (status-transitions.yaml single source of truth precedent).'
+  trigger: Any addition to FW_CONFIG_REGISTRY in lib/config.sh that is not simultaneously mirrored in config.py SETTINGS and
+    CLAUDE.md.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
