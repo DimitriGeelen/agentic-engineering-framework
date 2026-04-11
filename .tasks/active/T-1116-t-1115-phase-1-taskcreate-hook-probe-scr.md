@@ -1,0 +1,85 @@
+---
+id: T-1116
+name: "T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification checklist"
+description: >
+  T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification checklist
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-11T22:41:04Z
+last_update: 2026-04-11T22:41:04Z
+date_finished: null
+---
+
+# T-1116: T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification checklist
+
+## Context
+
+Phase 1 of T-1115 GO decision. Delivers a probe script + fresh-session
+verification checklist for the must-verify spike A1: does Claude Code
+fire `PreToolUse` on `TaskCreate`/`TaskUpdate`/`TaskList`/`TaskGet`?
+Does NOT modify live `.claude/settings.json` — all artifacts live in
+`tests/spikes/` and are only activated manually by the human before
+restarting Claude Code in a fresh session.
+
+Out of scope for this task (deferred to next session as follow-up):
+the fallback CLAUDE.md rule, the PostToolUse scanner, and the Level 1
+block hook — all conditional on the spike result.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `tests/spikes/taskcreate-hook-probe.sh` exists, executable, logs
+      stdin + argv + timestamp + tool name to
+      `.context/working/.taskcreate-probe.log`, exits 0.
+- [x] `tests/spikes/taskcreate-hook-probe-settings-fragment.json`
+      exists with a valid PreToolUse matcher for
+      `TaskCreate|TaskUpdate|TaskList|TaskGet` (human merges manually).
+- [x] `tests/spikes/taskcreate-hook-probe-README.md` gives a
+      copy-pasteable checklist: install fragment, restart Claude Code,
+      call TaskList, check the log, report result.
+- [x] Probe script smoke-tested locally: `echo '{}' | bash tests/spikes/taskcreate-hook-probe.sh`
+      writes a log line and exits 0.
+
+### Human
+- [ ] [REVIEW] Run the spike in a fresh Claude Code session
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && cat tests/spikes/taskcreate-hook-probe-README.md` (read the checklist)
+  2. Merge `tests/spikes/taskcreate-hook-probe-settings-fragment.json` into `.claude/settings.json` (or read-only: just start a new session from a clone that has the fragment)
+  3. Restart Claude Code (exit current session, start fresh with `claude`)
+  4. In the fresh session, issue a harmless built-in task tool call (e.g., "please add a TODO item: test spike")
+  5. Inspect `.context/working/.taskcreate-probe.log` — is it populated?
+  **Expected:** Either the log file contains a line (hooks fire on Task tools — proceed to Phase 2 Level 1 hook implementation) OR the log file is empty/absent (hooks do NOT fire on Task tools — proceed to Phase 2 fallback: CLAUDE.md rule + PostToolUse scanner).
+  **If not:** Report which case you got in the T-1116 Updates section, then decide T-1115 accordingly.
+
+## Verification
+
+test -x tests/spikes/taskcreate-hook-probe.sh
+test -f tests/spikes/taskcreate-hook-probe-settings-fragment.json
+test -f tests/spikes/taskcreate-hook-probe-README.md
+bash -c 'echo "{\"tool_name\":\"TaskCreate\",\"tool_input\":{\"subject\":\"test\"}}" | tests/spikes/taskcreate-hook-probe.sh'
+test -f .context/working/.taskcreate-probe.log
+python3 -c "import json; json.load(open('tests/spikes/taskcreate-hook-probe-settings-fragment.json'))"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-11T22:41:04Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1116-t-1115-phase-1-taskcreate-hook-probe-scr.md
+- **Context:** Initial task creation

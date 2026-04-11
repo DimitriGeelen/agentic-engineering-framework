@@ -1,0 +1,16 @@
+{
+  "_comment": "T-1115/T-1116 verification spike. Merge the PreToolUse entry below into .claude/settings.json under the existing 'hooks.PreToolUse' array. Restart Claude Code before testing. The probe script is at tests/spikes/taskcreate-hook-probe.sh — it logs every invocation and exits 0 (allow). If the hook fires on TaskCreate/TaskUpdate/TaskList/TaskGet, .context/working/.taskcreate-probe.log will contain entries after you make a built-in task tool call.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "TaskCreate|TaskUpdate|TaskList|TaskGet",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/tests/spikes/taskcreate-hook-probe.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
