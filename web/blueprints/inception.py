@@ -210,6 +210,7 @@ def inception_detail(task_id):
         "scope": _md(_extract_section(task_body, "Scope Fence")),
         "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
         "recommendation": _md(_extract_section(task_body, "Recommendation")),
+        "structural_upgrade": _md(_extract_section(task_body, "Structural Upgrade")),
         "decision": _md(_extract_section(task_body, "Decision")),
         "updates": _md(_extract_section(task_body, "Updates")),
     }

@@ -286,6 +286,14 @@
 </article>
 {% endif %}
 
+<!-- Structural Upgrade (T-1108, added per T-1105 chokepoint+invariant-test discipline) -->
+{% if sections.structural_upgrade %}
+<article class="section-card">
+    <header>Structural Upgrade</header>
+    <div class="section-content">{{ sections.structural_upgrade }}</div>
+</article>
+{% endif %}
+
 <!-- Decision Details -->
 {% if sections.decision and dec != 'pending' %}
 <article class="section-card">

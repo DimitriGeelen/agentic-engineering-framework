@@ -1048,3 +1048,33 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1104
+- id: G-036
+  type: gap
+  title: 'Watchtower inception detail page hardcoded section allowlist — new sections added to task files are silently dropped'
+  description: '`web/blueprints/inception.py:205-214` builds the `sections` dict from a hardcoded list of section names (Problem
+    Statement, Assumptions, Exploration Plan, Technical Constraints, Scope Fence, Go/No-Go Criteria, Recommendation, Decision,
+    Updates). Any new `## <Heading>` section added to a task file — including the `## Structural Upgrade` section introduced
+    per T-1105 chokepoint+invariant-test discipline — is parsed correctly by `_extract_section()` but never rendered because
+    it is not in the allowlist. The human reviewing via `fw task review T-XXX` sees the Recommendation but not the Structural
+    Upgrade, which is the entire point of the discipline pass. Fixed for Structural Upgrade in T-1108, but the underlying
+    gap (allowlist architecture) remains — the NEXT section added will hit the same bug.'
+  spec_reference: web/blueprints/inception.py:205-214, web/templates/inception_detail.html, T-1105, T-1108
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'T-1100..T-1106 all had ## Structural Upgrade sections added in the 2026-04-11 discipline pass. Post-add, curl -sf http://localhost:3003/inception/T-1100
+    | grep -c "Structural Upgrade" returned 0 for all six. The section was invisible to the human review flow — the entire
+    structural-fix work was hidden behind a template allowlist.'
+  - 'Root cause: sections dict is a literal whitelist keyed by section name. Both the Python side and the Jinja template
+    side have to be updated together for every new section. Any new section that does not come with both edits lands silently
+    broken.'
+  - 'T-1108 fix covers Structural Upgrade specifically but does not change the architecture. The next new section (e.g.,
+    Dialogue Log per C-001 extension) will hit the same bug.'
+  trigger: Any new standardized section heading added to inception task files (Dialogue Log, Chokepoint, Migration, etc.).
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1108
