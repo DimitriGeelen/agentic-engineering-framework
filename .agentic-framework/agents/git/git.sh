@@ -12,8 +12,11 @@ LIB_DIR="$SCRIPT_DIR/lib"
 # Source common utilities
 source "$LIB_DIR/common.sh"
 
-# Version for hook compatibility checking
-VERSION="1.4"
+# Version for hook compatibility checking.
+# Bump this when ANY hook template in lib/hooks.sh changes — the value must match
+# the commit-msg template's `# VERSION=X.Y` marker or install-hooks gets confused
+# (T-1079: previous drift left consumers silently on old hooks).
+VERSION="1.5"
 
 show_help() {
     cat << EOF

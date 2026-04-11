@@ -309,7 +309,7 @@ HOOK_EOF
 # pre-push hook - Audit Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.0
+# VERSION=1.1
 
 # Find project root (where .git is) and export for audit script
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
