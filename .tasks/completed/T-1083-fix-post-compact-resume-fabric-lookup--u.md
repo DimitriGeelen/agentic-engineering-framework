@@ -4,7 +4,7 @@ name: "Fix post-compact-resume fabric lookup — uses PROJECT_ROOT path, fails s
 description: >
   Fix post-compact-resume fabric lookup — uses PROJECT_ROOT path, fails silently on consumers
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T08:45:08Z
-last_update: 2026-04-11T08:45:08Z
-date_finished: null
+last_update: 2026-04-11T08:46:18Z
+date_finished: 2026-04-11T08:46:18Z
 ---
 
 # T-1083: Fix post-compact-resume fabric lookup — uses PROJECT_ROOT path, fails silently on consumers
@@ -68,3 +68,6 @@ grep -q 'FRAMEWORK_ROOT/agents/fabric/fabric.sh' agents/context/post-compact-res
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1083-fix-post-compact-resume-fabric-lookup--u.md
 - **Context:** Initial task creation
+
+### 2026-04-11T08:46:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
