@@ -4,7 +4,7 @@ name: "Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre
 description: >
   Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre-push (T-1084 primary fix)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T09:19:10Z
-last_update: 2026-04-11T09:19:10Z
-date_finished: null
+last_update: 2026-04-11T09:21:51Z
+date_finished: 2026-04-11T09:21:51Z
 ---
 
 # T-1086: Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre-push (T-1084 primary fix)
@@ -35,12 +35,12 @@ Research artifact: `docs/reports/T-1084-gate-bypass-discoverability.md`
 ## Acceptance Criteria
 
 ### Agent
-- [ ] commit-msg task-ref gate (hooks.sh:75-79) — replaced with clean bypass
-- [ ] Inception commit-msg gate (hooks.sh:128-130) — replaced with clean bypass
-- [ ] Pre-push audit gate (hooks.sh:377-379) — replaced with clean bypass
-- [ ] Hook VERSION bumped (commit-msg template + git.sh VERSION) so consumers get the fix on upgrade
-- [ ] Mirrored to `.agentic-framework/` consumer copy
-- [ ] Consumer propagation verified via TermLink (at least 3 sample projects)
+- [x] commit-msg task-ref gate (hooks.sh:72-81) — replaced with clean bypass
+- [x] Inception commit-msg gate (hooks.sh:124-132) — replaced with clean bypass
+- [x] Pre-push audit gate (hooks.sh:372-381) — replaced with clean bypass
+- [x] Hook VERSION bumped 1.5 → 1.6 (both templates + git.sh)
+- [x] Mirrored to `.agentic-framework/` consumer copy
+- [x] Consumer propagation verified: 11/11 projects FIXED via TermLink `install-hooks --force`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,3 +82,6 @@ grep -c 'git commit --no-verify' agents/git/lib/hooks.sh | grep -qE '^[3-9]'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1086-fix-hookssh-bypass-messages--commit-msg-.md
 - **Context:** Initial task creation
+
+### 2026-04-11T09:21:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

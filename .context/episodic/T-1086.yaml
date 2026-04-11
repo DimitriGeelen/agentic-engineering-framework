@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1086: Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre-push (T-1084 primary fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T09:21:58Z
+# ============================================================================
+
+task_id: T-1086
+task_name: "Fix hooks.sh bypass messages — commit-msg task-ref, inception gate, pre-push (T-1084 primary fix)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T09:19:10Z
+completed: 2026-04-11T09:21:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-11T11:21:05+02:00
+last_commit: 2026-04-11T11:21:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix hooks.sh bypass messages (T-1084 primary fix)
+
+# Key outcomes
+outcomes:
+  - "commit-msg task-ref gate (hooks.sh:72-81) — replaced with clean bypass"
+  - "Inception commit-msg gate (hooks.sh:124-132) — replaced with clean bypass"
+  - "Pre-push audit gate (hooks.sh:372-381) — replaced with clean bypass"
+  - "Hook VERSION bumped 1.5 → 1.6 (both templates + git.sh)"
+  - "Mirrored to `.agentic-framework/` consumer copy"
+  - "Consumer propagation verified: 11/11 projects FIXED via TermLink `install-hooks --force`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix hooks.sh bypass messages (T-1084 primary fix)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/git/git.sh"
+  - ".agentic-framework/agents/git/lib/hooks.sh"
+  - "agents/git/git.sh"
+  - "agents/git/lib/hooks.sh"
+  - ".tasks/active/T-1086-fix-hookssh-bypass-messages--commit-msg-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T11:21:05"
+    action: "T-1086: Fix hooks.sh bypass messages (T-1084 primary fix)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 5
+  lines_added: 114
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1086-fix-hookssh-bypass-messages--commit-msg-.md
+generated_by: context-agent-hybrid
