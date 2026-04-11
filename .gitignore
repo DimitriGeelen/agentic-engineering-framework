@@ -11,6 +11,9 @@ __pycache__/
 .playwright-mcp/
 .termlink-task
 .claude/scheduled_tasks.lock
+.context/working/.tier0-approval
+.context/working/.tier0-approval.pending
+.context/working/.reviewed-*
 .context/bus/
 .context/locks/
 .context/secrets/
