@@ -1,24 +1,31 @@
-timestamp: 2026-04-11T21:30:01Z
+timestamp: 2026-04-11T22:00:01Z
 findings:
-  - id: D1
+  - id: D4
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1006)"
-  - id: D2
-    level: FAIL
-    check: "D2: Human review queue — 1 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(29d) T-470(30d) T-479(14d) T-481(28d) T-505(25d) T-511(25d) T-518(24d) T-530(19d) T-571(14d) T-579(15d) T-584(14d) T-594(18d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(16d) T-613(15d) T-619(14d) T-631(15d) T-644(15d) T-645(15d) T-651(14d) T-662(14d) T-663(14d) T-671(14d) T-676(14d)"
-    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
-  - id: D8
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 12 anomaly(s): T-829(3min,human) T-827(2min,human) T-524(3min,human) T-523(1min,human) T-815(8d-active) T-801(8d-active) T-805(8d-active) T-804(8d-active) T-806(8d-active) T-807(8d-active) (+2 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
     level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
+    check: "D3: Commit velocity — insufficient data"
+  - id: D7
     level: PASS
-    check: "D10: Decision-without-dialogue — none detected"
-  - id: D11
+    check: "D7: Commit bunching — none (PASS no_recent_commits)"
+  - id: D6
+    level: WARN
+    check: "D6: Completion velocity — sustained drop (drop recent_avg=7.3 vs earlier_avg=29.4)"
+    mitigation: "Check for blockers or process issues slowing work"
+  - id: D12
     level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 4
-  warn: 0
-  fail: 1
-  total: 5
+  pass: 5
+  warn: 2
+  fail: 0
+  total: 7

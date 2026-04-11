@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1113: Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw task review + bats invariant tests (T-1111 build)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T22:13:23Z
+# ============================================================================
+
+task_id: T-1113
+task_name: "Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw task review + bats invariant tests (T-1111 build)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T21:53:34Z
+completed: 2026-04-11T22:13:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T00:00:02+02:00
+last_commit: 2026-04-12T00:00:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Placeholder audit chokepoint — block review/decide on unfilled templates
+
+# Key outcomes
+outcomes:
+  - "`lib/task-audit.sh` exists with `audit_task_placeholders()` that returns"
+  - "`bin/fw task review` sources `lib/task-audit.sh` and calls the audit"
+  - "`lib/inception.sh:do_inception_decide` calls the audit BEFORE the"
+  - "Unit test `tests/unit/lib_task_audit.bats` passes: exercises the helper"
+  - "Integration test `tests/integration/audit_blocks_review_and_decide.bats`"
+  - "`bin/fw test unit tests/unit/lib_task_audit.bats` green."
+  - "`bin/fw test integration tests/integration/audit_blocks_review_and_decide.bats` green."
+  - "`.context/project/concerns.yaml`: G-018 marked resolved_by: T-1113."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".context/project/concerns.yaml"
+  - ".fabric/components/lib-task-audit.yaml"
+  - "lib/inception.sh"
+  - "lib/task-audit.sh"
+  - ".tasks/active/T-1113-placeholder-audit-chokepoint-auditplaceh.md"
+  - "tests/integration/audit_blocks_review_and_decide.bats"
+  - "tests/unit/lib_task_audit.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T00:00:02"
+    action: "T-1113: Placeholder audit chokepoint — block review/decide on unfilled templates"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 8
+  lines_added: 514
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1113-placeholder-audit-chokepoint-auditplaceh.md
+generated_by: context-agent-hybrid

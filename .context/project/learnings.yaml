@@ -5,41 +5,6 @@ learnings:
   learning: "First learning"
   source: unknown
   task: unknown
-  date: 2026-04-09
-  context: Added via context agent
-  application: TBD
-- id: L-002
-  learning: "Pre-push hook install-hooks uses version gating — cosmetic changes to the template (like path checks) won't propagate to consumer projects unless VERSION is bumped in git.sh, or --force is used. Consider bumping VERSION when modifying hook templates."
-  source: P-001
-  task: T-1078
-  date: 2026-04-11
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "Hook templates that resolve framework scripts must include .agentic-framework/ path — consumer projects store the framework under that subdirectory, and omitting it means the hook silently fails for every consumer even after T-498 removed framework_path from .framework.yaml. Rule: any bin/fw subcommand or hook template that does path resolution on behalf of a consumer must try .agentic-framework/ before bare PROJECT_ROOT/ paths."
-  source: P-001
-  task: T-1078
-  date: 2026-04-11
-  context: Added via context agent
-  application: TBD
-- id: L-004
-  learning: "Post-compact state cleanup must SEED fresh state, not just DELETE: budget-gate and checkpoint both read the last usage entry across the whole resumed JSONL. If they find no cache file, slow path re-reads the JSONL and picks up the pre-compact final usage entry. Deleting the cache file hands the bug to the slow path — the fix is to write a fresh ok record so fast path answers correctly until real post-compact entries land."
-  source: P-009
-  task: T-1087
-  date: 2026-04-11
-  context: Added via context agent
-  application: TBD
-- id: L-005
-  learning: "Shell verification commands piped to grep -q trigger SIGPIPE (exit 141) under set -o pipefail: use 'cmd > file; grep -q pat file' pattern instead of 'cmd | grep -q pat' when the verification gate runs with pipefail."
-  source: P-011
-  task: T-1088
-  date: 2026-04-11
-  context: Added via context agent
-  application: TBD
-- id: L-006
-  learning: "Enumeration-divergence: when two code paths each maintain their own hardcoded list of the same logical thing (e.g., do_upgrade step 4b sync list vs do_vendor includes), they drift silently as new items are added to one but not the other. Structural fix: collapse to single source of truth by having one path call the other. T-1109 root cause for G-024."
-  source: P-001
-  task: T-1109
   date: 2026-04-11
   context: Added via context agent
   application: TBD
