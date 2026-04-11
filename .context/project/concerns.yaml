@@ -1113,3 +1113,35 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+- id: G-038
+  type: gap
+  title: 'web/blueprints/tasks.py hardcodes workflow_types and horizons — bypasses status-transitions.yaml single source of truth'
+  description: 'T-588 established `status-transitions.yaml` as the declarative source of truth for VALID_STATUSES, VALID_TYPES,
+    VALID_HORIZONS, and VALID_TRANSITIONS. `lib/enums.sh` correctly reads the YAML at source-time and exposes the values
+    via shell variables + validation functions. The bash side of the framework respects this chokepoint. But `web/blueprints/tasks.py:439`
+    has `allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]` hardcoded,
+    and `web/blueprints/tasks.py:448` has `horizon not in ("now", "next", "later")` hardcoded. Both currently match the YAML
+    but are parallel enumerations — if any new workflow type is added to status-transitions.yaml (e.g., "research", "ops"),
+    the Watchtower task-creation form will reject it as "Invalid workflow type" while the CLI accepts it. Same L-006 class
+    as G-024/G-037 but at the Python<->Bash boundary. Structural fix: Python-side helper `_load_enums_from_yaml()` that reads
+    status-transitions.yaml (already parsed via PyYAML elsewhere in Watchtower) and exposes the same names.'
+  spec_reference: web/blueprints/tasks.py:439, web/blueprints/tasks.py:448, status-transitions.yaml, lib/enums.sh, L-006, T-588
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'Hardcoded list at web/blueprints/tasks.py:439 — `allowed_types = ["build", "test", "refactor", "specification", "design",
+    "decommission", "inception"]`. Currently matches status-transitions.yaml `workflow_types` exactly (7 entries).'
+  - 'Hardcoded tuple at web/blueprints/tasks.py:448 — `("now", "next", "later")`. Currently matches status-transitions.yaml
+    `horizons` exactly (3 entries).'
+  - 'The bash side via lib/enums.sh already solved this — python side was never migrated.'
+  - 'Related: L-006 (enumeration-divergence class), G-024 (T-1109 primary instance), G-037 (second instance at do_vendor/do_update
+    boundary), T-588 (status-transitions.yaml origin), T-1105 (chokepoint+invariant-test discipline).'
+  trigger: Any addition to `workflow_types:` or `horizons:` in status-transitions.yaml that is not simultaneously mirrored
+    in web/blueprints/tasks.py.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
