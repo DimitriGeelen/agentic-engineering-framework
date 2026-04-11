@@ -18,12 +18,10 @@ FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 # T-712/T-713: Clear ALL session-scoped volatile state on session recovery.
 # These files are counters, caches, and flags that are valid only within a
 # single session. Carrying them across compact/resume causes stale-state bugs:
-# - .budget-status: stale token count blocks new session (T-712 root cause)
 # - .agent-dispatch-counter: old count blocks agent dispatch
 # - .handover-cooldown: old cooldown prevents handover in new session
 # - .loop-detect.json: old patterns cause false loop detection
 VOLATILE_FILES=(
-    .budget-status
     .budget-gate-counter
     .agent-dispatch-counter
     .edit-counter
@@ -37,6 +35,19 @@ VOLATILE_FILES=(
 for vf in "${VOLATILE_FILES[@]}"; do
     rm -f "$PROJECT_ROOT/.context/working/$vf" 2>/dev/null
 done
+
+# T-1087: Seed .budget-status with fresh {ok, 0, now} instead of deleting.
+# Regression of T-145/T-271/T-712/T-713: plain rm leaves the fast path to
+# fall through to slow path, which re-reads the resumed JSONL and picks up
+# the pre-compact final usage entry as the "last usage" (claude -c continues
+# writing to the same JSONL; the first post-compact assistant message with
+# a usage block hasn't landed yet on the first few tool calls). Seeding with
+# ok lets fast path serve the correct initial state for STATUS_MAX_AGE (90s),
+# during which real post-compact usage entries accumulate in the JSONL. The
+# proper fix (timestamp filter on JSONL entries) is tracked as T-1088.
+cat > "$PROJECT_ROOT/.context/working/.budget-status" <<BUDGET_EOF
+{"level": "ok", "tokens": 0, "timestamp": $(date +%s), "source": "post-compact-resume"}
+BUDGET_EOF
 
 # Build context string
 CONTEXT=""
