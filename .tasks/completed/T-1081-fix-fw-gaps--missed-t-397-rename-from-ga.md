@@ -4,7 +4,7 @@ name: "Fix fw gaps — missed T-397 rename from gaps.yaml to concerns.yaml"
 description: >
   Fix fw gaps — missed T-397 rename from gaps.yaml to concerns.yaml
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T08:34:53Z
-last_update: 2026-04-11T08:34:53Z
-date_finished: null
+last_update: 2026-04-11T08:36:10Z
+date_finished: 2026-04-11T08:36:10Z
 ---
 
 # T-1081: Fix fw gaps — missed T-397 rename from gaps.yaml to concerns.yaml
@@ -68,3 +68,6 @@ bin/fw gaps 2>&1 | grep -q 'watching'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1081-fix-fw-gaps--missed-t-397-rename-from-ga.md
 - **Context:** Initial task creation
+
+### 2026-04-11T08:36:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
