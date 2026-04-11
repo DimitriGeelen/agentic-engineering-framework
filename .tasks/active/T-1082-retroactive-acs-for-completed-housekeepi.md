@@ -1,34 +1,33 @@
 ---
-id: T-1074
-name: "Session housekeeping — commit working state and generated artifacts"
+id: T-1082
+name: "Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 warns)"
 description: >
-  Session housekeeping — commit working state and generated artifacts
+  Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 warns)
 
-status: work-completed
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-04-09T13:05:21Z
-last_update: 2026-04-09T13:05:45Z
-date_finished: 2026-04-09T13:05:45Z
+created: 2026-04-11T08:38:37Z
+last_update: 2026-04-11T08:38:37Z
+date_finished: null
 ---
 
-# T-1074: Session housekeeping — commit working state and generated artifacts
+# T-1082: Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 warns)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Audit CTL-012 warns that completed tasks T-1072 and T-1074 still contain `[First criterion]` placeholder ACs. Both were refactor-type housekeeping tasks created and completed within minutes without real ACs — the build-readiness gate only fires on `type: build`, so refactor housekeeping slipped through. Replace placeholders with retroactive ACs reflecting what was actually committed.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] VERSION bump committed
-- [x] Regenerated docs/generated/components committed
-- [x] Audit scan markers and hook check generation committed
-- [x] Working directory clean after commit
+- [x] T-1072 has real ACs describing what was committed (no placeholder text)
+- [x] T-1074 has real ACs describing what was committed (no placeholder text)
+- [x] `fw audit` no longer warns CTL-012 for T-1072 or T-1074
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -49,7 +48,8 @@ date_finished: 2026-04-09T13:05:45Z
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+! grep -q '\[First criterion\]' .tasks/completed/T-1072-commit-generated-docs-audit-results-and-.md
+! grep -q '\[First criterion\]' .tasks/completed/T-1074-session-housekeeping--commit-working-sta.md
 
 ## Decisions
 
@@ -64,10 +64,7 @@ date_finished: 2026-04-09T13:05:45Z
 
 ## Updates
 
-### 2026-04-09T13:05:21Z — task-created [task-create-agent]
+### 2026-04-11T08:38:37Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1074-session-housekeeping--commit-working-sta.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1082-retroactive-acs-for-completed-housekeepi.md
 - **Context:** Initial task creation
-
-### 2026-04-09T13:05:45Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

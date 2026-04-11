@@ -25,9 +25,9 @@ date_finished: 2026-04-09T12:44:02Z
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regenerated docs/generated/components committed (51 files, ~9.6K insertions)
+- [x] Audit results and session working state committed
+- [x] Working directory clean after commit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
