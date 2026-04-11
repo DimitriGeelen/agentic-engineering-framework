@@ -1,0 +1,55 @@
+---
+id: T-1090
+name: "fw task review announces review-marker creation as unblock for fw inception decide"
+description: >
+  T-1084 follow-up: emit_review in lib/review.sh creates .context/working/.reviewed-TASK as an invisible side effect. Agents had to dig through source to discover that running fw task review unblocks fw inception decide. Add an explicit line to the output announcing the marker creation and its purpose (T-973 gate unblock).
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-11T10:47:21Z
+last_update: 2026-04-11T10:47:21Z
+date_finished: null
+---
+
+# T-1090: fw task review announces review-marker creation as unblock for fw inception decide
+
+## Context
+
+T-1084 follow-up. `emit_review` in `lib/review.sh:135-136` silently creates `.context/working/.reviewed-TASK` — that marker is the T-973 unblock prereq for `fw inception decide`, but the output doesn't mention it. Agents had to dig through source to discover that `fw task review` was the unblock for a seemingly unrelated gate. Print one line announcing the marker and its purpose.
+
+## Acceptance Criteria
+
+### Agent
+- [ ] `emit_review` prints a one-line notice after creating the review marker, stating the marker path and that it unblocks `fw inception decide` (T-973 gate).
+- [ ] Mirrored to `.agentic-framework/lib/review.sh`.
+- [ ] Running `bin/fw task review T-1090` on this task emits output containing the marker announcement string.
+
+## Verification
+
+grep -q "\.reviewed-" lib/review.sh
+grep -q "unblocks" lib/review.sh
+grep -q "\.reviewed-" .agentic-framework/lib/review.sh
+grep -q "unblocks" .agentic-framework/lib/review.sh
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-11T10:47:21Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1090-fw-task-review-announces-review-marker-c.md
+- **Context:** Initial task creation

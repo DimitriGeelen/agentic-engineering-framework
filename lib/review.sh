@@ -134,4 +134,11 @@ except ImportError:
     # Mark task as reviewed — prerequisite gate for fw inception decide (T-973)
     mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null
     touch "$PROJECT_ROOT/.context/working/.reviewed-${task_id}" 2>/dev/null || true
+    # T-1090: Announce the marker side effect so the agent can discover the
+    # T-973 unblock without having to read source. Previously the marker was
+    # an invisible side effect that left agents stuck at the inception-decide
+    # gate with no discoverable unblock path.
+    echo -e "  ${CYAN}Review marker created:${NC} .context/working/.reviewed-${task_id}"
+    echo -e "  ${CYAN}(unblocks${NC} fw inception decide ${task_id}${CYAN} — T-973 gate)${NC}"
+    echo ""
 }
