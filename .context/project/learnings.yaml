@@ -36,3 +36,10 @@ learnings:
   date: 2026-04-11
   context: Added via context agent
   application: TBD
+- id: L-006
+  learning: "Enumeration-divergence: when two code paths each maintain their own hardcoded list of the same logical thing (e.g., do_upgrade step 4b sync list vs do_vendor includes), they drift silently as new items are added to one but not the other. Structural fix: collapse to single source of truth by having one path call the other. T-1109 root cause for G-024."
+  source: P-001
+  task: T-1109
+  date: 2026-04-11
+  context: Added via context agent
+  application: TBD
