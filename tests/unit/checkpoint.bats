@@ -94,6 +94,60 @@ EOF
     [[ "$output" != *"185000"* ]]
 }
 
+# --- T-1088: Session-start-ts filter (post-compact JSONL scan) ---
+
+# Helper: create a transcript with two entries, one pre- and one post-
+# session-start timestamp. Pre-entry has high tokens (simulates pre-compact
+# final usage), post-entry has low tokens (simulates post-compact).
+_create_timestamped_transcript() {
+    local dir="$1"
+    local filename="${2:-test-session.jsonl}"
+    mkdir -p "$dir"
+    cat > "$dir/$filename" <<'EOF'
+{"timestamp":"2026-04-11T09:00:00.000Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":296000,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+{"timestamp":"2026-04-11T11:00:00.000Z","message":{"model":"claude-opus-4-6","usage":{"input_tokens":50000,"output_tokens":500,"cache_read_input_tokens":0,"cache_creation_input_tokens":0}}}
+EOF
+    echo "$dir/$filename"
+}
+
+@test "checkpoint: T-1088 filters pre-session-start JSONL entries" {
+    echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
+    local project_dir_name
+    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
+    # Session starts between the two entries — only the 50000 entry counts.
+    echo "2026-04-11T10:00:00.000Z" > "$PROJECT_ROOT/.context/working/.session-start-ts"
+    run "$CHECKPOINT" status
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"50000"* ]]
+    [[ "$output" != *"296000"* ]]
+}
+
+@test "checkpoint: T-1088 without session-start-ts uses all entries (backward compat)" {
+    echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
+    local project_dir_name
+    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
+    # No .session-start-ts file — loop should pick the last entry (50000).
+    [ ! -f "$PROJECT_ROOT/.context/working/.session-start-ts" ]
+    run "$CHECKPOINT" status
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"50000"* ]]
+}
+
+@test "checkpoint: T-1088 session-start-ts AFTER all entries yields 0 tokens" {
+    echo "0" > "$PROJECT_ROOT/.context/working/.tool-counter"
+    local project_dir_name
+    project_dir_name=$(echo "$PROJECT_ROOT" | sed 's|/|-|g')
+    _create_timestamped_transcript "$HOME/.claude/projects/${project_dir_name}"
+    # Session start is AFTER both entries — nothing should count.
+    echo "2026-04-11T12:00:00.000Z" > "$PROJECT_ROOT/.context/working/.session-start-ts"
+    run "$CHECKPOINT" status
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"296000"* ]]
+    [[ "$output" != *"50000"* ]]
+}
+
 # --- Reset ---
 
 @test "checkpoint: reset clears counter and prev-tokens" {

@@ -2,6 +2,7 @@ __pycache__/
 .context/working/.tool-counter
 .context/working/.transcript-path
 .context/working/.prev-token-reading
+.context/working/.session-start-ts
 .context/working/.budget-gate-counter
 .context/working/.budget-status
 .context/working/.session-turn-offset

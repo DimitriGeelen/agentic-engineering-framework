@@ -183,8 +183,22 @@ if [ -z "${TRANSCRIPT:-}" ]; then
 fi
 
 # Read tokens + write status + determine action — single Python call
+# T-1088: Filter usage entries by .session-start-ts to exclude pre-compact
+# entries from the same JSONL (claude -c continues the same file, so the
+# "last usage" scan can pick up pre-compact entries). ISO-8601 Z timestamps
+# sort lexically in chronological order — no parsing needed. Falls back to
+# no-filter if the file is missing (backward compat with fresh installs).
 SLOW_RESULT=$(tail -c 10000000 "$TRANSCRIPT" 2>/dev/null | python3 -c "
-import sys, json, time
+import sys, json, time, os
+
+# T-1088: Read session-start timestamp if present.
+session_start_ts = ''
+ts_file = '$CONTEXT_DIR/working/.session-start-ts'
+if os.path.exists(ts_file):
+    try:
+        with open(ts_file) as sf:
+            session_start_ts = sf.read().strip()
+    except: pass
 
 t = 0
 for line in sys.stdin:
@@ -193,6 +207,12 @@ for line in sys.stdin:
         model = e.get('message', {}).get('model', '')
         if model == '<synthetic>' or model.startswith('<'):
             continue
+        # T-1088: Skip entries from before session start (pre-compact entries
+        # in the same JSONL). String comparison works for ISO-8601 Z format.
+        if session_start_ts:
+            entry_ts = e.get('timestamp', '')
+            if entry_ts and entry_ts < session_start_ts:
+                continue
         u = e.get('message', {}).get('usage')
         if u and 'input_tokens' in u:
             t = u['input_tokens'] + u.get('cache_read_input_tokens', 0) + u.get('cache_creation_input_tokens', 0)

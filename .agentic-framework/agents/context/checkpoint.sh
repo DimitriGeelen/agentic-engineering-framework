@@ -85,7 +85,18 @@ find_transcript() {
 get_context_tokens() {
     local transcript="$1"
     tail -c 10000000 "$transcript" 2>/dev/null | python3 -c "
-import sys, json
+import sys, json, os
+# T-1088: Read session-start timestamp if present, filter pre-compact entries.
+# claude -c continues the same JSONL, so the 'last usage' scan can otherwise
+# pick up pre-compact entries. ISO-8601 Z sorts lexically — no parsing needed.
+session_start_ts = ''
+ts_file = '$CONTEXT_DIR/working/.session-start-ts'
+if os.path.exists(ts_file):
+    try:
+        with open(ts_file) as sf:
+            session_start_ts = sf.read().strip()
+    except: pass
+
 t = 0
 for line in sys.stdin:
     try:
@@ -94,6 +105,11 @@ for line in sys.stdin:
         model = e.get('message', {}).get('model', '')
         if model == '<synthetic>' or model.startswith('<'):
             continue
+        # T-1088: skip pre-session-start entries (e.g., pre-compact).
+        if session_start_ts:
+            entry_ts = e.get('timestamp', '')
+            if entry_ts and entry_ts < session_start_ts:
+                continue
         u = e.get('message', {}).get('usage')
         if u and 'input_tokens' in u:
             t = u['input_tokens'] + u.get('cache_read_input_tokens', 0) + u.get('cache_creation_input_tokens', 0)

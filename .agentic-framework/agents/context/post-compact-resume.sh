@@ -43,11 +43,18 @@ done
 # writing to the same JSONL; the first post-compact assistant message with
 # a usage block hasn't landed yet on the first few tool calls). Seeding with
 # ok lets fast path serve the correct initial state for STATUS_MAX_AGE (90s),
-# during which real post-compact usage entries accumulate in the JSONL. The
-# proper fix (timestamp filter on JSONL entries) is tracked as T-1088.
+# during which real post-compact usage entries accumulate in the JSONL.
 cat > "$PROJECT_ROOT/.context/working/.budget-status" <<BUDGET_EOF
 {"level": "ok", "tokens": 0, "timestamp": $(date +%s), "source": "post-compact-resume"}
 BUDGET_EOF
+
+# T-1088: Write the session-start timestamp in ISO-8601 Z format. budget-gate.sh
+# and checkpoint.sh read this file and filter JSONL usage entries lexically
+# so pre-compact entries (still in the same JSONL because claude -c continues
+# the file) are excluded from the "last usage" scan. This is the authoritative
+# fix for the T-1087 regression class; T-1087's ok-seed is the safety net that
+# covers the first ~90 seconds before the slow-path runs.
+date -u +"%Y-%m-%dT%H:%M:%S.000Z" > "$PROJECT_ROOT/.context/working/.session-start-ts"
 
 # Build context string
 CONTEXT=""
