@@ -101,12 +101,19 @@ A-5: The discipline does NOT apply to one-off bug fixes (single-incident, no cla
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- 3+ same-day RCAs demonstrate the same "tactical fix proposed → human pushes back for structural" pattern (ACHIEVED — 5 on 2026-04-11: T-1100, T-1101, T-1102, T-1103, T-1104)
+- The pattern is expressible as a reusable rule, not a task-specific judgment call (ACHIEVED — chokepoint + invariant test pair applies to any recurring bug class)
+- CLAUDE.md has an existing governance-rule section that this can slot into (ACHIEVED — fits alongside "Bug-Fix Learning Checkpoint", "Error Escalation Ladder")
+- Implementation cost is low enough that adding the rule does not slow down routine bug fixing (ACHIEVED — the rule only applies when a bug has 3+ registered instances or a G-XXX gap)
+- The discipline has been applied successfully at least once after being articulated, to prove it generalizes (ACHIEVED — 6 total same-day applications: T-1106, T-1092, T-1108, T-1109 all followed the pattern after T-1100..T-1104)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The pattern turns out to be a property of a single session's momentum rather than a generalizable rule (not observed — it has generalized across worker sessions and task types)
+- Codifying the rule introduces friction that outweighs the bug-class prevention benefit (not observed — the rule only triggers on recurring classes, leaving normal bug fixing unconstrained)
+- The chokepoint+test pattern cannot be reduced to a reviewable task acceptance criterion (not observed — each T-1100..T-1104 structural upgrade section has explicit chokepoint identification and test sketches)
+
+**DEFER if:**
+- The CLAUDE.md section draft needs more worked examples before codification (could defer to collect 3-5 more instances across different sessions and human reviewers to confirm generalizability)
 
 ## Verification
 

@@ -61,12 +61,20 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Live reproduction confirms the bug (DONE — `/tmp/t1109-test-consumer` showed `fw upgrade` reports "OK All vendored scripts current" while terminal.py stays missing)
+- Root cause is a structural pattern (enumeration divergence), not a config edge case (CONFIRMED — `lib/upgrade.sh:do_upgrade()` step 4b vs `bin/fw:do_vendor()` includes list)
+- Chokepoint fix exists with zero blocking risk (CONFIRMED — collapse step 4b into `do_vendor` call; `do_vendor` is battle-tested via `fw init`)
+- Invariant tests can be written in bats (CONFIRMED — `upgrade-vendor-complete.bats` + `single-vendor-writer.bats` sketched in `docs/reports/T-1109-web-sync-rca.md`)
+- Migration path is single-command per consumer (CONFIRMED — `fw upgrade <consumer>` re-runs after fix)
+- No downstream code depends on `do_upgrade` maintaining its own enumeration (VERIFIED via grep — no callers expect partial sync behavior)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- `do_vendor` turns out to have unforeseen side-effects when called from `do_upgrade` context (e.g., deletes user-edited files in `.agentic-framework/`)
+- Full re-vendor runtime on large consumers exceeds acceptable upgrade latency (not measured; `.agentic-framework/` is ~7MB, expected sub-second)
+- Invariant test fails to actually guard the regression (test must cause `fw upgrade` without the fix to fail — to be validated in test build)
+
+**DEFER if:**
+- Any consumer project has non-vendored local edits in `.agentic-framework/web/` that would be overwritten (none known; requires audit before migration)
 
 ## Verification
 

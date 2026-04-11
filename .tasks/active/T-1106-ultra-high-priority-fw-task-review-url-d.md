@@ -138,12 +138,18 @@ A-6: The chokepoint+test discipline (T-1105) applies here: chokepoint = single f
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Bug 2 (PID path mismatch: `bin/watchtower.sh:21` uses `$FRAMEWORK_ROOT`, `lib/review.sh:41` uses `$PROJECT_ROOT`) is verified by direct code reading (CONFIRMED — file:line cited in RCA report)
+- A single chokepoint can serve all four bugs with proven architecture (CONFIRMED — `resolve_and_verify_watchtower_url()` in lib/review.sh + `/identity` endpoint in web/app.py + PID path unification)
+- Invariant tests can assert no code bypasses the chokepoint (CONFIRMED — no-rogue-url-construction, review-url-identity-check, pid-path-consistency, no-default-port-fallback sketched in docs/reports/T-1106-watchtower-port-bleed-rca.md)
+- The fix is fully contained within `lib/review.sh`, `bin/watchtower.sh`, and `web/app.py` (CONFIRMED — no cross-project impact, no schema changes, no migration needed)
+- Zero-downtime migration path exists (CONFIRMED — chokepoint is additive; old callers work until migrated)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The `/identity` endpoint introduces auth complexity that outweighs the bleed prevention value (not observed — endpoint is a read-only GET returning `$PROJECT_ROOT`)
+- The chokepoint refactor breaks existing fw task review in edge cases more common than the bleed (not observed — the bleed is already user-visible across multiple sessions)
+
+**DEFER if:**
+- T-885 (per-project configurable port) lands first and makes port collisions rare enough that the primary bleed vector disappears (would reduce urgency but not invalidate the fix — URL identity verification remains valuable)
 
 ## Verification
 

@@ -60,13 +60,19 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if (promote to started-work and begin research phase):**
+- T-1106 has been decided GO and deployed
+- Post-T-1106 monitoring window (1 week minimum) shows measurable residual bleed incidents (QR-after-restart, stale bookmark, cross-device leak) in `.context/project/concerns.yaml` or Watchtower logs
+- At least one of the 4 mitigation options (unique IDs / URL namespace / QR project ID / combined) has an acceptable backward-compat story for existing URLs in circulation
+- Human confirms the residual risk is worth the migration cost (not a rubber stamp — T-1106's emission-time check may be sufficient in practice)
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**NO-GO if (close and discard):**
+- T-1106's deployed fix measurably eliminates the bleed (zero resolution-time incidents in monitoring window)
+- T-885 (per-project configurable port) lands and makes port collisions rare enough that defense-in-depth is unnecessary
+- All 4 mitigation options require rewriting historical git commit messages (which is not an option)
+
+**DEFER if (RECOMMENDED — see Recommendation section):**
+- T-1106 has not yet been decided or deployed. This is the current state — T-1107 should not be promoted until T-1106 is landed and its effectiveness measured.
 
 ## Verification
 
