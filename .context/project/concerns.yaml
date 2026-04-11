@@ -708,3 +708,201 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1091
+- id: G-025
+  type: gap
+  title: fw upgrade not surfaced as the canonical onboarding command — and what it actually does is also unclear
+  description: 'When a consumer project has .framework.yaml and .context/ initialized but no local .agentic-framework/, the
+    canonical command for "set up the framework here" is `fw upgrade [dir]` (documented in `fw help` as "Sync framework improvements
+    to consumer project"). It is not surfaced in CLAUDE.md, fw doctor output, or any onboarding flow. Worse: even when an
+    agent is told to run `fw upgrade`, what it actually does is non-obvious — it migrates the global symlink to a project-detecting
+    shim, refreshes governance files, syncs vendored scripts, and pins a version, but does NOT vendor framework code into
+    a per-project .agentic-framework/ directory. Agents (and the recommending evaluator) assume `fw upgrade` is "copy framework
+    files into the project" and design custom processes around that wrong mental model.
+
+    '
+  spec_reference: lib/upgrade.sh, bin/fw (help text), CLAUDE.md (no entry for upgrade as onboarding)
+  severity: medium
+  likelihood: 4
+  impact: 3
+  score: 12
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in /root/ring20-dashboard spent 8+ exchanges designing
+    a custom tarball-extract vendoring process. User had to explicitly point at the sibling project before the agent investigated
+    the convention. `fw upgrade` was never mentioned by the agent.'
+  - 'Same incident, recovery: When told to run `fw upgrade`, output revealed shim migration (`Replaced global symlink with
+    project-detecting shim`) — completely different mechanism from what either the agent OR the recommending evaluator (this
+    session) expected. The framework ALREADY HAD a working isolation model (shim-based version pinning) that was invisible
+    to both sessions until `fw upgrade` printed it.'
+  - 'Related: G-023 (consumer governance decay), G-024 (fw upgrade web/blueprints gap), G-031 (two isolation patterns coexist)'
+  trigger: Agent in a freshly-initialized consumer project asked to "set up the framework here" and reinvents the process,
+    OR an evaluator recommends `fw upgrade` without knowing what it does.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1094
+- id: G-026
+  type: gap
+  title: fw doctor doesn't run the version-pin drift check that fw upgrade runs
+  description: '`fw upgrade` detects version-pin drift (e.g. `Pinned: vdev (behind v2.46.alpha)`) at upgrade time, but `fw
+    doctor` does not perform the same check. A consumer project can sit on a stale pin indefinitely with `fw doctor` reporting
+    OK. The detection mechanism already exists in lib/upgrade.sh — it just needs to be hoisted into doctor as a read-only
+    check (without applying changes).
+
+    '
+  spec_reference: bin/fw doctor, lib/upgrade.sh
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Project pinned to vdev while host was on v2.46.alpha.
+    Drift only surfaced when fw upgrade was run; fw doctor in the same project would have shown OK on every prior run since
+    2026-04-08.'
+  trigger: Host-installed framework upgrades; consumer project doctor still reports OK; consumer agent runs against stale
+    governance.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1095
+- id: G-027
+  type: gap
+  title: Project boundary hook blocks legitimate cross-project reads — escape route undocumented in BLOCK message
+  description: 'T-559 boundary hook correctly blocks all cross-project Bash including reads of sibling READMEs, CLAUDE.md,
+    and other public docs. T-1089 added the TermLink dispatch escape route for write/exec operations, but read-only operations
+    still have no first-class escape. The BLOCK message could mention `fw termlink dispatch --project /path --prompt "cat README.md"`
+    for legitimate read-only investigation; currently agents fall back to asking the human to authorize each cross-project
+    read individually.
+
+    '
+  spec_reference: agents/context/check-project-boundary.sh
+  severity: low
+  likelihood: 3
+  impact: 2
+  score: 6
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent legitimately needed to read /root/termlink/README.md
+    and /root/.agentic-framework/README.md to understand what they do. Boundary hook blocked. Agent had to ask user for one-time
+    cross-project read approval, then never followed up because the conversation went elsewhere.'
+  - 'Related: T-1089 (boundary gate TermLink dispatch escape for write ops)'
+  trigger: Agent in a consumer project needs to read a sibling project README/CLAUDE.md to understand convention.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1096
+- id: G-028
+  type: gap
+  title: Dual framework-path ambiguity — upstream_repo vs fw resolution path with no reconciliation
+  description: 'A consumer project''s .framework.yaml carries `upstream_repo: <path>` which is the canonical source for `fw
+    upgrade` syncs, while the actively-running `fw` resolves through a possibly different path (e.g. ~/.agentic-framework,
+    /usr/local/Cellar/agentic-fw/<ver>/libexec, or a vendored .agentic-framework/). When these two paths diverge, there is
+    no warning. The agent operating in the consumer project has no way to know which one is "the framework" for that project.
+    fw doctor should reconcile and surface the ambiguity (or at least print both paths and which one is active).
+
+    '
+  spec_reference: bin/fw (resolver), lib/init.sh, .framework.yaml schema
+  severity: medium
+  likelihood: 4
+  impact: 2
+  score: 8
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): /root/ring20-dashboard/.framework.yaml had `upstream_repo:
+    /opt/agentic-engineering-framework` while `which fw` resolved to /root/.local/bin/fw → /root/.agentic-framework/bin/fw.
+    Three potential framework paths in play; agent walked past the ambiguity without flagging it.'
+  trigger: A `fw upgrade` syncs from /opt while the running `fw` lives in ~/.agentic-framework — drift between the two becomes
+    invisible to the consumer.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1097
+- id: G-029
+  type: gap
+  title: Termlink installation model not contrasted with framework distribution model in CLAUDE.md
+  description: 'CLAUDE.md documents `brew install DimitriGeelen/termlink/termlink` (or `cargo install`) as the canonical install
+    path for termlink, but does not explicitly state WHY termlink is machine-wide and framework code is per-project. The reason
+    is structural: termlink is a cross-session message bus that uses Unix sockets at system paths to discover sessions across
+    the whole machine — per-project isolation would defeat session discovery. Framework code by contrast is governance per
+    project. The distinction should be explicit in CLAUDE.md so agents stop proposing per-project termlink vendoring.
+
+    '
+  spec_reference: CLAUDE.md §TermLink Integration
+  severity: low
+  likelihood: 2
+  impact: 2
+  score: 4
+  ranking: low
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in consumer project proposed tarball-vendoring
+    termlink the same way as the framework, no recognition of distribution model. After being told to read README, agent correctly
+    concluded "system-wide install is correct, no per-project version needed" — confirming the answer exists, just not in
+    CLAUDE.md.'
+  trigger: Agent proposes per-project termlink vendoring without realising it triggers a Rust build per consumer project AND
+    breaks cross-session discovery.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1098
+- id: G-030
+  type: gap
+  title: No consumer-project setup doc — vendoring pattern only implicit in existing siblings
+  description: 'The "how to set up a new consumer project" pattern is implicit in /opt/* and /root/* projects that already
+    use the framework. There is no docs/consumer-project-setup.md that walks through: clone target project, run `fw init`,
+    run `fw upgrade` to vendor framework code, what `.framework.yaml` fields mean (especially upstream_repo), when to use shared
+    vs vendored, and how termlink fits in. New consumer projects discover the pattern by reading sibling project layouts or
+    asking the agent to figure it out — both are slow, and the agent often picks the wrong pattern (see G-025).
+
+    '
+  spec_reference: docs/ (missing file)
+  severity: low
+  likelihood: 3
+  impact: 2
+  score: 6
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): User had to ask "how does /root/proxmox-ring20-management
+    do this??" before the agent investigated the convention. No doc to point at.'
+  - 'Related: G-025 (fw upgrade not surfaced), G-026 (doctor missing shared-tooling check), G-029 (termlink distribution model)'
+  trigger: New consumer project asks "how do I set this framework up here?" and the framework has no doc to hand them.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1099
+- id: G-031
+  type: gap
+  title: Two isolation patterns coexist undocumented — old vendored .agentic-framework/ plain dir vs new project-detecting shim
+  description: 'The framework has two isolation models in production simultaneously, with no documentation of which is canonical
+    or how to migrate between them. Old model: vendored plain directory at `<project>/.agentic-framework/` (no .git inside),
+    framework files committed into the project''s own git history (visible in /root/proxmox-ring20-management). New model:
+    project-detecting shim — global symlink at `~/.local/bin/fw` is replaced by `fw upgrade` with a shim that detects cwd,
+    routes to the project the user is standing in, reads the project''s `.framework.yaml` for version pin (visible in /root/ring20-dashboard
+    after `fw upgrade`). The two are complementary in principle (vendoring is a stronger pin than the shim), but agents AND
+    evaluators cannot tell which is the recommended pattern, when to migrate, or whether having both creates conflict. The
+    sibling pattern an agent samples for "how do projects do isolation" depends entirely on which sibling they look at.
+
+    '
+  spec_reference: lib/upgrade.sh (shim migration step 4c), proxmox-ring20-management/.agentic-framework/ (old pattern), ring20-dashboard
+    (new pattern after upgrade)
+  severity: medium
+  likelihood: 4
+  impact: 3
+  score: 12
+  ranking: medium
+  evidence:
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Evaluator (this session) recommended `fw upgrade` and
+    expected it to vendor framework code into a per-project plain directory (matching the proxmox-ring20-management pattern).
+    Actual `fw upgrade` output revealed shim migration as the mechanism — completely different model. Both sessions had wrong
+    mental models because the framework has two patterns and no doc explains which is canonical.'
+  - 'proxmox-ring20-management/.agentic-framework/ exists as plain directory with framework files (old model). Was likely
+    created by an earlier `fw init` or `fw upgrade` before shim migration was added. Has not been re-upgraded since, so still
+    on old model.'
+  - 'ring20-dashboard after `fw upgrade` 2026-04-11: no .agentic-framework/ directory; routing through project-detecting shim.
+    Different pattern, same framework, same upstream — purely a function of when each project last upgraded.'
+  trigger: Agent samples sibling project to learn the convention; gets the OLD pattern; designs work that conflicts with the
+    NEW pattern (or vice versa).
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1100
