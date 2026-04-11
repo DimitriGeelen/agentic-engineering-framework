@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1076: Fix shellcheck SC2034 false positive in healing diagnose.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T08:26:35Z
+# ============================================================================
+
+task_id: T-1076
+task_name: "Fix shellcheck SC2034 false positive in healing diagnose.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-09T13:16:15Z
+completed: 2026-04-09T13:19:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-09T15:18:56+02:00
+last_commit: 2026-04-09T15:21:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix shellcheck SC2034 false positive — add disable for indirect var expansion. Complete lint fix, register T-1067 report, session state
+
+# Key outcomes
+outcomes:
+  - "SC2034 false positive suppressed with shellcheck disable directive (5 variables)"
+  - "`fw test lint` shows 0 FAIL (was 2), both copies fixed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete lint fix, register T-1067 report, session state"
+    source: git-mined
+  - description: "Fix shellcheck SC2034 false positive — add disable for indirect var expansion"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/healing/lib/diagnose.sh"
+  - "agents/healing/lib/diagnose.sh"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".fabric/components/docs-reports-T-1067-horizon-status-invariants.yaml"
+  - ".tasks/active/T-1076-fix-shellcheck-sc2034-false-positive-in-.md"
+  - ".tasks/completed/T-1076-fix-shellcheck-sc2034-false-positive-in-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-09T15:18:56"
+    action: "T-1076: Fix shellcheck SC2034 false positive — add disable for indirect var expansion"
+  - time: "2026-04-09T15:21:21"
+    action: "T-1076: Complete lint fix, register T-1067 report, session state"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 9
+  lines_added: 137
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1076-fix-shellcheck-sc2034-false-positive-in-.md
+generated_by: context-agent-hybrid

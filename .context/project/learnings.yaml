@@ -9,9 +9,9 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "Project boundary hook TermLink exception only matched commands starting with termlink — missed TermLink commands inside loops/pipes. Fix: match anywhere in command with word-boundary anchors."
-  source: R-037
-  task: T-1075
-  date: 2026-04-09
+  learning: "Pre-push hook install-hooks uses version gating — cosmetic changes to the template (like path checks) won't propagate to consumer projects unless VERSION is bumped in git.sh, or --force is used. Consider bumping VERSION when modifying hook templates."
+  source: P-001
+  task: T-1078
+  date: 2026-04-11
   context: Added via context agent
   application: TBD

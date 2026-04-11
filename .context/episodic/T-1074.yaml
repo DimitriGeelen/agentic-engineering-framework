@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1074: Session housekeeping — commit working state and generated artifacts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T08:26:34Z
+# ============================================================================
+
+task_id: T-1074
+task_name: "Session housekeeping — commit working state and generated artifacts"
+workflow_type: refactor
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-04-09T13:05:21Z
+completed: 2026-04-09T13:05:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-09T15:05:42+02:00
+last_commit: 2026-04-09T15:05:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Session housekeeping — working state, generated docs, version bump
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-08.yaml"
+  - ".context/audits/2026-04-09.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-1072.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - "docs/generated/components/agents-audit-active-task-scan.md"
+  - "docs/generated/components/agents-audit-completed-task-scan.md"
+  - "docs/generated/components/agents-context-check-active-task.md"
+  - "docs/generated/components/agents-context-check-agent-dispatch.md"
+  - "docs/generated/components/agents-context-check-project-boundary.md"
+  - "docs/generated/components/agents-context-check-tier0.md"
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/active/T-1073-fix-playwright-test-suite--mass-failures.md"
+  - ".tasks/active/T-1074-session-housekeeping--commit-working-sta.md"
+  - ".tasks/completed/T-1072-commit-generated-docs-audit-results-and-.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-09T15:05:42"
+    action: "T-1074: Session housekeeping — working state, generated docs, version bump"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 22
+  lines_added: 526
+  lines_removed: 1098
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1074-session-housekeeping--commit-working-sta.md
+generated_by: context-agent-hybrid
