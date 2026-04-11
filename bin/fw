@@ -1194,7 +1194,7 @@ else:
         local crash_count
         crash_count=$(wc -l < "$crash_log" | tr -d '[:space:]')
         local recent_crashes
-        recent_crashes=$(grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null | wc -l | tr -d '[:space:]')
+        recent_crashes=$( { grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')
         if [ "${recent_crashes:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — check .context/working/.hook-crashes.log"
             warnings=$((warnings + 1))
@@ -1234,6 +1234,35 @@ else:
         fi
     else
         echo -e "  ${GREEN}OK${NC}  Configuration: all defaults (no FW_* overrides)"
+    fi
+
+    # Check: Cron registry drift (T-1112/T-1114)
+    # Catches the class of divergence where cron-registry.yaml and the
+    # installed /etc/cron.d/ file are out of sync — the root cause of
+    # T-1112 (pickup-process missing for 5 consumer projects).
+    local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+    if [ -f "$cron_registry" ]; then
+        local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
+        local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+        local cron_slug
+        cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+        local cron_target="$cron_target_dir/agentic-audit-${cron_slug}"
+        if [ -f "$cron_source" ] && [ -f "$cron_target" ]; then
+            if diff -q "$cron_source" "$cron_target" >/dev/null 2>&1; then
+                echo -e "  ${GREEN}OK${NC}  Cron registry in sync with $cron_target"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  Cron registry drift: $cron_source differs from $cron_target"
+                echo -e "        Run: fw cron install"
+                warnings=$((warnings + 1))
+            fi
+        elif [ -f "$cron_source" ] && [ ! -f "$cron_target" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Cron generated but not installed at $cron_target"
+            echo -e "        Run: fw cron install"
+            warnings=$((warnings + 1))
+        elif [ ! -f "$cron_source" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
+            warnings=$((warnings + 1))
+        fi
     fi
 
     # Summary
@@ -2162,19 +2191,98 @@ print(f'  Status: {old_status} → {new_status}')
 print(f'  Run \"fw cron generate\" to update the crontab file')
 "
                 ;;
+            install)
+                # T-1114: Unified generate + install chokepoint. Replaces the
+                # two-step "fw cron generate" + "fw audit schedule install"
+                # dance that silently clobbered the registry-sourced crontab
+                # with a hardcoded template (see T-1112 RCA).
+                _install_dry_run=false
+                while [ $# -gt 0 ]; do
+                    case "$1" in
+                        --dry-run) _install_dry_run=true; shift ;;
+                        *) shift ;;
+                    esac
+                done
+
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo -e "${RED}ERROR:${NC} No cron registry found at $_cron_registry" >&2
+                    exit 1
+                fi
+
+                _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
+                _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+                _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+                _cron_target="$_cron_target_dir/agentic-audit-${_cron_slug}"
+
+                # Step 1: regenerate crontab from registry (re-using fw cron generate logic)
+                if ! "$0" cron generate >/dev/null; then
+                    echo -e "${RED}ERROR:${NC} fw cron generate failed" >&2
+                    exit 1
+                fi
+                if [ ! -f "$_cron_source" ]; then
+                    echo -e "${RED}ERROR:${NC} Expected $_cron_source after generate" >&2
+                    exit 1
+                fi
+
+                # Step 2: compute diff vs currently installed
+                if [ -f "$_cron_target" ] && diff -q "$_cron_source" "$_cron_target" >/dev/null 2>&1; then
+                    echo "Cron in sync: $_cron_target"
+                    echo "  Source: $_cron_source"
+                    exit 0
+                fi
+
+                echo "Pending cron changes:"
+                if [ -f "$_cron_target" ]; then
+                    diff -u "$_cron_target" "$_cron_source" | sed 's/^/  /' || true
+                else
+                    echo "  (new install — $_cron_target does not exist)"
+                    sed -n '1,20p' "$_cron_source" | sed 's/^/  /'
+                    echo "  ..."
+                fi
+
+                if $_install_dry_run; then
+                    echo ""
+                    echo "(dry-run — no changes made)"
+                    echo "Run without --dry-run to apply."
+                    exit 0
+                fi
+
+                # Step 3: install atomically with sudo degradation
+                mkdir -p "$_cron_target_dir" 2>/dev/null || true
+                if [ "$(id -u)" = "0" ] || [ "$_cron_target_dir" != "/etc/cron.d" ]; then
+                    install -m 0644 "$_cron_source" "$_cron_target"
+                    echo "Installed: $_cron_target"
+                elif command -v sudo >/dev/null 2>&1; then
+                    sudo install -m 0644 "$_cron_source" "$_cron_target"
+                    echo "Installed (via sudo): $_cron_target"
+                else
+                    echo ""
+                    echo "NOTE: Root permissions required to install cron."
+                    echo "Run this command manually:"
+                    echo ""
+                    echo "  sudo install -m 0644 \"$_cron_source\" \"$_cron_target\""
+                    echo ""
+                    exit 1
+                fi
+                ;;
             ""|help|-h|--help)
                 echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
                 echo ""
                 echo "Subcommands:"
-                echo "  generate    Regenerate crontab from registry YAML"
-                echo "  status      Show registry status (jobs, active/paused)"
-                echo "  list        Alias for status"
-                echo "  run <id>    Run a job immediately"
-                echo "  pause <id>  Pause a job (comments out in crontab)"
-                echo "  resume <id> Resume a paused job"
+                echo "  generate          Regenerate crontab from registry YAML"
+                echo "  install [--dry-run]  Generate + install to /etc/cron.d/ atomically"
+                echo "  status            Show registry status (jobs, active/paused)"
+                echo "  list              Alias for status"
+                echo "  run <id>          Run a job immediately"
+                echo "  pause <id>        Pause a job (comments out in crontab)"
+                echo "  resume <id>       Resume a paused job"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
                 echo "Web UI:   http://localhost:3000/cron"
+                echo ""
+                echo "Env overrides:"
+                echo "  FW_CRON_INSTALL_DIR  Target directory (default /etc/cron.d)"
                 ;;
             *)
                 echo -e "${RED}Unknown cron subcommand:${NC} $cron_subcmd"

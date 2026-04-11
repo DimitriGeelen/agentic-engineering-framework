@@ -1,0 +1,83 @@
+---
+id: T-1114
+name: "fw cron install: unified generate+install command + fw doctor drift check (T-1112 build)"
+description: >
+  fw cron install: unified generate+install command + fw doctor drift check (T-1112 build)
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-11T22:15:35Z
+last_update: 2026-04-11T22:32:21Z
+date_finished: null
+---
+
+# T-1114: fw cron install: unified generate+install command + fw doctor drift check (T-1112 build)
+
+## Context
+
+Build task implementing T-1112 GO decision (inception RCA captured in
+`docs/reports/T-1112-cron-divergence-rca.md`). The cron registry system
+(T-604) and the legacy schedule-install system (T-184/T-196) both write
+to `.context/cron/agentic-audit.crontab` with different content: the
+legacy path has a hardcoded template (10 audit jobs) while the registry
+has 11 jobs including `pickup-process`. Running `fw audit schedule
+install` after `fw cron generate` silently clobbers the registry-sourced
+crontab, leaving `pickup-process` uninstalled. This task adds a unified
+`fw cron install` command that is the single chokepoint for installing
+from the registry, plus a `fw doctor` drift check that catches the
+problem retroactively.
+
+## Acceptance Criteria
+
+### Agent
+- [ ] `fw cron install` subcommand added to `bin/fw` cron case that:
+      (a) regenerates the registry-sourced crontab via the existing
+      `fw cron generate` logic, (b) computes a diff against the system
+      cron file (`/etc/cron.d/agentic-audit-<slug>` by default,
+      overridable via `FW_CRON_INSTALL_DIR` for tests), (c) installs
+      atomically using `install -m 0644` with sudo degradation.
+- [ ] `fw cron install --dry-run` shows the pending diff without making
+      changes and exits 0. Exit code is non-zero when source/registry is
+      missing.
+- [ ] `fw cron install` honors `FW_CRON_INSTALL_DIR` so integration
+      tests can target a temp directory instead of `/etc/cron.d/`.
+- [ ] `fw doctor` adds a cron drift check: when the registry-generated
+      crontab differs from the installed file (or when the registry has
+      jobs but nothing is installed), it emits a WARN with the remediation
+      command `fw cron install`.
+- [ ] `fw cron help` documents the new `install` subcommand.
+- [ ] Unit/integration bats test `tests/integration/cron_install.bats`
+      passes: exercises dry-run + clean install + drift detection using
+      `FW_CRON_INSTALL_DIR` + `FW_CRON_REGISTRY` overrides.
+- [ ] `bin/fw test integration tests/integration/cron_install.bats` green.
+- [ ] Existing `tests/unit/lib_*.bats` regression-free.
+
+## Verification
+
+grep -q '^            install)' bin/fw
+grep -q 'FW_CRON_INSTALL_DIR' bin/fw
+bin/fw cron help 2>&1 | grep -q 'install'
+bats tests/integration/cron_install.bats
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-11T22:15:35Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1114-fw-cron-install-unified-generateinstall-.md
+- **Context:** Initial task creation
