@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1091: Watchtower inception detail page removes rationale hint 500-char truncation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T14:35:41Z
+# ============================================================================
+
+task_id: T-1091
+task_name: "Watchtower inception detail page removes rationale hint 500-char truncation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T10:48:54Z
+completed: 2026-04-11T10:50:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-11T12:49:59+02:00
+last_commit: 2026-04-11T12:54:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Remove Watchtower inception rationale hint 500-char truncation. Register G-024 — fw upgrade does not sync web/blueprints/ (T-1091 propagation gap)
+
+# Key outcomes
+outcomes:
+  - "`web/blueprints/inception.py` no longer truncates `rationale_hint` at 500 chars — the full Recommendation section pre-populates the textarea."
+  - "Mirrored to `.agentic-framework/web/blueprints/inception.py`."
+  - "`approvals.py` 200-char list-view hint is preserved (not in scope)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/blueprints/inception.py"
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1091-watchtower-inception-detail-page-removes.md"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T12:49:59"
+    action: "T-1091: Remove Watchtower inception rationale hint 500-char truncation"
+  - time: "2026-04-11T12:54:21"
+    action: "T-1091: Register G-024 — fw upgrade does not sync web/blueprints/ (T-1091 propagation gap)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 4
+  lines_added: 89
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1091-watchtower-inception-detail-page-removes.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1087: Budget gate post-compact stale read — safety net fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T14:35:39Z
+# ============================================================================
+
+task_id: T-1087
+task_name: "Budget gate post-compact stale read — safety net fix"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T10:29:58Z
+completed: 2026-04-11T10:32:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-11T12:32:22+02:00
+last_commit: 2026-04-11T12:32:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix post-compact stale budget-status false critical (T-145/T-271/T-712/T-713 regression)
+
+# Key outcomes
+outcomes:
+  - "`post-compact-resume.sh` removes `.budget-status` from `VOLATILE_FILES` and writes a fresh `{\"level\": \"ok\", \"tokens\": 0, \"timestamp\": now, \"source\": \"post-compact-resume\"}` record instead."
+  - "Same change mirrored to `.agentic-framework/agents/context/post-compact-resume.sh`."
+  - "After a simulated post-compact recovery (run the script manually), `.budget-status` contains `level: ok` with a fresh timestamp."
+  - "T-1088 follow-up task created at `horizon: next` for the real fix (Option 1: timestamp filter in `budget-gate.sh` slow-path Python loop)."
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix post-compact stale budget-status false critical (T-145/T-271/T-712/T-713 regression)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/post-compact-resume.sh"
+  - "agents/context/post-compact-resume.sh"
+  - ".tasks/active/T-1087-budget-gate-post-compact-stale-read--saf.md"
+  - ".tasks/active/T-1088-budget-gate-timestamp-filter-post-compac.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T12:32:22"
+    action: "T-1087: Fix post-compact stale budget-status false critical (T-145/T-271/T-712/T-713 regression)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 151
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1087-budget-gate-post-compact-stale-read--saf.md
+generated_by: context-agent-hybrid
