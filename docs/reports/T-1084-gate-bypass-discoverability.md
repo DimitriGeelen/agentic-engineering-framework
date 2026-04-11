@@ -34,6 +34,37 @@ This is a 2x round-trip for something that should be 0 round-trips — the gate'
 | 10 | Project boundary (cross-project writes) | PreToolUse `check-project-boundary.sh` | No bypass — use TermLink | **PARTIAL** — says "restricted" but doesn't mention TermLink workaround |
 | 11 | Budget gate (context critical) | PreToolUse `budget-gate.sh` | No bypass — wrap up | **GOOD** — lists allowed operations clearly |
 
+## Second Incident — T-418 (/opt/025-WokrshopDesigner), 2026-04-11
+
+A second session hit the same class of issue while trying to decide an inception task. Three new gates surfaced:
+
+**Gate #12 — Inception review-marker gate (BROKEN)**
+- Mechanism: `fw inception decide T-XXX` refuses to run unless `.context/working/.reviewed-T-XXX` marker exists
+- Marker is created as a **side effect** of `fw task review T-XXX` (via `lib/review.sh:136`)
+- Error message: `ERROR: Task review required before decision` — does NOT name the bypass
+- Agent had to read source code (`lib/review.sh`, search for `reviewed-T`) to discover `fw task review` creates the marker
+- **Fix:** Error should print `To unblock: cd /opt/... && bin/fw task review T-XXX`
+
+**Gate #13 — Tier 0 on `fw inception decide` (GOOD, but misleading)**
+- Mechanism: `check-tier0.sh` matches `fw\s.*inception\s.*decide` in destructive patterns (line 53)
+- Error message: "INCEPTION DECISION: GO/NO-GO decisions require human authority..."
+- This correctly blocks the agent from deciding, but the error message doesn't mention the `fw task review` prerequisite that the human will ALSO need
+- When the human then runs `fw inception decide` themselves, they hit the separate review-marker gate (#12) and get a second confusing error
+- **Fix:** Tier 0 message for inception decisions should include BOTH prerequisites: human authority + review marker
+
+**UX issue #1 — Watchtower rationale textarea truncates at 500 chars**
+- Location: `web/blueprints/inception.py:187`
+- Problem: The inception form pre-fills the rationale textarea from the Recommendation section, but truncates at 500 chars with no expand affordance. The user saw "..." mid-word and reported "text is cut off!!!"
+- Impact: Agents writing thorough recommendations (tables, evidence, reframings) must manually trim to ≤500 chars or the form shows truncated content. Fidelity loss between the Recommendation section (full markdown) and the decision form (truncated plain text).
+- **NOT a gate bug** — form UX bug that interacts with the governance workflow
+- **Fix options:** (a) remove truncation, (b) show "recommendation preview + [read full]" instead of pre-filling a textarea, (c) show a summary of the FIRST LINE only with a link to the Recommendation section rendered as markdown
+
+**Coupling issue — Invisible marker lifecycle**
+- `fw task review T-XXX` looks like a "print URL and QR code" command
+- But it ALSO creates the review marker as an undocumented side effect
+- The connection is not surfaced in either command's help or error output
+- **Root cause:** side-effecting CLI commands that don't announce their side effects. If `fw task review` said "Created review marker .context/working/.reviewed-T-418 — this unblocks fw inception decide" in its output, the agent/user would understand the flow
+
 ## Audit Findings
 
 **The T-908 root cause is a repeated copy-paste bug.** Three separate git-hook gates (#6, #7, #8) all print the same misleading recipe:
@@ -79,7 +110,18 @@ To intentionally operate on another project: use TermLink
 
 ## Decision
 
-**GO** — 3 gates confirmed broken (#6, #7, #8), 1 partial (#10). Fix is mechanical: edit 4 error messages in hooks.sh, bump hook VERSION, propagate to 11 consumer projects. Each git hook change is one bug = one task per framework rules; TermLink addition to boundary gate is separate.
+**GO (reinforced after T-418 incident)** — Now **5 gates confirmed broken** (#6, #7, #8, #12, #13-partial), 1 partial (#10), plus one Watchtower UX bug and one invisible-side-effect coupling issue. The second incident on a different project confirms this is a pattern, not a one-off. Fix is still mostly mechanical.
+
+**Updated scope:**
+1. Fix the 3 original git hooks (T-1085/T-1086/T-1087 per earlier proposal)
+2. Fix review-marker gate error message (#12) — add to same fix pass
+3. Fix Tier 0 inception-decide message (#13) — add review-marker prerequisite
+4. Project boundary gate — add TermLink workaround mention (#10)
+5. Watchtower: remove 500-char truncation OR switch to "summary + link" pattern
+6. `fw task review`: print marker creation as visible side effect
+7. Bump hook VERSION, propagate to 11 consumers
+
+**Pattern observation:** Gates 1-5 (Python scripts, PreToolUse hooks, update-task) are all GOOD. Gates 6-8, 12-13 (git hooks, inception flow) are all BROKEN. The divide is workflow: **gates written by agents working in-context** know what to print; **gates written during infrastructure setup** often use template language ("Emergency bypass (human only)") that sounds authoritative but wasn't tested end-to-end. This suggests a secondary preventive action: a test harness that fires each gate and captures the error output, human-reviews for clarity.
 
 ## Impact Analysis
 
