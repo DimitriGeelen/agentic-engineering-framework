@@ -1010,3 +1010,41 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1103
+- id: G-035
+  type: gap
+  title: 'META-GAP: CLAUDE.md Quick Reference + agent memory drift from actual fw command surface — no structural enforcement
+    of doc/help/code parity'
+  description: 'Recurring class of bug: framework features (new subcommands, required flags, distribution model changes) get
+    added without updating CLAUDE.md Quick Reference, agent memory, or sometimes even `fw help`. Agents read CLAUDE.md as
+    canonical, copy a stale form, and fail at dispatch/invocation time. The framework correctly errors with a clear message,
+    but the agent should not have hit the error in the first place — the canonical reference lied to it. The gap is not in
+    the error handling; the gap is in the absence of structural enforcement that CLAUDE.md, `fw help`, `fw <subcommand> --help`,
+    and the actual code stay in sync. This subsumes G-025 (fw upgrade not surfaced), G-029 (termlink distribution model not
+    contrasted), G-031 evidence #4 (fw vendor not in CLAUDE.md), AND the new evidence below — they are all instances of the
+    same class.
+
+    '
+  spec_reference: CLAUDE.md (Quick Reference table), bin/fw (help text + subcommand parsers), agents/*/AGENT.md, T-652, T-630
+  severity: high
+  likelihood: 5
+  impact: 3
+  score: 15
+  ranking: high
+  evidence:
+  - 'Same-day incident triplet (2026-04-11): (a) ring20-dashboard onboarding — `fw upgrade` was the canonical answer, neither
+    agent nor evaluator knew (G-025); (b) /opt/termlink T-909 — `fw vendor` exists at bin/fw:3359 but is not in CLAUDE.md
+    (F4 evidence under G-031); (c) THIS session — agent dispatched 4 TermLink workers in parallel without `--task`, all 4
+    failed identically with "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)". CLAUDE.md
+    Quick Reference table for `fw termlink dispatch` says `--name N --prompt P [--project DIR] [--model M]`. The `--task`
+    parameter is REQUIRED but NOT listed. T-652 added the requirement; CLAUDE.md was never updated.'
+  - 'Pattern: every new required flag or new subcommand creates a doc-drift bug. Agent CLAUDE.md gets read at session start
+    AND saved into memory. Stale forms cache indefinitely.'
+  - 'No structural enforcement: no test asserts CLAUDE.md Quick Reference matches `fw help`. No `fw doctor` check for doc/help
+    parity. No CI step that regenerates CLAUDE.md from canonical source. The Quick Reference is a hand-maintained snapshot
+    that decays whenever a new feature ships without a doc-update step.'
+  trigger: Any new required flag or subcommand added to fw without a corresponding CLAUDE.md Quick Reference update. Multiple
+    times per release cycle.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1104
