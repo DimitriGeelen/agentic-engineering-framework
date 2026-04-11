@@ -708,7 +708,12 @@ concerns:
   - 'T-1109 (2026-04-11): Full RCA + live reproduction. Root cause confirmed: enumeration divergence between do_upgrade step 4b
     and do_vendor includes list. Chokepoint C1 (collapse step 4b into do_vendor call) + invariant tests (upgrade-vendor-complete.bats,
     single-vendor-writer.bats) proposed. Worker recommendation: GO with build decomposition T-1109a..e.'
-  - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync), T-1109 (RCA + fix)'
+  - 'T-1109 L-006 sweep (finding NEW-007, 2026-04-11): lib/upgrade.sh:388 has a SECOND enumeration problem in the same file
+    — `agent_dirs="task-create handover git healing fabric dispatch resume audit session-capture"` (9 entries) is missing
+    6 agents vs the filesystem: capture, docgen, mcp, observe, onboarding-test, termlink. The 4 broken consumers are thus
+    missing not just web/ but also 37% of agent subdirectories. The T-1109 chokepoint fix (collapse step 4b into do_vendor)
+    also closes NEW-007 because do_vendor uses a glob over agents/*/.'
+  - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync), T-1109 (RCA + fix), L-006, G-037/G-038/G-039/G-040/G-041/G-042/G-043'
   trigger: A consumer starts running its own Watchtower instance and encounters a bug already fixed in the canonical copy.
   status: watching
   created: 2026-04-11
@@ -1174,6 +1179,117 @@ concerns:
     T-588 (status-transitions.yaml single source of truth precedent).'
   trigger: Any addition to FW_CONFIG_REGISTRY in lib/config.sh that is not simultaneously mirrored in config.py SETTINGS and
     CLAUDE.md.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
+- id: G-040
+  type: gap
+  title: 'Owner enum (human/claude-code) has 5+ parallel sites with NO canonical source of truth'
+  description: 'Discovered by T-1109 L-006 sweep worker. The task owner enum (`human`, `claude-code`) is hardcoded in at least
+    5 separate locations with NO canonical definition in status-transitions.yaml or lib/enums.sh. Sites: (A) web/blueprints/tasks.py:443
+    `allowed_owners = ["human", "claude-code"]`; (B) web/blueprints/tasks.py:496 inline tuple; (C) web/templates/tasks.html:496
+    Jinja kanban list; (D) web/templates/tasks.html:711 Jinja list view; (E) web/templates/task_detail.html:166 Jinja detail
+    view. Agent audit at agents/audit/audit.sh:2010 checks `owner != "human"` (treats anything != human as agent). Critical
+    asymmetry: agents/task-create/create-task.sh accepts free-form `--owner` argument (bash is permissive); Python web side
+    strictly rejects non-{human,claude-code} inputs. A task created via `fw task create --owner orchestrator` loads in the
+    CLI but renders broken in Watchtower and is unsettable via the inline dropdown. Structural fix: add `owners:` section
+    to status-transitions.yaml; export VALID_OWNERS from lib/enums.sh; Flask context processor injects into templates.'
+  spec_reference: web/blueprints/tasks.py:443, web/blueprints/tasks.py:496, web/templates/tasks.html:496, web/templates/tasks.html:711,
+    web/templates/task_detail.html:166, agents/audit/audit.sh:2010, status-transitions.yaml (missing owners section)
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'T-1109 L-006 sweep worker output, finding NEW-001: 5 mirror sites, no canonical. Full report at docs/reports/T-1109-l006-sweep.md.'
+  - 'Bash<->Python asymmetry confirmed: create-task.sh has no validation on --owner; web side has strict whitelist.'
+  trigger: Any addition of a new owner type (e.g., `orchestrator`, `reviewer`) or any refactor that changes the owner whitelist.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
+- id: G-041
+  type: gap
+  title: 'Active-status enum has 7+ mirror sites including kanban CSS — new statuses become INVISIBLE in UI'
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-004). The active task statuses (`captured`, `started-work`,
+    `issues`, `work-completed`) have a canonical definition in status-transitions.yaml → lib/enums.sh VALID_STATUSES, but
+    the web tier reimplements them 7+ times: (A) web/blueprints/tasks.py:393 `status_options = [...]`; (B) web/blueprints/tasks.py:545
+    `allowed = [...]` duplicate in same file; (C) web/templates/tasks.html:489,699 Jinja inline_select × 2; (D) web/templates/tasks.html:652
+    Jinja `{% for s in [...] %}`; (E) web/templates/tasks.html:149,152,155,158,174,177,180,191,502,514,526,538 kanban CSS
+    + HTML column selectors (each status hand-named); (F) web/watchtower/prioritizer.py:16-18 priority dict as subset transformation;
+    (G) web/blueprints/core.py:190 `status in ("started-work", "captured")` subset check. Worst structural fragility: the
+    kanban CSS — each status is hand-named in 12+ selectors, so adding a new status would not just "not render", it would
+    be INVISIBLE because there is no column for it. Structural fix: replace kanban CSS hand-written selectors with Jinja
+    `{% for status in ENUMS.statuses %}` loop; Flask context processor injects ENUMS; prioritizer.py loads from YAML.'
+  spec_reference: web/blueprints/tasks.py:393, web/blueprints/tasks.py:545, web/templates/tasks.html (multiple), web/watchtower/prioritizer.py:16-18,
+    web/blueprints/core.py:190, status-transitions.yaml, lib/enums.sh
+  severity: high
+  likelihood: 4
+  impact: 4
+  score: 16
+  ranking: high
+  evidence:
+  - 'T-1109 L-006 sweep worker output, finding NEW-004. Full report at docs/reports/T-1109-l006-sweep.md.'
+  - 'Kanban CSS risk: a new status added to status-transitions.yaml would not display on the kanban board because the column
+    layout is hand-coded with explicit status-name selectors. This is the worst structural fragility in the L-006 family
+    discovered so far — silent UI invisibility, not just logical rejection.'
+  trigger: Any addition of a new task status (e.g., `reviewing`, `waiting-on-human`) to status-transitions.yaml.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
+- id: G-042
+  type: gap
+  title: 'fw hook usage list × 4 mirror sites — new hooks do not appear in help or enforcement panel'
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-005). The list of framework hooks is canonical in the
+    filesystem (`agents/context/*.sh`, loaded dynamically by `fw hook <name>`), but is mirrored in 4 other places: (A) bin/fw:3370-3372
+    hardcoded "Available hooks:" error message listing 15 hook names; (B) .claude/settings.json:1-146 runtime hook registration
+    (10 distinct hook invocations); (C) bin/fw:876-884 doctor `expected` dict of 6 hooks (subset, tier-based required-hook
+    check); (D) web/blueprints/enforcement.py:20 `hooks = {"tier0": False, "tier1": False, "checkpoint": False}` 3-entry
+    whitelist for enforcement UI panel. The usage message lists 15 hooks but the filesystem has more; the enforcement panel
+    only checks 3 of the actually-installed hooks — misleading the human about real coverage. Structural fix: generate the
+    usage list from `ls $AGENTS_DIR/context/*.sh`; doctor computes expected from parsing .claude/settings.json; enforcement.py
+    queries settings.json and removes the 3-entry whitelist.'
+  spec_reference: bin/fw:3370-3372, bin/fw:876-884, web/blueprints/enforcement.py:20, .claude/settings.json, agents/context/*.sh
+  severity: medium
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  evidence:
+  - 'T-1109 L-006 sweep worker output, finding NEW-005. Full report at docs/reports/T-1109-l006-sweep.md.'
+  - 'Enforcement panel has a 3-entry whitelist while settings.json has 10+ hook invocations — UI reports false incomplete
+    coverage.'
+  trigger: Any addition of a new hook script to agents/context/ or .claude/settings.json.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1109
+- id: G-043
+  type: gap
+  title: 'fw subcommand list already drifts — case statement vs show_help() prose in same file'
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-006). The canonical `fw` subcommand list is the top-level
+    `case "$command" in` block in bin/fw (~102 case entries from line 1901). A parallel hand-written list lives in bin/fw:433-532
+    show_help() function (~50 `echo -e` lines). **Already drifting:** case entries NOT in show_help include `ask`, `plugin-audit`,
+    `fix-learned`, `traceability`, `enforcement`, `preflight`, `validate-init`, `mcp`, `consolidate`, `upstream`, `cron`.
+    Users cannot discover these commands from `fw help`. Conversely, show_help mentions `setup` (deprecated alias) and other
+    entries the case handler routes differently. Structural fix: introduce lightweight `lib/commands.yaml` registry mapping
+    command → description → category, loaded by both the router and show_help. OR: generate show_help at release time by
+    parsing the case block.'
+  spec_reference: bin/fw (case statement line 1901+), bin/fw:433-532 show_help()
+  severity: medium
+  likelihood: 4
+  impact: 2
+  score: 8
+  ranking: medium
+  evidence:
+  - 'T-1109 L-006 sweep worker output, finding NEW-006. Full report at docs/reports/T-1109-l006-sweep.md.'
+  - 'Already-drifted commands: ask, plugin-audit, fix-learned, traceability, enforcement, preflight, validate-init, mcp, consolidate,
+    upstream, cron — all handled by case but absent from show_help.'
+  - 'Overlaps with G-035 (META-GAP: CLAUDE.md / fw help / code drift).'
+  trigger: Any addition of a new subcommand to the case block in bin/fw.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
