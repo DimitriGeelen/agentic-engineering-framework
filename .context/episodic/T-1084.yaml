@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1084: Gate bypass discoverability — every block message must name its bypass
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T09:17:21Z
+# ============================================================================
+
+task_id: T-1084
+task_name: "Gate bypass discoverability — every block message must name its bypass"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-04-11T09:03:48Z
+completed: 2026-04-11T09:17:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-11T11:06:00+02:00
+last_commit: 2026-04-11T11:10:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — gate bypass discoverability (research artifact). Gate audit complete — 3 broken, 1 partial (GO recommendation)
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/working/focus.yaml"
+  - "docs/reports/T-1084-gate-bypass-discoverability.md"
+  - ".tasks/active/T-1084-gate-bypass-discoverability--every-block.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T11:06:00"
+    action: "T-1084: Inception — gate bypass discoverability (research artifact)"
+  - time: "2026-04-11T11:10:38"
+    action: "T-1084: Gate audit complete — 3 broken, 1 partial (GO recommendation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 5
+  files_changed: 4
+  lines_added: 378
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1084-gate-bypass-discoverability--every-block.md
+generated_by: context-agent-hybrid

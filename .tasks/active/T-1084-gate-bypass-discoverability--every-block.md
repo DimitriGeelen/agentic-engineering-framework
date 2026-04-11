@@ -4,7 +4,7 @@ name: "Gate bypass discoverability — every block message must name its bypass"
 description: >
   Inception: Gate bypass discoverability — every block message must name its bypass
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T09:03:48Z
-last_update: 2026-04-11T09:04:59Z
-date_finished: null
+last_update: 2026-04-11T09:17:18Z
+date_finished: 2026-04-11T09:17:18Z
 ---
 
 # T-1084: Gate bypass discoverability — every block message must name its bypass
@@ -103,18 +103,18 @@ Out of scope (separate inceptions if wanted): `fw gates` inventory command, unif
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: 5 broken gates + Watchtower truncation + invisible marker coupling — fix systemically
+
+**Date**: 2026-04-11T09:17:18Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 5 broken gates + Watchtower truncation + invisible marker coupling — fix systemically
+
+**Date**: 2026-04-11T09:17:18Z
 
 ## Updates
 
@@ -123,3 +123,12 @@ Out of scope (separate inceptions if wanted): `fw gates` inventory command, unif
 
 ### 2026-04-11T09:04:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-11T09:17:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 5 broken gates + Watchtower truncation + invisible marker coupling — fix systemically
+
+### 2026-04-11T09:17:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
