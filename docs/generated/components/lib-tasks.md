@@ -24,7 +24,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -32,6 +32,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `bin/fw` | called_by |
 | `lib/paths.sh` | called_by |
 | `tests/unit/lib_tasks.bats` | called-by |
+| `tests/unit/lib_tasks.bats` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

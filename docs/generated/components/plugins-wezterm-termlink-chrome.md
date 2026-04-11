@@ -8,6 +8,12 @@
 
 ## What It Does
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `plugins/wezterm/README.md` | read_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `plugins-wezterm-termlink-chrome.yaml`*
 *Last verified: 2026-04-08*

@@ -29,7 +29,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Target | Relationship |
 |--------|-------------|
@@ -37,6 +37,7 @@ When fixing a bug discovered through real-world usage (user testing, production 
 | `F-003` | writes |
 | `agents/handover/handover.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Used By (8)
 

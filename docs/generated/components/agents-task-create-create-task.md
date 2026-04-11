@@ -16,7 +16,7 @@ Creates properly structured tasks following the framework specification
 | `lib/paths.sh` | calls |
 | `lib/enums.sh` | calls |
 
-## Used By (5)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -25,6 +25,7 @@ Creates properly structured tasks following the framework specification
 | `bin/fw` | called_by |
 | `lib/setup.sh` | called_by |
 | `tests/unit/create_task.bats` | tested_by |
+| `tests/unit/create_task.bats` | called_by |
 
 ## Documentation
 

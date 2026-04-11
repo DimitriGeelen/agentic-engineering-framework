@@ -22,11 +22,6 @@ Tests the do_add_decision() function:
 |--------|-------------|
 | `agents/context/context.sh` | calls |
 
-## Related
-
-### Tasks
-- T-757: Add unit tests for context learning and decision libs (12+ tests)
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_decision.yaml`*
 *Last verified: 2026-04-05*

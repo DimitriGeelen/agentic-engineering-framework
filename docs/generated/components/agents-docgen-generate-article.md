@@ -26,12 +26,13 @@ Article: docs/articles/deep-dives/{NN}-{subsystem}.md
 | `agents/docgen/generate_article.py` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/docgen_article.bats` | tested_by |
+| `tests/unit/docgen_article.bats` | called_by |
 
 ## Related
 

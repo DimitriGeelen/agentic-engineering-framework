@@ -30,6 +30,12 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `lib/config.sh` | reads |
 | `web/templates/base.html` | renders |
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/config.py` | rendered_by |
+
 ## Related
 
 ### Tasks

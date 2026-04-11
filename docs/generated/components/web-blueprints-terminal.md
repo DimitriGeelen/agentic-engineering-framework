@@ -8,6 +8,25 @@
 
 Singleton registry and adapter map (initialized on first use)
 
+## Dependencies (7)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/shared.py` | calls |
+| `web/terminal/adapters/local_shell.py` | calls |
+| `web/terminal/adapters/claude_code.py` | calls |
+| `web/terminal/profiles.py` | calls |
+| `web/terminal/registry.py` | calls |
+| `web/terminal/session.py` | calls |
+| `web/templates/terminal.html` | renders |
+
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+
 ## Related
 
 ### Tasks

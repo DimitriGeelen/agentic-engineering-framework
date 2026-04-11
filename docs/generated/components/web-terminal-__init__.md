@@ -8,6 +8,12 @@
 
 Singleton adapter for backward compatibility
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `web/terminal/adapters/local_shell.py` | calls |
+
 ## Related
 
 ### Tasks

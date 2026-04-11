@@ -26,7 +26,7 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -34,11 +34,13 @@ When agent ACs are complete and human ACs remain:
 | `bin/fw` | called_by |
 | `lib/inception.sh` | called_by |
 | `tests/unit/lib_review.bats` | called-by |
+| `tests/unit/lib_review.bats` | called_by |
 
 ## Related
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 - T-973: Review-before-decide gate — fw inception decide requires fw task review first
 

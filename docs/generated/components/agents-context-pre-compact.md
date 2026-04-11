@@ -14,12 +14,13 @@ Part of: T-111 (Autonomous compact-resume lifecycle)
 Updated: T-175 (D-028 — single handover, no emergency distinction)
 Updated: T-177 (manual-only cleanup, D-027 documentation)
 
-## Dependencies (2)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `agents/handover/handover.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Used By (3)
 
@@ -32,6 +33,7 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 ## Related
 
 ### Tasks
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---

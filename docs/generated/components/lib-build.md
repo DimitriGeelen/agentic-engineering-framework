@@ -9,12 +9,13 @@
 Compile all TypeScript sources to JavaScript via esbuild
 Called by: fw build, fw update, stale-guard in hooks
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_build.bats` | called-by |
+| `tests/unit/lib_build.bats` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-build.yaml`*

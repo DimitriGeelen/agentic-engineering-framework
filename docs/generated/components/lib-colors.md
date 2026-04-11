@@ -20,13 +20,18 @@ Scripts that source lib/paths.sh get colors for free.
 |--------|-------------|
 | `lib/colors.sh` | calls |
 
-## Used By (3)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
 | `lib/colors.sh` | called-by |
 | `lib/costs.sh` | called-by |
 | `tests/unit/lib_colors.bats` | called-by |
+| `agents/handover/handover.sh` | called_by |
+| `bin/fw` | called_by |
+| `lib/colors.sh` | called_by |
+| `lib/costs.sh` | called_by |
+| `tests/unit/lib_colors.bats` | called_by |
 
 ## Related
 

@@ -14,7 +14,7 @@
 |--------|-------------|
 | `web/shared.py` | calls |
 
-## Used By (8)
+## Used By (10)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -26,6 +26,8 @@
 | `web/blueprints/core.py` | called_by |
 | `web/blueprints/metrics.py` | called_by |
 | `web/blueprints/risks.py` | called_by |
+| `web/blueprints/quality.py` | called_by |
+| `web/blueprints/discovery.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-context_loader.yaml`*

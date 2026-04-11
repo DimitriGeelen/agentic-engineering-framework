@@ -13,13 +13,19 @@
 | `web/shared.py` | calls |
 | `web/templates/costs.html` | renders |
 
-## Used By (3)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/__init__.py` | calls |
 | `web/blueprints/core.py` | calls |
 | `web/test_costs.py` | called-by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+| `web/blueprints/core.py` | called_by |
+| `web/blueprints/core.py` | registered_by |
+| `web/test_costs.py` | registered_by |
+| `web/test_costs.py` | called_by |
 
 ## Related
 

@@ -51,12 +51,14 @@ When building a web application:
 | `web/blueprints/__init__.py` | calls |
 | `web/embeddings.py` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `web/templates/_partials/badge.html` | used-by |
+| `web/test_costs.py` | called_by |
+| `web/templates/_partials/badge.html` | used-by_by |
 
 ## Related
 

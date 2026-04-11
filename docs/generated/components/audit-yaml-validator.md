@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (6)
+## Dependencies (9)
 
 | Target | Relationship |
 |--------|-------------|
@@ -29,6 +29,9 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `agents/context/error-watchdog.sh` | calls |
 | `agents/task-create/update-task.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
+| `agents/audit/active-task-scan.py` | calls |
+| `agents/audit/completed-task-scan.py` | calls |
 
 ## Used By (5)
 
@@ -44,6 +47,7 @@ Sections: structure, compliance, quality, traceability, enforcement,
 
 ### Tasks
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 - T-955: Audit loop merge — combine 10 loops into 3 passes (T-860 Phase 1)
 

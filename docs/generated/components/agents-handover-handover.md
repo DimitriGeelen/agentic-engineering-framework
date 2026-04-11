@@ -15,7 +15,7 @@ Creates handover documents for session continuity
 
 **When to use:** MANDATORY at end of every session.
 
-## Dependencies (4)
+## Dependencies (8)
 
 | Target | Relationship |
 |--------|-------------|
@@ -23,8 +23,12 @@ Creates handover documents for session continuity
 | `C-008` | calls |
 | `agents/git/git.sh` | calls |
 | `lib/paths.sh` | calls |
+| `lib/costs.sh` | calls |
+| `lib/colors.sh` | calls |
+| `agents/context/session-metrics.sh` | calls |
+| `lib/notify.sh` | calls |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -34,6 +38,7 @@ Creates handover documents for session continuity
 | `agents/onboarding-test/test-onboarding.sh` | called_by |
 | `agents/context/checkpoint.sh` | called-by |
 | `tests/unit/handover.bats` | tested_by |
+| `tests/unit/handover.bats` | called_by |
 
 ## Documentation
 
@@ -42,8 +47,8 @@ Creates handover documents for session continuity
 ## Related
 
 ### Tasks
-- T-820: Fix TermLink dispatch preamble — workers write to target files
 - T-829: Input/output token breakdown — enrich handover frontmatter and timeline display
+- T-831: Session quality metrics — session-metrics.sh JSONL analyzer + handover integration
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 - T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes

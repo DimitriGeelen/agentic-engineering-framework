@@ -24,21 +24,26 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (1)
+## Dependencies (2)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
+| `web/templates/config.html` | renders |
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/templates/config.html` | used-by |
+| `web/blueprints/__init__.py` | called_by |
+| `web/blueprints/__init__.py` | registered_by |
+| `web/templates/config.html` | rendered_by |
 
 ## Related
 
 ### Tasks
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-834: Fix budget gate false critical — update CONTEXT_WINDOW default 200K to 1M for Opus 4.6
 - T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 - T-893: Fix Watchtower /config page — add .framework.yaml tier lookup

@@ -19,13 +19,14 @@ Architecture (T-138 hybrid):
 - Optional cron job can write .budget-status externally (future)
 Performance target: <100ms per invocation
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `F-003` | reads |
 | `budget-gate-counter` | reads |
 | `lib/paths.sh` | calls |
+| `lib/config.sh` | calls |
 
 ## Used By (4)
 

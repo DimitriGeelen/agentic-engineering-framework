@@ -19,12 +19,15 @@ ensure_firewall_open 3000
 |--------|-------------|
 | `lib/firewall.sh` | calls |
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `tests/unit/lib_firewall.bats` | called-by |
 | `lib/firewall.sh` | called-by |
+| `bin/watchtower.sh` | called_by |
+| `lib/firewall.sh` | called_by |
+| `tests/unit/lib_firewall.bats` | called_by |
 
 ## Related
 

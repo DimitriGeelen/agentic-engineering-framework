@@ -6,12 +6,13 @@
 
 ## What It Does
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/templates/_wrapper.html` | extended_by |
 | `web/templates/config.html` | used-by |
+| `web/templates/config.html` | rendered_by |
 
 ## Related
 

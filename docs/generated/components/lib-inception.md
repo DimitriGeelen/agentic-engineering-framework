@@ -27,12 +27,13 @@ When the active task has `workflow_type: inception`:
 |--------|-------------|
 | `lib/review.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_inception.bats` | called-by |
+| `tests/unit/lib_inception.bats` | called_by |
 
 ## Related
 

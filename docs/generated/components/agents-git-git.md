@@ -27,7 +27,7 @@ Ensures every commit connects to a task (T-XXX pattern)
 | `agents/git/lib/log.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -38,6 +38,8 @@ Ensures every commit connects to a task (T-XXX pattern)
 | `lib/upgrade.sh` | called_by |
 | `tests/unit/git_log.bats` | called-by |
 | `tests/unit/git_common.bats` | called-by |
+| `tests/unit/git_common.bats` | called_by |
+| `tests/unit/git_log.bats` | called_by |
 
 ## Documentation
 

@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -26,8 +26,9 @@ Usage:
 | `lib/enums.sh` | calls |
 | `lib/keylock.sh` | calls |
 | `lib/review.sh` | calls |
+| `lib/notify.sh` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -35,6 +36,7 @@ Usage:
 | `bin/fw` | called_by |
 | `agents/audit/audit.sh` | called-by |
 | `tests/unit/update_task.bats` | tested_by |
+| `tests/unit/update_task.bats` | called_by |
 
 ## Documentation
 

@@ -8,13 +8,14 @@
 
 _load_latest_audit moved to web.shared.load_latest_audit (T-431/A7)
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/shared.py` | calls |
 | `web/templates/quality.html` | renders |
 | `web/subprocess_utils.py` | calls |
+| `web/context_loader.py` | calls |
 
 ## Used By (4)
 

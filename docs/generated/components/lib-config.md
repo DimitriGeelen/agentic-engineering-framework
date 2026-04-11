@@ -36,7 +36,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (4)
+## Used By (20)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -44,6 +44,22 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `tests/unit/lib_config.bats` | called-by |
 | `web/templates/config.html` | used-by |
 | `lib/config.sh` | called-by |
+| `agents/context/check-active-task.sh` | called_by |
+| `agents/context/check-agent-dispatch.sh` | called_by |
+| `agents/context/check-project-boundary.sh` | called_by |
+| `agents/context/check-tier0.sh` | called_by |
+| `agents/context/pre-compact.sh` | called_by |
+| `agents/termlink/termlink.sh` | called_by |
+| `C-004` | called_by |
+| `bin/fw` | called_by |
+| `bin/watchtower.sh` | called_by |
+| `C-007` | called_by |
+| `C-008` | called_by |
+| `lib/keylock.sh` | called_by |
+| `lib/config.sh` | called_by |
+| `lib/verify-acs.sh` | called_by |
+| `tests/unit/lib_config.bats` | called_by |
+| `web/templates/config.html` | read_by |
 
 ## Related
 

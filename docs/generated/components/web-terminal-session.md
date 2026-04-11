@@ -18,6 +18,13 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 - All learnings are captured as practices
 - All open questions are tracked
 
+## Used By (2)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/terminal.py` | called_by |
+| `web/terminal/registry.py` | called_by |
+
 ---
 *Auto-generated from Component Fabric. Card: `web-terminal-session.yaml`*
 *Last verified: 2026-04-06*

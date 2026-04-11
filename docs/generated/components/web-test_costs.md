@@ -10,11 +10,13 @@
 
 ── Fixtures ────────────────────────────────────────────────────
 
-## Dependencies (1)
+## Dependencies (3)
 
 | Target | Relationship |
 |--------|-------------|
 | `web/blueprints/costs.py` | calls |
+| `web/app.py` | calls |
+| `web/blueprints/costs.py` | registers |
 
 ## Related
 

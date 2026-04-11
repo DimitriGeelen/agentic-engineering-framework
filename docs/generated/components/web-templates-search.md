@@ -12,12 +12,13 @@
 |--------|-------------|
 | `web/templates/_partials/chat_tab.html` | includes |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-003` | rendered_by |
 | `web/templates/_partials/chat_tab.html` | rendered_by |
+| `web/blueprints/discovery.py` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-search.yaml`*

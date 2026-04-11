@@ -26,12 +26,13 @@ Steps:
 | `C-001` | calls |
 | `agents/task-create/create-task.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_setup.bats` | called-by |
+| `tests/unit/lib_setup.bats` | called_by |
 
 ## Related
 

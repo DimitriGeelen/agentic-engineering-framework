@@ -31,7 +31,7 @@ fw task create --name "Fix bug" --type build --owner human
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (37)
+## Dependencies (41)
 
 | Target | Relationship |
 |--------|-------------|
@@ -72,8 +72,12 @@ fw task create --name "Fix bug" --type build --owner human
 | `lib/update.sh` | calls |
 | `bin/watchtower.sh` | calls |
 | `lib/build.sh` | calls |
+| `lib/pickup.sh` | calls |
+| `lib/colors.sh` | calls |
+| `lib/costs.sh` | calls |
+| `lib/config.sh` | calls |
 
-## Used By (45)
+## Used By (87)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -122,6 +126,48 @@ fw task create --name "Fix bug" --type build --owner human
 | `tests/integration/fw_costs.bats` | tested_by |
 | `tests/integration/fw_self_test.bats` | tested_by |
 | `tests/integration/fw_config.bats` | tested_by |
+| `bin/fw-shim` | called_by |
+| `tests/integration/fw_approvals.bats` | called_by |
+| `tests/integration/fw_assumption.bats` | called_by |
+| `tests/integration/fw_audit.bats` | called_by |
+| `tests/integration/fw_bus.bats` | called_by |
+| `tests/integration/fw_config.bats` | called_by |
+| `tests/integration/fw_context.bats` | called_by |
+| `tests/integration/fw_costs.bats` | called_by |
+| `tests/integration/fw_cron.bats` | called_by |
+| `tests/integration/fw_decisions.bats` | called_by |
+| `tests/integration/fw_doctor.bats` | called_by |
+| `tests/integration/fw_fabric.bats` | called_by |
+| `tests/integration/fw_fix_learned.bats` | called_by |
+| `tests/integration/fw_gaps.bats` | called_by |
+| `tests/integration/fw_git.bats` | called_by |
+| `tests/integration/fw_handover.bats` | called_by |
+| `tests/integration/fw_harvest.bats` | called_by |
+| `tests/integration/fw_healing.bats` | called_by |
+| `tests/integration/fw_help.bats` | called_by |
+| `tests/integration/fw_hook.bats` | called_by |
+| `tests/integration/fw_inception.bats` | called_by |
+| `tests/integration/fw_init.bats` | called_by |
+| `tests/integration/fw_learnings.bats` | called_by |
+| `tests/integration/fw_metrics.bats` | called_by |
+| `tests/integration/fw_notify.bats` | called_by |
+| `tests/integration/fw_onboarding.bats` | called_by |
+| `tests/integration/fw_patterns.bats` | called_by |
+| `tests/integration/fw_practices.bats` | called_by |
+| `tests/integration/fw_preflight.bats` | called_by |
+| `tests/integration/fw_promote.bats` | called_by |
+| `tests/integration/fw_resume.bats` | called_by |
+| `tests/integration/fw_search.bats` | called_by |
+| `tests/integration/fw_self_test.bats` | called_by |
+| `tests/integration/fw_task.bats` | called_by |
+| `tests/integration/fw_tier0.bats` | called_by |
+| `tests/integration/fw_timeline.bats` | called_by |
+| `tests/integration/fw_traceability.bats` | called_by |
+| `tests/integration/fw_upstream.bats` | called_by |
+| `tests/integration/fw_validate_init.bats` | called_by |
+| `tests/integration/fw_vendor.bats` | called_by |
+| `tests/integration/fw_version.bats` | called_by |
+| `tests/integration/fw_work_on.bats` | called_by |
 
 ## Documentation
 

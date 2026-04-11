@@ -6,6 +6,12 @@
 
 ## What It Does
 
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `web/blueprints/terminal.py` | rendered_by |
+
 ## Related
 
 ### Tasks

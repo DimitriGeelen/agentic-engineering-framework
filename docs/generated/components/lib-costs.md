@@ -23,7 +23,7 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 |--------|-------------|
 | `lib/colors.sh` | calls |
 
-## Used By (4)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -31,6 +31,9 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 | `web/blueprints/costs.py` | calls |
 | `agents/handover/handover.sh` | calls |
 | `tests/unit/lib_costs.bats` | called-by |
+| `agents/handover/handover.sh` | called_by |
+| `bin/fw` | called_by |
+| `tests/unit/lib_costs.bats` | called_by |
 
 ## Related
 

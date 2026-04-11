@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-003` | rendered_by |
+| `web/blueprints/discovery.py` | rendered_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-gaps.yaml`*

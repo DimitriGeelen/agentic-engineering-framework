@@ -17,12 +17,13 @@ Project-specific content is preserved.
 |--------|-------------|
 | `agents/git/git.sh` | calls |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `tests/unit/lib_upgrade.bats` | called-by |
+| `tests/unit/lib_upgrade.bats` | called_by |
 
 ## Related
 

@@ -16,6 +16,11 @@ Unit tests for fw verify-acs (T-824)
 |--------|-------------|
 | `lib/verify-acs.sh` | calls |
 
+## Related
+
+### Tasks
+- T-824: fw verify-acs CLI — automated Human AC evidence collection for stale tasks
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-verify_acs.yaml`*
 *Last verified: 2026-04-05*

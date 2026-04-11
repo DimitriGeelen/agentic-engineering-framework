@@ -15,11 +15,12 @@
 | `web/static/d3.v7.min.js` | calls |
 | `web/blueprints/fabric.py` | rendered_by |
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/fabric.py` | used-by |
+| `web/blueprints/fabric.py` | rendered_by |
 
 ## Related
 

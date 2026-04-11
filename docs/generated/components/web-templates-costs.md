@@ -6,11 +6,12 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/blueprints/costs.py` | renders |
+| `web/blueprints/costs.py` | rendered_by |
 
 ## Related
 
