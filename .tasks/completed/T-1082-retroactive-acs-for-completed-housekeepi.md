@@ -4,7 +4,7 @@ name: "Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 w
 description: >
   Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 warns)
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T08:38:37Z
-last_update: 2026-04-11T08:38:37Z
-date_finished: null
+last_update: 2026-04-11T08:40:54Z
+date_finished: 2026-04-11T08:40:54Z
 ---
 
 # T-1082: Retroactive ACs for completed housekeeping tasks T-1072/T-1074 (CTL-012 warns)
@@ -68,3 +68,6 @@ Audit CTL-012 warns that completed tasks T-1072 and T-1074 still contain `[First
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1082-retroactive-acs-for-completed-housekeepi.md
 - **Context:** Initial task creation
+
+### 2026-04-11T08:40:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
