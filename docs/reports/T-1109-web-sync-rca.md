@@ -182,9 +182,407 @@ This file — updated incrementally by the worker with findings from each phase.
 
 ---
 
-## Worker findings (to be filled)
+## Worker findings
 
-(Worker writes here — main session seed below)
+---
+
+## Phase 1 — Code path trace
+
+**Finding: `fw upgrade` → `lib/upgrade.sh:do_upgrade()`. No tmpdir, no git clone, no rsync.**
+
+### Dispatch chain
+```
+bin/fw:2697-2700
+  upgrade)
+    source "$FW_LIB_DIR/lib/upgrade.sh"
+    do_upgrade "$@"
+```
+
+`do_upgrade()` is a 914-line function with 10 explicit sections. It does NOT call `do_update`, `do_vendor`, `_do_update_vendored`, or any rsync-from-upstream logic. It syncs files by direct `diff -q` + `cp` from `$FRAMEWORK_ROOT` to `$target_dir`.
+
+### Section 4b — the vendored script sync (lib/upgrade.sh:320-446)
+
+Section 4b is the only section that writes to `<consumer>/.agentic-framework/`. It syncs:
+
+| What | Source | Mechanism |
+|------|--------|-----------|
+| `agents/context/*.sh` | `$FRAMEWORK_ROOT/agents/context/` | diff -q → cp |
+| `agents/context/lib/` | `$FRAMEWORK_ROOT/agents/context/lib/` | diff -q → cp |
+| `bin/fw` | `$FRAMEWORK_ROOT/bin/fw` | diff -q → cp |
+| `lib/*.sh` | `$FRAMEWORK_ROOT/lib/` | diff -q → cp |
+| Agent dirs | `$FRAMEWORK_ROOT/agents/{task-create,handover,git,healing,fabric,dispatch,resume,audit,session-capture}/` | diff -q → cp |
+| VERSION | Written directly | `echo "$fw_version" > VERSION` (T-859) |
+
+**`web/` is completely absent.** The agent_dirs string at lib/upgrade.sh:388 is:
+```bash
+local agent_dirs="task-create handover git healing fabric dispatch resume audit session-capture"
+```
+
+No `web`, no `web/blueprints`, no `web/templates`, no `web/terminal`.
+
+Searching the entire 914-line file for "web" finds only a comment inside a HEREDOC (line 286: `# Read by web/blueprints/cron.py`). There is no web sync anywhere in `do_upgrade`.
+
+### Contrast: `do_vendor()` (bin/fw:181-190)
+
+`fw init` calls `do_vendor` which has this includes list:
+```bash
+local includes=(
+    bin
+    lib
+    agents
+    web        # ← includes web/
+    docs
+    .tasks/templates
+    FRAMEWORK.md
+    metrics.sh
+)
+```
+
+`do_vendor` IS comprehensive. `do_upgrade` step 4b is SELECTIVE and was never updated to include `web/` after the terminal feature landed.
+
+### Answer to H6 (strongest hypothesis)
+H6 was "fw upgrade is shim-only". PARTIALLY CONFIRMED but nuanced: `fw upgrade` does vendor SOME files (step 4b syncs agents, bin/fw, lib, VERSION), but NOT `web/`. The web directory is the gap. H6 was right that upgrade doesn't re-vendor the full `.agentic-framework/` — it only re-vendors a known subset.
+
+### Secondary finding: shim routes to vendored fw (chicken-and-egg)
+
+The global shim `~/.local/bin/fw` (T-664) resolves framework in this order:
+1. Look for `bin/fw + FRAMEWORK.md` walking up from CWD (framework repo)
+2. Look for `.agentic-framework/bin/fw` walking up from CWD (consumer project)
+
+When run from `/opt/025-WokrshopDesigner`, the shim finds `.agentic-framework/bin/fw` (resolution #2). The vendored `bin/fw` then runs `resolve_framework()` which returns `.agentic-framework/` itself as `FRAMEWORK_ROOT` (because `.agentic-framework/` has `FRAMEWORK.md` + `agents/`).
+
+Result: when `fw upgrade` is run via the shim from a consumer project, `FRAMEWORK_ROOT` = the vendored copy, and `FW_VERSION` = the vendored VERSION (1.1.16 for /opt/025). Step 4b syncs from the vendored copy TO the vendored copy → zero changes. Step 9 writes the OLD version back to `.framework.yaml`.
+
+**But the audit trail for /opt/025 shows `framework_root: /opt/999-Agentic-Engineering-Framework`** for all recent upgrades. This means these upgrades were run via `/opt/999/bin/fw upgrade /opt/025-WokrshopDesigner` (not via the shim from within the consumer directory). In those cases, `FRAMEWORK_ROOT = /opt/999` and step 4b correctly syncs scripts from `/opt/999`. But `web/` is still missing because it's not in step 4b's sync list.
+
+The VERSION=1.1.16 mystery: versions in the upgrade audit trail start at 1.5.51 (April 9). T-859 was added April 4. All script syncs in step 4b would find `/opt/025/.agentic-framework/agents/context/...` already matching `/opt/999/agents/context/...` if they were already synced in a prior run — so `script_updated=0`. The T-859 VERSION write happens inside the same 4b block: if `script_updated` is incremented for any reason, VERSION gets written. But if all files already match (script_updated=0), VERSION is still written (line 426-432 always runs). So VERSION SHOULD be current. This remains a secondary mystery but does not affect the primary bug conclusion.
+
+---
+
+## Phase 2 — Live reproduction
+
+**Result: BUG REPRODUCED. `fw upgrade` silently skips web/ and reports false "OK".**
+
+### Steps
+
+```bash
+# 1. Create test consumer
+rm -rf /tmp/t1109-test-consumer
+mkdir /tmp/t1109-test-consumer
+/opt/999-Agentic-Engineering-Framework/bin/fw init --provider claude
+# → fw init correctly vendors terminal.py (via do_vendor which includes web/)
+
+# 2. Verify: terminal.py present
+ls /tmp/t1109-test-consumer/.agentic-framework/web/blueprints/terminal.py  # EXISTS
+
+# 3. Simulate stale state
+rm /tmp/t1109-test-consumer/.agentic-framework/web/blueprints/terminal.py
+
+# 4. Run fw upgrade
+/opt/999-Agentic-Engineering-Framework/bin/fw upgrade /tmp/t1109-test-consumer
+```
+
+### Upgrade output (key lines)
+
+```
+[4b/9] Vendored framework scripts
+  OK  All vendored scripts current    ← FALSE NEGATIVE: terminal.py still missing
+```
+
+### Post-upgrade check
+
+```bash
+ls /tmp/t1109-test-consumer/.agentic-framework/web/blueprints/ | grep terminal
+# → empty — terminal.py NOT restored
+```
+
+**`fw upgrade` reported "OK All vendored scripts current" but terminal.py was not present.** No error, no warning. Silent skip.
+
+### Blueprint diff: /opt/025 vs /opt/999
+
+```
+diff <(ls /opt/025-WokrshopDesigner/.agentic-framework/web/blueprints/) \
+     <(ls /opt/999-Agentic-Engineering-Framework/web/blueprints/)
+20a21
+> sessions.py
+22a24
+> terminal.py
+```
+
+`sessions.py` and `terminal.py` are missing from `/opt/025`. Both are newer additions to the framework that post-date the original vendoring.
+
+---
+
+## Phase 3 — Hypothesis elimination
+
+| Hypothesis | Status | Evidence |
+|------------|--------|----------|
+| H1 — Alternate code path | **RULED OUT** | `fw upgrade` definitively routes to `lib/upgrade.sh:do_upgrade()`, not `lib/update.sh:do_update()` |
+| H2 — Stale tmpdir | **RULED OUT** | `do_upgrade()` has no tmpdir or git clone. That pattern belongs to `lib/update.sh:_do_update_vendored()` only |
+| H3 — Nested .agentic-framework | **RULED OUT** | `find /opt/025-WokrshopDesigner -name .agentic-framework -type d` returns exactly one result |
+| H4 — Silent rsync failure | **RULED OUT** | `do_upgrade` step 4b uses `diff -q + cp`, not rsync. No rsync in the upgrade path |
+| H5 — VERSION is a relic | **PARTIALLY TRUE** | `.framework.yaml` is authoritative. But the real issue is missing web/ files, not the VERSION label |
+| H6 — Upgrade is shim-only | **PARTIALLY CONFIRMED** | `do_upgrade` does vendor some files (step 4b), but `web/` is NOT in the sync list — the omission is the bug |
+| H7 — upstream_repo mismatch | **RULED OUT (for this code path)** | `do_upgrade` reads directly from `$FRAMEWORK_ROOT`, never reads `upstream_repo` from `.framework.yaml`. This config key is only used by `lib/update.sh` |
+
+### Why /opt/termlink has terminal.py (anomaly explained)
+
+`/opt/termlink/.framework.yaml` has `upstream_repo: DimitriGeelen/agentic-engineering-framework` (a GitHub URL) and VERSION=0.9.585. The `upstream_repo` GitHub URL format triggers `lib/update.sh:_do_update_vendored()` which performs a `git clone` and calls `do_vendor` with the full includes list (including `web/`). This is the `fw update` code path, not `fw upgrade`. It gets terminal.py from GitHub.
+
+### Confirmed root cause
+
+`lib/upgrade.sh:do_upgrade()` step 4b maintains an explicit file-by-file enumeration for syncing `.agentic-framework/`. The `web/` directory was never added to this enumeration. When terminal.py was added in T-964..T-967/T-980, only the framework repo got the file — no update was made to step 4b's sync list.
+
+`do_vendor()` (in `bin/fw`) is the comprehensive sync used by `fw init` and `fw update`. It includes `web/`. The two mechanisms diverged silently.
+
+**Class of bug**: Missing entry in an explicit enumeration — a structural pattern that requires every new directory to be registered in two places (do_vendor includes + do_upgrade step 4b).
+
+---
+
+## Phase 4 — Structural fix design
+
+### Root cause requires fix at: `lib/upgrade.sh:do_upgrade()` step 4b
+
+### Option A — Minimum viable fix (add web/ to step 4b enumeration)
+
+**Approach:** Add web/ sync to section 4b, similar to how agent dirs are synced.
+
+**Exact change in lib/upgrade.sh (after line 423, before "# T-859: Sync VERSION file"):**
+```bash
+        # Sync web/ (Watchtower blueprints, templates, terminal module)
+        local web_subdirs="blueprints templates terminal"
+        for web_sub in $web_subdirs; do
+            local src_web="$FRAMEWORK_ROOT/web/$web_sub"
+            local dst_web="$vendored_dir/web/$web_sub"
+            [ -d "$src_web" ] || continue
+            if ! diff -rq "$src_web" "$dst_web" > /dev/null 2>&1; then
+                script_updated=$((script_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    mkdir -p "$dst_web"
+                    cp -r "$src_web/." "$dst_web/"
+                fi
+            fi
+        done
+        # Sync top-level web/*.py (app.py, config.py, etc.)
+        for src_web_file in "$FRAMEWORK_ROOT/web/"*.py "$FRAMEWORK_ROOT/web/requirements.txt"; do
+            [ -f "$src_web_file" ] || continue
+            local wfname
+            wfname=$(basename "$src_web_file")
+            local dst_web_file="$vendored_dir/web/$wfname"
+            if [ ! -f "$dst_web_file" ] || ! diff -q "$src_web_file" "$dst_web_file" > /dev/null 2>&1; then
+                script_updated=$((script_updated + 1))
+                if [ "$dry_run" != true ]; then
+                    mkdir -p "$vendored_dir/web"
+                    cp "$src_web_file" "$dst_web_file"
+                fi
+            fi
+        done
+```
+
+**Risk:** Still requires manual updates when new top-level directories are added. The enumeration problem recurs.
+
+### Option B — Structural fix (make step 4b call do_vendor) — RECOMMENDED
+
+**Approach:** Replace step 4b's hand-enumerated sync with a call to the already-correct `do_vendor` function.
+
+`do_vendor` already has the correct includes list (`bin lib agents web docs .tasks/templates FRAMEWORK.md metrics.sh`). Instead of maintaining a parallel enumeration, have `do_upgrade` call it:
+
+```bash
+# ── 4b. Vendored framework scripts (.agentic-framework/) ──
+echo -e "${YELLOW}[4b/9] Vendored framework scripts${NC}"
+local vendored_dir="$target_dir/.agentic-framework"
+if [ -d "$vendored_dir" ]; then
+    if [ "$dry_run" = true ]; then
+        echo -e "  ${CYAN}WOULD RE-VENDOR${NC}  Full re-vendor from $FRAMEWORK_ROOT"
+        changes=$((changes + 1))
+    else
+        local vendor_output
+        vendor_output=$(do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" 2>&1)
+        local vendor_exit=$?
+        if [ $vendor_exit -eq 0 ]; then
+            echo -e "  ${GREEN}UPDATED${NC}  Re-vendored from $FRAMEWORK_ROOT"
+            changes=$((changes + 1))
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Re-vendor reported issues: $vendor_output"
+            skipped=$((skipped + 1))
+        fi
+    fi
+else
+    echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
+fi
+```
+
+**Benefits:**
+- Single source of truth: `do_vendor` includes list is the only thing to update
+- Atomic: full re-vendor, no partial state
+- Automatically picks up future additions (e.g., when `web/api/` is added later)
+- Eliminates the VERSION divergence problem (do_vendor writes VERSION from FW_VERSION)
+- Eliminates the diff-without-web false-OK messages
+
+**Risk:** `do_vendor` does a full copy (not diff-based), slightly slower. But `.agentic-framework/` is ~7MB — acceptable.
+
+**Files to change:**
+- `lib/upgrade.sh`: Replace step 4b body (lines 320-443 approximately)
+- No other files needed
+
+### Migration path for broken consumers
+
+After the fix is deployed, consumers can self-heal by running:
+```bash
+cd /opt/025-WokrshopDesigner && /opt/999-Agentic-Engineering-Framework/bin/fw upgrade
+```
+This will trigger the new step 4b which calls `do_vendor`, restoring `web/blueprints/terminal.py`, `web/blueprints/sessions.py`, and any other missing files.
+
+**Alternative if fw upgrade is unavailable**: `fw vendor --target /opt/025-WokrshopDesigner` does the same thing directly.
+
+**The 4 broken consumers** (025, 051, 050, openclaw): all need one `fw upgrade` run after the fix. No manual file copying needed.
+
+---
+
+## Phase 5 — Invariant test design
+
+### Test: `tests/integration/upgrade-vendor-complete.bats`
+
+```bash
+#!/usr/bin/env bats
+# Integration test: fw upgrade must sync ALL web/ files to consumer .agentic-framework/
+# Regression test for T-1109 (web/ sync gap)
+
+setup() {
+    CONSUMER_DIR="$(mktemp -d)"
+    FRAMEWORK_ROOT="/opt/999-Agentic-Engineering-Framework"
+    # Initialize consumer using fw init
+    "$FRAMEWORK_ROOT/bin/fw" init --provider claude --target "$CONSUMER_DIR" >/dev/null 2>&1 || true
+    # Clobber web/blueprints to simulate stale state
+    rm -rf "$CONSUMER_DIR/.agentic-framework/web/blueprints"
+    rm -rf "$CONSUMER_DIR/.agentic-framework/web/templates"
+    rm -rf "$CONSUMER_DIR/.agentic-framework/web/terminal"
+}
+
+teardown() {
+    rm -rf "$CONSUMER_DIR"
+}
+
+@test "fw upgrade restores missing web/blueprints/terminal.py" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    [ -f "$CONSUMER_DIR/.agentic-framework/web/blueprints/terminal.py" ]
+}
+
+@test "fw upgrade restores ALL blueprints from upstream" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    # Every blueprint in FRAMEWORK_ROOT/web/blueprints/ must exist in consumer
+    for bp in "$FRAMEWORK_ROOT/web/blueprints/"*.py; do
+        local name
+        name=$(basename "$bp")
+        [ -f "$CONSUMER_DIR/.agentic-framework/web/blueprints/$name" ] || \
+            fail "Missing blueprint after upgrade: $name"
+    done
+}
+
+@test "fw upgrade restores web/templates/" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    local fw_tmpl_count consumer_tmpl_count
+    fw_tmpl_count=$(ls "$FRAMEWORK_ROOT/web/templates/"*.html 2>/dev/null | wc -l)
+    consumer_tmpl_count=$(ls "$CONSUMER_DIR/.agentic-framework/web/templates/"*.html 2>/dev/null | wc -l)
+    [ "$consumer_tmpl_count" -eq "$fw_tmpl_count" ]
+}
+
+@test "fw upgrade restores web/terminal/ module" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    [ -d "$CONSUMER_DIR/.agentic-framework/web/terminal" ]
+}
+
+@test "fw upgrade: vendored VERSION matches FW_VERSION after upgrade" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    local fw_version
+    fw_version=$(git -C "$FRAMEWORK_ROOT" describe --tags --match 'v*' 2>/dev/null | sed 's/^v//') || \
+        fw_version=$(cat "$FRAMEWORK_ROOT/VERSION")
+    local vendored_version
+    vendored_version=$(cat "$CONSUMER_DIR/.agentic-framework/VERSION")
+    [ "$vendored_version" = "$fw_version" ]
+}
+
+@test "fw upgrade --dry-run does not modify web/ but reports changes" {
+    run "$FRAMEWORK_ROOT/bin/fw" upgrade --dry-run "$CONSUMER_DIR"
+    [ "$status" -eq 0 ]
+    # web/blueprints should still be absent (dry-run doesn't write)
+    [ ! -d "$CONSUMER_DIR/.agentic-framework/web/blueprints" ]
+    # Output should mention something about vendored/web
+    [[ "$output" == *"WOULD"* ]]
+}
+```
+
+### Test: `tests/lint/single-vendor-writer.bats`
+
+```bash
+#!/usr/bin/env bats
+# Structural test: only ONE code path may define what gets vendored
+# Regression test for T-1109 (enumeration duplication between do_vendor and do_upgrade)
+
+@test "do_vendor includes list is the only place web/ is listed as a vendor target" {
+    # do_vendor includes list (bin/fw:181-190) must have 'web'
+    run grep -n '"web"' /opt/999-Agentic-Engineering-Framework/bin/fw
+    [ "$status" -eq 0 ]  # web IS in do_vendor
+
+    # do_upgrade step 4b must NOT have a separate web sync enumeration
+    # (it must call do_vendor, not maintain its own list)
+    run grep -n 'web/blueprints\|web/templates\|web/terminal' \
+        /opt/999-Agentic-Engineering-Framework/lib/upgrade.sh
+    # Any matches here indicate the duplication pattern has re-emerged
+    [ "$status" -ne 0 ] || fail "do_upgrade has its own web sync enumeration — must call do_vendor instead"
+}
+```
+
+### CI recommendation
+
+- `upgrade-vendor-complete.bats`: run in integration test suite (requires filesystem, not unit). Run nightly or on any change to `lib/upgrade.sh` or `web/`.
+- `single-vendor-writer.bats`: run as lint (fast, no filesystem). Run on every PR that touches `lib/upgrade.sh` or `bin/fw`.
+- Trigger: `on: [push, pull_request] paths: ['lib/upgrade.sh', 'bin/fw', 'web/**']`
+
+---
+
+## Phase 6 — Recommendation
+
+### Verdict: **GO**
+
+### Confirmed root cause
+
+`lib/upgrade.sh:do_upgrade()` section 4b (lines 320-443) maintains an **explicit enumeration** of directories to sync to `.agentic-framework/`. The `web/` directory was never added to this enumeration. `do_vendor()` (in `bin/fw:181-190`) has a parallel includes list that DOES include `web/`. These two lists diverged when the terminal feature (`web/blueprints/terminal.py`, `web/templates/terminal.html`, `web/terminal/`) was added in T-964..T-980.
+
+This is not a configuration issue, not an rsync exit code issue, not a path resolution issue. It is a **structural pattern failure**: two enumerations of the same logical thing, maintained independently.
+
+### Chokepoint
+
+**C1 (do_vendor chokepoint)** — Replace step 4b's hand-enumeration with a call to `do_vendor`. Single source of truth. No parallel list to forget.
+
+### Invariant test pair (per T-1105 discipline)
+
+| Chokepoint | Invariant test |
+|------------|---------------|
+| C1: do_upgrade calls do_vendor | `tests/lint/single-vendor-writer.bats` — grep ensures no parallel enumeration in upgrade.sh |
+| C1: web/ is restored after upgrade | `tests/integration/upgrade-vendor-complete.bats` — each blueprint file verified post-upgrade |
+
+### Descendant build tasks
+
+| Task ID | Scope | Type |
+|---------|-------|------|
+| T-1109a | Fix `lib/upgrade.sh` step 4b: replace enumeration with `do_vendor` call | Build |
+| T-1109b | Write `tests/integration/upgrade-vendor-complete.bats` | Test |
+| T-1109c | Write `tests/lint/single-vendor-writer.bats` | Test |
+| T-1109d | Run `fw upgrade` on the 4 broken consumers (025, 051, 050, openclaw) | Build |
+| T-1109e | Add `fw doctor` check: compare vendored web/ against upstream manifest | Build |
+
+### Risk: none blocking GO
+
+- Fix is a pure refactor of step 4b — no behavior change for already-correct files
+- `do_vendor` is battle-tested (used by `fw init` in thousands of runs)
+- Migration for broken consumers is a single `fw upgrade` command
+- Tests prevent recurrence
 
 ---
 

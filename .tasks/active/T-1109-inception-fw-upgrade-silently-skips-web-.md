@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T20:12:21Z
-last_update: 2026-04-11T20:12:27Z
+last_update: 2026-04-11T20:15:59Z
 date_finished: null
 ---
 
@@ -76,15 +76,46 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
+
+**Rationale:** The RCA (worker + main session, `docs/reports/T-1109-web-sync-rca.md`) confirms a structural enumeration-divergence bug. `fw upgrade` routes to `lib/upgrade.sh:do_upgrade()`, which maintains a handcrafted per-file sync list (`agents/context/*.sh`, `bin/fw`, `lib/*.sh`, a string of agent dirs, VERSION). `do_vendor()` in `bin/fw:181-190` maintains a separate, comprehensive includes list (`bin lib agents web docs .tasks/templates FRAMEWORK.md metrics.sh`). These two lists diverged silently when `web/blueprints/terminal.py` and `web/blueprints/sessions.py` were added in T-964..T-980 — `do_vendor` picked them up, `do_upgrade` did not. This is exactly the class of bug T-1105 (chokepoint+invariant-test discipline) exists to prevent: two enumerations of the same logical thing, no structural invariant binding them. Fix is pure refactor (collapse to single source of truth) + regression tests; `do_vendor` is battle-tested via `fw init`; migration is one `fw upgrade` per broken consumer. Zero blocking risk.
+
+**Evidence (from `docs/reports/T-1109-web-sync-rca.md`):**
+
+1. **Code path trace (Phase 1)** — `bin/fw:2697-2700` routes `upgrade` → `lib/upgrade.sh:do_upgrade()`. `do_upgrade()` is 914 lines and NEVER calls `do_update`, `do_vendor`, or any rsync-from-upstream logic. Section 4b (lines 320-446) syncs files via direct `diff -q + cp` from `$FRAMEWORK_ROOT`. The agent_dirs string at `lib/upgrade.sh:388` is `"task-create handover git healing fabric dispatch resume audit session-capture"` — no web, no web/blueprints, no web/templates, no web/terminal. Grep of the entire 914-line file for "web" finds only one comment inside a HEREDOC.
+
+2. **Live reproduction (Phase 2)** — On `/tmp/t1109-test-consumer`: `fw init` → terminal.py present (via do_vendor). Removed terminal.py. Ran `fw upgrade` → output said `[4b/9] Vendored framework scripts / OK All vendored scripts current`. Post-upgrade: terminal.py **NOT restored**. Silent false-OK reproduced end-to-end. Blueprint diff `/opt/025` vs `/opt/999` confirms both `sessions.py` and `terminal.py` are missing from the consumer.
+
+3. **`/opt/termlink` anomaly explained** — `/opt/termlink/.framework.yaml` has `upstream_repo: DimitriGeelen/agentic-engineering-framework` (GitHub URL). The GitHub format triggers `lib/update.sh:_do_update_vendored()` → `git clone` → `do_vendor` (full includes list). `/opt/termlink` got terminal.py via the `fw update` code path, never via `fw upgrade`. The 4 broken consumers (025, 051, 050, openclaw) do not have `upstream_repo` set and have only ever been upgraded via `fw upgrade`.
+
+4. **Hypotheses ruled out** — H1 (alternate code path): CONFIRMED — `do_upgrade`, not `do_update`. H2 (tmpdir): no tmpdir in `do_upgrade`. H3 (nested .agentic-framework): exactly one per consumer. H4 (rsync failure): no rsync in upgrade path. H5 (VERSION): partially true (two writers) but not the primary bug. H6 (shim-only): PARTIALLY CONFIRMED — `do_upgrade` syncs a known subset, web/ is the gap. H7 (upstream_repo): `do_upgrade` reads from `$FRAMEWORK_ROOT` directly, never reads upstream_repo.
+
+5. **G-024 finally explained** — G-024 ("fw upgrade does not sync web/blueprints/") was registered as an observation without root cause. The code that looks correct (`lib/update.sh` include list) is for `fw update`, a different command. `fw upgrade` has a fundamentally different sync strategy (handcrafted per-file) that structurally cannot sync new files without edits to `lib/upgrade.sh`. Every new blueprint/template/web module has required a manual code change that nobody made.
+
+**Chokepoint (per T-1105 discipline):** **C1 — Replace `lib/upgrade.sh:do_upgrade()` step 4b body with a single `do_vendor` call.** The `do_vendor` includes list (`bin lib agents web docs .tasks/templates FRAMEWORK.md metrics.sh`) becomes the only place where vendoring scope is defined. No parallel enumeration to forget. Atomic full re-vendor. Automatically picks up future additions.
+
+**Invariant tests (pair with chokepoint):**
+
+| Test | Purpose |
+|------|---------|
+| `tests/integration/upgrade-vendor-complete.bats` | Create consumer, remove web/blueprints/terminal.py, run `fw upgrade`, assert file restored. Also: every blueprint in `FRAMEWORK_ROOT/web/blueprints/` must exist in consumer post-upgrade; web/templates/ count matches; web/terminal/ dir exists; VERSION matches. |
+| `tests/lint/single-vendor-writer.bats` | Grep-based structural test: `lib/upgrade.sh` must NOT contain its own `web/blueprints\|web/templates\|web/terminal` enumeration. Any match = duplication pattern re-emerged = test fails. Runs on every PR touching `lib/upgrade.sh` or `bin/fw`. |
+
+**Build decomposition:**
+
+| ID | Scope | Type | Depends on |
+|----|-------|------|------------|
+| T-1109a | Fix `lib/upgrade.sh:do_upgrade()` step 4b: delete handcrafted sync block (lines 320-443), replace with `do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT"` call | Build | — |
+| T-1109b | Write `tests/integration/upgrade-vendor-complete.bats` — 6 test cases per worker design | Test | T-1109a |
+| T-1109c | Write `tests/lint/single-vendor-writer.bats` — structural guard | Test | T-1109a |
+| T-1109d | Run `fw upgrade` on the 4 broken consumers (`/opt/025-WokrshopDesigner`, `/opt/051-*`, `/opt/050-*`, `/opt/openclaw`) — self-healing migration | Build | T-1109a |
+| T-1109e | Add `fw doctor` check: compare vendored `web/` file manifest against upstream manifest, warn on drift | Build | T-1109a |
+
+**Cost estimate:** ~1 hour total. Step 4b replacement is ~20 LOC delete + 10 LOC add. Tests are ~80 LOC combined. Consumer migration is 4 shell invocations. `fw doctor` check is ~30 LOC.
+
+**Risk (none blocking):**
+- Behavior change: full re-vendor overwrites any local edits in `.agentic-framework/`. Mitigation: `do_vendor` already does this for `fw init`, and `.agentic-framework/` is documented as vendored (not user-edited). Add a `--preserve-local` flag if anyone complains.
+- Slightly slower: full copy vs diff-based. `.agentic-framework/` is ~7MB; runtime difference is negligible.
 
 ## Decisions
 
