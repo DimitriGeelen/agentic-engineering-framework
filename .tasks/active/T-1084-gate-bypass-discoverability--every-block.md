@@ -68,13 +68,10 @@ When a framework gate blocks an agent action, its error message often does NOT p
 
 ## Go/No-Go Criteria
 
-**GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**GO if:** 3+ gates lack or mislead on bypass AND fix is mechanical (no infra redesign).
+**NO-GO if:** <3 gates affected OR fix requires architectural change.
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+**Audit result:** 3 gates actively broken (commit-msg task-ref, commit-msg inception, pre-push audit), 1 partial (project boundary). → GO.
 
 ## Verification
 
@@ -84,15 +81,25 @@ When a framework gate blocks an agent action, its error message often does NOT p
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** The T-908 incident is a specific symptom of a copy-paste bug baked into 3 git-hook gate error messages. All 3 print `fw tier0 approve` as part of the bypass recipe, which is wrong in both human-terminal context (the command errors because no pending block exists, breaking the `&&` chain) and agent-Bash context (the agent never hits the git hook because Tier 0 fires first on `--no-verify`). Fix is mechanical: edit 4 messages, bump hook VERSION, propagate via `--force` install-hooks on 11 consumer projects.
+
+**Evidence:**
+- 11 gates audited: 6 GOOD, 3 BROKEN (#6, #7, #8), 1 PARTIAL (#10), 1 N/A (budget — good as-is)
+- The broken gates are `agents/git/lib/hooks.sh` lines 75-79 (commit-msg task-ref), 128-130 (commit-msg inception), 377-379 (pre-push audit)
+- The same file's research-artifact gate (line 169) gets it right with just `git commit --no-verify` — pattern to copy
+- Good examples from task-first gate (`check-active-task.sh:167-169`) and G-020 (`check-active-task.sh:341-344`) prove the template is learnable and clear
+- Full audit in `docs/reports/T-1084-gate-bypass-discoverability.md`
+
+**Proposed follow-up tasks:**
+1. T-1085 (build): Fix commit-msg task-ref gate bypass message
+2. T-1086 (build): Fix inception commit-msg gate bypass message
+3. T-1087 (build): Fix pre-push audit gate bypass message
+4. T-1088 (build): Add TermLink workaround to project boundary gate error (PARTIAL)
+5. Bump hook VERSION → 1.6, propagate to 11 consumers via `install-hooks --force` (rolled into one of the above or a separate small task)
+
+Out of scope (separate inceptions if wanted): `fw gates` inventory command, unified `fw bypass` wrapper, context-aware `fw tier0 approve` suggestions.
 
 ## Decisions
 
