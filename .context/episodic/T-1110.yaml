@@ -1,0 +1,70 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1110: Collapse framework enums into single source of truth (L-006 structural sweep)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-11T21:30:33Z
+# ============================================================================
+
+task_id: T-1110
+task_name: "Collapse framework enums into single source of truth (L-006 structural sweep)"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-04-11T21:10:31Z
+completed: 2026-04-11T21:30:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-11T23:14:57+02:00
+last_commit: 2026-04-11T23:14:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception capture — collapse framework enums into single source of truth
+
+# Key outcomes
+outcomes:
+  - "Task completed"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1110-enum-sweep-inception.md"
+  - ".tasks/active/T-1110-collapse-framework-enums-into-single-sou.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T23:14:57"
+    action: "T-1110: Inception capture — collapse framework enums into single source of truth"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 2
+  lines_added: 295
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1110-collapse-framework-enums-into-single-sou.md
+generated_by: context-agent-hybrid

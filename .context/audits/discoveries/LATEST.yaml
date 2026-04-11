@@ -1,49 +1,24 @@
-timestamp: 2026-04-11T08:42:32Z
+timestamp: 2026-04-11T21:30:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/991)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1006)"
   - id: D2
-    level: WARN
-    check: "D2: Human review queue — 18 task(s) waiting >14d: T-446(27d) T-460(28d) T-470(29d) T-481(27d) T-505(24d) T-511(24d) T-518(24d) T-530(18d) T-579(14d) T-594(18d) T-607(16d) T-610(14d) T-611(14d) T-612(15d) T-613(14d) T-631(14d) T-644(14d) T-645(14d)"
-    mitigation: "Review with: fw task verify"
+    level: FAIL
+    check: "D2: Human review queue — 1 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(29d) T-470(30d) T-479(14d) T-481(28d) T-505(25d) T-511(25d) T-518(24d) T-530(19d) T-571(14d) T-579(15d) T-584(14d) T-594(18d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(16d) T-613(15d) T-619(14d) T-631(15d) T-644(15d) T-645(15d) T-651(14d) T-662(14d) T-663(14d) T-671(14d) T-676(14d)"
+    mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - id: D10
-    level: WARN
-    check: "D10: Decision-without-dialogue — 1 task(s): T-468"
-    mitigation: "Review flagged tasks — human dialogue may have been skipped"
+    level: PASS
+    check: "D10: Decision-without-dialogue — none detected"
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
-  - id: D4
-    level: PASS
-    check: "D4: Audit trend — insufficient history (<3 entries)"
-  - id: D5
-    level: WARN
-    check: "D5: Task lifecycle — 5 anomaly(s): T-829(3min,human) T-827(2min,human) T-524(3min,human) T-523(1min,human) T-472(2min,human)"
-    mitigation: "Review flagged tasks for process issues"
-  - id: D3
-    level: WARN
-    check: "D3: Commit velocity — WARN drop today=10 avg=85 ratio=0.1x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
-  - id: D7
-    level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 10_commits_24h)"
-  - id: D6
-    level: WARN
-    check: "D6: Completion velocity — sustained drop (drop recent_avg=4.0 vs earlier_avg=29.4)"
-    mitigation: "Check for blockers or process issues slowing work"
-  - id: D12
-    level: PASS
-    check: "D12: Bypass log — no log file"
-  - id: D9
-    level: PASS
-    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 7
-  warn: 5
-  fail: 0
-  total: 12
+  pass: 4
+  warn: 0
+  fail: 1
+  total: 5

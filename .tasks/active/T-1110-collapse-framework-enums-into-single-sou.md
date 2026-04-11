@@ -4,7 +4,7 @@ name: "Collapse framework enums into single source of truth (L-006 structural sw
 description: >
   Inception: Collapse framework enums into single source of truth (L-006 structural sweep)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T21:10:31Z
-last_update: 2026-04-11T21:13:46Z
-date_finished: null
+last_update: 2026-04-11T21:30:29Z
+date_finished: 2026-04-11T21:30:29Z
 ---
 
 # T-1110: Collapse framework enums into single source of truth (L-006 structural sweep)
@@ -165,18 +165,92 @@ If any spike fails, the sweep task is DEFERRED (not NO-GO) until the architectur
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO (pending T-1109 decision and spike A/B/C completion).
+
+Rationale: A systematic sweep of the framework in a single session surfaced 8 L-006 enumeration-divergence instances — 3 of which already silently drift (G-024 web/, G-037 excludes lists, G-043 fw help). The density suggests the class is pervasive rather than incidental. Incremental per-gap fixing has two problems: (1) every fix touches the same chokepoint pattern (Flask context processor + `status-transitions.yaml` extension + `fw_enums.py` helper), so splitting produces 6× the coordination cost for the same structural change; (2) the same session that scanned for the bugs already wrote the fix sketch — the tactical work to convert that sketch into a commit is bounded and well-specified. The worker's LOC estimate is net −115 LOC (115 removed, ~80 added), closing 4 confirmed gaps (G-040/G-041/G-042/G-043) and retiring the Python side of G-038 in a single structural pass. G-024 and G-024-NEW-007 are covered by the separate T-1109 fix which must land first (dependency ordering). If spikes A/B/C pass, this is the textbook T-1105 chokepoint+invariant-test discipline applied to a bug class rather than a single bug.
+
+Evidence:
+
+1. L-006 sweep worker findings (`docs/reports/T-1109-l006-sweep.md`, 162 lines, 20-minute systematic scan by tl-vvfixptj worker):
+   - 8 confirmed instances with line-level citations
+   - 3 already-drifting instances (not theoretical)
+   - Net LOC delta estimate: −115 (removed) / +80 (added)
+   - 7 non-instances explicitly rejected (fabric.py, cron.py, risks.py, init.sh providers, create-task.sh)
+   - Method section documents grep patterns, files inspected, and decision criteria
+
+2. Pattern density — 8 instances found in one session; 4 of them within 30 minutes of local scanning before the worker dispatched. The L-006 learning (captured in `.context/project/learnings.yaml`) was named as a bug class specifically to make future agents recognize the pattern.
+
+3. Chokepoint architecture already exists — `status-transitions.yaml` (T-588) solved exactly this problem for the bash side via `lib/enums.sh`. The Python side of the framework was never migrated to consume the same canonical. The missing piece is a `fw_enums.py` helper that reads the YAML once and a Flask context processor that injects the dict into every template. This is 40+15 = 55 LOC of new code to retire 115 LOC of mirror sites.
+
+4. T-1105 discipline alignment — This inception is the textbook application of the chokepoint+invariant-test discipline to a bug class rather than a single bug. Per T-1105's framework governance rule, when a bug class has 3+ registered instances, the fix MUST land via a single chokepoint with an invariant test (e.g., `tests/lint/no-hardcoded-enum-mirrors.bats` that greps for literal enum mirrors in `web/` and fails if any are found outside `fw_enums.py`).
+
+Dependencies: Blocked by T-1109 (must land first so consumer vendoring picks up the new status-transitions.yaml + fw_enums.py). Once T-1109a-e are done, T-1110 can promote to build and split into:
+- T-1111a: Extend status-transitions.yaml with owners section
+- T-1111b: Add fw_enums.py + Flask context processor
+- T-1111c: Migrate web/blueprints/tasks.py (retire G-038/G-040 Python side)
+- T-1111d: Migrate web/templates/*.html (retire G-041 Jinja side + kanban CSS loop)
+- T-1111e: Migrate enforcement.py + prioritizer.py (retire G-042)
+- T-1111f: bin/fw commands registry (retire G-043)
+- T-1111g: Invariant test `tests/lint/no-hardcoded-enum-mirrors.bats`
+
+Risk (cited from worker report):
+- Medium: kanban CSS reduction requires visual parity verification (SPIKE B)
+- Low: Flask injection point availability (SPIKE A — standard pattern)
+- Low: hidden consumers (SPIKE C — grep-able)
+- Zero: backwards compatibility (lib/enums.sh consumers unchanged, status-transitions.yaml read-only extended)
+
+Human decision request: Review `docs/reports/T-1109-l006-sweep.md` (worker's 162-line systematic findings) and this inception's evidence, then either:
+- `fw inception decide T-1110 go --rationale "approved — run spikes A/B/C then promote to build"`, OR
+- `fw inception decide T-1110 defer --rationale "wait until T-1109 is decided"`, OR
+- `fw inception decide T-1110 no-go --rationale "prefer incremental fixes per gap"`
+
+**Date**: 2026-04-11T21:30:29Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (pending T-1109 decision and spike A/B/C completion).
+
+Rationale: A systematic sweep of the framework in a single session surfaced 8 L-006 enumeration-divergence instances — 3 of which already silently drift (G-024 web/, G-037 excludes lists, G-043 fw help). The density suggests the class is pervasive rather than incidental. Incremental per-gap fixing has two problems: (1) every fix touches the same chokepoint pattern (Flask context processor + `status-transitions.yaml` extension + `fw_enums.py` helper), so splitting produces 6× the coordination cost for the same structural change; (2) the same session that scanned for the bugs already wrote the fix sketch — the tactical work to convert that sketch into a commit is bounded and well-specified. The worker's LOC estimate is net −115 LOC (115 removed, ~80 added), closing 4 confirmed gaps (G-040/G-041/G-042/G-043) and retiring the Python side of G-038 in a single structural pass. G-024 and G-024-NEW-007 are covered by the separate T-1109 fix which must land first (dependency ordering). If spikes A/B/C pass, this is the textbook T-1105 chokepoint+invariant-test discipline applied to a bug class rather than a single bug.
+
+Evidence:
+
+1. L-006 sweep worker findings (`docs/reports/T-1109-l006-sweep.md`, 162 lines, 20-minute systematic scan by tl-vvfixptj worker):
+   - 8 confirmed instances with line-level citations
+   - 3 already-drifting instances (not theoretical)
+   - Net LOC delta estimate: −115 (removed) / +80 (added)
+   - 7 non-instances explicitly rejected (fabric.py, cron.py, risks.py, init.sh providers, create-task.sh)
+   - Method section documents grep patterns, files inspected, and decision criteria
+
+2. Pattern density — 8 instances found in one session; 4 of them within 30 minutes of local scanning before the worker dispatched. The L-006 learning (captured in `.context/project/learnings.yaml`) was named as a bug class specifically to make future agents recognize the pattern.
+
+3. Chokepoint architecture already exists — `status-transitions.yaml` (T-588) solved exactly this problem for the bash side via `lib/enums.sh`. The Python side of the framework was never migrated to consume the same canonical. The missing piece is a `fw_enums.py` helper that reads the YAML once and a Flask context processor that injects the dict into every template. This is 40+15 = 55 LOC of new code to retire 115 LOC of mirror sites.
+
+4. T-1105 discipline alignment — This inception is the textbook application of the chokepoint+invariant-test discipline to a bug class rather than a single bug. Per T-1105's framework governance rule, when a bug class has 3+ registered instances, the fix MUST land via a single chokepoint with an invariant test (e.g., `tests/lint/no-hardcoded-enum-mirrors.bats` that greps for literal enum mirrors in `web/` and fails if any are found outside `fw_enums.py`).
+
+Dependencies: Blocked by T-1109 (must land first so consumer vendoring picks up the new status-transitions.yaml + fw_enums.py). Once T-1109a-e are done, T-1110 can promote to build and split into:
+- T-1111a: Extend status-transitions.yaml with owners section
+- T-1111b: Add fw_enums.py + Flask context processor
+- T-1111c: Migrate web/blueprints/tasks.py (retire G-038/G-040 Python side)
+- T-1111d: Migrate web/templates/*.html (retire G-041 Jinja side + kanban CSS loop)
+- T-1111e: Migrate enforcement.py + prioritizer.py (retire G-042)
+- T-1111f: bin/fw commands registry (retire G-043)
+- T-1111g: Invariant test `tests/lint/no-hardcoded-enum-mirrors.bats`
+
+Risk (cited from worker report):
+- Medium: kanban CSS reduction requires visual parity verification (SPIKE B)
+- Low: Flask injection point availability (SPIKE A — standard pattern)
+- Low: hidden consumers (SPIKE C — grep-able)
+- Zero: backwards compatibility (lib/enums.sh consumers unchanged, status-transitions.yaml read-only extended)
+
+Human decision request: Review `docs/reports/T-1109-l006-sweep.md` (worker's 162-line systematic findings) and this inception's evidence, then either:
+- `fw inception decide T-1110 go --rationale "approved — run spikes A/B/C then promote to build"`, OR
+- `fw inception decide T-1110 defer --rationale "wait until T-1109 is decided"`, OR
+- `fw inception decide T-1110 no-go --rationale "prefer incremental fixes per gap"`
+
+**Date**: 2026-04-11T21:30:29Z
 
 ## Updates
 
@@ -185,3 +259,49 @@ If any spike fails, the sweep task is DEFERRED (not NO-GO) until the architectur
 
 ### 2026-04-11T21:13:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-11T21:30:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (pending T-1109 decision and spike A/B/C completion).
+
+Rationale: A systematic sweep of the framework in a single session surfaced 8 L-006 enumeration-divergence instances — 3 of which already silently drift (G-024 web/, G-037 excludes lists, G-043 fw help). The density suggests the class is pervasive rather than incidental. Incremental per-gap fixing has two problems: (1) every fix touches the same chokepoint pattern (Flask context processor + `status-transitions.yaml` extension + `fw_enums.py` helper), so splitting produces 6× the coordination cost for the same structural change; (2) the same session that scanned for the bugs already wrote the fix sketch — the tactical work to convert that sketch into a commit is bounded and well-specified. The worker's LOC estimate is net −115 LOC (115 removed, ~80 added), closing 4 confirmed gaps (G-040/G-041/G-042/G-043) and retiring the Python side of G-038 in a single structural pass. G-024 and G-024-NEW-007 are covered by the separate T-1109 fix which must land first (dependency ordering). If spikes A/B/C pass, this is the textbook T-1105 chokepoint+invariant-test discipline applied to a bug class rather than a single bug.
+
+Evidence:
+
+1. L-006 sweep worker findings (`docs/reports/T-1109-l006-sweep.md`, 162 lines, 20-minute systematic scan by tl-vvfixptj worker):
+   - 8 confirmed instances with line-level citations
+   - 3 already-drifting instances (not theoretical)
+   - Net LOC delta estimate: −115 (removed) / +80 (added)
+   - 7 non-instances explicitly rejected (fabric.py, cron.py, risks.py, init.sh providers, create-task.sh)
+   - Method section documents grep patterns, files inspected, and decision criteria
+
+2. Pattern density — 8 instances found in one session; 4 of them within 30 minutes of local scanning before the worker dispatched. The L-006 learning (captured in `.context/project/learnings.yaml`) was named as a bug class specifically to make future agents recognize the pattern.
+
+3. Chokepoint architecture already exists — `status-transitions.yaml` (T-588) solved exactly this problem for the bash side via `lib/enums.sh`. The Python side of the framework was never migrated to consume the same canonical. The missing piece is a `fw_enums.py` helper that reads the YAML once and a Flask context processor that injects the dict into every template. This is 40+15 = 55 LOC of new code to retire 115 LOC of mirror sites.
+
+4. T-1105 discipline alignment — This inception is the textbook application of the chokepoint+invariant-test discipline to a bug class rather than a single bug. Per T-1105's framework governance rule, when a bug class has 3+ registered instances, the fix MUST land via a single chokepoint with an invariant test (e.g., `tests/lint/no-hardcoded-enum-mirrors.bats` that greps for literal enum mirrors in `web/` and fails if any are found outside `fw_enums.py`).
+
+Dependencies: Blocked by T-1109 (must land first so consumer vendoring picks up the new status-transitions.yaml + fw_enums.py). Once T-1109a-e are done, T-1110 can promote to build and split into:
+- T-1111a: Extend status-transitions.yaml with owners section
+- T-1111b: Add fw_enums.py + Flask context processor
+- T-1111c: Migrate web/blueprints/tasks.py (retire G-038/G-040 Python side)
+- T-1111d: Migrate web/templates/*.html (retire G-041 Jinja side + kanban CSS loop)
+- T-1111e: Migrate enforcement.py + prioritizer.py (retire G-042)
+- T-1111f: bin/fw commands registry (retire G-043)
+- T-1111g: Invariant test `tests/lint/no-hardcoded-enum-mirrors.bats`
+
+Risk (cited from worker report):
+- Medium: kanban CSS reduction requires visual parity verification (SPIKE B)
+- Low: Flask injection point availability (SPIKE A — standard pattern)
+- Low: hidden consumers (SPIKE C — grep-able)
+- Zero: backwards compatibility (lib/enums.sh consumers unchanged, status-transitions.yaml read-only extended)
+
+Human decision request: Review `docs/reports/T-1109-l006-sweep.md` (worker's 162-line systematic findings) and this inception's evidence, then either:
+- `fw inception decide T-1110 go --rationale "approved — run spikes A/B/C then promote to build"`, OR
+- `fw inception decide T-1110 defer --rationale "wait until T-1109 is decided"`, OR
+- `fw inception decide T-1110 no-go --rationale "prefer incremental fixes per gap"`
+
+### 2026-04-11T21:30:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

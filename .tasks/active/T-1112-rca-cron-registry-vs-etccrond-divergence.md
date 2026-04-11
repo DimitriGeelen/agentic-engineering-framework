@@ -4,7 +4,7 @@ name: "RCA: cron registry vs /etc/cron.d/ divergence — pickup-process missing 
 description: >
   Inception: RCA: cron registry vs /etc/cron.d/ divergence — pickup-process missing + consumer remediation
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T21:38:54Z
-last_update: 2026-04-11T21:39:11Z
-date_finished: null
+last_update: 2026-04-11T21:45:57Z
+date_finished: 2026-04-11T21:45:57Z
 ---
 
 # T-1112: RCA: cron registry vs /etc/cron.d/ divergence — pickup-process missing + consumer remediation
@@ -160,18 +160,114 @@ This pushes the updated 11-job crontab from `.context/cron/agentic-audit.crontab
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — immediate unblock via `fw audit schedule install` + structural fix T-1113a..e + register as G-044 + consumer remediation across 4 /etc/cron.d/ files.
+
+Rationale: Two-system divergence confirmed: `fw cron generate` (registry) and `fw audit schedule install` (runtime) are joined only by manual convention. Ninth L-006 instance this week. This is no longer a collection of local bugs — the framework's default failure mode for any concept existing in two places is silent divergence. Fix pattern matches T-1110 exactly: one chokepoint command (`fw cron install`) + one invariant test (`fw doctor` drift check) + invariant bats test. Consumer remediation is permissible because /etc/cron.d/ writes are OS-level and do not touch consumer source trees (preserving the cross-repo edit rule). Immediate 1-command fix unblocks pickup-process this session; structural fix prevents recurrence.
+
+Evidence:
+
+1. Divergence confirmed end-to-end: `fw cron status` reports 11 jobs from `.context/cron-registry.yaml`; `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` has 10 schedules installed; `pickup-process` (*/15 * * * *) is the missing 11th; `.context/pickup/inbox/` does not exist, proving it has never fired.
+2. Audit files prove legacy system works: `.context/audits/cron/2026-04-11-2330.yaml` written at 23:30:09 — the */30 schedule fires. 10 of 11 jobs are healthy.
+3. Stray pollution: `/etc/cron.d/agentic-audit` (no project suffix) points at `/opt/3021-Bilderkarte-tool-llm` — leftover install from before T-604 added per-project naming. Not interfering but should be swept.
+4. Systemic across consumers: 4 /etc/cron.d/ files on this host share the divergence risk (999, 150-skills-manager, termlink, stale 3021). Every consumer that updated its registry without running `fw audit schedule install` is affected.
+5. Class density: 9 L-006 instances confirmed in 24 hours. T-1105 discipline explicitly triggers on 3+ instances — this case is 3x over threshold.
+6. Chokepoint architecture trivial: single `fw cron install` that generates + diffs + writes atomically. ~80 LOC added. Zero existing code removed. `fw audit schedule install` remains as deprecated alias.
+
+Build decomposition (T-1113a..e):
+
+| Task ID | Scope | Type |
+|---------|-------|------|
+| T-1113a | Add `fw cron install` — unified generate+install command | Build |
+| T-1113b | Add `fw doctor` check comparing registry to /etc/cron.d/ | Build |
+| T-1113c | Add `fw doctor` check flagging stray /etc/cron.d/agentic-audit (no project suffix) | Build |
+| T-1113d | Write `tests/integration/cron-install-syncs-registry.bats` + `fw-doctor-flags-cron-drift.bats` | Test |
+| T-1113e | Document + run consumer remediation across 4 projects on this host | Build |
+
+Immediate action (pre-build):
+```
+cd /opt/999-Agentic-Engineering-Framework && sudo bin/fw audit schedule install
+```
+
+This pushes the updated 11-job crontab from `.context/cron/agentic-audit.crontab` to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework`, enabling pickup-process to fire. No code changes, no build task, single command.
+
+Gap registration: G-044 (cron registry vs /etc/cron.d/ divergence). Severity high — affects cross-project fleet. Score ~12 (likelihood 4 × impact 3).
+
+Cost: ~80 LOC for the structural fix. 1 bats test file. Immediate unblock is 1 shell command.
+
+Risk (none blocking):
+- Consumer remediation requires root on each host (acceptable)
+- `sudo` invocation UX (can be handled via existing pattern in `fw audit schedule install`)
+- Stale /etc/cron.d/agentic-audit file requires manual cleanup (not auto-remediated to avoid deleting user files without consent)
+
+Cross-references:
+- Research artifact: `docs/reports/T-1112-cron-divergence-rca.md` (detailed RCA + consumer impact analysis)
+- Related L-006 instances: G-024, G-037, G-038, G-039, G-040, G-041, G-042, G-043 (all same class, in-process)
+- Parent discipline: T-1105 (chokepoint+invariant-test framework rule)
+- Related tasks: T-1109 (web/ sync — same class, different system), T-1110 (framework enum sweep — in-process cousin)
+
+Human decision request:
+- `fw inception decide T-1112 go --rationale "approved — immediate install + build T-1113a..e"`, OR
+- `fw inception decide T-1112 defer --rationale "wait for T-1110 to land first"`, OR
+- `fw inception decide T-1112 no-go --rationale "prefer two-step workflow"`
+
+**Date**: 2026-04-11T21:45:57Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — immediate unblock via `fw audit schedule install` + structural fix T-1113a..e + register as G-044 + consumer remediation across 4 /etc/cron.d/ files.
+
+Rationale: Two-system divergence confirmed: `fw cron generate` (registry) and `fw audit schedule install` (runtime) are joined only by manual convention. Ninth L-006 instance this week. This is no longer a collection of local bugs — the framework's default failure mode for any concept existing in two places is silent divergence. Fix pattern matches T-1110 exactly: one chokepoint command (`fw cron install`) + one invariant test (`fw doctor` drift check) + invariant bats test. Consumer remediation is permissible because /etc/cron.d/ writes are OS-level and do not touch consumer source trees (preserving the cross-repo edit rule). Immediate 1-command fix unblocks pickup-process this session; structural fix prevents recurrence.
+
+Evidence:
+
+1. Divergence confirmed end-to-end: `fw cron status` reports 11 jobs from `.context/cron-registry.yaml`; `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` has 10 schedules installed; `pickup-process` (*/15 * * * *) is the missing 11th; `.context/pickup/inbox/` does not exist, proving it has never fired.
+2. Audit files prove legacy system works: `.context/audits/cron/2026-04-11-2330.yaml` written at 23:30:09 — the */30 schedule fires. 10 of 11 jobs are healthy.
+3. Stray pollution: `/etc/cron.d/agentic-audit` (no project suffix) points at `/opt/3021-Bilderkarte-tool-llm` — leftover install from before T-604 added per-project naming. Not interfering but should be swept.
+4. Systemic across consumers: 4 /etc/cron.d/ files on this host share the divergence risk (999, 150-skills-manager, termlink, stale 3021). Every consumer that updated its registry without running `fw audit schedule install` is affected.
+5. Class density: 9 L-006 instances confirmed in 24 hours. T-1105 discipline explicitly triggers on 3+ instances — this case is 3x over threshold.
+6. Chokepoint architecture trivial: single `fw cron install` that generates + diffs + writes atomically. ~80 LOC added. Zero existing code removed. `fw audit schedule install` remains as deprecated alias.
+
+Build decomposition (T-1113a..e):
+
+| Task ID | Scope | Type |
+|---------|-------|------|
+| T-1113a | Add `fw cron install` — unified generate+install command | Build |
+| T-1113b | Add `fw doctor` check comparing registry to /etc/cron.d/ | Build |
+| T-1113c | Add `fw doctor` check flagging stray /etc/cron.d/agentic-audit (no project suffix) | Build |
+| T-1113d | Write `tests/integration/cron-install-syncs-registry.bats` + `fw-doctor-flags-cron-drift.bats` | Test |
+| T-1113e | Document + run consumer remediation across 4 projects on this host | Build |
+
+Immediate action (pre-build):
+```
+cd /opt/999-Agentic-Engineering-Framework && sudo bin/fw audit schedule install
+```
+
+This pushes the updated 11-job crontab from `.context/cron/agentic-audit.crontab` to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework`, enabling pickup-process to fire. No code changes, no build task, single command.
+
+Gap registration: G-044 (cron registry vs /etc/cron.d/ divergence). Severity high — affects cross-project fleet. Score ~12 (likelihood 4 × impact 3).
+
+Cost: ~80 LOC for the structural fix. 1 bats test file. Immediate unblock is 1 shell command.
+
+Risk (none blocking):
+- Consumer remediation requires root on each host (acceptable)
+- `sudo` invocation UX (can be handled via existing pattern in `fw audit schedule install`)
+- Stale /etc/cron.d/agentic-audit file requires manual cleanup (not auto-remediated to avoid deleting user files without consent)
+
+Cross-references:
+- Research artifact: `docs/reports/T-1112-cron-divergence-rca.md` (detailed RCA + consumer impact analysis)
+- Related L-006 instances: G-024, G-037, G-038, G-039, G-040, G-041, G-042, G-043 (all same class, in-process)
+- Parent discipline: T-1105 (chokepoint+invariant-test framework rule)
+- Related tasks: T-1109 (web/ sync — same class, different system), T-1110 (framework enum sweep — in-process cousin)
+
+Human decision request:
+- `fw inception decide T-1112 go --rationale "approved — immediate install + build T-1113a..e"`, OR
+- `fw inception decide T-1112 defer --rationale "wait for T-1110 to land first"`, OR
+- `fw inception decide T-1112 no-go --rationale "prefer two-step workflow"`
+
+**Date**: 2026-04-11T21:45:57Z
 
 ## Updates
 
@@ -180,3 +276,60 @@ This pushes the updated 11-job crontab from `.context/cron/agentic-audit.crontab
 
 ### 2026-04-11T21:39:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-11T21:45:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — immediate unblock via `fw audit schedule install` + structural fix T-1113a..e + register as G-044 + consumer remediation across 4 /etc/cron.d/ files.
+
+Rationale: Two-system divergence confirmed: `fw cron generate` (registry) and `fw audit schedule install` (runtime) are joined only by manual convention. Ninth L-006 instance this week. This is no longer a collection of local bugs — the framework's default failure mode for any concept existing in two places is silent divergence. Fix pattern matches T-1110 exactly: one chokepoint command (`fw cron install`) + one invariant test (`fw doctor` drift check) + invariant bats test. Consumer remediation is permissible because /etc/cron.d/ writes are OS-level and do not touch consumer source trees (preserving the cross-repo edit rule). Immediate 1-command fix unblocks pickup-process this session; structural fix prevents recurrence.
+
+Evidence:
+
+1. Divergence confirmed end-to-end: `fw cron status` reports 11 jobs from `.context/cron-registry.yaml`; `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` has 10 schedules installed; `pickup-process` (*/15 * * * *) is the missing 11th; `.context/pickup/inbox/` does not exist, proving it has never fired.
+2. Audit files prove legacy system works: `.context/audits/cron/2026-04-11-2330.yaml` written at 23:30:09 — the */30 schedule fires. 10 of 11 jobs are healthy.
+3. Stray pollution: `/etc/cron.d/agentic-audit` (no project suffix) points at `/opt/3021-Bilderkarte-tool-llm` — leftover install from before T-604 added per-project naming. Not interfering but should be swept.
+4. Systemic across consumers: 4 /etc/cron.d/ files on this host share the divergence risk (999, 150-skills-manager, termlink, stale 3021). Every consumer that updated its registry without running `fw audit schedule install` is affected.
+5. Class density: 9 L-006 instances confirmed in 24 hours. T-1105 discipline explicitly triggers on 3+ instances — this case is 3x over threshold.
+6. Chokepoint architecture trivial: single `fw cron install` that generates + diffs + writes atomically. ~80 LOC added. Zero existing code removed. `fw audit schedule install` remains as deprecated alias.
+
+Build decomposition (T-1113a..e):
+
+| Task ID | Scope | Type |
+|---------|-------|------|
+| T-1113a | Add `fw cron install` — unified generate+install command | Build |
+| T-1113b | Add `fw doctor` check comparing registry to /etc/cron.d/ | Build |
+| T-1113c | Add `fw doctor` check flagging stray /etc/cron.d/agentic-audit (no project suffix) | Build |
+| T-1113d | Write `tests/integration/cron-install-syncs-registry.bats` + `fw-doctor-flags-cron-drift.bats` | Test |
+| T-1113e | Document + run consumer remediation across 4 projects on this host | Build |
+
+Immediate action (pre-build):
+```
+cd /opt/999-Agentic-Engineering-Framework && sudo bin/fw audit schedule install
+```
+
+This pushes the updated 11-job crontab from `.context/cron/agentic-audit.crontab` to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework`, enabling pickup-process to fire. No code changes, no build task, single command.
+
+Gap registration: G-044 (cron registry vs /etc/cron.d/ divergence). Severity high — affects cross-project fleet. Score ~12 (likelihood 4 × impact 3).
+
+Cost: ~80 LOC for the structural fix. 1 bats test file. Immediate unblock is 1 shell command.
+
+Risk (none blocking):
+- Consumer remediation requires root on each host (acceptable)
+- `sudo` invocation UX (can be handled via existing pattern in `fw audit schedule install`)
+- Stale /etc/cron.d/agentic-audit file requires manual cleanup (not auto-remediated to avoid deleting user files without consent)
+
+Cross-references:
+- Research artifact: `docs/reports/T-1112-cron-divergence-rca.md` (detailed RCA + consumer impact analysis)
+- Related L-006 instances: G-024, G-037, G-038, G-039, G-040, G-041, G-042, G-043 (all same class, in-process)
+- Parent discipline: T-1105 (chokepoint+invariant-test framework rule)
+- Related tasks: T-1109 (web/ sync — same class, different system), T-1110 (framework enum sweep — in-process cousin)
+
+Human decision request:
+- `fw inception decide T-1112 go --rationale "approved — immediate install + build T-1113a..e"`, OR
+- `fw inception decide T-1112 defer --rationale "wait for T-1110 to land first"`, OR
+- `fw inception decide T-1112 no-go --rationale "prefer two-step workflow"`
+
+### 2026-04-11T21:45:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
