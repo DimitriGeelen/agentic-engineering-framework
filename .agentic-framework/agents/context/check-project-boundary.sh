@@ -184,7 +184,20 @@ PYEOF
     echo "  Command: ${COMMAND:0:150}" >&2
     echo "" >&2
     echo "  Bash commands must operate within the current project." >&2
-    echo "  Cross-project operations require explicit human approval." >&2
+    echo "" >&2
+    echo "  For legitimate cross-project work, use TermLink dispatch which" >&2
+    echo "  runs the command in the target project's own session context:" >&2
+    echo "" >&2
+    echo "    fw termlink dispatch --name work --project /opt/other \\" >&2
+    echo "      --prompt 'describe the work for the target project'" >&2
+    echo "" >&2
+    echo "  Or spawn an interactive TermLink session rooted in the target:" >&2
+    echo "" >&2
+    echo "    termlink spawn --name work --backend background --shell \\" >&2
+    echo "      --wait --tags 'task:T-XXX' --cwd /opt/other" >&2
+    echo "" >&2
+    echo "  Neither path crosses the boundary of *this* session; each" >&2
+    echo "  target project enforces its own governance in its own process." >&2
     echo "" >&2
     echo "  Project root: $PROJECT_ROOT" >&2
     echo "" >&2
