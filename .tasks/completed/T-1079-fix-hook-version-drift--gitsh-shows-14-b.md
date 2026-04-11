@@ -4,7 +4,7 @@ name: "Fix hook VERSION drift — git.sh shows 1.4 but templates write 1.5 causi
 description: >
   Fix hook VERSION drift — git.sh shows 1.4 but templates write 1.5 causing install mismatches
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T08:27:45Z
-last_update: 2026-04-11T08:27:45Z
-date_finished: null
+last_update: 2026-04-11T08:29:14Z
+date_finished: 2026-04-11T08:29:14Z
 ---
 
 # T-1079: Fix hook VERSION drift — git.sh shows 1.4 but templates write 1.5 causing install mismatches
@@ -68,3 +68,6 @@ grep -q '# VERSION=1.1' agents/git/lib/hooks.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1079-fix-hook-version-drift--gitsh-shows-14-b.md
 - **Context:** Initial task creation
+
+### 2026-04-11T08:29:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
