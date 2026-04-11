@@ -2790,10 +2790,12 @@ with open('$BYPASS_LOG', 'w') as f:
         esac
         ;;
     gaps)
-        GAPS_FILE="$PROJECT_ROOT/.context/project/gaps.yaml"
+        # T-397: Register renamed gaps.yaml → concerns.yaml; fall back to old name.
+        GAPS_FILE="$PROJECT_ROOT/.context/project/concerns.yaml"
+        [ -f "$GAPS_FILE" ] || GAPS_FILE="$PROJECT_ROOT/.context/project/gaps.yaml"
         if [ ! -f "$GAPS_FILE" ]; then
             echo -e "${YELLOW}No gaps register found${NC}"
-            echo "Create one at: .context/project/gaps.yaml"
+            echo "Create one at: .context/project/concerns.yaml"
             exit 0
         fi
         python3 << PYEOF
@@ -2802,7 +2804,8 @@ import yaml
 with open("$GAPS_FILE") as f:
     data = yaml.safe_load(f)
 
-gaps = data.get('gaps', [])
+# T-397: 'concerns' is the canonical key; 'gaps' is legacy fallback.
+gaps = data.get('concerns', data.get('gaps', []))
 watching = [g for g in gaps if g.get('status') == 'watching']
 closed = [g for g in gaps if g.get('status') in ('closed', 'decided-build', 'decided-simplify')]
 
