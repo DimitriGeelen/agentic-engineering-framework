@@ -1712,6 +1712,14 @@ PYTASK_VERIFY
                 exit 1
             fi
 
+            # Placeholder audit chokepoint (T-1111/T-1113) — block review if the
+            # task file still contains literal template stubs. Runs BEFORE
+            # emit_review so no review marker is created on failure.
+            source "$FW_LIB_DIR/task-audit.sh"
+            if ! audit_task_placeholders "$task_file"; then
+                exit 1
+            fi
+
             # Shared review output (T-634)
             source "$FW_LIB_DIR/review.sh"
             emit_review "$task_id" "$task_file"

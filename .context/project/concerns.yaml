@@ -417,15 +417,19 @@ concerns:
   spec_reference: CLAUDE.md §Four Constitutional Directives (D1, D2, D3)
   severity: high
   what_was_fixed: 'T-393/T-395: Zero-TODO handover generator, D8b archive checks, corpus cleanup.
+    T-1113: Placeholder audit chokepoint — lib/task-audit.sh blocks fw task review and fw inception decide
+    when a task file contains literal [Criterion N], [TODO], [PLACEHOLDER], or [REQUIRED before] stubs.
+    Unit + integration tests guard the invariant. Closes the task-file bleed-through subset of G-018.
 
     '
-  what_remains: 'A. Generator completeness principle not codified B. Cumulative quality auditing not implemented C. Trend-to-gap
-    escalation not automated
+  what_remains: 'Handover/episodic/component-doc quality decay still unaddressed — only task files are now
+    chokepointed. Broader cumulative quality auditing and trend-to-gap escalation remain open.
 
     '
-  status: watching
+  status: partially-resolved
+  resolved_by_task: T-1113
   created: 2026-03-09
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-11
   related_task: T-393
 - id: G-019
   type: gap

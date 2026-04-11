@@ -206,6 +206,17 @@ do_inception_decide() {
         exit 1
     fi
 
+    # Gate: placeholder audit chokepoint (T-1111/T-1113). Runs FIRST so that
+    # a task edited between review-marker creation and decide-time still
+    # catches bleed-through. If the marker exists from a previous review
+    # but the task was later edited to introduce placeholders, this blocks.
+    if [ -f "$FW_LIB_DIR/task-audit.sh" ]; then
+        source "$FW_LIB_DIR/task-audit.sh"
+        if ! audit_task_placeholders "$task_file"; then
+            exit 1
+        fi
+    fi
+
     # Gate: require fw task review before accepting decision (T-973)
     local review_marker="$PROJECT_ROOT/.context/working/.reviewed-$task_id"
     if [ ! -f "$review_marker" ]; then
