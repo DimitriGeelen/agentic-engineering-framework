@@ -872,37 +872,141 @@ concerns:
   related_task: T-1099
 - id: G-031
   type: gap
-  title: Two isolation patterns coexist undocumented — old vendored .agentic-framework/ plain dir vs new project-detecting shim
-  description: 'The framework has two isolation models in production simultaneously, with no documentation of which is canonical
-    or how to migrate between them. Old model: vendored plain directory at `<project>/.agentic-framework/` (no .git inside),
-    framework files committed into the project''s own git history (visible in /root/proxmox-ring20-management). New model:
-    project-detecting shim — global symlink at `~/.local/bin/fw` is replaced by `fw upgrade` with a shim that detects cwd,
-    routes to the project the user is standing in, reads the project''s `.framework.yaml` for version pin (visible in /root/ring20-dashboard
-    after `fw upgrade`). The two are complementary in principle (vendoring is a stronger pin than the shim), but agents AND
-    evaluators cannot tell which is the recommended pattern, when to migrate, or whether having both creates conflict. The
-    sibling pattern an agent samples for "how do projects do isolation" depends entirely on which sibling they look at.
+  title: Five isolation patterns coexist undocumented — vendored dir, fw vendor, shim, manual cp, symlink
+  description: 'The framework has FIVE distinct isolation/vendoring patterns in production simultaneously, with no documentation
+    of which is canonical, when to use each, or how to migrate between them. Originally registered as a 2-pattern problem
+    (2026-04-11 morning); widened to 5 after /opt/termlink T-909 transcript (2026-04-11 afternoon) revealed `fw vendor` and
+    the symlink mode. The five patterns are: (1) vendored plain directory `<project>/.agentic-framework/` with framework
+    files committed into project git, no .git inside (proxmox-ring20-management — created by earlier `fw init` before shim
+    migration); (2) `fw vendor` — explicit subcommand "Copy framework into project for full isolation", with size exclusions
+    (~56MB target per /opt/termlink transcript); (3) project-detecting shim — global `~/.local/bin/fw` replaced by `fw upgrade`
+    step 4c, routes via cwd, reads `.framework.yaml` for version pin (ring20-dashboard after fw upgrade); (4) manual `cp -r`
+    — bloated (~349MB per /opt/termlink transcript), wrong, no exclusions; (5) symlinked `.agentic-framework` — current /opt/termlink
+    state, contaminates host install with consumer state. None are documented as canonical. Agents pick whichever sibling
+    they sample first.
 
     '
-  spec_reference: lib/upgrade.sh (shim migration step 4c), proxmox-ring20-management/.agentic-framework/ (old pattern), ring20-dashboard
-    (new pattern after upgrade)
-  severity: medium
-  likelihood: 4
-  impact: 3
-  score: 12
-  ranking: medium
+  spec_reference: lib/upgrade.sh (shim migration step 4c), bin/fw:3359 (vendor subcommand), proxmox-ring20-management/.agentic-framework/
+    (plain dir), ring20-dashboard (post-upgrade shim), /opt/termlink (current symlink mode)
+  severity: high
+  likelihood: 5
+  impact: 4
+  score: 20
+  ranking: high
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Evaluator (this session) recommended `fw upgrade` and
-    expected it to vendor framework code into a per-project plain directory (matching the proxmox-ring20-management pattern).
-    Actual `fw upgrade` output revealed shim migration as the mechanism — completely different model. Both sessions had wrong
-    mental models because the framework has two patterns and no doc explains which is canonical.'
-  - 'proxmox-ring20-management/.agentic-framework/ exists as plain directory with framework files (old model). Was likely
-    created by an earlier `fw init` or `fw upgrade` before shim migration was added. Has not been re-upgraded since, so still
-    on old model.'
-  - 'ring20-dashboard after `fw upgrade` 2026-04-11: no .agentic-framework/ directory; routing through project-detecting shim.
-    Different pattern, same framework, same upstream — purely a function of when each project last upgraded.'
-  trigger: Agent samples sibling project to learn the convention; gets the OLD pattern; designs work that conflicts with the
-    NEW pattern (or vice versa).
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11 morning): Evaluator (this session) recommended `fw upgrade`
+    and expected it to vendor framework code into a per-project plain directory (matching proxmox-ring20-management). Actual
+    `fw upgrade` output revealed shim migration as the mechanism — completely different model. Both sessions had wrong mental
+    models.'
+  - 'proxmox-ring20-management/.agentic-framework/ exists as plain directory with framework files (pattern 1). Was likely
+    created by an earlier `fw init` before shim migration was added. Has not been re-upgraded since.'
+  - 'ring20-dashboard after `fw upgrade` 2026-04-11: no .agentic-framework/ directory; routing through project-detecting shim
+    (pattern 3).'
+  - '/opt/termlink T-909 transcript (2026-04-11 afternoon): user explicitly references `fw vendor (56MB, exclusions) not cp
+    -r (349MB pollution)` as the right tool — confirms patterns 2 and 4 exist. Current /opt/termlink state is `.agentic-framework`
+    as a symlink — pattern 5 — and the task T-909 itself is "Fix .agentic-framework symlink — replace with vendored copy"
+    which is migration from pattern 5 → pattern 2.'
+  - '`fw vendor` subcommand confirmed: bin/fw:3359 dispatches to vendor handler, bin/fw:129 help text "Copy framework into
+    project for full isolation". Not in CLAUDE.md Quick Reference table. Not surfaced anywhere agents would discover it.'
+  trigger: Any agent in a consumer project asked to "set up", "vendor", or "isolate" the framework — picks one of five patterns
+    based on which sibling/example it sampled, with no guidance on which is canonical. Five patterns means roughly 25 possible
+    migration paths, none documented.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1100
+- id: G-032
+  type: gap
+  title: 'CRITICAL: fw inception decide silently passes --force, bypassing agent AC, verification, and human-ownership gates'
+  description: '`fw inception decide T-XXX go` (and `no-go`) calls `update-task.sh --status work-completed --force` internally
+    at lib/inception.sh:303. The user does NOT pass --force. The framework adds it silently. Result: every inception that
+    ends in go/no-go bypasses (a) the P-010 acceptance criteria gate, (b) the P-011 verification gate, and (c) the Human Task
+    Completion Rule that protects human-owned tasks. Comment at lib/inception.sh:299 justifies this with "—force bypasses
+    sovereignty gate (R-033) because inception decide itself required Tier 0 approval — human authority was already exercised
+    (T-637)" but this premise is FACTUALLY WRONG: inception decide is not a Tier 0 command. It does not trip check-tier0.sh.
+    No prior human authority is exercised. The intent of T-637 was probably "do not re-prompt for confirmation"; the effect
+    is "skip every safety check the framework has." This is a structural bypass via a back door inside framework code itself
+    — exactly the class of violation CLAUDE.md §Human Task Completion Rule and §Autonomous Mode Boundaries forbid.
+
+    '
+  spec_reference: lib/inception.sh:299-303, CLAUDE.md §Human Task Completion Rule, CLAUDE.md §Autonomous Mode Boundaries,
+    P-010, P-011, R-033, T-637
+  severity: critical
+  likelihood: 5
+  impact: 5
+  score: 25
+  ranking: critical
+  evidence:
+  - 'lib/inception.sh:303 (verbatim): `"$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force
+    --reason "Inception decision: $decision_upper" 2>&1`'
+  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go --rationale "..."` printed: "Completing human-owned
+    task (--force bypass)", "3/3 agent AC unchecked (--force bypass)", "Partial-complete: 1 human AC(s) pending verification".
+    User never passed --force. Task moved to work-completed status with zero verified ACs.'
+  - 'CLAUDE.md §Autonomous Mode Boundaries: NOT delegated includes "Using --force to bypass any gate (sovereignty, AC, verification)"
+    AND "Completing human-owned tasks". Both happened here, automatically, without any human intervention beyond running a
+    decide command.'
+  trigger: Every inception task that ends in `go` or `no-go`. Has been firing silently since T-637.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1101
+- id: G-033
+  type: gap
+  title: bin/fw hardcoded in framework error messages and review prompts (T-609 propagation gap inside framework code)
+  description: 'T-609 (Copy-Pasteable Commands rule) requires copy-pasteable commands to use `cd /path/to/project && bin/fw
+    ...` for the in-framework-repo case. The rule was applied uniformly across framework error messages without distinguishing
+    consumer-project context. In a consumer project (where the agent operates from a project that is NOT the framework repo),
+    `bin/fw` does not exist — only `.agentic-framework/bin/fw` (or bare `fw` after shim migration). Every framework message
+    that hardcodes `bin/fw` produces a copy-paste failure when relayed to a consumer-project user. Agent must correct manually,
+    burning a round-trip.
+
+    '
+  spec_reference: lib/inception.sh:215, lib/review.sh:127, T-609, CLAUDE.md §Copy-Pasteable Commands
+  severity: medium
+  likelihood: 5
+  impact: 2
+  score: 10
+  ranking: medium
+  evidence:
+  - 'lib/inception.sh:215 — `cd $PROJECT_ROOT && bin/fw task review $task_id` (review-required error)'
+  - 'lib/review.sh:127 — `cd $PROJECT_ROOT && bin/fw inception decide $task_id go --rationale "your rationale"` (post-review
+    prompt)'
+  - '/opt/termlink T-909 transcript (2026-04-11): agent had to correct `bin/fw → .agentic-framework/bin/fw` TWICE in the same
+    exchange — once for inception decide, once for task review. Same class of bug surfaced in ring20-dashboard transcript
+    earlier same day.'
+  - 'Related: G-025 (fw upgrade not surfaced for consumers — same root: framework code does not distinguish self-host vs consumer-host)'
+  trigger: Every framework error or review prompt that includes a copy-paste command, when run in a consumer project. Multiple
+    times per inception/review cycle.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1102
+- id: G-034
+  type: gap
+  title: Episodic auto-generation fires on partial-complete tasks — premature memory of unfinalized work
+  description: 'When `update-task.sh --status work-completed` runs against a task with unchecked human ACs, the framework
+    correctly enters partial-complete state: status = work-completed, but the task file STAYS in `.tasks/active/` with owner
+    flipped to human, awaiting human finalization. However the auto-trigger for episodic generation fires on the status transition
+    alone, without waiting for the file to physically move to `.tasks/completed/`. Result: episodic memory contains a "done"
+    record for tasks the human never finalized. Future agents reading episodic will treat them as completed and accept their
+    decisions/learnings as authoritative — even if the human ultimately rejects the work.
+
+    '
+  spec_reference: agents/task-create/update-task.sh (episodic auto-trigger), agents/context/context.sh generate-episodic
+  severity: high
+  likelihood: 4
+  impact: 4
+  score: 16
+  ranking: high
+  evidence:
+  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go` printed "Partial-complete: 1 human AC(s)
+    pending verification" AND "Task stays in active/" AND "Episodic generated: /opt/termlink/.context/episodic/T-909.yaml"
+    in the same output block. The episodic was written to a task that the framework explicitly said was not finalized.'
+  - 'Compounding effect with G-032: G-032 silently force-completes inception tasks → triggers premature episodic via this
+    gap → future agents read "T-XXX done" with unverified ACs → bad memory propagates indefinitely.'
+  trigger: Any inception decide on a task with unchecked human ACs (which is ~all of them under the G-032 bug). Compounds
+    with G-032 to produce false long-term memory.
+  status: watching
+  created: 2026-04-11
+  last_reviewed: 2026-04-11
+  related_task: T-1103
