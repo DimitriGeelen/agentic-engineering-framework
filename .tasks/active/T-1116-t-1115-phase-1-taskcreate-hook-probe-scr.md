@@ -4,16 +4,16 @@ name: "T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification
 description: >
   T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification checklist
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T22:41:04Z
-last_update: 2026-04-11T22:41:04Z
-date_finished: null
+last_update: 2026-04-11T22:43:48Z
+date_finished: 2026-04-11T22:43:48Z
 ---
 
 # T-1116: T-1115 Phase 1: TaskCreate hook probe script + fresh-session verification checklist
@@ -83,3 +83,6 @@ python3 -c "import json; json.load(open('tests/spikes/taskcreate-hook-probe-sett
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1116-t-1115-phase-1-taskcreate-hook-probe-scr.md
 - **Context:** Initial task creation
+
+### 2026-04-11T22:43:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
