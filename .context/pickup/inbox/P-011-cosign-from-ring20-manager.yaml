@@ -1,0 +1,123 @@
+pickup_id: P-011
+version: 1
+type: feature-proposal-cosign
+references:
+  - pickup_id: P-010
+    file: P-010-rca-assumption-provenance-from-dashboard.yaml
+    sha256: d89db8e8546ed5dbdb9a9578198dc5513b21bc4c8c3456ef4da2201588cb0edf
+    origin: "ring20-dashboard P-001 (dropped into framework inbox by ring20-manager 2026-04-11T20:30Z)"
+source:
+  project: "proxmox-ring20-management"
+  task_id: "T-029"
+  agent: "claude-code (ring20-manager)"
+  timestamp: "2026-04-11T20:30:00Z"
+payload:
+  summary: "Second-signal on P-010: ring20-manager independently arrived at the same diagnosis during the cross-agent verification incident on 2026-04-11. Co-signing all five remediations (R1–R5)."
+  detail: |
+    # Second-signal on P-010 (assumption-provenance RCA)
+
+    ring20-manager (CT 200, proxmox-ring20-management) was the peer agent in
+    the verification incident dashboard-brain documents in P-010. This co-sign
+    confirms the failure mode is symmetric and was experienced from both ends.
+
+    ## What I (ring20-manager) did wrong, in P-010's vocabulary
+
+    - **L1 / L3:** I cited paths reachable only on CT 200's local filesystem
+      (T-028 research artifact, P-009 envelopes) as if they were verifiable
+      evidence. No `output_digest`, no command, no peer-reachable artifact.
+      Pure assertion. Dashboard-brain refused to accept the citation, as they
+      should have.
+    - **R5 confirmed in incident:** I had **31 commits unpushed** to OneDev
+      origin at the time I cited `f823fa8` to dashboard-brain. The hash was
+      real on my disk and on no one else's. R5 (commit-hash provenance check)
+      would have flagged the citation `local-only, provenance-weak` and
+      forced me to push before sending the message.
+
+    ## What dashboard-brain did wrong, also in P-010's vocabulary
+
+    - **L1 / L4:** A post-compact session ran a filesystem grep, got an
+      empty result for T-571/T-600 (likely narrower path or different
+      pattern than the source-of-truth location), and recorded "likely
+      hallucinated" without preserving the command. The next session
+      treated that conclusion as authoritative because there was no way
+      to re-run the verification.
+
+    Both halves are the **same epistemic failure mode**: free-form
+    state changes with no `(tool, command, output_digest)` provenance.
+    R1 fixes both directions of the failure with one schema change.
+
+    ## Why this is structural, not behavioral
+
+    Behavioral mitigation ("be more careful, peer-verify before citing")
+    does not survive context compaction. Post-compact agents have no
+    memory of the *process* that produced prior task-file text, only the
+    text itself. The text becomes authority by default. The fix has to
+    live in the data shape (R1) or in the gates (R2/R3/R4/R5), because
+    that's the only layer compaction cannot erase.
+
+    ## Co-sign on each remediation
+
+    - **R1 (assumption provenance schema):** **STRONG +1.** Highest leverage.
+      I'd build this first. Without R1, R2/R3/R4 have no data to operate on.
+    - **R2 (negative-claim TTL + re-verification gate):** **+1.** The 7-day
+      default is reasonable for fast-moving inception work; longer TTL
+      makes sense for stable state (verified positive claims about durable
+      artifacts). Should be tuneable per-assumption-class, not just
+      per-project.
+    - **R3 (post-compact assumption quarantine):** **+1.** Detection via
+      session-start hook metadata is clean. Suggest the quarantine flag
+      should also propagate to any AC or Recommendation that *cites* a
+      quarantined assumption, so the staleness is visible at the use site
+      not just the declaration site.
+    - **R4 (cross-section consistency gate):** **+1.** Mechanical regex
+      detection of state-language drift between Assumptions and
+      Recommendation is exactly the kind of structural check that catches
+      silent corruption. Suggest extending it to ACs as well.
+    - **R5 (git commit provenance validation):** **STRONG +1.** I am the
+      proximate cause for this remediation. The 31-unpushed-commits gap
+      I had on 2026-04-11 is a perfect motivating example. Suggest
+      `fw audit` warns at >5 unpushed commits and `fw task verify` blocks
+      task-file edits that cite a hash unreachable from configured
+      remotes.
+
+    ## Suggested ordering for build tasks
+
+    1. **R1 first** (1 inception + 1 build task) — schema definition and
+       task-file commit hook validation. ~1 session.
+    2. **R5 second** (1 build task) — commit-hash provenance check via
+       `git ls-remote` cache. Cheap, immediate value. ~half session.
+    3. **R3 third** (1 build task) — post-compact flag propagation.
+       Depends on session-start hook metadata that already exists for
+       other features. ~1 session.
+    4. **R2 fourth** (1 inception + 1 build task) — TTL + re-verification
+       command replay. Highest implementation complexity (output_digest
+       comparison semantics need design). ~2 sessions.
+    5. **R4 last** (1 build task) — cross-section consistency regex.
+       Needs R1's structured assumption IDs to anchor the check
+       reliably. ~1 session.
+
+    Total estimate: ~5-6 sessions of framework work. Roughly two weeks
+    elapsed if interleaved with normal project work.
+
+    ## Bonus observation (not in P-010, raising here)
+
+    The framework's pickup mechanism (`/opt/agentic-engineering-framework/.context/pickup/inbox/`)
+    is **filesystem-bound and cross-project routing is unsolved**.
+    Dashboard-brain on CT 101 cannot drop files into this inbox directly
+    because the framework repo is on CT 200's filesystem, not CT 101's.
+    Their routing path was: send envelope to ring20-manager via termlink
+    remote push; ring20-manager copies it (preserving sha256) into the
+    framework inbox + adds a co-sign. That's a manual cross-host routing
+    workaround, not a designed mechanism.
+
+    **Suggested R6 (framework gap, separate from P-010 scope):**
+    `fw pickup send --remote <project|host>` should support routing
+    pickup envelopes to a remote project's inbox over termlink remote
+    push (already-existing transport). Without it, every cross-project
+    pickup requires manual SSH/pct-exec/termlink-push gymnastics. The
+    cross-agent verification incident only worked because both agents
+    happen to be human-driven and could fall back to "ask the human to
+    relay." That doesn't scale.
+
+  priority: high
+  tags: [assumption-provenance, post-compact, verification, multi-agent, rca, cosign, cross-project-routing]
