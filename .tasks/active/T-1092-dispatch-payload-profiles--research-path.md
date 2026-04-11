@@ -4,16 +4,16 @@ name: "Dispatch payload profiles — research path before architectural commitme
 description: >
   Research inception (Option 3 from prior reflection). Explore whether the orchestrator should tailor dispatch payloads (CLAUDE.md slice, MCP subset, starting context) per worker type to balance context cost against output quality. Deliverable: a research artifact enumerating profile use cases from episodic memory, sketching Path A (build-first, extract later) and Path B (schema-first, separate repo day 1) architectures side-by-side, and recommending a path with evidence. Scope fence: NO profiles built, NO CLAUDE.md sliced, NO schema locked, NO new repo created under this task. Decision at end is a path recommendation, not a build authorization — build tasks come from descendants.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T11:32:45Z
-last_update: 2026-04-11T11:32:45Z
-date_finished: null
+last_update: 2026-04-11T20:05:43Z
+date_finished: 2026-04-11T20:05:43Z
 ---
 
 # T-1092: Dispatch payload profiles — research path before architectural commitment
@@ -144,32 +144,129 @@ All phases write to `docs/reports/T-1092-dispatch-profile-research.md` increment
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — Path A (build-first), with prerequisite: validate LBU-1 (delivery mechanism) first
+
+**Rationale:** Evidence supports building profiles (A-5 validated: 6 archetypes, growing dispatch volume at 11-parallel; A-1 validated: 74% of CLAUDE.md is orchestrator-only). Path A preferred over Path B because A-3 is validated — schema-first designs in this project get rewritten after first real use. However, the entire token-reduction value proposition depends on whether there is a mechanism to REPLACE (not supplement) the auto-loaded CLAUDE.md when dispatching workers. This is LBU-1 and must be validated before investing in profile content.
+
+**Evidence:**
+- **A-5 validated (6 archetypes):** Investigator (T-059/T-061/T-086), Auditor (T-072), Generator (T-073/T-1025), Developer (T-058), Batch Fanout (T-897/T-1071/T-1088 at 11 parallel), Research Vector (T-962/T-968)
+- **A-1 validated (74% orchestrator-only):** CLAUDE.md is 12,325 tokens; constitutional floor + worker rules = ~1,055 tokens (9%). Stripping is meaningful.
+- **A-3 validated (schema-first fails):** Result bus, component fabric, learnings.yaml, inception taxonomy — all were redesigned after first real use. Building the schema before 2-3 profiles exist will produce a schema that gets rewritten.
+- **A-6 unvalidated (no cross-framework urgency):** No evidence of another framework consuming profiles within 2026. Path A can migrate to separate repo after profiles exist (low-cost migration).
+- **Dispatch volume growing:** T-897, T-1071, T-1088 at 11-parallel routine. Cost at 11 × ~30K = ~330K tokens per batch upgrade.
+- **Delivery mechanism unknown (LBU-1):** `claude -p` auto-loads CLAUDE.md from project directory. No confirmed mechanism to override or suppress it. If `--system-prompt` flag doesn't exist, profiles only ADD tokens (via `--append-system-prompt`).
+
+**Next steps if GO confirmed:**
+1. Validate LBU-1: test `claude -p` with system-prompt override flag
+2. Write first profile: `agents/dispatch/profiles/one-shot-researcher.md`
+3. Add `--profile` flag to `fw termlink dispatch`
+4. Measure real token savings on next 11-parallel batch dispatch (validates A-4)
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's recommendation is correctly research-only. The discipline applies at the BUILD phase (descendant tasks after GO). Framing it here so descendants inherit the rule:
+
+**Chokepoint (for the build phase, not this task):**
+- A single function `load_profile_for_worker(profile_name, task_id) → system_prompt` in `agents/dispatch/profiles/loader.sh` (or the Path B equivalent). This function is the ONLY legal way to construct a worker's system context. It:
+  1. Reads the profile file (constitutional floor + worker rules + profile-specific protocol)
+  2. Composes with `agents/dispatch/preamble.md` (governance floor)
+  3. Applies whatever delivery mechanism resolves LBU-1 (--system-prompt override, worktree scrub, or --append-system-prompt fallback)
+  4. Returns the assembled prompt
+- `fw termlink dispatch` must call this function; it must NOT construct prompts inline.
+
+**Invariant tests (for the build phase):**
+- `tests/lint/no-inline-worker-prompts.bats` — greps `bin/` `agents/dispatch/` `lib/` for any `claude -p` invocation whose prompt argument is not sourced via `load_profile_for_worker()`. Allowlist: the loader itself + any test fixture.
+- `tests/integration/profile-token-budget.bats` — measures real worker system context against the profile's declared budget. Fails if a `one-shot-researcher` profile produces >5K system tokens. Uses a controlled test dispatch with known inputs.
+- `tests/lint/profile-governance-floor.bats` — asserts every profile under `agents/dispatch/profiles/` includes the constitutional floor markers (Four Directives, Authority Model reference, Task Gate reference). Prevents a profile from silently stripping a governance invariant.
+
+**LBU-1 gate:**
+- The build MUST be gated on LBU-1 validation as a DISTINCT task. Do NOT start profile authoring before LBU-1 resolves — the worker explicitly called this out. LBU-1 validation itself is a 30-minute spike (test `claude -p --system-prompt /dev/null -p "echo test"` and check what loads), not a build task.
+
+**Why this is more reliable than the worker's plan alone:**
+- The worker correctly stopped at research + next-steps. The structural discipline (T-1105) requires that when a profile system is built, there's a single legal assembly path with test enforcement. This section pre-commits future build tasks to that discipline so the "build first profile" task doesn't ship with tactical inline prompt construction.
+- The profile-token-budget test closes A-4 (whether tailoring meaningfully cuts cost) into a CI-enforced contract. If a profile regresses past its declared budget, CI fails.
+- The governance-floor test prevents the failure mode where someone writes a profile that strips a constitutional directive by mistake.
+
+**Build decomposition (when GO confirmed):**
+1. **T-1092a (spike)** — Validate LBU-1: does `claude -p` support system-prompt override? 30 min, write result to docs/reports/T-1092a-lbu1-spike.md
+2. **T-1092b** — Build `load_profile_for_worker()` chokepoint + 3 invariant tests (tests ship empty, filled by T-1092c)
+3. **T-1092c** — Write first profile `agents/dispatch/profiles/one-shot-researcher.md`; populate test fixtures
+4. **T-1092d** — Add `--profile` flag to `fw termlink dispatch`; route through chokepoint
+5. **T-1092e** — Real-world measurement on next 11-parallel batch (validates A-4); update learning if savings match prediction
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — Path A (build-first), with prerequisite: validate LBU-1 (delivery mechanism) first
+
+Rationale: Evidence supports building profiles (A-5 validated: 6 archetypes, growing dispatch volume at 11-parallel; A-1 validated: 74% of CLAUDE.md is orchestrator-only). Path A preferred over Path B because A-3 is validated — schema-first designs in this project get rewritten after first real use. However, the entire token-reduction value proposition depends on whether there is a mechanism to REPLACE (not supplement) the auto-loaded CLAUDE.md when dispatching workers. This is LBU-1 and must be validated before investing in profile content.
+
+Evidence:
+- A-5 validated (6 archetypes): Investigator (T-059/T-061/T-086), Auditor (T-072), Generator (T-073/T-1025), Developer (T-058), Batch Fanout (T-897/T-1071/T-1088 at 11 parallel), Research Vector (T-962/T-968)
+- A-1 validated (74% orchestrator-only): CLAUDE.md is 12,325 tokens; constitutional floor + worker rules = ~1,055 tokens (9%). Stripping is meaningful.
+- A-3 validated (schema-first fails): Result bus, component fabric, learnings.yaml, inception taxonomy — all were redesigned after first real use. Building the schema before 2-3 profiles exist will produce a schema that gets rewritten.
+- A-6 unvalidated (no cross-framework urgency): No evidence of another framework consuming profiles within 2026. Path A can migrate to separate repo after profiles exist (low-cost migration).
+- Dispatch volume growing: T-897, T-1071, T-1088 at 11-parallel routine. Cost at 11 × ~30K = ~330K tokens per batch upgrade.
+- Delivery mechanism unknown (LBU-1): `claude -p` auto-loads CLAUDE.md from project directory. No confirmed mechanism to override or suppress it. If `--system-prompt` flag doesn't exist, profiles only ADD tokens (via `--append-system-prompt`).
+
+Next steps if GO confirmed:
+1. Validate LBU-1: test `claude -p` with system-prompt override flag
+2. Write first profile: `agents/dispatch/profiles/one-shot-researcher.md`
+3. Add `--profile` flag to `fw termlink dispatch`
+4. Measure real token savings on next 11-parallel batch dispatch (validates A-4)
+
+**Date**: 2026-04-11T20:05:43Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Path A (build-first), with prerequisite: validate LBU-1 (delivery mechanism) first
+
+Rationale: Evidence supports building profiles (A-5 validated: 6 archetypes, growing dispatch volume at 11-parallel; A-1 validated: 74% of CLAUDE.md is orchestrator-only). Path A preferred over Path B because A-3 is validated — schema-first designs in this project get rewritten after first real use. However, the entire token-reduction value proposition depends on whether there is a mechanism to REPLACE (not supplement) the auto-loaded CLAUDE.md when dispatching workers. This is LBU-1 and must be validated before investing in profile content.
+
+Evidence:
+- A-5 validated (6 archetypes): Investigator (T-059/T-061/T-086), Auditor (T-072), Generator (T-073/T-1025), Developer (T-058), Batch Fanout (T-897/T-1071/T-1088 at 11 parallel), Research Vector (T-962/T-968)
+- A-1 validated (74% orchestrator-only): CLAUDE.md is 12,325 tokens; constitutional floor + worker rules = ~1,055 tokens (9%). Stripping is meaningful.
+- A-3 validated (schema-first fails): Result bus, component fabric, learnings.yaml, inception taxonomy — all were redesigned after first real use. Building the schema before 2-3 profiles exist will produce a schema that gets rewritten.
+- A-6 unvalidated (no cross-framework urgency): No evidence of another framework consuming profiles within 2026. Path A can migrate to separate repo after profiles exist (low-cost migration).
+- Dispatch volume growing: T-897, T-1071, T-1088 at 11-parallel routine. Cost at 11 × ~30K = ~330K tokens per batch upgrade.
+- Delivery mechanism unknown (LBU-1): `claude -p` auto-loads CLAUDE.md from project directory. No confirmed mechanism to override or suppress it. If `--system-prompt` flag doesn't exist, profiles only ADD tokens (via `--append-system-prompt`).
+
+Next steps if GO confirmed:
+1. Validate LBU-1: test `claude -p` with system-prompt override flag
+2. Write first profile: `agents/dispatch/profiles/one-shot-researcher.md`
+3. Add `--profile` flag to `fw termlink dispatch`
+4. Measure real token savings on next 11-parallel batch dispatch (validates A-4)
+
+**Date**: 2026-04-11T20:05:43Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T20:05:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Path A (build-first), with prerequisite: validate LBU-1 (delivery mechanism) first
+
+Rationale: Evidence supports building profiles (A-5 validated: 6 archetypes, growing dispatch volume at 11-parallel; A-1 validated: 74% of CLAUDE.md is orchestrator-only). Path A preferred over Path B because A-3 is validated — schema-first designs in this project get rewritten after first real use. However, the entire token-reduction value proposition depends on whether there is a mechanism to REPLACE (not supplement) the auto-loaded CLAUDE.md when dispatching workers. This is LBU-1 and must be validated before investing in profile content.
+
+Evidence:
+- A-5 validated (6 archetypes): Investigator (T-059/T-061/T-086), Auditor (T-072), Generator (T-073/T-1025), Developer (T-058), Batch Fanout (T-897/T-1071/T-1088 at 11 parallel), Research Vector (T-962/T-968)
+- A-1 validated (74% orchestrator-only): CLAUDE.md is 12,325 tokens; constitutional floor + worker rules = ~1,055 tokens (9%). Stripping is meaningful.
+- A-3 validated (schema-first fails): Result bus, component fabric, learnings.yaml, inception taxonomy — all were redesigned after first real use. Building the schema before 2-3 profiles exist will produce a schema that gets rewritten.
+- A-6 unvalidated (no cross-framework urgency): No evidence of another framework consuming profiles within 2026. Path A can migrate to separate repo after profiles exist (low-cost migration).
+- Dispatch volume growing: T-897, T-1071, T-1088 at 11-parallel routine. Cost at 11 × ~30K = ~330K tokens per batch upgrade.
+- Delivery mechanism unknown (LBU-1): `claude -p` auto-loads CLAUDE.md from project directory. No confirmed mechanism to override or suppress it. If `--system-prompt` flag doesn't exist, profiles only ADD tokens (via `--append-system-prompt`).
+
+Next steps if GO confirmed:
+1. Validate LBU-1: test `claude -p` with system-prompt override flag
+2. Write first profile: `agents/dispatch/profiles/one-shot-researcher.md`
+3. Add `--profile` flag to `fw termlink dispatch`
+4. Measure real token savings on next 11-parallel batch dispatch (validates A-4)
+
+### 2026-04-11T20:05:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

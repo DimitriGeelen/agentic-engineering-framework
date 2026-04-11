@@ -146,20 +146,78 @@ The worker's "Pattern 2 canonical + Pattern 3 orthogonal + init guard for Patter
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — Pattern 2 (fw vendor / fw init) as canonical isolation, Pattern 3 (shim) as dispatch
+
+Rationale: The five patterns collapse to two correct mechanisms (vendored dir + shim) that are orthogonal and already compose correctly in all working consumer projects. Patterns 1 and 2 are mechanically identical (both call do_vendor()). Pattern 4 (manual cp) is a bloated legacy global install at /root/.agentic-framework (327MB, unused). Pattern 5 (symlink) was fixed in T-909. A sixth undocumented pattern (nested .agentic-framework) was discovered in 3 projects. No rewrite required — documentation + fw doctor checks + one fw init guard cover all gaps.
+
+Evidence:
+- `lib/init.sh:110` calls `do_vendor --target "$target_dir"` — fw init and fw vendor use identical code
+- `bin/fw-shim:find_fw()` requires `.agentic-framework/bin/fw` to exist — shim is dispatch, not isolation
+- Disk survey: all 9 working consumer projects in /opt/ use Pattern 2 (56MB vendored dirs)
+- `/root/.agentic-framework` = 327MB (Pattern 4 bloat; 6× expected), VERSION=1.4.520 (stale), unused by shim
+- `/opt/termlink/.agentic-framework` = real directory post-T-909 (Pattern 5 eliminated)
+- 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
+- `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
+- Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`
+
+**Date**: 2026-04-11T20:07:05Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Pattern 2 (fw vendor / fw init) as canonical isolation, Pattern 3 (shim) as dispatch
+
+Rationale: The five patterns collapse to two correct mechanisms (vendored dir + shim) that are orthogonal and already compose correctly in all working consumer projects. Patterns 1 and 2 are mechanically identical (both call do_vendor()). Pattern 4 (manual cp) is a bloated legacy global install at /root/.agentic-framework (327MB, unused). Pattern 5 (symlink) was fixed in T-909. A sixth undocumented pattern (nested .agentic-framework) was discovered in 3 projects. No rewrite required — documentation + fw doctor checks + one fw init guard cover all gaps.
+
+Evidence:
+- `lib/init.sh:110` calls `do_vendor --target "$target_dir"` — fw init and fw vendor use identical code
+- `bin/fw-shim:find_fw()` requires `.agentic-framework/bin/fw` to exist — shim is dispatch, not isolation
+- Disk survey: all 9 working consumer projects in /opt/ use Pattern 2 (56MB vendored dirs)
+- `/root/.agentic-framework` = 327MB (Pattern 4 bloat; 6× expected), VERSION=1.4.520 (stale), unused by shim
+- `/opt/termlink/.agentic-framework` = real directory post-T-909 (Pattern 5 eliminated)
+- 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
+- `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
+- Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`
+
+**Date**: 2026-04-11T20:07:05Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T20:06:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Pattern 2 (fw vendor / fw init) as canonical isolation, Pattern 3 (shim) as dispatch
+
+Rationale: The five patterns collapse to two correct mechanisms (vendored dir + shim) that are orthogonal and already compose correctly in all working consumer projects. Patterns 1 and 2 are mechanically identical (both call do_vendor()). Pattern 4 (manual cp) is a bloated legacy global install at /root/.agentic-framework (327MB, unused). Pattern 5 (symlink) was fixed in T-909. A sixth undocumented pattern (nested .agentic-framework) was discovered in 3 projects. No rewrite required — documentation + fw doctor checks + one fw init guard cover all gaps.
+
+Evidence:
+- `lib/init.sh:110` calls `do_vendor --target "$target_dir"` — fw init and fw vendor use identical code
+- `bin/fw-shim:find_fw()` requires `.agentic-framework/bin/fw` to exist — shim is dispatch, not isolation
+- Disk survey: all 9 working consumer projects in /opt/ use Pattern 2 (56MB vendored dirs)
+- `/root/.agentic-framework` = 327MB (Pattern 4 bloat; 6× expected), VERSION=1.4.520 (stale), unused by shim
+- `/opt/termlink/.agentic-framework` = real directory post-T-909 (Pattern 5 eliminated)
+- 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
+- `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
+- Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`
+
+### 2026-04-11T20:07:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Pattern 2 (fw vendor / fw init) as canonical isolation, Pattern 3 (shim) as dispatch
+
+Rationale: The five patterns collapse to two correct mechanisms (vendored dir + shim) that are orthogonal and already compose correctly in all working consumer projects. Patterns 1 and 2 are mechanically identical (both call do_vendor()). Pattern 4 (manual cp) is a bloated legacy global install at /root/.agentic-framework (327MB, unused). Pattern 5 (symlink) was fixed in T-909. A sixth undocumented pattern (nested .agentic-framework) was discovered in 3 projects. No rewrite required — documentation + fw doctor checks + one fw init guard cover all gaps.
+
+Evidence:
+- `lib/init.sh:110` calls `do_vendor --target "$target_dir"` — fw init and fw vendor use identical code
+- `bin/fw-shim:find_fw()` requires `.agentic-framework/bin/fw` to exist — shim is dispatch, not isolation
+- Disk survey: all 9 working consumer projects in /opt/ use Pattern 2 (56MB vendored dirs)
+- `/root/.agentic-framework` = 327MB (Pattern 4 bloat; 6× expected), VERSION=1.4.520 (stale), unused by shim
+- `/opt/termlink/.agentic-framework` = real directory post-T-909 (Pattern 5 eliminated)
+- 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
+- `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
+- Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`

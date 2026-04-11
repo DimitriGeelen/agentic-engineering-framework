@@ -148,20 +148,73 @@ The worker's `--skip-sovereignty` flag is good — narrow-scoped, grep-able, aud
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: The bug is confirmed, the fix is surgical, and the backwards-compat cost is
+zero. `lib/inception.sh:303` passes `--force` to `update-task.sh`, bypassing P-010 (AC gate)
+and P-011 (verification gate) in addition to the intended R-033 (sovereignty) bypass.
+T-637's original intent (no second command after human approval) is fully preserved by
+replacing `--force` with a new `--skip-sovereignty` flag that only bypasses R-033.
+The T-909 incident proves the bug causes real harm in production.
+
+Evidence:
+- `lib/inception.sh:303` — confirmed `--force` passed silently, without user knowledge
+- `check-tier0.sh:145` — `fw inception decide` IS Tier 0 gated (T-637 premise is true for R-033, not for P-010/P-011)
+- `update-task.sh:277` — `--force` explicitly bypasses "acceptance criteria + verification gates"
+- 0/98 completed inception tasks had unchecked ACs → backwards compat cost is zero
+- T-909 live transcript: `3/3 agent AC unchecked (--force bypass)` confirmed
+- T-637 completed in 1 minute, no alternatives recorded — insufficient analysis of `--force` scope
+- Full analysis: `docs/reports/T-1101-fw-inception-decide-force-rca.md`
+
+**Date**: 2026-04-11T20:07:32Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The bug is confirmed, the fix is surgical, and the backwards-compat cost is
+zero. `lib/inception.sh:303` passes `--force` to `update-task.sh`, bypassing P-010 (AC gate)
+and P-011 (verification gate) in addition to the intended R-033 (sovereignty) bypass.
+T-637's original intent (no second command after human approval) is fully preserved by
+replacing `--force` with a new `--skip-sovereignty` flag that only bypasses R-033.
+The T-909 incident proves the bug causes real harm in production.
+
+Evidence:
+- `lib/inception.sh:303` — confirmed `--force` passed silently, without user knowledge
+- `check-tier0.sh:145` — `fw inception decide` IS Tier 0 gated (T-637 premise is true for R-033, not for P-010/P-011)
+- `update-task.sh:277` — `--force` explicitly bypasses "acceptance criteria + verification gates"
+- 0/98 completed inception tasks had unchecked ACs → backwards compat cost is zero
+- T-909 live transcript: `3/3 agent AC unchecked (--force bypass)` confirmed
+- T-637 completed in 1 minute, no alternatives recorded — insufficient analysis of `--force` scope
+- Full analysis: `docs/reports/T-1101-fw-inception-decide-force-rca.md`
+
+**Date**: 2026-04-11T20:07:32Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T20:07:32Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The bug is confirmed, the fix is surgical, and the backwards-compat cost is
+zero. `lib/inception.sh:303` passes `--force` to `update-task.sh`, bypassing P-010 (AC gate)
+and P-011 (verification gate) in addition to the intended R-033 (sovereignty) bypass.
+T-637's original intent (no second command after human approval) is fully preserved by
+replacing `--force` with a new `--skip-sovereignty` flag that only bypasses R-033.
+The T-909 incident proves the bug causes real harm in production.
+
+Evidence:
+- `lib/inception.sh:303` — confirmed `--force` passed silently, without user knowledge
+- `check-tier0.sh:145` — `fw inception decide` IS Tier 0 gated (T-637 premise is true for R-033, not for P-010/P-011)
+- `update-task.sh:277` — `--force` explicitly bypasses "acceptance criteria + verification gates"
+- 0/98 completed inception tasks had unchecked ACs → backwards compat cost is zero
+- T-909 live transcript: `3/3 agent AC unchecked (--force bypass)` confirmed
+- T-637 completed in 1 minute, no alternatives recorded — insufficient analysis of `--force` scope
+- Full analysis: `docs/reports/T-1101-fw-inception-decide-force-rca.md`

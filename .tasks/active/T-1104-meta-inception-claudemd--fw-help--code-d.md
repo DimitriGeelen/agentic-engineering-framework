@@ -161,20 +161,76 @@ The worker's `(c) fw doctor doc-drift check + (f) canonical-form comments` is go
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Three same-day incidents (G-025, G-031-F4, THIS-session) plus 4 identical parallel
+worker failures confirm this is a recurring structural failure, not a one-off. The drift is
+one-directional (code advances, docs lag), invisible to manual review (survived 2 explicit
+doc-update passes on the same function), and self-perpetuating (authors copy the stale canonical
+form). Two complementary mechanisms cover both failure classes at low cost and near-zero false
+positive rate.
+
+Evidence:
+- Census: 1 required-flag drift (fw termlink dispatch, missing --task) across 2 surfaces (CLAUDE.md + fw termlink help); 30+ commands in fw help absent from CLAUDE.md Quick Reference; 0 phantom commands (drift is one-directional)
+- T-652 (2026-03-28) added --task as REQUIRED: zero doc ACs, CLAUDE.md not in commit `280d2888`, in-binary help not updated. The task was framed as "enforcement change," not "CLI surface change" — documentation was invisible from that framing.
+- Drift survived T-1063 (added --project, explicitly updated help + CLAUDE.md) and T-1065 (added --model, explicitly updated both) because authors copied the stale form and appended their new flag. The stale form self-perpetuates once in the canonical reference.
+- Drift window: 14 days. Would repeat in the next session that uses fw termlink dispatch.
+- Recommended mechanism: (c) fw doctor command-gap scan + (f) canonical-form comments in CLI functions. Combined cost ~1 day; blast radius zero (warnings); covers both missing-command and flag-level drift classes.
+- Downstream build tasks needed: (1) add canonical-form comment + fix cmd_help() in termlink.sh; (2) add doctor doc-drift check in bin/fw; (3) fix CLAUDE.md Quick Reference row for fw termlink dispatch; (4) add highest-value missing commands to QR (fw upgrade, fw vendor, fw onboarding).
+
+Full research artifact: `docs/reports/T-1104-doc-parity-rca.md`
+
+**Date**: 2026-04-11T20:08:29Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Three same-day incidents (G-025, G-031-F4, THIS-session) plus 4 identical parallel
+worker failures confirm this is a recurring structural failure, not a one-off. The drift is
+one-directional (code advances, docs lag), invisible to manual review (survived 2 explicit
+doc-update passes on the same function), and self-perpetuating (authors copy the stale canonical
+form). Two complementary mechanisms cover both failure classes at low cost and near-zero false
+positive rate.
+
+Evidence:
+- Census: 1 required-flag drift (fw termlink dispatch, missing --task) across 2 surfaces (CLAUDE.md + fw termlink help); 30+ commands in fw help absent from CLAUDE.md Quick Reference; 0 phantom commands (drift is one-directional)
+- T-652 (2026-03-28) added --task as REQUIRED: zero doc ACs, CLAUDE.md not in commit `280d2888`, in-binary help not updated. The task was framed as "enforcement change," not "CLI surface change" — documentation was invisible from that framing.
+- Drift survived T-1063 (added --project, explicitly updated help + CLAUDE.md) and T-1065 (added --model, explicitly updated both) because authors copied the stale form and appended their new flag. The stale form self-perpetuates once in the canonical reference.
+- Drift window: 14 days. Would repeat in the next session that uses fw termlink dispatch.
+- Recommended mechanism: (c) fw doctor command-gap scan + (f) canonical-form comments in CLI functions. Combined cost ~1 day; blast radius zero (warnings); covers both missing-command and flag-level drift classes.
+- Downstream build tasks needed: (1) add canonical-form comment + fix cmd_help() in termlink.sh; (2) add doctor doc-drift check in bin/fw; (3) fix CLAUDE.md Quick Reference row for fw termlink dispatch; (4) add highest-value missing commands to QR (fw upgrade, fw vendor, fw onboarding).
+
+Full research artifact: `docs/reports/T-1104-doc-parity-rca.md`
+
+**Date**: 2026-04-11T20:08:29Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T20:08:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Three same-day incidents (G-025, G-031-F4, THIS-session) plus 4 identical parallel
+worker failures confirm this is a recurring structural failure, not a one-off. The drift is
+one-directional (code advances, docs lag), invisible to manual review (survived 2 explicit
+doc-update passes on the same function), and self-perpetuating (authors copy the stale canonical
+form). Two complementary mechanisms cover both failure classes at low cost and near-zero false
+positive rate.
+
+Evidence:
+- Census: 1 required-flag drift (fw termlink dispatch, missing --task) across 2 surfaces (CLAUDE.md + fw termlink help); 30+ commands in fw help absent from CLAUDE.md Quick Reference; 0 phantom commands (drift is one-directional)
+- T-652 (2026-03-28) added --task as REQUIRED: zero doc ACs, CLAUDE.md not in commit `280d2888`, in-binary help not updated. The task was framed as "enforcement change," not "CLI surface change" — documentation was invisible from that framing.
+- Drift survived T-1063 (added --project, explicitly updated help + CLAUDE.md) and T-1065 (added --model, explicitly updated both) because authors copied the stale form and appended their new flag. The stale form self-perpetuates once in the canonical reference.
+- Drift window: 14 days. Would repeat in the next session that uses fw termlink dispatch.
+- Recommended mechanism: (c) fw doctor command-gap scan + (f) canonical-form comments in CLI functions. Combined cost ~1 day; blast radius zero (warnings); covers both missing-command and flag-level drift classes.
+- Downstream build tasks needed: (1) add canonical-form comment + fix cmd_help() in termlink.sh; (2) add doctor doc-drift check in bin/fw; (3) fix CLAUDE.md Quick Reference row for fw termlink dispatch; (4) add highest-value missing commands to QR (fw upgrade, fw vendor, fw onboarding).
+
+Full research artifact: `docs/reports/T-1104-doc-parity-rca.md`

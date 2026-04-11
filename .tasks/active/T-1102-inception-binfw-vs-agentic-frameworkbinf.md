@@ -137,20 +137,55 @@ The worker's `_fw_cmd_for_user()` helper is necessary but not sufficient — it 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Two same-day incidents from independent consumer projects (ring20-dashboard, /opt/termlink T-909) confirm the bug class is real and recurring. 3 active user-facing BUGs found (`lib/inception.sh:215`, `lib/review.sh:127`, `agents/context/check-tier0.sh:377`). The fix is a ~15-line helper extracted from an already-proven detection pattern (`lib/init.sh:579-583`). T-609 intent preserved. Zero test breakage risk. Fix propagates automatically via `fw upgrade`.
+
+Evidence:
+- `lib/inception.sh:215` — emits `bin/fw` unconditionally in error message shown to user in consumer projects
+- `lib/review.sh:127` — emits `bin/fw` unconditionally in post-review instruction shown to user
+- `agents/context/check-tier0.sh:377` — emits `./bin/fw` unconditionally (also missing `cd PROJECT_ROOT &&`)
+- Fix pattern proven: `lib/init.sh:579-583` has identical context-detection logic, just not extracted
+- All 40+ test files use `$FRAMEWORK_ROOT/bin/fw` (qualified) — zero breakage risk
+- Research artifact: `docs/reports/T-1102-bin-fw-rca.md`
+
+**Date**: 2026-04-11T20:07:51Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Two same-day incidents from independent consumer projects (ring20-dashboard, /opt/termlink T-909) confirm the bug class is real and recurring. 3 active user-facing BUGs found (`lib/inception.sh:215`, `lib/review.sh:127`, `agents/context/check-tier0.sh:377`). The fix is a ~15-line helper extracted from an already-proven detection pattern (`lib/init.sh:579-583`). T-609 intent preserved. Zero test breakage risk. Fix propagates automatically via `fw upgrade`.
+
+Evidence:
+- `lib/inception.sh:215` — emits `bin/fw` unconditionally in error message shown to user in consumer projects
+- `lib/review.sh:127` — emits `bin/fw` unconditionally in post-review instruction shown to user
+- `agents/context/check-tier0.sh:377` — emits `./bin/fw` unconditionally (also missing `cd PROJECT_ROOT &&`)
+- Fix pattern proven: `lib/init.sh:579-583` has identical context-detection logic, just not extracted
+- All 40+ test files use `$FRAMEWORK_ROOT/bin/fw` (qualified) — zero breakage risk
+- Research artifact: `docs/reports/T-1102-bin-fw-rca.md`
+
+**Date**: 2026-04-11T20:07:51Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T20:07:51Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Two same-day incidents from independent consumer projects (ring20-dashboard, /opt/termlink T-909) confirm the bug class is real and recurring. 3 active user-facing BUGs found (`lib/inception.sh:215`, `lib/review.sh:127`, `agents/context/check-tier0.sh:377`). The fix is a ~15-line helper extracted from an already-proven detection pattern (`lib/init.sh:579-583`). T-609 intent preserved. Zero test breakage risk. Fix propagates automatically via `fw upgrade`.
+
+Evidence:
+- `lib/inception.sh:215` — emits `bin/fw` unconditionally in error message shown to user in consumer projects
+- `lib/review.sh:127` — emits `bin/fw` unconditionally in post-review instruction shown to user
+- `agents/context/check-tier0.sh:377` — emits `./bin/fw` unconditionally (also missing `cd PROJECT_ROOT &&`)
+- Fix pattern proven: `lib/init.sh:579-583` has identical context-detection logic, just not extracted
+- All 40+ test files use `$FRAMEWORK_ROOT/bin/fw` (qualified) — zero breakage risk
+- Research artifact: `docs/reports/T-1102-bin-fw-rca.md`

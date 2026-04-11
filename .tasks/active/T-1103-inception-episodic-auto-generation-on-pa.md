@@ -4,16 +4,16 @@ name: "Inception: episodic auto-generation on partial-complete tasks — prematu
 description: >
   Inception task — RCA the auto-trigger that generates episodic memory for tasks in partial-complete state (status=work-completed but file still in .tasks/active/, awaiting human AC verification). Trigger: /opt/termlink T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Partial-complete: 1 human AC(s) pending verification' AND 'Task stays in active/' AND 'Episodic generated: T-909.yaml' in the same block. Result: long-term memory now contains a 'done' record for a task the human never finalized. Compounds with G-032 (which silently force-completes) to systematically pollute episodic memory. Investigate: (1) where the episodic auto-trigger fires in update-task.sh — gate condition and timing; (2) whether the trigger should follow physical file location (.tasks/completed/) or status field (work-completed); (3) what happens when human eventually rejects the partial-complete (does episodic get rewritten? deleted? left stale?); (4) backwards compat — how many existing episodic files were generated this way and might need re-generation; (5) recommend GO/NO-GO/DEFER + concrete remediation. Origin: G-034.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: [T-1093, G-034, G-032]
 created: 2026-04-11T12:37:39Z
-last_update: 2026-04-11T12:46:06Z
-date_finished: null
+last_update: 2026-04-11T20:08:11Z
+date_finished: 2026-04-11T20:08:11Z
 ---
 
 # T-1103: Inception: episodic auto-generation on partial-complete tasks — premature memory of unfinalized work (G-034)
@@ -139,18 +139,38 @@ The worker's `PARTIAL_COMPLETE` guard at `update-task.sh:792` is correct but liv
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Root cause confirmed. The episodic auto-trigger at `agents/task-create/update-task.sh:792` fires unconditionally inside the `work-completed` transition block, with no guard for the `PARTIAL_COMPLETE` flag that is correctly set at line 144. The task file correctly stays in `active/` on partial-complete, but the episodic generates anyway. The fix is one `if [ "${PARTIAL_COMPLETE:-false}" = false ]` conditional wrapping lines 792-802. The human-finalization path (Trigger 1 at line 352) already has the correct guard and will generate the episodic when the human finalizes. Zero structural change required.
+
+Evidence:
+- `update-task.sh:792` — episodic trigger has no `PARTIAL_COMPLETE` guard (confirmed by reading code)
+- `update-task.sh:144` — `PARTIAL_COMPLETE=true` correctly set when human ACs are unchecked
+- `update-task.sh:352-360` — human-finalization trigger has correct guard (`if [ ! -f episodic ]`)
+- `lib/inception.sh:303` — inception decide calls `update-task.sh --force`, compounding: every inception task with a human AC generates a premature episodic on `fw inception decide`
+- 68 of 996 episodics (6.8%) are premature — task still in `active/` with `work-completed` status, all with `owner: human` and 1 unchecked human AC (confirmed by cross-reference audit)
+- Full RCA at `docs/reports/T-1103-episodic-partial-rca.md`
+
+**Date**: 2026-04-11T20:08:11Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Root cause confirmed. The episodic auto-trigger at `agents/task-create/update-task.sh:792` fires unconditionally inside the `work-completed` transition block, with no guard for the `PARTIAL_COMPLETE` flag that is correctly set at line 144. The task file correctly stays in `active/` on partial-complete, but the episodic generates anyway. The fix is one `if [ "${PARTIAL_COMPLETE:-false}" = false ]` conditional wrapping lines 792-802. The human-finalization path (Trigger 1 at line 352) already has the correct guard and will generate the episodic when the human finalizes. Zero structural change required.
+
+Evidence:
+- `update-task.sh:792` — episodic trigger has no `PARTIAL_COMPLETE` guard (confirmed by reading code)
+- `update-task.sh:144` — `PARTIAL_COMPLETE=true` correctly set when human ACs are unchecked
+- `update-task.sh:352-360` — human-finalization trigger has correct guard (`if [ ! -f episodic ]`)
+- `lib/inception.sh:303` — inception decide calls `update-task.sh --force`, compounding: every inception task with a human AC generates a premature episodic on `fw inception decide`
+- 68 of 996 episodics (6.8%) are premature — task still in `active/` with `work-completed` status, all with `owner: human` and 1 unchecked human AC (confirmed by cross-reference audit)
+- Full RCA at `docs/reports/T-1103-episodic-partial-rca.md`
+
+**Date**: 2026-04-11T20:08:11Z
 
 ## Updates
 
@@ -159,3 +179,22 @@ The worker's `PARTIAL_COMPLETE` guard at `update-task.sh:792` is correct but liv
 
 ### 2026-04-11T12:46:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-11T20:08:11Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Root cause confirmed. The episodic auto-trigger at `agents/task-create/update-task.sh:792` fires unconditionally inside the `work-completed` transition block, with no guard for the `PARTIAL_COMPLETE` flag that is correctly set at line 144. The task file correctly stays in `active/` on partial-complete, but the episodic generates anyway. The fix is one `if [ "${PARTIAL_COMPLETE:-false}" = false ]` conditional wrapping lines 792-802. The human-finalization path (Trigger 1 at line 352) already has the correct guard and will generate the episodic when the human finalizes. Zero structural change required.
+
+Evidence:
+- `update-task.sh:792` — episodic trigger has no `PARTIAL_COMPLETE` guard (confirmed by reading code)
+- `update-task.sh:144` — `PARTIAL_COMPLETE=true` correctly set when human ACs are unchecked
+- `update-task.sh:352-360` — human-finalization trigger has correct guard (`if [ ! -f episodic ]`)
+- `lib/inception.sh:303` — inception decide calls `update-task.sh --force`, compounding: every inception task with a human AC generates a premature episodic on `fw inception decide`
+- 68 of 996 episodics (6.8%) are premature — task still in `active/` with `work-completed` status, all with `owner: human` and 1 unchecked human AC (confirmed by cross-reference audit)
+- Full RCA at `docs/reports/T-1103-episodic-partial-rca.md`
+
+### 2026-04-11T20:08:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

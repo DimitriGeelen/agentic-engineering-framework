@@ -4,16 +4,16 @@ name: "ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-proje
 description: >
   URGENT inception. lib/review.sh:38-52 detects the Watchtower URL by reading PROJECT_ROOT/.context/working/watchtower.pid then ss for the port. If the pid file is missing OR the PID is dead, it FALLS BACK to default_port=3000 (line 51). On any host with multiple consumer projects, the first Watchtower to bind :3000 captures every other project's review URLs. Combined with task-ID collisions across projects (T-434 exists in BOTH /opt/025-WokrshopDesigner AND /opt/999-Agentic-Engineering-Framework as different tasks), this means: /opt/025 user runs 'fw task review T-434', QR opens http://host:3000/inception/T-434, but :3000 is /opt/999's Watchtower, which serves ITS T-434 — wrong content, right URL, right task ID, completely silent failure. Live evidence today (2026-04-11): user ran fw task review T-434 in /opt/025-WokrshopDesigner, the URL took them to /opt/999's Watchtower which served a different T-434 (the inception about framework update/upgrade process), with the After-review-run text correctly pointing back to /opt/025. Investigate: (1) what was the port-detection mechanism BEFORE the current pid+ss approach? grep history for previous review.sh and earlier port-resolution code; check T-885 (configurable Watchtower port project setting) and any predecessor; (2) why the current pid+ss fallback collapses to 3000 silently — is there ANY cross-project safety check? (3) what would a STRUCTURAL fix look like: assign each project a unique deterministic port (e.g., hash of project name into 3000-3999 range), refuse to start Watchtower on a port that already serves another project, embed PROJECT_ROOT in Watchtower's identity endpoint and have fw task review verify the running Watchtower at the chosen URL belongs to PROJECT_ROOT before emitting the link; (4) the underlying task-ID collision is itself a bug — should task IDs be project-namespaced (e.g., 999/T-434, 025/T-434) at least in URL form? (5) recommend GO with chokepoint+invariant test discipline per T-1105: chokepoint = single function that resolves Watchtower URL AND verifies project identity before emitting; invariant test = no fw task review can emit a URL whose Watchtower /identity returns a different PROJECT_ROOT. Severity: high - silent wrong-content serving across project boundaries violates the framework's project isolation guarantee. Origin: live incident 2026-04-11 during structural-fix discipline pass.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-885, T-1105, T-1100, T-1093]
 created: 2026-04-11T13:30:22Z
-last_update: 2026-04-11T14:30:28Z
-date_finished: null
+last_update: 2026-04-11T20:10:54Z
+date_finished: 2026-04-11T20:10:54Z
 ---
 
 # T-1106: ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content
@@ -218,18 +218,40 @@ The worker's Option D (Bug 2 fix + `/identity` endpoint + emitter verification) 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — Option D (Bug 2 fix + `/identity` endpoint + emitter verification)
+
+Rationale: Three compounding bugs confirmed. Bug 2 (`bin/watchtower.sh:21` uses `$FRAMEWORK_ROOT` for PID_FILE, `lib/review.sh:41` reads `$PROJECT_ROOT`) means ALL 5 consumer projects ALWAYS fall through to default port 3000 — Bug 1. No `/identity` endpoint (Bug 3) removes last detection layer. Fix: 3 files, ~20 lines, backward compatible, fail-loud.
+
+Evidence:
+- `bin/watchtower.sh:21` — PID_FILE uses FRAMEWORK_ROOT, not PROJECT_ROOT (root of Bug 2)
+- `lib/review.sh:52` — unconditional fallback to :3000 (Bug 1)
+- 5 of 5 consumer projects write PID to `.agentic-framework/.context/working/` — review.sh reads from `.context/working/` — paths never match
+- `/identity` absent on all 3 running Watchtower instances (curl confirmed)
+- T-434 collision live: active in /opt/025 (promote-to-prod), completed in /opt/999 (fw upgrade)
+- Full RCA: `docs/reports/T-1106-watchtower-port-bleed-rca.md`
+- Build decomposition: T-1106a (watchtower.sh 1-line fix), T-1106b (/identity endpoint), T-1106c (emitter verification + invariant test), then T-885 (unblock port registry)
+
+**Date**: 2026-04-11T20:10:54Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Option D (Bug 2 fix + `/identity` endpoint + emitter verification)
+
+Rationale: Three compounding bugs confirmed. Bug 2 (`bin/watchtower.sh:21` uses `$FRAMEWORK_ROOT` for PID_FILE, `lib/review.sh:41` reads `$PROJECT_ROOT`) means ALL 5 consumer projects ALWAYS fall through to default port 3000 — Bug 1. No `/identity` endpoint (Bug 3) removes last detection layer. Fix: 3 files, ~20 lines, backward compatible, fail-loud.
+
+Evidence:
+- `bin/watchtower.sh:21` — PID_FILE uses FRAMEWORK_ROOT, not PROJECT_ROOT (root of Bug 2)
+- `lib/review.sh:52` — unconditional fallback to :3000 (Bug 1)
+- 5 of 5 consumer projects write PID to `.agentic-framework/.context/working/` — review.sh reads from `.context/working/` — paths never match
+- `/identity` absent on all 3 running Watchtower instances (curl confirmed)
+- T-434 collision live: active in /opt/025 (promote-to-prod), completed in /opt/999 (fw upgrade)
+- Full RCA: `docs/reports/T-1106-watchtower-port-bleed-rca.md`
+- Build decomposition: T-1106a (watchtower.sh 1-line fix), T-1106b (/identity endpoint), T-1106c (emitter verification + invariant test), then T-885 (unblock port registry)
+
+**Date**: 2026-04-11T20:10:54Z
 
 ## Updates
 
@@ -239,3 +261,23 @@ The worker's Option D (Bug 2 fix + `/identity` endpoint + emitter verification) 
 ### 2026-04-11T14:30:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Reason:** Ingesting T-1106 RCA + applying structural upgrade + fixing port squatter
+
+### 2026-04-11T20:10:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option D (Bug 2 fix + `/identity` endpoint + emitter verification)
+
+Rationale: Three compounding bugs confirmed. Bug 2 (`bin/watchtower.sh:21` uses `$FRAMEWORK_ROOT` for PID_FILE, `lib/review.sh:41` reads `$PROJECT_ROOT`) means ALL 5 consumer projects ALWAYS fall through to default port 3000 — Bug 1. No `/identity` endpoint (Bug 3) removes last detection layer. Fix: 3 files, ~20 lines, backward compatible, fail-loud.
+
+Evidence:
+- `bin/watchtower.sh:21` — PID_FILE uses FRAMEWORK_ROOT, not PROJECT_ROOT (root of Bug 2)
+- `lib/review.sh:52` — unconditional fallback to :3000 (Bug 1)
+- 5 of 5 consumer projects write PID to `.agentic-framework/.context/working/` — review.sh reads from `.context/working/` — paths never match
+- `/identity` absent on all 3 running Watchtower instances (curl confirmed)
+- T-434 collision live: active in /opt/025 (promote-to-prod), completed in /opt/999 (fw upgrade)
+- Full RCA: `docs/reports/T-1106-watchtower-port-bleed-rca.md`
+- Build decomposition: T-1106a (watchtower.sh 1-line fix), T-1106b (/identity endpoint), T-1106c (emitter verification + invariant test), then T-885 (unblock port registry)
+
+### 2026-04-11T20:10:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
