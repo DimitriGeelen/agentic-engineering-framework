@@ -686,28 +686,34 @@ concerns:
 - id: G-024
   type: gap
   title: fw upgrade does not sync web/blueprints/ — consumer web code can drift silently
-  description: 'fw upgrade syncs lib/*.sh, agents/, bin/fw, CLAUDE.md, and VERSION but not web/blueprints/ or web/templates/.
-    Consumers that were initialized at a point in time retain their original blueprint files forever. Low impact today because
-    consumers typically do not run their own Watchtower (it runs from the framework repo or in LXC 170), but the drift exists
-    and will bite if any consumer starts running its own Watchtower against the framework''s local tooling.
-
-    '
-  spec_reference: lib/upgrade.sh, web/blueprints/
-  severity: low
-  likelihood: 2
-  impact: 1
-  score: 2
-  ranking: low
+  description: 'fw upgrade routes to lib/upgrade.sh:do_upgrade() which maintains a handcrafted per-file sync enumeration
+    (agents/context/*.sh, bin/fw, lib/*.sh, a hardcoded agent_dirs string, VERSION). The enumeration was never updated to
+    include web/ when the Watchtower feature grew — web/blueprints/, web/templates/, web/terminal/, web/*.py are all absent.
+    do_vendor() in bin/fw has a parallel includes list that DOES include web/, but fw upgrade never calls do_vendor. The two
+    sync lists diverged silently when terminal.py landed in T-964..T-980. Consumer Watchtowers served from vendored copies
+    are silently missing new blueprints. Reproduction: /tmp/t1109-test-consumer, remove web/blueprints/terminal.py, run fw
+    upgrade → output says "OK All vendored scripts current", terminal.py still missing. 4 of 5 consumers (025, 051, 050,
+    openclaw) are confirmed missing terminal.py and sessions.py. /opt/termlink is the only exception because it uses fw update
+    (GitHub upstream_repo → git clone → do_vendor) which goes through the correct code path. RCA in docs/reports/T-1109-web-sync-rca.md.'
+  spec_reference: lib/upgrade.sh:320-446 (do_upgrade step 4b), bin/fw:181-190 (do_vendor includes)
+  severity: high
+  likelihood: 5
+  impact: 3
+  score: 15
+  ranking: high
   evidence:
   - 'T-1091 (2026-04-11): rationale_hint truncation fix propagated to 11 consumers via fw upgrade. 4/11 still had outdated
     inception.py (025-WokrshopDesigner, 051-Vinix24, 052-KCP, 053-ntfy) with file mtimes from Mar 28–Apr 4. The other 7 passed
     only because they lacked inception.py at all or had it missing the truncation pattern.'
-  - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync)'
+  - 'T-1109 (2026-04-11): Full RCA + live reproduction. Root cause confirmed: enumeration divergence between do_upgrade step 4b
+    and do_vendor includes list. Chokepoint C1 (collapse step 4b into do_vendor call) + invariant tests (upgrade-vendor-complete.bats,
+    single-vendor-writer.bats) proposed. Worker recommendation: GO with build decomposition T-1109a..e.'
+  - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync), T-1109 (RCA + fix)'
   trigger: A consumer starts running its own Watchtower instance and encounters a bug already fixed in the canonical copy.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
-  related_task: T-1091
+  related_task: T-1109
 - id: G-025
   type: gap
   title: fw upgrade not surfaced as the canonical onboarding command — and what it actually does is also unclear
