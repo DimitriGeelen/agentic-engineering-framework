@@ -77,9 +77,9 @@ A-4: The "compounding effect" is real — G-032 + G-034 (premature episodic) pro
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -93,30 +93,58 @@ A-4: The "compounding effect" is real — G-032 + G-034 (premature episodic) pro
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- A non-bypass alternative exists that preserves T-637's UX (no second command) — CONFIRMED (`--skip-sovereignty`)
+- Backwards compat cost is acceptable — CONFIRMED (0/98 historical tasks affected)
+- The bug causes real harm — CONFIRMED (T-909 live incident)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The `--force` bypass is structurally necessary for reasons not yet discovered — REFUTED
+- Removing it would break historical inception flows — REFUTED (0/98 unchecked ACs)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+test -f docs/reports/T-1101-fw-inception-decide-force-rca.md
+grep -q "Recommendation: GO" docs/reports/T-1101-fw-inception-decide-force-rca.md
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** The bug is confirmed, the fix is surgical, and the backwards-compat cost is
+zero. `lib/inception.sh:303` passes `--force` to `update-task.sh`, bypassing P-010 (AC gate)
+and P-011 (verification gate) in addition to the intended R-033 (sovereignty) bypass.
+T-637's original intent (no second command after human approval) is fully preserved by
+replacing `--force` with a new `--skip-sovereignty` flag that only bypasses R-033.
+The T-909 incident proves the bug causes real harm in production.
+
+**Evidence:**
+- `lib/inception.sh:303` — confirmed `--force` passed silently, without user knowledge
+- `check-tier0.sh:145` — `fw inception decide` IS Tier 0 gated (T-637 premise is true for R-033, not for P-010/P-011)
+- `update-task.sh:277` — `--force` explicitly bypasses "acceptance criteria + verification gates"
+- **0/98** completed inception tasks had unchecked ACs → backwards compat cost is zero
+- T-909 live transcript: `3/3 agent AC unchecked (--force bypass)` confirmed
+- T-637 completed in 1 minute, no alternatives recorded — insufficient analysis of `--force` scope
+- Full analysis: `docs/reports/T-1101-fw-inception-decide-force-rca.md`
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's `--skip-sovereignty` flag is good — narrow-scoped, grep-able, auditable. Upgrade it to fully structural by adding a chokepoint and an invariant test:
+
+**Chokepoint (decompose `--force`):**
+- Split `update-task.sh --force` into four narrow flags, each requiring explicit justification:
+  - `--skip-sovereignty` (R-033) — used by `fw inception decide` after Tier 0 approval
+  - `--skip-acceptance-criteria` (P-010) — never used by framework code; user-only
+  - `--skip-verification` (P-011) — never used by framework code; user-only
+  - `--skip-human-ownership` — never used by framework code; user-only
+- `--force` becomes a deprecated alias that prints a warning and applies all four. New code must use the narrow flags.
+
+**Invariant test:**
+- `tests/lint/no-force-in-framework.bats`: greps `lib/ agents/` for `--force` in calls to `update-task.sh`. Allowlist: only the `--skip-sovereignty` site in `lib/inception.sh:303`. Any other use fails CI.
+
+**Audit log:**
+- Every non-default flag is logged to `.context/working/.gate-bypass-log.yaml` with `{timestamp, caller, flag, reason}`. Reviewable; surfaces silent bypasses immediately.
+
+**Why this is more reliable than the worker's fix alone:** the worker fix prevents `lib/inception.sh:303` from bypassing AC/verification gates today, but does NOT prevent another framework function from doing the same thing tomorrow. The chokepoint+test pair makes the bug class structurally impossible.
 
 ## Decisions
 

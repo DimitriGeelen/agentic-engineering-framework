@@ -77,9 +77,9 @@ A-4: T-609 does not need to be repealed — its intent (copy-pasteable, no ambig
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -93,12 +93,13 @@ A-4: T-609 does not need to be repealed — its intent (copy-pasteable, no ambig
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- A helper can detect self-host vs consumer context without false positives (proven: `lib/init.sh:579-583` already has this logic)
+- The fix covers all confirmed BUG call sites (inception.sh:215, review.sh:127, check-tier0.sh:377)
+- Backward compat preserved for existing tests and docs (confirmed: tests use `$FRAMEWORK_ROOT/bin/fw`, unaffected)
+- T-609 intent preserved (confirmed: commands remain single-line, copy-pasteable, unambiguous)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Shim detection is unreliable causing false `fw` output in pre-shim consumer projects (mitigated: falls through to `.agentic-framework/bin/fw`)
 
 ## Verification
 
@@ -108,15 +109,31 @@ A-4: T-609 does not need to be repealed — its intent (copy-pasteable, no ambig
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Two same-day incidents from independent consumer projects (ring20-dashboard, /opt/termlink T-909) confirm the bug class is real and recurring. 3 active user-facing BUGs found (`lib/inception.sh:215`, `lib/review.sh:127`, `agents/context/check-tier0.sh:377`). The fix is a ~15-line helper extracted from an already-proven detection pattern (`lib/init.sh:579-583`). T-609 intent preserved. Zero test breakage risk. Fix propagates automatically via `fw upgrade`.
+
+**Evidence:**
+- `lib/inception.sh:215` — emits `bin/fw` unconditionally in error message shown to user in consumer projects
+- `lib/review.sh:127` — emits `bin/fw` unconditionally in post-review instruction shown to user
+- `agents/context/check-tier0.sh:377` — emits `./bin/fw` unconditionally (also missing `cd PROJECT_ROOT &&`)
+- Fix pattern proven: `lib/init.sh:579-583` has identical context-detection logic, just not extracted
+- All 40+ test files use `$FRAMEWORK_ROOT/bin/fw` (qualified) — zero breakage risk
+- Research artifact: `docs/reports/T-1102-bin-fw-rca.md`
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's `_fw_cmd_for_user()` helper is necessary but not sufficient — it fixes 3 known sites but doesn't prevent the next contributor from emitting `bin/fw` literally somewhere new. Upgrade by adding the chokepoint+test pair:
+
+**Chokepoint:**
+- Single output formatter `_emit_user_command()` (in `lib/colors.sh` or `lib/paths.sh`) that takes a subcommand string and emits the full copy-pasteable command with the right `fw` form for the current context. ALL framework code that prints command suggestions to the user goes through this function.
+- The `_fw_cmd_for_user()` helper from the worker fix is the implementation detail; `_emit_user_command()` is the user-facing chokepoint that includes the `cd $PROJECT_ROOT &&` prefix per T-609.
+
+**Invariant test:**
+- `tests/lint/no-hardcoded-fw-paths.bats` — greps `lib/ agents/ web/` for the literal string `bin/fw` in echo/printf/heredoc contexts. Allowlist: framework-internal calls (`source $FW_BIN_DIR/...`) are exempt; only user-facing emissions are checked. Fails CI if found.
+- Pre-commit hook variant: flag any new `bin/fw` or `./bin/fw` strings in modified `.sh`/`.py` files.
+
+**Why this is more reliable:** the helper alone leaves 3 sites fixed today and unbounded sites broken tomorrow. The chokepoint funnels all callers through one place; the test makes "bypass the chokepoint" impossible without a CI failure.
 
 ## Decisions
 

@@ -88,9 +88,9 @@ For each: cost, blast radius, false-positive rate, who maintains it.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -104,12 +104,13 @@ For each: cost, blast radius, false-positive rate, who maintains it.
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Drift census confirms multiple instances of the same class (confirmed: 1 required-flag drift, 30+ missing commands)
+- Mechanism is buildable in one session and has <20% false positive rate in fw doctor (confirmed for (c)+(f))
+- The failure cost (4 parallel worker failures, sessions lost to stale forms) exceeds the fix cost
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Only a single isolated incident (disproved: 3 same-day incidents + this session = 4th instance)
+- No feasible structural mechanism exists (disproved: (c)+(f) are both ~40-line changes)
 
 ## Verification
 
@@ -119,15 +120,44 @@ For each: cost, blast radius, false-positive rate, who maintains it.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Three same-day incidents (G-025, G-031-F4, THIS-session) plus 4 identical parallel
+worker failures confirm this is a recurring structural failure, not a one-off. The drift is
+one-directional (code advances, docs lag), invisible to manual review (survived 2 explicit
+doc-update passes on the same function), and self-perpetuating (authors copy the stale canonical
+form). Two complementary mechanisms cover both failure classes at low cost and near-zero false
+positive rate.
+
+**Evidence:**
+- Census: 1 required-flag drift (fw termlink dispatch, missing --task) across 2 surfaces (CLAUDE.md + fw termlink help); 30+ commands in fw help absent from CLAUDE.md Quick Reference; 0 phantom commands (drift is one-directional)
+- T-652 (2026-03-28) added --task as REQUIRED: zero doc ACs, CLAUDE.md not in commit `280d2888`, in-binary help not updated. The task was framed as "enforcement change," not "CLI surface change" — documentation was invisible from that framing.
+- Drift survived T-1063 (added --project, explicitly updated help + CLAUDE.md) and T-1065 (added --model, explicitly updated both) because authors copied the stale form and appended their new flag. The stale form self-perpetuates once in the canonical reference.
+- Drift window: 14 days. Would repeat in the next session that uses fw termlink dispatch.
+- Recommended mechanism: (c) fw doctor command-gap scan + (f) canonical-form comments in CLI functions. Combined cost ~1 day; blast radius zero (warnings); covers both missing-command and flag-level drift classes.
+- Downstream build tasks needed: (1) add canonical-form comment + fix cmd_help() in termlink.sh; (2) add doctor doc-drift check in bin/fw; (3) fix CLAUDE.md Quick Reference row for fw termlink dispatch; (4) add highest-value missing commands to QR (fw upgrade, fw vendor, fw onboarding).
+
+**Full research artifact:** `docs/reports/T-1104-doc-parity-rca.md`
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's `(c) fw doctor doc-drift check + (f) canonical-form comments` is good but still relies on human authors copying canonical-form comments correctly. T-1104 IS the meta-pattern, but it can be made even more structural by making CLAUDE.md NOT the source of truth at all:
+
+**Chokepoint (single source of truth):**
+- The Quick Reference table in CLAUDE.md becomes **auto-generated** from `bin/fw` introspection. A script `scripts/regen-quick-reference.sh` walks the `case` statements in `bin/fw`, extracts subcommand names + flags + help text, and emits the markdown table. Run as part of `fw upgrade` (already syncs CLAUDE.md) and as a pre-commit hook. The hand-edited table is replaced with a `<!-- AUTO-GENERATED — do not edit -->` block.
+- This eliminates "author copies stale form" because the canonical form comes from the code itself, not from a manually-maintained snapshot.
+
+**Invariant test:**
+- `tests/lint/quick-reference-fresh.bats` — runs the regen script in `--check` mode and asserts no diff. Fails CI if `bin/fw` was changed without regenerating the table.
+- `tests/lint/all-fw-subcommands-documented.bats` — asserts every subcommand in `bin/fw` appears in the CLAUDE.md Quick Reference (closes the 30+ missing-commands gap the worker found).
+
+**Per-flag enforcement (worker fix retained as fallback):**
+- The `(f) canonical-form comments` proposal stays as a soft guard for the cases auto-gen can't reach (e.g., `--task` on `fw termlink dispatch` is required only when `TERMLINK_TASK_GOVERNANCE=1`). The comment becomes machine-readable: a structured `# CANONICAL: fw termlink dispatch --task TASK --name NAME --prompt PROMPT [--project DIR] [--model M]` block above each `cmd_*()` function, parsed by the regen script.
+
+**Memory propagation:**
+- Auto-gen alone doesn't update agent memory. Add a session-start hook that warns when CLAUDE.md Quick Reference has been regenerated since the last session (timestamp comparison) — invalidates the agent's cached form. Forces a re-read.
+
+**Why this is more reliable:** `fw doctor` warns about drift; auto-gen makes drift impossible. The two combined make the meta-class structurally extinct. Worker's mechanism (c)+(f) catches drift; this upgrade prevents it.
 
 ## Decisions
 

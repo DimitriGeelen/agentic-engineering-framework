@@ -4,7 +4,7 @@ name: "Inception: episodic auto-generation on partial-complete tasks — prematu
 description: >
   Inception task — RCA the auto-trigger that generates episodic memory for tasks in partial-complete state (status=work-completed but file still in .tasks/active/, awaiting human AC verification). Trigger: /opt/termlink T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Partial-complete: 1 human AC(s) pending verification' AND 'Task stays in active/' AND 'Episodic generated: T-909.yaml' in the same block. Result: long-term memory now contains a 'done' record for a task the human never finalized. Compounds with G-032 (which silently force-completes) to systematically pollute episodic memory. Investigate: (1) where the episodic auto-trigger fires in update-task.sh — gate condition and timing; (2) whether the trigger should follow physical file location (.tasks/completed/) or status field (work-completed); (3) what happens when human eventually rejects the partial-complete (does episodic get rewritten? deleted? left stale?); (4) backwards compat — how many existing episodic files were generated this way and might need re-generation; (5) recommend GO/NO-GO/DEFER + concrete remediation. Origin: G-034.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-1093, G-034, G-032]
 created: 2026-04-11T12:37:39Z
-last_update: 2026-04-11T12:37:39Z
+last_update: 2026-04-11T12:46:06Z
 date_finished: null
 ---
 
@@ -77,9 +77,9 @@ A-5: When the human eventually rejects a partial-complete (status flips back to 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -93,12 +93,13 @@ A-5: When the human eventually rejects a partial-complete (status flips back to 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Root cause confirmed with line-level evidence in update-task.sh
+- Fix is surgical (one guard, zero structural change)
+- Corruption is measurable and bounded (68 episodics, 6.8%)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The partial-complete state itself is a misfeature that should be redesigned (it is not — it is working correctly except for this one trigger)
+- The fix would break the human-finalization path (it does not — Trigger 1 already handles that correctly)
 
 ## Verification
 
@@ -108,15 +109,33 @@ A-5: When the human eventually rejects a partial-complete (status flips back to 
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Root cause confirmed. The episodic auto-trigger at `agents/task-create/update-task.sh:792` fires unconditionally inside the `work-completed` transition block, with no guard for the `PARTIAL_COMPLETE` flag that is correctly set at line 144. The task file correctly stays in `active/` on partial-complete, but the episodic generates anyway. The fix is one `if [ "${PARTIAL_COMPLETE:-false}" = false ]` conditional wrapping lines 792-802. The human-finalization path (Trigger 1 at line 352) already has the correct guard and will generate the episodic when the human finalizes. Zero structural change required.
+
+**Evidence:**
+- `update-task.sh:792` — episodic trigger has no `PARTIAL_COMPLETE` guard (confirmed by reading code)
+- `update-task.sh:144` — `PARTIAL_COMPLETE=true` correctly set when human ACs are unchecked
+- `update-task.sh:352-360` — human-finalization trigger has correct guard (`if [ ! -f episodic ]`)
+- `lib/inception.sh:303` — inception decide calls `update-task.sh --force`, compounding: every inception task with a human AC generates a premature episodic on `fw inception decide`
+- **68 of 996 episodics (6.8%) are premature** — task still in `active/` with `work-completed` status, all with `owner: human` and 1 unchecked human AC (confirmed by cross-reference audit)
+- Full RCA at `docs/reports/T-1103-episodic-partial-rca.md`
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's `PARTIAL_COMPLETE` guard at `update-task.sh:792` is correct but lives at the wrong layer — it's a defensive conditional next to the bug, not a chokepoint. Upgrade by moving the trigger to the actual completion event:
+
+**Chokepoint (event, not state):**
+- Episodic generation should fire on the **physical file move** (`mv .tasks/active/T-XXX → .tasks/completed/T-XXX`), NOT on the status field. The file move is the canonical "task is finalized" signal — partial-complete by definition does not move the file. Make episodic generation a side effect of `_finalize_task()` (or whatever wraps the move), not of `--status work-completed`.
+- This eliminates the gate-vs-state-mismatch class entirely. Future status fields (e.g., `archived`, `deferred`) won't accidentally trigger episodic generation.
+
+**Invariant test:**
+- `tests/lint/no-orphan-episodics.bats` — for every `.context/episodic/T-XXX.yaml`, assert the corresponding task file is in `.tasks/completed/`. Run on every commit. Catches both this bug and any future regression. Run as a one-shot now to identify the 68 corrupted episodics already in the repo.
+
+**Cleanup task (downstream):**
+- The 68 corrupted episodics are not just stale — they're polluting future agents' memory. The fix needs a **migration** that either deletes them or marks them with `partial_complete: true` until human finalization. Worker's recommendation didn't address the existing corruption.
+
+**Why this is more reliable:** the worker's guard adds a conditional next to the bug. The chokepoint moves the trigger to the actual event. The test makes the invariant continuously enforced — no orphan episodics, ever.
 
 ## Decisions
 
@@ -137,3 +156,6 @@ A-5: When the human eventually rejects a partial-complete (status flips back to 
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T12:46:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

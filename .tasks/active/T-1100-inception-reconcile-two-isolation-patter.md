@@ -77,9 +77,9 @@ A-4: Migration paths between patterns are non-trivial and need documentation —
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -93,12 +93,14 @@ A-4: Migration paths between patterns are non-trivial and need documentation —
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- A single canonical isolation mechanism exists and is already correct (fw vendor / do_vendor)
+- All working consumer projects are already on the canonical pattern (no forced migration)
+- The shim composes correctly with the vendored dir (additive, not competing)
+- Gaps are documentation + guard additions, not architectural rewrites
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The five patterns require different codepaths for the same use case (they don't)
+- Migration would require modifying all consumer projects (it wouldn't — they're already correct)
 
 ## Verification
 
@@ -108,15 +110,39 @@ A-4: Migration paths between patterns are non-trivial and need documentation —
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — Pattern 2 (fw vendor / fw init) as canonical isolation, Pattern 3 (shim) as dispatch
+
+**Rationale:** The five patterns collapse to two correct mechanisms (vendored dir + shim) that are orthogonal and already compose correctly in all working consumer projects. Patterns 1 and 2 are mechanically identical (both call do_vendor()). Pattern 4 (manual cp) is a bloated legacy global install at /root/.agentic-framework (327MB, unused). Pattern 5 (symlink) was fixed in T-909. A sixth undocumented pattern (nested .agentic-framework) was discovered in 3 projects. No rewrite required — documentation + fw doctor checks + one fw init guard cover all gaps.
+
+**Evidence:**
+- `lib/init.sh:110` calls `do_vendor --target "$target_dir"` — fw init and fw vendor use identical code
+- `bin/fw-shim:find_fw()` requires `.agentic-framework/bin/fw` to exist — shim is dispatch, not isolation
+- Disk survey: all 9 working consumer projects in /opt/ use Pattern 2 (56MB vendored dirs)
+- `/root/.agentic-framework` = 327MB (Pattern 4 bloat; 6× expected), VERSION=1.4.520 (stale), unused by shim
+- `/opt/termlink/.agentic-framework` = real directory post-T-909 (Pattern 5 eliminated)
+- 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
+- `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
+- Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's "Pattern 2 canonical + Pattern 3 orthogonal + init guard for Pattern 6" is half tactical (docs rot) and half structural (init guard). Upgrade by making the canonical state machine-checkable and the wrong patterns impossible to create:
+
+**Chokepoint (single mutation path):**
+- All writes to `<project>/.agentic-framework/` go through `do_vendor()`. No other function may create, modify, or merge contents. `fw upgrade` calls `do_vendor()` for the sync; `fw init` calls `do_vendor()` for the create. Manual `cp -r` (Pattern 4), symlink (Pattern 5), and nested vendoring (Pattern 6) become unauthorized states.
+- `do_vendor()` becomes atomic-replace (not merge). Existing contents are removed; the new vendor is written cleanly. Eliminates the nested-`.agentic-framework` regression class.
+
+**Type the project state:**
+- Add `isolation_mode` field to `.framework.yaml`: `vendored | shim | hybrid`. Written by `do_vendor()` and `fw upgrade`. `fw doctor` validates the declared mode matches actual disk state and refuses to operate on inconsistent state.
+
+**Invariant tests:**
+- `tests/lint/isolation-state-consistency.bats` — for every `.framework.yaml` carrying `isolation_mode: vendored`, assert `.agentic-framework/bin/fw` exists, `.agentic-framework/.git` does NOT exist, and `.agentic-framework/.agentic-framework/` does NOT exist (Pattern 6 guard).
+- `tests/lint/no-rogue-vendor-paths.bats` — greps `lib/ agents/` for any function other than `do_vendor()` that writes to `.agentic-framework/`. Allowlist: `do_vendor()` itself.
+
+**Migration:**
+- Existing consumers in unrecognized state get a one-shot `fw migrate-isolation` that converts to `vendored` mode. Pattern 4 (327MB bloat) detected by size check; Pattern 5 (symlink) by `test -L`; Pattern 6 (nested) by recursive find.
+
+**Why this is more reliable:** the worker's plan documents the canonical pattern but doesn't make the wrong ones impossible. The chokepoint+state+test trio makes "be on a non-canonical pattern" structurally unrepresentable — `fw doctor` will refuse, the test will fail CI, and `do_vendor()` is the only legal mutation.
 
 ## Decisions
 
