@@ -22,3 +22,17 @@ learnings:
   date: 2026-04-11
   context: Added via context agent
   application: TBD
+- id: L-004
+  learning: "Post-compact state cleanup must SEED fresh state, not just DELETE: budget-gate and checkpoint both read the last usage entry across the whole resumed JSONL. If they find no cache file, slow path re-reads the JSONL and picks up the pre-compact final usage entry. Deleting the cache file hands the bug to the slow path — the fix is to write a fresh ok record so fast path answers correctly until real post-compact entries land."
+  source: P-009
+  task: T-1087
+  date: 2026-04-11
+  context: Added via context agent
+  application: TBD
+- id: L-005
+  learning: "Shell verification commands piped to grep -q trigger SIGPIPE (exit 141) under set -o pipefail: use 'cmd > file; grep -q pat file' pattern instead of 'cmd | grep -q pat' when the verification gate runs with pipefail."
+  source: P-011
+  task: T-1088
+  date: 2026-04-11
+  context: Added via context agent
+  application: TBD
