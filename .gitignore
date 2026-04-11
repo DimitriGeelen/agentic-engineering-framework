@@ -10,6 +10,7 @@ __pycache__/
 .context/working/.restart-requested
 .playwright-mcp/
 .termlink-task
+.claude/scheduled_tasks.lock
 .context/bus/
 .context/locks/
 .context/secrets/
