@@ -4,7 +4,7 @@ name: "ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-proje
 description: >
   URGENT inception. lib/review.sh:38-52 detects the Watchtower URL by reading PROJECT_ROOT/.context/working/watchtower.pid then ss for the port. If the pid file is missing OR the PID is dead, it FALLS BACK to default_port=3000 (line 51). On any host with multiple consumer projects, the first Watchtower to bind :3000 captures every other project's review URLs. Combined with task-ID collisions across projects (T-434 exists in BOTH /opt/025-WokrshopDesigner AND /opt/999-Agentic-Engineering-Framework as different tasks), this means: /opt/025 user runs 'fw task review T-434', QR opens http://host:3000/inception/T-434, but :3000 is /opt/999's Watchtower, which serves ITS T-434 — wrong content, right URL, right task ID, completely silent failure. Live evidence today (2026-04-11): user ran fw task review T-434 in /opt/025-WokrshopDesigner, the URL took them to /opt/999's Watchtower which served a different T-434 (the inception about framework update/upgrade process), with the After-review-run text correctly pointing back to /opt/025. Investigate: (1) what was the port-detection mechanism BEFORE the current pid+ss approach? grep history for previous review.sh and earlier port-resolution code; check T-885 (configurable Watchtower port project setting) and any predecessor; (2) why the current pid+ss fallback collapses to 3000 silently — is there ANY cross-project safety check? (3) what would a STRUCTURAL fix look like: assign each project a unique deterministic port (e.g., hash of project name into 3000-3999 range), refuse to start Watchtower on a port that already serves another project, embed PROJECT_ROOT in Watchtower's identity endpoint and have fw task review verify the running Watchtower at the chosen URL belongs to PROJECT_ROOT before emitting the link; (4) the underlying task-ID collision is itself a bug — should task IDs be project-namespaced (e.g., 999/T-434, 025/T-434) at least in URL form? (5) recommend GO with chokepoint+invariant test discipline per T-1105: chokepoint = single function that resolves Watchtower URL AND verifies project identity before emitting; invariant test = no fw task review can emit a URL whose Watchtower /identity returns a different PROJECT_ROOT. Severity: high - silent wrong-content serving across project boundaries violates the framework's project isolation guarantee. Origin: live incident 2026-04-11 during structural-fix discipline pass.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-885, T-1105, T-1100, T-1093]
 created: 2026-04-11T13:30:22Z
-last_update: 2026-04-11T13:30:22Z
+last_update: 2026-04-11T14:30:28Z
 date_finished: null
 ---
 
@@ -122,9 +122,9 @@ A-6: The chokepoint+test discipline (T-1105) applies here: chokepoint = single f
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -153,15 +153,68 @@ A-6: The chokepoint+test discipline (T-1105) applies here: chokepoint = single f
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — Option D (Bug 2 fix + `/identity` endpoint + emitter verification)
+
+**Rationale:** Three compounding bugs confirmed. Bug 2 (`bin/watchtower.sh:21` uses `$FRAMEWORK_ROOT` for PID_FILE, `lib/review.sh:41` reads `$PROJECT_ROOT`) means ALL 5 consumer projects ALWAYS fall through to default port 3000 — Bug 1. No `/identity` endpoint (Bug 3) removes last detection layer. Fix: 3 files, ~20 lines, backward compatible, fail-loud.
+
+**Evidence:**
+- `bin/watchtower.sh:21` — PID_FILE uses FRAMEWORK_ROOT, not PROJECT_ROOT (root of Bug 2)
+- `lib/review.sh:52` — unconditional fallback to :3000 (Bug 1)
+- 5 of 5 consumer projects write PID to `.agentic-framework/.context/working/` — review.sh reads from `.context/working/` — paths never match
+- `/identity` absent on all 3 running Watchtower instances (curl confirmed)
+- T-434 collision live: active in /opt/025 (promote-to-prod), completed in /opt/999 (fw upgrade)
+- Full RCA: `docs/reports/T-1106-watchtower-port-bleed-rca.md`
+- Build decomposition: T-1106a (watchtower.sh 1-line fix), T-1106b (/identity endpoint), T-1106c (emitter verification + invariant test), then T-885 (unblock port registry)
+
+## Structural Upgrade (added 2026-04-11 — chokepoint+test discipline pass per T-1105)
+
+The worker's Option D (Bug 2 fix + `/identity` endpoint + emitter verification) is already chokepoint-shaped. This section makes the chokepoint explicit, adds the invariant tests, and extends the design to cover the task-ID collision blast radius the worker deferred (Bug 4).
+
+**Chokepoint 1 — URL resolution (single function):**
+- Add `resolve_and_verify_watchtower_url()` in `lib/review.sh`. Every `fw task review` URL emission MUST go through this function. It:
+  1. Reads `$PROJECT_ROOT/.context/working/watchtower.pid` (same path as before — Bug 2 fix makes the writer match)
+  2. If missing/stale → fails loud with "No Watchtower running for this project. Start with: cd $PROJECT_ROOT && bin/fw watchtower start" — NEVER defaults to :3000
+  3. If present → resolves port via ss, curls `/identity`, asserts `project_root == $PROJECT_ROOT`
+  4. On mismatch → fails loud with the served project_root and copy-paste start command
+  5. Returns the verified URL only if all checks pass
+- `lib/review.sh:38-52` is replaced wholesale. No other function in `lib/` or `agents/` is permitted to construct a Watchtower URL — enforced by invariant test below.
+
+**Chokepoint 2 — PID file path (single convention):**
+- `bin/watchtower.sh:21` → `PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"` (was `$FRAMEWORK_ROOT/...`)
+- Add compatibility read: if `$PROJECT_ROOT/.context/working/watchtower.pid` missing, check `$FRAMEWORK_ROOT/.context/working/watchtower.pid` with a loud migration warning, then move it. One-shot migration for existing consumer installs.
+- All five consumer projects (025, 051, termlink, 050, openclaw) get the migration on their next `fw watchtower start`.
+
+**Chokepoint 3 — Identity endpoint (single source of truth):**
+- Add `GET /identity` in `web/app.py` returning `{"project_root": str(PROJECT_ROOT), "project_name": ..., "fw_version": ..., "started_at": ...}`.
+- Reads from the same `PROJECT_ROOT` env var the Flask app was launched with — no duplication. If the env var is absent, `/identity` returns 503 with an explicit "Watchtower started without PROJECT_ROOT" error, preventing a silent "serves whatever cwd" fallback.
+
+**Invariant tests:**
+- `tests/lint/no-rogue-url-construction.bats` — greps `lib/` `agents/` `bin/` for any string matching `http://.*:(3000|3001|\${.*port.*})` outside `lib/review.sh:resolve_and_verify_watchtower_url()`. Allowlist: the chokepoint itself, `bin/watchtower.sh` start banner, `docs/`.
+- `tests/integration/review-url-identity-check.bats` — starts Watchtower on :3099, runs `fw task review T-XXX`, asserts the emitted URL's `/identity.project_root` equals `$PROJECT_ROOT`. Runs as a sub-test with a second Watchtower on :3098 serving a fake project — asserts that `fw task review` from the first project NEVER emits a URL resolving to the second.
+- `tests/integration/pid-path-consistency.bats` — for each consumer project layout (vendored + shim), starts Watchtower and asserts `lib/review.sh` can find the PID by reading `$PROJECT_ROOT/.context/working/watchtower.pid`.
+- `tests/lint/no-default-port-fallback.bats` — asserts no file in `lib/` contains `:-3000` or `:-$default_port` in a URL-constructing context.
+
+**Addressing Bug 4 (task-ID collision) — deferred but scoped:**
+- Full URL namespacing (Option C — `/proj/<name>/inception/T-XXX`) is out of scope for T-1106 build. Option D's identity check makes namespacing unnecessary as a security fix — the verification catches the wrong-Watchtower case before the URL is emitted. Namespacing would only help if the URL leaks to a second client (e.g., QR scanned on another device while the original Watchtower is restarted on a different project).
+- Open a separate inception `T-1107` (to be captured) to track "globally unique task IDs OR URL namespacing" as a defense-in-depth follow-up to T-1106 and T-885.
+
+**Memory propagation:**
+- After Bug 2 is fixed, all five affected consumer projects need `fw watchtower restart` once to migrate the PID file. Document this in the build task's migration steps. Add a `fw doctor` check that detects the mismatched path and prints the one-line remediation.
+
+**Why this is more reliable than the worker's plan alone:**
+- The worker identified the chokepoint but the build decomposition (T-1106a/b/c) left the invariant tests implicit. This section makes them explicit and enforceable in CI.
+- The rogue-URL-construction lint catches future regressions where someone adds a new `http://...:3000` anywhere in the tree, not just in the current bug site.
+- The integration test with two Watchtowers is the only way to prove the cross-project check works end-to-end — unit tests can't exercise the actual network port collision.
+- The Bug 2 migration shim prevents a silent "upgrade ate the PID file" class on consumer projects.
+
+**Build decomposition (revised):**
+1. **T-1106a** — Bug 2 fix: `bin/watchtower.sh:21` + migration shim (1 file, ~10 lines)
+2. **T-1106b** — `/identity` endpoint + Playwright test (1 file, ~10 lines + test)
+3. **T-1106c** — `resolve_and_verify_watchtower_url()` chokepoint in `lib/review.sh` (1 file, ~30 lines)
+4. **T-1106d** — Invariant tests (`no-rogue-url-construction.bats`, `review-url-identity-check.bats`, `pid-path-consistency.bats`, `no-default-port-fallback.bats`) — 4 files, ~100 lines total
+5. **T-1106e** — `fw doctor` checks for PID path drift + Watchtower identity mismatch — existing doctor hooks, ~20 lines
+6. **T-1107** (new inception, captured) — Task-ID collision: globally unique IDs or URL namespacing (defense-in-depth)
+7. **T-885 (unblock)** — Deterministic per-project port (already GO-recommended, awaiting human decision)
 
 ## Decisions
 
@@ -182,3 +235,7 @@ A-6: The chokepoint+test discipline (T-1105) applies here: chokepoint = single f
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-11T14:30:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Ingesting T-1106 RCA + applying structural upgrade + fixing port squatter
