@@ -4,16 +4,16 @@ name: "fw cron install: unified generate+install command + fw doctor drift check
 description: >
   fw cron install: unified generate+install command + fw doctor drift check (T-1112 build)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, tests/integration/cron_install.bats]
 related_tasks: []
 created: 2026-04-11T22:15:35Z
-last_update: 2026-04-11T22:32:21Z
-date_finished: null
+last_update: 2026-04-11T22:40:06Z
+date_finished: 2026-04-11T22:40:06Z
 ---
 
 # T-1114: fw cron install: unified generate+install command + fw doctor drift check (T-1112 build)
@@ -35,27 +35,27 @@ problem retroactively.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw cron install` subcommand added to `bin/fw` cron case that:
+- [x] `fw cron install` subcommand added to `bin/fw` cron case that:
       (a) regenerates the registry-sourced crontab via the existing
       `fw cron generate` logic, (b) computes a diff against the system
       cron file (`/etc/cron.d/agentic-audit-<slug>` by default,
       overridable via `FW_CRON_INSTALL_DIR` for tests), (c) installs
       atomically using `install -m 0644` with sudo degradation.
-- [ ] `fw cron install --dry-run` shows the pending diff without making
+- [x] `fw cron install --dry-run` shows the pending diff without making
       changes and exits 0. Exit code is non-zero when source/registry is
       missing.
-- [ ] `fw cron install` honors `FW_CRON_INSTALL_DIR` so integration
+- [x] `fw cron install` honors `FW_CRON_INSTALL_DIR` so integration
       tests can target a temp directory instead of `/etc/cron.d/`.
-- [ ] `fw doctor` adds a cron drift check: when the registry-generated
+- [x] `fw doctor` adds a cron drift check: when the registry-generated
       crontab differs from the installed file (or when the registry has
       jobs but nothing is installed), it emits a WARN with the remediation
       command `fw cron install`.
-- [ ] `fw cron help` documents the new `install` subcommand.
-- [ ] Unit/integration bats test `tests/integration/cron_install.bats`
+- [x] `fw cron help` documents the new `install` subcommand.
+- [x] Unit/integration bats test `tests/integration/cron_install.bats`
       passes: exercises dry-run + clean install + drift detection using
       `FW_CRON_INSTALL_DIR` + `FW_CRON_REGISTRY` overrides.
-- [ ] `bin/fw test integration tests/integration/cron_install.bats` green.
-- [ ] Existing `tests/unit/lib_*.bats` regression-free.
+- [x] `bin/fw test integration tests/integration/cron_install.bats` green.
+- [x] Existing `tests/unit/lib_*.bats` regression-free.
 
 ## Verification
 
@@ -81,3 +81,6 @@ bats tests/integration/cron_install.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1114-fw-cron-install-unified-generateinstall-.md
 - **Context:** Initial task creation
+
+### 2026-04-11T22:40:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
