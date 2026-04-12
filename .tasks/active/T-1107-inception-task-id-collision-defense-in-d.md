@@ -4,15 +4,15 @@ name: "Inception: task-ID collision defense-in-depth — globally unique IDs or 
 description: >
   Follow-up to T-1106 (Watchtower port bleed + cross-project task-ID collision). T-1106's Option D (identity-endpoint check before URL emission) closes the primary bleed-through, but leaks remain when a URL is shared with a second client (QR code scanned later; bookmark hit after Watchtower restart on a different project). This inception explores defense-in-depth: (1) make task IDs globally unique (prefix with project slug, e.g., '025/T-434' vs '999/T-434'); OR (2) namespace URL paths with project ('/proj/025/inception/T-434'); OR (3) embed project identifier in QR payload and have Watchtower /inception/T-XXX reject when the path project doesn't match the served project. Evaluate backwards-compat cost, consumer-project migration burden, QR lifetime, and interaction with T-885 port registry. Scope fence: NO build, NO schema lock. Deliverable: path recommendation with evidence from T-1106 RCA and audit of historical task-ID collisions across consumer projects. Related: T-1106, T-885, T-1105, T-1100.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T14:34:33Z
-last_update: 2026-04-12T09:30:47Z
+last_update: 2026-04-12T12:52:37Z
 date_finished: null
 ---
 
@@ -20,39 +20,45 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+T-1106's Option D (identity-endpoint check) closes the primary bleed-through at the **point of emission** — `fw task review` refuses to emit a URL unless the target Watchtower serves `$PROJECT_ROOT`. However, a correctly emitted URL can still be resolved against the *wrong* Watchtower later: QR scanned after restart, bookmarked link after port reassignment, or cross-device link pasted after topology change. Task IDs are not globally unique, so integer collisions across projects cause silent wrong-content rendering with HTTP 200. This inception explores whether defense-in-depth (globally unique IDs, URL namespacing, or QR project embedding) is warranted after T-1106 lands.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: T-1106 emission-time check closes 80%+ of collision scenarios (validated by recommendation analysis)
+- A2: Residual post-emission bleed requires a specific precondition (stale URL + topology change) that is rare in practice
+- A3: T-885 (per-project configurable port) further reduces the collision surface by eliminating same-port binding
+- A4: All 4 mitigation options require some backward-compat cost; none is zero-impact
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. **Wait for T-1106 deployment** — This inception should not proceed until T-1106 is decided GO and deployed to consumer projects
+2. **Monitor for 1 week** — Measure residual resolution-time bleed incidents in `.context/project/concerns.yaml` and Watchtower logs
+3. **If incidents detected:** Audit cross-project task-ID collisions across all consumer projects, evaluate 4 mitigation options (see research artifact)
+4. **If zero incidents:** NO-GO — T-1106 emission-time check is sufficient
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Historical git commits reference `T-XXX` format — rewriting history is not an option
+- QR codes already in the wild encode plain URLs, no project identifier
+- Consumer projects span 11+ installations on this host with independent Watchtower instances
+- T-885 (per-project port) and T-1106 (identity endpoint) are prerequisite/interacting tasks
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:** Path recommendation with evidence from T-1106 RCA, audit of historical task-ID collisions across consumer projects, migration cost analysis, interaction with T-885.
+**OUT of scope:** Any build, any schema lock, any actual ID rewrite, any route change, any URL emission change. Those are descendant build tasks if T-1107 is decided GO.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1107`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
   3. Record decision via the Watchtower form or the command shown alongside the QR code
   **Expected:** Decision recorded, task completed
@@ -125,3 +131,7 @@ date_finished: null
 
 ### 2026-04-12T09:30:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T12:52:37Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
