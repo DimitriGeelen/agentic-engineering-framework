@@ -15,3 +15,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-003
+  learning: "Gap closures may already be structurally fixed by prior tasks (T-1157 fixed G-024) but the concern register was not updated. Always check current code state before creating build tasks — the fix may be in place and only the concern register needs closing."
+  source: P-001
+  task: T-1183
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

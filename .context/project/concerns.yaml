@@ -658,10 +658,13 @@ concerns:
     The T-1109 chokepoint fix (collapse step 4b into do_vendor) also closes NEW-007 because do_vendor uses a glob over agents/*/.'
   - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync), T-1109 (RCA + fix), L-006, G-037/G-038/G-039/G-040/G-041/G-042/G-043'
   trigger: A consumer starts running its own Watchtower instance and encounters a bug already fixed in the canonical copy.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution: 'T-1157: Collapsed lib/upgrade.sh step 4b from 120-line handcrafted per-file sync into single do_vendor() call. do_vendor includes web/ in its canonical list. 4 invariant tests in tests/lint/single-vendor-writer.bats
+    guard against regression. Consumer upgrades now sync all web/blueprints/ and web/templates/ automatically.'
+  closed_date: '2026-04-12'
 - id: G-025
   type: gap
   title: fw upgrade not surfaced as the canonical onboarding command — and what it actually does is also unclear
