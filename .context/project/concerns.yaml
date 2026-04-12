@@ -1168,7 +1168,10 @@ concerns:
   - 'Already-drifted commands: ask, plugin-audit, fix-learned, traceability, enforcement, preflight, validate-init, mcp, consolidate, upstream, cron — all handled by case but absent from show_help.'
   - 'Overlaps with G-035 (META-GAP: CLAUDE.md / fw help / code drift).'
   trigger: Any addition of a new subcommand to the case block in bin/fw.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution: 'T-1185: Added ask, docs, enforcement, fabric to show_help(). Invariant test tests/lint/help-router-parity.bats (2 tests) guards against future drift by comparing router case entries to help
+    output.'
+  closed_date: '2026-04-12'

@@ -29,3 +29,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-005
+  learning: "CLI help text is another enumeration-divergence site. Add an invariant test (tests/lint/help-router-parity.bats) that extracts commands from the case block and compares to show_help() output. This catches new commands that were added to the router but forgotten in help."
+  source: P-001
+  task: T-1185
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
