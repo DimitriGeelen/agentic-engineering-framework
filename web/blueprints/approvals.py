@@ -100,6 +100,11 @@ def _load_pending_go_decisions():
         if _extract_decision(body) != "pending":
             continue
 
+        # T-1123: Only show inception tasks with a recommendation (skip captured/unexplored)
+        rec_section = _extract_section(body, "Recommendation")
+        if not rec_section or len(rec_section.strip()) < 20:
+            continue
+
         task_id = fm.get("id", "")
         linked = [a for a in assumptions if a.get("linked_task") == task_id]
 
