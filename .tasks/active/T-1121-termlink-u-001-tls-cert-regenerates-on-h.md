@@ -4,7 +4,7 @@ name: "TermLink U-001: TLS cert regenerates on hub restart — breaks all client
 description: >
   Inception: TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T08:04:30Z
-last_update: 2026-04-12T08:16:27Z
-date_finished: null
+last_update: 2026-04-12T11:02:43Z
+date_finished: 2026-04-12T11:02:43Z
 ---
 
 # T-1121: TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust
@@ -93,18 +93,22 @@ reload on restart instead of regenerating.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Hub cert regeneration on restart is a clear defect — TOFU is useless if every restart invalidates trust. Independently confirmed this session (not just ring20-manager...
+
+**Date**: 2026-04-12T11:02:43Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Hub cert regeneration on restart is a clear defect — TOFU is useless if every restart invalidates trust. Independently confirmed this session (not just ring20-manager...
+
+**Date**: 2026-04-12T11:02:43Z
 
 ## Updates
 
@@ -113,3 +117,14 @@ reload on restart instead of regenerating.
 
 ### 2026-04-12T08:16:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:02:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Hub cert regeneration on restart is a clear defect — TOFU is useless if every restart invalidates trust. Independently confirmed this session (not just ring20-manager...
+
+### 2026-04-12T11:02:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1121: TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:02:46Z
+# ============================================================================
+
+task_id: T-1121
+task_name: "TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:04:30Z
+completed: 2026-04-12T11:02:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T10:07:40+02:00
+last_commit: 2026-04-12T10:17:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1121/T-1122: Inception + pickup envelopes for TermLink U-001/U-002. TOFU fix, observations sent, research artifact + pickup processing
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "TOFU fix, observations sent, research artifact + pickup processing"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/inbox/P-011-bug-report.yaml"
+  - ".context/pickup/inbox/P-012-feature-proposal.yaml"
+  - ".context/pickup/processed/P-011-bug-report.yaml"
+  - ".context/pickup/processed/P-012-feature-proposal.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/T-1121-termlink-tls-tofu.md"
+  - ".tasks/active/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md"
+  - ".tasks/active/T-1122-termlink-u-002-no-hub-level-inbox--canno.md"
+  - ".tasks/active/T-1123-pickup-approvals-page-shows-inception-ta.md"
+  - ".tasks/active/T-1124-pickup-u-002-hub-level-inbox--store-file.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T10:07:40"
+    action: "T-1121/T-1122: Inception + pickup envelopes for TermLink U-001/U-002"
+  - time: "2026-04-12T10:17:02"
+    action: "T-1121: TOFU fix, observations sent, research artifact + pickup processing"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 178 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 178
+  commits: 2
+  files_changed: 16
+  lines_added: 577
+  lines_removed: 47
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md
+generated_by: context-agent-hybrid

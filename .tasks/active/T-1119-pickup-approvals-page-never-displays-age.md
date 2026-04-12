@@ -12,7 +12,7 @@ tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T07:45:01Z
-last_update: 2026-04-12T10:55:00Z
+last_update: 2026-04-12T11:02:26Z
 date_finished: 2026-04-12T10:55:00Z
 ---
 
@@ -65,18 +65,22 @@ grep -q "recommendation" web/templates/_approvals_content.html
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: The approvals page hides the agent's recommendation — the human sees a blank form and must click through to the task page to understand what's being recommended. Fix:...
+
+**Date**: 2026-04-12T11:02:26Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The approvals page hides the agent's recommendation — the human sees a blank form and must click through to the task page to understand what's being recommended. Fix:...
+
+**Date**: 2026-04-12T11:02:26Z
 
 ## Updates
 
@@ -90,3 +94,10 @@ grep -q "recommendation" web/templates/_approvals_content.html
 ### 2026-04-12T10:55:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Fix applied
+
+### 2026-04-12T11:02:26Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The approvals page hides the agent's recommendation — the human sees a blank form and must click through to the task page to understand what's being recommended. Fix:...

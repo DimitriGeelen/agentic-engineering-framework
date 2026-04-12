@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1122: TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:02:54Z
+# ============================================================================
+
+task_id: T-1122
+task_name: "TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:05:17Z
+completed: 2026-04-12T11:02:51Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T10:07:40+02:00
+last_commit: 2026-04-12T11:28:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-1121/T-1122: Inception + pickup envelopes for TermLink U-001/U-002. Inception — DEFER recommendation pending T-1135, research artifact
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/pickup/inbox/P-011-bug-report.yaml"
+  - ".context/pickup/inbox/P-012-feature-proposal.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - "docs/reports/T-1122-hub-inbox-assessment.md"
+  - ".tasks/active/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md"
+  - ".tasks/active/T-1122-termlink-u-002-no-hub-level-inbox--canno.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T10:07:40"
+    action: "T-1121/T-1122: Inception + pickup envelopes for TermLink U-001/U-002"
+  - time: "2026-04-12T11:28:48"
+    action: "T-1122: Inception — DEFER recommendation pending T-1135, research artifact"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 177 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 177
+  commits: 2
+  files_changed: 8
+  lines_added: 323
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1122-termlink-u-002-no-hub-level-inbox--canno.md
+generated_by: context-agent-hybrid

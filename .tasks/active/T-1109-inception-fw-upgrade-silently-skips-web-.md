@@ -4,16 +4,16 @@ name: "Inception: fw upgrade silently skips web/ sync — consumer terminal + bl
 description: >
   RCA inception. Live evidence 2026-04-11: /opt/025-WokrshopDesigner ran fw upgrade today (last_upgrade 2026-04-11T10:50:34Z, .framework.yaml says version 1.5.246) but the vendored .agentic-framework/VERSION file still says 1.1.16, and web/blueprints/terminal.py is missing. 4 of 5 inspected consumer projects (025, 051, 050, openclaw) have the same failure. lib/update.sh:183-192 includes 'web' in the rsync list, so theoretically web/blueprints/terminal.py should have been copied. Yet the consumer has no terminal.py and its Watchtower on :3001 returns 404 on /terminal. Two contradictory signals: (a) upgrade reports success + updates the yaml + writes last_upgrade timestamp; (b) actual vendored files are stale. TWO separate but possibly related issues: (1) WHY does fw upgrade claim success without syncing web/ (matches G-024 but code looks correct) — possible causes: alternate code path, rsync error silenced, nested .agentic-framework (Pattern 6 from T-1100), source tmpdir pointing at wrong version, dry-run flag stuck; (2) WHY does .framework.yaml/VERSION file drift — two different writers, two different reads. Investigate: (i) trace every upgrade code path in bin/fw + lib/upgrade.sh + lib/update.sh + lib/init.sh + any agents/upgrade/*; (ii) reproduce on a throwaway consumer; (iii) identify the chokepoint where upgrade sync SHOULD converge; (iv) design invariant test that fails CI if any file in upstream web/ is missing from a consumer's vendored web/ after upgrade; (v) recommend structural fix with validation plan. Per T-1105 chokepoint+test discipline. Related: G-024, T-1094 (fw upgrade docs), T-1100 (5 isolation patterns including Pattern 6 nested), T-1106 (Bug 2 PID path — another consumer-vs-framework path inconsistency). Deliverable: docs/reports/T-NNNN-web-sync-rca.md with code-path trace, reproduction, structural fix design, invariant test design, validation plan.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T20:12:21Z
-last_update: 2026-04-11T20:15:59Z
-date_finished: null
+last_update: 2026-04-12T11:02:01Z
+date_finished: 2026-04-12T11:01:55Z
 ---
 
 # T-1109: Inception: fw upgrade silently skips web/ sync — consumer terminal + blueprints missing despite include list
@@ -126,18 +126,22 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
+
+Rationale: The RCA (worker + main session, ...
+
+**Date**: 2026-04-12T11:02:01Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
+
+Rationale: The RCA (worker + main session, ...
+
+**Date**: 2026-04-12T11:02:01Z
 
 ## Updates
 
@@ -147,3 +151,21 @@ date_finished: null
 ### 2026-04-11T20:12:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Reason:** Dispatching RCA worker for fw upgrade sync failure
+
+### 2026-04-12T11:01:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
+
+Rationale: The RCA (worker + main session, ...
+
+### 2026-04-12T11:01:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-12T11:02:01Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
+
+Rationale: The RCA (worker + main session, ...

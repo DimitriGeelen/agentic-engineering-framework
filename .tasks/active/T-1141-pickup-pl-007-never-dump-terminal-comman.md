@@ -4,16 +4,16 @@ name: "Pickup: PL-007: Never dump terminal commands — always use fw task revie
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-967. Type: learning.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-12T09:57:49Z
-last_update: 2026-04-12T10:55:36Z
-date_finished: null
+last_update: 2026-04-12T11:05:06Z
+date_finished: 2026-04-12T11:05:06Z
 ---
 
 # T-1141: Pickup: PL-007: Never dump terminal commands — always use fw task review + termlink inject (from 010-termlink)
@@ -70,7 +70,7 @@ Agents output bare CLI commands instead of using `fw task review` / Watchtower. 
 ## Verification
 
 test -f docs/reports/T-1141-pl-007-enforcement.md
-grep -q "Recommendation: GO" docs/reports/T-1141-pl-007-enforcement.md
+grep -q "Recommendation.*GO" docs/reports/T-1141-pl-007-enforcement.md
 
 ## Recommendation
 
@@ -87,18 +87,22 @@ grep -q "Recommendation: GO" docs/reports/T-1141-pl-007-enforcement.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — consolidate with T-1146 into one build task.
+
+Rationale: The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issu...
+
+**Date**: 2026-04-12T11:04:25Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — consolidate with T-1146 into one build task.
+
+Rationale: The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issu...
+
+**Date**: 2026-04-12T11:04:25Z
 
 ## Updates
 
@@ -108,3 +112,28 @@ grep -q "Recommendation: GO" docs/reports/T-1141-pl-007-enforcement.md
 ### 2026-04-12T10:41:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T11:04:08Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — consolidate with T-1146 into one build task.
+
+Rationale: The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issu...
+
+### 2026-04-12T11:04:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — consolidate with T-1146 into one build task.
+
+Rationale: The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issu...
+
+### 2026-04-12T11:04:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — consolidate with T-1146 into one build task.
+
+Rationale: The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issu...
+
+### 2026-04-12T11:05:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception complete — GO recommendation

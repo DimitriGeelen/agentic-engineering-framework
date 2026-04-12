@@ -4,7 +4,7 @@ name: "TermLink U-002: no hub-level inbox — cannot push files when zero sessio
 description: >
   Inception: TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T08:05:17Z
-last_update: 2026-04-12T09:28:48Z
-date_finished: null
+last_update: 2026-04-12T11:02:51Z
+date_finished: 2026-04-12T11:02:51Z
 ---
 
 # T-1122: TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered
@@ -93,18 +93,22 @@ exists even when the user isn't logged in.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: DEFER (pending T-1135 outcome)
+
+Rationale: If T-1135 (persistent TermLink agent sessions) ships, every project will always have an active session to target. This makes hub-level inb...
+
+**Date**: 2026-04-12T11:02:50Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: DEFER (pending T-1135 outcome)
+
+Rationale: If T-1135 (persistent TermLink agent sessions) ships, every project will always have an active session to target. This makes hub-level inb...
+
+**Date**: 2026-04-12T11:02:50Z
 
 ## Updates
 
@@ -113,3 +117,14 @@ exists even when the user isn't logged in.
 
 ### 2026-04-12T09:27:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:02:50Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER (pending T-1135 outcome)
+
+Rationale: If T-1135 (persistent TermLink agent sessions) ships, every project will always have an active session to target. This makes hub-level inb...
+
+### 2026-04-12T11:02:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

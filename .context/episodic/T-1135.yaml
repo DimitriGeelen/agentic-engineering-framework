@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1135: Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:03:50Z
+# ============================================================================
+
+task_id: T-1135
+task_name: "Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T09:14:35Z
+completed: 2026-04-12T11:03:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T11:16:53+02:00
+last_commit: 2026-04-12T11:25:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — persistent TermLink agent sessions + research artifact. Inception — cross-agent coordination complete, recommendation GO
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1137.yaml"
+  - "docs/reports/T-1135-persistent-termlink-agents.md"
+  - ".tasks/active/T-1135-persistent-termlink-agent-sessions--alwa.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T11:16:53"
+    action: "T-1135: Inception — persistent TermLink agent sessions + research artifact"
+  - time: "2026-04-12T11:25:40"
+    action: "T-1135: Inception — cross-agent coordination complete, recommendation GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 109 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 109
+  commits: 2
+  files_changed: 3
+  lines_added: 340
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1135-persistent-termlink-agent-sessions--alwa.md
+generated_by: context-agent-hybrid

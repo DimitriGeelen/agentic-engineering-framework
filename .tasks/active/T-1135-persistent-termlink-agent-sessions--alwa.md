@@ -4,7 +4,7 @@ name: "Persistent TermLink agent sessions — always-listening receptionist per 
 description: >
   Inception: Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:14:35Z
-last_update: 2026-04-12T09:25:40Z
-date_finished: null
+last_update: 2026-04-12T11:03:47Z
+date_finished: 2026-04-12T11:03:47Z
 ---
 
 # T-1135: Persistent TermLink agent sessions — always-listening receptionist per project, resume-flow health check, cleanup exemption, cross-agent specialist network
@@ -125,18 +125,22 @@ Today's evidence (S-2026-0412): This session communicated with ring20-manager (.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Cross-agent coordination with TermLink project confirms the fix is small (3 code changes in TermLink, ~2 hours), the tags infrastructure is 90% ready, and the cost mo...
+
+**Date**: 2026-04-12T11:03:47Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Cross-agent coordination with TermLink project confirms the fix is small (3 code changes in TermLink, ~2 hours), the tags infrastructure is 90% ready, and the cost mo...
+
+**Date**: 2026-04-12T11:03:47Z
 
 ## Updates
 
@@ -145,3 +149,14 @@ Today's evidence (S-2026-0412): This session communicated with ring20-manager (.
 
 ### 2026-04-12T09:16:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:03:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Cross-agent coordination with TermLink project confirms the fix is small (3 code changes in TermLink, ~2 hours), the tags infrastructure is 90% ready, and the cost mo...
+
+### 2026-04-12T11:03:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

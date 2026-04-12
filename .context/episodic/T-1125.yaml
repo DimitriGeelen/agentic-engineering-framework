@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1125: TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:03:03Z
+# ============================================================================
+
+task_id: T-1125
+task_name: "TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:19:54Z
+completed: 2026-04-12T11:03:00Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T10:21:33+02:00
+last_commit: 2026-04-12T10:21:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  TermLink U-003 inception + files received from ring20-manager
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/pickup/inbox/P-013-bug-report.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1125-termlink-u-003-send-file-reports-ok-on-h.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T10:21:33"
+    action: "T-1125: TermLink U-003 inception + files received from ring20-manager"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 163 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 163
+  commits: 1
+  files_changed: 5
+  lines_added: 130
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1125-termlink-u-003-send-file-reports-ok-on-h.md
+generated_by: context-agent-hybrid

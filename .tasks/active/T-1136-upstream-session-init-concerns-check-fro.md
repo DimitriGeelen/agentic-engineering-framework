@@ -4,7 +4,7 @@ name: "Upstream session-init concerns check from 010-termlink — warn about ope
 description: >
   Inception: Upstream session-init concerns check from 010-termlink — warn about open gaps at session start
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:18:11Z
-last_update: 2026-04-12T09:19:36Z
-date_finished: null
+last_update: 2026-04-12T11:03:54Z
+date_finished: 2026-04-12T11:03:54Z
 ---
 
 # T-1136: Upstream session-init concerns check from 010-termlink — warn about open gaps at session start
@@ -86,18 +86,22 @@ Currently `fw context init` shows: session ID, cron audit status, and little els
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Low-risk, high-value addition. Open concerns are currently invisible at session start -- agents must explicitly run `fw gaps`. Showing them at init prevents cross-ses...
+
+**Date**: 2026-04-12T11:03:54Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Low-risk, high-value addition. Open concerns are currently invisible at session start -- agents must explicitly run `fw gaps`. Showing them at init prevents cross-ses...
+
+**Date**: 2026-04-12T11:03:54Z
 
 ## Updates
 
@@ -106,3 +110,14 @@ Currently `fw context init` shows: session ID, cron audit status, and little els
 
 ### 2026-04-12T09:18:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:03:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Low-risk, high-value addition. Open concerns are currently invisible at session start -- agents must explicitly run `fw gaps`. Showing them at init prevents cross-ses...
+
+### 2026-04-12T11:03:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

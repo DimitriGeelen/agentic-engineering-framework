@@ -4,7 +4,7 @@ name: "TermLink U-003: send-file reports ok on hub acceptance, not delivery — 
 description: >
   Inception: TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T08:19:54Z
-last_update: 2026-04-12T08:20:13Z
-date_finished: null
+last_update: 2026-04-12T11:03:00Z
+date_finished: 2026-04-12T11:03:00Z
 ---
 
 # T-1125: TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss
@@ -97,18 +97,22 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: send-file's ok:true semantics are misleading and cause silent data loss. ring20-manager sent 3 files to .107 -- all returned ok:true, none arrived. The receiver had e...
+
+**Date**: 2026-04-12T11:03:00Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: send-file's ok:true semantics are misleading and cause silent data loss. ring20-manager sent 3 files to .107 -- all returned ok:true, none arrived. The receiver had e...
+
+**Date**: 2026-04-12T11:03:00Z
 
 ## Updates
 
@@ -117,3 +121,14 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 
 ### 2026-04-12T08:20:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:03:00Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: send-file's ok:true semantics are misleading and cause silent data loss. ring20-manager sent 3 files to .107 -- all returned ok:true, none arrived. The receiver had e...
+
+### 2026-04-12T11:03:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

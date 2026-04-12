@@ -4,7 +4,7 @@ name: "Add patch-delivery type to pickup processor — enable cross-project patc
 description: >
   Inception: Add patch-delivery type to pickup processor — enable cross-project patch sharing
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:32:41Z
-last_update: 2026-04-12T09:49:43Z
-date_finished: null
+last_update: 2026-04-12T11:04:02Z
+date_finished: 2026-04-12T11:04:02Z
 ---
 
 # T-1139: Add patch-delivery type to pickup processor — enable cross-project patch sharing
@@ -90,18 +90,22 @@ handling than the existing types: patches need code review + inception, not just
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Two patches from 010-termlink were rejected today because `patch-delivery` isn't a valid pickup type. Cross-project patch sharing is a natural extension of the pickup...
+
+**Date**: 2026-04-12T11:04:02Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Two patches from 010-termlink were rejected today because `patch-delivery` isn't a valid pickup type. Cross-project patch sharing is a natural extension of the pickup...
+
+**Date**: 2026-04-12T11:04:02Z
 
 ## Updates
 
@@ -110,3 +114,14 @@ handling than the existing types: patches need code review + inception, not just
 
 ### 2026-04-12T09:33:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T11:04:02Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Two patches from 010-termlink were rejected today because `patch-delivery` isn't a valid pickup type. Cross-project patch sharing is a natural extension of the pickup...
+
+### 2026-04-12T11:04:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -4,16 +4,16 @@ name: "Upstream portable date helpers from 010-termlink — lib/compat.sh _date_
 description: >
   Upstream portable date helpers from 010-termlink — lib/compat.sh _date_to_epoch + episodic verification
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:12:20Z
-last_update: 2026-04-12T09:14:21Z
-date_finished: null
+last_update: 2026-04-12T11:03:33Z
+date_finished: 2026-04-12T11:03:33Z
 ---
 
 # T-1134: Upstream portable date helpers from 010-termlink — lib/compat.sh _date_to_epoch + episodic verification
@@ -94,20 +94,35 @@ Framework currently has 3 files using `date -d` (GNU-only) which silently fail o
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO
+
+Rationale: Three framework files use GNU-only `date -d` which fails on macOS. The compat.sh fallback chain (GNU→BSD→python3) is the standard pattern for this project's portabili...
+
+**Date**: 2026-04-12T11:03:33Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Three framework files use GNU-only `date -d` which fails on macOS. The compat.sh fallback chain (GNU→BSD→python3) is the standard pattern for this project's portabili...
+
+**Date**: 2026-04-12T11:03:33Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T11:03:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Three framework files use GNU-only `date -d` which fails on macOS. The compat.sh fallback chain (GNU→BSD→python3) is the standard pattern for this project's portabili...
+
+### 2026-04-12T11:03:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
