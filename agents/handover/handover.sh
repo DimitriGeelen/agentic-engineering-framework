@@ -753,7 +753,7 @@ if [ "$AUTO_COMMIT" = true ]; then
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
         echo ""
         echo -e "${CYAN}Pushing to remotes...${NC}"
-        local _push_failed=false
+        _push_failed=false
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
             if git -C "$PROJECT_ROOT" push "$remote_name" HEAD 2>&1; then

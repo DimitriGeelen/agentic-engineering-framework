@@ -1,0 +1,52 @@
+---
+id: T-1165
+name: "Fix lint errors — local outside function in handover.sh"
+description: >
+  Fix lint errors — local outside function in handover.sh
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T13:19:21Z
+last_update: 2026-04-12T13:19:21Z
+date_finished: null
+---
+
+# T-1165: Fix lint errors — local outside function in handover.sh
+
+## Context
+
+Shellcheck SC2168 error: `local _push_failed=false` on line 756 of `agents/handover/handover.sh` is outside any function (in main script body). Same issue in vendored copy.
+
+## Acceptance Criteria
+
+### Agent
+- [x] SC2168 lint error fixed in `agents/handover/handover.sh`
+- [x] Vendored copy synced
+- [x] `fw test lint` shows 0 errors (was 2)
+
+## Verification
+
+bash -c 'shellcheck -S error agents/handover/handover.sh 2>&1; exit 0' | grep -c "SC2168" | grep -q "^0$"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T13:19:21Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1165-fix-lint-errors--local-outside-function-.md
+- **Context:** Initial task creation
