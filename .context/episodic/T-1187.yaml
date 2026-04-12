@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1187: Fix G-039: add invariant test for config registry parity across lib/config.sh, web/blueprints/config.py, CLAUDE.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T21:27:51Z
+# ============================================================================
+
+task_id: T-1187
+task_name: "Fix G-039: add invariant test for config registry parity across lib/config.sh, web/blueprints/config.py, CLAUDE.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T21:25:43Z
+completed: 2026-04-12T21:27:48Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Invariant test `tests/lint/config-registry-parity.bats` verifies all 3 sources have the same config keys"
+  - "Test passes with current state (all 3 sources are in sync, 18 keys, 3/3 tests pass)"
+  - "G-039 marked resolved in concerns.yaml"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1187-fix-g-039-add-invariant-test-for-config-.md
+generated_by: context-agent-hybrid

@@ -1070,10 +1070,12 @@ concerns:
   - G-035 (doc/code drift) is the parent class. G-039 is the config-registry instance. T-588 precedent (status-transitions.yaml) shows the Option B pattern works.
   - 'Related: L-006 (enumeration-divergence class), G-035 (doc parity parent), G-024/G-037/G-038 (other L-006 instances), T-588 (status-transitions.yaml single source of truth precedent).'
   trigger: Any addition to FW_CONFIG_REGISTRY in lib/config.sh that is not simultaneously mirrored in config.py SETTINGS and CLAUDE.md.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution: 'T-1187: Invariant test tests/lint/config-registry-parity.bats (3 tests) verifies key parity across lib/config.sh, web/blueprints/config.py, and CLAUDE.md. Catches any future divergence immediately.'
+  closed_date: '2026-04-12'
 - id: G-040
   type: gap
   title: Owner enum (human/claude-code) has 5+ parallel sites with NO canonical source of truth
