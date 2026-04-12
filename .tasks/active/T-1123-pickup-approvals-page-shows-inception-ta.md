@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: later
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T08:15:01Z
-last_update: 2026-04-12T08:15:01Z
+last_update: 2026-04-12T10:58:41Z
 date_finished: null
 ---
 
@@ -105,3 +105,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T10:58:41Z — status-update [task-update-agent]
+- **Change:** horizon: next → later
+- **Reason:** Covered by T-1149 — approvals page now filters tasks without recommendations
