@@ -8,17 +8,3 @@ decisions:
     date: 2026-04-12
     task: unknown
     rationale: "Not specified"
-
-  - id: D-002
-    decision: "Test decision from Playwright"
-    scope: project
-    date: 2026-04-12
-    task: T-1030
-    rationale: "Not specified"
-
-  - id: D-003
-    decision: "Test decision from Playwright"
-    scope: project
-    date: 2026-04-12
-    task: T-1030
-    rationale: "Not specified"
