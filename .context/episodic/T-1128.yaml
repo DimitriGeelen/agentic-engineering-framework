@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1128: T-1126 build: add TermLink inject vs push protocol to CLAUDE.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T09:08:25Z
+# ============================================================================
+
+task_id: T-1128
+task_name: "T-1126 build: add TermLink inject vs push protocol to CLAUDE.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:40:12Z
+completed: 2026-04-12T08:41:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T10:41:46+02:00
+last_commit: 2026-04-12T10:42:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add TermLink inject vs push protocol to CLAUDE.md. Complete — inject vs push protocol codified in CLAUDE.md
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md §TermLink Integration has communication protocol section"
+  - "Section mentions send-file silent loss risk (U-003)"
+  - "Section includes the 4-row decision table"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1126-codify-termlink-communication-protocol-i.md"
+  - ".tasks/active/T-1128-t-1126-build-add-termlink-inject-vs-push.md"
+  - ".tasks/completed/T-1128-t-1126-build-add-termlink-inject-vs-push.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T10:41:46"
+    action: "T-1128: Add TermLink inject vs push protocol to CLAUDE.md"
+  - time: "2026-04-12T10:42:04"
+    action: "T-1128: Complete — inject vs push protocol codified in CLAUDE.md"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 7
+  lines_added: 157
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1128-t-1126-build-add-termlink-inject-vs-push.md
+generated_by: context-agent-hybrid

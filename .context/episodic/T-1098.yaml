@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1098: CLAUDE.md: explicitly contrast termlink (machine-wide) vs framework (per-project) distribution models (G-029)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T09:08:20Z
+# ============================================================================
+
+task_id: T-1098
+task_name: "CLAUDE.md: explicitly contrast termlink (machine-wide) vs framework (per-project) distribution models (G-029)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T12:15:59Z
+completed: 2026-04-12T07:22:38Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-04-12T09:22:33+02:00
+last_commit: 2026-04-12T09:22:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add TermLink distribution model contrast to CLAUDE.md. Complete — distribution model contrast added, G-029 closed
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md §TermLink Integration contains a distribution-model"
+  - "Note mentions Unix socket discovery as the reason"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-1098-claudemd-explicitly-contrast-termlink-ma.md"
+  - ".tasks/completed/T-1098-claudemd-explicitly-contrast-termlink-ma.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T09:22:33"
+    action: "T-1098: Add TermLink distribution model contrast to CLAUDE.md"
+  - time: "2026-04-12T09:22:46"
+    action: "T-1098: Complete — distribution model contrast added, G-029 closed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1146 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1146
+  commits: 2
+  files_changed: 3
+  lines_added: 69
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1098-claudemd-explicitly-contrast-termlink-ma.md
+generated_by: context-agent-hybrid

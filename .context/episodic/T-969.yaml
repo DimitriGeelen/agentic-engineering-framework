@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T09:08:36Z
+# ============================================================================
+
+task_id: T-969
+task_name: "Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T19:37:58Z
+completed: 2026-04-12T07:55:35Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-04-06T21:38:11+02:00
+last_commit: 2026-04-06T22:13:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-968: Create 3 build tasks for test infrastructure. Playwright test infrastructure — tests/playwright/ + fw test playwright
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/conftest.py` exists with server fixture (start Watchtower on port 3099) and browser fixture"
+  - "`tests/playwright/test_smoke.py` exists with at least 3 route smoke tests (12 tests: 3 homepage, 6 core pages, 3 navigation)"
+  - "`fw test playwright` sub-command added to `bin/fw`"
+  - "`fw test all` includes playwright tests"
+  - "`fw test playwright` runs successfully — 12/12 passed"
+  - "Help text updated to show playwright option"
+  - "Verification commands pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-969-playwright-test-infrastructure--testspla.md"
+  - ".tasks/active/T-970-5-initial-playwright-regression-tests--t.md"
+  - ".tasks/active/T-971-ac-to-test-workflow--playwright-test-gen.md"
+  - "tests/playwright/conftest.py"
+  - "tests/playwright/test_smoke.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T21:38:11"
+    action: "T-968: Create 3 build tasks for test infrastructure"
+  - time: "2026-04-06T22:13:35"
+    action: "T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7937 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7937
+  commits: 2
+  files_changed: 6
+  lines_added: 445
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-969-playwright-test-infrastructure--testspla.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-804: Add fw costs to CLAUDE.md quick reference table
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T09:08:32Z
+# ============================================================================
+
+task_id: T-804
+task_name: "Add fw costs to CLAUDE.md quick reference table"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-03T19:21:28Z
+completed: 2026-04-12T07:55:14Z
+duration_days: 9
+updates_count: 2
+first_commit: 2026-04-03T21:22:21+02:00
+last_commit: 2026-04-03T21:22:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw costs to CLAUDE.md quick reference table
+
+# Key outcomes
+outcomes:
+  - "`fw costs` entries added to Quick Reference table in CLAUDE.md"
+  - "Entries cover: summary, session, current subcommands"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-804-add-fw-costs-to-claudemd-quick-reference.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-03T21:22:21"
+    action: "T-804: Add fw costs to CLAUDE.md quick reference table"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12273 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [docs, tokens]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12273
+  commits: 1
+  files_changed: 2
+  lines_added: 54
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-804-add-fw-costs-to-claudemd-quick-reference.md
+generated_by: context-agent-hybrid

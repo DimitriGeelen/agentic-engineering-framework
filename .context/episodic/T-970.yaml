@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-970: 5 initial Playwright regression tests — terminal, inception, tasks, fabric, search (T-968 Phase 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T09:08:39Z
+# ============================================================================
+
+task_id: T-970
+task_name: "5 initial Playwright regression tests — terminal, inception, tasks, fabric, search (T-968 Phase 2)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-06T19:38:01Z
+completed: 2026-04-12T07:55:37Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-04-06T21:38:11+02:00
+last_commit: 2026-04-06T22:17:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-968: Create 3 build tasks for test infrastructure. 5 Playwright regression tests — tasks, inception, fabric, terminal, review
+
+# Key outcomes
+outcomes:
+  - "`tests/playwright/test_tasks.py` — task list (3 tests), task detail (2 tests)"
+  - "`tests/playwright/test_inception.py` — inception list (3 tests), inception detail (3 tests)"
+  - "`tests/playwright/test_fabric.py` — fabric overview (3 tests), component detail (2 tests), graph (1 test)"
+  - "`tests/playwright/test_terminal.py` — terminal page (7 tests: container, tabs, buttons, status, xterm)"
+  - "`tests/playwright/test_review.py` — approvals (2 tests), review page (2 tests)"
+  - "All tests pass: `fw test playwright` — 40/40 passed in 77s"
+  - "Verification commands pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-969-playwright-test-infrastructure--testspla.md"
+  - ".tasks/active/T-970-5-initial-playwright-regression-tests--t.md"
+  - ".tasks/active/T-971-ac-to-test-workflow--playwright-test-gen.md"
+  - "tests/playwright/test_fabric.py"
+  - "tests/playwright/test_inception.py"
+  - "tests/playwright/test_review.py"
+  - "tests/playwright/test_tasks.py"
+  - "tests/playwright/test_terminal.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-06T21:38:11"
+    action: "T-968: Create 3 build tasks for test infrastructure"
+  - time: "2026-04-06T22:17:41"
+    action: "T-970: 5 Playwright regression tests — tasks, inception, fabric, terminal, review"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7937 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7937
+  commits: 2
+  files_changed: 8
+  lines_added: 556
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-970-5-initial-playwright-regression-tests--t.md
+generated_by: context-agent-hybrid
