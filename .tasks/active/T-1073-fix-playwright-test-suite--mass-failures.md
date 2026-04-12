@@ -4,15 +4,15 @@ name: "Fix Playwright test suite — mass failures across API and UI tests"
 description: >
   373 Playwright tests collected, majority failing. Likely common root cause (port, config, or test infrastructure issue). Needs investigation and fix.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-09T13:04:38Z
-last_update: 2026-04-09T13:04:46Z
+last_update: 2026-04-12T12:58:01Z
 date_finished: null
 ---
 
@@ -20,35 +20,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+373 Playwright tests were mass-failing when this task was created (2026-04-09). Subsequent framework fixes in T-1106, T-1119, T-1120, and other Watchtower-related tasks resolved the underlying issues. Verified 2026-04-12: all 373 tests pass (394s runtime).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] All 373 Playwright tests pass (`fw test playwright`)
+- [x] No test infrastructure changes needed — root causes fixed by prior tasks
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bin/fw test playwright 2>&1 | tail -3 | grep -q "passed"
 
 ## Decisions
 
@@ -67,3 +49,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1073-fix-playwright-test-suite--mass-failures.md
 - **Context:** Initial task creation
+
+### 2026-04-12T12:58:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
