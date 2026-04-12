@@ -182,5 +182,27 @@ WPEOF
         fi
     fi
 
+    # T-1159: Show open concerns at session start (cross-session failure awareness)
+    local concerns_file="$CONTEXT_DIR/project/concerns.yaml"
+    if [ -f "$concerns_file" ]; then
+        local watching_count
+        watching_count=$(python3 -c "
+import yaml, sys
+try:
+    with open(sys.argv[1]) as f:
+        data = yaml.safe_load(f) or {}
+    concerns = data.get('concerns', [])
+    watching = [c for c in concerns if c.get('status') == 'watching']
+    print(len(watching))
+except Exception:
+    print('0')
+" "$concerns_file" 2>/dev/null) || watching_count=0
+        if [ "${watching_count:-0}" -gt 0 ]; then
+            echo ""
+            echo -e "Concerns register: ${YELLOW}${watching_count} watching${NC}"
+            echo -e "  Run ${CYAN}fw gaps${NC} for details"
+        fi
+    fi
+
     return 0
 }
