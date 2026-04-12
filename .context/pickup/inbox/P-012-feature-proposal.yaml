@@ -1,0 +1,13 @@
+pickup_id: P-012
+version: 1
+type: feature-proposal
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1122"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:06:10Z"
+payload:
+  summary: "U-002: Hub-level inbox — store files at hub for delivery when sessions register"
+  detail: "termlink send-file requires an active target session. When the receiving machine has zero sessions, files cannot be delivered. Proposed: hub-level inbox that stores files and delivers them when a session registers. Like email: the mailbox exists even when the user is not logged in. Workaround: SSH+scp. Origin: ring20-manager T-046 RCA."
+  priority: medium
+  tags: [hub, inbox, file-transfer]

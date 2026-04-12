@@ -1,0 +1,13 @@
+pickup_id: P-011
+version: 1
+type: bug-report
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1121"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:06:04Z"
+payload:
+  summary: "U-001: TLS cert regenerates on every hub restart, breaking all client TOFU trust"
+  detail: "Hub generates a new TLS certificate on every restart. All clients that previously connected via TOFU reject the hub because the fingerprint changed. Live evidence: framework agent on .107 tried termlink remote ping 192.168.10.109:9100 and got TOFU VIOLATION. Proposed fix: persist the cert (generate once, save to /var/lib/termlink/hub.pem, reload on restart). Origin: ring20-manager T-046 RCA + independent confirmation from framework session S-2026-0412-0935."
+  priority: high
+  tags: [tls, tofu, hub, security]
