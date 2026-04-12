@@ -1188,3 +1188,22 @@ concerns:
   resolution: 'T-1185: Added ask, docs, enforcement, fabric to show_help(). Invariant test tests/lint/help-router-parity.bats (2 tests) guards against future drift by comparing router case entries to help
     output.'
   closed_date: '2026-04-12'
+- id: G-044
+  type: gap
+  title: Consumer project discovery hardcodes /opt/* — breaks non-/opt installations
+  description: 'bin/fw doctor consumer check and isolation model check both iterate over /opt/*/.framework.yaml. This fails for consumer projects outside /opt/ (e.g., ~/projects/). Should be configurable
+    or search common paths. Related: incoming pickup envelope P-001-hardcoded-opt-paths-bugfix.'
+  spec_reference: bin/fw:1141, bin/fw:1217
+  severity: medium
+  trigger_fired: false
+  trigger_event: null
+  resolution_in_progress: null
+  what_works_now: Consumer discovery works for /opt/ installations (the framework dev environment)
+  what_remains: Non-/opt/ installations invisible to fw doctor
+  tier0_resolution: null
+  resolution: null
+  status: watching
+  created: '2026-04-12'
+  last_reviewed: '2026-04-12'
+  trigger_fired_date: null
+  closed_date: null
