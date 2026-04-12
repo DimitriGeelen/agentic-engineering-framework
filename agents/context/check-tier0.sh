@@ -25,6 +25,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 fw_hook_crash_trap "check-tier0"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
 
@@ -338,21 +339,8 @@ if feedback:
 fi
 
 # ── Block with explanation ──
-# Detect Watchtower URL for approval link (T-638)
-WT_URL="${WATCHTOWER_URL:-}"
-if [ -z "$WT_URL" ]; then
-    WT_PORT="" WT_HOST="" WT_PID=""
-    if [ -f "$PROJECT_ROOT/.context/working/watchtower.pid" ]; then
-        WT_PID=$(cat "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null)
-        if [ -n "$WT_PID" ] && kill -0 "$WT_PID" 2>/dev/null; then
-            WT_PORT=$(ss -tlnp 2>/dev/null | grep "pid=$WT_PID" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
-        fi
-    fi
-    WT_HOST=$(hostname -I 2>/dev/null | awk '{print $1}')
-    WT_HOST="${WT_HOST:-$(hostname 2>/dev/null)}"
-    WT_HOST="${WT_HOST:-localhost}"
-    WT_URL="http://${WT_HOST}:${WT_PORT:-3000}"
-fi
+# Detect Watchtower URL via shared helper (T-1154, T-1156)
+WT_URL=$(_watchtower_url 2>/dev/null || echo "http://localhost:3000")
 
 echo "" >&2
 echo "══════════════════════════════════════════════════════════" >&2

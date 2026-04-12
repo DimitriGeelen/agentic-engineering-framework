@@ -53,11 +53,10 @@ check_human_sovereignty() {
         else
             echo -e "${RED}ERROR: Cannot complete human-owned task${NC}" >&2
             echo "Sovereignty gate (R-033): owner is human." >&2
-            echo "Options:" >&2
-            echo "  1. Human completes:" >&2
-            echo "     fw task update $TASK_ID --status work-completed --skip-sovereignty" >&2
-            echo "  2. Reassign first:" >&2
-            echo "     fw task update $TASK_ID --owner agent --skip-human-ownership" >&2
+            echo "The human must review and approve via Watchtower:" >&2
+            # T-1156: Show Watchtower review link instead of bare commands (PL-007)
+            source "$FRAMEWORK_ROOT/lib/review.sh" 2>/dev/null
+            emit_review "$TASK_ID" "$TASK_FILE" >&2 2>/dev/null || true
             exit 1
         fi
     fi
@@ -660,7 +659,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         HUMAN_AC_UNCHECKED_REMAINING=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
         echo -e "${YELLOW}Partial-complete: $HUMAN_AC_UNCHECKED_REMAINING human AC(s) pending verification${NC}"
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
-        echo "Finalize after verification: fw task update $TASK_ID --status work-completed"
+        echo "Human review required — see Watchtower link below."
 
         # T-634: Auto-emit review (URL + QR + artifacts) on partial-complete
         if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then

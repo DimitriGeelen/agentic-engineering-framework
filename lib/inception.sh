@@ -90,8 +90,8 @@ do_inception_start() {
         echo "2. Register assumptions:"
         echo "     fw assumption add 'Users want X' --task $task_id"
         echo "3. Conduct exploration (spikes, prototypes, research)"
-        echo "4. Record decision:"
-        echo "     fw inception decide $task_id go --rationale '...'"
+        echo "4. Record decision via Watchtower:"
+        echo "     fw task review $task_id"
     fi
 }
 
