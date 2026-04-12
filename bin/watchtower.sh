@@ -18,8 +18,9 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 source "$FRAMEWORK_ROOT/lib/firewall.sh"
-PID_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.pid"
-LOG_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.log"
+# PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
+PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
+LOG_FILE="$PROJECT_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT=$(fw_config "PORT" 3000)
 
 # Colors provided by lib/colors.sh (via paths.sh chain)

@@ -49,13 +49,15 @@ do_verify_acs() {
         esac
     done
 
-    source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null || true
-    local wt_port
-    wt_port=$(type fw_config >/dev/null 2>&1 && fw_config "PORT" 3000 || echo 3000)
+    source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
+    local wt_base_url wt_port
+    wt_base_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:3000")
+    # Extract port from URL for downstream use
+    wt_port=$(echo "$wt_base_url" | grep -oP ':\K\d+$' || echo "3000")
 
     # Check if Watchtower is running (needed for HTTP checks)
     local wt_running=false
-    if curl -sf --max-time 2 "http://localhost:${wt_port}/" >/dev/null 2>&1; then
+    if curl -sf --max-time 2 "${wt_base_url}/" >/dev/null 2>&1; then
         wt_running=true
     fi
 

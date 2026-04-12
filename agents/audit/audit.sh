@@ -18,6 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -2714,8 +2715,9 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-_wt_port=$(fw_config "PORT" 3000)
-if curl -sf --max-time 3 "http://localhost:${_wt_port}/health" >/dev/null 2>&1; then
+_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:$(fw_config "PORT" 3000)")
+_wt_port=$(echo "$_wt_url" | grep -oP ':\K\d+$' || echo "3000")
+if curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"

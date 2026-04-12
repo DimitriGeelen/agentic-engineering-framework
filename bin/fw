@@ -989,9 +989,14 @@ else:
     fi
 
     # Check: Watchtower smoke test (T-486) — run if server is reachable
-    if curl -sf "http://localhost:${FW_PORT:-3000}/health" >/dev/null 2>&1; then
+    # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
+    source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
+    local _doctor_wt_url _doctor_wt_port
+    _doctor_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:${FW_PORT:-3000}")
+    _doctor_wt_port=$(echo "$_doctor_wt_url" | grep -oP ':\K\d+$' || echo "${FW_PORT:-3000}")
+    if curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
         local smoke_result
-        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "${FW_PORT:-3000}" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
+        smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
         local smoke_passed smoke_failed smoke_total
         smoke_passed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('passed',0))" 2>/dev/null || echo 0)
         smoke_failed=$(echo "$smoke_result" | python3 -c "import sys,json;print(json.load(sys.stdin).get('failed',0))" 2>/dev/null || echo 0)
@@ -2321,7 +2326,7 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 echo "  resume <id>       Resume a paused job"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
-                echo "Web UI:   http://localhost:3000/cron"
+                echo "Web UI:   Watchtower /cron page (fw serve to start)"
                 echo ""
                 echo "Env overrides:"
                 echo "  FW_CRON_INSTALL_DIR  Target directory (default /etc/cron.d)"
