@@ -3558,9 +3558,9 @@ PYSEARCH
         shift 2>/dev/null || true
         if [ -z "$_hook_name" ]; then
             echo "Usage: fw hook <name> [args...]" >&2
-            echo "Available hooks: check-active-task, check-tier0, check-project-boundary, budget-gate," >&2
-            echo "  block-plan-mode, block-task-tools, audit-task-tools, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
-            echo "  check-fabric-new-file, check-agent-dispatch, commit-cadence, loop-detect, pre-compact, post-compact-resume" >&2
+            # T-1186/G-042: Generate hook list from filesystem (single source of truth)
+            _hooks=$(ls "$AGENTS_DIR/context/"*.sh 2>/dev/null | xargs -I{} basename {} .sh | sort | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
+            echo "Available hooks: $_hooks" >&2
             exit 1
         fi
         _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"

@@ -1145,10 +1145,12 @@ concerns:
   - T-1109 L-006 sweep worker output, finding NEW-005. Full report at docs/reports/T-1109-l006-sweep.md.
   - Enforcement panel has a 3-entry whitelist while settings.json has 10+ hook invocations — UI reports false incomplete coverage.
   trigger: Any addition of a new hook script to agents/context/ or .claude/settings.json.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution: 'T-1186: Hook usage list in bin/fw now generated from filesystem (ls agents/context/*.sh). Shows 20 hooks dynamically vs 16 previously hardcoded. New hooks auto-appear in usage message.'
+  closed_date: '2026-04-12'
 - id: G-043
   type: gap
   title: fw subcommand list already drifts — case statement vs show_help() prose in same file
