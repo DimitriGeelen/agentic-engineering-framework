@@ -119,11 +119,28 @@ def _load_pending_go_decisions():
         if len(problem_excerpt) > 200:
             problem_excerpt = problem_excerpt[:197] + "..."
 
-        # Extract recommendation or GO criteria for rationale prepopulation
-        rec = _extract_section(body, "Recommendation")
-        if not rec or len(rec) < 10:
+        # Extract recommendation for display (T-1119: show full recommendation)
+        rec_raw = _extract_section(body, "Recommendation")
+        rec_display = ""  # Full recommendation for visible display
+        rec_decision = ""  # GO/NO-GO/DEFER extracted
+        if rec_raw and len(rec_raw) > 10:
+            rec_display = rec_raw.strip()
+            # Extract the recommendation decision
+            for line in rec_raw.split("\n"):
+                stripped = line.strip().replace("**", "").replace("*", "")
+                if stripped.lower().startswith("recommendation:"):
+                    rec_decision = stripped.split(":", 1)[1].strip().split()[0].upper()
+                    break
+
+        # Fallback to GO criteria for rationale hint
+        rationale_hint = ""
+        if rec_raw and len(rec_raw) > 10:
+            hint = rec_raw.replace("**", "").replace("*", "").strip()
+            if len(hint) > 200:
+                hint = hint[:197] + "..."
+            rationale_hint = hint
+        else:
             gonogo = _extract_section(body, "Go/No-Go Criteria")
-            # Extract just the "GO if:" bullet points
             if gonogo:
                 go_lines = []
                 in_go = False
@@ -136,16 +153,7 @@ def _load_pending_go_decisions():
                         break
                     if in_go and stripped.startswith("- "):
                         go_lines.append(stripped[2:].strip())
-                rec = "; ".join(go_lines) if go_lines else ""
-
-        # Truncate rationale hint
-        rationale_hint = ""
-        if rec:
-            # Strip markdown formatting
-            hint = rec.replace("**", "").replace("*", "").strip()
-            if len(hint) > 200:
-                hint = hint[:197] + "..."
-            rationale_hint = hint
+                rationale_hint = "; ".join(go_lines) if go_lines else ""
 
         results.append({
             "task_id": task_id,
@@ -158,6 +166,8 @@ def _load_pending_go_decisions():
             },
             "artifacts": artifacts,
             "rationale_hint": rationale_hint,
+            "recommendation": rec_display,
+            "rec_decision": rec_decision,
         })
 
     return results

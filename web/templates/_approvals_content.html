@@ -84,6 +84,23 @@
         Assumptions: {{ t.assumption_counts.validated }}/{{ t.assumption_counts.total }} validated
     </div>
     {% endif %}
+    {% if t.recommendation %}
+    <details style="margin-top:0.5rem; background:var(--pico-card-sectionning-background-color); padding:0.5rem 0.75rem; border-radius:4px;" open>
+        <summary style="font-weight:600; cursor:pointer;">
+            Agent Recommendation:
+            {% if t.rec_decision == 'GO' %}
+            <span style="color:#10b981;">GO</span>
+            {% elif t.rec_decision == 'NO-GO' %}
+            <span style="color:#ef4444;">NO-GO</span>
+            {% elif t.rec_decision == 'DEFER' %}
+            <span style="color:#6b7280;">DEFER</span>
+            {% else %}
+            {{ t.rec_decision }}
+            {% endif %}
+        </summary>
+        <div style="font-size:0.85rem; margin-top:0.4rem; white-space:pre-wrap; line-height:1.5;">{{ t.recommendation }}</div>
+    </details>
+    {% endif %}
     <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
           style="margin-top:0.5rem;">
         <div class="decision-inline">
