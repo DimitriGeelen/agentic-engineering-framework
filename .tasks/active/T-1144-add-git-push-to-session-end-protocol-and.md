@@ -1,0 +1,55 @@
+---
+id: T-1144
+name: "Add git push to session-end protocol and handover agent"
+description: >
+  Add git push to session-end protocol and handover agent
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T10:08:50Z
+last_update: 2026-04-12T10:08:50Z
+date_finished: null
+---
+
+# T-1144: Add git push to session-end protocol and handover agent
+
+## Context
+
+536 unpushed commits accumulated over a week because: (1) CLAUDE.md forbids agents from pushing, (2) Session End Protocol has no push step, (3) no push automation exists. Fix the protocol gap.
+
+## Acceptance Criteria
+
+### Agent
+- [x] CLAUDE.md Session End Protocol includes git push step with confirmation
+- [x] Handover agent (agents/handover/handover.sh) attempts push after --commit
+- [x] Push failure is non-blocking (warn, don't fail handover)
+- [x] CLAUDE.md git commit rules updated: push after handover commit is allowed
+
+## Verification
+
+grep -q "push" agents/handover/handover.sh
+grep -q "git push" CLAUDE.md
+# The completion gate runs each command — if any exits non-zero, completion is blocked.
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T10:08:50Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1144-add-git-push-to-session-end-protocol-and.md
+- **Context:** Initial task creation

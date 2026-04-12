@@ -1169,9 +1169,9 @@ TermLink is optional. Without it installed, `--termlink` prints a warning and fa
 1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
-4. Generate handover: `fw handover`
-5. Fill in the [TODO] sections in the handover document
-6. Commit all changes with task references
-7. Run `fw metrics` to verify state
+4. Generate handover: `fw handover --commit` (auto-commits AND pushes to all remotes)
+5. If push fails: warn the user — unpushed commits are a data loss risk
+6. Run `fw metrics` to verify state
 
 **Do not end a session without generating a handover.**
+**Do not end a session with unpushed commits** — `fw handover --commit` pushes automatically (T-1144). If push fails (divergence, auth), flag it to the user before ending.

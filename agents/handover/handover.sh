@@ -749,6 +749,23 @@ if [ "$AUTO_COMMIT" = true ]; then
 
         # Commit via git agent
         PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID"
+
+        # Push to all remotes (T-1144: prevent unpushed commit accumulation)
+        echo ""
+        echo -e "${CYAN}Pushing to remotes...${NC}"
+        local _push_failed=false
+        while IFS= read -r remote_name; do
+            [ -z "$remote_name" ] && continue
+            if git -C "$PROJECT_ROOT" push "$remote_name" HEAD 2>&1; then
+                echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
+            else
+                echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
+                _push_failed=true
+            fi
+        done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+        if [ "$_push_failed" = true ]; then
+            echo -e "${YELLOW}Some pushes failed. Run 'git push' manually after resolving.${NC}"
+        fi
     else
         error "Git agent not found. Manual commit required."
         echo "Run: git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
