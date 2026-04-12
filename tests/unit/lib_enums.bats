@@ -153,3 +153,30 @@ teardown() {
     [[ "$result" == *"build"* ]]
     [[ "$result" == *"inception"* ]]
 }
+
+# --- is_valid_owner (T-1181, G-040) ---
+
+@test "enums: human is valid owner" {
+    run is_valid_owner "human"
+    [ "$status" -eq 0 ]
+}
+
+@test "enums: claude-code is valid owner" {
+    run is_valid_owner "claude-code"
+    [ "$status" -eq 0 ]
+}
+
+@test "enums: invalid owner rejected" {
+    run is_valid_owner "orchestrator"
+    [ "$status" -eq 1 ]
+}
+
+@test "enums: VALID_OWNERS is populated" {
+    [ -n "$VALID_OWNERS" ]
+}
+
+@test "enums: list_valid_owners returns all owners" {
+    result=$(list_valid_owners)
+    [[ "$result" == *"human"* ]]
+    [[ "$result" == *"claude-code"* ]]
+}
