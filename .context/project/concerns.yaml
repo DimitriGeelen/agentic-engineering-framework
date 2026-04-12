@@ -1167,9 +1167,10 @@ concerns:
     boundary), T-588 (status-transitions.yaml origin), T-1105 (chokepoint+invariant-test discipline).'
   trigger: Any addition to `workflow_types:` or `horizons:` in status-transitions.yaml that is not simultaneously mirrored
     in web/blueprints/tasks.py.
-  status: watching
+  status: resolved
+  resolution: 'T-1179 — tasks.py now reads workflow_types, horizons, and statuses from status-transitions.yaml via _load_enums() with caching. Template dropdowns use Jinja loops over enum_types/enum_horizons. No more parallel hardcoded lists.'
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1109
 - id: G-039
   type: gap
