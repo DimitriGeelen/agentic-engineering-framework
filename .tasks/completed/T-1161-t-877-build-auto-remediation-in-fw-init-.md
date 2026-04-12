@@ -4,7 +4,7 @@ name: "T-877 build: Auto-remediation in fw init — git hooks, enforcement basel
 description: >
   T-877 build: Auto-remediation in fw init — git hooks, enforcement baseline, start guidance
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T12:13:05Z
-last_update: 2026-04-12T12:56:53Z
-date_finished: null
+last_update: 2026-04-12T12:57:47Z
+date_finished: 2026-04-12T12:57:47Z
 ---
 
 # T-1161: T-877 build: Auto-remediation in fw init — git hooks, enforcement baseline, start guidance
@@ -59,3 +59,6 @@ bash -c 'grep -qi "claude\|agent" lib/init.sh'
 
 ### 2026-04-12T12:56:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T12:57:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
