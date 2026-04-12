@@ -506,13 +506,15 @@ concerns:
   score: 8
   ranking: medium
   controls: []
-  residual_notes: Bypass is the current workaround. Needs configurable threshold.
+  residual_notes: Fixed by T-1176 — FW_INCEPTION_COMMIT_LIMIT configurable (default 2). No more forced --no-verify for deep explorations.
   evidence:
   - L-002
   - T-191
-  status: watching
+  - 'T-1176: Added FW_INCEPTION_COMMIT_LIMIT to lib/config.sh, agents/git/lib/hooks.sh, CLAUDE.md, Watchtower config.py'
+  status: resolved
+  resolution: 'T-1176 — inception commit limit now configurable via FW_INCEPTION_COMMIT_LIMIT env var, .framework.yaml, or fw config set. Default 2 (backward compatible).'
   created: 2026-02-19
-  last_reviewed: 2026-03-09
+  last_reviewed: 2026-04-12
   related_task: T-191
 - id: G-020
   type: gap
