@@ -1,0 +1,53 @@
+---
+id: T-1150
+name: "RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation"
+description: >
+  RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T11:05:48Z
+last_update: 2026-04-12T11:05:48Z
+date_finished: null
+---
+
+# T-1150: RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation
+
+## Context
+
+RCA: Watchtower approvals page truncates `rationale_hint` to 200 chars. This pre-fills the textarea. When human clicks approve, truncated text becomes the PERMANENT decision rationale in the task file. Root cause: approvals.py:145 `hint[:197] + "..."`. Also truncates `problem_excerpt` to 200 chars. Inception for structural remediation: need a policy that Watchtower NEVER truncates data that flows into permanent records.
+
+## Acceptance Criteria
+
+### Agent
+- [x] rationale_hint no longer truncated in approvals.py
+- [x] problem_excerpt remains truncated (display-only, not permanent)
+- [x] Inception task created for structural remediation (truncation policy) — T-1151
+
+## Verification
+
+bash -c '! grep -q "hint\[:197\]" web/blueprints/approvals.py'
+grep -q "NO truncation" web/blueprints/approvals.py
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T11:05:48Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1150-rca-recommendation-text-truncation-in-mu.md
+- **Context:** Initial task creation

@@ -218,10 +218,10 @@ def inception_detail(task_id):
     # T-679: Pre-populate rationale from ## Recommendation section
     rec_raw = _extract_section(task_body, "Recommendation") or ""
     # Strip markdown formatting for the textarea hint.
-    # T-1091: No truncation — this is a single-task detail page, and the human
-    # recording the decision needs the full Recommendation. Prior 500-char cap
-    # left the textarea with fragmented rationale ending in "...". The list-view
-    # 200-char cap in approvals.py is preserved (appropriate for a list row).
+    # T-1091: No truncation — the human recording the decision needs the full
+    # Recommendation. Prior 500-char cap left the textarea with fragmented rationale
+    # ending in "...". T-1150: approvals.py cap also removed — truncating the pre-fill
+    # truncates the permanent decision rationale.
     rationale_hint = re_mod.sub(r"\*\*([^*]+)\*\*", r"\1", rec_raw).strip()
 
     decision_state = _extract_decision(task_body)

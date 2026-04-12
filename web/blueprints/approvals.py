@@ -138,12 +138,12 @@ def _load_pending_go_decisions():
                     break
 
         # Fallback to GO criteria for rationale hint
+        # T-1150: NO truncation — the textarea pre-fill becomes the permanent decision
+        # rationale when the human clicks approve. Truncating here = truncating the decision.
+        # (Previous 200-char cap caused data loss in recorded decisions.)
         rationale_hint = ""
         if rec_raw and len(rec_raw) > 10:
-            hint = rec_raw.replace("**", "").replace("*", "").strip()
-            if len(hint) > 200:
-                hint = hint[:197] + "..."
-            rationale_hint = hint
+            rationale_hint = rec_raw.replace("**", "").replace("*", "").strip()
         else:
             gonogo = _extract_section(body, "Go/No-Go Criteria")
             if gonogo:
