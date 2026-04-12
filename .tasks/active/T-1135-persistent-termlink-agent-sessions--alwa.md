@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:14:35Z
-last_update: 2026-04-12T09:16:22Z
+last_update: 2026-04-12T09:16:53Z
 date_finished: null
 ---
 
@@ -69,9 +69,9 @@ Today's evidence (S-2026-0412): This session communicated with ring20-manager (.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -103,15 +103,25 @@ Today's evidence (S-2026-0412): This session communicated with ring20-manager (.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Cross-agent coordination with TermLink project confirms the fix is small (3 code changes in TermLink, ~2 hours), the tags infrastructure is 90% ready, and the cost model is acceptable. The persistent session pattern enables the networked agent ecosystem the human envisions. Both projects have aligned on naming convention, tag-based exemption, and restart event signaling.
+
+**Evidence:**
+- TermLink project (T-967) confirmed: cleanup is PID-based, no tag awareness yet
+- Tags infrastructure already exists (`--tags persistent` works for registration + discovery)
+- Fix: 3 code changes in supervisor.rs, manager.rs, remote_store.rs
+- Cost: ~2KB disk + 1 FD per session (TermLink overhead), ~150MB per Claude Code process
+- Naming convention agreed: `{project}-agent` with tags `persistent,receptionist`
+- Counter-proposal accepted: emit `session.needs_restart` event (observable, not silent)
+- Framework side: `/resume` health check, `fw doctor` report, `.framework.yaml` config
+
+**Build decomposition (after GO):**
+1. TermLink upstream: tag-aware cleanup exemption (T-967 build tasks)
+2. Framework: `/resume` persistent agent health check
+3. Framework: `fw doctor` persistent agent report
+4. Framework: `.framework.yaml` persistent_session config block
+5. Framework: `fw termlink agent start/stop/status` subcommands
 
 ## Decisions
 

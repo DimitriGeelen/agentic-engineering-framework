@@ -28,19 +28,64 @@ Every project has a **persistent TermLink agent session** ("receptionist"):
 5. **Registration format:** .framework.yaml field? Separate .termlink-agent.yaml?
 6. **Cross-machine discovery:** How do agents find each other's receptionists?
 
-## Cross-Agent Coordination
+## Cross-Agent Coordination Results
 
-Coordinating with ring20-manager (.109) who also has this inception assignment.
+Coordinated with TermLink project agent (/opt/termlink) via TermLink dispatch.
+Full response: `/opt/termlink/docs/reports/T-967-persistent-sessions-response.md`
 
-### Questions for ring20-manager
+### TermLink Project Findings (T-967)
 
-1. Do you have a stale session cleanup cron? How does it decide what's stale?
-2. What session naming convention are you using for persistent sessions?
-3. How do you envision the specialist network — each project as a domain expert?
-4. What's your experience with persistent tmux sessions surviving reboots?
-5. Have you prototyped a "receptionist" pattern already?
-6. What task ID are you tracking this under on your side?
+**Cleanup is PID-based, not cron-based:**
+- Hub supervisor sweep (every 30s) — checks `kill(pid, 0)` + socket exists
+- Remote store TTL reaper (every 30s) — expires TCP sessions after 5min
+- `termlink clean` CLI — same PID check, on-demand
+- NO external cron jobs for cleanup
 
-## Dialogue Log
+**Tags infrastructure is 90% ready:**
+- `Registration` struct has `tags: Vec<String>`, `roles: Vec<String>`
+- CLI already supports `--tags persistent` on registration
+- Discovery already supports `--tag persistent` filtering
+- **Missing:** cleanup code doesn't check tags before killing
 
-(To be filled during cross-agent coordination via inject)
+**Fix is small (3 code changes in TermLink):**
+1. `supervisor.rs` sweep — check `persistent` tag, emit `session.needs_restart` instead
+2. `manager.rs` clean_stale — skip `persistent` tagged sessions
+3. `remote_store.rs` reaper — skip persistent TTL
+
+**Counter-proposals from TermLink:**
+- Use existing `tags` mechanism, not a new flag (composable, no schema change)
+- Emit `session.needs_restart` event for dead persistent sessions (observable)
+- Grace period (5min) instead of permanent exemption
+- Remote TTL override (30min vs 5min)
+
+**Naming convention agreed:**
+```
+fw-agent              # Framework receptionist
+termlink-agent        # TermLink receptionist
+{project-name}-agent  # Consumer project receptionist
+```
+Tags: `persistent,receptionist`. Roles: `agent`.
+
+**Cost model confirmed:**
+- TermLink tracking cost: ~2KB disk + 1 FD per session (negligible)
+- Real cost: the process inside (Claude Code ~150MB RSS)
+- 3-5 projects × 150MB = <1GB — manageable on dev machine
+
+### Related TermLink Tasks
+- T-967: Persistent agent sessions (inception, captured)
+- T-937: Cleanup kills active dispatch workers (same root cause)
+- T-941: Service templates for persistent sessions
+- T-959: Two-pool architecture (persistent /var/lib + ephemeral /tmp)
+
+## Design Consensus
+
+Based on coordination:
+
+1. **Registration:** `termlink register --name "fw-agent" --tags persistent,receptionist --roles agent`
+2. **Cleanup exemption:** Tag-based (`persistent` tag) — TermLink builds the check
+3. **Restart signal:** `session.needs_restart` event when persistent session PID dies
+4. **Framework integration:**
+   - `/resume` flow: check for project's persistent agent, respawn if dead
+   - `fw doctor`: report persistent agent health
+   - `.framework.yaml`: optional `persistent_session` config block
+5. **Consumer projects:** each runs own `{project}-agent`, discovered via hub
