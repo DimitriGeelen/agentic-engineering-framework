@@ -4,7 +4,7 @@ name: "fw doctor: hoist version-pin drift check from lib/upgrade.sh as a read-on
 description: >
   Add a fw doctor check that runs the same version-pin detection as fw upgrade (e.g. 'Pinned: vdev (behind v2.46.alpha)') without applying changes. Surfaces stale pins between upgrade runs. Origin: G-026. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: [T-1093]
 created: 2026-04-11T12:15:36Z
-last_update: 2026-04-11T12:15:36Z
-date_finished: null
+last_update: 2026-04-12T07:20:54Z
+date_finished: 2026-04-12T07:20:54Z
 ---
 
 # T-1095: fw doctor: hoist version-pin drift check from lib/upgrade.sh as a read-only doctor check (G-026)
@@ -25,30 +25,15 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] `fw doctor` shows version-pin drift for consumer projects
+      (already implemented in doctor Consumer Projects fleet scan,
+      bin/fw lines 1109-1189: shows `WARN name (vX → vY)`)
+- [x] `fw doctor` shows version-pin drift for current project when
+      running as consumer (bin/fw lines 569-578)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -c 'bin/fw doctor 2>&1 | grep -qE "Consumer Projects|All.*consumer"'
 
 ## Decisions
 
@@ -67,3 +52,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1095-fw-doctor-hoist-version-pin-drift-check-.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:19:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-04-12T07:20:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
