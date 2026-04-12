@@ -4,7 +4,7 @@ name: "Triage self-pickup duplicates — T-1130, T-1131, T-1140 are self-referen
 description: >
   Triage self-pickup duplicates — T-1130, T-1131, T-1140 are self-referential
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T14:02:17Z
-last_update: 2026-04-12T14:02:17Z
-date_finished: null
+last_update: 2026-04-12T14:03:38Z
+date_finished: 2026-04-12T14:03:38Z
 ---
 
 # T-1168: Triage self-pickup duplicates — T-1130, T-1131, T-1140 are self-referential
@@ -50,3 +50,6 @@ bash -c 'for id in T-1130 T-1131 T-1140; do grep "^horizon: later" .tasks/active
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1168-triage-self-pickup-duplicates--t-1130-t-.md
 - **Context:** Initial task creation
+
+### 2026-04-12T14:03:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
