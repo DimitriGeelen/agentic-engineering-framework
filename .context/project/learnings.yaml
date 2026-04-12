@@ -64,3 +64,17 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-010
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-011
+  learning: "generate_claude_code_config template in lib/init.sh is the source of truth for settings.json hooks — new hooks must be added here, not just to the framework's own settings.json. The upgrade function calls this template, so template drift = consumer hook drift."
+  source: P-001
+  task: T-1152
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

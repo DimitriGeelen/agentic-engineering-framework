@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T11:02:23Z
-last_update: 2026-04-12T09:27:15Z
+last_update: 2026-04-12T11:19:11Z
 date_finished: 2026-04-07T11:16:17Z
 ---
 
@@ -168,3 +168,6 @@ Evidence:
 
 ### 2026-04-12T09:27:15Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-12T11:19:11Z — status-update [task-update-agent]
+- **Change:** horizon: next → now

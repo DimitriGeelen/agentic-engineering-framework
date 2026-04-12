@@ -441,6 +441,7 @@ show_help() {
     echo -e "  ${GREEN}test-onboarding${NC}     End-to-end onboarding flow test (8 checkpoints)"
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
     echo -e "  ${GREEN}git${NC} <cmd>            Task-traced git operations (commit, status, log, ...)"
+    echo -e "  ${GREEN}push${NC}                Push to all remotes"
     echo -e "  ${GREEN}handover${NC}             Generate session handover document"
     echo -e "  ${GREEN}handover --checkpoint${NC} Mid-session checkpoint (P-009)"
     echo -e "  ${GREEN}healing${NC} <cmd>        Error recovery (diagnose, resolve, patterns, suggest)"
@@ -2344,6 +2345,30 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
+        ;;
+    push)
+        # T-1153: Push to all remotes with per-remote status
+        echo -e "${BOLD}fw push${NC} — Push to all remotes"
+        echo ""
+        _push_ok=0
+        _push_fail=0
+        while IFS= read -r _remote; do
+            [ -z "$_remote" ] && continue
+            echo -n "  $_remote: "
+            if git -C "$PROJECT_ROOT" push "$_remote" HEAD "$@" 2>&1 | tail -1; then
+                _push_ok=$((_push_ok + 1))
+            else
+                echo -e "${RED}FAILED${NC}"
+                _push_fail=$((_push_fail + 1))
+            fi
+        done < <(git -C "$PROJECT_ROOT" remote 2>/dev/null)
+        echo ""
+        if [ "$_push_fail" -gt 0 ]; then
+            echo -e "${YELLOW}$_push_ok pushed, $_push_fail failed${NC}"
+            exit 1
+        else
+            echo -e "${GREEN}All $_push_ok remote(s) pushed ✓${NC}"
+        fi
         ;;
     handover)
         exec "$AGENTS_DIR/handover/handover.sh" "$@"
