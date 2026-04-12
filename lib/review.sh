@@ -8,6 +8,9 @@
 #   source "$FRAMEWORK_ROOT/lib/review.sh"
 #   emit_review T-XXX [task_file]
 #
+
+# Ensure _fw_cmd/_emit_user_command are available (T-1143)
+[[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
 # Requires: PROJECT_ROOT, BOLD, NC, CYAN (from colors.sh/paths.sh chain)
 
 # Source config for PORT setting (guard protects double-source)
@@ -124,7 +127,7 @@ except ImportError:
     # Show decision command for inception tasks (T-973)
     if [ "$workflow_type" = "inception" ]; then
         echo -e "  ${BOLD}After review, run:${NC}"
-        echo "  cd $PROJECT_ROOT && bin/fw inception decide $task_id go --rationale \"your rationale\""
+        echo "  $(_emit_user_command "inception decide $task_id go --rationale \"your rationale\"")"
         echo ""
     fi
 

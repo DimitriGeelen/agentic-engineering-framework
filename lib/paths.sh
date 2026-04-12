@@ -38,6 +38,27 @@ fi
 TASKS_DIR="${TASKS_DIR:-$PROJECT_ROOT/.tasks}"
 CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"
 
+# Context-aware fw command path (T-1102/T-1143)
+# Returns the right form for copy-pasteable commands shown to users:
+#   - Framework repo: bin/fw
+#   - Consumer with shim: fw
+#   - Consumer without shim: .agentic-framework/bin/fw
+_fw_cmd() {
+    if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ]; then
+        echo "bin/fw"
+    elif command -v fw &>/dev/null; then
+        echo "fw"
+    else
+        echo ".agentic-framework/bin/fw"
+    fi
+}
+
+# Emit a full copy-pasteable command with cd prefix (T-609/T-1102)
+# Usage: _emit_user_command "inception decide T-XXX go"
+_emit_user_command() {
+    echo "cd $PROJECT_ROOT && $(_fw_cmd) $1"
+}
+
 # Export for subprocesses
 export FRAMEWORK_ROOT PROJECT_ROOT TASKS_DIR CONTEXT_DIR
 

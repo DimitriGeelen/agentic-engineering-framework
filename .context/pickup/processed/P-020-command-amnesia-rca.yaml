@@ -1,0 +1,34 @@
+pickup_id: P-020
+version: 1
+type: learning
+source:
+  project: "010-termlink"
+  task_id: "T-972"
+  agent: "claude-code"
+  timestamp: "2026-04-12T10:06:00Z"
+payload:
+  summary: "CRITICAL RCA: Agent command amnesia has 3 structural root causes — framework scripts ARE the violation source"
+  detail: |
+    Deep RCA from T-972. The agent violated PL-007 (never output bare commands)
+    within 3 minutes of BUILDING PL-007. Five fixes in one session all failed.
+
+    THREE ROOT CAUSES (all must be fixed together):
+
+    RC-1: Framework gate scripts output bare commands as error messages.
+    check-tier0.sh, inception.sh, update-task.sh, verify-acs.sh all print
+    "run this command: fw inception decide..." The agent relays these.
+
+    RC-2: No governance over agent text output. Claude Code has no
+    PreTextOutput or PostMessage hook. Agent prose is ungoverned.
+
+    RC-3: No shared Watchtower URL helper. Port 3000 hardcoded in 4+
+    scripts. Fixing one leaves others broken.
+
+    FIX ARCHITECTURE:
+    1. lib/watchtower.sh shared helper (port detection + browser open)
+    2. Refactor ALL gate scripts to invoke UX flows, not output commands
+    3. PostToolUse hook to scan for bare command patterns in tool output
+
+    This is a FRAMEWORK-LEVEL fix. Every consumer project is affected.
+  priority: critical
+  tags: [RCA, PL-007, structural, gate-scripts, watchtower, systemic]

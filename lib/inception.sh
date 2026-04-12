@@ -2,6 +2,9 @@
 # fw inception - Inception phase workflow
 # Manages exploration-phase work: problem definition, assumptions, go/no-go
 
+# Ensure _fw_cmd/_emit_user_command are available (T-1143)
+[[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
+
 do_inception() {
     local subcmd="${1:-}"
     shift || true
@@ -223,7 +226,7 @@ do_inception_decide() {
         echo -e "${RED}ERROR: Task review required before decision${NC}" >&2
         echo "" >&2
         echo -e "Run this first:" >&2
-        echo -e "  cd $PROJECT_ROOT && bin/fw task review $task_id" >&2
+        echo -e "  $(_emit_user_command "task review $task_id")" >&2
         echo "" >&2
         echo -e "Then re-run the decide command." >&2
         exit 1
