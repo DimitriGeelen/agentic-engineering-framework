@@ -166,18 +166,21 @@ do_generate_episodic() {
     # =========================================================================
     # Calculate duration
     # =========================================================================
+    # T-1158: Use portable date helper (GNU→BSD→python3 fallback)
+    source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/lib/compat.sh" 2>/dev/null || true
+
     local created_date=$(echo "$created" | cut -d'T' -f1)
     local completed_date=$(echo "$last_update" | cut -d'T' -f1)
     local duration_days=0
     if [ "$created_date" != "$completed_date" ]; then
-        duration_days=$(( ($(date -d "$completed_date" +%s) - $(date -d "$created_date" +%s)) / 86400 )) 2>/dev/null || duration_days=0
+        duration_days=$(( ($(_date_to_epoch "$completed_date") - $(_date_to_epoch "$created_date")) / 86400 )) 2>/dev/null || duration_days=0
     fi
 
     local wall_minutes=0
     if [ -n "$created" ] && [ -n "$last_update" ]; then
         local start_epoch end_epoch
-        start_epoch=$(date -d "$created" +%s 2>/dev/null) || start_epoch=0
-        end_epoch=$(date -d "$last_update" +%s 2>/dev/null) || end_epoch=0
+        start_epoch=$(_date_to_epoch "$created") || start_epoch=0
+        end_epoch=$(_date_to_epoch "$last_update") || end_epoch=0
         if [ "$start_epoch" -gt 0 ] && [ "$end_epoch" -gt "$start_epoch" ]; then
             wall_minutes=$(( (end_epoch - start_epoch) / 60 ))
         fi

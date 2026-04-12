@@ -7,6 +7,10 @@ set -e
 TASKS_DIR=".tasks"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "$0")" && pwd)}"
 cd "$PROJECT_ROOT"
+# T-1158: Portable date helpers
+FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"
+[ -f "$FRAMEWORK_ROOT/lib/compat.sh" ] && source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || true
+[ -f "$PROJECT_ROOT/.agentic-framework/lib/compat.sh" ] && source "$PROJECT_ROOT/.agentic-framework/lib/compat.sh" 2>/dev/null || true
 
 echo "=== AGENTIC ENGINEERING FRAMEWORK - METRICS ==="
 echo "Timestamp: $(date -Iseconds)"
@@ -77,7 +81,7 @@ fi
 total_active=0
 total_updates=0
 stale_count=0
-seven_days_ago=$(date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
+seven_days_ago=$(type _date_relative &>/dev/null && _date_relative "7 days ago" || date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s 2>/dev/null || echo 0)
 
 for f in "$TASKS_DIR/active"/*.md; do
     [ -f "$f" ] || continue
@@ -91,7 +95,7 @@ for f in "$TASKS_DIR/active"/*.md; do
     # Check for stale (>7 days old with <2 updates)
     last_update=$(grep "^last_update:" "$f" | sed 's/last_update: //' | cut -dT -f1)
     if [ -n "$last_update" ]; then
-        last_ts=$(date -d "$last_update" +%s 2>/dev/null || echo 0)
+        last_ts=$(_date_to_epoch "$last_update" 2>/dev/null || echo 0)
         if [ "$last_ts" -lt "$seven_days_ago" ] && [ "$updates" -lt 2 ]; then
             stale_count=$((stale_count + 1))
         fi

@@ -1,0 +1,54 @@
+---
+id: T-1158
+name: "T-1134 build: Upstream _date_to_epoch to lib/compat.sh + fix 3 GNU-only date -d sites"
+description: >
+  T-1134 build: Upstream _date_to_epoch to lib/compat.sh + fix 3 GNU-only date -d sites
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T12:02:02Z
+last_update: 2026-04-12T12:02:02Z
+date_finished: null
+---
+
+# T-1158: T-1134 build: Upstream _date_to_epoch to lib/compat.sh + fix 3 GNU-only date -d sites
+
+## Context
+
+Build from T-1134 GO decision. Three framework files use GNU-only `date -d` which fails on macOS: `agents/context/lib/episodic.sh`, `agents/context/checkpoint.sh`, `metrics.sh`. Add `_date_to_epoch` to `lib/compat.sh` with GNU→BSD→python3 fallback chain, then replace all `date -d` sites.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `_date_to_epoch` function added to `lib/compat.sh` with GNU→BSD→python3 fallback
+- [x] All `date -d` sites replaced with `_date_to_epoch` calls
+- [x] `_date_relative` function added for relative date calculations
+- [x] `_date_to_epoch "2026-04-12T12:00:00Z"` returns a valid epoch number
+
+## Verification
+
+bash -c 'source lib/compat.sh && result=$(_date_to_epoch "2026-04-12T12:00:00Z") && [ "$result" -gt 0 ]'
+bash -c '! grep -rn "date -d" agents/ metrics.sh 2>/dev/null | grep -v compat.sh | grep -v node_modules | grep -q .'
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T12:02:02Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1158-t-1134-build-upstream-datetoepoch-to-lib.md
+- **Context:** Initial task creation

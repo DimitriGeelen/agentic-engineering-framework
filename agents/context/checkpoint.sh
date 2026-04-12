@@ -285,7 +285,9 @@ case "${1:-}" in
                     # Check age — only notify for approvals < 1 hour old
                     responded_at=$(grep 'responded_at:' "$resolved" 2>/dev/null | head -1 | sed "s/.*responded_at: *'\\{0,1\\}//;s/'.*//")
                     if [ -n "$responded_at" ]; then
-                        resp_epoch=$(date -d "$responded_at" +%s 2>/dev/null) || resp_epoch=0
+                        # T-1158: Portable date conversion
+                        source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/lib/compat.sh" 2>/dev/null || true
+                        resp_epoch=$(_date_to_epoch "$responded_at" 2>/dev/null) || resp_epoch=0
                         now_epoch=$(date +%s)
                         age=$(( now_epoch - resp_epoch ))
                         [ "$age" -gt 3600 ] && continue
