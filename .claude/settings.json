@@ -85,6 +85,15 @@
             "command": "bin/fw hook budget-gate"
           }
         ]
+      },
+      {
+        "matcher": "TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/fw hook block-task-tools"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -139,6 +148,15 @@
           {
             "type": "command",
             "command": "bin/fw hook commit-cadence"
+          }
+        ]
+      },
+      {
+        "matcher": "TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/fw hook audit-task-tools"
           }
         ]
       }

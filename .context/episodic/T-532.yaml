@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-532: Onboarding gate — structural enforcement that setup tasks complete before other work
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T07:56:29Z
+# ============================================================================
+
+task_id: T-532
+task_name: "Onboarding gate — structural enforcement that setup tasks complete before other work"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T08:42:41Z
+completed: 2026-04-12T07:56:26Z
+duration_days: 19
+updates_count: 5
+first_commit: 2026-03-23T09:45:07+01:00
+last_commit: 2026-03-23T09:45:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-532, T-533: Create inception tasks — onboarding gate + dispatch rerouting hook
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Go/No-Go decision made"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-532-onboarding-gate-research.md"
+  - "docs/reports/T-533-dispatch-rerouting-research.md"
+  - ".tasks/active/T-532-onboarding-gate--structural-enforcement-.md"
+  - ".tasks/active/T-533-agent-to-termlink-dispatch-rerouting--pr.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T09:45:07"
+    action: "T-532, T-533: Create inception tasks — onboarding gate + dispatch rerouting hook"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28753 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28753
+  commits: 1
+  files_changed: 4
+  lines_added: 320
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-532-onboarding-gate--structural-enforcement-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-548: npm install pathway — evaluate whether to build npm-based framework installation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T07:56:34Z
+# ============================================================================
+
+task_id: T-548
+task_name: "npm install pathway — evaluate whether to build npm-based framework installation"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-03-23T11:10:41Z
+completed: 2026-04-12T07:56:32Z
+duration_days: 19
+updates_count: 4
+first_commit: 2026-03-23T12:12:28+01:00
+last_commit: 2026-04-06T20:33:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Create inception task — npm install pathway evaluation. T-963: Add Recommendation sections to T-837 (NO-GO) and T-548 (NO-GO)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (3 assumptions — 1 not validated, 2 invalid)"
+  - "Go/No-Go decision made (NO-GO recommended)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-548-npm-install-pathway--evaluate-whether-to.md"
+  - ".tasks/active/T-837-auto-detect-context-window-from-model--e.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T12:12:28"
+    action: "T-548: Create inception task — npm install pathway evaluation"
+  - time: "2026-04-06T20:33:02"
+    action: "T-963: Add Recommendation sections to T-837 (NO-GO) and T-548 (NO-GO)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 28605 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28605
+  commits: 2
+  files_changed: 2
+  lines_added: 107
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-548-npm-install-pathway--evaluate-whether-to.md
+generated_by: context-agent-hybrid

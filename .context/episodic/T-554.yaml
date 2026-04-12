@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-554: Single started-work gate — enforce one active task, inception starts as captured
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T07:56:37Z
+# ============================================================================
+
+task_id: T-554
+task_name: "Single started-work gate — enforce one active task, inception starts as captured"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T16:18:04Z
+completed: 2026-04-12T07:56:34Z
+duration_days: 19
+updates_count: 3
+first_commit: 2026-03-25T10:59:00+01:00
+last_commit: 2026-03-25T10:59:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add concurrent started-work advisory + inception starts as captured
+
+# Key outcomes
+outcomes:
+  - "`update-task.sh` warns when transitioning to started-work if other started-work tasks exist"
+  - "Warning lists the other started-work task IDs (max 5 shown)"
+  - "Warning is advisory (exit 0), not blocking — transition still proceeds"
+  - "`fw inception start` creates tasks as captured (not started-work)"
+  - "`fw work-on T-XXX` path unchanged (the warning comes from update-task.sh)"
+  - "Verify warning fires when starting a second task (reclassified from Human RUBBER-STAMP per T-954)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+    chose: "Advisory (warn, don't block)"
+    rationale: "20 existing started-work tasks would make blocking unusable immediately. Advisory provides visibility without disruption. Can tighten to blocking after cleanup."
+    alternatives_rejected: ["Hard block (would require cleaning up 20 tasks first), configurable limit (over-engineering for now)"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - "lib/inception.sh"
+  - ".tasks/active/T-554-single-started-work-gate--enforce-one-ac.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-25T10:59:00"
+    action: "T-554: Add concurrent started-work advisory + inception starts as captured"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 28298 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 28298
+  commits: 1
+  files_changed: 3
+  lines_added: 55
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-554-single-started-work-gate--enforce-one-ac.md
+generated_by: context-agent-hybrid

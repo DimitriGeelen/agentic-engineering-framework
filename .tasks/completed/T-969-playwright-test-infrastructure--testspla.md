@@ -4,7 +4,7 @@ name: "Playwright test infrastructure — tests/playwright/ + fw test playwright
 description: >
   Add pytest-playwright to the framework. Create tests/playwright/ with conftest.py (server fixture, browser fixture), test_smoke.py (all routes 200), and fw test playwright sub-command. CI integration in GitHub Actions.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T19:37:58Z
-last_update: 2026-04-07T11:34:10Z
-date_finished: null
+last_update: 2026-04-12T07:55:35Z
+date_finished: 2026-04-12T07:55:35Z
 ---
 
 # T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
@@ -60,3 +60,6 @@ grep -q 'playwright' bin/fw
 
 ### 2026-04-06T20:05:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T07:55:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

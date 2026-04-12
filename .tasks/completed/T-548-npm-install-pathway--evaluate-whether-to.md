@@ -4,16 +4,16 @@ name: "npm install pathway — evaluate whether to build npm-based framework ins
 description: >
   Inception: npm install pathway — evaluate whether to build npm-based framework installation
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T11:10:41Z
-last_update: 2026-04-06T22:23:16Z
-date_finished: null
+last_update: 2026-04-12T07:56:32Z
+date_finished: 2026-04-12T07:56:32Z
 ---
 
 # T-548: npm install pathway — evaluate whether to build npm-based framework installation
@@ -92,3 +92,10 @@ Should the framework offer `npm install` as an installation pathway? The framewo
 
 ### 2026-04-06T22:23:16Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-12T07:56:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-12T07:56:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

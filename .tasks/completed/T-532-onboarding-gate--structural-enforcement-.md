@@ -4,16 +4,16 @@ name: "Onboarding gate — structural enforcement that setup tasks complete befo
 description: >
   Inception: Onboarding gate — structural enforcement that setup tasks complete before other work
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/post-compact-resume.sh, agents/task-create/update-task.sh, bin/fw]
 related_tasks: []
 created: 2026-03-23T08:42:41Z
-last_update: 2026-04-06T22:29:31Z
-date_finished: null
+last_update: 2026-04-12T07:56:26Z
+date_finished: 2026-04-12T07:56:26Z
 ---
 
 # T-532: Onboarding gate — structural enforcement that setup tasks complete before other work
@@ -123,3 +123,10 @@ This means a freshly initialized project can immediately drift into ungoverned w
 
 ### 2026-04-06T22:29:31Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-12T07:56:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-12T07:56:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

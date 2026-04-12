@@ -4,7 +4,7 @@ name: "Add fw costs to CLAUDE.md quick reference table"
 description: >
   Add fw costs command entries to the Quick Reference table in CLAUDE.md. Simple documentation update to register the new T-801 command.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [docs, tokens]
 components: []
 related_tasks: []
 created: 2026-04-03T19:21:28Z
-last_update: 2026-04-03T19:22:21Z
-date_finished: null
+last_update: 2026-04-12T07:55:14Z
+date_finished: 2026-04-12T07:55:14Z
 ---
 
 # T-804: Add fw costs to CLAUDE.md quick reference table
@@ -49,3 +49,6 @@ grep -q "fw costs" CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-804-add-fw-costs-to-claudemd-quick-reference.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:55:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,16 +4,16 @@ name: "Single started-work gate — enforce one active task, inception starts as
 description: >
   Add max-started-tasks check (default 1) to update-task.sh and fw work-on. Block starting a new task when another is already started-work. --force bypasses with logging. Also change fw inception start to create tasks as captured instead of started-work. Cleanup existing 13 started-work tasks to correct status. Origin: T-549 OpenClaw eval — agent started 8 tasks simultaneously. Evidence: all completed tasks show sequential pattern, focus.yaml is single-task, 13 accumulated started-work tasks in current project.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, lib/inception.sh]
 related_tasks: []
 created: 2026-03-23T16:18:04Z
-last_update: 2026-03-25T11:46:33Z
-date_finished: null
+last_update: 2026-04-12T07:56:34Z
+date_finished: 2026-04-12T07:56:34Z
 ---
 
 # T-554: Single started-work gate — enforce one active task, inception starts as captured
@@ -53,3 +53,10 @@ grep -q "CONCURRENT\|concurrent" agents/task-create/update-task.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-554-single-started-work-gate--enforce-one-ac.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:56:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T07:56:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

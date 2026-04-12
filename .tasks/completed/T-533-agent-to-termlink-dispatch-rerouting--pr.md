@@ -4,16 +4,16 @@ name: "Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLi
 description: >
   Inception: Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/check-agent-dispatch.sh, agents/context/post-compact-resume.sh, agents/task-create/update-task.sh, bin/fw, lib/dispatch.sh, lib/init.sh]
 related_tasks: []
 created: 2026-03-23T08:43:03Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-12T07:56:29Z
+date_finished: 2026-04-12T07:56:29Z
 ---
 
 # T-533: Agent-to-TermLink dispatch rerouting — PreToolUse hook enforcing TermLink-first for heavy parallel work
@@ -123,3 +123,10 @@ The existing `check-dispatch.sh` is PostToolUse (advisory, cannot block). A PreT
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-12T07:56:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-12T07:56:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

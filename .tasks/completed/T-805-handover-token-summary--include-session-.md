@@ -4,16 +4,16 @@ name: "Handover token summary — include session token usage in handover docume
 description: >
   Add current session token usage summary to the handover document. When fw handover runs, include: total tokens consumed, turns, cache hit rate, and avg tokens/turn. Uses fw costs current data. Enables tracking token consumption per-session in the handover trail.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [tokens, handover, observability]
-components: []
+components: [agents/handover/handover.sh]
 related_tasks: []
 created: 2026-04-03T19:23:46Z
-last_update: 2026-04-03T19:48:16Z
-date_finished: null
+last_update: 2026-04-12T07:55:16Z
+date_finished: 2026-04-12T07:55:16Z
 ---
 
 # T-805: Handover token summary — include session token usage in handover documents
@@ -55,3 +55,6 @@ grep -q "token" agents/handover/handover.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-805-handover-token-summary--include-session-.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:55:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

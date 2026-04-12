@@ -4,7 +4,7 @@ name: "5 initial Playwright regression tests — terminal, inception, tasks, fab
 description: >
   Write 5 Playwright test files covering key Watchtower features: test_terminal.py (xterm loads, multi-session tabs, TermLink attach), test_inception.py (batch review, recommendations inline), test_tasks.py (task list, detail view), test_fabric.py (overview, component detail), test_smoke.py (all routes return 200 with content).
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T19:38:01Z
-last_update: 2026-04-06T20:13:50Z
-date_finished: null
+last_update: 2026-04-12T07:55:37Z
+date_finished: 2026-04-12T07:55:37Z
 ---
 
 # T-970: 5 initial Playwright regression tests — terminal, inception, tasks, fabric, search (T-968 Phase 2)
@@ -62,3 +62,6 @@ python3 -m pytest tests/playwright/ --co -q 2>/dev/null | tail -1
 
 ### 2026-04-06T20:13:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T07:55:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

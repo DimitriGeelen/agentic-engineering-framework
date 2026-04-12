@@ -4,16 +4,16 @@ name: "fw doctor token health — show session token usage in health check"
 description: >
   Add token usage line to fw doctor output. Show current session tokens and cache hit rate as an informational line. Quick integration using lib/costs.sh.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: [tokens, doctor, observability]
-components: []
+components: [bin/fw]
 related_tasks: []
 created: 2026-04-03T19:42:49Z
-last_update: 2026-04-03T19:44:59Z
-date_finished: null
+last_update: 2026-04-12T07:55:19Z
+date_finished: 2026-04-12T07:55:19Z
 ---
 
 # T-806: fw doctor token health — show session token usage in health check
@@ -50,3 +50,6 @@ bin/fw doctor 2>&1 | grep -qi "token"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-806-fw-doctor-token-health--show-session-tok.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:55:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

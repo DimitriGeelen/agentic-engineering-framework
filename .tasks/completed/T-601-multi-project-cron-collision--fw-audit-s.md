@@ -4,16 +4,16 @@ name: "Multi-project cron collision — fw audit schedule install overwrites sin
 description: >
   Inception: Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit, silently disabling all other projects
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [urgent]
 components: []
 related_tasks: []
 created: 2026-03-24T09:17:00Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-12T07:56:40Z
+date_finished: 2026-04-12T07:56:40Z
 ---
 
 # T-601: Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit, silently disabling all other projects
@@ -115,3 +115,10 @@ Research artifact: `docs/reports/T-601-multi-project-cron-collision.md`
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-12T07:56:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-12T07:56:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

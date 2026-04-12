@@ -4,16 +4,16 @@ name: "Re-evaluate SKIP refactoring findings (27 items, score ≤4)"
 description: >
   Re-evaluate 27 refactoring findings that scored ≤4 against the four directives. These were deprioritized in T-411 as cosmetic or low-impact. After DO and MAYBE phases complete, reassess whether: (a) any findings upgraded by new evidence, (b) any became moot from other refactoring, (c) any patterns emerged that change scoring. SKIP findings: S9 (inline template dup, 5), S11 (dir init, 5), S12 (shopt, 2), S14 (help text, 3), J5 (abort cleanup, 4), J7 (hardcoded colors, 4), J8 (DOM queries, 2), J9 (naming, 3), J10 (null checks, 4), J11 (magic numbers, 4), J12 (addEventListener, 2), P2 (logger naming, 3), P5 (handover parsing, 4), P6 (task caching, 3), P10 (magic numbers, 4), P12 (regex compile, 1), P13 (error context, 4), H5 (page headers, 3), H6 (table macro, 3), H8 (htmx boilerplate, 3), H9 (badge styling, 3), H12 (grid utils, 2), H13 (snippets, 2), H14 (form rows, 2), A1 (scanner wrapper, 3), A4 (stale backup, 3), A10 (directives drift, 4). Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [refactoring, quality, audit]
 components: []
 related_tasks: []
 created: 2026-03-10T21:04:40Z
-last_update: 2026-03-28T12:17:23Z
-date_finished: null
+last_update: 2026-04-12T07:56:23Z
+date_finished: 2026-04-12T07:56:23Z
 ---
 
 # T-432: Re-evaluate SKIP refactoring findings (27 items, score ≤4)
@@ -101,3 +101,10 @@ None — reassessment of existing findings.
 
 ### 2026-03-28T12:17:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T07:55:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-12T07:56:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-316: Spike: layered CLAUDE.md (framework base + project overrides)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T07:56:23Z
+# ============================================================================
+
+task_id: T-316
+task_name: "Spike: layered CLAUDE.md (framework base + project overrides)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-04T19:27:32Z
+completed: 2026-04-12T07:56:20Z
+duration_days: 38
+updates_count: 8
+first_commit: 2026-03-04T20:27:41+01:00
+last_commit: 2026-03-04T20:27:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-306: Create Phase 1-3 build tasks from inception GO decision
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested (3 — 2 invalid, 1 partial)"
+  - "Go/No-Go recommendation made (NO-GO)"
+  - "[REVIEW] Review findings and confirm NO-GO (overrides corrupted GO decision)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-313-fix-settingsjson-hook-generation--add-mi.md"
+  - ".tasks/active/T-314-fix-claudemd-template--add-missing-7-gov.md"
+  - ".tasks/active/T-315-build-fw-upgrade-command-audit-propose-a.md"
+  - ".tasks/active/T-316-spike-layered-claudemd-framework-base--p.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-04T20:27:41"
+    action: "T-306: Create Phase 1-3 build tasks from inception GO decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 55468 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 55468
+  commits: 1
+  files_changed: 4
+  lines_added: 276
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-316-spike-layered-claudemd-framework-base--p.md
+generated_by: context-agent-hybrid

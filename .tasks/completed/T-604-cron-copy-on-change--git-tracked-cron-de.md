@@ -4,16 +4,16 @@ name: "Cron copy-on-change — git-tracked cron definitions with drift detection
 description: >
   T-603 GO: Implement Option F. Move cron definitions to PROJECT_ROOT/.context/cron/ as source of truth (git-tracked). fw audit schedule install copies to /etc/cron.d/ with sudo. Audit detects drift (project ≠ installed) and prints remediation command. Graceful degradation: root→auto, sudo→auto, no-sudo→print command. Cross-platform: same pattern for cron.d, launchd, systemd timers. Related: T-603, T-602, T-559.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [urgent]
 components: []
 related_tasks: []
 created: 2026-03-24T09:51:08Z
-last_update: 2026-03-27T17:34:07Z
-date_finished: null
+last_update: 2026-04-12T07:56:42Z
+date_finished: 2026-04-12T07:56:42Z
 ---
 
 # T-604: Cron copy-on-change — git-tracked cron definitions with drift detection and sudo degradation
@@ -67,3 +67,10 @@ grep -q "schedule" agents/audit/audit.sh
 
 ### 2026-03-27T17:34:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-04-12T07:56:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T07:56:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
