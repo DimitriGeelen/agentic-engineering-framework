@@ -752,9 +752,11 @@ concerns:
   - 'Related: G-023 (consumer governance decay), G-024 (fw upgrade web/blueprints gap), G-031 (two isolation patterns coexist)'
   trigger: Agent in a freshly-initialized consumer project asked to "set up the framework here" and reinvents the process,
     OR an evaluator recommends `fw upgrade` without knowing what it does.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1094
+  what_was_fixed: fw upgrade documented in CLAUDE.md Quick Reference + §fw CLI section with clear description
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1094
 - id: G-026
   type: gap
@@ -777,9 +779,11 @@ concerns:
     2026-04-08.'
   trigger: Host-installed framework upgrades; consumer project doctor still reports OK; consumer agent runs against stale
     governance.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1095
+  what_was_fixed: Doctor already had Consumer Projects fleet scan with version-pin drift check
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1095
 - id: G-027
   type: gap
@@ -803,9 +807,11 @@ concerns:
     cross-project read approval, then never followed up because the conversation went elsewhere.'
   - 'Related: T-1089 (boundary gate TermLink dispatch escape for write ops)'
   trigger: Agent in a consumer project needs to read a sibling project README/CLAUDE.md to understand convention.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1096
+  what_was_fixed: Write/Edit block message now shows TermLink dispatch example for cross-project reads
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1096
 - id: G-028
   type: gap
@@ -829,9 +835,11 @@ concerns:
     Three potential framework paths in play; agent walked past the ambiguity without flagging it.'
   trigger: A `fw upgrade` syncs from /opt while the running `fw` lives in ~/.agentic-framework — drift between the two becomes
     invisible to the consumer.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1097
+  what_was_fixed: fw doctor now compares upstream_repo vs running FRAMEWORK_ROOT and warns on divergence
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1097
 - id: G-029
   type: gap
@@ -856,9 +864,11 @@ concerns:
     CLAUDE.md.'
   trigger: Agent proposes per-project termlink vendoring without realising it triggers a Rust build per consumer project AND
     breaks cross-session discovery.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1098
+  what_was_fixed: CLAUDE.md §TermLink Integration now explicitly contrasts machine-wide vs per-project distribution model
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1098
 - id: G-030
   type: gap
@@ -881,9 +891,11 @@ concerns:
     do this??" before the agent investigated the convention. No doc to point at.'
   - 'Related: G-025 (fw upgrade not surfaced), G-026 (doctor missing shared-tooling check), G-029 (termlink distribution model)'
   trigger: New consumer project asks "how do I set this framework up here?" and the framework has no doc to hand them.
-  status: watching
+  status: resolved
+  resolved_by_task: T-1099
+  what_was_fixed: Created docs/consumer-project-setup.md with full onboarding walkthrough
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1099
 - id: G-031
   type: gap
