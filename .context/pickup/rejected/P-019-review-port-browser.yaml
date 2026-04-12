@@ -1,0 +1,32 @@
+pickup_id: P-019
+version: 1
+type: patch-delivery
+source:
+  project: "010-termlink"
+  task_id: "T-970,T-969"
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:54:00Z"
+payload:
+  summary: "fw task review: dynamic port detection + browser auto-open + inception decide auto-invokes review"
+  detail: |
+    Three fixes for the fw task review UX:
+
+    1. lib/review.sh port detection (T-970): Instead of defaulting to PORT config (3000),
+       probes common ports checking if the task exists on that Watchtower instance.
+       Prevents cross-project false matches (e.g. framework on 3000 vs termlink on 3002).
+
+    2. lib/review.sh browser auto-open (T-970): After displaying QR+link, auto-opens
+       browser via xdg-open (Linux) or open (macOS). Non-blocking, fail-silent.
+
+    3. lib/inception.sh auto-invoke review (T-969): When fw inception decide is called
+       without a review marker, auto-invokes fw task review instead of just blocking.
+       Ensures human always sees full Watchtower experience even if agent bypassed review.
+
+    Files changed:
+    - lib/review.sh: port probe logic + browser open
+    - lib/inception.sh: auto-invoke task review in decide gate
+
+    Also codified PL-007 in CLAUDE.md: agents must ALWAYS call fw task review,
+    never output bare fw inception decide commands.
+  priority: critical
+  tags: [review, port, browser, inception, PL-007, UX]

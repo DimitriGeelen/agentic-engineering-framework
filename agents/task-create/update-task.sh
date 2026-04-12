@@ -26,7 +26,20 @@ source "$FRAMEWORK_ROOT/lib/enums.sh"
 source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
 
 # === Extracted gate functions (T-415) ===
-# Each function accesses outer-scope variables: TASK_FILE, TASK_ID, FORCE, colors
+# Each function accesses outer-scope variables: TASK_FILE, TASK_ID, SKIP_*, colors
+
+# Gate bypass audit log (T-1142)
+log_gate_bypass() {
+    local flag="$1" caller="${2:-manual}"
+    local log_file="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+    local timestamp
+    timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    echo "- timestamp: '$timestamp'" >> "$log_file"
+    echo "  task: '$TASK_ID'" >> "$log_file"
+    echo "  flag: '$flag'" >> "$log_file"
+    echo "  caller: '$caller'" >> "$log_file"
+    echo "  reason: '${REASON:-}'" >> "$log_file"
+}
 
 # Human Sovereignty Gate (R-033/T-198)
 # Block agent from completing human-owned tasks without human interaction.
@@ -34,16 +47,17 @@ check_human_sovereignty() {
     local current_owner
     current_owner=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
     if [ "$current_owner" = "human" ]; then
-        if [ "$FORCE" = true ]; then
-            echo -e "${YELLOW}WARNING: Completing human-owned task (--force bypass)${NC}"
+        if [ "$SKIP_SOVEREIGNTY" = true ]; then
+            echo -e "${YELLOW}WARNING: Completing human-owned task (--skip-sovereignty bypass)${NC}"
+            log_gate_bypass "--skip-sovereignty" "check_human_sovereignty"
         else
             echo -e "${RED}ERROR: Cannot complete human-owned task${NC}" >&2
             echo "Sovereignty gate (R-033): owner is human." >&2
             echo "Options:" >&2
             echo "  1. Human completes:" >&2
-            echo "     fw task update $TASK_ID --status work-completed --force" >&2
+            echo "     fw task update $TASK_ID --status work-completed --skip-sovereignty" >&2
             echo "  2. Reassign first:" >&2
-            echo "     fw task update $TASK_ID --owner agent --force" >&2
+            echo "     fw task update $TASK_ID --owner agent --skip-human-ownership" >&2
             exit 1
         fi
     fi
@@ -90,8 +104,9 @@ check_acceptance_criteria() {
 
     # Gate: unchecked ACs block completion
     if [ "$ac_total" -gt 0 ] && [ "$ac_unchecked" -gt 0 ]; then
-        if [ "$FORCE" = true ]; then
-            echo -e "${YELLOW}WARNING: $ac_unchecked/$ac_total $ac_label unchecked (--force bypass)${NC}"
+        if [ "$SKIP_AC" = true ]; then
+            echo -e "${YELLOW}WARNING: $ac_unchecked/$ac_total $ac_label unchecked (--skip-acceptance-criteria bypass)${NC}"
+            log_gate_bypass "--skip-acceptance-criteria" "check_acceptance_criteria"
         else
             echo -e "${RED}ERROR: Cannot complete — $ac_unchecked/$ac_total $ac_label unchecked:${NC}" >&2
             if [ "$has_agent_header" -gt 0 ]; then
@@ -102,7 +117,7 @@ check_acceptance_criteria() {
             echo "" >&2
             echo "Options:" >&2
             echo "  1. Check the criteria in the task file, then retry" >&2
-            echo "  2. Use --force to bypass (logged)" >&2
+            echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
             exit 1
         fi
     elif [ "$ac_total" -gt 0 ]; then
@@ -117,8 +132,9 @@ check_acceptance_criteria() {
         fi
 
         if [ -n "$placeholder_acs" ]; then
-            if [ "$FORCE" = true ]; then
-                echo -e "${YELLOW}WARNING: Skeleton/placeholder ACs detected (--force bypass)${NC}"
+            if [ "$SKIP_AC" = true ]; then
+                echo -e "${YELLOW}WARNING: Skeleton/placeholder ACs detected (--skip-acceptance-criteria bypass)${NC}"
+                log_gate_bypass "--skip-acceptance-criteria" "placeholder_detection"
             else
                 placeholder_count=$(echo "$placeholder_acs" | wc -l)
                 echo -e "${RED}ERROR: Cannot complete — $placeholder_count $ac_label are skeleton placeholders:${NC}" >&2
@@ -128,7 +144,7 @@ check_acceptance_criteria() {
                 echo "Replace placeholder text with real, specific acceptance criteria." >&2
                 echo "Options:" >&2
                 echo "  1. Edit the task file with real ACs, then retry" >&2
-                echo "  2. Use --force to bypass (logged)" >&2
+                echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
                 exit 1
             fi
         else
@@ -220,8 +236,9 @@ print(text)
 
     echo ""
     if [ "$verify_fail" -gt 0 ]; then
-        if [ "$FORCE" = true ]; then
-            echo -e "${YELLOW}WARNING: $verify_fail/$verify_total verification(s) failed (--force bypass)${NC}"
+        if [ "$SKIP_VERIFICATION" = true ]; then
+            echo -e "${YELLOW}WARNING: $verify_fail/$verify_total verification(s) failed (--skip-verification bypass)${NC}"
+            log_gate_bypass "--skip-verification" "run_verification_commands"
         else
             echo -e "${RED}ERROR: Cannot complete — $verify_fail/$verify_total verification(s) failed:${NC}" >&2
             echo -e "$verify_failures" >&2
@@ -229,7 +246,7 @@ print(text)
             echo "Options:" >&2
             echo "  1. Fix the issues and retry" >&2
             echo "  2. Update ## Verification commands if they are wrong" >&2
-            echo "  3. Use --force to bypass (logged)" >&2
+            echo "  3. Use --skip-verification to bypass (logged)" >&2
             exit 1
         fi
     else
@@ -252,6 +269,10 @@ NEW_HORIZON=""
 NEW_TYPE=""
 REASON=""
 FORCE=false
+SKIP_SOVEREIGNTY=false
+SKIP_AC=false
+SKIP_VERIFICATION=false
+SKIP_HUMAN_OWNERSHIP=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -262,7 +283,18 @@ while [[ $# -gt 0 ]]; do
         --horizon) NEW_HORIZON="$2"; shift 2 ;;
         --type|-t) NEW_TYPE="$2"; shift 2 ;;
         --reason|-r) REASON="$2"; shift 2 ;;
-        --force|-f) FORCE=true; shift ;;
+        --skip-sovereignty) SKIP_SOVEREIGNTY=true; shift ;;
+        --skip-acceptance-criteria) SKIP_AC=true; shift ;;
+        --skip-verification) SKIP_VERIFICATION=true; shift ;;
+        --skip-human-ownership) SKIP_HUMAN_OWNERSHIP=true; shift ;;
+        --force|-f)
+            echo -e "${YELLOW}DEPRECATED: --force will be removed. Use narrow flags instead:${NC}" >&2
+            echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)" >&2
+            echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)" >&2
+            echo "  --skip-verification          Bypass verification gate (P-011)" >&2
+            echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true
+            shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
             echo ""
@@ -274,7 +306,11 @@ while [[ $# -gt 0 ]]; do
             echo "  --add-tag     Add tag(s) to existing (comma-separated)"
             echo "  --horizon     Priority horizon: now, next, later"
             echo "  --reason, -r  Reason for status change (logged in Updates)"
-            echo "  --force, -f   Bypass acceptance criteria + verification gates on work-completed"
+            echo "  --skip-sovereignty          Bypass human ownership completion gate (R-033)"
+            echo "  --skip-acceptance-criteria   Bypass AC gate (P-010)"
+            echo "  --skip-verification          Bypass verification gate (P-011)"
+            echo "  --skip-human-ownership       Bypass human ownership reassignment"
+            echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
             echo ""
             echo "Auto-triggers:"
@@ -457,12 +493,13 @@ if [ -n "$NEW_OWNER" ]; then
     OLD_OWNER=$(grep "^owner:" "$TASK_FILE" | head -1 | sed 's/owner:[[:space:]]*//')
     # T-198/R-033: Owner protection — owner: human is sticky
     if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then
-        if [ "$FORCE" = true ]; then
-            echo -e "${YELLOW}WARNING: Overriding human ownership (--force bypass)${NC}"
+        if [ "$SKIP_HUMAN_OWNERSHIP" = true ]; then
+            echo -e "${YELLOW}WARNING: Overriding human ownership (--skip-human-ownership bypass)${NC}"
+            log_gate_bypass "--skip-human-ownership" "owner_change"
         else
             echo -e "${RED}ERROR: Cannot change owner from 'human' — human ownership is protected (R-033)${NC}" >&2
             echo "Only the human can reassign human-owned tasks." >&2
-            echo "Use --force to bypass (logged)." >&2
+            echo "Use --skip-human-ownership to bypass (logged)." >&2
             exit 1
         fi
     fi

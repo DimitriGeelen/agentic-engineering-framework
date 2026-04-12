@@ -1,0 +1,47 @@
+pickup_id: P-018
+version: 1
+type: learning
+source:
+  project: "010-termlink"
+  task_id: "T-967"
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:30:00Z"
+payload:
+  summary: "PL-007: Never dump terminal commands — always use fw task review + termlink inject"
+  detail: |
+    SYSTEMIC AGENT BEHAVIOR BUG — reported 3+ times across sessions.
+
+    The problem: When an inception needs a GO/NO-GO decision, agents output
+    "run this command: fw inception decide T-XXX go --rationale '...'" instead
+    of calling `fw task review T-XXX` which opens Watchtower with a QR code,
+    recommendation display, and one-click decision UI.
+
+    The fix: Add to CLAUDE.md or agent behavioral rules:
+
+    ### Inception Decision Delivery (PL-007)
+    When an inception task is ready for human decision:
+    1. ALWAYS run `fw task review T-XXX` — this opens Watchtower with the
+       recommendation, go/no-go criteria, and decision form
+    2. NEVER tell the user to run `fw inception decide` manually
+    3. If termlink inject is available, inject a notification into the user's
+       terminal pointing them to Watchtower
+
+    ### Result Delivery (PL-007 extension)
+    When the agent has results the user needs to see:
+    1. Use `termlink inject` to push results to the user's terminal
+    2. Use `fw task review` for any review/approval flow
+    3. NEVER output bare URLs or commands and tell the user to "run this"
+
+    Why this matters: The user built Watchtower and termlink inject specifically
+    for push-based agent→human communication. Every time an agent dumps a
+    command instead of using the tooling, it:
+    - Defeats the purpose of the infrastructure investment
+    - Creates friction (user must copy-paste, switch terminals)
+    - Violates P-002 (the rule "use termlink inject" is aspirational without
+      structural enforcement — agents forget it after compaction)
+
+    Proposed structural fix: Add a PostToolUse hook that detects when the agent
+    outputs text containing "fw inception decide" and warns/blocks, suggesting
+    `fw task review` instead.
+  priority: critical
+  tags: [learning, behavioral, fw-task-review, termlink-inject, P-002, systemic]
