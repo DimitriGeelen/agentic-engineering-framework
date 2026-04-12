@@ -1,0 +1,27 @@
+pickup_id: P-021
+version: 1
+type: patch-delivery
+source:
+  project: "010-termlink"
+  task_id: "T-973"
+  agent: "claude-code"
+  timestamp: "2026-04-12T10:15:00Z"
+payload:
+  summary: "check-tier0.sh: recognize review marker as human authorization for inception decide"
+  detail: |
+    From T-972 RCA. The Tier 0 block on fw inception decide creates unnecessary
+    friction when the human has already reviewed via Watchtower (fw task review
+    creates .reviewed-T-XXX marker).
+
+    Fix: In check-tier0.sh, between the fast-path grep and Python patterns,
+    extract the task ID from the command, check if the review marker exists.
+    If it does, exit 0 (SAFE) — the marker proves human authorization.
+
+    The check still fires (it's not skipped), but the marker is recognized
+    as valid proof of human review. Combined with T-943 (Watchtower GO button
+    creates review marker), this means: human clicks GO in browser → marker
+    created → agent can run inception decide → no friction.
+
+    File: agents/context/check-tier0.sh (between fast-path and Python section)
+  priority: high
+  tags: [tier0, inception, review-marker, friction, T-972]

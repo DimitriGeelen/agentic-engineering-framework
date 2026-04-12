@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1143: T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw sites
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T10:14:24Z
+# ============================================================================
+
+task_id: T-1143
+task_name: "T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw sites"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T10:06:32Z
+completed: 2026-04-12T10:14:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T12:14:17+02:00
+last_commit: 2026-04-12T12:14:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add context-aware _fw_cmd helper — fix 3 hardcoded bin/fw sites for consumer projects
+
+# Key outcomes
+outcomes:
+  - "_fw_cmd helper added to lib/paths.sh (returns context-aware fw command path)"
+  - "lib/review.sh uses _fw_cmd instead of hardcoded bin/fw"
+  - "lib/inception.sh uses _fw_cmd instead of hardcoded bin/fw"
+  - "agents/context/check-tier0.sh uses _fw_cmd instead of hardcoded ./bin/fw"
+  - "_emit_user_command helper emits full copy-pasteable command with cd prefix"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Add context-aware _fw_cmd helper — fix 3 hardcoded bin/fw sites for consumer projects"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/check-tier0.sh"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/processed/P-010-rca-assumption-provenance-from-dashboard.yaml"
+  - ".context/pickup/processed/P-020-command-amnesia-rca.yaml"
+  - ".context/pickup/rejected/P-011-cosign-from-ring20-manager.yaml"
+  - "lib/inception.sh"
+  - "lib/paths.sh"
+  - "lib/review.sh"
+  - ".tasks/active/T-1143-t-1102-build-context-aware-fw-path-helpe.md"
+  - ".tasks/active/T-1145-pickup-p-010-rca-on-recurring-assumption.md"
+  - ".tasks/active/T-1146-pickup-critical-rca-agent-command-amnesi.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:14:17"
+    action: "T-1143: Add context-aware _fw_cmd helper — fix 3 hardcoded bin/fw sites for consumer projects"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 10
+  lines_added: 338
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1143-t-1102-build-context-aware-fw-path-helpe.md
+generated_by: context-agent-hybrid

@@ -50,3 +50,17 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-008
+  learning: "fw doctor config check silently exits function under pipefail: fw_config_list returns non-zero when no overrides exist, pipefail kills the function. All checks after it (cron, doc-drift) were invisible. Fix: add || true to pipeline."
+  source: P-001
+  task: T-1147
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-009
+  learning: "fw upgrade syncs script files but NOT .claude/settings.json hooks — new hooks (block-task-tools, audit-task-tools) were present as files but not registered in settings.json. The fix requires running fw init or manually adding hooks to settings.json after upgrade."
+  source: P-001
+  task: T-1148
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

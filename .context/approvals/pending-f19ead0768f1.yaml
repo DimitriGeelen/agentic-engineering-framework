@@ -1,9 +1,0 @@
-command_hash: f19ead0768f145e0d47f4389362035b5866f142ed5722800a24e155772ba51f0
-command_preview: 'for t in T-316 T-432 T-532 T-533 T-548 T-554 T-557 T-601 T-604 T-804
-  T-805 T-806 T-807 T-969 T-970 T-971; do echo "--- Completing $t ---"; bin/fw task
-  update "$t" --status work-completed --force 2>&1 '
-risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification
-  gate (P-011)'
-status: pending
-timestamp: '2026-04-12T07:55:03Z'
-type: tier0

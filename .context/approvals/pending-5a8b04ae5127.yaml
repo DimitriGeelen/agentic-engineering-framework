@@ -1,0 +1,9 @@
+command_hash: 5a8b04ae5127745295e45f140decf77a3ec2fa7c770f15e1782bc071a8f179f6
+command_preview: '# Commit the upgrade in each consumer project
+
+  for proj in /opt/001-sprechloop /opt/025-WokrshopDesigner /opt/050-email-archive
+  /opt/051-Vinix24 /opt/052-KCP /opt/053-ntfy /opt/150-skills-manager /opt/'
+risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+status: pending
+timestamp: '2026-04-12T10:31:13Z'
+type: tier0

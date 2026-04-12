@@ -1,11 +1,11 @@
-timestamp: 2026-04-12T09:30:01Z
+timestamp: 2026-04-12T10:30:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1038)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1042)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 1 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(29d) T-470(30d) T-479(14d) T-481(28d) T-505(25d) T-511(25d) T-518(25d) T-530(19d) T-571(14d) T-579(15d) T-584(14d) T-594(19d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(16d) T-613(15d) T-619(14d) T-631(15d) T-644(15d) T-645(15d) T-651(14d) T-662(14d) T-663(14d) T-671(14d) T-676(14d) T-678(14d) T-679(14d) T-696(14d) T-697(14d)"
+    check: "D2: Human review queue — 2 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(30d) T-470(30d) T-479(14d) T-481(28d) T-505(25d) T-511(25d) T-518(25d) T-530(20d) T-571(14d) T-579(15d) T-584(14d) T-594(19d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(16d) T-613(15d) T-619(14d) T-631(15d) T-644(15d) T-645(15d) T-651(15d) T-662(14d) T-663(14d) T-671(14d) T-676(14d) T-678(14d) T-679(14d) T-696(14d) T-697(14d) T-706(14d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
