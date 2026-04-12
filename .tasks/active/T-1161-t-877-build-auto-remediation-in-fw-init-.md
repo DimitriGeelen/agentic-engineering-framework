@@ -4,7 +4,7 @@ name: "T-877 build: Auto-remediation in fw init — git hooks, enforcement basel
 description: >
   T-877 build: Auto-remediation in fw init — git hooks, enforcement baseline, start guidance
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T12:13:05Z
-last_update: 2026-04-12T12:14:17Z
+last_update: 2026-04-12T12:56:53Z
 date_finished: null
 ---
 
@@ -25,15 +25,15 @@ Build from T-877 GO. Real user hit 6 failure modes during install. F3 (git hooks
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw init` auto-installs git hooks when in a git repo
-- [ ] `fw init` auto-creates enforcement baseline if missing
-- [ ] `fw init` post-init message includes "start Claude Code" guidance
+- [x] `fw init` auto-installs git hooks when in a git repo
+- [x] `fw init` auto-creates enforcement baseline if missing
+- [x] `fw init` post-init message includes "start Claude Code" guidance
 
 ## Verification
 
 bash -c 'grep -q "install-hooks\|install_hooks" lib/init.sh'
 bash -c 'grep -q "enforcement.*baseline\|baseline" lib/init.sh'
-bash -c 'grep -qi "claude\|agent" lib/init.sh | head -1'
+bash -c 'grep -qi "claude\|agent" lib/init.sh'
 
 ## Decisions
 
@@ -56,3 +56,6 @@ bash -c 'grep -qi "claude\|agent" lib/init.sh | head -1'
 ### 2026-04-12T12:14:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Reason:** Already implemented — git hooks (line 392), enforcement baseline (line 400), Claude Code guidance (line 490) all present in lib/init.sh
+
+### 2026-04-12T12:56:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
