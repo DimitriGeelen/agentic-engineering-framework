@@ -1,0 +1,54 @@
+---
+id: T-1171
+name: "Verify and close G-032 — inception decide --force bypass already fixed"
+description: >
+  Verify and close G-032 — inception decide --force bypass already fixed
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T14:17:38Z
+last_update: 2026-04-12T14:17:38Z
+date_finished: null
+---
+
+# T-1171: Verify and close G-032 — inception decide --force bypass already fixed
+
+## Context
+
+G-032 (CRITICAL): `fw inception decide` used `--force` internally, bypassing all gates. Already fixed — now uses `--skip-sovereignty` (T-1101/T-1142). Gap record in concerns.yaml needs to be marked resolved.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Verified `lib/inception.sh` uses `--skip-sovereignty` not `--force`
+- [x] G-032 marked resolved in concerns.yaml
+- [x] No `--force` in any `inception decide` path
+
+## Verification
+
+bash -c '! grep -q "\-\-force" lib/inception.sh'
+grep -q "skip-sovereignty" lib/inception.sh
+grep -q "resolved" .context/project/concerns.yaml
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T14:17:38Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1171-verify-and-close-g-032--inception-decide.md
+- **Context:** Initial task creation

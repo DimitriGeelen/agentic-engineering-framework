@@ -973,9 +973,10 @@ concerns:
     AND "Completing human-owned tasks". Both happened here, automatically, without any human intervention beyond running a
     decide command.'
   trigger: Every inception task that ends in `go` or `no-go`. Has been firing silently since T-637.
-  status: watching
+  status: resolved
+  resolution: "Fixed in T-1101/T-1142: lib/inception.sh now uses --skip-sovereignty (bypasses only R-033 sovereignty gate) instead of --force. P-010 (AC gate) and P-011 (verification gate) are no longer bypassed. Verified 2026-04-12: no --force in inception decide path."
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1101
 - id: G-033
   type: gap
