@@ -13,6 +13,33 @@ bp = Blueprint("tasks", __name__)
 
 
 # ---------------------------------------------------------------------------
+# Enum loading from status-transitions.yaml (T-1179, G-038)
+# ---------------------------------------------------------------------------
+
+_ENUM_CACHE = {}
+
+def _load_enums():
+    """Load workflow_types and horizons from status-transitions.yaml.
+
+    Cached after first load. Falls back to hardcoded defaults if YAML is missing.
+    """
+    if _ENUM_CACHE:
+        return _ENUM_CACHE
+    yaml_path = FRAMEWORK_ROOT / "status-transitions.yaml"
+    try:
+        with open(yaml_path) as f:
+            data = yaml.safe_load(f) or {}
+        _ENUM_CACHE["workflow_types"] = data.get("workflow_types", [])
+        _ENUM_CACHE["horizons"] = data.get("horizons", [])
+        _ENUM_CACHE["statuses"] = data.get("statuses", {}).get("active", [])
+    except Exception:
+        _ENUM_CACHE["workflow_types"] = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
+        _ENUM_CACHE["horizons"] = ["now", "next", "later"]
+        _ENUM_CACHE["statuses"] = ["captured", "started-work", "issues", "work-completed"]
+    return _ENUM_CACHE
+
+
+# ---------------------------------------------------------------------------
 # Helpers — file finding and frontmatter editing (T-181 spike)
 # ---------------------------------------------------------------------------
 
@@ -341,6 +368,7 @@ def tasks():
     if view not in ("board", "list"):
         view = "board"
 
+    enums = _load_enums()
     return render_page(
         "tasks.html",
         page_title="Tasks",
@@ -359,6 +387,8 @@ def tasks():
         search_query=search_query,
         sort_by=sort_by,
         view=view,
+        enum_types=enums["workflow_types"],
+        enum_horizons=enums["horizons"],
     )
 
 
@@ -390,7 +420,7 @@ def task_detail(task_id):
         except yaml.YAMLError:
             episodic = None
 
-    status_options = ["captured", "started-work", "issues", "work-completed"]
+    status_options = _load_enums()["statuses"]
 
     # Parse AC checkboxes for interactive rendering
     ac_items = _parse_acceptance_criteria(task_content)
@@ -436,8 +466,8 @@ def create_task():
     if not name:
         return '<p style="color: var(--pico-del-color);">Task name is required</p>', 400
 
-    allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
-    if workflow_type not in allowed_types:
+    enums = _load_enums()
+    if workflow_type not in enums["workflow_types"]:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
     allowed_owners = ["human", "claude-code"]
@@ -445,7 +475,7 @@ def create_task():
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
     horizon = request.form.get("horizon", "now").strip()
-    if horizon not in ("now", "next", "later"):
+    if horizon not in enums["horizons"]:
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
     cmd = [
@@ -478,7 +508,8 @@ def update_task_horizon(task_id):
         abort(404)
 
     horizon = request.form.get("horizon", "")
-    if horizon not in ("now", "next", "later"):
+    enums = _load_enums()
+    if horizon not in enums["horizons"]:
         return '<p style="color: var(--pico-del-color);">Invalid horizon</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--horizon", horizon])
@@ -508,8 +539,8 @@ def update_task_type(task_id):
         abort(404)
 
     wtype = request.form.get("type", "")
-    allowed = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
-    if wtype not in allowed:
+    enums = _load_enums()
+    if wtype not in enums["workflow_types"]:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])

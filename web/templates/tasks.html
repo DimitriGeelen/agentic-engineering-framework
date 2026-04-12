@@ -396,12 +396,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                             <div>
                                 <label for="task-type">Type</label>
                                 <select id="task-type" name="type">
-                                    <option value="build">build</option>
-                                    <option value="test">test</option>
-                                    <option value="refactor">refactor</option>
-                                    <option value="specification">specification</option>
-                                    <option value="design">design</option>
-                                    <option value="decommission">decommission</option>
+                                    {% for t in enum_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div>
@@ -414,9 +409,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                             <div>
                                 <label for="task-horizon">Horizon</label>
                                 <select id="task-horizon" name="horizon">
-                                    <option value="now">now</option>
-                                    <option value="next">next</option>
-                                    <option value="later">later</option>
+                                    {% for h in enum_horizons %}<option value="{{ h }}">{{ h }}</option>{% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -491,8 +484,8 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
               onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
         <div class="kanban-card-meta">
-            {{ inline_select(task.id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
-            {{ inline_select(task.id, 'horizon', ['now','next','later'], task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'type', enum_types, task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ inline_select(task.id, 'owner', ['human','claude-code'], task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
     </article>
@@ -700,11 +693,11 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <span class="status-update-result"></span>
             </td>
             <td>
-                {{ inline_select(task.id, 'horizon', ['now','next','later'], task.horizon, select_class='inline-status-select horizon-select', hx_target='next .horizon-update-result', form_class='inline-flex-center gap-xs') }}
+                {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-status-select horizon-select', hx_target='next .horizon-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="horizon-update-result"></span>
             </td>
             <td>
-                {{ inline_select(task.id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, hx_target='next .type-update-result', form_class='inline-flex-center gap-xs') }}
+                {{ inline_select(task.id, 'type', enum_types, task.workflow_type, hx_target='next .type-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="type-update-result"></span>
             </td>
             <td>
