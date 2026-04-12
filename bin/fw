@@ -1222,7 +1222,7 @@ else:
     # Check: Configuration overrides (T-819)
     source "$FRAMEWORK_ROOT/lib/config.sh"
     local config_overrides
-    config_overrides=$(fw_config_list 2>/dev/null | grep -v "^$" | wc -l)
+    config_overrides=$(fw_config_list 2>/dev/null | grep -v "^$" | wc -l || true)
     config_overrides=$(echo "$config_overrides" | tr -d '[:space:]')
     if [ "${config_overrides:-0}" -gt 0 ]; then
         echo ""
@@ -1276,6 +1276,33 @@ else:
         elif [ ! -f "$cron_source" ]; then
             echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
             warnings=$((warnings + 1))
+        fi
+    fi
+
+    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104)
+    if [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ]; then
+        local _qr_cmds _fw_cmds _missing _miss_count
+        # Extract commands from Quick Reference table: | `fw cmd` | or | **`fw cmd`** |
+        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*( [a-z][-a-z]*)?`' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/`//g; s/^fw //' | sort -u || true)
+        # Extract top-level routed subcommands from main routing case
+        _fw_cmds=$(sed -n '/^case "\$cmd" in/,/^esac/p' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null \
+            | grep -E '^    [a-z][-a-z]*\)' | sed 's/[[:space:]]*//; s/).*//' | sort -u || true)
+        _missing=""
+        _miss_count=0
+        while IFS= read -r cmd; do
+            [ -z "$cmd" ] && continue
+            if ! echo "$_qr_cmds" | grep -qw "$cmd"; then
+                _missing="${_missing} ${cmd}"
+                _miss_count=$((_miss_count + 1))
+            fi
+        done <<< "$_fw_cmds"
+        if [ "$_miss_count" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Doc drift: $_miss_count fw subcommand(s) missing from CLAUDE.md Quick Reference"
+            echo -e "        Missing:${_missing}"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  Quick Reference coverage"
         fi
     fi
 
