@@ -78,3 +78,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-012
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
