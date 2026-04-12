@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1150: RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:47:28Z
+# ============================================================================
+
+task_id: T-1150
+task_name: "RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T11:05:48Z
+completed: 2026-04-12T11:09:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T13:09:07+02:00
+last_commit: 2026-04-12T13:09:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix rationale truncation — remove 200-char cap from approvals pre-fill, create T-1151 inception for truncation policy. Complete — truncation fix applied, T-1151 inception created
+
+# Key outcomes
+outcomes:
+  - "rationale_hint no longer truncated in approvals.py"
+  - "problem_excerpt remains truncated (display-only, not permanent)"
+  - "Inception task created for structural remediation (truncation policy) — T-1151"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — truncation fix applied, T-1151 inception created"
+    source: git-mined
+  - description: "Fix rationale truncation — remove 200-char cap from approvals pre-fill, create T-1151 inception for truncation policy"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-12.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1150-rca-recommendation-text-truncation-in-mu.md"
+  - ".tasks/active/T-1151-watchtower-truncation-policy--data-that-.md"
+  - ".tasks/completed/T-1150-rca-recommendation-text-truncation-in-mu.md"
+  - "web/blueprints/approvals.py"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T13:09:07"
+    action: "T-1150: Fix rationale truncation — remove 200-char cap from approvals pre-fill, create T-1151 inception for truncation policy"
+  - time: "2026-04-12T13:09:32"
+    action: "T-1150: Complete — truncation fix applied, T-1151 inception created"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 10
+  lines_added: 192
+  lines_removed: 53
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1150-rca-recommendation-text-truncation-in-mu.md
+generated_by: context-agent-hybrid

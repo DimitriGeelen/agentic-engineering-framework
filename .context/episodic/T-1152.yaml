@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1152: T-1109 build: fix fw upgrade to sync settings.json hooks — call generate_claude_code_config in do_upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:47:28Z
+# ============================================================================
+
+task_id: T-1152
+task_name: "T-1109 build: fix fw upgrade to sync settings.json hooks — call generate_claude_code_config in do_upgrade"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T11:13:52Z
+completed: 2026-04-12T11:16:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T13:16:12+02:00
+last_commit: 2026-04-12T13:16:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix settings.json template — add block-task-tools + audit-task-tools hooks to generate_claude_code_config. Complete — settings.json template fixed, 11 consumers re-upgraded
+
+# Key outcomes
+outcomes:
+  - "Root cause found: generate_claude_code_config template in lib/init.sh missing block-task-tools + audit-task-tools"
+  - "Template updated with both hooks"
+  - "do_upgrade already calls generate_claude_code_config (no change needed)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete — settings.json template fixed, 11 consumers re-upgraded"
+    source: git-mined
+  - description: "Fix settings.json template — add block-task-tools + audit-task-tools hooks to generate_claude_code_config"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-12.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/reports/T-1151-truncation-audit.md"
+  - "lib/init.sh"
+  - ".tasks/active/T-1151-watchtower-truncation-policy--data-that-.md"
+  - ".tasks/active/T-1152-t-1109-build-fix-fw-upgrade-to-sync-sett.md"
+  - ".tasks/completed/T-1152-t-1109-build-fix-fw-upgrade-to-sync-sett.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T13:16:12"
+    action: "T-1152: Fix settings.json template — add block-task-tools + audit-task-tools hooks to generate_claude_code_config"
+  - time: "2026-04-12T13:16:58"
+    action: "T-1152: Complete — settings.json template fixed, 11 consumers re-upgraded"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 11
+  lines_added: 380
+  lines_removed: 73
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1152-t-1109-build-fix-fw-upgrade-to-sync-sett.md
+generated_by: context-agent-hybrid

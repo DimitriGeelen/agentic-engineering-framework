@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1149: Watchtower approvals fixes — filter noise, restart server
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:47:28Z
+# ============================================================================
+
+task_id: T-1149
+task_name: "Watchtower approvals fixes — filter noise, restart server"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T10:56:28Z
+completed: 2026-04-12T10:57:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T12:57:04+02:00
+last_commit: 2026-04-12T12:58:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Filter approvals page — only show inception tasks with recommendations (fixes T-1123 noise). Complete — approvals page filtered from 77 to 22 cards. Shelve T-1123 — covered by T-1149 approvals filter
+
+# Key outcomes
+outcomes:
+  - "Approvals page filters out inception tasks without recommendations"
+  - "Watchtower restarted with fix"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Filter approvals page — only show inception tasks with recommendations (fixes T-1123 noise)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-12.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1123-pickup-approvals-page-shows-inception-ta.md"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/active/T-1149-watchtower-approvals-fixes--filter-noise.md"
+  - ".tasks/completed/T-1149-watchtower-approvals-fixes--filter-noise.md"
+  - "web/blueprints/approvals.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:57:04"
+    action: "T-1149: Filter approvals page — only show inception tasks with recommendations (fixes T-1123 noise)"
+  - time: "2026-04-12T12:57:57"
+    action: "T-1149: Complete — approvals page filtered from 77 to 22 cards"
+  - time: "2026-04-12T12:58:50"
+    action: "T-1149: Shelve T-1123 — covered by T-1149 approvals filter"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 3
+  files_changed: 10
+  lines_added: 101
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1149-watchtower-approvals-fixes--filter-noise.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1142: T-1101 build: decompose --force into narrow bypass flags (--skip-sovereignty) in update-task.sh and inception.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T11:47:26Z
+# ============================================================================
+
+task_id: T-1142
+task_name: "T-1101 build: decompose --force into narrow bypass flags (--skip-sovereignty) in update-task.sh and inception.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T09:58:48Z
+completed: 2026-04-12T10:05:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T12:05:00+02:00
+last_commit: 2026-04-12T12:05:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Decompose --force into narrow bypass flags — --skip-sovereignty, --skip-acceptance-criteria, --skip-verification, --skip-human-ownership
+
+# Key outcomes
+outcomes:
+  - "update-task.sh accepts 4 narrow flags: --skip-sovereignty, --skip-acceptance-criteria, --skip-verification, --skip-human-ownership"
+  - "--force is deprecated alias that sets all 4 narrow flags and prints deprecation warning"
+  - "Each gate function (sovereignty, AC, verification, ownership) checks only its own narrow flag"
+  - "lib/inception.sh uses --skip-sovereignty instead of --force"
+  - "Gate bypass audit log: each bypass writes to .context/working/.gate-bypass-log.yaml"
+  - "Invariant test: no --force in lib/ or agents/ code (except update-task.sh deprecated alias)"
+  - "Existing tests still pass"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/task-create/update-task.sh"
+  - ".context/pickup/dedup.log"
+  - ".context/pickup/processed/P-018-always-use-fw-task-review.yaml"
+  - ".context/pickup/rejected/P-019-review-port-browser.yaml"
+  - "lib/inception.sh"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/active/T-1142-t-1101-build-decompose---force-into-narr.md"
+  - "tests/lint/no-force-in-framework.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:05:00"
+    action: "T-1142: Decompose --force into narrow bypass flags — --skip-sovereignty, --skip-acceptance-criteria, --skip-verification, --skip-human-ownership"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 8
+  lines_added: 359
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1142-t-1101-build-decompose---force-into-narr.md
+generated_by: context-agent-hybrid
