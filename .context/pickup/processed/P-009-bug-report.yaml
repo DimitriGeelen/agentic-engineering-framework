@@ -1,0 +1,33 @@
+pickup_id: P-009
+version: 1
+type: bug-report
+source:
+  project: "010-termlink"
+  task_id: "T-939"
+  agent: "claude-code"
+  timestamp: "2026-04-12T07:35:00Z"
+payload:
+  summary: "Approvals page never displays agent recommendation or argumentation — rationale_hint only pre-fills textarea, no visible recommendation block"
+  detail: |
+    Bug: web/blueprints/approvals.py extracts recommendation from task files into
+    `rationale_hint` but _approvals_content.html only uses it as textarea pre-fill.
+    The reviewer sees task name + problem excerpt + GO/NO-GO radio buttons — no
+    visible recommendation or argumentation before deciding.
+
+    RCA: (1) UI gap — template never renders rationale_hint as visible text.
+    (2) Data gap — 16/24 inception tasks have empty ## Recommendation sections
+    (placeholder HTML comments only), predating T-974 enforcement.
+
+    Fix applied in termlink vendored copy: added `recommendation_label` and
+    `recommendation_text` to _load_pending_go_decisions() return dict, added
+    color-coded recommendation-display div to _approvals_content.html (green GO,
+    red NO-GO, amber DEFER, grey "No recommendation yet" with link to task).
+
+    Suggested framework actions:
+    1. Apply the UI fix (approvals.py + _approvals_content.html)
+    2. Add inception completion gate: block work-completed if ## Recommendation empty
+    3. Add audit check: warn on inception tasks with started-work but empty recommendation after N days
+
+    Full pickup spec: docs/specs/T-939-approvals-recommendation-display-pickup.md (in termlink repo)
+  priority: medium
+  tags: [watchtower, approvals, inception, ui]

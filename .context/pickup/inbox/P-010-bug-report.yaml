@@ -1,0 +1,40 @@
+pickup_id: P-010
+version: 1
+type: bug-report
+source:
+  project: "010-termlink"
+  task_id: "T-943"
+  agent: "claude-code"
+  timestamp: "2026-04-12T07:58:00Z"
+payload:
+  summary: "Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking approve button gets 'Task review required' error"
+  detail: |
+    Bug: web/blueprints/inception.py record_decision() calls `fw inception decide`
+    which checks for a review marker file (.context/working/.reviewed-T-XXX).
+    This marker is only created by `fw task review T-XXX` (CLI command).
+    When a human clicks GO/NO-GO on the Watchtower /approvals page, the CLI
+    command fails because no marker exists — even though the human is literally
+    reviewing the task right now by using the web UI.
+
+    RCA: The review marker gate (T-973) was designed to prevent agents from
+    deciding without human review. But the gate doesn't distinguish between
+    agent-initiated CLI calls and human-initiated web UI submissions.
+    The Watchtower web form IS the human review — requiring a separate CLI
+    step first is unnecessary friction that defeats the purpose of the web UI.
+
+    Fix applied in termlink vendored copy: inception.py record_decision()
+    now creates the review marker before calling fw inception decide:
+
+      review_marker = PROJECT_ROOT / ".context" / "working" / f".reviewed-{task_id}"
+      review_marker.parent.mkdir(parents=True, exist_ok=True)
+      review_marker.touch()
+
+    This is safe because: (1) the endpoint is only reachable via web form POST,
+    (2) agents cannot POST to Watchtower (no tool for it), (3) the marker
+    still blocks agent-initiated CLI decisions as intended.
+
+    Suggested improvement: Apply the same fix in the framework's inception.py.
+    Consider also: allowing `fw inception decide` to accept a `--reviewed` flag
+    that skips the marker check when the caller can prove human involvement.
+  priority: high
+  tags: [watchtower, inception, friction, review-gate]
