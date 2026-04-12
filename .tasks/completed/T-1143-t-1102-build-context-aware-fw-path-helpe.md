@@ -4,16 +4,16 @@ name: "T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded 
 description: >
   T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw sites
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-tier0.sh, lib/inception.sh, lib/paths.sh, lib/review.sh]
 related_tasks: []
 created: 2026-04-12T10:06:32Z
-last_update: 2026-04-12T10:06:32Z
-date_finished: null
+last_update: 2026-04-12T10:14:21Z
+date_finished: 2026-04-12T10:14:21Z
 ---
 
 # T-1143: T-1102 build: context-aware fw path helper (_fw_cmd) and fix 3 hardcoded bin/fw sites
@@ -56,3 +56,6 @@ bash -c '! grep -q "echo.*bin/fw" lib/inception.sh'
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1143-t-1102-build-context-aware-fw-path-helpe.md
 - **Context:** Initial task creation
+
+### 2026-04-12T10:14:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

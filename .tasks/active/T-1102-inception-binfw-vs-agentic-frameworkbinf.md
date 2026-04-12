@@ -4,16 +4,16 @@ name: "Inception: bin/fw vs .agentic-framework/bin/fw — framework error messag
 description: >
   Inception task — RCA the recurring 'bin/fw not found' class of bug in consumer projects. Framework error messages and review prompts hardcode 'bin/fw' (lib/inception.sh:215, lib/review.sh:127, possibly more) under T-609 'Copy-Pasteable Commands' rule, but the rule was applied without distinguishing self-host vs consumer-host context. In consumer projects bin/fw does not exist — only .agentic-framework/bin/fw or bare 'fw' (post-shim-migration). Trigger: same class of bug surfaced in BOTH ring20-dashboard and /opt/termlink transcripts on 2026-04-11. Investigate: (1) every framework code path that emits a copy-paste command — grep for 'bin/fw' across lib/, agents/, web/; (2) which contexts each runs in (always self-host, always consumer-host, or both); (3) feasibility of a helper function (e.g. lib/colors.sh _fw_cmd_for_user) that detects PROJECT_ROOT vs FRAMEWORK_ROOT and emits the right form; (4) interaction with shim migration — after fw upgrade, bare 'fw' should work, so the helper might emit just 'fw'; (5) recommend GO/NO-GO/DEFER + concrete remediation. Origin: G-033.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: [T-1093, G-033, T-609]
 created: 2026-04-11T12:37:33Z
-last_update: 2026-04-12T09:30:31Z
-date_finished: null
+last_update: 2026-04-12T10:14:30Z
+date_finished: 2026-04-12T10:14:30Z
 ---
 
 # T-1102: Inception: bin/fw vs .agentic-framework/bin/fw — framework error messages broken in consumer projects (G-033)
@@ -192,3 +192,7 @@ Evidence:
 
 ### 2026-04-12T09:30:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T10:14:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Build task T-1143 completed — _fw_cmd helper added, 3 sites fixed

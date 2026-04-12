@@ -4,7 +4,7 @@ name: "T-1104 build: fw doctor doc-drift check — warn when fw subcommands miss
 description: >
   T-1104 build: fw doctor doc-drift check — warn when fw subcommands missing from CLAUDE.md Quick Reference
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T10:15:49Z
-last_update: 2026-04-12T10:15:49Z
-date_finished: null
+last_update: 2026-04-12T10:30:07Z
+date_finished: 2026-04-12T10:30:07Z
 ---
 
 # T-1147: T-1104 build: fw doctor doc-drift check — warn when fw subcommands missing from CLAUDE.md Quick Reference
@@ -31,7 +31,7 @@ From T-1104 inception (GO). Add doc-drift check to `fw doctor`.
 
 ## Verification
 
-bin/fw doctor 2>&1 | grep -qi "doc\|drift\|reference"
+bash -c 'bin/fw doctor 2>&1 | grep -qi "doc\|drift\|reference"'
 
 ## Decisions
 
@@ -50,3 +50,6 @@ bin/fw doctor 2>&1 | grep -qi "doc\|drift\|reference"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1147-t-1104-build-fw-doctor-doc-drift-check--.md
 - **Context:** Initial task creation
+
+### 2026-04-12T10:30:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -4,7 +4,7 @@ name: "T-1101 build: decompose --force into narrow bypass flags (--skip-sovereig
 description: >
   T-1101 build: decompose --force into narrow bypass flags (--skip-sovereignty) in update-task.sh and inception.sh
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T09:58:48Z
-last_update: 2026-04-12T09:58:48Z
-date_finished: null
+last_update: 2026-04-12T10:05:06Z
+date_finished: 2026-04-12T10:05:06Z
 ---
 
 # T-1142: T-1101 build: decompose --force into narrow bypass flags (--skip-sovereignty) in update-task.sh and inception.sh
@@ -66,3 +66,6 @@ bats tests/lint/no-force-in-framework.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1142-t-1101-build-decompose---force-into-narr.md
 - **Context:** Initial task creation
+
+### 2026-04-12T10:05:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
