@@ -1128,6 +1128,7 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution_in_progress: 'T-1188: Python-side hardcoded status lists replaced with _load_enums(). Remaining: kanban CSS/HTML template needs Jinja loop refactor (deferred — separate inception).'
 - id: G-042
   type: gap
   title: fw hook usage list × 4 mirror sites — new hooks do not appear in help or enforcement panel

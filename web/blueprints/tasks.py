@@ -576,7 +576,7 @@ def update_task_status(task_id):
         abort(404)
 
     status = request.form.get("status", "")
-    allowed = ["captured", "started-work", "issues", "work-completed"]
+    allowed = _load_enums()["statuses"]
     if status not in allowed:
         return '<p style="color: var(--pico-del-color);">Invalid status value</p>', 400
 
