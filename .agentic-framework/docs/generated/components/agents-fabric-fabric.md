@@ -44,13 +44,15 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `agents/fabric/lib/summary.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/post-compact-resume.sh` | called_by |
 | `bin/fw` | called_by |
 | `agents/context/check-fabric-new-file.sh` | called_by |
+| `tests/unit/fabric.bats` | tested_by |
+| `tests/unit/fabric.bats` | called_by |
 
 ## Documentation
 

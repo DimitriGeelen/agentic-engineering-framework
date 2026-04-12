@@ -6,11 +6,11 @@
 
 ## What It Does
 
-## Related
+## Dependencies (1)
 
-### Tasks
-- T-673: Review page 404 handler — show friendly message when task not found
-- T-676: Watchtower dark mode toggle — persist theme preference
+| Target | Relationship |
+|--------|-------------|
+| `web/blueprints/review.py` | used-by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_review_error.yaml`*

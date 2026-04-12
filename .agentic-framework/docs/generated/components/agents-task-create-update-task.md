@@ -16,7 +16,7 @@ Usage:
 ./agents/task-create/update-task.sh T-XXX --owner claude-code
 ./agents/task-create/update-task.sh T-XXX --status blocked --reason "Waiting on API key"
 
-## Dependencies (6)
+## Dependencies (7)
 
 | Target | Relationship |
 |--------|-------------|
@@ -26,13 +26,17 @@ Usage:
 | `lib/enums.sh` | calls |
 | `lib/keylock.sh` | calls |
 | `lib/review.sh` | calls |
+| `lib/notify.sh` | calls |
 
-## Used By (2)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-004` | called_by |
 | `bin/fw` | called_by |
+| `agents/audit/audit.sh` | called-by |
+| `tests/unit/update_task.bats` | tested_by |
+| `tests/unit/update_task.bats` | called_by |
 
 ## Documentation
 
@@ -41,8 +45,6 @@ Usage:
 ## Related
 
 ### Tasks
-- T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
-- T-709: Wire ntfy notifications into framework hooks — Tier 0, task complete, audit, handover
 - T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes

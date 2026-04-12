@@ -37,6 +37,10 @@
         background: #1565c0;
         color: #fff;
     }
+    .source-file {
+        background: #2e7d32;
+        color: #fff;
+    }
     .warning-text {
         color: #f57c00;
         font-size: 0.85rem;
@@ -59,6 +63,20 @@
         margin: 0.5rem 0;
     }
 </style>
+
+{% if project_info %}
+<article style="margin-bottom: 1.5rem; padding: 1rem;">
+    <h4 style="margin-top: 0;">Project</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        {% for key, val in project_info.items() %}
+        <div>
+            <small style="color: var(--pico-muted-color); text-transform: uppercase;">{{ key }}</small>
+            <div><strong>{{ val }}</strong></div>
+        </div>
+        {% endfor %}
+    </div>
+</article>
+{% endif %}
 
 <div class="config-summary">
     <article class="config-card">
@@ -111,17 +129,37 @@
     </table>
 </figure>
 
+{% if custom_settings %}
+<h4>Custom Settings <small style="color: var(--pico-muted-color);">(.framework.yaml)</small></h4>
+<figure>
+    <table>
+        <thead>
+            <tr><th>Key</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+            {% for key, val in custom_settings.items() %}
+            <tr>
+                <td><code>{{ key }}</code></td>
+                <td><strong>{{ val }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% endif %}
+
 <div class="config-help">
     <h4>How to override</h4>
-    <p>Set <code>FW_*</code> environment variables before starting the framework. Resolution order: explicit CLI flag > env var > default.</p>
+    <p>Resolution order: explicit CLI flag &gt; <code>FW_*</code> env var &gt; <code>.framework.yaml</code> &gt; default.</p>
     <pre>
-# Per-session
+# Persistent (per-project) — recommended
+fw config set PORT 4000
+fw config set CONTEXT_WINDOW 500000
+
+# Per-session (env var)
 export FW_CONTEXT_WINDOW=1000000
 
-# In systemd service (persistent)
-Environment=FW_PORT=5050
-
-# In .bashrc (persistent)
-export FW_DISPATCH_LIMIT=5</pre>
+# In systemd service
+Environment=FW_PORT=5050</pre>
     <p>Run <code>fw doctor</code> to validate overrides and check for out-of-range values.</p>
 </div>

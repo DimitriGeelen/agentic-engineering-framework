@@ -23,11 +23,6 @@ fw notify           — show help
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-720: Add integration test for fw notify CLI
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_notify.yaml`*
 *Last verified: 2026-03-29*

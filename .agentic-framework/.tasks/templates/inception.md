@@ -51,9 +51,9 @@ date_finished: null
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Read the research artifact and recommendation in this task
-  2. Evaluate go/no-go criteria against findings
-  3. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-XXX go|no-go --rationale "your rationale"`
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
   **Expected:** Decision recorded, task completed
   **If not:** Ask agent for clarification on specific findings
 
@@ -69,10 +69,20 @@ date_finished: null
 
 ## Verification
 
-<!-- Shell commands that MUST pass before work-completed. One per line.
-     Lines starting with # are comments. Empty lines ignored.
-     The completion gate runs each command — if any exits non-zero, completion is blocked.
-     For inception tasks, verification is often not needed (decisions, not code).
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+
+## Recommendation
+
+<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
+     Watchtower reads this section — if it's empty, the human sees nothing.
+     Format:
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence from exploration)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
 -->
 
 ## Decisions

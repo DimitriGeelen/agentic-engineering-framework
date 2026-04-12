@@ -46,11 +46,13 @@ The `horizon` field controls when a task should be considered for work:
 | `?` | uses |
 | `lib/paths.sh` | calls |
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/lib_ask.bats` | tested_by |
+| `tests/unit/lib_ask.bats` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ask.yaml`*

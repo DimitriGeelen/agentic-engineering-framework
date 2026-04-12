@@ -9,11 +9,12 @@
 Context Agent - status command
 Shows current context state across all memory types
 
-## Used By (1)
+## Used By (2)
 
 | Component | Relationship |
 |-----------|-------------|
 | `C-001` | called_by |
+| `agents/context/context.sh` | called-by |
 
 ## Documentation
 

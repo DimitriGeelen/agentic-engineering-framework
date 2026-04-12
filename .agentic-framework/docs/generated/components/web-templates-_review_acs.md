@@ -12,11 +12,6 @@
 |-----------|-------------|
 | `web/templates/review.html` | included_by |
 
-## Related
-
-### Tasks
-- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
-
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_review_acs.yaml`*
 *Last verified: 2026-03-28*

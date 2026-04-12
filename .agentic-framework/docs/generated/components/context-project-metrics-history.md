@@ -22,11 +22,11 @@ Auto-appended by audit.sh on each run
 ## Related
 
 ### Tasks
-- T-762: Fix remaining shellcheck warnings + unit tests for episodic, init, safe-commands libs
-- T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
-- T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
 - T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
 - T-847: Session housekeeping — memory updates and handover
+- T-937: Commit pending handover checkpoints
+- T-940: Commit accumulated generated docs and cron audits
+- T-949: Fix fw self-test task-gate-allow failure — gate test expects exit 0, gets 2
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-metrics-history.yaml`*

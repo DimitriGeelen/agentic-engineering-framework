@@ -117,6 +117,114 @@ def create_app() -> Flask:
     register_blueprints(app)
 
     # -------------------------------------------------------------------
+    # Flask-SocketIO for web terminal (T-964)
+    # -------------------------------------------------------------------
+
+    from flask_socketio import SocketIO, emit, join_room
+    from web import terminal as term_mgr
+
+    socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+    app.extensions["socketio"] = socketio
+
+    # Map SocketIO sid → set of session_ids (multi-session per connection)
+    _client_sessions = {}
+
+    @socketio.on("connect")
+    def handle_connect():
+        """Track the WebSocket connection."""
+        from flask import request as req
+        _client_sessions[req.sid] = set()
+
+    @socketio.on("disconnect")
+    def handle_disconnect():
+        """Kill all PTYs owned by this WebSocket connection."""
+        from flask import request as req
+        for session_id in list(_client_sessions.get(req.sid, [])):
+            term_mgr.kill_pty(session_id)
+        _client_sessions.pop(req.sid, None)
+
+    @socketio.on("create_session")
+    def handle_create_session(data):
+        """Spawn a new PTY for a named terminal session."""
+        from flask import request as req
+        session_id = data.get("session_id", req.sid)
+        join_room(session_id)
+        term_mgr.spawn_pty(session_id)
+        _client_sessions.setdefault(req.sid, set()).add(session_id)
+
+    @socketio.on("close_session")
+    def handle_close_session(data):
+        """Kill a specific terminal session."""
+        from flask import request as req
+        session_id = data.get("session_id")
+        if session_id:
+            if term_mgr.is_termlink_session(session_id):
+                term_mgr.detach_termlink(session_id)
+            else:
+                term_mgr.kill_pty(session_id)
+            _client_sessions.get(req.sid, set()).discard(session_id)
+
+    @socketio.on("attach_termlink")
+    def handle_attach_termlink(data):
+        """Attach to an existing TermLink session for observation (T-966)."""
+        from flask import request as req
+        session_id = data.get("session_id")
+        tl_name = data.get("tl_name")
+        if session_id and tl_name:
+            join_room(session_id)
+            term_mgr.attach_termlink(session_id, tl_name)
+            _client_sessions.setdefault(req.sid, set()).add(session_id)
+
+    @socketio.on("pty_input")
+    def handle_pty_input(data):
+        """Forward browser keystrokes to the PTY."""
+        session_id = data.get("session_id")
+        if session_id:
+            if term_mgr.is_termlink_session(session_id):
+                term_mgr.write_termlink(session_id, data.get("input", ""))
+            else:
+                term_mgr.write_pty(session_id, data.get("input", ""))
+
+    @socketio.on("resize")
+    def handle_resize(data):
+        """Resize the PTY to match the browser terminal dimensions."""
+        session_id = data.get("session_id")
+        rows = data.get("rows", 24)
+        cols = data.get("cols", 80)
+        if session_id:
+            term_mgr.resize_pty(session_id, rows, cols)
+
+    def _pty_output_loop():
+        """Background thread: poll all PTYs and emit output to clients."""
+        import time
+        tl_poll_counter = 0
+        while True:
+            # Poll local PTYs (10ms)
+            for session_id in list(term_mgr._sessions.keys()):
+                output = term_mgr.read_pty(session_id)
+                if output:
+                    socketio.emit("pty_output", {
+                        "session_id": session_id,
+                        "output": output.decode("utf-8", errors="replace"),
+                    }, to=session_id)
+            # Poll TermLink sessions less frequently (every 200ms = every 20th loop)
+            tl_poll_counter += 1
+            if tl_poll_counter >= 20:
+                tl_poll_counter = 0
+                for session_id in list(term_mgr._termlink_sessions.keys()):
+                    output = term_mgr.read_termlink(session_id)
+                    if output:
+                        socketio.emit("pty_output", {
+                            "session_id": session_id,
+                            "output": output,
+                        }, to=session_id)
+            time.sleep(0.01)  # 10ms poll interval
+
+    import threading
+    _output_thread = threading.Thread(target=_pty_output_loop, daemon=True)
+    _output_thread.start()
+
+    # -------------------------------------------------------------------
     # Health endpoint
     # -------------------------------------------------------------------
 
@@ -132,11 +240,14 @@ def create_app() -> Flask:
         result = {"app": "ok"}
         healthy = True
 
-        # Check Ollama connectivity
+        # Check Ollama connectivity (3s timeout prevents /health from hanging)
+        import concurrent.futures
         try:
-            ollama_client.list()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(ollama_client.list)
+                future.result(timeout=3)
             result["ollama"] = "ok"
-        except Exception as e:
+        except (concurrent.futures.TimeoutError, Exception):
             result["ollama"] = "unreachable"
             healthy = False
 
@@ -152,6 +263,26 @@ def create_app() -> Flask:
                 result["embeddings"] = {"status": "no_index"}
         except Exception:
             result["embeddings"] = {"status": "unavailable"}
+
+        # Test infrastructure counts (T-1008)
+        try:
+            from web.shared import FRAMEWORK_ROOT
+            tests = {}
+            pw_dir = FRAMEWORK_ROOT / "tests" / "playwright"
+            if pw_dir.exists():
+                tests["playwright"] = len(list(pw_dir.glob("test_*.py")))
+            unit_dir = FRAMEWORK_ROOT / "tests" / "unit"
+            if unit_dir.exists():
+                tests["unit"] = len(list(unit_dir.glob("*.bats")))
+            int_dir = FRAMEWORK_ROOT / "tests" / "integration"
+            if int_dir.exists():
+                tests["integration"] = len(list(int_dir.glob("*.bats")))
+            web_test = FRAMEWORK_ROOT / "web" / "test_app.py"
+            if web_test.exists():
+                tests["web"] = 1
+            result["tests"] = tests
+        except Exception:
+            result["tests"] = {"status": "unavailable"}
 
         code = 200 if healthy else 503
         return jsonify(result), code
@@ -251,7 +382,11 @@ def main():
     print()
 
     try:
-        app.run(host=host, port=port, debug=args.debug)
+        socketio = app.extensions.get("socketio")
+        if socketio:
+            socketio.run(app, host=host, port=port, debug=args.debug, allow_unsafe_werkzeug=True)
+        else:
+            app.run(host=host, port=port, debug=args.debug)
     except OSError as exc:
         if "Address already in use" in str(exc) or "address already in use" in str(exc):
             print(

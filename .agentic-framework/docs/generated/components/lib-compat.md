@@ -11,13 +11,15 @@ Source this file to get portable shell functions that work on
 both GNU (Linux) and BSD (macOS) systems.
 Usage: source "$FRAMEWORK_ROOT/lib/compat.sh"
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | sourced_by |
 | `bin/fw` | called_by |
 | `lib/paths.sh` | called_by |
+| `tests/unit/lib_compat.bats` | called-by |
+| `tests/unit/lib_compat.bats` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-compat.yaml`*

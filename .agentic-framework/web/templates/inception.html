@@ -142,6 +142,21 @@
     <p style="font-size: 0.9rem;">{{ t.description[:200] }}{% if t.description|length > 200 %}...{% endif %}</p>
     {% endif %}
 
+    {% if t._recommendation %}
+    <div style="background: var(--pico-muted-background); padding: 0.75rem 1rem; border-radius: 6px; margin: 0.5rem 0; border-left: 3px solid {% if t._rec_type == 'GO' %}#2e7d32{% elif t._rec_type == 'NO-GO' %}#c62828{% elif t._rec_type == 'DEFER' %}#f9a825{% else %}var(--pico-muted-border-color){% endif %};">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <strong style="font-size: 0.8rem;">Recommendation:</strong>
+            {% if t._rec_type %}
+            <span class="decision-badge decision-{% if t._rec_type == 'GO' %}go{% elif t._rec_type == 'NO-GO' %}no-go{% else %}defer{% endif %}">{{ t._rec_type }}</span>
+            {% endif %}
+            {% if t._has_artifact %}
+            <a href="/file/{{ t._artifact_path }}" style="font-size: 0.75rem;" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Research artifact</a>
+            {% endif %}
+        </div>
+        <p style="font-size: 0.8rem; margin: 0; color: var(--pico-muted-color);">{{ t._recommendation[:200] }}{% if t._recommendation|length > 200 %}...{% endif %}</p>
+    </div>
+    {% endif %}
+
     {% if t._assumption_total > 0 %}
     <div class="text-sm text-muted">
         Assumptions: {{ t._assumption_validated }} validated, {{ t._assumption_untested }} untested, {{ t._assumption_invalidated }} invalidated

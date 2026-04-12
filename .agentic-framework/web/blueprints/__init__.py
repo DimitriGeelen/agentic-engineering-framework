@@ -27,11 +27,13 @@ def register_blueprints(app):
     from web.blueprints.review import bp as review_bp
     from web.blueprints.costs import bp as costs_bp
     from web.blueprints.config import bp as config_bp
+    from web.blueprints.terminal import bp as terminal_bp
+    from web.blueprints.sessions import bp as sessions_page_bp
 
     for bp in (
         core_bp, tasks_bp, timeline_bp, discovery_bp, quality_bp,
         session_bp, metrics_bp, cockpit_bp, inception_bp, enforcement_bp,
         risks_bp, fabric_bp, discoveries_bp, docs_bp, settings_bp, cron_bp, api_bp,
-        approvals_bp, review_bp, costs_bp, config_bp,
+        approvals_bp, review_bp, costs_bp, config_bp, terminal_bp, sessions_page_bp,
     ):
         app.register_blueprint(bp)

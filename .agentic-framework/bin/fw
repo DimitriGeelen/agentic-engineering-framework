@@ -14,8 +14,9 @@ set -euo pipefail
 # Version: derived from git tags (major.minor = human tag, patch = commits since tag)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
+    local fw_dir="${BASH_SOURCE[0]%/*}/.."
     local desc
-    desc=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+    desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
     if [ -n "$desc" ]; then
         # v1.4.0 → 1.4.0 | v1.4.0-5-gabc123 → 1.4.5
         desc="${desc#v}"  # strip leading v
@@ -460,6 +461,7 @@ show_help() {
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
+    echo -e "  ${GREEN}config${NC} <cmd>           Project config (set, get, list) — persistent settings in .framework.yaml"
     echo -e "  ${GREEN}scan${NC}                  Run watchtower scan (detect opportunities & issues)"
     echo -e "  ${GREEN}serve${NC} [--port N]     Start web UI (default port 3000)"
     echo -e "  ${GREEN}upstream${NC} <cmd>        Report issues to framework upstream (report, config, status)"
@@ -573,6 +575,20 @@ do_doctor() {
             if [ -n "$pinned" ] && [ "$pinned" != "$FW_VERSION" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Version mismatch: pinned=$pinned installed=$FW_VERSION"
                 warnings=$((warnings + 1))
+            fi
+            # T-1097/G-028: Reconcile upstream_repo vs running FRAMEWORK_ROOT
+            local upstream_repo
+            upstream_repo=$(grep "^upstream_repo:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/^upstream_repo:[[:space:]]*//' || true)
+            if [ -n "$upstream_repo" ]; then
+                local resolved_upstream resolved_fw
+                resolved_upstream=$(realpath -m "$upstream_repo" 2>/dev/null || echo "$upstream_repo")
+                resolved_fw=$(realpath -m "$FRAMEWORK_ROOT" 2>/dev/null || echo "$FRAMEWORK_ROOT")
+                if [ "$resolved_upstream" != "$resolved_fw" ]; then
+                    echo -e "  ${YELLOW}WARN${NC}  Framework path ambiguity:"
+                    echo -e "         upstream_repo: $upstream_repo"
+                    echo -e "         running fw:    $FRAMEWORK_ROOT"
+                    warnings=$((warnings + 1))
+                fi
             fi
         else
             echo -e "  ${RED}FAIL${NC}  .framework.yaml missing in $PROJECT_ROOT"
@@ -1192,7 +1208,7 @@ else:
         local crash_count
         crash_count=$(wc -l < "$crash_log" | tr -d '[:space:]')
         local recent_crashes
-        recent_crashes=$(grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null | wc -l | tr -d '[:space:]')
+        recent_crashes=$( { grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')
         if [ "${recent_crashes:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — check .context/working/.hook-crashes.log"
             warnings=$((warnings + 1))
@@ -1206,7 +1222,7 @@ else:
     # Check: Configuration overrides (T-819)
     source "$FRAMEWORK_ROOT/lib/config.sh"
     local config_overrides
-    config_overrides=$(fw_config_list 2>/dev/null | grep -v "^$" | wc -l)
+    config_overrides=$(fw_config_list 2>/dev/null | grep -v "^$" | wc -l || true)
     config_overrides=$(echo "$config_overrides" | tr -d '[:space:]')
     if [ "${config_overrides:-0}" -gt 0 ]; then
         echo ""
@@ -1232,6 +1248,62 @@ else:
         fi
     else
         echo -e "  ${GREEN}OK${NC}  Configuration: all defaults (no FW_* overrides)"
+    fi
+
+    # Check: Cron registry drift (T-1112/T-1114)
+    # Catches the class of divergence where cron-registry.yaml and the
+    # installed /etc/cron.d/ file are out of sync — the root cause of
+    # T-1112 (pickup-process missing for 5 consumer projects).
+    local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+    if [ -f "$cron_registry" ]; then
+        local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
+        local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+        local cron_slug
+        cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+        local cron_target="$cron_target_dir/agentic-audit-${cron_slug}"
+        if [ -f "$cron_source" ] && [ -f "$cron_target" ]; then
+            if diff -q "$cron_source" "$cron_target" >/dev/null 2>&1; then
+                echo -e "  ${GREEN}OK${NC}  Cron registry in sync with $cron_target"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  Cron registry drift: $cron_source differs from $cron_target"
+                echo -e "        Run: fw cron install"
+                warnings=$((warnings + 1))
+            fi
+        elif [ -f "$cron_source" ] && [ ! -f "$cron_target" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Cron generated but not installed at $cron_target"
+            echo -e "        Run: fw cron install"
+            warnings=$((warnings + 1))
+        elif [ ! -f "$cron_source" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
+    # Doc-drift check: fw subcommands vs CLAUDE.md Quick Reference (T-1147/T-1104)
+    if [ -f "$FRAMEWORK_ROOT/CLAUDE.md" ]; then
+        local _qr_cmds _fw_cmds _missing _miss_count
+        # Extract commands from Quick Reference table: | `fw cmd` | or | **`fw cmd`** |
+        _qr_cmds=$(grep -oE '`fw [a-z][-a-z]*( [a-z][-a-z]*)?`' "$FRAMEWORK_ROOT/CLAUDE.md" 2>/dev/null \
+            | sed 's/`//g; s/^fw //' | sort -u || true)
+        # Extract top-level routed subcommands from main routing case
+        _fw_cmds=$(sed -n '/^case "\$cmd" in/,/^esac/p' "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null \
+            | grep -E '^    [a-z][-a-z]*\)' | sed 's/[[:space:]]*//; s/).*//' | sort -u || true)
+        _missing=""
+        _miss_count=0
+        while IFS= read -r cmd; do
+            [ -z "$cmd" ] && continue
+            if ! echo "$_qr_cmds" | grep -qw "$cmd"; then
+                _missing="${_missing} ${cmd}"
+                _miss_count=$((_miss_count + 1))
+            fi
+        done <<< "$_fw_cmds"
+        if [ "$_miss_count" -gt 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Doc drift: $_miss_count fw subcommand(s) missing from CLAUDE.md Quick Reference"
+            echo -e "        Missing:${_missing}"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  Quick Reference coverage"
+        fi
     fi
 
     # Summary
@@ -1710,6 +1782,14 @@ PYTASK_VERIFY
                 exit 1
             fi
 
+            # Placeholder audit chokepoint (T-1111/T-1113) — block review if the
+            # task file still contains literal template stubs. Runs BEFORE
+            # emit_review so no review marker is created on failure.
+            source "$FW_LIB_DIR/task-audit.sh"
+            if ! audit_task_placeholders "$task_file"; then
+                exit 1
+            fi
+
             # Shared review output (T-634)
             source "$FW_LIB_DIR/review.sh"
             emit_review "$task_id" "$task_file"
@@ -2152,19 +2232,98 @@ print(f'  Status: {old_status} → {new_status}')
 print(f'  Run \"fw cron generate\" to update the crontab file')
 "
                 ;;
+            install)
+                # T-1114: Unified generate + install chokepoint. Replaces the
+                # two-step "fw cron generate" + "fw audit schedule install"
+                # dance that silently clobbered the registry-sourced crontab
+                # with a hardcoded template (see T-1112 RCA).
+                _install_dry_run=false
+                while [ $# -gt 0 ]; do
+                    case "$1" in
+                        --dry-run) _install_dry_run=true; shift ;;
+                        *) shift ;;
+                    esac
+                done
+
+                _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
+                if [ ! -f "$_cron_registry" ]; then
+                    echo -e "${RED}ERROR:${NC} No cron registry found at $_cron_registry" >&2
+                    exit 1
+                fi
+
+                _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
+                _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+                _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
+                _cron_target="$_cron_target_dir/agentic-audit-${_cron_slug}"
+
+                # Step 1: regenerate crontab from registry (re-using fw cron generate logic)
+                if ! "$0" cron generate >/dev/null; then
+                    echo -e "${RED}ERROR:${NC} fw cron generate failed" >&2
+                    exit 1
+                fi
+                if [ ! -f "$_cron_source" ]; then
+                    echo -e "${RED}ERROR:${NC} Expected $_cron_source after generate" >&2
+                    exit 1
+                fi
+
+                # Step 2: compute diff vs currently installed
+                if [ -f "$_cron_target" ] && diff -q "$_cron_source" "$_cron_target" >/dev/null 2>&1; then
+                    echo "Cron in sync: $_cron_target"
+                    echo "  Source: $_cron_source"
+                    exit 0
+                fi
+
+                echo "Pending cron changes:"
+                if [ -f "$_cron_target" ]; then
+                    diff -u "$_cron_target" "$_cron_source" | sed 's/^/  /' || true
+                else
+                    echo "  (new install — $_cron_target does not exist)"
+                    sed -n '1,20p' "$_cron_source" | sed 's/^/  /'
+                    echo "  ..."
+                fi
+
+                if $_install_dry_run; then
+                    echo ""
+                    echo "(dry-run — no changes made)"
+                    echo "Run without --dry-run to apply."
+                    exit 0
+                fi
+
+                # Step 3: install atomically with sudo degradation
+                mkdir -p "$_cron_target_dir" 2>/dev/null || true
+                if [ "$(id -u)" = "0" ] || [ "$_cron_target_dir" != "/etc/cron.d" ]; then
+                    install -m 0644 "$_cron_source" "$_cron_target"
+                    echo "Installed: $_cron_target"
+                elif command -v sudo >/dev/null 2>&1; then
+                    sudo install -m 0644 "$_cron_source" "$_cron_target"
+                    echo "Installed (via sudo): $_cron_target"
+                else
+                    echo ""
+                    echo "NOTE: Root permissions required to install cron."
+                    echo "Run this command manually:"
+                    echo ""
+                    echo "  sudo install -m 0644 \"$_cron_source\" \"$_cron_target\""
+                    echo ""
+                    exit 1
+                fi
+                ;;
             ""|help|-h|--help)
                 echo -e "${BOLD}fw cron${NC} — Cron registry management (T-448)"
                 echo ""
                 echo "Subcommands:"
-                echo "  generate    Regenerate crontab from registry YAML"
-                echo "  status      Show registry status (jobs, active/paused)"
-                echo "  list        Alias for status"
-                echo "  run <id>    Run a job immediately"
-                echo "  pause <id>  Pause a job (comments out in crontab)"
-                echo "  resume <id> Resume a paused job"
+                echo "  generate          Regenerate crontab from registry YAML"
+                echo "  install [--dry-run]  Generate + install to /etc/cron.d/ atomically"
+                echo "  status            Show registry status (jobs, active/paused)"
+                echo "  list              Alias for status"
+                echo "  run <id>          Run a job immediately"
+                echo "  pause <id>        Pause a job (comments out in crontab)"
+                echo "  resume <id>       Resume a paused job"
                 echo ""
                 echo "Registry: .context/cron-registry.yaml"
                 echo "Web UI:   http://localhost:3000/cron"
+                echo ""
+                echo "Env overrides:"
+                echo "  FW_CRON_INSTALL_DIR  Target directory (default /etc/cron.d)"
                 ;;
             *)
                 echo -e "${RED}Unknown cron subcommand:${NC} $cron_subcmd"
@@ -3366,7 +3525,7 @@ PYSEARCH
         if [ -z "$_hook_name" ]; then
             echo "Usage: fw hook <name> [args...]" >&2
             echo "Available hooks: check-active-task, check-tier0, check-project-boundary, budget-gate," >&2
-            echo "  block-plan-mode, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
+            echo "  block-plan-mode, block-task-tools, audit-task-tools, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
             echo "  check-fabric-new-file, check-agent-dispatch, commit-cadence, loop-detect, pre-compact, post-compact-resume" >&2
             exit 1
         fi
@@ -3737,6 +3896,24 @@ PYPREDICT
                 echo -e "${BOLD}=== Web Tests (pytest) ===${NC}"
                 cd "$FRAMEWORK_ROOT" && python3 -m pytest web/test_app.py -v || _test_exit=1
                 ;;
+            --playwright|playwright|ui)
+                # Playwright UI tests (T-969)
+                if ! python3 -c "import playwright" 2>/dev/null; then
+                    echo -e "${RED}ERROR: playwright is not installed${NC}" >&2
+                    echo "  Install: pip install playwright && playwright install chromium"
+                    exit 1
+                fi
+                if ! python3 -c "import pytest" 2>/dev/null; then
+                    echo -e "${RED}ERROR: pytest is not installed${NC}" >&2
+                    exit 1
+                fi
+                if [ ! -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    echo -e "${YELLOW}No Playwright tests found (tests/playwright/ missing)${NC}"
+                    exit 0
+                fi
+                echo -e "${BOLD}=== Playwright UI Tests ===${NC}"
+                cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                ;;
             all)
                 # Run everything
                 echo -e "${BOLD}=== Framework Test Suite ===${NC}"
@@ -3768,14 +3945,24 @@ PYPREDICT
                 else
                     echo -e "${YELLOW}SKIP: pytest not installed${NC}"
                 fi
+
+                # 4. Playwright UI tests (T-969)
+                if python3 -c "import playwright" 2>/dev/null && [ -d "$FRAMEWORK_ROOT/tests/playwright" ]; then
+                    echo -e "${BOLD}--- Playwright UI Tests ---${NC}"
+                    cd "$FRAMEWORK_ROOT" && python3 -m pytest tests/playwright/ -v || _test_exit=1
+                    echo ""
+                else
+                    echo -e "${YELLOW}SKIP: playwright not installed or tests/playwright/ missing${NC}"
+                fi
                 ;;
             *)
-                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|lint]"
+                echo -e "${BOLD}Usage:${NC} fw test [all|unit|integration|web|playwright|lint]"
                 echo ""
                 echo "  all           Run all tests (default)"
                 echo "  unit          Bats unit tests only"
                 echo "  integration   Bats integration tests only"
                 echo "  web           Pytest web tests only"
+                echo "  playwright    Playwright UI tests (alias: ui)"
                 echo "  lint          ShellCheck linting on all .sh files"
                 exit 0
                 ;;
@@ -3953,6 +4140,10 @@ YAMLEOF
                 exit 1
                 ;;
         esac
+        ;;
+    config)
+        source "$FW_LIB_DIR/config-file.sh"
+        do_config "$@"
         ;;
     version|-v|--version)
         _ver_sub="${1:-}"

@@ -22,12 +22,14 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 |--------|-------------|
 | `lib/init.sh` | reads |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
 | `lib/init.sh` | called_by |
+| `tests/unit/lib_validate_init.bats` | called-by |
+| `tests/unit/lib_validate_init.bats` | called_by |
 
 ## Related
 

@@ -2,6 +2,9 @@
 # fw inception - Inception phase workflow
 # Manages exploration-phase work: problem definition, assumptions, go/no-go
 
+# Ensure _fw_cmd/_emit_user_command are available (T-1143)
+[[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
+
 do_inception() {
     local subcmd="${1:-}"
     shift || true
@@ -206,13 +209,24 @@ do_inception_decide() {
         exit 1
     fi
 
+    # Gate: placeholder audit chokepoint (T-1111/T-1113). Runs FIRST so that
+    # a task edited between review-marker creation and decide-time still
+    # catches bleed-through. If the marker exists from a previous review
+    # but the task was later edited to introduce placeholders, this blocks.
+    if [ -f "$FW_LIB_DIR/task-audit.sh" ]; then
+        source "$FW_LIB_DIR/task-audit.sh"
+        if ! audit_task_placeholders "$task_file"; then
+            exit 1
+        fi
+    fi
+
     # Gate: require fw task review before accepting decision (T-973)
     local review_marker="$PROJECT_ROOT/.context/working/.reviewed-$task_id"
     if [ ! -f "$review_marker" ]; then
         echo -e "${RED}ERROR: Task review required before decision${NC}" >&2
         echo "" >&2
         echo -e "Run this first:" >&2
-        echo -e "  cd $PROJECT_ROOT && bin/fw task review $task_id" >&2
+        echo -e "  $(_emit_user_command "task review $task_id")" >&2
         echo "" >&2
         echo -e "Then re-run the decide command." >&2
         exit 1
@@ -296,11 +310,12 @@ PYDECIDE
 EOF
 
     # Complete task if go or no-go (not defer)
-    # --force bypasses sovereignty gate (R-033) because inception decide itself
-    # required Tier 0 approval — human authority was already exercised (T-637)
+    # --skip-sovereignty bypasses only R-033 (sovereignty gate) because inception decide
+    # itself required Tier 0 approval — human authority was already exercised (T-637).
+    # P-010 (AC gate) and P-011 (verification gate) are NOT bypassed (T-1101/T-1142).
     if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
         echo ""
-        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force --reason "Inception decision: $decision_upper" 2>&1
+        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --skip-sovereignty --reason "Inception decision: $decision_upper" 2>&1
     fi
 
     # Clean up review marker (T-973)

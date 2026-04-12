@@ -9,6 +9,12 @@
 Unit tests for lib/pickup.sh
 Tests pickup pipeline: validation, dedup, ID generation, processing
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/pickup.sh` | calls |
+
 ## Related
 
 ### Tasks

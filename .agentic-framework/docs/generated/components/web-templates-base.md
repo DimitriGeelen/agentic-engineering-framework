@@ -6,17 +6,17 @@
 
 ## What It Does
 
-## Used By (1)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `web/templates/_wrapper.html` | extended_by |
+| `web/templates/config.html` | used-by |
+| `web/templates/config.html` | rendered_by |
 
 ## Related
 
 ### Tasks
-- T-676: Watchtower dark mode toggle — persist theme preference
-- T-732: Remove unused Cytoscape.js vendor files from base.html
 - T-854: Pass project name to Watchtower templates — resolve from project root, display in header
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 

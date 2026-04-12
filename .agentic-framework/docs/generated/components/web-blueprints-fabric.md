@@ -33,7 +33,7 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/templates/fabric_detail.html` | renders |
 | `web/templates/fabric_explorer.html` | renders |
 
-## Used By (4)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -41,12 +41,12 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+| `web/templates/fabric_explorer.html` | used-by |
+| `web/templates/fabric_explorer.html` | rendered_by_by |
 
 ## Related
 
 ### Tasks
-- T-735: Remove dead _build_graph function from fabric.py
-- T-736: Fix component detail source path — use ACTUAL_PROJECT_ROOT
 - T-849: Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data
 - T-853: Enrich Fabric Explorer subsystem descriptions from component purpose fields
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes

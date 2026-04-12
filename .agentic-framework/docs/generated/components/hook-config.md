@@ -27,11 +27,6 @@
 |-----------|-------------|
 | `agents/audit/self-audit.sh` | read_by |
 
-## Related
-
-### Tasks
-- T-663: Fix framework hooks — replace bare fw with bin/fw in settings.json
-
 ---
 *Auto-generated from Component Fabric. Card: `hook-config.yaml`*
 *Last verified: 2026-02-20*

@@ -19,6 +19,17 @@ audit   — action logged, reviewable post-hoc (Q2: stochastic × low)
 gate    — PreToolUse hook blocks until condition met (Q3: deterministic × high)
 approve — requires human approval per instance (Q4: stochastic × high)
 
+### Framework Reference
+
+When `TERMLINK_TASK_GOVERNANCE=1` is set (configured in `.mcp.json`), TermLink MCP tools require a `task_id` parameter. **Always pass the current task ID** when calling TermLink MCP tools:
+
+- `termlink_exec`: `{"command": "...", "session": "...", "task_id": "T-XXX"}`
+- `termlink_spawn`: `{"name": "...", "task_id": "T-XXX"}`
+- `termlink_interact`: `{"session": "...", "command": "...", "task_id": "T-XXX"}`
+- `termlink_dispatch`: `{"name": "...", "prompt": "...", "task_id": "T-XXX"}`
+
+*(truncated — see CLAUDE.md for full section)*
+
 ## Used By (1)
 
 | Component | Relationship |

@@ -374,7 +374,7 @@ echo "  Approve in Watchtower:" >&2
 echo "    ${WT_URL}/approvals" >&2
 echo "" >&2
 echo "  Or via CLI:" >&2
-echo "    ./bin/fw tier0 approve" >&2
+echo "    $(_emit_user_command "tier0 approve")" >&2
 echo "" >&2
 echo "  Policy: 011-EnforcementConfig.md §Tier 0" >&2
 echo "══════════════════════════════════════════════════════════" >&2

@@ -19,7 +19,7 @@ warn MESSAGE              — Print warning to stderr
 info MESSAGE              — Print info to stdout
 success MESSAGE           — Print success to stdout
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -30,6 +30,8 @@ success MESSAGE           — Print success to stdout
 | `agents/healing/healing.sh` | calls |
 | `agents/context/context.sh` | calls |
 | `lib/paths.sh` | called_by |
+| `tests/unit/lib_errors.bats` | called-by |
+| `tests/unit/lib_errors.bats` | called_by |
 
 ## Related
 

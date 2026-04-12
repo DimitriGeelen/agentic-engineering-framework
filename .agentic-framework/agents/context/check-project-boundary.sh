@@ -87,6 +87,11 @@ except:
     echo "    - /tmp/**           (agent dispatch scratch)" >&2
     echo "    - /root/.claude/**  (Claude Code config)" >&2
     echo "" >&2
+    echo "  For cross-project reads, use TermLink dispatch:" >&2
+    echo "" >&2
+    echo "    fw termlink dispatch --name read --project /opt/other \\" >&2
+    echo "      --prompt 'cat README.md and return its contents'" >&2
+    echo "" >&2
     echo "  Policy: T-559 (Project Boundary Enforcement)" >&2
     echo "══════════════════════════════════════════════════════════" >&2
     echo "" >&2
@@ -116,7 +121,9 @@ except:
     # execute in a separate process, not in our shell. The cd inside the
     # quoted argument targets the TermLink session, not the framework session.
     # T-679: Boundary hook was blocking all TermLink cross-project operations.
-    if echo "$COMMAND" | grep -qE '^\s*(termlink|bin/fw termlink|fw termlink)\s'; then
+    # T-1075: Also match TermLink commands inside loops/pipes (not just at start).
+    #   e.g., `for n in ...; do termlink pty inject ... "cd /opt/$n && ..."`
+    if echo "$COMMAND" | grep -qE '(^|\s|;|&&|\|)(termlink|bin/fw termlink|fw termlink)\s'; then
         exit 0
     fi
 

@@ -27,6 +27,14 @@ Before acting on a pickup message:
 
 *(truncated — see CLAUDE.md for full section)*
 
+## Used By (3)
+
+| Component | Relationship |
+|-----------|-------------|
+| `tests/unit/lib_pickup.bats` | called-by |
+| `bin/fw` | called_by |
+| `tests/unit/lib_pickup.bats` | called_by |
+
 ## Related
 
 ### Tasks

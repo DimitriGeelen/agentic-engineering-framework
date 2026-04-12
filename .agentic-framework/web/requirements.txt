@@ -1,8 +1,10 @@
 flask>=3.0,<4.0
+flask-socketio>=5.0
 gunicorn>=22.0
 pyyaml>=6.0
 ruamel.yaml>=0.18
 markdown2>=2.4
+markupsafe>=2.1
 bleach>=6.0
 ollama>=0.4
 sqlite-vec>=0.1.3

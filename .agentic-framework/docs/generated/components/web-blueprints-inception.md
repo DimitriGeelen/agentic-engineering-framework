@@ -44,8 +44,7 @@ When the active task has `workflow_type: inception`:
 ## Related
 
 ### Tasks
-- T-643: Htmx-ify GO decision form — inline response on /approvals page
-- T-679: Path C workflow refinement — document TermLink-based external ingestion, redo vnx experiment from scratch, capture learnings for TermLink and framework
+- T-959: Batch inception review page in Watchtower — surface pending go/no-go decisions with summaries (T-954 Phase 3a)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-inception.yaml`*

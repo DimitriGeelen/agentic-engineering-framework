@@ -19,12 +19,14 @@ Inception: T-451 | Build: T-454
 | `bin/fw` | calls |
 | `lib/init.sh` | reads |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | calls |
 | `bin/fw` | called_by |
+| `tests/unit/lib_upstream.bats` | called-by |
+| `tests/unit/lib_upstream.bats` | called_by |
 
 ## Related
 

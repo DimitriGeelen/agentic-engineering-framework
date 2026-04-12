@@ -13,7 +13,7 @@
 | `web/shared.py` | imports |
 | `web/shared.py` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -21,6 +21,7 @@
 | `web/app.py` | called_by |
 | `web/embeddings.py` | called_by |
 | `web/search.py` | called_by |
+| `web/blueprints/discovery.py` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search_utils.yaml`*

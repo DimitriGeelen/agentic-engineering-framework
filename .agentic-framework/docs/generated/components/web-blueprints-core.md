@@ -12,7 +12,7 @@ Active tasks with no recent update
 
 **Nothing gets done without a task.** This is enforced structurally by the framework, not by agent discipline.
 
-## Dependencies (12)
+## Dependencies (14)
 
 | Target | Relationship |
 |--------|-------------|
@@ -28,6 +28,8 @@ Active tasks with no recent update
 | `web/subprocess_utils.py` | calls |
 | `web/blueprints/approvals.py` | calls |
 | `web/blueprints/approvals.py` | registers |
+| `web/blueprints/costs.py` | calls |
+| `web/blueprints/costs.py` | registers |
 
 ## Used By (4)
 
@@ -37,6 +39,11 @@ Active tasks with no recent update
 | `web/app.py` | registered_by |
 | `web/blueprints/__init__.py` | called_by |
 | `web/blueprints/__init__.py` | registered_by |
+
+## Related
+
+### Tasks
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-core.yaml`*

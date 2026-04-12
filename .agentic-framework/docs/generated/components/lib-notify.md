@@ -19,7 +19,7 @@ Configuration:
 NTFY_ENABLED — set to "true" to enable (default: disabled)
 Design: Fire-and-forget, backgrounded, never blocks the calling script.
 
-## Used By (4)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -27,13 +27,13 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 | `agents/context/check-tier0.sh` | called_by |
 | `agents/task-create/update-task.sh` | called_by |
 | `agents/audit/audit.sh` | called_by |
+| `tests/unit/lib_notify.bats` | called-by |
+| `agents/handover/handover.sh` | called_by |
+| `tests/unit/lib_notify.bats` | called_by |
 
 ## Related
 
 ### Tasks
-- T-708: lib/notify.sh — thin wrapper calling skills-manager alert dispatcher
-- T-710: fw notify CLI — setup, test, enable, disable commands
-- T-717: Sync vendor copy of lib/notify.sh with config file support
 - T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 

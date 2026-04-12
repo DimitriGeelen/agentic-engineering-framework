@@ -114,6 +114,28 @@ def gaps():
     return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
 
 
+@bp.route("/api/learnings")
+def learnings_api():
+    """Return learnings as JSON (T-1023)."""
+    from flask import jsonify
+    items = load_learnings()
+    return jsonify({
+        "learnings": items,
+        "total": len(items),
+    })
+
+
+@bp.route("/api/decisions")
+def decisions_api():
+    """Return decisions as JSON (T-1023)."""
+    from flask import jsonify
+    items = load_decisions()
+    return jsonify({
+        "decisions": items,
+        "total": len(items),
+    })
+
+
 def _execute_search(query, mode):
     """Run search with mode selection and vector fallback. Returns (results, stats, vec_stats)."""
     from web.search import search as bm25_search, index_stats
@@ -539,6 +561,25 @@ def patterns():
         type_filter=type_filter,
         type_counts=type_counts,
     )
+
+
+@bp.route("/api/patterns")
+def patterns_api():
+    """Return patterns as JSON (T-1024)."""
+    from flask import jsonify
+    pdata = load_patterns()
+    grouped = {
+        "failure": pdata.get("failure_patterns", []),
+        "success": pdata.get("success_patterns", []),
+        "antifragile": pdata.get("antifragile_patterns", []),
+        "workflow": pdata.get("workflow_patterns", []),
+    }
+    total = sum(len(v) for v in grouped.values())
+    return jsonify({
+        "patterns": grouped,
+        "total": total,
+        "by_type": {k: len(v) for k, v in grouped.items()},
+    })
 
 
 def _count_applications(learning_id):

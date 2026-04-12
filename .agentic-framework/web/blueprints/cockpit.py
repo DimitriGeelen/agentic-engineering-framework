@@ -150,6 +150,21 @@ def get_action_summary() -> dict:
     }
 
 
+def _get_test_counts() -> dict:
+    """Count test files per suite (T-1010)."""
+    from web.shared import FRAMEWORK_ROOT
+    counts = {}
+    for name, subdir, pattern in [
+        ("playwright", "tests/playwright", "test_*.py"),
+        ("unit", "tests/unit", "*.bats"),
+        ("integration", "tests/integration", "*.bats"),
+    ]:
+        d = FRAMEWORK_ROOT / subdir
+        if d.exists():
+            counts[name] = len(list(d.glob(pattern)))
+    return counts
+
+
 def get_cockpit_context(scan_data: dict) -> dict:
     """Build template context from scan data."""
     return {
@@ -171,6 +186,7 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "scan_status": scan_data.get("scan_status", "unknown"),
         "human_verify": get_human_verify_tasks(),
         "action_summary": get_action_summary(),
+        "test_counts": _get_test_counts(),
     }
 
 

@@ -9,6 +9,12 @@
 Unit tests for lib/promote.sh
 Tests do_promote routing, help, and error handling
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/promote.sh` | calls |
+
 ## Related
 
 ### Tasks

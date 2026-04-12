@@ -156,7 +156,10 @@ cmd_cleanup() {
             worker_pids=$(ps aux 2>/dev/null | grep "$wdir" | grep -v grep | awk '{print $2}' || true)
 
             if [ -n "$worker_pids" ]; then
-                # T-843: Check if a claude process is actively running — if so, skip (not orphaned)
+                # T-843/T-972: Check if a claude process is actively running — if so, skip (not orphaned)
+                # Must check BOTH the matched PIDs AND their child processes, because
+                # run.sh (matched by grep $wdir) spawns claude -p as a child process
+                # whose args don't contain $wdir.
                 local has_claude=false
                 for pid in $worker_pids; do
                     local cmd_line
@@ -165,6 +168,17 @@ cmd_cleanup() {
                         has_claude=true
                         break
                     fi
+                    # T-972: Also check child processes of this PID
+                    local child_pids
+                    child_pids=$(ps --ppid "$pid" -o pid= 2>/dev/null || true)
+                    for cpid in $child_pids; do
+                        local child_cmd
+                        child_cmd=$(ps -p "$cpid" -o args= 2>/dev/null || echo "")
+                        if echo "$child_cmd" | grep -q "claude"; then
+                            has_claude=true
+                            break 2
+                        fi
+                    done
                 done
 
                 if [ "$has_claude" = true ]; then
@@ -251,7 +265,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT"
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -261,6 +275,7 @@ cmd_dispatch() {
             --prompt-file) prompt_file="$2"; shift 2 ;;
             --project) project_dir="$2"; shift 2 ;;
             --timeout) timeout="$2"; shift 2 ;;
+            --model) model="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -287,6 +302,7 @@ cmd_dispatch() {
   "project": "$project_dir",
   "timeout": $timeout,
   "task": "${task:-}",
+  "model": "${model:-}",
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -296,7 +312,7 @@ METAEOF
     # Adapted from tl-dispatch.sh — battle-tested with 3 parallel workers
     cat > "$wdir/run.sh" <<'RUNEOF'
 #!/bin/bash
-WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"
+WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
@@ -310,8 +326,14 @@ fi
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
 unset CLAUDECODE 2>/dev/null || true
 
+# T-1065: Build model flag if specified
+MODEL_FLAG=""
+if [ -n "$MODEL" ]; then
+    MODEL_FLAG="--model $MODEL"
+fi
+
 # Background process + kill watchdog (macOS has no `timeout` command)
-claude -p "$(cat "$WDIR/prompt.md")" --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
+claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG --output-format text > "$WDIR/result.md" 2>"$WDIR/stderr.log" &
 CLAUDE_PID=$!
 (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" > "$WDIR/stderr.log") &
 WATCHDOG_PID=$!
@@ -335,7 +357,7 @@ RUNEOF
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
     sleep 1
-    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout'" --enter >/dev/null 2>&1
+    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model'" --enter >/dev/null 2>&1
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }
@@ -466,7 +488,8 @@ cmd_help() {
     echo -e "  ${GREEN}exec${NC} <session> <command>      Run command in session (structured output)"
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
-    echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal"
+    echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
+                                     [--project DIR] [--model M] [--timeout S]"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
@@ -475,7 +498,8 @@ cmd_help() {
     echo "  fw termlink check"
     echo "  fw termlink spawn --task T-042 --name test-runner"
     echo "  fw termlink exec test-runner 'pytest tests/'"
-    echo "  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'"
+    echo "  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'
+  fw termlink dispatch --task T-042 --name tl-worker --project /opt/termlink --prompt '...'"
     echo "  fw termlink wait --all --timeout 300"
     echo "  fw termlink cleanup"
 }

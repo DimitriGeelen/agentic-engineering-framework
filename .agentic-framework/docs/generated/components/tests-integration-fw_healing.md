@@ -20,11 +20,6 @@ fw healing suggest        — suggestions for tasks with issues
 |--------|-------------|
 | `bin/fw` | calls |
 
-## Related
-
-### Tasks
-- T-744: Commit untracked research artifacts and clean up git state
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-integration-fw_healing.yaml`*
 *Last verified: 2026-03-30*

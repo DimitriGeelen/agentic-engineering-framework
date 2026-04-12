@@ -1,0 +1,546 @@
+<style>
+    /* Tab bar */
+    .session-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0.25rem 0.5rem;
+        background: #252526;
+        border-radius: 8px 8px 0 0;
+        border: 1px solid var(--pico-muted-border-color);
+        border-bottom: none;
+        overflow-x: auto;
+        min-height: 36px;
+    }
+    .session-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 4px 4px 0 0;
+        font-size: 0.8rem;
+        cursor: pointer;
+        background: transparent;
+        color: #888;
+        border: none;
+        white-space: nowrap;
+        transition: background 0.1s;
+    }
+    .session-tab:hover { background: #2d2d2d; color: #ccc; }
+    .session-tab.active { background: #1e1e1e; color: #d4d4d4; }
+    .session-tab .tab-status {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .tab-status.running { background: #2e7d32; }
+    .tab-status.exited { background: #c62828; }
+    .session-tab .tab-close {
+        font-size: 0.7rem;
+        opacity: 0;
+        padding: 0 2px;
+        cursor: pointer;
+        color: #888;
+    }
+    .session-tab:hover .tab-close { opacity: 0.7; }
+    .session-tab .tab-close:hover { opacity: 1; color: #f44747; }
+    .new-session {
+        display: flex;
+        align-items: center;
+        padding: 0.3rem 0.5rem;
+        background: transparent;
+        border: 1px dashed #555;
+        border-radius: 4px;
+        color: #888;
+        cursor: pointer;
+        font-size: 0.8rem;
+        margin-left: 4px;
+    }
+    .new-session:hover { background: #2d2d2d; color: #ccc; border-color: #888; }
+    /* Profile selector dropdown (T-980) */
+    .profile-menu {
+        position: absolute;
+        background: #252526;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 4px 0;
+        min-width: 220px;
+        z-index: 100;
+        display: none;
+    }
+    .profile-menu.visible { display: block; }
+    .profile-item {
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .profile-item:hover { background: #2d2d2d; }
+    .profile-item .profile-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .profile-item .profile-desc {
+        font-size: 0.7rem;
+        color: #888;
+        margin-left: auto;
+    }
+    .attach-menu {
+        position: absolute;
+        background: #252526;
+        border: 1px solid #555;
+        border-radius: 4px;
+        padding: 4px 0;
+        min-width: 200px;
+        z-index: 100;
+        display: none;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .attach-menu.visible { display: block; }
+    .attach-item {
+        padding: 0.4rem 0.8rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .attach-item:hover { background: #2d2d2d; }
+    .attach-item .tl-tag { font-size: 0.65rem; color: #888; }
+    .session-tab.termlink { border-top: 2px solid #569cd6; }
+    .attach-empty { padding: 0.4rem 0.8rem; color: #666; font-size: 0.8rem; font-style: italic; }
+
+    /* Terminal container */
+    .terminal-container {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 210px);
+        min-height: 400px;
+        background: #1e1e1e;
+        border-radius: 0 0 8px 8px;
+        overflow: hidden;
+        border: 1px solid var(--pico-muted-border-color);
+        border-top: none;
+    }
+    .terminal-container .xterm {
+        height: 100%;
+        padding: 8px;
+    }
+    .terminal-viewport {
+        display: none;
+        width: 100%;
+        height: 100%;
+    }
+    .terminal-viewport.active { display: block; }
+
+    .terminal-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+    .terminal-status .status-dot {
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    .status-dot.connected { background: #2e7d32; }
+    .status-dot.disconnected { background: #c62828; }
+    .status-dot.connecting { background: #f9a825; }
+</style>
+
+<div class="page-header">
+    <h1>Terminal</h1>
+    <p>Interactive shell sessions in the browser.</p>
+</div>
+
+<div class="terminal-status">
+    <span>
+        <span class="status-dot connecting" id="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+    </span>
+    <span id="terminal-info"></span>
+</div>
+
+<div class="session-tabs" id="session-tabs">
+    <button class="new-session" id="new-session" title="New terminal session">+ New</button>
+    <div class="profile-menu" id="profile-menu"></div>
+    <button class="new-session" id="attach-termlink" title="Attach to TermLink session" style="border-color: #569cd6; color: #569cd6;">Attach</button>
+    <div class="attach-menu" id="attach-menu"></div>
+</div>
+
+<div class="terminal-container" id="terminal-container">
+    <!-- Terminal viewports are created dynamically -->
+</div>
+
+<!-- xterm.js from CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+
+<!-- Socket.IO client -->
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4/dist/socket.io.min.js"></script>
+
+<script>
+(function() {
+    const tabBar = document.getElementById('session-tabs');
+    const newBtn = document.getElementById('new-session');
+    const container = document.getElementById('terminal-container');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const termInfo = document.getElementById('terminal-info');
+
+    // Session state
+    const sessions = {};  // { sessionId: { term, fitAddon, tabEl, viewportEl, name, state } }
+    let activeSession = null;
+    let sessionCounter = 0;
+    let profiles = {};  // Loaded from /api/sessions/profiles (T-980)
+
+    // Shared terminal config
+    const TERM_OPTS = {
+        cursorBlink: true,
+        fontSize: 14,
+        fontFamily: '"Cascadia Code", "Fira Code", "JetBrains Mono", Menlo, monospace',
+        theme: {
+            background: '#1e1e1e', foreground: '#d4d4d4', cursor: '#d4d4d4',
+            selectionBackground: '#264f78',
+            black: '#1e1e1e', red: '#f44747', green: '#6a9955', yellow: '#d7ba7d',
+            blue: '#569cd6', magenta: '#c586c0', cyan: '#4ec9b0', white: '#d4d4d4',
+            brightBlack: '#808080', brightRed: '#f44747', brightGreen: '#6a9955',
+            brightYellow: '#d7ba7d', brightBlue: '#569cd6', brightMagenta: '#c586c0',
+            brightCyan: '#4ec9b0', brightWhite: '#ffffff',
+        },
+        scrollback: 5000,
+        convertEol: false,
+        allowProposedApi: true,
+    };
+
+    // Connect to Socket.IO
+    const socket = io({ path: '/socket.io', transports: ['websocket', 'polling'] });
+
+    socket.on('connect', function() {
+        statusDot.className = 'status-dot connected';
+        statusText.textContent = 'Connected';
+        // Create first session on connect (default profile)
+        if (Object.keys(sessions).length === 0) {
+            createSession('local-bash');
+        }
+    });
+
+    socket.on('disconnect', function() {
+        statusDot.className = 'status-dot disconnected';
+        statusText.textContent = 'Disconnected';
+    });
+
+    socket.on('connect_error', function() {
+        statusDot.className = 'status-dot disconnected';
+        statusText.textContent = 'Connection error';
+    });
+
+    // Receive output routed to specific session
+    socket.on('pty_output', function(data) {
+        const s = sessions[data.session_id];
+        if (s) s.term.write(data.output);
+    });
+
+    // Session exited
+    socket.on('session_exited', function(data) {
+        const s = sessions[data.session_id];
+        if (s) {
+            s.state = 'exited';
+            const dot = s.tabEl.querySelector('.tab-status');
+            if (dot) dot.className = 'tab-status exited';
+            s.term.write('\r\n\x1b[31m[Process exited]\x1b[0m\r\n');
+        }
+    });
+
+    function createSession(profileId) {
+        profileId = profileId || 'local-bash';
+        const profile = profiles[profileId] || { name: 'Shell', ui: { label: 'bash', color: '#4CAF50' } };
+        sessionCounter++;
+        const name = (profile.ui && profile.ui.label || 'shell') + '-' + sessionCounter;
+        const sessionId = 'ts-' + Math.random().toString(36).substr(2, 8);
+
+        // Create viewport div
+        const viewport = document.createElement('div');
+        viewport.className = 'terminal-viewport';
+        viewport.id = 'viewport-' + sessionId;
+        container.appendChild(viewport);
+
+        // Create xterm instance
+        const term = new Terminal(TERM_OPTS);
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+        term.open(viewport);
+
+        // Create tab
+        const tab = document.createElement('div');
+        tab.className = 'session-tab';
+        tab.innerHTML = '<span class="tab-status running"></span>'
+            + '<span class="tab-name">' + name + '</span>'
+            + '<span class="tab-close" title="Close session">\u00d7</span>';
+        tabBar.insertBefore(tab, newBtn);
+
+        // Store session
+        sessions[sessionId] = {
+            term: term,
+            fitAddon: fitAddon,
+            tabEl: tab,
+            viewportEl: viewport,
+            name: name,
+            state: 'running',
+        };
+
+        // Tab click → switch session
+        tab.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab-close')) return;
+            switchSession(sessionId);
+        });
+
+        // Close button
+        tab.querySelector('.tab-close').addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSession(sessionId);
+        });
+
+        // Terminal input → server
+        term.onData(function(data) {
+            socket.emit('pty_input', { session_id: sessionId, input: data });
+        });
+
+        // Terminal resize → server
+        term.onResize(function(size) {
+            socket.emit('resize', { session_id: sessionId, rows: size.rows, cols: size.cols });
+        });
+
+        // Tell server to spawn PTY for this session
+        socket.emit('create_session', { session_id: sessionId, name: name });
+
+        // Switch to this session
+        switchSession(sessionId);
+
+        return sessionId;
+    }
+
+    function switchSession(sessionId) {
+        // Deactivate current
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].tabEl.classList.remove('active');
+            sessions[activeSession].viewportEl.classList.remove('active');
+        }
+        // Activate new
+        activeSession = sessionId;
+        const s = sessions[sessionId];
+        s.tabEl.classList.add('active');
+        s.viewportEl.classList.add('active');
+        s.fitAddon.fit();
+        s.term.focus();
+        termInfo.textContent = s.name + ' (' + s.state + ')';
+    }
+
+    function closeSession(sessionId) {
+        const s = sessions[sessionId];
+        if (!s) return;
+
+        // Tell server to kill PTY
+        socket.emit('close_session', { session_id: sessionId });
+
+        // Clean up DOM
+        s.term.dispose();
+        s.tabEl.remove();
+        s.viewportEl.remove();
+        delete sessions[sessionId];
+
+        // Switch to another session or create new
+        const remaining = Object.keys(sessions);
+        if (remaining.length > 0) {
+            switchSession(remaining[remaining.length - 1]);
+        } else {
+            activeSession = null;
+            termInfo.textContent = '';
+        }
+    }
+
+    // Profile selector (T-980)
+    const profileMenu = document.getElementById('profile-menu');
+
+    // Load profiles on startup
+    fetch('/api/sessions/profiles')
+        .then(r => r.json())
+        .then(function(data) {
+            profiles = data;
+            profileMenu.innerHTML = '';
+            Object.entries(data).forEach(function([id, p]) {
+                const item = document.createElement('div');
+                item.className = 'profile-item';
+                item.setAttribute('data-profile', id);
+                const color = (p.ui && p.ui.color) || '#888';
+                const label = (p.ui && p.ui.label) || p.name || id;
+                const desc = p.description || '';
+                item.innerHTML = '<span class="profile-dot" style="background:' + color + '"></span>'
+                    + '<span>' + label + '</span>'
+                    + '<span class="profile-desc">' + desc + '</span>';
+                item.addEventListener('click', function() {
+                    profileMenu.classList.remove('visible');
+                    createSession(id);
+                });
+                profileMenu.appendChild(item);
+            });
+        })
+        .catch(function() {
+            // Fallback: no profiles, create directly
+            profileMenu.innerHTML = '';
+        });
+
+    // New session button — show profile selector
+    newBtn.addEventListener('click', function(e) {
+        if (Object.keys(profiles).length === 0) {
+            createSession();
+            return;
+        }
+        if (profileMenu.classList.contains('visible')) {
+            profileMenu.classList.remove('visible');
+            return;
+        }
+        const rect = newBtn.getBoundingClientRect();
+        profileMenu.style.top = (rect.bottom + 2) + 'px';
+        profileMenu.style.left = rect.left + 'px';
+        profileMenu.classList.add('visible');
+    });
+
+    // Close profile menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!newBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+            profileMenu.classList.remove('visible');
+        }
+    });
+
+    // Attach TermLink button (T-966)
+    const attachBtn = document.getElementById('attach-termlink');
+    const attachMenu = document.getElementById('attach-menu');
+
+    attachBtn.addEventListener('click', function() {
+        // Toggle menu and fetch sessions
+        if (attachMenu.classList.contains('visible')) {
+            attachMenu.classList.remove('visible');
+            return;
+        }
+        attachMenu.innerHTML = '<div class="attach-empty">Loading...</div>';
+        attachMenu.classList.add('visible');
+        // Position menu below button
+        const rect = attachBtn.getBoundingClientRect();
+        attachMenu.style.top = (rect.bottom + 2) + 'px';
+        attachMenu.style.left = rect.left + 'px';
+
+        fetch('/api/termlink/sessions')
+            .then(r => r.json())
+            .then(function(tlSessions) {
+                attachMenu.innerHTML = '';
+                if (tlSessions.length === 0) {
+                    attachMenu.innerHTML = '<div class="attach-empty">No TermLink sessions found</div>';
+                    return;
+                }
+                tlSessions.forEach(function(tl) {
+                    const item = document.createElement('div');
+                    item.className = 'attach-item';
+                    const tags = (tl.tags || []).join(', ');
+                    item.innerHTML = '<span class="tab-status running"></span>'
+                        + '<span>' + tl.name + '</span>'
+                        + (tags ? '<span class="tl-tag">[' + tags + ']</span>' : '');
+                    item.addEventListener('click', function() {
+                        attachTermlinkSession(tl.name);
+                        attachMenu.classList.remove('visible');
+                    });
+                    attachMenu.appendChild(item);
+                });
+            })
+            .catch(function() {
+                attachMenu.innerHTML = '<div class="attach-empty">TermLink not available</div>';
+            });
+    });
+
+    // Close attach menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!attachBtn.contains(e.target) && !attachMenu.contains(e.target)) {
+            attachMenu.classList.remove('visible');
+        }
+    });
+
+    function attachTermlinkSession(tlName) {
+        const sessionId = 'tl-' + Math.random().toString(36).substr(2, 8);
+        const name = tlName;
+
+        // Create viewport
+        const viewport = document.createElement('div');
+        viewport.className = 'terminal-viewport';
+        viewport.id = 'viewport-' + sessionId;
+        container.appendChild(viewport);
+
+        // Create xterm (observation mode)
+        const term = new Terminal(TERM_OPTS);
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(new WebLinksAddon.WebLinksAddon());
+        term.open(viewport);
+
+        // Create tab with TermLink styling
+        const tab = document.createElement('div');
+        tab.className = 'session-tab termlink';
+        tab.innerHTML = '<span class="tab-status running"></span>'
+            + '<span class="tab-name">' + name + '</span>'
+            + '<span class="tab-close" title="Detach">\u00d7</span>';
+        tabBar.insertBefore(tab, newBtn);
+
+        sessions[sessionId] = {
+            term: term, fitAddon: fitAddon, tabEl: tab, viewportEl: viewport,
+            name: name, state: 'observing', type: 'termlink',
+        };
+
+        tab.addEventListener('click', function(e) {
+            if (e.target.classList.contains('tab-close')) return;
+            switchSession(sessionId);
+        });
+        tab.querySelector('.tab-close').addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeSession(sessionId);
+        });
+
+        // Input forwarding (inject to TermLink)
+        term.onData(function(data) {
+            socket.emit('pty_input', { session_id: sessionId, input: data });
+        });
+
+        // Tell server to attach
+        socket.emit('attach_termlink', { session_id: sessionId, tl_name: tlName });
+
+        switchSession(sessionId);
+        term.write('\x1b[36m[Attached to TermLink session: ' + tlName + ']\x1b[0m\r\n');
+    }
+
+    // Fit active terminal on window resize
+    window.addEventListener('resize', function() {
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].fitAddon.fit();
+        }
+    });
+
+    // ResizeObserver for container changes
+    new ResizeObserver(function() {
+        if (activeSession && sessions[activeSession]) {
+            sessions[activeSession].fitAddon.fit();
+        }
+    }).observe(container);
+})();
+</script>

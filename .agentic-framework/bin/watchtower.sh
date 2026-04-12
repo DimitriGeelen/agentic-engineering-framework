@@ -17,6 +17,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+source "$FRAMEWORK_ROOT/lib/firewall.sh"
 PID_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.pid"
 LOG_FILE="$FRAMEWORK_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT=$(fw_config "PORT" 3000)
@@ -55,29 +56,7 @@ port_in_use() {
     ss -tlnp 2>/dev/null | grep -q ":${port} " 2>/dev/null
 }
 
-ensure_firewall_open() {
-    local port="$1"
-    # Skip if ufw is not installed
-    if ! command -v ufw >/dev/null 2>&1; then
-        return 0
-    fi
-    # Skip if ufw is inactive
-    if ! ufw status 2>/dev/null | grep -q "Status: active"; then
-        return 0
-    fi
-    # Check if port is already allowed
-    if ufw status 2>/dev/null | grep -qE "^${port}/tcp\s+ALLOW"; then
-        log_info "Firewall: port $port already open."
-        return 0
-    fi
-    # Open the port
-    log_info "Firewall: opening port $port/tcp (UFW policy is DROP)..."
-    if ufw allow "$port/tcp" comment "Watchtower (fw serve)" >/dev/null 2>&1; then
-        log_info "Firewall: port $port opened for LAN access."
-    else
-        log_warn "Firewall: failed to open port $port — LAN access may be blocked."
-    fi
-}
+# ensure_firewall_open is sourced from lib/firewall.sh (T-888)
 
 # ---------------------------------------------------------------------------
 # stop — Graceful shutdown with SIGTERM, fallback to SIGKILL

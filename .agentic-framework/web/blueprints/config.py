@@ -1,8 +1,9 @@
-"""Config blueprint — framework configuration visibility (T-819)."""
+"""Config blueprint — framework configuration visibility (T-819, T-893)."""
 
 import os
 import subprocess
 
+import yaml as pyyaml
 from flask import Blueprint
 
 from web.shared import PROJECT_ROOT, render_page
@@ -31,8 +32,33 @@ SETTINGS = [
 ]
 
 
+def _read_framework_yaml():
+    """Read .framework.yaml config file, return dict or empty dict."""
+    config_path = os.path.join(PROJECT_ROOT, ".framework.yaml")
+    if not os.path.isfile(config_path):
+        return {}
+    try:
+        with open(config_path) as f:
+            return pyyaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+
+def _file_val(file_data, key):
+    """Look up a key in .framework.yaml data. Supports dot-notation."""
+    parts = key.split(".")
+    current = file_data
+    for part in parts:
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+        else:
+            return None
+    return str(current) if current is not None else None
+
+
 def _get_config():
     """Get all settings with current values and sources."""
+    file_data = _read_framework_yaml()
     result = []
     for key, default, description in SETTINGS:
         env_var = f"FW_{key}"
@@ -41,8 +67,13 @@ def _get_config():
             current = env_val
             source = "env"
         else:
-            current = default
-            source = "default"
+            fval = _file_val(file_data, key)
+            if fval is not None:
+                current = fval
+                source = "file"
+            else:
+                current = default
+                source = "default"
 
         # Range validation
         warning = None
@@ -75,11 +106,37 @@ def _get_config():
     return result
 
 
+def _get_project_info():
+    """Get project info and custom settings from .framework.yaml."""
+    file_data = _read_framework_yaml()
+    standard_keys = {"project_name", "version", "provider", "initialized_at",
+                     "upgraded_from", "last_upgrade", "upstream_repo"}
+    known_fw_keys = {k for k, _, _ in SETTINGS}
+
+    project_info = {}
+    for k in ["project_name", "version", "provider"]:
+        if k in file_data:
+            project_info[k] = file_data[k]
+
+    # Custom settings: anything not standard and not a known FW_ key
+    custom = {}
+    for k, v in file_data.items():
+        if k not in standard_keys and k not in known_fw_keys:
+            if isinstance(v, dict):
+                for sk, sv in v.items():
+                    custom[f"{k}.{sk}"] = sv
+            else:
+                custom[k] = v
+
+    return project_info, custom
+
+
 @bp.route("/config")
 def config_page():
     settings = _get_config()
-    override_count = sum(1 for s in settings if s["source"] == "env")
+    override_count = sum(1 for s in settings if s["source"] in ("env", "file"))
     warning_count = sum(1 for s in settings if s["warning"])
+    project_info, custom_settings = _get_project_info()
 
     return render_page(
         "config.html",
@@ -88,4 +145,6 @@ def config_page():
         override_count=override_count,
         warning_count=warning_count,
         total_count=len(settings),
+        project_info=project_info,
+        custom_settings=custom_settings,
     )

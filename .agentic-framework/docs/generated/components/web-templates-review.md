@@ -24,12 +24,6 @@ When agent ACs are complete and human ACs remain:
 |--------|-------------|
 | `web/templates/_review_acs.html` | includes |
 
-## Related
-
-### Tasks
-- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
-- T-676: Watchtower dark mode toggle — persist theme preference
-
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-review.yaml`*
 *Last verified: 2026-03-28*

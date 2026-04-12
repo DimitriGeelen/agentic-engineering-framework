@@ -95,6 +95,10 @@ with open(focus_file, 'w') as f:
             fi
         fi
 
+        # T-1063: Write .termlink-task for MCP governance integration
+        # TermLink MCP tools read this file when TERMLINK_TASK_GOVERNANCE=1
+        echo "$task_id" > "$PROJECT_ROOT/.termlink-task"
+
         local task_name=$(grep "^name:" "$task_file" | sed 's/name: //')
         echo -e "${GREEN}Focus set: $task_id${NC}"
         echo "Task: $task_name"

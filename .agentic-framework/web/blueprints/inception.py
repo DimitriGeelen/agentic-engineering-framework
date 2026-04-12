@@ -97,7 +97,7 @@ def inception_list():
 
     assumptions = _load_assumptions()
 
-    # Enrich inception tasks with decision state and assumption counts
+    # Enrich inception tasks with decision state, assumption counts, and recommendation (T-959)
     for t in inception_tasks:
         body = t.get("_body", "")
         t["_decision"] = _extract_decision(body)
@@ -107,6 +107,40 @@ def inception_list():
         t["_assumption_validated"] = len([a for a in linked if a.get("status") == "validated"])
         t["_assumption_invalidated"] = len([a for a in linked if a.get("status") == "invalidated"])
         t["_assumption_untested"] = len([a for a in linked if a.get("status") == "untested"])
+
+        # T-959: Extract recommendation summary for batch review
+        rec_section = _extract_section(body, "Recommendation")
+        if rec_section:
+            # Get first 200 chars of recommendation for inline display
+            rec_lines = [l for l in rec_section.split("\n") if l.strip() and not l.startswith("#")]
+            t["_recommendation"] = " ".join(rec_lines)[:300] if rec_lines else ""
+            # Extract recommendation type (GO/NO-GO/DEFER)
+            rec_type = ""
+            for line in rec_lines[:3]:
+                if re_mod.search(r"\bGO\b", line) and not re_mod.search(r"\bNO-GO\b", line):
+                    rec_type = "GO"
+                    break
+                elif re_mod.search(r"\bNO-GO\b", line):
+                    rec_type = "NO-GO"
+                    break
+                elif re_mod.search(r"\bDEFER\b", line):
+                    rec_type = "DEFER"
+                    break
+            t["_rec_type"] = rec_type
+        else:
+            t["_recommendation"] = ""
+            t["_rec_type"] = ""
+
+        # T-959: Check for research artifact
+        reports_dir = PROJECT_ROOT / "docs" / "reports"
+        t["_has_artifact"] = False
+        t["_artifact_path"] = ""
+        if reports_dir.exists() and task_id:
+            for rf in reports_dir.iterdir():
+                if task_id.lower() in rf.name.lower() and rf.suffix == ".md":
+                    t["_has_artifact"] = True
+                    t["_artifact_path"] = f"docs/reports/{rf.name}"
+                    break
 
     # Filter
     decision_filter = request.args.get("decision", "").strip().lower()
@@ -176,6 +210,7 @@ def inception_detail(task_id):
         "scope": _md(_extract_section(task_body, "Scope Fence")),
         "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
         "recommendation": _md(_extract_section(task_body, "Recommendation")),
+        "structural_upgrade": _md(_extract_section(task_body, "Structural Upgrade")),
         "decision": _md(_extract_section(task_body, "Decision")),
         "updates": _md(_extract_section(task_body, "Updates")),
     }

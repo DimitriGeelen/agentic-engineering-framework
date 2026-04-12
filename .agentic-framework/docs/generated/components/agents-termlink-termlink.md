@@ -29,20 +29,28 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (1)
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/config.sh` | calls |
+
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `tests/unit/termlink.bats` | tested_by |
+| `tests/unit/termlink.bats` | called_by |
 
 ## Related
 
 ### Tasks
-- T-652: TermLink dispatch task enforcement — make --task mandatory in fw termlink dispatch
-- T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)
-- T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044
 - T-798: Shellcheck cleanup: remaining peripheral agent scripts
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-843: Fix TermLink cleanup killing active dispatch workers
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+- T-972: Pickup: TermLink cleanup kills active dispatch workers — fw termlink cleanup treats running workers as orphans because they lack exit_code file (from 999-Agentic-Engineering-Framework)
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-termlink-termlink.yaml`*

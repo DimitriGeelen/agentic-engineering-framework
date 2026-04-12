@@ -273,6 +273,13 @@
             {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
             <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
             {% endif %}
+            {% if test_counts %}
+            <li>Tests:
+                <span class="wt-pulse-value">{{ test_counts.get('playwright', 0) }}</span> playwright,
+                <span class="wt-pulse-value">{{ test_counts.get('unit', 0) }}</span> unit,
+                <span class="wt-pulse-value">{{ test_counts.get('integration', 0) }}</span> integration
+            </li>
+            {% endif %}
         </ul>
         {% if concerns_summary %}
         <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--pico-muted-border-color);">

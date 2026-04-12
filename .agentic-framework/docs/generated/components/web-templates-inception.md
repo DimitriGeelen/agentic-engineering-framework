@@ -24,6 +24,11 @@ When the active task has `workflow_type: inception`:
 |-----------|-------------|
 | `web/blueprints/inception.py` | rendered_by |
 
+## Related
+
+### Tasks
+- T-959: Batch inception review page in Watchtower — surface pending go/no-go decisions with summaries (T-954 Phase 3a)
+
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-inception.yaml`*
 *Last verified: 2026-02-20*

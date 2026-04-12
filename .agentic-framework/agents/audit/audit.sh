@@ -390,6 +390,24 @@ echo "Project: $PROJECT_ROOT"
 [ -n "$SECTIONS" ] && echo "Sections: $SECTIONS"
 echo ""
 
+# --- Task File Scans (T-955) ---
+# Single-pass Python scans replace 8 separate bash loops over task files.
+# Each scan runs once, results reused by multiple sections.
+
+# Active task scan: replaces loops 1/2/5/9/10 (compliance, quality, research, ownership, D2)
+ACTIVE_SCAN=""
+if should_run_section "compliance" || should_run_section "quality" || should_run_section "oe-research" || should_run_section "oe-daily" || should_run_section "discovery" || should_run_section "discovery-trends"; then
+    ACTIVE_SCAN=$(python3 "$FRAMEWORK_ROOT/agents/audit/active-task-scan.py" \
+        "$TASKS_DIR" "$PROJECT_ROOT/docs/reports" 2>/dev/null || echo "")
+fi
+
+# Completed task scan: replaces loops 3/4/7 (episodic, research artifacts, AC gate)
+COMPLETED_SCAN=""
+if should_run_section "episodic" || should_run_section "research" || should_run_section "oe-daily"; then
+    COMPLETED_SCAN=$(python3 "$FRAMEWORK_ROOT/agents/audit/completed-task-scan.py" \
+        "$TASKS_DIR" "$CONTEXT_DIR/episodic" "$PROJECT_ROOT/docs/reports" 2>/dev/null || echo "")
+fi
+
 # ============================================
 # SECTION 1: STRUCTURE CHECKS
 # ============================================
@@ -604,71 +622,34 @@ fi # end structure
 if should_run_section "compliance"; then
 echo "=== TASK COMPLIANCE CHECKS ==="
 
-# Required frontmatter fields
-REQUIRED_FIELDS="id name description status workflow_type owner created last_update"
-
-# Check each active task
+# Check each active task (T-955: uses single-pass scan)
 task_count=0
 valid_task_count=0
 
-shopt -s nullglob
-for task_file in "$TASKS_DIR/active"/*.md; do
-    [ -f "$task_file" ] || continue
-    task_count=$((task_count + 1))
+if [ -n "$ACTIVE_SCAN" ]; then
+    task_count=$(echo "$ACTIVE_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin)['stats']['total'])" 2>/dev/null || echo "0")
+    valid_task_count=$(echo "$ACTIVE_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin)['stats']['valid'])" 2>/dev/null || echo "0")
 
-    task_name=$(basename "$task_file")
-    task_valid=true
+    # Emit warnings for compliance issues
+    while IFS='|' read -r task_name issue; do
+        [ -z "$task_name" ] && continue
+        warn "Task $task_name $issue" \
+             "Compliance check failed" \
+             "Fix $issue in $task_name"
+    done < <(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data['compliance']['issues']:
+    print(f\"{item['task']}|{item['issue']}\")
+" 2>/dev/null)
+fi
 
-    # Check required fields
-    for field in $REQUIRED_FIELDS; do
-        if ! grep -q "^$field:" "$task_file"; then
-            warn "Task $task_name missing field: $field" \
-                 "Field '$field' not found in frontmatter" \
-                 "Add '$field:' to task frontmatter"
-            task_valid=false
-        fi
-    done
-
-    # Check status is valid
-    status=$(grep "^status:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    valid_statuses="captured refined started-work issues blocked work-completed"
-    if ! echo "$valid_statuses" | grep -qw "$status"; then
-        warn "Task $task_name has invalid status: $status" \
-             "Status '$status' not in valid list" \
-             "Valid statuses: $valid_statuses"
-        task_valid=false
-    fi
-
-    # Check workflow_type is valid
-    wf_type=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    valid_types="specification design build test refactor decommission inception"
-    if [ -n "$wf_type" ] && ! echo "$valid_types" | grep -qw "$wf_type"; then
-        warn "Task $task_name has invalid workflow_type: $wf_type" \
-             "Type '$wf_type' not in valid list" \
-             "Valid types: $valid_types"
-        task_valid=false
-    fi
-
-    # Check Updates section exists
-    if ! grep -q "^## Updates" "$task_file"; then
-        warn "Task $task_name missing Updates section" \
-             "No '## Updates' header found" \
-             "Add '## Updates' section to track work"
-        task_valid=false
-    fi
-
-    if [ "$task_valid" = true ]; then
-        valid_task_count=$((valid_task_count + 1))
-    fi
-done
-shopt -u nullglob
-
-if [ $task_count -eq 0 ]; then
+if [ "$task_count" -eq 0 ]; then
     warn "No active tasks found" \
          ".tasks/active/ is empty" \
          "Create tasks for ongoing work"
 else
-    if [ $valid_task_count -eq $task_count ]; then
+    if [ "$valid_task_count" -eq "$task_count" ]; then
         pass "All $task_count active tasks are valid"
     else
         echo "       $valid_task_count of $task_count tasks fully valid"
@@ -684,101 +665,23 @@ fi # end compliance
 if should_run_section "quality"; then
 echo "=== TASK QUALITY CHECKS ==="
 
+# Quality checks (T-955: uses single-pass scan)
 quality_issues=0
 
-shopt -s nullglob
-for task_file in "$TASKS_DIR/active"/*.md; do
-    [ -f "$task_file" ] || continue
-    task_name=$(basename "$task_file")
-    task_id=$(grep "^id:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    task_status=$(grep "^status:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-
-    # Quality Check 1: Description length > 50 chars
-    description=$(grep "^description:" "$task_file" | head -1 | cut -d: -f2-)
-    # Handle multi-line description (YAML > syntax)
-    if [ -z "$description" ] || [ "$description" = " >" ]; then
-        # Multi-line: get next non-empty line
-        description=$(sed -n '/^description:/,/^[a-z_]*:/p' "$task_file" | sed '1d;/^[a-z_]*:/d' | tr -d '\n' | sed 's/^[ ]*//')
-    fi
-    desc_len=${#description}
-    if [ "$desc_len" -lt 50 ]; then
-        warn "Task $task_id has short description ($desc_len chars)" \
-             "Description should be >= 50 chars for clarity" \
-             "Expand description in $task_name"
+if [ -n "$ACTIVE_SCAN" ]; then
+    while IFS='|' read -r task_id issue task_file; do
+        [ -z "$task_id" ] && continue
+        warn "Task $task_id has $issue" \
+             "Quality check failed" \
+             "Fix in $task_file"
         quality_issues=$((quality_issues + 1))
-    fi
-
-    # Count updates (### headers in Updates section)
-    updates_count=$(grep -c "^### " "$task_file" 2>/dev/null || true)
-    updates_count=${updates_count:-0}
-    # Ensure it's a clean integer
-    updates_count=$(echo "$updates_count" | tr -d '[:space:]')
-
-    # Quality Check 2: Updates section has entries for started-work tasks
-    if [ "$task_status" = "started-work" ]; then
-        if [ "$updates_count" -eq 0 ]; then
-            warn "Task $task_id has no updates but status is started-work" \
-                 "Started tasks should have at least 1 update entry" \
-                 "Add update entry to $task_name"
-            quality_issues=$((quality_issues + 1))
-        fi
-    fi
-
-    # Quality Check 3: Tasks older than 7 days should have > 1 update
-    created_date=$(grep "^created:" "$task_file" | head -1 | cut -d: -f2- | tr -d ' ' | cut -dT -f1)
-    if [ -n "$created_date" ]; then
-        created_ts=$(date -d "$created_date" +%s 2>/dev/null || date -j -f "%Y-%m-%d" "$created_date" +%s 2>/dev/null || true)
-        now_ts=$(date +%s)
-        age_days=$(( (now_ts - created_ts) / 86400 ))
-        if [ "$age_days" -gt 7 ] && [ "$task_status" != "work-completed" ]; then
-            if [ "$updates_count" -lt 2 ]; then
-                warn "Task $task_id is $age_days days old with only $updates_count updates" \
-                     "Long-running tasks should show progress" \
-                     "Add progress updates to $task_name"
-                quality_issues=$((quality_issues + 1))
-            fi
-        fi
-    fi
-
-    # Quality Check 4: Acceptance Criteria section exists with at least one checkbox
-    # Skip for captured tasks (not yet fleshed out) and inception tasks (use Go/No-Go instead)
-    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    if [ "$task_status" != "captured" ] && [ "$task_workflow" != "inception" ]; then
-        ac_checkboxes=$(grep -c '\- \[[ x]\]' "$task_file" 2>/dev/null || true)
-        ac_checkboxes=$(echo "$ac_checkboxes" | tr -d '[:space:]')
-        if [ "$ac_checkboxes" -eq 0 ]; then
-            warn "Task $task_id has no acceptance criteria checkboxes" \
-                 "Tasks in progress need measurable completion criteria" \
-                 "Add '## Acceptance Criteria' with checkboxes to $task_name"
-            quality_issues=$((quality_issues + 1))
-        fi
-    fi
-
-    # Quality Check 5: Verification section exists for started-work+ tasks
-    if [ "$task_status" = "started-work" ] || [ "$task_status" = "issues" ]; then
-        has_verification=$(grep -c '^## Verification' "$task_file" 2>/dev/null || true)
-        has_verification=$(echo "$has_verification" | tr -d '[:space:]')
-        if [ "$has_verification" -eq 0 ]; then
-            warn "Task $task_id has no ## Verification section" \
-                 "Verification commands enable the structural gate (P-011)" \
-                 "Add '## Verification' with shell commands to $task_name"
-            quality_issues=$((quality_issues + 1))
-        fi
-    fi
-
-    # Quality Check 6: Context section is not a template placeholder
-    if [ "$task_status" != "captured" ]; then
-        has_placeholder=$(grep -c '\[Link to design docs' "$task_file" 2>/dev/null || true)
-        has_placeholder=$(echo "$has_placeholder" | tr -d '[:space:]')
-        if [ "$has_placeholder" -gt 0 ]; then
-            warn "Task $task_id has unfilled placeholder in Context section" \
-                 "Context should describe the task's background, not contain template text" \
-                 "Replace placeholder in $task_name with actual context"
-            quality_issues=$((quality_issues + 1))
-        fi
-    fi
-done
-shopt -u nullglob
+    done < <(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data['quality']['issues']:
+    print(f\"{item['id']}|{item['issue']}|{item['file']}\")
+" 2>/dev/null)
+fi
 
 if [ "$quality_issues" -eq 0 ]; then
     pass "All active tasks meet quality thresholds"
@@ -1052,24 +955,16 @@ echo "=== EPISODIC MEMORY CHECKS ==="
 
 episodic_dir="$CONTEXT_DIR/episodic"
 
-# Check 1: Every completed task should have an episodic summary
+# Check 1: Every completed task should have an episodic summary (T-955: uses single-pass scan)
 missing_episodic=0
-if [ -d "$TASKS_DIR/completed" ]; then
-    shopt -s nullglob
-    for task_file in "$TASKS_DIR/completed"/*.md; do
-        [ -f "$task_file" ] || continue
-        task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+if [ -n "$COMPLETED_SCAN" ]; then
+    while IFS= read -r task_id; do
         [ -z "$task_id" ] && continue
-
-        episodic_file="$episodic_dir/${task_id}.yaml"
-        if [ ! -f "$episodic_file" ]; then
-            warn "Completed task $task_id has no episodic summary" \
-                 "$episodic_file not found" \
-                 "Run: ./agents/context/context.sh generate-episodic $task_id"
-            missing_episodic=$((missing_episodic + 1))
-        fi
-    done
-    shopt -u nullglob
+        warn "Completed task $task_id has no episodic summary" \
+             "$episodic_dir/${task_id}.yaml not found" \
+             "Run: ./agents/context/context.sh generate-episodic $task_id"
+        missing_episodic=$((missing_episodic + 1))
+    done < <(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; [print(x) for x in json.load(sys.stdin).get('missing_episodic',[])]" 2>/dev/null)
 fi
 
 if [ "$missing_episodic" -eq 0 ]; then
@@ -1425,53 +1320,20 @@ fi # end graduation
 if should_run_section "research"; then
 echo "=== INCEPTION RESEARCH CHECKS ==="
 
-# Check completed inception tasks for research artifacts in docs/reports/
+# Check completed inception tasks for research artifacts (T-955: uses single-pass scan)
 missing_research=0
-if [ -d "$TASKS_DIR/completed" ] && [ -d "$PROJECT_ROOT/docs/reports" ]; then
-    shopt -s nullglob
-    for task_file in "$TASKS_DIR/completed"/*.md; do
-        [ -f "$task_file" ] || continue
-        task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-        [ "$task_workflow" != "inception" ] && continue
-
-        task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+if [ -n "$COMPLETED_SCAN" ]; then
+    while IFS= read -r task_id; do
         [ -z "$task_id" ] && continue
-
-        # Check if any docs/reports/ file references this task ID
-        has_artifact=false
-        for report in "$PROJECT_ROOT/docs/reports"/*.md; do
-            if basename "$report" | grep -qi "$task_id"; then
-                has_artifact=true
-                break
-            fi
-        done
-
-        # Also check if task body mentions docs/reports/
-        if [ "$has_artifact" = false ]; then
-            if grep -q "docs/reports/" "$task_file" 2>/dev/null; then
-                has_artifact=true
-            fi
-        fi
-
-        # Also check episodic for artifact references
-        if [ "$has_artifact" = false ] && [ -f "$CONTEXT_DIR/episodic/${task_id}.yaml" ]; then
-            if grep -q "docs/reports/" "$CONTEXT_DIR/episodic/${task_id}.yaml" 2>/dev/null; then
-                has_artifact=true
-            fi
-        fi
-
-        if [ "$has_artifact" = false ]; then
-            warn "Inception task $task_id has no research artifact in docs/reports/" \
-                 "Completed inception with no persisted research output" \
-                 "Save research findings: docs/reports/${task_id}-*.md"
-            missing_research=$((missing_research + 1))
-        fi
-    done
-    shopt -u nullglob
+        warn "Inception task $task_id has no research artifact in docs/reports/" \
+             "Completed inception with no persisted research output" \
+             "Save research findings: docs/reports/${task_id}-*.md"
+        missing_research=$((missing_research + 1))
+    done < <(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; [print(x) for x in json.load(sys.stdin).get('missing_research',[])]" 2>/dev/null)
 fi
 
 if [ "$missing_research" -eq 0 ]; then
-    inception_count=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/completed/" 2>/dev/null | wc -l | tr -d ' ')
+    inception_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('inception_count',0))" 2>/dev/null || echo "0")
     if [ "$inception_count" -gt 0 ]; then
         pass "All $inception_count completed inceptions have research artifacts"
     else
@@ -1488,39 +1350,31 @@ fi # end research
 if should_run_section "oe-research"; then
 echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
 
-# C-001 OE: Active inception tasks with started-work should have docs/reports/ artifact
+# C-001 OE: Active inception tasks with started-work should have docs/reports/ artifact (T-955: uses scan)
 c001_missing=0
-shopt -s nullglob
-for task_file in "$TASKS_DIR/active"/*.md; do
-    [ -f "$task_file" ] || continue
-    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    [ "$task_workflow" != "inception" ] && continue
-    task_status=$(grep "^status:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
-    [ "$task_status" != "started-work" ] && continue
-    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
-    [ -z "$task_id" ] && continue
-
-    artifact=$(find "$PROJECT_ROOT/docs/reports/" -name "${task_id}-*" -type f 2>/dev/null | head -1)
-    if [ -z "$artifact" ]; then
-        warn "C-001: Inception $task_id has no research artifact in docs/reports/" \
-             "Active inception task without persisted research" \
-             "Create docs/reports/${task_id}-*.md — the thinking trail IS the artifact"
-        c001_missing=$((c001_missing + 1))
-    else
-        # Check artifact is referenced in task Updates section
-        artifact_ref=$(grep -c 'docs/reports/' "$task_file" 2>/dev/null || true)
-        artifact_ref=$(echo "$artifact_ref" | tr -d '[:space:]')
-        if [ "$artifact_ref" -eq 0 ]; then
+if [ -n "$ACTIVE_SCAN" ]; then
+    while IFS='|' read -r task_id issue_type artifact_name; do
+        [ -z "$task_id" ] && continue
+        if [ "$issue_type" = "missing" ]; then
+            warn "C-001: Inception $task_id has no research artifact in docs/reports/" \
+                 "Active inception task without persisted research" \
+                 "Create docs/reports/${task_id}-*.md — the thinking trail IS the artifact"
+            c001_missing=$((c001_missing + 1))
+        elif [ "$issue_type" = "unreferenced" ]; then
             warn "C-001: Inception $task_id has artifact but task doesn't reference it" \
-                 "$(basename "$artifact") exists but not linked in task Updates" \
+                 "$artifact_name exists but not linked in task Updates" \
                  "Add artifact reference to ## Updates section of $task_id"
         fi
-    fi
-done
-shopt -u nullglob
+    done < <(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data['research']['issues']:
+    print(f\"{item['id']}|{item['type']}|{item.get('artifact','')}\")
+" 2>/dev/null)
+fi
 
 if [ "$c001_missing" -eq 0 ]; then
-    inception_active=$(grep -rl "^workflow_type: inception" "$TASKS_DIR/active/" 2>/dev/null | while read -r f; do grep -l "^status: started-work" "$f" 2>/dev/null; done | wc -l | tr -d ' ')
+    inception_active=$(echo "$ACTIVE_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin)['research']['inception_active'])" 2>/dev/null || echo "0")
     if [ "$inception_active" -gt 0 ]; then
         pass "C-001: All $inception_active active inceptions have research artifacts"
     else
@@ -1850,46 +1704,24 @@ else
          "Run: fw git install-hooks"
 fi
 
-# CTL-012 OE: AC Gate — no completed task has unchecked ACs
+# CTL-012 OE: AC Gate — no completed task has unchecked ACs (T-955: uses single-pass scan)
 ac_fail=0
-shopt -s nullglob
-for task_file in "$TASKS_DIR/completed"/*.md; do
-    [ -f "$task_file" ] || continue
-    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
-    # Check for unchecked ACs in Acceptance Criteria section
-    # Skip ### Human subsection — those are human-owned and intentionally unchecked (T-193)
-    in_ac=false
-    in_human=false
-    while IFS= read -r line; do
-        if echo "$line" | grep -q "^## Acceptance Criteria"; then
-            in_ac=true
-            in_human=false
-            continue
-        fi
-        if echo "$line" | grep -q "^## " && [ "$in_ac" = true ]; then
-            break
-        fi
-        # Track Human/Agent subsections within AC
-        if [ "$in_ac" = true ] && echo "$line" | grep -q "^### Human"; then
-            in_human=true
-            continue
-        fi
-        if [ "$in_ac" = true ] && echo "$line" | grep -q "^### "; then
-            in_human=false
-            continue
-        fi
-        if [ "$in_ac" = true ] && [ "$in_human" = false ] && echo "$line" | grep -q '^\- \[ \]'; then
-            warn "CTL-012: Completed task $task_id has unchecked AC" \
-                 "$(echo "$line" | head -c 80)" \
-                 "Review task completion — AC gate may have been bypassed"
-            ac_fail=$((ac_fail + 1))
-            break
-        fi
-    done < "$task_file"
-done
-shopt -u nullglob
+if [ -n "$COMPLETED_SCAN" ]; then
+    while IFS='|' read -r task_id ac_line; do
+        [ -z "$task_id" ] && continue
+        warn "CTL-012: Completed task $task_id has unchecked AC" \
+             "$ac_line" \
+             "Review task completion — AC gate may have been bypassed"
+        ac_fail=$((ac_fail + 1))
+    done < <(echo "$COMPLETED_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get('unchecked_ac', []):
+    print(f\"{item['id']}|{item['line']}\")
+" 2>/dev/null)
+fi
 if [ "$ac_fail" -eq 0 ]; then
-    completed_count=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+    completed_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('total',0))" 2>/dev/null || echo "0")
     pass "CTL-012: All $completed_count completed tasks have checked ACs"
 fi
 
@@ -1966,25 +1798,24 @@ else
          "Auto-restart won't work without claude-fw wrapper"
 fi
 
-# CTL-025 OE: P-010 Agent/Human AC split — partial-complete tasks have owner:human
-shopt -s nullglob
-for task_file in "$TASKS_DIR/active/"T-*.md; do
-    task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/id:[[:space:]]*//')
-    task_status=$(grep "^status:" "$task_file" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
-    task_owner=$(grep "^owner:" "$task_file" 2>/dev/null | head -1 | sed 's/owner:[[:space:]]*//')
-
-    # Check: work-completed tasks still in active/ must have owner:human
-    if [ "$task_status" = "work-completed" ]; then
-        if [ "$task_owner" = "human" ]; then
+# CTL-025 OE: P-010 Agent/Human AC split — partial-complete tasks have owner:human (T-955: uses scan)
+if [ -n "$ACTIVE_SCAN" ]; then
+    while IFS='|' read -r task_id owner is_valid; do
+        [ -z "$task_id" ] && continue
+        if [ "$is_valid" = "True" ]; then
             pass "CTL-025: $task_id partial-complete with owner:human ✓"
         else
-            warn "CTL-025: $task_id is work-completed in active/ but owner is '$task_owner' (expected: human)" \
+            warn "CTL-025: $task_id is work-completed in active/ but owner is '$owner' (expected: human)" \
                  "Partial-complete task without human ownership" \
                  "Run: fw task update $task_id --owner human"
         fi
-    fi
-done
-shopt -u nullglob
+    done < <(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data['ownership']['issues']:
+    print(f\"{item['id']}|{item['owner']}|{item['valid']}\")
+" 2>/dev/null)
+fi
 
 # CTL-026 OE: Human Sovereignty Gate — update-task.sh has both gate checks
 if grep -qi 'sovereignty gate.*R-033' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" 2>/dev/null; then
@@ -2049,55 +1880,31 @@ else
     pass "D1: No episodic directory"
 fi
 
-# D2: Human Review Queue Aging (Score 20)
-# Scan active tasks for work-completed with owner:human, calculate age
-# T-373: Redesigned thresholds. Tasks awaiting human review are a NORMAL state,
-# not a problem. Only escalate when genuinely forgotten (>30 days).
-# Previous thresholds (72h FAIL, 48h WARN) created perverse incentive for agents
-# to suggest closing tasks to "fix" the audit score.
+# D2: Human Review Queue Aging (Score 20) (T-955: uses single-pass scan)
+# T-373: Tasks awaiting human review are NORMAL. Only escalate when forgotten (>30 days).
 d2_info=0
 d2_warn=0
 d2_fail=0
 d2_details=""
-shopt -s nullglob
-for task_file in "$TASKS_DIR/active"/T-*.md; do
-    [ -f "$task_file" ] || continue
-    t_status=$(grep "^status:" "$task_file" | head -1 | sed 's/status:[[:space:]]*//')
-    [ "$t_status" != "work-completed" ] && continue
-    t_owner=$(grep "^owner:" "$task_file" | head -1 | sed 's/owner:[[:space:]]*//')
-    [ "$t_owner" != "human" ] && continue
-    t_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id:[[:space:]]*//')
-    t_finished=$(grep "^date_finished:" "$task_file" | head -1 | sed 's/date_finished:[[:space:]]*//')
-    t_updated=$(grep "^last_update:" "$task_file" | head -1 | sed 's/last_update:[[:space:]]*//')
-
-    # Use date_finished if available, else last_update
-    t_date="${t_finished:-$t_updated}"
-    if [ -n "$t_date" ] && [ "$t_date" != "null" ]; then
-        age_seconds=$(python3 -c "
-from datetime import datetime, timezone
-try:
-    ts = datetime.fromisoformat('$t_date'.replace('Z','+00:00'))
-    if ts.tzinfo is None: ts = ts.replace(tzinfo=timezone.utc)
-    age = (datetime.now(timezone.utc) - ts).total_seconds()
-    print(int(age))
-except: print(0)
-" 2>/dev/null)
-        age_hours=$((age_seconds / 3600))
-
-        # T-373: Only flag genuinely forgotten tasks (>30 days)
-        # Tasks <30 days are normal — human reviews on their own schedule
+if [ -n "$ACTIVE_SCAN" ]; then
+    while IFS='|' read -r t_id age_hours age_days; do
+        [ -z "$t_id" ] && continue
         if [ "$age_hours" -ge 720 ]; then
             d2_fail=$((d2_fail + 1))
-            d2_details="$d2_details $t_id($((age_hours / 24))d)"
+            d2_details="$d2_details $t_id(${age_days}d)"
         elif [ "$age_hours" -ge 336 ]; then
             d2_warn=$((d2_warn + 1))
-            d2_details="$d2_details $t_id($((age_hours / 24))d)"
+            d2_details="$d2_details $t_id(${age_days}d)"
         else
             d2_info=$((d2_info + 1))
         fi
-    fi
-done
-shopt -u nullglob
+    done < <(echo "$ACTIVE_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data['review_queue']['tasks']:
+    print(f\"{item['id']}|{item['age_hours']}|{item['age_days']}\")
+" 2>/dev/null)
+fi
 
 # shellcheck disable=SC2034 # d2_total available for debug/summary
 d2_total=$((d2_info + d2_warn + d2_fail))

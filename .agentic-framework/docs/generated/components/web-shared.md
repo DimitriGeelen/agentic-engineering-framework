@@ -10,7 +10,7 @@
 
 Path resolution
 
-## Used By (34)
+## Used By (42)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -48,13 +48,22 @@ Path resolution
 | `web/search.py` | imports_by |
 | `web/search_utils.py` | imports_by |
 | `web/subprocess_utils.py` | called_by |
+| `web/blueprints/costs.py` | called-by |
+| `web/blueprints/config.py` | called-by |
+| `web/blueprints/discovery.py` | called-by |
+| `web/blueprints/sessions.py` | called_by |
+| `web/blueprints/terminal.py` | called_by |
+| `web/blueprints/config.py` | called_by |
+| `web/blueprints/costs.py` | called_by |
+| `web/blueprints/discovery.py` | called_by |
 
 ## Related
 
 ### Tasks
-- T-733: Update Watchtower navigation labels for Fabric Explorer
 - T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
+- T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
+- T-984: Add Sessions link to Watchtower navigation
 
 ---
 *Auto-generated from Component Fabric. Card: `web-shared.yaml`*

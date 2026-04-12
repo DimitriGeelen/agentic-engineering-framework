@@ -26,21 +26,23 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (3)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/task-create/update-task.sh` | called_by |
 | `bin/fw` | called_by |
 | `lib/inception.sh` | called_by |
+| `tests/unit/lib_review.bats` | called-by |
+| `tests/unit/lib_review.bats` | called_by |
 
 ## Related
 
 ### Tasks
-- T-642: emit_review type parameter — route inception to /inception, tasks to /tasks
-- T-667: Mobile review route — /review/T-XXX lightweight approval card for QR scan
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
+- T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
+- T-973: Review-before-decide gate — fw inception decide requires fw task review first
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-review.yaml`*

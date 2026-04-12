@@ -1,0 +1,16 @@
+# test_discoveries
+
+> Playwright tests for Discoveries dashboard (T-987)
+
+**Type:** script | **Subsystem:** tests-playwright | **Location:** `tests/playwright/test_discoveries.py`
+
+## What It Does
+
+## Related
+
+### Tasks
+- T-987: Playwright tests for remaining pages — discoveries, docs, settings
+
+---
+*Auto-generated from Component Fabric. Card: `tests-playwright-test_discoveries.yaml`*
+*Last verified: 2026-04-07*

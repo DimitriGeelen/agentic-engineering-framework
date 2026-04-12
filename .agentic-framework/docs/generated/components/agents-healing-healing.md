@@ -33,12 +33,16 @@ Usage:
 | `agents/healing/lib/suggest.sh` | calls |
 | `lib/paths.sh` | calls |
 
-## Used By (2)
+## Used By (6)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/task-create/update-task.sh` | called_by |
 | `bin/fw` | called_by |
+| `tests/unit/healing_diagnose.bats` | called-by |
+| `tests/unit/healing_suggest.bats` | called-by |
+| `tests/unit/healing_diagnose.bats` | called_by |
+| `tests/unit/healing_suggest.bats` | called_by |
 
 ## Documentation
 

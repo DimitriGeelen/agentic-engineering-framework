@@ -1,0 +1,60 @@
+# Terminal session profiles — named presets for quick session creation (T-967).
+# Each profile defines provider, shell/model, environment, and UI appearance.
+
+profiles:
+  local-bash:
+    name: "Bash Shell"
+    description: "Local bash terminal"
+    type: shell
+    provider:
+      name: local
+    config:
+      shell: /bin/bash
+    ui:
+      icon: "terminal"
+      color: "#4CAF50"
+      label: "Bash"
+
+  local-zsh:
+    name: "Zsh Shell"
+    description: "Local zsh terminal"
+    type: shell
+    provider:
+      name: local
+    config:
+      shell: /bin/zsh
+    ui:
+      icon: "terminal"
+      color: "#2196F3"
+      label: "Zsh"
+
+  claude-code:
+    name: "Claude Code"
+    description: "Interactive Claude Code session (-c mode)"
+    type: agent
+    provider:
+      name: claude
+      model: claude-opus-4-6
+    config:
+      env:
+        FW_CONTEXT_WINDOW: "300000"
+    ui:
+      icon: "brain"
+      color: "#D97706"
+      label: "Claude"
+
+  claude-dispatch:
+    name: "Claude Dispatch"
+    description: "Claude Code prompt worker (-p mode)"
+    type: agent
+    provider:
+      name: claude
+      model: claude-opus-4-6
+    config:
+      output_format: text
+      env:
+        FW_CONTEXT_WINDOW: "300000"
+    ui:
+      icon: "zap"
+      color: "#9333EA"
+      label: "Dispatch"

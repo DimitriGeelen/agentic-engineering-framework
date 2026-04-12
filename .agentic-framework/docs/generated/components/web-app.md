@@ -51,19 +51,23 @@ When building a web application:
 | `web/blueprints/__init__.py` | calls |
 | `web/embeddings.py` | calls |
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|
 | `bin/fw` | called_by |
+| `web/templates/_partials/badge.html` | used-by |
+| `web/test_costs.py` | called_by |
+| `web/templates/_partials/badge.html` | used-by_by |
 
 ## Related
 
 ### Tasks
-- T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
-- T-854: Pass project name to Watchtower templates — resolve from project root, display in header
-- T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 - T-865: Fix Fabric Explorer naming — use project_name in title
+- T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
+- T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)
+- T-965: Multi-session terminal tabs + session management (T-962 Phase 2)
+- T-966: TermLink session observation in Watchtower terminal (T-962 Phase 3)
 
 ---
 *Auto-generated from Component Fabric. Card: `web-app.yaml`*
