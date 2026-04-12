@@ -4,16 +4,16 @@ name: "Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-943. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T08:00:02Z
-last_update: 2026-04-12T10:47:00Z
-date_finished: null
+last_update: 2026-04-12T10:55:05Z
+date_finished: 2026-04-12T10:55:05Z
 ---
 
 # T-1120: Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking approve button gets Task review required error (from 010-termlink)
@@ -96,3 +96,7 @@ grep -q "reviewed-via-watchtower" web/blueprints/inception.py
 ### 2026-04-12T10:45:06Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T10:55:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Fix applied: Watchtower creates review marker before decide call

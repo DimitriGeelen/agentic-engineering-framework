@@ -4,16 +4,16 @@ name: "Pickup: Approvals page never displays agent recommendation or argumentati
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-939. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T07:45:01Z
-last_update: 2026-04-12T10:50:16Z
-date_finished: null
+last_update: 2026-04-12T10:55:00Z
+date_finished: 2026-04-12T10:55:00Z
 ---
 
 # T-1119: Pickup: Approvals page never displays agent recommendation or argumentation — rationale_hint only pre-fills textarea, no visible recommendation block (from 010-termlink)
@@ -27,7 +27,7 @@ Watchtower approvals page shows inception tasks but hides the agent's recommenda
 ### Agent
 - [x] Problem statement validated
 - [x] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -86,3 +86,7 @@ grep -q "recommendation" web/templates/_approvals_content.html
 ### 2026-04-12T10:47:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T10:55:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Fix applied
