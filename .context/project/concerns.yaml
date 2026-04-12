@@ -2,42 +2,35 @@ concerns:
 - id: G-001
   type: gap
   title: Enforcement tiers — Tier 1 implemented, Tier 0 remains spec-only
-  description: '010-TaskSystem.md defines 4 enforcement tiers. Trigger fired: third-party plugins (acting as second agent)
-    caused task-first bypass (T-061 investigation). Tier 1 now implemented via PreToolUse hook (T-063) + fw work-on (T-064).
-    Tier 0 (consequential actions) still spec-only — needs Bash command parsing.
+  description: '010-TaskSystem.md defines 4 enforcement tiers. Trigger fired: third-party plugins (acting as second agent) caused task-first bypass (T-061 investigation). Tier 1 now implemented via PreToolUse
+    hook (T-063) + fw work-on (T-064). Tier 0 (consequential actions) still spec-only — needs Bash command parsing.
 
     '
   spec_reference: '010-TaskSystem.md §Enforcement: The Four Tiers'
   severity: medium
   trigger_fired: true
-  trigger_event: 'T-061: Third-party plugins (superpowers, feature-dev, etc.) acted as second agent and caused task creation
-    bypass. 0/20 loaded skills were task-aware. Investigation confirmed by 4 parallel analysis agents.
+  trigger_event: 'T-061: Third-party plugins (superpowers, feature-dev, etc.) acted as second agent and caused task creation bypass. 0/20 loaded skills were task-aware. Investigation confirmed by 4 parallel
+    analysis agents.
 
     '
-  resolution_in_progress: 'T-062: Instruction precedence in CLAUDE.md (DONE) T-063: PreToolUse hook blocks Write/Edit without
-    active task (DONE) T-064: fw work-on single-step gate command (DONE) T-065: /start-work command for plugin integration
-    (DONE) T-067: Plugin onboarding audit process (DONE) Remaining: Tier 0 Bash enforcement for destructive commands
+  resolution_in_progress: 'T-062: Instruction precedence in CLAUDE.md (DONE) T-063: PreToolUse hook blocks Write/Edit without active task (DONE) T-064: fw work-on single-step gate command (DONE) T-065:
+    /start-work command for plugin integration (DONE) T-067: Plugin onboarding audit process (DONE) Remaining: Tier 0 Bash enforcement for destructive commands
 
     '
-  what_works_now: 'Tier 1: PreToolUse hook blocks Write/Edit without active task in focus.yaml. Exempt paths: .context/, .tasks/,
-    .claude/, .git/. Agent gets clear error with instructions to create task. Git commit-msg hook still enforces T-XXX pattern
-    at commit time. CLAUDE.md instruction precedence resolves plugin authority conflicts.
+  what_works_now: 'Tier 1: PreToolUse hook blocks Write/Edit without active task in focus.yaml. Exempt paths: .context/, .tasks/, .claude/, .git/. Agent gets clear error with instructions to create task.
+    Git commit-msg hook still enforces T-XXX pattern at commit time. CLAUDE.md instruction precedence resolves plugin authority conflicts.
 
     '
-  what_remains: 'Tier 2: No formal bypass logging mechanism beyond git --no-verify. Tier 3: Pre-approved categories exist
-    in spec but not consumed by enforcement.
+  what_remains: 'Tier 2: No formal bypass logging mechanism beyond git --no-verify. Tier 3: Pre-approved categories exist in spec but not consumed by enforcement.
 
     '
-  tier0_resolution: 'T-092 (2026-02-16): Built check-tier0.sh PreToolUse hook for Bash tool. Detects: force push, hard reset,
-    git clean, branch -D, rm -rf /, DROP TABLE, TRUNCATE, docker system prune, kubectl delete namespace. Approval flow: fw
-    tier0 approve (one-time, 5-min expiry, logged to bypass-log.yaml). 47/47 pattern tests passing. Fast path: keyword pre-filter
-    avoids Python overhead for 95%+ of safe commands. T-094 added heredoc false-positive prevention.
+  tier0_resolution: 'T-092 (2026-02-16): Built check-tier0.sh PreToolUse hook for Bash tool. Detects: force push, hard reset, git clean, branch -D, rm -rf /, DROP TABLE, TRUNCATE, docker system prune, kubectl
+    delete namespace. Approval flow: fw tier0 approve (one-time, 5-min expiry, logged to bypass-log.yaml). 47/47 pattern tests passing. Fast path: keyword pre-filter avoids Python overhead for 95%+ of safe
+    commands. T-094 added heredoc false-positive prevention.
 
     '
-  resolution: 'All decided-build enforcement work complete: Tier 0: check-tier0.sh (T-092, T-094) — destructive Bash command
-    guard Tier 1: check-active-task.sh (T-063) — Write/Edit blocked without active task Tier 2: Partial — bypass logging exists
-    via git agent, not yet formalized Tier 3: Spec only — pre-approved categories not yet consumed by enforcement Tiers 2+3
-    are low priority and tracked informally.
+  resolution: 'All decided-build enforcement work complete: Tier 0: check-tier0.sh (T-092, T-094) — destructive Bash command guard Tier 1: check-active-task.sh (T-063) — Write/Edit blocked without active
+    task Tier 2: Partial — bypass logging exists via git agent, not yet formalized Tier 3: Spec only — pre-approved categories not yet consumed by enforcement Tiers 2+3 are low priority and tracked informally.
 
     '
   status: closed
@@ -48,18 +41,17 @@ concerns:
 - id: G-002
   type: gap
   title: Status transitions not validated
-  description: '010-TaskSystem.md originally defined 6 statuses including ''refined'' and ''blocked''. After 50 tasks, neither
-    was ever used. Simplified to 4 statuses (captured, started-work, issues, work-completed) with validated transitions.
+  description: '010-TaskSystem.md originally defined 6 statuses including ''refined'' and ''blocked''. After 50 tasks, neither was ever used. Simplified to 4 statuses (captured, started-work, issues, work-completed)
+    with validated transitions.
 
     '
   spec_reference: 010-TaskSystem.md §Task Statuses (Lifecycle)
   severity: medium
-  resolution: 'Decided-simplify (T-051): Removed ''refined'' and ''blocked'' statuses. Added transition validation to update-task.sh.
-    Updated spec, CLI, web UI. Legacy compat: old tasks with refined/blocked can transition to started-work.
+  resolution: 'Decided-simplify (T-051): Removed ''refined'' and ''blocked'' statuses. Added transition validation to update-task.sh. Updated spec, CLI, web UI. Legacy compat: old tasks with refined/blocked
+    can transition to started-work.
 
     '
-  evidence_collected: '50 tasks: 0 used ''refined'', 0 used ''blocked'', 7 used ''issues''. Actual lifecycle was always: captured
-    → started-work ↔ issues → work-completed.
+  evidence_collected: '50 tasks: 0 used ''refined'', 0 used ''blocked'', 7 used ''issues''. Actual lifecycle was always: captured → started-work ↔ issues → work-completed.
 
     '
   status: closed
@@ -69,14 +61,14 @@ concerns:
 - id: G-003
   type: gap
   title: Unused frontmatter fields (priority, tags, agents.supporting)
-  description: 'Task template had 11 frontmatter fields. Removed priority, tags, agents.primary, and agents.supporting from
-    default template (T-052). workflow_type kept — it IS consumed by task list filtering and episodic tags.
+  description: 'Task template had 11 frontmatter fields. Removed priority, tags, agents.primary, and agents.supporting from default template (T-052). workflow_type kept — it IS consumed by task list filtering
+    and episodic tags.
 
     '
   spec_reference: 010-TaskSystem.md §Task Fields Reference
   severity: low
-  resolution: 'Decided-simplify (T-052): Removed priority, tags, agents from default template and create-task.sh. Existing
-    tasks retain these fields (no migration needed). workflow_type retained as it has consumers (task list, web UI).
+  resolution: 'Decided-simplify (T-052): Removed priority, tags, agents from default template and create-task.sh. Existing tasks retain these fields (no migration needed). workflow_type retained as it has
+    consumers (task list, web UI).
 
     '
   evidence_collected: '50 tasks: all medium priority, tags almost always [], supporting agents always [].
@@ -89,14 +81,13 @@ concerns:
 - id: G-004
   type: gap
   title: Multi-agent collaboration untested
-  description: 'Spec describes primary + supporting agents on a single task, with all agents logging to the same update history.
-    Never tested — every task has been single-owner, single-agent. agents.supporting is [] on all 41 tasks.
+  description: 'Spec describes primary + supporting agents on a single task, with all agents logging to the same update history. Never tested — every task has been single-owner, single-agent. agents.supporting
+    is [] on all 41 tasks.
 
     '
   spec_reference: 010-TaskSystem.md §Task-to-Agent Relationship
   severity: low
-  why_not_now: 'Only one agent exists (claude-code). Can''t test multi-agent patterns without multiple agents. Building coordination
-    for a solo performer is waste.
+  why_not_now: 'Only one agent exists (claude-code). Can''t test multi-agent patterns without multiple agents. Building coordination for a solo performer is waste.
 
     '
   decision_trigger: 'First project where two agents need to work on the same task.
@@ -107,8 +98,7 @@ concerns:
     hint: 'Check after each project: did two different agents work on the same task?'
   evidence_needed: Actual multi-agent scenario
   evidence_collected: 0 instances across 41 tasks
-  alternative_outcome: 'If single-agent remains the pattern after 3 projects → simplify agents field to just ''owner'', drop
-    primary/supporting distinction.
+  alternative_outcome: 'If single-agent remains the pattern after 3 projects → simplify agents field to just ''owner'', drop primary/supporting distinction.
 
     '
   status: watching
@@ -117,15 +107,13 @@ concerns:
 - id: G-005
   type: gap
   title: Graduation pipeline has no tooling
-  description: '015-Practices.md defines a graduation pipeline: task update → learning (2+ tasks) → practice (3+ applications)
-    → directive. This pipeline is entirely manual. No counting, no promotion command, no detection of "this learning appeared
-    in 3 tasks."
+  description: '015-Practices.md defines a graduation pipeline: task update → learning (2+ tasks) → practice (3+ applications) → directive. This pipeline is entirely manual. No counting, no promotion command,
+    no detection of "this learning appeared in 3 tasks."
 
     '
   spec_reference: 015-Practices.md §Graduation Criteria
   severity: medium
-  decision_trigger: 'learnings.yaml has 20+ entries, OR a learning is missed that was applicable (context loss causes repeat
-    failure).
+  decision_trigger: 'learnings.yaml has 20+ entries, OR a learning is missed that was applicable (context loss causes repeat failure).
 
     '
   trigger_check:
@@ -134,10 +122,8 @@ concerns:
     threshold: '>= 20 means scale warrants automation'
   trigger_fired: true
   trigger_fired_date: 2026-02-16
-  resolution: 'Built fw promote (T-087) with three commands: - fw promote suggest: identifies learnings with 3+ applications
-    - fw promote status: shows all learnings with application counts - fw promote L-XXX: promotes a learning to a practice
-    Audit section 9 checks for promotion candidates when 20+ learnings exist. Application counting is deliberate (explicit
-    L-XXX references) not fuzzy.
+  resolution: 'Built fw promote (T-087) with three commands: - fw promote suggest: identifies learnings with 3+ applications - fw promote status: shows all learnings with application counts - fw promote
+    L-XXX: promotes a learning to a practice Audit section 9 checks for promotion candidates when 20+ learnings exist. Application counting is deliberate (explicit L-XXX references) not fuzzy.
 
     '
   evidence_collected: 21 learnings, 9 practices. Trigger threshold (20) exceeded. T-087 built full tooling.
@@ -148,18 +134,17 @@ concerns:
 - id: G-006
   type: gap
   title: Only default.md template exists
-  description: 'Simplified default.md to match actual usage. Removed dead sections (Design Record, Specification Record, Test
-    Files). Added single Context section. Spec-imagined workflow-specific templates not created.
+  description: 'Simplified default.md to match actual usage. Removed dead sections (Design Record, Specification Record, Test Files). Added single Context section. Spec-imagined workflow-specific templates
+    not created.
 
     '
   spec_reference: 010-TaskSystem.md §Location
   severity: low
-  resolution: 'Decided-simplify (T-052): Simplified default.md to frontmatter + Context + Updates. Removed 3 dead sections
-    and 3 unused frontmatter fields. If workflow-specific templates are needed, create from real need.
+  resolution: 'Decided-simplify (T-052): Simplified default.md to frontmatter + Context + Updates. Removed 3 dead sections and 3 unused frontmatter fields. If workflow-specific templates are needed, create
+    from real need.
 
     '
-  evidence_collected: '50 tasks: Design Record, Spec Record, and Test Files sections were placeholder in every single task.
-    Updates carried 100% of content.
+  evidence_collected: '50 tasks: Design Record, Spec Record, and Test Files sections were placeholder in every single task. Updates carried 100% of content.
 
     '
   status: closed
@@ -169,27 +154,21 @@ concerns:
 - id: G-007
   type: gap
   title: Budget gate non-functional for shared-tooling projects
-  description: 'budget-gate.sh, pre-compact.sh, and post-compact-resume.sh all used FRAMEWORK_ROOT for project-specific paths
-    (.context/, .tasks/, JSONL transcripts). In shared-tooling mode (PROJECT_ROOT != FRAMEWORK_ROOT), this caused: (1) transcript
-    discovery read the wrong project''s tokens, (2) pre-compact reset the framework''s counter instead of the project''s,
-    (3) post-compact resume injected framework context into project sessions, (4) stale critical status failed open on 4/5
-    tool calls. Net effect: budget monitoring was non-functional for sprechloop despite hooks being wired. Contributed to
-    the 14-compaction cascade (L-050).
+  description: 'budget-gate.sh, pre-compact.sh, and post-compact-resume.sh all used FRAMEWORK_ROOT for project-specific paths (.context/, .tasks/, JSONL transcripts). In shared-tooling mode (PROJECT_ROOT
+    != FRAMEWORK_ROOT), this caused: (1) transcript discovery read the wrong project''s tokens, (2) pre-compact reset the framework''s counter instead of the project''s, (3) post-compact resume injected
+    framework context into project sessions, (4) stale critical status failed open on 4/5 tool calls. Net effect: budget monitoring was non-functional for sprechloop despite hooks being wired. Contributed
+    to the 14-compaction cascade (L-050).
 
     '
   spec_reference: CLAUDE.md §Context Budget Management (P-009)
   severity: high
-  evidence_collected: 'T-148 investigation: sprechloop had no .budget-status file. Manual test of budget-gate.sh with PROJECT_ROOT=/opt/001-sprechloop
-    returned 124K tokens — from the framework''s active session, not sprechloop''s (which had no active session). 3 scripts
-    affected: budget-gate.sh (transcript discovery + stale fail-open), pre-compact.sh (FRAMEWORK_ROOT reset), post-compact-resume.sh
-    (FRAMEWORK_ROOT for all project reads). Audit of remaining agent scripts confirmed these were the only 3 affected — other
-    scripts already use PROJECT_ROOT correctly.
+  evidence_collected: 'T-148 investigation: sprechloop had no .budget-status file. Manual test of budget-gate.sh with PROJECT_ROOT=/opt/001-sprechloop returned 124K tokens — from the framework''s active
+    session, not sprechloop''s (which had no active session). 3 scripts affected: budget-gate.sh (transcript discovery + stale fail-open), pre-compact.sh (FRAMEWORK_ROOT reset), post-compact-resume.sh (FRAMEWORK_ROOT
+    for all project reads). Audit of remaining agent scripts confirmed these were the only 3 affected — other scripts already use PROJECT_ROOT correctly.
 
     '
-  resolution: 'T-149 fixed all 4 bugs: (1) transcript discovery scoped to project''s Claude Code directory via path encoding,
-    (2) pre-compact.sh uses PROJECT_ROOT for counter/status reset, (3) stale critical status still blocks (no fail-open at
-    critical level), (4) post-compact-resume.sh uses PROJECT_ROOT for handover/tasks/git reads. Audit confirmed no remaining
-    FRAMEWORK_ROOT misuse in other agent scripts.
+  resolution: 'T-149 fixed all 4 bugs: (1) transcript discovery scoped to project''s Claude Code directory via path encoding, (2) pre-compact.sh uses PROJECT_ROOT for counter/status reset, (3) stale critical
+    status still blocks (no fail-open at critical level), (4) post-compact-resume.sh uses PROJECT_ROOT for handover/tasks/git reads. Audit confirmed no remaining FRAMEWORK_ROOT misuse in other agent scripts.
 
     '
   status: closed
@@ -199,31 +178,25 @@ concerns:
 - id: G-008
   type: gap
   title: Sub-agent dispatch protocol has no structural enforcement
-  description: 'CLAUDE.md §Sub-Agent Dispatch Protocol defines clear rules: investigators must keep returns under 2K tokens,
-    prompts must include output format and write-to-file instructions, background agents should write to disk not return content.
-    But nothing enforces this — an agent can launch 4 background Explore agents with "return a summary" prompts, call TaskOutput
-    on all 4, and flood the context with 4×30K chars of raw JSONL transcript. This caused a 12-minute hang and effective session
-    crash during T-158.
+  description: 'CLAUDE.md §Sub-Agent Dispatch Protocol defines clear rules: investigators must keep returns under 2K tokens, prompts must include output format and write-to-file instructions, background
+    agents should write to disk not return content. But nothing enforces this — an agent can launch 4 background Explore agents with "return a summary" prompts, call TaskOutput on all 4, and flood the context
+    with 4×30K chars of raw JSONL transcript. This caused a 12-minute hang and effective session crash during T-158.
 
     '
   spec_reference: CLAUDE.md §Sub-Agent Dispatch Protocol
   severity: medium
-  evidence_collected: 'T-158 (2026-02-18): 4 background Explore agents launched with prompts saying "Return structured summary.
-    Keep under 2K tokens." TaskOutput returned raw JSONL transcripts at 30,156 chars each (120K total). Model produced 0 output
-    tokens after ingesting this, then emitted stop_sequence with no content. Session effectively crashed for 12m40s. Root
-    cause: (1) prompts didn''t include write-to-file instructions per template rule, (2) TaskOutput returns raw transcript
-    not agent final answer, (3) no hook or gate prevents this.
+  evidence_collected: 'T-158 (2026-02-18): 4 background Explore agents launched with prompts saying "Return structured summary. Keep under 2K tokens." TaskOutput returned raw JSONL transcripts at 30,156
+    chars each (120K total). Model produced 0 output tokens after ingesting this, then emitted stop_sequence with no content. Session effectively crashed for 12m40s. Root cause: (1) prompts didn''t include
+    write-to-file instructions per template rule, (2) TaskOutput returns raw transcript not agent final answer, (3) no hook or gate prevents this.
 
-    T-170 (2026-02-18): Third instance — Playwright browser_navigate and browser_snapshot return full accessibility tree for
-    all 168 kanban tasks (~30-50K tokens per call). 5+ calls in one session consumed 150K+ tokens, causing repeated compactions
-    (15 emergency handovers in 24h). Same root cause: uncontrolled context intake from tool results. Mitigation: use browser_run_code
-    for navigation, browser_take_screenshot for visuals, never browser_snapshot on pages with large DOM.
+    T-170 (2026-02-18): Third instance — Playwright browser_navigate and browser_snapshot return full accessibility tree for all 168 kanban tasks (~30-50K tokens per call). 5+ calls in one session consumed
+    150K+ tokens, causing repeated compactions (15 emergency handovers in 24h). Same root cause: uncontrolled context intake from tool results. Mitigation: use browser_run_code for navigation, browser_take_screenshot
+    for visuals, never browser_snapshot on pages with large DOM.
 
     '
-  resolution: 'T-225 built PostToolUse hook (check-dispatch.sh) on Task|TaskOutput. Warns at 5K chars, critical at 20K chars.
-    Combined with the dispatch preamble (T-217) and MEMORY.md rules, provides layered enforcement: documentation (CLAUDE.md),
-    prompt injection (preamble.md), runtime guard (check-dispatch.sh). Remaining items (PreToolUse parallel count, prompt
-    linter) are lower priority — can be added if incidents recur.
+  resolution: 'T-225 built PostToolUse hook (check-dispatch.sh) on Task|TaskOutput. Warns at 5K chars, critical at 20K chars. Combined with the dispatch preamble (T-217) and MEMORY.md rules, provides layered
+    enforcement: documentation (CLAUDE.md), prompt injection (preamble.md), runtime guard (check-dispatch.sh). Remaining items (PreToolUse parallel count, prompt linter) are lower priority — can be added
+    if incidents recur.
 
     '
   status: closed
@@ -233,9 +206,8 @@ concerns:
 - id: G-009
   type: gap
   title: Research artifact persistence has no structural enforcement
-  description: 'Sub-agent dispatch protocol (CLAUDE.md) says content generators "MUST write to disk" and investigators should
-    use fw bus. Reality: fw bus has NEVER been used (empty dirs). 5+ agents dispatched in session S-2026-0218-1920 returned
-    full content to orchestrator context — would have been lost without human intervention.
+  description: 'Sub-agent dispatch protocol (CLAUDE.md) says content generators "MUST write to disk" and investigators should use fw bus. Reality: fw bus has NEVER been used (empty dirs). 5+ agents dispatched
+    in session S-2026-0218-1920 returned full content to orchestrator context — would have been lost without human intervention.
 
     '
   severity: medium
@@ -244,8 +216,8 @@ concerns:
   - 'T-178 experiment: Explore agents can''t write (read-only); general-purpose can'
   - .context/bus/results/ and .context/bus/blobs/ both empty across 170+ tasks
   - fw bus designed (D-026), built (T-109), documented in CLAUDE.md — never used
-  resolution: 'T-226 escalated the commit-msg hook research artifact check from warn to block. After the first inception commit,
-    subsequent commits are blocked unless docs/reports/T-XXX-*.md exists on disk or in staged changes.
+  resolution: 'T-226 escalated the commit-msg hook research artifact check from warn to block. After the first inception commit, subsequent commits are blocked unless docs/reports/T-XXX-*.md exists on disk
+    or in staged changes.
 
     '
   status: closed
@@ -256,15 +228,14 @@ concerns:
 - id: G-010
   type: gap
   title: P-010 AC gate has no distinction between agent-verifiable and human-verifiable criteria
-  description: 'The P-010 acceptance criteria gate in update-task.sh counts ALL checkboxes under ## Acceptance Criteria and
-    blocks work-completed if any are unchecked. For tasks with behavior ACs (UI/UX criteria requiring human observation),
-    this creates a perverse incentive.
+  description: 'The P-010 acceptance criteria gate in update-task.sh counts ALL checkboxes under ## Acceptance Criteria and blocks work-completed if any are unchecked. For tasks with behavior ACs (UI/UX
+    criteria requiring human observation), this creates a perverse incentive.
 
     '
   spec_reference: CLAUDE.md §Verification Before Completion, §Enforcement Tiers
   severity: high
-  resolution: 'T-192 inception: GO decision for Option A (AC tagging). ### Agent / ### Human section headers in AC section.
-    P-010 gates only on ### Agent ACs. T-193 built the implementation. T-216 added placeholder detection on top.
+  resolution: 'T-192 inception: GO decision for Option A (AC tagging). ### Agent / ### Human section headers in AC section. P-010 gates only on ### Agent ACs. T-193 built the implementation. T-216 added
+    placeholder detection on top.
 
     '
   status: closed
@@ -274,14 +245,12 @@ concerns:
 - id: G-011
   type: gap
   title: PostToolUse hooks are advisory-only — cannot block actions
-  description: 'Claude Code PostToolUse hooks always exit 0 (advisory). Error-watchdog.sh and check-dispatch.sh can warn but
-    not prevent the agent from ignoring errors or dispatching too many agents.
+  description: 'Claude Code PostToolUse hooks always exit 0 (advisory). Error-watchdog.sh and check-dispatch.sh can warn but not prevent the agent from ignoring errors or dispatching too many agents.
 
     '
   spec_reference: CLAUDE.md §Enforcement Tiers
   severity: low
-  decision_trigger: 'Agent repeatedly ignores error-watchdog warnings (3+ instances in one session) and the resulting bug
-    requires >1 hour to fix.
+  decision_trigger: 'Agent repeatedly ignores error-watchdog warnings (3+ instances in one session) and the resulting bug requires >1 hour to fix.
 
     '
   trigger_check:
@@ -295,8 +264,7 @@ concerns:
 - id: G-012
   type: gap
   title: NotebookEdit and other side-effect tools not covered by PreToolUse task gate
-  description: 'The PreToolUse task gate (check-active-task.sh) only fires for Write|Edit per the settings.json matcher. NotebookEdit,
-    WebFetch, and MCP tools can produce side effects without task context.
+  description: 'The PreToolUse task gate (check-active-task.sh) only fires for Write|Edit per the settings.json matcher. NotebookEdit, WebFetch, and MCP tools can produce side effects without task context.
 
     '
   spec_reference: CLAUDE.md §Enforcement Tiers
@@ -312,14 +280,12 @@ concerns:
 - id: G-013
   type: gap
   title: Task gate accepts completed task IDs — no active-file validation
-  description: 'check-active-task.sh only checked if CURRENT_TASK was non-empty in focus.yaml. It did not verify the task
-    file exists in .tasks/active/.
+  description: 'check-active-task.sh only checked if CURRENT_TASK was non-empty in focus.yaml. It did not verify the task file exists in .tasks/active/.
 
     '
   spec_reference: CLAUDE.md §Enforcement Tiers — Tier 1
   severity: high
-  resolution: 'Added active-file validation after reading CURRENT_TASK. The gate now does find .tasks/active/${CURRENT_TASK}-*.md
-    and blocks if no match found.
+  resolution: 'Added active-file validation after reading CURRENT_TASK. The gate now does find .tasks/active/${CURRENT_TASK}-*.md and blocks if no match found.
 
     '
   status: closed
@@ -330,8 +296,7 @@ concerns:
 - id: G-014
   type: gap
   title: Built-in EnterPlanMode bypasses all framework governance
-  description: 'Claude Code''s built-in EnterPlanMode tool bypasses framework governance: no task gate, no session init, no
-    research artifacts.
+  description: 'Claude Code''s built-in EnterPlanMode tool bypasses framework governance: no task gate, no session init, no research artifacts.
 
     '
   spec_reference: CLAUDE.md §Plan Mode Prohibition, §Instruction Precedence
@@ -347,8 +312,8 @@ concerns:
 - id: G-015
   type: gap
   title: Sub-agent results bypass task governance — no structural linking
-  description: 'Sub-agents dispatched via Claude Code''s Task tool write results to /tmp/fw-agent-*.md (outside PROJECT_ROOT).
-    These writes bypass check-active-task.sh and are never registered against the active task.
+  description: 'Sub-agents dispatched via Claude Code''s Task tool write results to /tmp/fw-agent-*.md (outside PROJECT_ROOT). These writes bypass check-active-task.sh and are never registered against the
+    active task.
 
     '
   spec_reference: CLAUDE.md §Sub-Agent Dispatch Protocol, §Result Ledger (fw bus)
@@ -363,14 +328,12 @@ concerns:
 - id: G-016
   type: gap
   title: Learning capture has no structural trigger for bugfix tasks
-  description: '72% of bugfix tasks (31/43) produce zero learning entries. Learning capture relies entirely on behavioral
-    rules which are consistently skipped during ops-heavy fix cycles.
+  description: '72% of bugfix tasks (31/43) produce zero learning entries. Learning capture relies entirely on behavioral rules which are consistently skipped during ops-heavy fix cycles.
 
     '
   spec_reference: CLAUDE.md §Error Escalation Ladder, §Session End Protocol
   severity: medium
-  decision_trigger: 'Same bug class reappears 3rd time without a connecting learning entry. Or: bugfix-to-learning ratio stays
-    below 35% for 20+ additional bugfix tasks.
+  decision_trigger: 'Same bug class reappears 3rd time without a connecting learning entry. Or: bugfix-to-learning ratio stays below 35% for 20+ additional bugfix tasks.
 
     '
   trigger_check:
@@ -382,8 +345,7 @@ concerns:
   - 'Preventive: fw fix-learned shortcut for fast capture during fix cycles'
   - 'Structural: update-task.sh prompts for learning when completing bugfix tasks (DONE — T-692, T-693)'
   status: mitigated
-  mitigation: 'T-692/T-693: update-task.sh now emits a visible learning prompt when completing tasks starting
-    with "Fix" that have no learning entry. Advisory (non-blocking). Remaining: no audit check for
+  mitigation: 'T-692/T-693: update-task.sh now emits a visible learning prompt when completing tasks starting with "Fix" that have no learning entry. Advisory (non-blocking). Remaining: no audit check for
     bugfix-to-learning ratio, no fw fix-learned shortcut.'
   created: 2026-03-08
   last_reviewed: 2026-03-29
@@ -391,8 +353,7 @@ concerns:
 - id: G-017
   type: gap
   title: Execution gates do not cover proposal/suggestion layer
-  description: 'Four structural gates protect task completion execution. But agents can freely suggest --force bypass or batch-completion
-    of human-owned tasks without triggering any gate.
+  description: 'Four structural gates protect task completion execution. But agents can freely suggest --force bypass or batch-completion of human-owned tasks without triggering any gate.
 
     '
   spec_reference: CLAUDE.md §Autonomous Mode Boundaries, §Blind Completion Anti-Pattern
@@ -410,20 +371,17 @@ concerns:
 - id: G-018
   type: gap
   title: No structural guard against silent quality decay in generated artifacts
-  description: 'The framework generates artifacts automatically (handovers, episodics, component docs) but has no structural
-    mechanism to detect or prevent gradual quality decay. Quality checks are point-in-time (LATEST.md only), not cumulative.
+  description: 'The framework generates artifacts automatically (handovers, episodics, component docs) but has no structural mechanism to detect or prevent gradual quality decay. Quality checks are point-in-time
+    (LATEST.md only), not cumulative.
 
     '
   spec_reference: CLAUDE.md §Four Constitutional Directives (D1, D2, D3)
   severity: high
-  what_was_fixed: 'T-393/T-395: Zero-TODO handover generator, D8b archive checks, corpus cleanup.
-    T-1113: Placeholder audit chokepoint — lib/task-audit.sh blocks fw task review and fw inception decide
-    when a task file contains literal [Criterion N], [TODO], [PLACEHOLDER], or [REQUIRED before] stubs.
-    Unit + integration tests guard the invariant. Closes the task-file bleed-through subset of G-018.
+  what_was_fixed: 'T-393/T-395: Zero-TODO handover generator, D8b archive checks, corpus cleanup. T-1113: Placeholder audit chokepoint — lib/task-audit.sh blocks fw task review and fw inception decide when
+    a task file contains literal [Criterion N], [TODO], [PLACEHOLDER], or [REQUIRED before] stubs. Unit + integration tests guard the invariant. Closes the task-file bleed-through subset of G-018.
 
     '
-  what_remains: 'Handover/episodic/component-doc quality decay still unaddressed — only task files are now
-    chokepointed. Broader cumulative quality auditing and trend-to-gap escalation remain open.
+  what_remains: 'Handover/episodic/component-doc quality decay still unaddressed — only task files are now chokepointed. Broader cumulative quality auditing and trend-to-gap escalation remain open.
 
     '
   status: partially-resolved
@@ -434,14 +392,13 @@ concerns:
 - id: G-019
   type: gap
   title: Agent treats symptom-level fixes as complete — no self-escalation to systemic root cause
-  description: 'When discovering a problem, the agent fixes the immediate symptom and declares the work done. It does not
-    self-escalate from "fix the broken thing" to "why did the framework allow this to happen?"
+  description: 'When discovering a problem, the agent fixes the immediate symptom and declares the work done. It does not self-escalate from "fix the broken thing" to "why did the framework allow this to
+    happen?"
 
     '
   spec_reference: CLAUDE.md §Error Escalation Ladder, §Proactive Level D
   severity: high
-  decision_trigger: 'Agent closes a gap or completes a fix without addressing root cause, and the human has to correct the
-    escalation level again.
+  decision_trigger: 'Agent closes a gap or completes a fix without addressing root cause, and the human has to correct the escalation level again.
 
     '
   trigger_check:
@@ -454,8 +411,7 @@ concerns:
 - id: R-018
   type: risk
   title: Invalid YAML data disappears without error
-  description: 'YAML with special characters breaks parsing; downstream tools skip the entry silently. No validation gate
-    exists.
+  description: 'YAML with special characters breaks parsing; downstream tools skip the entry silently. No validation gate exists.
 
     '
   severity: medium
@@ -496,8 +452,7 @@ concerns:
 - id: R-032
   type: risk
   title: Long inception gate conflict
-  description: '2-commit inception gate incompatible with 5-10 session deep explorations. Forces --no-verify, which is logged
-    but not ideal.
+  description: '2-commit inception gate incompatible with 5-10 session deep explorations. Forces --no-verify, which is logged but not ideal.
 
     '
   severity: medium
@@ -512,17 +467,16 @@ concerns:
   - T-191
   - 'T-1176: Added FW_INCEPTION_COMMIT_LIMIT to lib/config.sh, agents/git/lib/hooks.sh, CLAUDE.md, Watchtower config.py'
   status: resolved
-  resolution: 'T-1176 — inception commit limit now configurable via FW_INCEPTION_COMMIT_LIMIT env var, .framework.yaml, or fw config set. Default 2 (backward compatible).'
+  resolution: T-1176 — inception commit limit now configurable via FW_INCEPTION_COMMIT_LIMIT env var, .framework.yaml, or fw config set. Default 2 (backward compatible).
   created: 2026-02-19
   last_reviewed: 2026-04-12
   related_task: T-191
 - id: G-020
   type: gap
   title: Pickup messages bypass governance — no scope/complexity gate before build
-  description: 'A pickup message from another agent session caused complete governance bypass: agent created a build task
-    and immediately started editing framework source files (bin/fw), building Watchtower pages, and creating feature branches
-    — without inception, without scoping, without ACs. Human intervened 3 times. Root cause: task gate validates task EXISTS
-    but not whether the task''s scope justifies the action. Having a task is not authorization to build a new subsystem.
+  description: 'A pickup message from another agent session caused complete governance bypass: agent created a build task and immediately started editing framework source files (bin/fw), building Watchtower
+    pages, and creating feature branches — without inception, without scoping, without ACs. Human intervened 3 times. Root cause: task gate validates task EXISTS but not whether the task''s scope justifies
+    the action. Having a task is not authorization to build a new subsystem.
 
     '
   severity: high
@@ -558,13 +512,10 @@ concerns:
 - id: G-021
   type: gap
   title: Path isolation failure — hardcoded absolute paths in committed files disable all enforcement on clone/move
-  description: 'fw init bakes machine-specific absolute paths into 3 committed files: (1) .claude/settings.json — 12 hook
-    commands with hardcoded FRAMEWORK_ROOT and PROJECT_ROOT, (2) .framework.yaml — framework_path field, (3) CLAUDE.md — __FRAMEWORK_ROOT__
-    template substitution. When a project is cloned to a different machine, moved, or the framework is reinstalled to a different
-    path, ALL hooks silently fail. Claude Code does not error on missing hook commands — it skips them. This means every enforcement
-    gate (task gate, tier 0, budget gate, plan mode block, error watchdog, dispatch guard, pre-compact handover, post-compact
-    resume) is silently disabled. The framework''s entire value proposition — structural enforcement over agent discipline
-    — becomes a facade.
+  description: 'fw init bakes machine-specific absolute paths into 3 committed files: (1) .claude/settings.json — 12 hook commands with hardcoded FRAMEWORK_ROOT and PROJECT_ROOT, (2) .framework.yaml — framework_path
+    field, (3) CLAUDE.md — __FRAMEWORK_ROOT__ template substitution. When a project is cloned to a different machine, moved, or the framework is reinstalled to a different path, ALL hooks silently fail.
+    Claude Code does not error on missing hook commands — it skips them. This means every enforcement gate (task gate, tier 0, budget gate, plan mode block, error watchdog, dispatch guard, pre-compact handover,
+    post-compact resume) is silently disabled. The framework''s entire value proposition — structural enforcement over agent discipline — becomes a facade.
 
     '
   spec_reference: CLAUDE.md §Enforcement Tiers, Constitutional Directive D4 (Portability)
@@ -589,9 +540,8 @@ concerns:
   - fw self-test gives false confidence (same-machine testing)
   related_to: G-007 (same root cause class, fixed only for 3 budget scripts)
   status: resolved
-  resolution: 'All 3 contamination points fixed upstream: (1) init.sh uses quoted heredoc with portable .agentic-framework/bin/fw
-    paths (T-496), (2) framework_path removed from .framework.yaml (T-498), (3) __FRAMEWORK_ROOT__ sed substitution removed
-    (T-572). fw doctor now validates hook paths (check 6). Dead sed line cleaned up T-572.
+  resolution: 'All 3 contamination points fixed upstream: (1) init.sh uses quoted heredoc with portable .agentic-framework/bin/fw paths (T-496), (2) framework_path removed from .framework.yaml (T-498),
+    (3) __FRAMEWORK_ROOT__ sed substitution removed (T-572). fw doctor now validates hook paths (check 6). Dead sed line cleaned up T-572.
 
     '
   created: 2026-03-14
@@ -601,9 +551,8 @@ concerns:
 - id: G-022
   type: gap
   title: Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit
-  description: 'Hardcoded cron filename means only one project per machine gets scheduled audits. Last to install wins, all
-    others silently lose cron. Same class as G-021 (silent enforcement disabling). Discovered when 150-skills-manager overwrote
-    framework repo''s cron without warning.
+  description: 'Hardcoded cron filename means only one project per machine gets scheduled audits. Last to install wins, all others silently lose cron. Same class as G-021 (silent enforcement disabling).
+    Discovered when 150-skills-manager overwrote framework repo''s cron without warning.
 
     '
   spec_reference: CLAUDE.md §Constitutional Directive D2 (Reliability), agents/audit/audit.sh:25
@@ -614,8 +563,8 @@ concerns:
   - No overwrite warning, no collision detection
   - fw doctor does not check cron ownership
   status: closed
-  resolution: 'T-602: project-specific cron filenames (basename slug). T-604: cron definitions moved to PROJECT_ROOT/.context/cron/
-    as git-tracked source of truth with copy-on-change, drift detection, and sudo degradation.
+  resolution: 'T-602: project-specific cron filenames (basename slug). T-604: cron definitions moved to PROJECT_ROOT/.context/cron/ as git-tracked source of truth with copy-on-change, drift detection, and
+    sudo degradation.
 
     '
   created: 2026-03-24
@@ -624,9 +573,8 @@ concerns:
 - id: R-037
   type: risk
   title: Project boundary hook scans bash command text literally — false positives on string literals
-  description: 'check-project-boundary.sh (T-559) uses regex on raw bash command text. Cannot distinguish actual cd/redirect
-    operations from paths inside quoted strings, echo output, or test data. Conservative (false positives are safe) but causes
-    friction for self-tests and commands that mention other paths.
+  description: 'check-project-boundary.sh (T-559) uses regex on raw bash command text. Cannot distinguish actual cd/redirect operations from paths inside quoted strings, echo output, or test data. Conservative
+    (false positives are safe) but causes friction for self-tests and commands that mention other paths.
 
     '
   spec_reference: agents/context/check-project-boundary.sh, T-559
@@ -647,12 +595,10 @@ concerns:
 - id: G-023
   type: gap
   title: Consumer project governance decays silently — no detection, no propagation, no audit trail
-  description: 'All 7 consumer projects are at v1.2.6 while framework is at v1.3.0. Each is missing 2 hooks (check-project-boundary,
-    commit-cadence) and ~180 lines of CLAUDE.md governance rules. fw upgrade exists but: (1) hook detection uses count (expects
-    10) not type enumeration — hardcoded count is wrong (init.sh generates 13), (2) fw doctor has no consumer staleness check,
-    (3) no upgrade audit trail exists, (4) fw update doesn''t suggest fw upgrade for known consumers. Same class as G-021/G-022:
-    silent enforcement disabling. Net effect: consumer agents operate under stale governance rules and missing enforcement
-    hooks indefinitely.
+  description: 'All 7 consumer projects are at v1.2.6 while framework is at v1.3.0. Each is missing 2 hooks (check-project-boundary, commit-cadence) and ~180 lines of CLAUDE.md governance rules. fw upgrade
+    exists but: (1) hook detection uses count (expects 10) not type enumeration — hardcoded count is wrong (init.sh generates 13), (2) fw doctor has no consumer staleness check, (3) no upgrade audit trail
+    exists, (4) fw update doesn''t suggest fw upgrade for known consumers. Same class as G-021/G-022: silent enforcement disabling. Net effect: consumer agents operate under stale governance rules and missing
+    enforcement hooks indefinitely.
 
     '
   spec_reference: CLAUDE.md §Constitutional Directive D2 (Reliability), lib/upgrade.sh, bin/fw (doctor)
@@ -684,23 +630,18 @@ concerns:
   created: 2026-03-25
   last_reviewed: 2026-03-25
   related_task: T-614
-  mitigation: 'T-657 (2026-03-28): All 7 consumer projects upgraded v1.3.0→v1.4.73. fw doctor now detects and reports stale
-    consumers. Structural: fw upgrade exists, fw doctor warns, upgrade trail logged to .context/audits/upgrades.yaml. T-857
-    (2026-04-04): fw upgrade now syncs lib/*.sh, 9 agent directories, and VERSION file to consumer vendored dirs. T-859: VERSION
-    file sync prevents stale version detection after upgrade. All 9 consumers upgraded 2026-04-05. Gap remaining: no automated
-    trigger for upgrades — relies on human running fw doctor.'
+  mitigation: 'T-657 (2026-03-28): All 7 consumer projects upgraded v1.3.0→v1.4.73. fw doctor now detects and reports stale consumers. Structural: fw upgrade exists, fw doctor warns, upgrade trail logged
+    to .context/audits/upgrades.yaml. T-857 (2026-04-04): fw upgrade now syncs lib/*.sh, 9 agent directories, and VERSION file to consumer vendored dirs. T-859: VERSION file sync prevents stale version
+    detection after upgrade. All 9 consumers upgraded 2026-04-05. Gap remaining: no automated trigger for upgrades — relies on human running fw doctor.'
 - id: G-024
   type: gap
   title: fw upgrade does not sync web/blueprints/ — consumer web code can drift silently
-  description: 'fw upgrade routes to lib/upgrade.sh:do_upgrade() which maintains a handcrafted per-file sync enumeration
-    (agents/context/*.sh, bin/fw, lib/*.sh, a hardcoded agent_dirs string, VERSION). The enumeration was never updated to
-    include web/ when the Watchtower feature grew — web/blueprints/, web/templates/, web/terminal/, web/*.py are all absent.
-    do_vendor() in bin/fw has a parallel includes list that DOES include web/, but fw upgrade never calls do_vendor. The two
-    sync lists diverged silently when terminal.py landed in T-964..T-980. Consumer Watchtowers served from vendored copies
-    are silently missing new blueprints. Reproduction: /tmp/t1109-test-consumer, remove web/blueprints/terminal.py, run fw
-    upgrade → output says "OK All vendored scripts current", terminal.py still missing. 4 of 5 consumers (025, 051, 050,
-    openclaw) are confirmed missing terminal.py and sessions.py. /opt/termlink is the only exception because it uses fw update
-    (GitHub upstream_repo → git clone → do_vendor) which goes through the correct code path. RCA in docs/reports/T-1109-web-sync-rca.md.'
+  description: 'fw upgrade routes to lib/upgrade.sh:do_upgrade() which maintains a handcrafted per-file sync enumeration (agents/context/*.sh, bin/fw, lib/*.sh, a hardcoded agent_dirs string, VERSION).
+    The enumeration was never updated to include web/ when the Watchtower feature grew — web/blueprints/, web/templates/, web/terminal/, web/*.py are all absent. do_vendor() in bin/fw has a parallel includes
+    list that DOES include web/, but fw upgrade never calls do_vendor. The two sync lists diverged silently when terminal.py landed in T-964..T-980. Consumer Watchtowers served from vendored copies are
+    silently missing new blueprints. Reproduction: /tmp/t1109-test-consumer, remove web/blueprints/terminal.py, run fw upgrade → output says "OK All vendored scripts current", terminal.py still missing.
+    4 of 5 consumers (025, 051, 050, openclaw) are confirmed missing terminal.py and sessions.py. /opt/termlink is the only exception because it uses fw update (GitHub upstream_repo → git clone → do_vendor)
+    which goes through the correct code path. RCA in docs/reports/T-1109-web-sync-rca.md.'
   spec_reference: lib/upgrade.sh:320-446 (do_upgrade step 4b), bin/fw:181-190 (do_vendor includes)
   severity: high
   likelihood: 5
@@ -708,17 +649,13 @@ concerns:
   score: 15
   ranking: high
   evidence:
-  - 'T-1091 (2026-04-11): rationale_hint truncation fix propagated to 11 consumers via fw upgrade. 4/11 still had outdated
-    inception.py (025-WokrshopDesigner, 051-Vinix24, 052-KCP, 053-ntfy) with file mtimes from Mar 28–Apr 4. The other 7 passed
-    only because they lacked inception.py at all or had it missing the truncation pattern.'
-  - 'T-1109 (2026-04-11): Full RCA + live reproduction. Root cause confirmed: enumeration divergence between do_upgrade step 4b
-    and do_vendor includes list. Chokepoint C1 (collapse step 4b into do_vendor call) + invariant tests (upgrade-vendor-complete.bats,
-    single-vendor-writer.bats) proposed. Worker recommendation: GO with build decomposition T-1109a..e.'
-  - 'T-1109 L-006 sweep (finding NEW-007, 2026-04-11): lib/upgrade.sh:388 has a SECOND enumeration problem in the same file
-    — `agent_dirs="task-create handover git healing fabric dispatch resume audit session-capture"` (9 entries) is missing
-    6 agents vs the filesystem: capture, docgen, mcp, observe, onboarding-test, termlink. The 4 broken consumers are thus
-    missing not just web/ but also 37% of agent subdirectories. The T-1109 chokepoint fix (collapse step 4b into do_vendor)
-    also closes NEW-007 because do_vendor uses a glob over agents/*/.'
+  - 'T-1091 (2026-04-11): rationale_hint truncation fix propagated to 11 consumers via fw upgrade. 4/11 still had outdated inception.py (025-WokrshopDesigner, 051-Vinix24, 052-KCP, 053-ntfy) with file mtimes
+    from Mar 28–Apr 4. The other 7 passed only because they lacked inception.py at all or had it missing the truncation pattern.'
+  - 'T-1109 (2026-04-11): Full RCA + live reproduction. Root cause confirmed: enumeration divergence between do_upgrade step 4b and do_vendor includes list. Chokepoint C1 (collapse step 4b into do_vendor
+    call) + invariant tests (upgrade-vendor-complete.bats, single-vendor-writer.bats) proposed. Worker recommendation: GO with build decomposition T-1109a..e.'
+  - 'T-1109 L-006 sweep (finding NEW-007, 2026-04-11): lib/upgrade.sh:388 has a SECOND enumeration problem in the same file — `agent_dirs="task-create handover git healing fabric dispatch resume audit session-capture"`
+    (9 entries) is missing 6 agents vs the filesystem: capture, docgen, mcp, observe, onboarding-test, termlink. The 4 broken consumers are thus missing not just web/ but also 37% of agent subdirectories.
+    The T-1109 chokepoint fix (collapse step 4b into do_vendor) also closes NEW-007 because do_vendor uses a glob over agents/*/.'
   - 'Related: G-023 (consumer governance decay), T-857 (lib + agents sync), T-1109 (RCA + fix), L-006, G-037/G-038/G-039/G-040/G-041/G-042/G-043'
   trigger: A consumer starts running its own Watchtower instance and encounters a bug already fixed in the canonical copy.
   status: watching
@@ -728,13 +665,11 @@ concerns:
 - id: G-025
   type: gap
   title: fw upgrade not surfaced as the canonical onboarding command — and what it actually does is also unclear
-  description: 'When a consumer project has .framework.yaml and .context/ initialized but no local .agentic-framework/, the
-    canonical command for "set up the framework here" is `fw upgrade [dir]` (documented in `fw help` as "Sync framework improvements
-    to consumer project"). It is not surfaced in CLAUDE.md, fw doctor output, or any onboarding flow. Worse: even when an
-    agent is told to run `fw upgrade`, what it actually does is non-obvious — it migrates the global symlink to a project-detecting
-    shim, refreshes governance files, syncs vendored scripts, and pins a version, but does NOT vendor framework code into
-    a per-project .agentic-framework/ directory. Agents (and the recommending evaluator) assume `fw upgrade` is "copy framework
-    files into the project" and design custom processes around that wrong mental model.
+  description: 'When a consumer project has .framework.yaml and .context/ initialized but no local .agentic-framework/, the canonical command for "set up the framework here" is `fw upgrade [dir]` (documented
+    in `fw help` as "Sync framework improvements to consumer project"). It is not surfaced in CLAUDE.md, fw doctor output, or any onboarding flow. Worse: even when an agent is told to run `fw upgrade`,
+    what it actually does is non-obvious — it migrates the global symlink to a project-detecting shim, refreshes governance files, syncs vendored scripts, and pins a version, but does NOT vendor framework
+    code into a per-project .agentic-framework/ directory. Agents (and the recommending evaluator) assume `fw upgrade` is "copy framework files into the project" and design custom processes around that
+    wrong mental model.
 
     '
   spec_reference: lib/upgrade.sh, bin/fw (help text), CLAUDE.md (no entry for upgrade as onboarding)
@@ -744,16 +679,13 @@ concerns:
   score: 12
   ranking: medium
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in /root/ring20-dashboard spent 8+ exchanges designing
-    a custom tarball-extract vendoring process. User had to explicitly point at the sibling project before the agent investigated
-    the convention. `fw upgrade` was never mentioned by the agent.'
-  - 'Same incident, recovery: When told to run `fw upgrade`, output revealed shim migration (`Replaced global symlink with
-    project-detecting shim`) — completely different mechanism from what either the agent OR the recommending evaluator (this
-    session) expected. The framework ALREADY HAD a working isolation model (shim-based version pinning) that was invisible
-    to both sessions until `fw upgrade` printed it.'
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in /root/ring20-dashboard spent 8+ exchanges designing a custom tarball-extract vendoring process. User had to explicitly point
+    at the sibling project before the agent investigated the convention. `fw upgrade` was never mentioned by the agent.'
+  - 'Same incident, recovery: When told to run `fw upgrade`, output revealed shim migration (`Replaced global symlink with project-detecting shim`) — completely different mechanism from what either the
+    agent OR the recommending evaluator (this session) expected. The framework ALREADY HAD a working isolation model (shim-based version pinning) that was invisible to both sessions until `fw upgrade` printed
+    it.'
   - 'Related: G-023 (consumer governance decay), G-024 (fw upgrade web/blueprints gap), G-031 (two isolation patterns coexist)'
-  trigger: Agent in a freshly-initialized consumer project asked to "set up the framework here" and reinvents the process,
-    OR an evaluator recommends `fw upgrade` without knowing what it does.
+  trigger: Agent in a freshly-initialized consumer project asked to "set up the framework here" and reinvents the process, OR an evaluator recommends `fw upgrade` without knowing what it does.
   status: resolved
   resolved_by_task: T-1094
   what_was_fixed: fw upgrade documented in CLAUDE.md Quick Reference + §fw CLI section with clear description
@@ -763,10 +695,8 @@ concerns:
 - id: G-026
   type: gap
   title: fw doctor doesn't run the version-pin drift check that fw upgrade runs
-  description: '`fw upgrade` detects version-pin drift (e.g. `Pinned: vdev (behind v2.46.alpha)`) at upgrade time, but `fw
-    doctor` does not perform the same check. A consumer project can sit on a stale pin indefinitely with `fw doctor` reporting
-    OK. The detection mechanism already exists in lib/upgrade.sh — it just needs to be hoisted into doctor as a read-only
-    check (without applying changes).
+  description: '`fw upgrade` detects version-pin drift (e.g. `Pinned: vdev (behind v2.46.alpha)`) at upgrade time, but `fw doctor` does not perform the same check. A consumer project can sit on a stale
+    pin indefinitely with `fw doctor` reporting OK. The detection mechanism already exists in lib/upgrade.sh — it just needs to be hoisted into doctor as a read-only check (without applying changes).
 
     '
   spec_reference: bin/fw doctor, lib/upgrade.sh
@@ -776,11 +706,9 @@ concerns:
   score: 9
   ranking: medium
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Project pinned to vdev while host was on v2.46.alpha.
-    Drift only surfaced when fw upgrade was run; fw doctor in the same project would have shown OK on every prior run since
-    2026-04-08.'
-  trigger: Host-installed framework upgrades; consumer project doctor still reports OK; consumer agent runs against stale
-    governance.
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Project pinned to vdev while host was on v2.46.alpha. Drift only surfaced when fw upgrade was run; fw doctor in the same project would
+    have shown OK on every prior run since 2026-04-08.'
+  trigger: Host-installed framework upgrades; consumer project doctor still reports OK; consumer agent runs against stale governance.
   status: resolved
   resolved_by_task: T-1095
   what_was_fixed: Doctor already had Consumer Projects fleet scan with version-pin drift check
@@ -790,11 +718,9 @@ concerns:
 - id: G-027
   type: gap
   title: Project boundary hook blocks legitimate cross-project reads — escape route undocumented in BLOCK message
-  description: 'T-559 boundary hook correctly blocks all cross-project Bash including reads of sibling READMEs, CLAUDE.md,
-    and other public docs. T-1089 added the TermLink dispatch escape route for write/exec operations, but read-only operations
-    still have no first-class escape. The BLOCK message could mention `fw termlink dispatch --project /path --prompt "cat README.md"`
-    for legitimate read-only investigation; currently agents fall back to asking the human to authorize each cross-project
-    read individually.
+  description: 'T-559 boundary hook correctly blocks all cross-project Bash including reads of sibling READMEs, CLAUDE.md, and other public docs. T-1089 added the TermLink dispatch escape route for write/exec
+    operations, but read-only operations still have no first-class escape. The BLOCK message could mention `fw termlink dispatch --project /path --prompt "cat README.md"` for legitimate read-only investigation;
+    currently agents fall back to asking the human to authorize each cross-project read individually.
 
     '
   spec_reference: agents/context/check-project-boundary.sh
@@ -804,9 +730,8 @@ concerns:
   score: 6
   ranking: medium
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent legitimately needed to read /root/termlink/README.md
-    and /root/.agentic-framework/README.md to understand what they do. Boundary hook blocked. Agent had to ask user for one-time
-    cross-project read approval, then never followed up because the conversation went elsewhere.'
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent legitimately needed to read /root/termlink/README.md and /root/.agentic-framework/README.md to understand what they do. Boundary
+    hook blocked. Agent had to ask user for one-time cross-project read approval, then never followed up because the conversation went elsewhere.'
   - 'Related: T-1089 (boundary gate TermLink dispatch escape for write ops)'
   trigger: Agent in a consumer project needs to read a sibling project README/CLAUDE.md to understand convention.
   status: resolved
@@ -818,11 +743,9 @@ concerns:
 - id: G-028
   type: gap
   title: Dual framework-path ambiguity — upstream_repo vs fw resolution path with no reconciliation
-  description: 'A consumer project''s .framework.yaml carries `upstream_repo: <path>` which is the canonical source for `fw
-    upgrade` syncs, while the actively-running `fw` resolves through a possibly different path (e.g. ~/.agentic-framework,
-    /usr/local/Cellar/agentic-fw/<ver>/libexec, or a vendored .agentic-framework/). When these two paths diverge, there is
-    no warning. The agent operating in the consumer project has no way to know which one is "the framework" for that project.
-    fw doctor should reconcile and surface the ambiguity (or at least print both paths and which one is active).
+  description: 'A consumer project''s .framework.yaml carries `upstream_repo: <path>` which is the canonical source for `fw upgrade` syncs, while the actively-running `fw` resolves through a possibly different
+    path (e.g. ~/.agentic-framework, /usr/local/Cellar/agentic-fw/<ver>/libexec, or a vendored .agentic-framework/). When these two paths diverge, there is no warning. The agent operating in the consumer
+    project has no way to know which one is "the framework" for that project. fw doctor should reconcile and surface the ambiguity (or at least print both paths and which one is active).
 
     '
   spec_reference: bin/fw (resolver), lib/init.sh, .framework.yaml schema
@@ -832,11 +755,9 @@ concerns:
   score: 8
   ranking: medium
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): /root/ring20-dashboard/.framework.yaml had `upstream_repo:
-    /opt/agentic-engineering-framework` while `which fw` resolved to /root/.local/bin/fw → /root/.agentic-framework/bin/fw.
-    Three potential framework paths in play; agent walked past the ambiguity without flagging it.'
-  trigger: A `fw upgrade` syncs from /opt while the running `fw` lives in ~/.agentic-framework — drift between the two becomes
-    invisible to the consumer.
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): /root/ring20-dashboard/.framework.yaml had `upstream_repo: /opt/agentic-engineering-framework` while `which fw` resolved to /root/.local/bin/fw
+    → /root/.agentic-framework/bin/fw. Three potential framework paths in play; agent walked past the ambiguity without flagging it.'
+  trigger: A `fw upgrade` syncs from /opt while the running `fw` lives in ~/.agentic-framework — drift between the two becomes invisible to the consumer.
   status: resolved
   resolved_by_task: T-1097
   what_was_fixed: fw doctor now compares upstream_repo vs running FRAMEWORK_ROOT and warns on divergence
@@ -846,11 +767,9 @@ concerns:
 - id: G-029
   type: gap
   title: Termlink installation model not contrasted with framework distribution model in CLAUDE.md
-  description: 'CLAUDE.md documents `brew install DimitriGeelen/termlink/termlink` (or `cargo install`) as the canonical install
-    path for termlink, but does not explicitly state WHY termlink is machine-wide and framework code is per-project. The reason
-    is structural: termlink is a cross-session message bus that uses Unix sockets at system paths to discover sessions across
-    the whole machine — per-project isolation would defeat session discovery. Framework code by contrast is governance per
-    project. The distinction should be explicit in CLAUDE.md so agents stop proposing per-project termlink vendoring.
+  description: 'CLAUDE.md documents `brew install DimitriGeelen/termlink/termlink` (or `cargo install`) as the canonical install path for termlink, but does not explicitly state WHY termlink is machine-wide
+    and framework code is per-project. The reason is structural: termlink is a cross-session message bus that uses Unix sockets at system paths to discover sessions across the whole machine — per-project
+    isolation would defeat session discovery. Framework code by contrast is governance per project. The distinction should be explicit in CLAUDE.md so agents stop proposing per-project termlink vendoring.
 
     '
   spec_reference: CLAUDE.md §TermLink Integration
@@ -860,12 +779,9 @@ concerns:
   score: 4
   ranking: low
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in consumer project proposed tarball-vendoring
-    termlink the same way as the framework, no recognition of distribution model. After being told to read README, agent correctly
-    concluded "system-wide install is correct, no per-project version needed" — confirming the answer exists, just not in
-    CLAUDE.md.'
-  trigger: Agent proposes per-project termlink vendoring without realising it triggers a Rust build per consumer project AND
-    breaks cross-session discovery.
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): Agent in consumer project proposed tarball-vendoring termlink the same way as the framework, no recognition of distribution model. After
+    being told to read README, agent correctly concluded "system-wide install is correct, no per-project version needed" — confirming the answer exists, just not in CLAUDE.md.'
+  trigger: Agent proposes per-project termlink vendoring without realising it triggers a Rust build per consumer project AND breaks cross-session discovery.
   status: resolved
   resolved_by_task: T-1098
   what_was_fixed: CLAUDE.md §TermLink Integration now explicitly contrasts machine-wide vs per-project distribution model
@@ -875,11 +791,9 @@ concerns:
 - id: G-030
   type: gap
   title: No consumer-project setup doc — vendoring pattern only implicit in existing siblings
-  description: 'The "how to set up a new consumer project" pattern is implicit in /opt/* and /root/* projects that already
-    use the framework. There is no docs/consumer-project-setup.md that walks through: clone target project, run `fw init`,
-    run `fw upgrade` to vendor framework code, what `.framework.yaml` fields mean (especially upstream_repo), when to use shared
-    vs vendored, and how termlink fits in. New consumer projects discover the pattern by reading sibling project layouts or
-    asking the agent to figure it out — both are slow, and the agent often picks the wrong pattern (see G-025).
+  description: 'The "how to set up a new consumer project" pattern is implicit in /opt/* and /root/* projects that already use the framework. There is no docs/consumer-project-setup.md that walks through:
+    clone target project, run `fw init`, run `fw upgrade` to vendor framework code, what `.framework.yaml` fields mean (especially upstream_repo), when to use shared vs vendored, and how termlink fits in.
+    New consumer projects discover the pattern by reading sibling project layouts or asking the agent to figure it out — both are slow, and the agent often picks the wrong pattern (see G-025).
 
     '
   spec_reference: docs/ (missing file)
@@ -889,8 +803,7 @@ concerns:
   score: 6
   ranking: medium
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): User had to ask "how does /root/proxmox-ring20-management
-    do this??" before the agent investigated the convention. No doc to point at.'
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11): User had to ask "how does /root/proxmox-ring20-management do this??" before the agent investigated the convention. No doc to point at.'
   - 'Related: G-025 (fw upgrade not surfaced), G-026 (doctor missing shared-tooling check), G-029 (termlink distribution model)'
   trigger: New consumer project asks "how do I set this framework up here?" and the framework has no doc to hand them.
   status: resolved
@@ -902,44 +815,35 @@ concerns:
 - id: G-031
   type: gap
   title: Five isolation patterns coexist undocumented — vendored dir, fw vendor, shim, manual cp, symlink
-  description: 'The framework has FIVE distinct isolation/vendoring patterns in production simultaneously, with no documentation
-    of which is canonical, when to use each, or how to migrate between them. Originally registered as a 2-pattern problem
-    (2026-04-11 morning); widened to 5 after /opt/termlink T-909 transcript (2026-04-11 afternoon) revealed `fw vendor` and
-    the symlink mode. The five patterns are: (1) vendored plain directory `<project>/.agentic-framework/` with framework
-    files committed into project git, no .git inside (proxmox-ring20-management — created by earlier `fw init` before shim
-    migration); (2) `fw vendor` — explicit subcommand "Copy framework into project for full isolation", with size exclusions
-    (~56MB target per /opt/termlink transcript); (3) project-detecting shim — global `~/.local/bin/fw` replaced by `fw upgrade`
-    step 4c, routes via cwd, reads `.framework.yaml` for version pin (ring20-dashboard after fw upgrade); (4) manual `cp -r`
-    — bloated (~349MB per /opt/termlink transcript), wrong, no exclusions; (5) symlinked `.agentic-framework` — current /opt/termlink
-    state, contaminates host install with consumer state. None are documented as canonical. Agents pick whichever sibling
-    they sample first.
+  description: 'The framework has FIVE distinct isolation/vendoring patterns in production simultaneously, with no documentation of which is canonical, when to use each, or how to migrate between them.
+    Originally registered as a 2-pattern problem (2026-04-11 morning); widened to 5 after /opt/termlink T-909 transcript (2026-04-11 afternoon) revealed `fw vendor` and the symlink mode. The five patterns
+    are: (1) vendored plain directory `<project>/.agentic-framework/` with framework files committed into project git, no .git inside (proxmox-ring20-management — created by earlier `fw init` before shim
+    migration); (2) `fw vendor` — explicit subcommand "Copy framework into project for full isolation", with size exclusions (~56MB target per /opt/termlink transcript); (3) project-detecting shim — global
+    `~/.local/bin/fw` replaced by `fw upgrade` step 4c, routes via cwd, reads `.framework.yaml` for version pin (ring20-dashboard after fw upgrade); (4) manual `cp -r` — bloated (~349MB per /opt/termlink
+    transcript), wrong, no exclusions; (5) symlinked `.agentic-framework` — current /opt/termlink state, contaminates host install with consumer state. None are documented as canonical. Agents pick whichever
+    sibling they sample first.
 
     '
-  spec_reference: lib/upgrade.sh (shim migration step 4c), bin/fw:3359 (vendor subcommand), proxmox-ring20-management/.agentic-framework/
-    (plain dir), ring20-dashboard (post-upgrade shim), /opt/termlink (current symlink mode)
+  spec_reference: lib/upgrade.sh (shim migration step 4c), bin/fw:3359 (vendor subcommand), proxmox-ring20-management/.agentic-framework/ (plain dir), ring20-dashboard (post-upgrade shim), /opt/termlink
+    (current symlink mode)
   severity: high
   likelihood: 5
   impact: 4
   score: 20
   ranking: high
   evidence:
-  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11 morning): Evaluator (this session) recommended `fw upgrade`
-    and expected it to vendor framework code into a per-project plain directory (matching proxmox-ring20-management). Actual
-    `fw upgrade` output revealed shim migration as the mechanism — completely different model. Both sessions had wrong mental
-    models.'
-  - 'proxmox-ring20-management/.agentic-framework/ exists as plain directory with framework files (pattern 1). Was likely
-    created by an earlier `fw init` before shim migration was added. Has not been re-upgraded since.'
-  - 'ring20-dashboard after `fw upgrade` 2026-04-11: no .agentic-framework/ directory; routing through project-detecting shim
-    (pattern 3).'
-  - '/opt/termlink T-909 transcript (2026-04-11 afternoon): user explicitly references `fw vendor (56MB, exclusions) not cp
-    -r (349MB pollution)` as the right tool — confirms patterns 2 and 4 exist. Current /opt/termlink state is `.agentic-framework`
-    as a symlink — pattern 5 — and the task T-909 itself is "Fix .agentic-framework symlink — replace with vendored copy"
-    which is migration from pattern 5 → pattern 2.'
-  - '`fw vendor` subcommand confirmed: bin/fw:3359 dispatches to vendor handler, bin/fw:129 help text "Copy framework into
-    project for full isolation". Not in CLAUDE.md Quick Reference table. Not surfaced anywhere agents would discover it.'
-  trigger: Any agent in a consumer project asked to "set up", "vendor", or "isolate" the framework — picks one of five patterns
-    based on which sibling/example it sampled, with no guidance on which is canonical. Five patterns means roughly 25 possible
-    migration paths, none documented.
+  - 'Cross-session ring20-dashboard onboarding incident (2026-04-11 morning): Evaluator (this session) recommended `fw upgrade` and expected it to vendor framework code into a per-project plain directory
+    (matching proxmox-ring20-management). Actual `fw upgrade` output revealed shim migration as the mechanism — completely different model. Both sessions had wrong mental models.'
+  - proxmox-ring20-management/.agentic-framework/ exists as plain directory with framework files (pattern 1). Was likely created by an earlier `fw init` before shim migration was added. Has not been re-upgraded
+    since.
+  - 'ring20-dashboard after `fw upgrade` 2026-04-11: no .agentic-framework/ directory; routing through project-detecting shim (pattern 3).'
+  - '/opt/termlink T-909 transcript (2026-04-11 afternoon): user explicitly references `fw vendor (56MB, exclusions) not cp -r (349MB pollution)` as the right tool — confirms patterns 2 and 4 exist. Current
+    /opt/termlink state is `.agentic-framework` as a symlink — pattern 5 — and the task T-909 itself is "Fix .agentic-framework symlink — replace with vendored copy" which is migration from pattern 5 →
+    pattern 2.'
+  - '`fw vendor` subcommand confirmed: bin/fw:3359 dispatches to vendor handler, bin/fw:129 help text "Copy framework into project for full isolation". Not in CLAUDE.md Quick Reference table. Not surfaced
+    anywhere agents would discover it.'
+  trigger: Any agent in a consumer project asked to "set up", "vendor", or "isolate" the framework — picks one of five patterns based on which sibling/example it sampled, with no guidance on which is canonical.
+    Five patterns means roughly 25 possible migration paths, none documented.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
@@ -947,48 +851,39 @@ concerns:
 - id: G-032
   type: gap
   title: 'CRITICAL: fw inception decide silently passes --force, bypassing agent AC, verification, and human-ownership gates'
-  description: '`fw inception decide T-XXX go` (and `no-go`) calls `update-task.sh --status work-completed --force` internally
-    at lib/inception.sh:303. The user does NOT pass --force. The framework adds it silently. Result: every inception that
-    ends in go/no-go bypasses (a) the P-010 acceptance criteria gate, (b) the P-011 verification gate, and (c) the Human Task
-    Completion Rule that protects human-owned tasks. Comment at lib/inception.sh:299 justifies this with "—force bypasses
-    sovereignty gate (R-033) because inception decide itself required Tier 0 approval — human authority was already exercised
-    (T-637)" but this premise is FACTUALLY WRONG: inception decide is not a Tier 0 command. It does not trip check-tier0.sh.
-    No prior human authority is exercised. The intent of T-637 was probably "do not re-prompt for confirmation"; the effect
-    is "skip every safety check the framework has." This is a structural bypass via a back door inside framework code itself
-    — exactly the class of violation CLAUDE.md §Human Task Completion Rule and §Autonomous Mode Boundaries forbid.
+  description: '`fw inception decide T-XXX go` (and `no-go`) calls `update-task.sh --status work-completed --force` internally at lib/inception.sh:303. The user does NOT pass --force. The framework adds
+    it silently. Result: every inception that ends in go/no-go bypasses (a) the P-010 acceptance criteria gate, (b) the P-011 verification gate, and (c) the Human Task Completion Rule that protects human-owned
+    tasks. Comment at lib/inception.sh:299 justifies this with "—force bypasses sovereignty gate (R-033) because inception decide itself required Tier 0 approval — human authority was already exercised
+    (T-637)" but this premise is FACTUALLY WRONG: inception decide is not a Tier 0 command. It does not trip check-tier0.sh. No prior human authority is exercised. The intent of T-637 was probably "do not
+    re-prompt for confirmation"; the effect is "skip every safety check the framework has." This is a structural bypass via a back door inside framework code itself — exactly the class of violation CLAUDE.md
+    §Human Task Completion Rule and §Autonomous Mode Boundaries forbid.
 
     '
-  spec_reference: lib/inception.sh:299-303, CLAUDE.md §Human Task Completion Rule, CLAUDE.md §Autonomous Mode Boundaries,
-    P-010, P-011, R-033, T-637
+  spec_reference: lib/inception.sh:299-303, CLAUDE.md §Human Task Completion Rule, CLAUDE.md §Autonomous Mode Boundaries, P-010, P-011, R-033, T-637
   severity: critical
   likelihood: 5
   impact: 5
   score: 25
   ranking: critical
   evidence:
-  - 'lib/inception.sh:303 (verbatim): `"$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force
-    --reason "Inception decision: $decision_upper" 2>&1`'
-  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go --rationale "..."` printed: "Completing human-owned
-    task (--force bypass)", "3/3 agent AC unchecked (--force bypass)", "Partial-complete: 1 human AC(s) pending verification".
-    User never passed --force. Task moved to work-completed status with zero verified ACs.'
-  - 'CLAUDE.md §Autonomous Mode Boundaries: NOT delegated includes "Using --force to bypass any gate (sovereignty, AC, verification)"
-    AND "Completing human-owned tasks". Both happened here, automatically, without any human intervention beyond running a
-    decide command.'
+  - 'lib/inception.sh:303 (verbatim): `"$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --force --reason "Inception decision: $decision_upper" 2>&1`'
+  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go --rationale "..."` printed: "Completing human-owned task (--force bypass)", "3/3 agent AC unchecked (--force bypass)", "Partial-complete:
+    1 human AC(s) pending verification". User never passed --force. Task moved to work-completed status with zero verified ACs.'
+  - 'CLAUDE.md §Autonomous Mode Boundaries: NOT delegated includes "Using --force to bypass any gate (sovereignty, AC, verification)" AND "Completing human-owned tasks". Both happened here, automatically,
+    without any human intervention beyond running a decide command.'
   trigger: Every inception task that ends in `go` or `no-go`. Has been firing silently since T-637.
   status: resolved
-  resolution: "Fixed in T-1101/T-1142: lib/inception.sh now uses --skip-sovereignty (bypasses only R-033 sovereignty gate) instead of --force. P-010 (AC gate) and P-011 (verification gate) are no longer bypassed. Verified 2026-04-12: no --force in inception decide path."
+  resolution: 'Fixed in T-1101/T-1142: lib/inception.sh now uses --skip-sovereignty (bypasses only R-033 sovereignty gate) instead of --force. P-010 (AC gate) and P-011 (verification gate) are no longer
+    bypassed. Verified 2026-04-12: no --force in inception decide path.'
   created: 2026-04-11
   last_reviewed: 2026-04-12
   related_task: T-1101
 - id: G-033
   type: gap
   title: bin/fw hardcoded in framework error messages and review prompts (T-609 propagation gap inside framework code)
-  description: 'T-609 (Copy-Pasteable Commands rule) requires copy-pasteable commands to use `cd /path/to/project && bin/fw
-    ...` for the in-framework-repo case. The rule was applied uniformly across framework error messages without distinguishing
-    consumer-project context. In a consumer project (where the agent operates from a project that is NOT the framework repo),
-    `bin/fw` does not exist — only `.agentic-framework/bin/fw` (or bare `fw` after shim migration). Every framework message
-    that hardcodes `bin/fw` produces a copy-paste failure when relayed to a consumer-project user. Agent must correct manually,
-    burning a round-trip.
+  description: 'T-609 (Copy-Pasteable Commands rule) requires copy-pasteable commands to use `cd /path/to/project && bin/fw ...` for the in-framework-repo case. The rule was applied uniformly across framework
+    error messages without distinguishing consumer-project context. In a consumer project (where the agent operates from a project that is NOT the framework repo), `bin/fw` does not exist — only `.agentic-framework/bin/fw`
+    (or bare `fw` after shim migration). Every framework message that hardcodes `bin/fw` produces a copy-paste failure when relayed to a consumer-project user. Agent must correct manually, burning a round-trip.
 
     '
   spec_reference: lib/inception.sh:215, lib/review.sh:127, T-609, CLAUDE.md §Copy-Pasteable Commands
@@ -998,28 +893,26 @@ concerns:
   score: 10
   ranking: medium
   evidence:
-  - 'lib/inception.sh:215 — `cd $PROJECT_ROOT && bin/fw task review $task_id` (review-required error)'
-  - 'lib/review.sh:127 — `cd $PROJECT_ROOT && bin/fw inception decide $task_id go --rationale "your rationale"` (post-review
-    prompt)'
-  - '/opt/termlink T-909 transcript (2026-04-11): agent had to correct `bin/fw → .agentic-framework/bin/fw` TWICE in the same
-    exchange — once for inception decide, once for task review. Same class of bug surfaced in ring20-dashboard transcript
-    earlier same day.'
+  - lib/inception.sh:215 — `cd $PROJECT_ROOT && bin/fw task review $task_id` (review-required error)
+  - lib/review.sh:127 — `cd $PROJECT_ROOT && bin/fw inception decide $task_id go --rationale "your rationale"` (post-review prompt)
+  - '/opt/termlink T-909 transcript (2026-04-11): agent had to correct `bin/fw → .agentic-framework/bin/fw` TWICE in the same exchange — once for inception decide, once for task review. Same class of bug
+    surfaced in ring20-dashboard transcript earlier same day.'
   - 'Related: G-025 (fw upgrade not surfaced for consumers — same root: framework code does not distinguish self-host vs consumer-host)'
-  trigger: Every framework error or review prompt that includes a copy-paste command, when run in a consumer project. Multiple
-    times per inception/review cycle.
-  status: watching
+  trigger: Every framework error or review prompt that includes a copy-paste command, when run in a consumer project. Multiple times per inception/review cycle.
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1102
+  resolution: 'T-1182: block-task-tools.sh now sources lib/paths.sh and uses _fw_cmd() for context-aware fw path. The _fw_cmd/_emit_user_command helpers (T-1143, lib/paths.sh) already covered the 3 originally
+    cited files (inception.sh, review.sh, check-tier0.sh). block-task-tools.sh was the last remaining hardcoded site.'
+  closed_date: '2026-04-12'
 - id: G-034
   type: gap
   title: Episodic auto-generation fires on partial-complete tasks — premature memory of unfinalized work
-  description: 'When `update-task.sh --status work-completed` runs against a task with unchecked human ACs, the framework
-    correctly enters partial-complete state: status = work-completed, but the task file STAYS in `.tasks/active/` with owner
-    flipped to human, awaiting human finalization. However the auto-trigger for episodic generation fires on the status transition
-    alone, without waiting for the file to physically move to `.tasks/completed/`. Result: episodic memory contains a "done"
-    record for tasks the human never finalized. Future agents reading episodic will treat them as completed and accept their
-    decisions/learnings as authoritative — even if the human ultimately rejects the work.
+  description: 'When `update-task.sh --status work-completed` runs against a task with unchecked human ACs, the framework correctly enters partial-complete state: status = work-completed, but the task file
+    STAYS in `.tasks/active/` with owner flipped to human, awaiting human finalization. However the auto-trigger for episodic generation fires on the status transition alone, without waiting for the file
+    to physically move to `.tasks/completed/`. Result: episodic memory contains a "done" record for tasks the human never finalized. Future agents reading episodic will treat them as completed and accept
+    their decisions/learnings as authoritative — even if the human ultimately rejects the work.
 
     '
   spec_reference: agents/task-create/update-task.sh (episodic auto-trigger), agents/context/context.sh generate-episodic
@@ -1029,30 +922,24 @@ concerns:
   score: 16
   ranking: high
   evidence:
-  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go` printed "Partial-complete: 1 human AC(s)
-    pending verification" AND "Task stays in active/" AND "Episodic generated: /opt/termlink/.context/episodic/T-909.yaml"
+  - '/opt/termlink T-909 transcript (2026-04-11): `fw inception decide T-909 go` printed "Partial-complete: 1 human AC(s) pending verification" AND "Task stays in active/" AND "Episodic generated: /opt/termlink/.context/episodic/T-909.yaml"
     in the same output block. The episodic was written to a task that the framework explicitly said was not finalized.'
-  - 'Compounding effect with G-032: G-032 silently force-completes inception tasks → triggers premature episodic via this
-    gap → future agents read "T-XXX done" with unverified ACs → bad memory propagates indefinitely.'
-  trigger: Any inception decide on a task with unchecked human ACs (which is ~all of them under the G-032 bug). Compounds
-    with G-032 to produce false long-term memory.
+  - 'Compounding effect with G-032: G-032 silently force-completes inception tasks → triggers premature episodic via this gap → future agents read "T-XXX done" with unverified ACs → bad memory propagates
+    indefinitely.'
+  trigger: Any inception decide on a task with unchecked human ACs (which is ~all of them under the G-032 bug). Compounds with G-032 to produce false long-term memory.
   status: resolved
-  resolution: "Fixed in T-1160: PARTIAL_COMPLETE guard at update-task.sh line 838 prevents episodic generation on partial-complete tasks. Verified 2026-04-12."
+  resolution: 'Fixed in T-1160: PARTIAL_COMPLETE guard at update-task.sh line 838 prevents episodic generation on partial-complete tasks. Verified 2026-04-12.'
   created: 2026-04-11
   last_reviewed: 2026-04-12
   related_task: T-1103
 - id: G-035
   type: gap
-  title: 'META-GAP: CLAUDE.md Quick Reference + agent memory drift from actual fw command surface — no structural enforcement
-    of doc/help/code parity'
-  description: 'Recurring class of bug: framework features (new subcommands, required flags, distribution model changes) get
-    added without updating CLAUDE.md Quick Reference, agent memory, or sometimes even `fw help`. Agents read CLAUDE.md as
-    canonical, copy a stale form, and fail at dispatch/invocation time. The framework correctly errors with a clear message,
-    but the agent should not have hit the error in the first place — the canonical reference lied to it. The gap is not in
-    the error handling; the gap is in the absence of structural enforcement that CLAUDE.md, `fw help`, `fw <subcommand> --help`,
-    and the actual code stay in sync. This subsumes G-025 (fw upgrade not surfaced), G-029 (termlink distribution model not
-    contrasted), G-031 evidence #4 (fw vendor not in CLAUDE.md), AND the new evidence below — they are all instances of the
-    same class.
+  title: 'META-GAP: CLAUDE.md Quick Reference + agent memory drift from actual fw command surface — no structural enforcement of doc/help/code parity'
+  description: 'Recurring class of bug: framework features (new subcommands, required flags, distribution model changes) get added without updating CLAUDE.md Quick Reference, agent memory, or sometimes
+    even `fw help`. Agents read CLAUDE.md as canonical, copy a stale form, and fail at dispatch/invocation time. The framework correctly errors with a clear message, but the agent should not have hit the
+    error in the first place — the canonical reference lied to it. The gap is not in the error handling; the gap is in the absence of structural enforcement that CLAUDE.md, `fw help`, `fw <subcommand> --help`,
+    and the actual code stay in sync. This subsumes G-025 (fw upgrade not surfaced), G-029 (termlink distribution model not contrasted), G-031 evidence #4 (fw vendor not in CLAUDE.md), AND the new evidence
+    below — they are all instances of the same class.
 
     '
   spec_reference: CLAUDE.md (Quick Reference table), bin/fw (help text + subcommand parsers), agents/*/AGENT.md, T-652, T-630
@@ -1062,33 +949,26 @@ concerns:
   score: 15
   ranking: high
   evidence:
-  - 'Same-day incident triplet (2026-04-11): (a) ring20-dashboard onboarding — `fw upgrade` was the canonical answer, neither
-    agent nor evaluator knew (G-025); (b) /opt/termlink T-909 — `fw vendor` exists at bin/fw:3359 but is not in CLAUDE.md
-    (F4 evidence under G-031); (c) THIS session — agent dispatched 4 TermLink workers in parallel without `--task`, all 4
-    failed identically with "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)". CLAUDE.md
-    Quick Reference table for `fw termlink dispatch` says `--name N --prompt P [--project DIR] [--model M]`. The `--task`
+  - 'Same-day incident triplet (2026-04-11): (a) ring20-dashboard onboarding — `fw upgrade` was the canonical answer, neither agent nor evaluator knew (G-025); (b) /opt/termlink T-909 — `fw vendor` exists
+    at bin/fw:3359 but is not in CLAUDE.md (F4 evidence under G-031); (c) THIS session — agent dispatched 4 TermLink workers in parallel without `--task`, all 4 failed identically with "Missing --task —
+    TermLink workers require a task reference for governance (T-652, T-630)". CLAUDE.md Quick Reference table for `fw termlink dispatch` says `--name N --prompt P [--project DIR] [--model M]`. The `--task`
     parameter is REQUIRED but NOT listed. T-652 added the requirement; CLAUDE.md was never updated.'
-  - 'Pattern: every new required flag or new subcommand creates a doc-drift bug. Agent CLAUDE.md gets read at session start
-    AND saved into memory. Stale forms cache indefinitely.'
-  - 'No structural enforcement: no test asserts CLAUDE.md Quick Reference matches `fw help`. No `fw doctor` check for doc/help
-    parity. No CI step that regenerates CLAUDE.md from canonical source. The Quick Reference is a hand-maintained snapshot
-    that decays whenever a new feature ships without a doc-update step.'
-  trigger: Any new required flag or subcommand added to fw without a corresponding CLAUDE.md Quick Reference update. Multiple
-    times per release cycle.
+  - 'Pattern: every new required flag or new subcommand creates a doc-drift bug. Agent CLAUDE.md gets read at session start AND saved into memory. Stale forms cache indefinitely.'
+  - 'No structural enforcement: no test asserts CLAUDE.md Quick Reference matches `fw help`. No `fw doctor` check for doc/help parity. No CI step that regenerates CLAUDE.md from canonical source. The Quick
+    Reference is a hand-maintained snapshot that decays whenever a new feature ships without a doc-update step.'
+  trigger: Any new required flag or subcommand added to fw without a corresponding CLAUDE.md Quick Reference update. Multiple times per release cycle.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1104
 - id: G-036
   type: gap
-  title: 'Watchtower inception detail page hardcoded section allowlist — new sections added to task files are silently dropped'
-  description: '`web/blueprints/inception.py:205-214` builds the `sections` dict from a hardcoded list of section names (Problem
-    Statement, Assumptions, Exploration Plan, Technical Constraints, Scope Fence, Go/No-Go Criteria, Recommendation, Decision,
-    Updates). Any new `## <Heading>` section added to a task file — including the `## Structural Upgrade` section introduced
-    per T-1105 chokepoint+invariant-test discipline — is parsed correctly by `_extract_section()` but never rendered because
-    it is not in the allowlist. The human reviewing via `fw task review T-XXX` sees the Recommendation but not the Structural
-    Upgrade, which is the entire point of the discipline pass. Fixed for Structural Upgrade in T-1108, but the underlying
-    gap (allowlist architecture) remains — the NEXT section added will hit the same bug.'
+  title: Watchtower inception detail page hardcoded section allowlist — new sections added to task files are silently dropped
+  description: '`web/blueprints/inception.py:205-214` builds the `sections` dict from a hardcoded list of section names (Problem Statement, Assumptions, Exploration Plan, Technical Constraints, Scope Fence,
+    Go/No-Go Criteria, Recommendation, Decision, Updates). Any new `## <Heading>` section added to a task file — including the `## Structural Upgrade` section introduced per T-1105 chokepoint+invariant-test
+    discipline — is parsed correctly by `_extract_section()` but never rendered because it is not in the allowlist. The human reviewing via `fw task review T-XXX` sees the Recommendation but not the Structural
+    Upgrade, which is the entire point of the discipline pass. Fixed for Structural Upgrade in T-1108, but the underlying gap (allowlist architecture) remains — the NEXT section added will hit the same
+    bug.'
   spec_reference: web/blueprints/inception.py:205-214, web/templates/inception_detail.html, T-1105, T-1108
   severity: medium
   likelihood: 3
@@ -1096,32 +976,27 @@ concerns:
   score: 9
   ranking: medium
   evidence:
-  - 'T-1100..T-1106 all had ## Structural Upgrade sections added in the 2026-04-11 discipline pass. Post-add, curl -sf http://localhost:3003/inception/T-1100
-    | grep -c "Structural Upgrade" returned 0 for all six. The section was invisible to the human review flow — the entire
-    structural-fix work was hidden behind a template allowlist.'
-  - 'Root cause: sections dict is a literal whitelist keyed by section name. Both the Python side and the Jinja template
-    side have to be updated together for every new section. Any new section that does not come with both edits lands silently
-    broken.'
-  - 'T-1108 fix covers Structural Upgrade specifically but does not change the architecture. The next new section (e.g.,
-    Dialogue Log per C-001 extension) will hit the same bug.'
+  - 'T-1100..T-1106 all had ## Structural Upgrade sections added in the 2026-04-11 discipline pass. Post-add, curl -sf http://localhost:3003/inception/T-1100 | grep -c "Structural Upgrade" returned 0 for
+    all six. The section was invisible to the human review flow — the entire structural-fix work was hidden behind a template allowlist.'
+  - 'Root cause: sections dict is a literal whitelist keyed by section name. Both the Python side and the Jinja template side have to be updated together for every new section. Any new section that does
+    not come with both edits lands silently broken.'
+  - T-1108 fix covers Structural Upgrade specifically but does not change the architecture. The next new section (e.g., Dialogue Log per C-001 extension) will hit the same bug.
   trigger: Any new standardized section heading added to inception task files (Dialogue Log, Chokepoint, Migration, etc.).
   status: resolved
-  resolution: 'T-1177 — _extract_all_sections() dynamically parses all ## headings. Extra sections beyond the known set are rendered generically via extra_sections loop in template. No more allowlist maintenance needed.'
+  resolution: 'T-1177 — _extract_all_sections() dynamically parses all ## headings. Extra sections beyond the known set are rendered generically via extra_sections loop in template. No more allowlist maintenance
+    needed.'
   created: 2026-04-11
   last_reviewed: 2026-04-12
   related_task: T-1177
 - id: G-037
   type: gap
-  title: 'Enumeration-divergence between do_vendor and do_update excludes lists (L-006 pattern, second instance)'
-  description: 'Found while investigating T-1109 (G-024 RCA). `bin/fw:181-190` do_vendor and `lib/update.sh:183-192` do_update
-    both maintain their own includes=() and excludes=() arrays. The includes lists currently match (`bin lib agents web docs
-    .tasks/templates FRAMEWORK.md metrics.sh`) but the excludes lists already drift: do_vendor excludes 7 items (including
-    `lib/ts/src`, `lib/ts/tsconfig.json`, `lib/ts/package.json`, `lib/ts/package-lock.json`) while do_update excludes only
-    3 (`__pycache__`, `*.pyc`, `.DS_Store`). Consumers upgraded via `fw update` (GitHub upstream_repo path) will receive the
-    lib/ts/* source files that consumers initialized via `fw init` / `fw vendor` never got. No functional bug today because
-    lib/ts/ is empty/unused, but this is precisely the L-006 enumeration-divergence pattern that caused T-1109. A future
-    addition to one list without the other will bite silently. Structural fix: collapse do_update to call do_vendor — same
-    chokepoint pattern proposed for do_upgrade in T-1109.'
+  title: Enumeration-divergence between do_vendor and do_update excludes lists (L-006 pattern, second instance)
+  description: 'Found while investigating T-1109 (G-024 RCA). `bin/fw:181-190` do_vendor and `lib/update.sh:183-192` do_update both maintain their own includes=() and excludes=() arrays. The includes lists
+    currently match (`bin lib agents web docs .tasks/templates FRAMEWORK.md metrics.sh`) but the excludes lists already drift: do_vendor excludes 7 items (including `lib/ts/src`, `lib/ts/tsconfig.json`,
+    `lib/ts/package.json`, `lib/ts/package-lock.json`) while do_update excludes only 3 (`__pycache__`, `*.pyc`, `.DS_Store`). Consumers upgraded via `fw update` (GitHub upstream_repo path) will receive
+    the lib/ts/* source files that consumers initialized via `fw init` / `fw vendor` never got. No functional bug today because lib/ts/ is empty/unused, but this is precisely the L-006 enumeration-divergence
+    pattern that caused T-1109. A future addition to one list without the other will bite silently. Structural fix: collapse do_update to call do_vendor — same chokepoint pattern proposed for do_upgrade
+    in T-1109.'
   spec_reference: bin/fw:181-200 (do_vendor), lib/update.sh:183-202 (do_update), L-006
   severity: low
   likelihood: 3
@@ -1129,10 +1004,9 @@ concerns:
   score: 6
   ranking: low
   evidence:
-  - 'Diff of the two blocks: includes identical, excludes differ by 4 lines (do_vendor adds lib/ts/* exclusions, do_update
-    does not).'
-  - 'Discovery context: during T-1109 RCA, L-006 (enumeration-divergence) was named as a class. Local grep for similar parallel
-    lists in lib/ and bin/fw found this exact pattern at the do_vendor/do_update boundary.'
+  - 'Diff of the two blocks: includes identical, excludes differ by 4 lines (do_vendor adds lib/ts/* exclusions, do_update does not).'
+  - 'Discovery context: during T-1109 RCA, L-006 (enumeration-divergence) was named as a class. Local grep for similar parallel lists in lib/ and bin/fw found this exact pattern at the do_vendor/do_update
+    boundary.'
   - 'Related: T-1109 (collapses do_upgrade into do_vendor), L-006 (enumeration-divergence class), G-024 (original T-1109 trigger).'
   trigger: Anyone adds a new include (e.g., `deploy/`, `.fabric/`) to do_vendor or do_update without updating the other.
   status: watching
@@ -1141,16 +1015,13 @@ concerns:
   related_task: T-1109
 - id: G-038
   type: gap
-  title: 'web/blueprints/tasks.py hardcodes workflow_types and horizons — bypasses status-transitions.yaml single source of truth'
-  description: 'T-588 established `status-transitions.yaml` as the declarative source of truth for VALID_STATUSES, VALID_TYPES,
-    VALID_HORIZONS, and VALID_TRANSITIONS. `lib/enums.sh` correctly reads the YAML at source-time and exposes the values
-    via shell variables + validation functions. The bash side of the framework respects this chokepoint. But `web/blueprints/tasks.py:439`
-    has `allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]` hardcoded,
-    and `web/blueprints/tasks.py:448` has `horizon not in ("now", "next", "later")` hardcoded. Both currently match the YAML
-    but are parallel enumerations — if any new workflow type is added to status-transitions.yaml (e.g., "research", "ops"),
-    the Watchtower task-creation form will reject it as "Invalid workflow type" while the CLI accepts it. Same L-006 class
-    as G-024/G-037 but at the Python<->Bash boundary. Structural fix: Python-side helper `_load_enums_from_yaml()` that reads
-    status-transitions.yaml (already parsed via PyYAML elsewhere in Watchtower) and exposes the same names.'
+  title: web/blueprints/tasks.py hardcodes workflow_types and horizons — bypasses status-transitions.yaml single source of truth
+  description: 'T-588 established `status-transitions.yaml` as the declarative source of truth for VALID_STATUSES, VALID_TYPES, VALID_HORIZONS, and VALID_TRANSITIONS. `lib/enums.sh` correctly reads the
+    YAML at source-time and exposes the values via shell variables + validation functions. The bash side of the framework respects this chokepoint. But `web/blueprints/tasks.py:439` has `allowed_types =
+    ["build", "test", "refactor", "specification", "design", "decommission", "inception"]` hardcoded, and `web/blueprints/tasks.py:448` has `horizon not in ("now", "next", "later")` hardcoded. Both currently
+    match the YAML but are parallel enumerations — if any new workflow type is added to status-transitions.yaml (e.g., "research", "ops"), the Watchtower task-creation form will reject it as "Invalid workflow
+    type" while the CLI accepts it. Same L-006 class as G-024/G-037 but at the Python<->Bash boundary. Structural fix: Python-side helper `_load_enums_from_yaml()` that reads status-transitions.yaml (already
+    parsed via PyYAML elsewhere in Watchtower) and exposes the same names.'
   spec_reference: web/blueprints/tasks.py:439, web/blueprints/tasks.py:448, status-transitions.yaml, lib/enums.sh, L-006, T-588
   severity: medium
   likelihood: 3
@@ -1158,33 +1029,28 @@ concerns:
   score: 9
   ranking: medium
   evidence:
-  - 'Hardcoded list at web/blueprints/tasks.py:439 — `allowed_types = ["build", "test", "refactor", "specification", "design",
-    "decommission", "inception"]`. Currently matches status-transitions.yaml `workflow_types` exactly (7 entries).'
-  - 'Hardcoded tuple at web/blueprints/tasks.py:448 — `("now", "next", "later")`. Currently matches status-transitions.yaml
-    `horizons` exactly (3 entries).'
-  - 'The bash side via lib/enums.sh already solved this — python side was never migrated.'
-  - 'Related: L-006 (enumeration-divergence class), G-024 (T-1109 primary instance), G-037 (second instance at do_vendor/do_update
-    boundary), T-588 (status-transitions.yaml origin), T-1105 (chokepoint+invariant-test discipline).'
-  trigger: Any addition to `workflow_types:` or `horizons:` in status-transitions.yaml that is not simultaneously mirrored
-    in web/blueprints/tasks.py.
+  - Hardcoded list at web/blueprints/tasks.py:439 — `allowed_types = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]`. Currently matches status-transitions.yaml `workflow_types`
+    exactly (7 entries).
+  - Hardcoded tuple at web/blueprints/tasks.py:448 — `("now", "next", "later")`. Currently matches status-transitions.yaml `horizons` exactly (3 entries).
+  - The bash side via lib/enums.sh already solved this — python side was never migrated.
+  - 'Related: L-006 (enumeration-divergence class), G-024 (T-1109 primary instance), G-037 (second instance at do_vendor/do_update boundary), T-588 (status-transitions.yaml origin), T-1105 (chokepoint+invariant-test
+    discipline).'
+  trigger: Any addition to `workflow_types:` or `horizons:` in status-transitions.yaml that is not simultaneously mirrored in web/blueprints/tasks.py.
   status: resolved
-  resolution: 'T-1179 — tasks.py now reads workflow_types, horizons, and statuses from status-transitions.yaml via _load_enums() with caching. Template dropdowns use Jinja loops over enum_types/enum_horizons. No more parallel hardcoded lists.'
+  resolution: T-1179 — tasks.py now reads workflow_types, horizons, and statuses from status-transitions.yaml via _load_enums() with caching. Template dropdowns use Jinja loops over enum_types/enum_horizons.
+    No more parallel hardcoded lists.
   created: 2026-04-11
   last_reviewed: 2026-04-12
   related_task: T-1109
 - id: G-039
   type: gap
-  title: 'Config registry triple-mirror — lib/config.sh, web/blueprints/config.py, CLAUDE.md all hand-maintained'
-  description: 'The framework config registry is enumerated in THREE places: (1) `lib/config.sh:130-148` FW_CONFIG_REGISTRY
-    (17 entries, format KEY|DEFAULT|DESCRIPTION, the bash canonical); (2) `web/blueprints/config.py:14-32` SETTINGS (17 entries,
-    Python tuples, comment explicitly says "mirrors lib/config.sh FW_CONFIG_REGISTRY"); (3) CLAUDE.md config table (17 entries,
-    human-readable markdown, includes FW_ env-var prefix and human-readable name). All three currently match exactly, but
-    adding a new config setting requires touching all three with no structural link between them. This is the fourth confirmed
-    L-006 instance found in a 30-minute scan of the framework — pattern density is high enough to warrant a dedicated systematic
-    sweep. Intersects with G-035 (CLAUDE.md/fw help/code drift) as the CLAUDE.md side of the mirror. Structural fix options:
-    (A) Generate CLAUDE.md table + config.py SETTINGS from lib/config.sh at build time (chokepoint = lib/config.sh); (B) Move
-    FW_CONFIG_REGISTRY into a YAML file readable by all three (config/settings.yaml, like status-transitions.yaml solved
-    T-588); (C) `fw doctor` invariant check that diffs the 17 keys across all three sources.'
+  title: Config registry triple-mirror — lib/config.sh, web/blueprints/config.py, CLAUDE.md all hand-maintained
+  description: 'The framework config registry is enumerated in THREE places: (1) `lib/config.sh:130-148` FW_CONFIG_REGISTRY (17 entries, format KEY|DEFAULT|DESCRIPTION, the bash canonical); (2) `web/blueprints/config.py:14-32`
+    SETTINGS (17 entries, Python tuples, comment explicitly says "mirrors lib/config.sh FW_CONFIG_REGISTRY"); (3) CLAUDE.md config table (17 entries, human-readable markdown, includes FW_ env-var prefix
+    and human-readable name). All three currently match exactly, but adding a new config setting requires touching all three with no structural link between them. This is the fourth confirmed L-006 instance
+    found in a 30-minute scan of the framework — pattern density is high enough to warrant a dedicated systematic sweep. Intersects with G-035 (CLAUDE.md/fw help/code drift) as the CLAUDE.md side of the
+    mirror. Structural fix options: (A) Generate CLAUDE.md table + config.py SETTINGS from lib/config.sh at build time (chokepoint = lib/config.sh); (B) Move FW_CONFIG_REGISTRY into a YAML file readable
+    by all three (config/settings.yaml, like status-transitions.yaml solved T-588); (C) `fw doctor` invariant check that diffs the 17 keys across all three sources.'
   spec_reference: lib/config.sh:130-148, web/blueprints/config.py:14-32, CLAUDE.md config table, L-006, G-035
   severity: medium
   likelihood: 4
@@ -1192,33 +1058,27 @@ concerns:
   score: 8
   ranking: medium
   evidence:
-  - 'Manual cross-check: all 17 keys in lib/config.sh and web/blueprints/config.py match exactly (BASH_TIMEOUT, BUDGET_RECHECK_INTERVAL,
-    ... HANDOVER_DEDUP_COOLDOWN). CLAUDE.md lists the same 17 with FW_ prefix and human-readable names.'
-  - 'config.py:13 comment explicitly states "mirrors lib/config.sh FW_CONFIG_REGISTRY" — self-documented divergence risk.'
-  - 'G-035 (doc/code drift) is the parent class. G-039 is the config-registry instance. T-588 precedent (status-transitions.yaml)
-    shows the Option B pattern works.'
-  - 'Related: L-006 (enumeration-divergence class), G-035 (doc parity parent), G-024/G-037/G-038 (other L-006 instances),
-    T-588 (status-transitions.yaml single source of truth precedent).'
-  trigger: Any addition to FW_CONFIG_REGISTRY in lib/config.sh that is not simultaneously mirrored in config.py SETTINGS and
-    CLAUDE.md.
+  - 'Manual cross-check: all 17 keys in lib/config.sh and web/blueprints/config.py match exactly (BASH_TIMEOUT, BUDGET_RECHECK_INTERVAL, ... HANDOVER_DEDUP_COOLDOWN). CLAUDE.md lists the same 17 with FW_
+    prefix and human-readable names.'
+  - config.py:13 comment explicitly states "mirrors lib/config.sh FW_CONFIG_REGISTRY" — self-documented divergence risk.
+  - G-035 (doc/code drift) is the parent class. G-039 is the config-registry instance. T-588 precedent (status-transitions.yaml) shows the Option B pattern works.
+  - 'Related: L-006 (enumeration-divergence class), G-035 (doc parity parent), G-024/G-037/G-038 (other L-006 instances), T-588 (status-transitions.yaml single source of truth precedent).'
+  trigger: Any addition to FW_CONFIG_REGISTRY in lib/config.sh that is not simultaneously mirrored in config.py SETTINGS and CLAUDE.md.
   status: watching
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
 - id: G-040
   type: gap
-  title: 'Owner enum (human/claude-code) has 5+ parallel sites with NO canonical source of truth'
-  description: 'Discovered by T-1109 L-006 sweep worker. The task owner enum (`human`, `claude-code`) is hardcoded in at least
-    5 separate locations with NO canonical definition in status-transitions.yaml or lib/enums.sh. Sites: (A) web/blueprints/tasks.py:443
-    `allowed_owners = ["human", "claude-code"]`; (B) web/blueprints/tasks.py:496 inline tuple; (C) web/templates/tasks.html:496
-    Jinja kanban list; (D) web/templates/tasks.html:711 Jinja list view; (E) web/templates/task_detail.html:166 Jinja detail
-    view. Agent audit at agents/audit/audit.sh:2010 checks `owner != "human"` (treats anything != human as agent). Critical
-    asymmetry: agents/task-create/create-task.sh accepts free-form `--owner` argument (bash is permissive); Python web side
-    strictly rejects non-{human,claude-code} inputs. A task created via `fw task create --owner orchestrator` loads in the
-    CLI but renders broken in Watchtower and is unsettable via the inline dropdown. Structural fix: add `owners:` section
-    to status-transitions.yaml; export VALID_OWNERS from lib/enums.sh; Flask context processor injects into templates.'
-  spec_reference: web/blueprints/tasks.py:443, web/blueprints/tasks.py:496, web/templates/tasks.html:496, web/templates/tasks.html:711,
-    web/templates/task_detail.html:166, agents/audit/audit.sh:2010, status-transitions.yaml (missing owners section)
+  title: Owner enum (human/claude-code) has 5+ parallel sites with NO canonical source of truth
+  description: 'Discovered by T-1109 L-006 sweep worker. The task owner enum (`human`, `claude-code`) is hardcoded in at least 5 separate locations with NO canonical definition in status-transitions.yaml
+    or lib/enums.sh. Sites: (A) web/blueprints/tasks.py:443 `allowed_owners = ["human", "claude-code"]`; (B) web/blueprints/tasks.py:496 inline tuple; (C) web/templates/tasks.html:496 Jinja kanban list;
+    (D) web/templates/tasks.html:711 Jinja list view; (E) web/templates/task_detail.html:166 Jinja detail view. Agent audit at agents/audit/audit.sh:2010 checks `owner != "human"` (treats anything != human
+    as agent). Critical asymmetry: agents/task-create/create-task.sh accepts free-form `--owner` argument (bash is permissive); Python web side strictly rejects non-{human,claude-code} inputs. A task created
+    via `fw task create --owner orchestrator` loads in the CLI but renders broken in Watchtower and is unsettable via the inline dropdown. Structural fix: add `owners:` section to status-transitions.yaml;
+    export VALID_OWNERS from lib/enums.sh; Flask context processor injects into templates.'
+  spec_reference: web/blueprints/tasks.py:443, web/blueprints/tasks.py:496, web/templates/tasks.html:496, web/templates/tasks.html:711, web/templates/task_detail.html:166, agents/audit/audit.sh:2010, status-transitions.yaml
+    (missing owners section)
   severity: medium
   likelihood: 3
   impact: 3
@@ -1229,35 +1089,32 @@ concerns:
   - 'Bash<->Python asymmetry confirmed: create-task.sh has no validation on --owner; web side has strict whitelist.'
   trigger: Any addition of a new owner type (e.g., `orchestrator`, `reviewer`) or any refactor that changes the owner whitelist.
   status: resolved
-  resolution: 'T-1180 — owners: section added to status-transitions.yaml. Python side reads via _load_enums(), bash side exports VALID_OWNERS + is_valid_owner(). Template dropdowns use Jinja loops. Single canonical source.'
+  resolution: 'T-1180 — owners: section added to status-transitions.yaml. Python side reads via _load_enums(), bash side exports VALID_OWNERS + is_valid_owner(). Template dropdowns use Jinja loops. Single
+    canonical source.'
   created: 2026-04-11
   last_reviewed: 2026-04-12
   related_task: T-1180
 - id: G-041
   type: gap
-  title: 'Active-status enum has 7+ mirror sites including kanban CSS — new statuses become INVISIBLE in UI'
-  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-004). The active task statuses (`captured`, `started-work`,
-    `issues`, `work-completed`) have a canonical definition in status-transitions.yaml → lib/enums.sh VALID_STATUSES, but
-    the web tier reimplements them 7+ times: (A) web/blueprints/tasks.py:393 `status_options = [...]`; (B) web/blueprints/tasks.py:545
-    `allowed = [...]` duplicate in same file; (C) web/templates/tasks.html:489,699 Jinja inline_select × 2; (D) web/templates/tasks.html:652
-    Jinja `{% for s in [...] %}`; (E) web/templates/tasks.html:149,152,155,158,174,177,180,191,502,514,526,538 kanban CSS
-    + HTML column selectors (each status hand-named); (F) web/watchtower/prioritizer.py:16-18 priority dict as subset transformation;
-    (G) web/blueprints/core.py:190 `status in ("started-work", "captured")` subset check. Worst structural fragility: the
-    kanban CSS — each status is hand-named in 12+ selectors, so adding a new status would not just "not render", it would
-    be INVISIBLE because there is no column for it. Structural fix: replace kanban CSS hand-written selectors with Jinja
-    `{% for status in ENUMS.statuses %}` loop; Flask context processor injects ENUMS; prioritizer.py loads from YAML.'
-  spec_reference: web/blueprints/tasks.py:393, web/blueprints/tasks.py:545, web/templates/tasks.html (multiple), web/watchtower/prioritizer.py:16-18,
-    web/blueprints/core.py:190, status-transitions.yaml, lib/enums.sh
+  title: Active-status enum has 7+ mirror sites including kanban CSS — new statuses become INVISIBLE in UI
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-004). The active task statuses (`captured`, `started-work`, `issues`, `work-completed`) have a canonical definition in status-transitions.yaml
+    → lib/enums.sh VALID_STATUSES, but the web tier reimplements them 7+ times: (A) web/blueprints/tasks.py:393 `status_options = [...]`; (B) web/blueprints/tasks.py:545 `allowed = [...]` duplicate in same
+    file; (C) web/templates/tasks.html:489,699 Jinja inline_select × 2; (D) web/templates/tasks.html:652 Jinja `{% for s in [...] %}`; (E) web/templates/tasks.html:149,152,155,158,174,177,180,191,502,514,526,538
+    kanban CSS + HTML column selectors (each status hand-named); (F) web/watchtower/prioritizer.py:16-18 priority dict as subset transformation; (G) web/blueprints/core.py:190 `status in ("started-work",
+    "captured")` subset check. Worst structural fragility: the kanban CSS — each status is hand-named in 12+ selectors, so adding a new status would not just "not render", it would be INVISIBLE because
+    there is no column for it. Structural fix: replace kanban CSS hand-written selectors with Jinja `{% for status in ENUMS.statuses %}` loop; Flask context processor injects ENUMS; prioritizer.py loads
+    from YAML.'
+  spec_reference: web/blueprints/tasks.py:393, web/blueprints/tasks.py:545, web/templates/tasks.html (multiple), web/watchtower/prioritizer.py:16-18, web/blueprints/core.py:190, status-transitions.yaml,
+    lib/enums.sh
   severity: high
   likelihood: 4
   impact: 4
   score: 16
   ranking: high
   evidence:
-  - 'T-1109 L-006 sweep worker output, finding NEW-004. Full report at docs/reports/T-1109-l006-sweep.md.'
-  - 'Kanban CSS risk: a new status added to status-transitions.yaml would not display on the kanban board because the column
-    layout is hand-coded with explicit status-name selectors. This is the worst structural fragility in the L-006 family
-    discovered so far — silent UI invisibility, not just logical rejection.'
+  - T-1109 L-006 sweep worker output, finding NEW-004. Full report at docs/reports/T-1109-l006-sweep.md.
+  - 'Kanban CSS risk: a new status added to status-transitions.yaml would not display on the kanban board because the column layout is hand-coded with explicit status-name selectors. This is the worst structural
+    fragility in the L-006 family discovered so far — silent UI invisibility, not just logical rejection.'
   trigger: Any addition of a new task status (e.g., `reviewing`, `waiting-on-human`) to status-transitions.yaml.
   status: watching
   created: 2026-04-11
@@ -1265,16 +1122,13 @@ concerns:
   related_task: T-1109
 - id: G-042
   type: gap
-  title: 'fw hook usage list × 4 mirror sites — new hooks do not appear in help or enforcement panel'
-  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-005). The list of framework hooks is canonical in the
-    filesystem (`agents/context/*.sh`, loaded dynamically by `fw hook <name>`), but is mirrored in 4 other places: (A) bin/fw:3370-3372
-    hardcoded "Available hooks:" error message listing 15 hook names; (B) .claude/settings.json:1-146 runtime hook registration
-    (10 distinct hook invocations); (C) bin/fw:876-884 doctor `expected` dict of 6 hooks (subset, tier-based required-hook
-    check); (D) web/blueprints/enforcement.py:20 `hooks = {"tier0": False, "tier1": False, "checkpoint": False}` 3-entry
-    whitelist for enforcement UI panel. The usage message lists 15 hooks but the filesystem has more; the enforcement panel
-    only checks 3 of the actually-installed hooks — misleading the human about real coverage. Structural fix: generate the
-    usage list from `ls $AGENTS_DIR/context/*.sh`; doctor computes expected from parsing .claude/settings.json; enforcement.py
-    queries settings.json and removes the 3-entry whitelist.'
+  title: fw hook usage list × 4 mirror sites — new hooks do not appear in help or enforcement panel
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-005). The list of framework hooks is canonical in the filesystem (`agents/context/*.sh`, loaded dynamically by `fw hook <name>`), but
+    is mirrored in 4 other places: (A) bin/fw:3370-3372 hardcoded "Available hooks:" error message listing 15 hook names; (B) .claude/settings.json:1-146 runtime hook registration (10 distinct hook invocations);
+    (C) bin/fw:876-884 doctor `expected` dict of 6 hooks (subset, tier-based required-hook check); (D) web/blueprints/enforcement.py:20 `hooks = {"tier0": False, "tier1": False, "checkpoint": False}` 3-entry
+    whitelist for enforcement UI panel. The usage message lists 15 hooks but the filesystem has more; the enforcement panel only checks 3 of the actually-installed hooks — misleading the human about real
+    coverage. Structural fix: generate the usage list from `ls $AGENTS_DIR/context/*.sh`; doctor computes expected from parsing .claude/settings.json; enforcement.py queries settings.json and removes the
+    3-entry whitelist.'
   spec_reference: bin/fw:3370-3372, bin/fw:876-884, web/blueprints/enforcement.py:20, .claude/settings.json, agents/context/*.sh
   severity: medium
   likelihood: 3
@@ -1282,9 +1136,8 @@ concerns:
   score: 9
   ranking: medium
   evidence:
-  - 'T-1109 L-006 sweep worker output, finding NEW-005. Full report at docs/reports/T-1109-l006-sweep.md.'
-  - 'Enforcement panel has a 3-entry whitelist while settings.json has 10+ hook invocations — UI reports false incomplete
-    coverage.'
+  - T-1109 L-006 sweep worker output, finding NEW-005. Full report at docs/reports/T-1109-l006-sweep.md.
+  - Enforcement panel has a 3-entry whitelist while settings.json has 10+ hook invocations — UI reports false incomplete coverage.
   trigger: Any addition of a new hook script to agents/context/ or .claude/settings.json.
   status: watching
   created: 2026-04-11
@@ -1292,15 +1145,12 @@ concerns:
   related_task: T-1109
 - id: G-043
   type: gap
-  title: 'fw subcommand list already drifts — case statement vs show_help() prose in same file'
-  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-006). The canonical `fw` subcommand list is the top-level
-    `case "$command" in` block in bin/fw (~102 case entries from line 1901). A parallel hand-written list lives in bin/fw:433-532
-    show_help() function (~50 `echo -e` lines). **Already drifting:** case entries NOT in show_help include `ask`, `plugin-audit`,
-    `fix-learned`, `traceability`, `enforcement`, `preflight`, `validate-init`, `mcp`, `consolidate`, `upstream`, `cron`.
-    Users cannot discover these commands from `fw help`. Conversely, show_help mentions `setup` (deprecated alias) and other
-    entries the case handler routes differently. Structural fix: introduce lightweight `lib/commands.yaml` registry mapping
-    command → description → category, loaded by both the router and show_help. OR: generate show_help at release time by
-    parsing the case block.'
+  title: fw subcommand list already drifts — case statement vs show_help() prose in same file
+  description: 'Discovered by T-1109 L-006 sweep worker (finding NEW-006). The canonical `fw` subcommand list is the top-level `case "$command" in` block in bin/fw (~102 case entries from line 1901). A
+    parallel hand-written list lives in bin/fw:433-532 show_help() function (~50 `echo -e` lines). **Already drifting:** case entries NOT in show_help include `ask`, `plugin-audit`, `fix-learned`, `traceability`,
+    `enforcement`, `preflight`, `validate-init`, `mcp`, `consolidate`, `upstream`, `cron`. Users cannot discover these commands from `fw help`. Conversely, show_help mentions `setup` (deprecated alias)
+    and other entries the case handler routes differently. Structural fix: introduce lightweight `lib/commands.yaml` registry mapping command → description → category, loaded by both the router and show_help.
+    OR: generate show_help at release time by parsing the case block.'
   spec_reference: bin/fw (case statement line 1901+), bin/fw:433-532 show_help()
   severity: medium
   likelihood: 4
@@ -1308,9 +1158,8 @@ concerns:
   score: 8
   ranking: medium
   evidence:
-  - 'T-1109 L-006 sweep worker output, finding NEW-006. Full report at docs/reports/T-1109-l006-sweep.md.'
-  - 'Already-drifted commands: ask, plugin-audit, fix-learned, traceability, enforcement, preflight, validate-init, mcp, consolidate,
-    upstream, cron — all handled by case but absent from show_help.'
+  - T-1109 L-006 sweep worker output, finding NEW-006. Full report at docs/reports/T-1109-l006-sweep.md.
+  - 'Already-drifted commands: ask, plugin-audit, fix-learned, traceability, enforcement, preflight, validate-init, mcp, consolidate, upstream, cron — all handled by case but absent from show_help.'
   - 'Overlaps with G-035 (META-GAP: CLAUDE.md / fw help / code drift).'
   trigger: Any addition of a new subcommand to the case block in bin/fw.
   status: watching
