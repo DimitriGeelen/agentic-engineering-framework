@@ -99,8 +99,15 @@ if [ -f "$FRAMEWORK_ROOT/lib/tasks.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/tasks.sh"
 fi
 
-# --- Inception Gate (T-126) ---
+# Source config for configurable inception limit (T-1176, R-032)
+if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+fi
+INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
+
+# --- Inception Gate (T-126, T-1176) ---
 # Block commits on inception tasks after exploration threshold unless decision recorded
+# Threshold configurable via FW_INCEPTION_COMMIT_LIMIT (default: 2)
 if [ -n "$TASK_REF" ]; then
     TASK_FILE=$(find_task_file "$TASK_REF" active)
     if [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE"; then
@@ -114,12 +121,12 @@ if [ -n "$TASK_REF" ]; then
             # Count existing commits for this inception task
             INCEPTION_COMMITS=$(git log --oneline --grep="$TASK_REF" 2>/dev/null | wc -l | tr -d ' ')
 
-            if [ "$INCEPTION_COMMITS" -ge 2 ]; then
+            if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
                 echo ""
                 echo "BLOCKED: Inception gate — $TASK_REF has no go/no-go decision"
                 echo ""
                 echo "This inception task has $INCEPTION_COMMITS commits but no decision."
-                echo "Inception tasks allow 2 exploration commits, then require a decision."
+                echo "Inception tasks allow $INCEPTION_COMMIT_LIMIT exploration commits, then require a decision."
                 echo ""
                 echo "Record a decision:"
                 echo "  1. Review: fw task review $TASK_REF  (creates review marker)"
@@ -128,10 +135,11 @@ if [ -n "$TASK_REF" ]; then
                 echo ""
                 echo "Bypass: git commit --no-verify"
                 echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
+                echo "  Configure: fw config set inception_commit_limit N"
                 exit 1
             else
                 echo ""
-                echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/2 before gate)"
+                echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/$INCEPTION_COMMIT_LIMIT before gate)"
                 echo "  After exploration:"
                 echo "    fw inception decide $TASK_REF go --rationale '...'"
                 echo ""
