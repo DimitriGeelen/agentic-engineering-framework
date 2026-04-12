@@ -4,7 +4,7 @@ name: "Add episodic verification after auto-generation in update-task.sh"
 description: >
   Add episodic verification after auto-generation in update-task.sh
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T14:05:10Z
-last_update: 2026-04-12T14:05:10Z
-date_finished: null
+last_update: 2026-04-12T14:07:12Z
+date_finished: 2026-04-12T14:07:12Z
 ---
 
 # T-1169: Add episodic verification after auto-generation in update-task.sh
@@ -51,3 +51,6 @@ grep -q "episodic.*exist\|Episodic.*not.*created\|EPISODIC_FILE" agents/task-cre
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1169-add-episodic-verification-after-auto-gen.md
 - **Context:** Initial task creation
+
+### 2026-04-12T14:07:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
