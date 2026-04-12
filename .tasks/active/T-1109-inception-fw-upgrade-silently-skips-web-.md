@@ -20,34 +20,33 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+`fw upgrade` silently reports success while failing to sync `web/` directory to consumer projects. 4 of 5 inspected consumers (025, 051, 050, openclaw) have stale vendored files. Root cause: `lib/upgrade.sh:do_upgrade()` maintains a handcrafted per-file sync list that diverged from `bin/fw:do_vendor()`'s comprehensive includes list when web/ was added. This explains G-024.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: `fw upgrade` uses `do_upgrade()`, not `do_vendor()` (CONFIRMED — code path trace)
+- A2: `do_upgrade()` has its own file enumeration that excludes web/ (CONFIRMED — grep finds zero "web" refs)
+- A3: `do_vendor()` includes web/ and works correctly (CONFIRMED — `fw init` syncs web/)
+- A4: Collapsing to single `do_vendor()` call is safe (CONFIRMED — no callers expect partial sync)
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+1. Trace all upgrade code paths in bin/fw + lib/upgrade.sh (DONE — Phase 1)
+2. Reproduce on throwaway consumer (DONE — Phase 2, `/tmp/t1109-test-consumer`)
+3. Design chokepoint fix + invariant tests (DONE — Phase 3)
+4. Present recommendation for human decision (THIS STEP)
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** RCA, chokepoint identification, invariant test design, build decomposition.
+**OUT:** Implementing the fix (separate build tasks T-1109a through T-1109e after GO).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision

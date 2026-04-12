@@ -8,10 +8,3 @@ decisions:
     date: 2026-04-12
     task: unknown
     rationale: "Not specified"
-
-  - id: D-002
-    decision: "Advisory (warn, don't block)"
-    scope: project
-    date: 2026-04-12
-    task: T-554
-    rationale: "Auto-captured from task file on completion"

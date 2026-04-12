@@ -1,0 +1,31 @@
+pickup_id: P-015
+version: 1
+type: patch-delivery
+source:
+  project: "010-termlink"
+  task_id: "T-961,T-962"
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:09:00Z"
+payload:
+  summary: "Portable date helpers + episodic verification — implemented locally, ready to upstream"
+  detail: |
+    Two fixes implemented in termlink's vendored .agentic-framework/:
+
+    1. T-962 (Portable date): Added _date_to_epoch() and _days_ago_epoch() to lib/compat.sh.
+       Replaced all 6 `date -d` calls in episodic.sh, checkpoint.sh, and metrics.sh.
+       Uses GNU date → BSD date → python3 fallback chain.
+
+    2. T-961 (Episodic verification): Added post-generation check in update-task.sh.
+       After generate-episodic runs, verifies .context/episodic/T-XXX.yaml exists.
+       Prints WARNING with manual recovery command if missing. Non-blocking.
+
+    Files changed:
+    - lib/compat.sh: +_date_to_epoch(), +_days_ago_epoch()
+    - agents/context/lib/episodic.sh: source compat.sh, use _date_to_epoch
+    - agents/context/checkpoint.sh: use _date_to_epoch
+    - metrics.sh: source compat.sh, use _date_to_epoch + _days_ago_epoch
+    - agents/task-create/update-task.sh: episodic file existence check (2 locations)
+
+    Verified on Linux. Episodic generation produces .yaml files correctly.
+  priority: high
+  tags: [macos, portability, date, episodic, upstream, T-292]

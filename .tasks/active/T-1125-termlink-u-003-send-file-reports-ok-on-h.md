@@ -32,7 +32,9 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Confirm send-file semantics via ring20-manager's T-046 RCA evidence (DONE)
+2. Document the caveat in CLAUDE.md §TermLink Integration (DONE — T-1128)
+3. Create pickup for TermLink upstream (DONE — P-013)
 
 ## Technical Constraints
 
@@ -44,14 +46,15 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** Document the caveat, create upstream pickup, record learning.
+**OUT:** Implementing fix — this is TermLink repo's responsibility.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -65,12 +68,13 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- send-file ok:true confirmed as hub acceptance, not end-to-end delivery
+- Silent file loss is reproducible (ring20-manager sent 3 files, none arrived)
+- Fix belongs in TermLink upstream (no framework arch changes)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- send-file actually does verify delivery and the loss had a different cause
+- The hub-acceptance semantics are intentional and documented
 
 ## Verification
 
@@ -80,15 +84,16 @@ fell back to PTY inject. Origin: T-046 RCA on .109.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** send-file's ok:true semantics are misleading and cause silent data loss. ring20-manager sent 3 files to .107 -- all returned ok:true, none arrived. The receiver had event-only sessions (no inbox processing). This is a TermLink upstream issue -- the fix is to either return delivery confirmation or at minimum document the hub-acceptance semantics clearly. Pickup P-013 delivered to /opt/termlink.
+
+**Evidence:**
+- ring20-manager sent 3 files to .107, all returned ok:true, zero arrived
+- Receiver had event-only sessions -- files silently lost
+- ring20-manager fell back to PTY inject as workaround
+- CLAUDE.md already updated with send-file caveat (T-1128)
+- Learning L-006 recorded and shared cross-agent via pickup P-015
 
 ## Decisions
 

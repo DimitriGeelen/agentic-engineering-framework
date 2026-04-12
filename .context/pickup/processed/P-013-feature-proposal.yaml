@@ -1,0 +1,32 @@
+pickup_id: P-013
+version: 1
+type: feature-proposal
+source:
+  project: "010-termlink"
+  task_id: "T-961"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:50:00Z"
+payload:
+  summary: "Completion gate should verify episodic output exists after generation — silent failures cause audit decay"
+  detail: |
+    From T-292 inception (GO). Root cause: update-task.sh calls generate-episodic
+    during task completion but never verifies the .yaml file was actually created.
+    On macOS, date -d failures cause silent generation failures. Over 2 weeks,
+    50 missing episodics accumulated undetected.
+
+    Fix: In update-task.sh, after the generate-episodic call, check:
+      if [ ! -f "$CONTEXT_DIR/episodic/${TASK_ID}.yaml" ]; then
+        echo "WARNING: Episodic generation failed for $TASK_ID"
+        echo "  Run manually: fw context generate-episodic $TASK_ID"
+        # Don't block — just warn loudly so the agent can fix it
+      fi
+
+    Location: agents/task-create/update-task.sh, in the work-completed handler
+    after the generate-episodic call (~line 280-300 area).
+
+    ACs:
+    - update-task.sh checks for .context/episodic/T-XXX.yaml after generation
+    - Missing file produces actionable warning (not silent)
+    - Backward compatible (tasks without episodic don't break)
+  priority: high
+  tags: [completion-gate, episodic, audit-decay, T-292]

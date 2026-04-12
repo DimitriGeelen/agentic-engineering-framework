@@ -1,0 +1,33 @@
+pickup_id: P-014
+version: 1
+type: bug-report
+source:
+  project: "010-termlink"
+  task_id: "T-962"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:50:00Z"
+payload:
+  summary: "GNU date -d in framework shell scripts fails silently on macOS — causes episodic generation failures"
+  detail: |
+    From T-292 inception (GO). Root cause: generate-episodic and other framework
+    scripts use `date -d` (GNU extension) which doesn't exist on macOS bash 3.2.
+    The scripts fail silently, producing no output and no error.
+
+    Known affected scripts (grep for `date -d` in .agentic-framework/):
+    - agents/context/context.sh (generate-episodic path)
+    - agents/task-create/update-task.sh (date formatting)
+    - agents/audit/audit.sh (retention calculation)
+
+    Fix options:
+    1. Use python3 for date parsing (always available):
+       python3 -c "from datetime import datetime; print(datetime.fromisoformat('$ts').strftime('%Y-%m-%d'))"
+    2. Use date -j on macOS with fallback:
+       date -d "$ts" +%Y-%m-%d 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%S" "$ts" +%Y-%m-%d 2>/dev/null
+    3. Use the existing compat.sh pattern (T-196) if it has date helpers
+
+    ACs:
+    - All date -d usage replaced with portable alternative
+    - Episodic generation works on both Linux and macOS
+    - No GNU-only date flags remain in shell scripts
+  priority: high
+  tags: [macos, portability, date, bash, T-292, T-196]

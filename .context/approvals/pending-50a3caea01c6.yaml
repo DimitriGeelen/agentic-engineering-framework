@@ -1,0 +1,10 @@
+command_hash: 50a3caea01c66e5ef372fe9cd8e32e3981f6fb15086914287cdc1d07b59728b8
+command_preview: 'bin/fw inception decide T-1126 go --rationale "Live evidence: 2
+  push attempts got zero response, 1 inject got immediate response + file resend.
+  Every agent defaults wrong. Fix is a CLAUDE.md rule with'
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: pending
+timestamp: '2026-04-12T08:38:59Z'
+type: tier0

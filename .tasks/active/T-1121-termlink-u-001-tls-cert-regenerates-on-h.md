@@ -48,9 +48,9 @@ reload on restart instead of regenerating.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -64,12 +64,13 @@ reload on restart instead of regenerating.
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- TOFU violation confirmed independently (not just ring20-manager's report)
+- Fix is scoped to TermLink upstream repo (no framework arch changes)
+- Pickup P-011 already delivered to /opt/termlink for upstream tracking
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- TOFU behavior is intentional/desirable for TermLink's security model
+- Hub cert rotation is a feature, not a bug (some TOFU designs rotate deliberately)
 
 ## Verification
 
@@ -79,15 +80,16 @@ reload on restart instead of regenerating.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Hub cert regeneration on restart is a clear defect — TOFU is useless if every restart invalidates trust. Independently confirmed this session (not just ring20-manager's report). Fix belongs in TermLink upstream (persist cert like T-933 persists secrets). Pickup P-011 already delivered. No framework changes needed.
+
+**Evidence:**
+- TOFU violation confirmed: `termlink remote ping 192.168.10.109:9100` returned fingerprint mismatch after hub restart
+- ring20-manager independently reported same issue as U-001 during T-046 RCA
+- Workaround exists (clear `known_hubs` entry) but is manual and per-client
+- Proposed fix is minimal: persist cert to disk, reload on restart instead of regenerating
+- Research artifact: `docs/reports/T-1121-termlink-tls-tofu.md`
 
 ## Decisions
 
