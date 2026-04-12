@@ -228,9 +228,12 @@ fw context init      # Initialize session
 fw git commit -m "T-XXX: description"
 fw handover --commit # Generate and commit handover
 fw task create --name "Fix bug" --type build --owner human
+fw upgrade /opt/my-project  # Sync framework to consumer project
 ```
 
 **Path resolution:** `fw` finds the framework via `bin/fw`'s location (inside framework repo) or via `.framework.yaml` in the project root (shared tooling mode).
+
+**`fw upgrade` (canonical onboarding):** Syncs framework governance to a consumer project. It refreshes shims (bin/fw, .claude/settings.json hooks), updates the version pin in .framework.yaml, and syncs vendored scripts. It does NOT copy framework source code into the consumer — agents and libraries remain in the framework repo, accessed via the shim. Run `fw upgrade /path/to/project` from the framework repo, or `fw upgrade` from inside the consumer project.
 
 ## Agents
 
@@ -1037,6 +1040,7 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Cron run | `fw cron run <job-id>` | Run a job immediately |
 | Cron pause | `fw cron pause <job-id>` | Pause a job (comment out in crontab) |
 | Cron resume | `fw cron resume <job-id>` | Resume a paused job |
+| Upgrade consumer | `fw upgrade [dir]` | Sync shims, hooks, version pin to consumer project (does NOT copy framework code) |
 | Generate handover | `fw handover` | `./agents/handover/handover.sh` |
 | Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |
