@@ -1034,9 +1034,10 @@ concerns:
     gap → future agents read "T-XXX done" with unverified ACs → bad memory propagates indefinitely.'
   trigger: Any inception decide on a task with unchecked human ACs (which is ~all of them under the G-032 bug). Compounds
     with G-032 to produce false long-term memory.
-  status: watching
+  status: resolved
+  resolution: "Fixed in T-1160: PARTIAL_COMPLETE guard at update-task.sh line 838 prevents episodic generation on partial-complete tasks. Verified 2026-04-12."
   created: 2026-04-11
-  last_reviewed: 2026-04-11
+  last_reviewed: 2026-04-12
   related_task: T-1103
 - id: G-035
   type: gap
