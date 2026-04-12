@@ -23,8 +23,8 @@ date_finished: 2026-02-18T16:49:43Z
 
 ## Acceptance Criteria
 
-- [x] [First criterion]
-- [x] [Second criterion]
+- [x] `fw upgrade` command implemented and routable via `bin/fw`
+- [x] Running `fw upgrade /path/to/project` syncs framework shims, hooks, and version pin to the consumer project without copying framework source code
 
 ## Verification
 

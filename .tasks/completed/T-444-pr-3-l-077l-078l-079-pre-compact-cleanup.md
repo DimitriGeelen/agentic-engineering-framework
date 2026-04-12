@@ -38,8 +38,9 @@ date_finished: 2026-03-12T13:00:47Z
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] [First criterion]
-- [x] [Second criterion]
+- [x] L-077 fix applied: PROJECT_ROOT resolves from git toplevel in budget-gate.sh
+- [x] L-078/L-079 pre-compact cleanup applied and `fw init` generated `.claude/settings.json` includes the complete hook set (PreCompact, SessionStart hooks)
+- [x] PR #3 branch `learning/precompact-cleanup` merged on OneDev
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

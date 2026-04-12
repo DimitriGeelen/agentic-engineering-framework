@@ -26,8 +26,8 @@ date_finished: 2026-03-10T22:40:23Z
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] [First criterion]
-- [x] [Second criterion]
+- [x] Task created with `workflow_type: build` and completed successfully as an enumeration/workflow test
+- [x] Task lifecycle (captured -> started-work -> work-completed) executed without errors
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

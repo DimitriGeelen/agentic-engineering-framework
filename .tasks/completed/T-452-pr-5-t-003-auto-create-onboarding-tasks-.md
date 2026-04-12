@@ -28,8 +28,9 @@ date_finished: 2026-03-12T13:00:47Z
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] [First criterion]
-- [x] [Second criterion]
+- [x] `fw init` auto-detects existing vs new projects and creates appropriate onboarding tasks (3 tasks for existing projects: ingest, fabric, handover; inception task for new projects)
+- [x] Auto-created onboarding tasks are idempotent on re-init (no duplicates)
+- [x] PR #5 branch `fix/T-003-auto-onboarding-tasks` merged on OneDev
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

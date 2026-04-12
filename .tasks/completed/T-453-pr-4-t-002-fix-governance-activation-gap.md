@@ -28,8 +28,9 @@ date_finished: 2026-03-12T13:00:47Z
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] [First criterion]
-- [x] [Second criterion]
+- [x] `fw context init` called at end of `do_init()` so governance is active immediately after `fw init`
+- [x] `check-active-task.sh` hardened to block when `.framework.yaml` exists but `focus.yaml` is missing
+- [x] Integration test added to verify governance activation after init; PR #4 branch `fix/T-002-governance-activation-gap` merged on OneDev
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
