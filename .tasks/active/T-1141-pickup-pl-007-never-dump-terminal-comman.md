@@ -4,15 +4,15 @@ name: "Pickup: PL-007: Never dump terminal commands — always use fw task revie
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-967. Type: learning.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-12T09:57:49Z
-last_update: 2026-04-12T09:57:49Z
+last_update: 2026-04-12T10:41:38Z
 date_finished: null
 ---
 
@@ -20,34 +20,33 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Agents output bare CLI commands instead of using `fw task review` / Watchtower. Reported 3+ times across sessions. Root cause: framework gate scripts (update-task.sh, inception.sh, check-tier0.sh) print "run this command" in their error messages. Even with CLAUDE.md rules, agents relay these messages verbatim. The T-972 incident from 010-termlink: agent violated PL-007 within 3 minutes of building it.
+
+**Partial fix already applied:** T-1143 added `_fw_cmd` / `_emit_user_command` helpers and fixed 3 hardcoded `bin/fw` sites. T-1142 replaced `--force` with narrow flags. But the scripts still OUTPUT commands instead of INVOKING the review UX.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: Making gate scripts invoke `emit_review` instead of printing commands will eliminate the class of bug (framework-caused command amnesia)
+- A2: A PostToolUse hook to detect bare command patterns is too noisy (false positives on legitimate command output)
+- A3: T-1146 (command amnesia RCA) covers the same structural issue and should be consolidated
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
-
-## Technical Constraints
-
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+1. Audit gate scripts for remaining "output command" sites
+2. Assess `emit_review` integration feasibility
+3. Consolidate with T-1146
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** RCA, audit, recommendation, research artifact.
+**OUT:** Implementation (build task downstream).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,30 +60,30 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The root cause is confirmed as framework scripts outputting commands (confirmed: T-1143 fixed 3 sites, more remain)
+- The fix is incremental on existing work (confirmed: T-1143 infrastructure in place)
+- Consolidation with T-1146 is feasible (confirmed: same root cause)
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- The agent behavior is the real root cause, not framework scripts (disproved: framework scripts ARE the source)
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+test -f docs/reports/T-1141-pl-007-enforcement.md
+grep -q "Recommendation: GO" docs/reports/T-1141-pl-007-enforcement.md
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — consolidate with T-1146 into one build task.
+
+**Rationale:** The root cause is framework gate scripts outputting bare commands in error messages. T-1143 fixed the command PATH issue (bin/fw vs .agentic-framework/bin/fw), but scripts still print "run: fw inception decide..." instead of invoking `fw task review`. The fix is incremental: gate scripts should call `emit_review()` instead of echoing commands. ~50 lines across 3 files.
+
+**Evidence:**
+- 3+ incidents of agents relaying bare commands
+- T-972: agent violated PL-007 within 3 minutes of building it
+- T-1143 partial fix already in place (infrastructure ready)
+- CLAUDE.md rule doesn't survive compaction — structural fix needed
+- Research artifact: `docs/reports/T-1141-pl-007-enforcement.md`
 
 ## Decisions
 
@@ -105,3 +104,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T10:41:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
