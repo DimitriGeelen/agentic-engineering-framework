@@ -825,16 +825,21 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
         fi
     fi
 
-    # Generate episodic summary
-    echo ""
-    echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
+    # Generate episodic summary — but NOT for partial-complete tasks (T-1160/T-1103)
+    # Partial-complete means human ACs are unchecked; the task stays in active/.
+    # Generating episodic now creates premature memory of unfinalized work.
+    # The human-finalization path (line ~388) handles episodic generation on final completion.
+    if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
+        echo ""
+        echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
 
-    CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
-    if [ -x "$CONTEXT_AGENT" ]; then
-        PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
-    else
-        echo -e "${YELLOW}Context agent not found${NC}"
-        echo "Run manually: fw context generate-episodic $TASK_ID"
+        CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
+        if [ -x "$CONTEXT_AGENT" ]; then
+            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+        else
+            echo -e "${YELLOW}Context agent not found${NC}"
+            echo "Run manually: fw context generate-episodic $TASK_ID"
+        fi
     fi
 
     # === Learning capture check for bugfix tasks (T-692, G-016) ===
