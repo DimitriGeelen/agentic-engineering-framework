@@ -673,6 +673,15 @@ generate_claude_code_config() {
             "command": "$fw_prefix hook budget-gate"
           }
         ]
+      },
+      {
+        "matcher": "TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook block-task-tools"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -727,6 +736,15 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook commit-cadence"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook audit-task-tools"
           }
         ]
       }
