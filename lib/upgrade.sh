@@ -318,129 +318,20 @@ CRONREGEOF
     fi
 
     # ── 4b. Vendored framework scripts (.agentic-framework/) ──
+    # T-1157: Collapsed from 120-line handcrafted per-file sync into single do_vendor call.
+    # do_vendor (bin/fw:118) maintains the canonical includes list (bin lib agents web docs
+    # .tasks/templates FRAMEWORK.md metrics.sh). This eliminates the enumeration-divergence
+    # bug that caused fw upgrade to silently skip web/ (T-1109 RCA).
     echo -e "${YELLOW}[4b/9] Vendored framework scripts${NC}"
 
     local vendored_dir="$target_dir/.agentic-framework"
     if [ -d "$vendored_dir" ]; then
-        local script_updated=0
-        # Sync agents/context/*.sh (hook scripts)
-        for src_script in "$FRAMEWORK_ROOT/agents/context/"*.sh; do
-            [ -f "$src_script" ] || continue
-            local sname
-            sname=$(basename "$src_script")
-            local dst_script="$vendored_dir/agents/context/$sname"
-            if [ ! -f "$dst_script" ] || ! diff -q "$src_script" "$dst_script" > /dev/null 2>&1; then
-                script_updated=$((script_updated + 1))
-                if [ "$dry_run" != true ]; then
-                    mkdir -p "$vendored_dir/agents/context"
-                    cp "$src_script" "$dst_script"
-                    chmod +x "$dst_script"
-                fi
-            fi
-        done
-        # Sync agents/context/lib/ (shared libraries)
-        if [ -d "$FRAMEWORK_ROOT/agents/context/lib" ]; then
-            for src_lib in "$FRAMEWORK_ROOT/agents/context/lib/"*; do
-                [ -f "$src_lib" ] || continue
-                local lname
-                lname=$(basename "$src_lib")
-                local dst_lib="$vendored_dir/agents/context/lib/$lname"
-                if [ ! -f "$dst_lib" ] || ! diff -q "$src_lib" "$dst_lib" > /dev/null 2>&1; then
-                    script_updated=$((script_updated + 1))
-                    if [ "$dry_run" != true ]; then
-                        mkdir -p "$vendored_dir/agents/context/lib"
-                        cp "$src_lib" "$dst_lib"
-                        [ -x "$src_lib" ] && chmod +x "$dst_lib"
-                    fi
-                fi
-            done
-        fi
-        # Sync bin/fw (consumer's vendored fw binary)
-        if [ -f "$FRAMEWORK_ROOT/bin/fw" ]; then
-            local dst_fw="$vendored_dir/bin/fw"
-            if [ ! -f "$dst_fw" ] || ! diff -q "$FRAMEWORK_ROOT/bin/fw" "$dst_fw" > /dev/null 2>&1; then
-                script_updated=$((script_updated + 1))
-                if [ "$dry_run" != true ]; then
-                    mkdir -p "$vendored_dir/bin"
-                    cp "$FRAMEWORK_ROOT/bin/fw" "$dst_fw"
-                    chmod +x "$dst_fw"
-                fi
-            fi
-        fi
-        # T-857: Sync lib/*.sh (subcommand implementations — inception.sh, upgrade.sh, etc.)
-        if [ -d "$FRAMEWORK_ROOT/lib" ]; then
-            for src_lib in "$FRAMEWORK_ROOT/lib/"*.sh; do
-                [ -f "$src_lib" ] || continue
-                local lname
-                lname=$(basename "$src_lib")
-                local dst_lib="$vendored_dir/lib/$lname"
-                if [ ! -f "$dst_lib" ] || ! diff -q "$src_lib" "$dst_lib" > /dev/null 2>&1; then
-                    script_updated=$((script_updated + 1))
-                    if [ "$dry_run" != true ]; then
-                        mkdir -p "$vendored_dir/lib"
-                        cp "$src_lib" "$dst_lib"
-                        [ -x "$src_lib" ] && chmod +x "$dst_lib"
-                    fi
-                fi
-            done
-        fi
-        # T-857: Sync agent scripts (task-create, handover, git, healing, fabric, dispatch, resume)
-        local agent_dirs="task-create handover git healing fabric dispatch resume audit session-capture"
-        for agent_name in $agent_dirs; do
-            local src_agent_dir="$FRAMEWORK_ROOT/agents/$agent_name"
-            [ -d "$src_agent_dir" ] || continue
-            for src_file in "$src_agent_dir"/*.sh "$src_agent_dir"/*.md; do
-                [ -f "$src_file" ] || continue
-                local fname
-                fname=$(basename "$src_file")
-                local dst_file="$vendored_dir/agents/$agent_name/$fname"
-                if [ ! -f "$dst_file" ] || ! diff -q "$src_file" "$dst_file" > /dev/null 2>&1; then
-                    script_updated=$((script_updated + 1))
-                    if [ "$dry_run" != true ]; then
-                        mkdir -p "$vendored_dir/agents/$agent_name"
-                        cp "$src_file" "$dst_file"
-                        [ -x "$src_file" ] && chmod +x "$dst_file"
-                    fi
-                fi
-            done
-            # Sync agent lib/ subdirectories if they exist
-            if [ -d "$src_agent_dir/lib" ]; then
-                for src_sub in "$src_agent_dir/lib/"*; do
-                    [ -f "$src_sub" ] || continue
-                    local sname
-                    sname=$(basename "$src_sub")
-                    local dst_sub="$vendored_dir/agents/$agent_name/lib/$sname"
-                    if [ ! -f "$dst_sub" ] || ! diff -q "$src_sub" "$dst_sub" > /dev/null 2>&1; then
-                        script_updated=$((script_updated + 1))
-                        if [ "$dry_run" != true ]; then
-                            mkdir -p "$vendored_dir/agents/$agent_name/lib"
-                            cp "$src_sub" "$dst_sub"
-                            [ -x "$src_sub" ] && chmod +x "$dst_sub"
-                        fi
-                    fi
-                done
-            fi
-        done
-
-        # T-859: Sync VERSION file so fw doctor doesn't report stale after upgrade
-        local dst_version="$vendored_dir/VERSION"
-        if [ ! -f "$dst_version" ] || [ "$(cat "$dst_version" 2>/dev/null)" != "$fw_version" ]; then
-            script_updated=$((script_updated + 1))
-            if [ "$dry_run" != true ]; then
-                echo "$fw_version" > "$dst_version"
-            fi
-        fi
-
-        if [ "$script_updated" -gt 0 ]; then
-            changes=$((changes + 1))
-            if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  $script_updated vendored script(s)"
-            else
-                echo -e "  ${GREEN}UPDATED${NC}  $script_updated vendored script(s) synced"
-            fi
+        if [ "$dry_run" = true ]; then
+            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run 2>&1 | sed 's/^/  /'
         else
-            echo -e "  ${GREEN}OK${NC}  All vendored scripts current"
+            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" 2>&1 | sed 's/^/  /'
         fi
+        changes=$((changes + 1))
     else
         echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
     fi
