@@ -391,6 +391,12 @@ if [ -n "$NEW_STATUS" ]; then
                     CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
                     if [ -x "$CONTEXT_AGENT" ]; then
                         PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+                        # Verify episodic was created (T-1169: silent failure detection)
+                        EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
+                        if [ ! -f "$EPISODIC_FILE" ]; then
+                            echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
+                            echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                        fi
                     fi
                 fi
             else
@@ -836,6 +842,12 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
         CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
         if [ -x "$CONTEXT_AGENT" ]; then
             PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+            # Verify episodic was created (T-1169: silent failure detection)
+            EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
+            if [ ! -f "$EPISODIC_FILE" ]; then
+                echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
+                echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+            fi
         else
             echo -e "${YELLOW}Context agent not found${NC}"
             echo "Run manually: fw context generate-episodic $TASK_ID"

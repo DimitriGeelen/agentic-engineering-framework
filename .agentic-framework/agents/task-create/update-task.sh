@@ -53,11 +53,10 @@ check_human_sovereignty() {
         else
             echo -e "${RED}ERROR: Cannot complete human-owned task${NC}" >&2
             echo "Sovereignty gate (R-033): owner is human." >&2
-            echo "Options:" >&2
-            echo "  1. Human completes:" >&2
-            echo "     fw task update $TASK_ID --status work-completed --skip-sovereignty" >&2
-            echo "  2. Reassign first:" >&2
-            echo "     fw task update $TASK_ID --owner agent --skip-human-ownership" >&2
+            echo "The human must review and approve via Watchtower:" >&2
+            # T-1156: Show Watchtower review link instead of bare commands (PL-007)
+            source "$FRAMEWORK_ROOT/lib/review.sh" 2>/dev/null
+            emit_review "$TASK_ID" "$TASK_FILE" >&2 2>/dev/null || true
             exit 1
         fi
     fi
@@ -392,6 +391,12 @@ if [ -n "$NEW_STATUS" ]; then
                     CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
                     if [ -x "$CONTEXT_AGENT" ]; then
                         PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+                        # Verify episodic was created (T-1169: silent failure detection)
+                        EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
+                        if [ ! -f "$EPISODIC_FILE" ]; then
+                            echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
+                            echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                        fi
                     fi
                 fi
             else
@@ -660,7 +665,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         HUMAN_AC_UNCHECKED_REMAINING=$((HUMAN_AC_TOTAL - HUMAN_AC_CHECKED))
         echo -e "${YELLOW}Partial-complete: $HUMAN_AC_UNCHECKED_REMAINING human AC(s) pending verification${NC}"
         echo -e "${YELLOW}Task stays in active/ — owner set to human${NC}"
-        echo "Finalize after verification: fw task update $TASK_ID --status work-completed"
+        echo "Human review required — see Watchtower link below."
 
         # T-634: Auto-emit review (URL + QR + artifacts) on partial-complete
         if [ -f "$FRAMEWORK_ROOT/lib/review.sh" ]; then
@@ -826,16 +831,27 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
         fi
     fi
 
-    # Generate episodic summary
-    echo ""
-    echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
+    # Generate episodic summary — but NOT for partial-complete tasks (T-1160/T-1103)
+    # Partial-complete means human ACs are unchecked; the task stays in active/.
+    # Generating episodic now creates premature memory of unfinalized work.
+    # The human-finalization path (line ~388) handles episodic generation on final completion.
+    if [ "${PARTIAL_COMPLETE:-false}" = false ]; then
+        echo ""
+        echo -e "${YELLOW}=== Auto-trigger: Episodic Generation ===${NC}"
 
-    CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
-    if [ -x "$CONTEXT_AGENT" ]; then
-        PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
-    else
-        echo -e "${YELLOW}Context agent not found${NC}"
-        echo "Run manually: fw context generate-episodic $TASK_ID"
+        CONTEXT_AGENT="$FRAMEWORK_ROOT/agents/context/context.sh"
+        if [ -x "$CONTEXT_AGENT" ]; then
+            PROJECT_ROOT="$PROJECT_ROOT" "$CONTEXT_AGENT" generate-episodic "$TASK_ID" || true
+            # Verify episodic was created (T-1169: silent failure detection)
+            EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
+            if [ ! -f "$EPISODIC_FILE" ]; then
+                echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
+                echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+            fi
+        else
+            echo -e "${YELLOW}Context agent not found${NC}"
+            echo "Run manually: fw context generate-episodic $TASK_ID"
+        fi
     fi
 
     # === Learning capture check for bugfix tasks (T-692, G-016) ===
