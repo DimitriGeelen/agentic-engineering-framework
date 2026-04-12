@@ -1,8 +1,8 @@
-# Audit Results - 2026-04-12-1102
-timestamp: 2026-04-12T09:02:55Z
-sections: "structure"
+# Audit Results - 2026-04-12-1132
+timestamp: 2026-04-12T09:32:28Z
+sections: "structure,compliance"
 summary:
-  pass: 8
+  pass: 9
   warn: 1
   fail: 0
 findings:
@@ -25,3 +25,5 @@ findings:
     mitigation: "Run: fw fabric enrich"
   - level: PASS
     check: "Fabric drift: All watched source files registered (390 cards)"
+  - level: PASS
+    check: "All 146 active tasks are valid"

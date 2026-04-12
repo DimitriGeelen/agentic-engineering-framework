@@ -29,3 +29,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-005
+  learning: "fw upgrade doesn't sync new hook scripts: upgrade worker upgraded 11 consumers, all still missing audit-task-tools and block-task-tools. This is the T-1109 enumeration-divergence bug in action -- do_upgrade's handcrafted file list doesn't include new agents/context/*.sh files added after the list was last updated. Further evidence for T-1109 GO."
+  source: unknown
+  task: T-1109
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
