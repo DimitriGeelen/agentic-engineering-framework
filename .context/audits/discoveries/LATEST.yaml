@@ -1,11 +1,11 @@
-timestamp: 2026-04-12T14:00:01Z
+timestamp: 2026-04-12T14:03:00Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (17/1072)"
+    check: "D1: Episodic quality — 1% [TODO] (17/1073)"
   - id: D2
     level: FAIL
-    check: "D2: Human review queue — 2 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(30d) T-470(30d) T-479(14d) T-481(28d) T-505(26d) T-511(26d) T-518(25d) T-530(20d) T-571(14d) T-579(15d) T-584(14d) T-594(19d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(17d) T-613(15d) T-619(14d) T-631(15d) T-644(16d) T-645(16d) T-651(15d) T-662(14d) T-663(14d) T-671(14d) T-676(14d) T-678(14d) T-679(14d) T-686(14d) T-696(14d) T-697(14d) T-698(14d) T-702(14d) T-703(14d) T-706(14d) T-707(14d) T-708(14d)"
+    check: "D2: Human review queue — 2 task(s) waiting >30d: T-436(14d) T-446(28d) T-448(14d) T-460(30d) T-470(30d) T-479(14d) T-481(28d) T-505(26d) T-511(26d) T-518(25d) T-530(20d) T-571(14d) T-579(15d) T-584(14d) T-594(19d) T-598(14d) T-599(14d) T-600(14d) T-607(17d) T-610(15d) T-611(15d) T-612(17d) T-613(15d) T-619(14d) T-631(15d) T-644(16d) T-645(16d) T-651(15d) T-662(14d) T-663(14d) T-671(14d) T-676(14d) T-678(14d) T-679(14d) T-686(14d) T-696(14d) T-697(14d) T-698(14d) T-702(14d) T-703(14d) T-706(14d) T-707(14d) T-708(14d) T-710(14d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - id: D8
     level: PASS
@@ -16,9 +16,31 @@ findings:
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
+  - id: D4
+    level: PASS
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
+    level: WARN
+    check: "D5: Task lifecycle — 4 anomaly(s): T-829(3min,human) T-827(2min,human) T-524(3min,human) T-523(1min,human)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D3
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=137 avg=87 ratio=1.6x)"
+  - id: D7
+    level: PASS
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 165_commits_24h)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=22.3 earlier=30.6)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
 
 summary:
-  pass: 4
-  warn: 0
+  pass: 10
+  warn: 1
   fail: 1
-  total: 5
+  total: 12
