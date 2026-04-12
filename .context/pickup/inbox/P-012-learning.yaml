@@ -1,0 +1,36 @@
+pickup_id: P-012
+version: 1
+type: learning
+source:
+  project: "010-termlink"
+  task_id: "T-944"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:20:00Z"
+payload:
+  summary: "4 learnings from termlink session — subagent scope violation, format assumptions, stale gaps, dog-fooding"
+  detail: |
+    Systemic learnings from 2026-04-12 session, applicable to all consumer projects:
+
+    PL-003 (SYSTEMIC — affects all agent dispatch):
+    Subagent dispatch outputs must be verified against scope. A backfill agent
+    told "only edit ## Recommendation" changed status to work-completed,
+    overwrote ## Decisions, and corrupted 6 task files. Required manual git
+    checkout rollback. Mitigation: always diff subagent output before committing.
+    Structural fix: post-dispatch diff check that flags changes outside the
+    specified file sections.
+
+    PL-004 (LOCAL — convention awareness):
+    When generating files for framework consumption, check existing format
+    convention first. Audit expected .yaml episodics but agent generated .md.
+
+    PL-005 (SYSTEMIC — affects concerns register):
+    Concerns register should auto-flag for closure when all related_tasks are
+    completed. G-001/G-002/G-003 stayed "watching" for days after fixes shipped.
+    Structural fix: audit check that detects gaps whose related_tasks are all
+    in completed/ directory.
+
+    PL-006 (SYSTEMIC — affects all Watchtower features):
+    Dog-food Watchtower features after building them. The approvals page had 3
+    compound bugs that would have been caught by one real use. Build → use → fix.
+  priority: medium
+  tags: [learnings, dispatch, audit, watchtower, dog-fooding]

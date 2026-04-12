@@ -1,0 +1,13 @@
+pickup_id: P-015
+version: 1
+type: learning
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1125"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:38:10Z"
+payload:
+  summary: "L-006: termlink send-file ok:true means hub accepted, NOT delivered — verify receipt independently"
+  detail: "termlink remote send-file returns ok:true when the hub accepts the file, NOT when the receiver stores it. Files silently lost to event-only sessions. ring20-manager sent 3 files, all ok:true, none arrived. Always verify receipt (ls inbox on receiver) or use inject as fallback delivery. Origin: U-003 from ring20-manager T-046 RCA."
+  priority: high
+  tags: [termlink, send-file, silent-loss]

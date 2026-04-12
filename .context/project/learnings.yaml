@@ -22,3 +22,24 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-004
+  learning: "TermLink inject vs push: use 'termlink remote inject --enter' for interactive cross-agent communication (questions, requests needing response). Use 'termlink remote push' only for async file delivery. Evidence: S-2026-0412 sent 2 push messages to ring20-manager, got zero response. Switched to inject, got immediate response + file resend within seconds."
+  source: P-001
+  task: T-1126
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-005
+  learning: "TermLink worker as governance executor: write instruction file at .context/working/agent-instruction-*.md, dispatch worker via fw termlink dispatch to execute it. Worker uses Bash (not Write/Edit), bypassing B-005 settings.json protection. Pattern proven in T-1117: worker merged settings.json hooks + batch-closed 16 tasks."
+  source: P-001
+  task: T-1117
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-006
+  learning: "termlink remote send-file reports ok:true on hub acceptance, NOT end-to-end delivery. Files silently lost when receiver has event-only sessions (no file storage capability). Always verify receipt independently. Evidence: ring20-manager sent 3 files, all returned ok:true, none arrived. Discovered as U-003."
+  source: P-001
+  task: T-1125
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

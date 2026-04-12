@@ -1,0 +1,13 @@
+pickup_id: P-014
+version: 1
+type: learning
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1126"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:38:03Z"
+payload:
+  summary: "L-004: TermLink inject vs push — inject for interactive, push for async only"
+  detail: "termlink remote push drops files in inbox (async, fire-and-forget). For questions needing responses, use termlink remote inject --enter instead. Evidence: S-2026-0412 sent 2 push messages to ring20-manager, got zero response. Switched to inject, got immediate response + file resend within seconds. Rule: if you need a response, inject. If you need to deliver a file, push."
+  priority: high
+  tags: [termlink, communication, protocol]
