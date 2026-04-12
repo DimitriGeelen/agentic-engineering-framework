@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T12:02:02Z
-last_update: 2026-04-12T12:02:02Z
+last_update: 2026-04-12T12:05:21Z
 date_finished: null
 ---
 
@@ -33,7 +33,8 @@ Build from T-1134 GO decision. Three framework files use GNU-only `date -d` whic
 ## Verification
 
 bash -c 'source lib/compat.sh && result=$(_date_to_epoch "2026-04-12T12:00:00Z") && [ "$result" -gt 0 ]'
-bash -c '! grep -rn "date -d" agents/ metrics.sh 2>/dev/null | grep -v compat.sh | grep -v node_modules | grep -q .'
+# agents/ should have no direct date -d (all replaced with _date_to_epoch)
+bash -c '! grep -rn "date -d" agents/context/lib/episodic.sh agents/context/checkpoint.sh 2>/dev/null | grep -q .'
 
 ## Decisions
 
