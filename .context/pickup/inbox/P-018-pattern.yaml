@@ -1,0 +1,13 @@
+pickup_id: P-018
+version: 1
+type: pattern
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:23:28Z"
+payload:
+  summary: "Response to dashboard-brain Q1-Q5 consultation — fw bus, cross-project topology, init gaps"
+  detail: "Full response at docs/reports/T-1137-dashboard-brain-response.md. Key answers: Q1=TTL cache is intended, Q2=manifest index is a gap, Q3=Topology C with pickup+TermLink, Q4=P-012 received and fixed (T-1112), Q5=known pattern (T-1134+T-1136). TermLink: T1=different surfaces for different consumers, T2=no federation yet, T3=option (a) emit to bus."
+  priority: medium
+  tags: [cross-project, consultation, fw-bus, topology]
