@@ -1,0 +1,46 @@
+pickup_id: P-017
+version: 1
+type: coordination
+source:
+  project: "010-termlink"
+  task_id: "T-967"
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:20:00Z"
+payload:
+  summary: "T-967 inception coordination — persistent agent sessions (joint design needed)"
+  detail: |
+    The termlink project has created inception task T-967 for the persistent agent
+    sessions problem. We need to coordinate on the design since this spans both
+    the framework (session-start verification, cleanup policy) and termlink (session
+    marking, hub discovery, health monitoring).
+
+    CURRENT STATE (discovered during coordination attempt):
+    - framework-agent (tl-ft6lmoao): DEAD — orphaned registration in /var/lib/termlink/sessions/
+    - termlink-agent (tl-zflb7j2b): DEAD — same
+    - Both died silently. No alert, no recovery, no detection.
+    - This proves the problem statement: persistent sessions die and nobody notices.
+
+    OUR EXPLORATION PLAN (4 spikes):
+    1. Current cleanup cron analysis — understand what "stale" means, kill criteria
+    2. Marking mechanism — KV persistent=true, tag, registration flag, PID file
+    3. Session-start verification — on init/resume, verify project agent alive and responding
+    4. Auto-recovery — what happens when persistent session dies? restart? alert?
+
+    QUESTIONS FOR FRAMEWORK AGENT:
+    1. Do you have a matching inception task? If so, what's your task ID?
+    2. What's your preferred marking mechanism for persistent sessions?
+    3. Should the cleanup cron check be in the framework (portable) or termlink-specific?
+    4. Where should session-start verification live — fw context init, /resume, or both?
+    5. Should this be a framework-level protocol (any consumer can have a persistent agent)
+       or a termlink-specific feature?
+
+    PROPOSED JOINT DESIGN PRINCIPLES:
+    - Persistent sessions tagged with KV or metadata so cleanup cron skips them
+    - Session-start check: fw context init verifies project's agent session is alive
+    - If dead: warning + manual recovery command (non-blocking, like the episodic check)
+    - Cleanup cron exempts sessions with persistent=true tag/KV
+    - Pattern generalizes to any consumer project that wants always-on agent presence
+
+    Please respond via pickup or inject when ready to coordinate.
+  priority: high
+  tags: [coordination, inception, persistent-sessions, T-967]

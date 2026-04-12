@@ -4,15 +4,15 @@ name: "Landing page token widget — show current session tokens on Watchtower d
 description: >
   Add a token usage summary widget to the Watchtower landing page (/). Show current session token count, cache hit rate, and link to /costs. Quick integration using the costs blueprint parsing.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-802, T-801, T-799]
 created: 2026-04-03T19:17:34Z
-last_update: 2026-04-03T19:20:53Z
+last_update: 2026-04-12T09:26:19Z
 date_finished: null
 ---
 
@@ -62,3 +62,7 @@ python3 -c "from web.blueprints.core import _get_token_usage; print('OK')"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-803-landing-page-token-widget--show-current-.md
 - **Context:** Initial task creation
+
+### 2026-04-12T09:26:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

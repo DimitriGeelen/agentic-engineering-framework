@@ -4,15 +4,15 @@ name: "Timeline token usage — show per-session token costs in Watchtower /time
 description: >
   Inception: Timeline token usage — show per-session token costs in Watchtower /timeline
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T23:19:05Z
-last_update: 2026-04-03T23:19:32Z
+last_update: 2026-04-12T09:26:20Z
 date_finished: null
 ---
 
@@ -103,3 +103,7 @@ None — display-only change, data already exists, no new dependencies.
 
 ### 2026-04-03T23:19:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

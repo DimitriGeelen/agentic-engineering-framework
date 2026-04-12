@@ -1,0 +1,23 @@
+pickup_id: P-016
+version: 1
+type: patch-delivery
+source:
+  project: "010-termlink"
+  task_id: "T-963"
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:12:00Z"
+payload:
+  summary: "Session init now warns about open concerns — prevents cross-session failure blindness"
+  detail: |
+    From T-283 GO (Option B: cross-session failure register).
+
+    Change: agents/context/lib/init.sh do_init() now reads concerns.yaml
+    and displays open (non-closed) gaps at session start with ID, title, and age.
+
+    Uses python3 for YAML parsing (portable, no GNU date dependency).
+    Silent when all concerns are closed (backward compatible).
+
+    Files changed:
+    - agents/context/lib/init.sh: added concerns check after session init output
+  priority: medium
+  tags: [session-start, concerns, cross-session, T-283]

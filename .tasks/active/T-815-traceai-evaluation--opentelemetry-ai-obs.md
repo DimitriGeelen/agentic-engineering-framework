@@ -4,15 +4,15 @@ name: "traceAI evaluation — OpenTelemetry AI observability vs framework direct
 description: >
   Inception: traceAI evaluation — OpenTelemetry AI observability vs framework directives
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T20:43:08Z
-last_update: 2026-04-03T20:43:46Z
+last_update: 2026-04-12T09:26:20Z
 date_finished: null
 ---
 
@@ -106,3 +106,7 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
 
 ### 2026-04-03T20:43:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

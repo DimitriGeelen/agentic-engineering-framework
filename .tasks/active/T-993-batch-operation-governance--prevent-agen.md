@@ -4,15 +4,15 @@ name: "Batch operation governance — prevent agent batch-modifying task horizon
 description: >
   Inception: Batch operation governance — prevent agent batch-modifying task horizons without per-task justification
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T09:53:46Z
-last_update: 2026-04-07T09:57:04Z
+last_update: 2026-04-12T09:26:26Z
 date_finished: null
 ---
 
@@ -120,3 +120,7 @@ Research artifact: `docs/reports/T-993-batch-operation-governance.md`
 
 ### 2026-04-07T09:54:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:26Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

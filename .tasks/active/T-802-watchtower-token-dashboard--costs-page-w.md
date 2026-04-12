@@ -4,15 +4,15 @@ name: "Watchtower token dashboard — /costs page with session table and project
 description: >
   Add /costs page to Watchtower showing token usage data from fw costs. Display project summary (total tokens by category), per-session table with sorting, and current session highlights. Uses lib/costs.sh parsing functions. Follow-up from T-801 (fw costs CLI).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-801, T-799, T-800]
 created: 2026-04-03T19:09:41Z
-last_update: 2026-04-03T19:39:55Z
+last_update: 2026-04-12T09:26:19Z
 date_finished: null
 ---
 
@@ -70,3 +70,7 @@ curl -sf http://localhost:3000/costs -o /tmp/T-802-verify.html && grep -qi "toke
 
 ### 2026-04-03T19:09:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

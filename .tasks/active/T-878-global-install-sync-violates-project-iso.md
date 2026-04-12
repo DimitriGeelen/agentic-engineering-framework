@@ -4,15 +4,15 @@ name: "Global install sync violates project isolation — fw upgrade still write
 description: >
   fw upgrade step 4c syncs scripts to ~/.agentic-framework despite T-662 establishing project isolation. The INFO message says 'no global install dependency' but then immediately syncs to global. Contradicts isolation principle.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:08:16Z
-last_update: 2026-04-05T11:56:09Z
+last_update: 2026-04-12T09:26:25Z
 date_finished: null
 ---
 
@@ -135,3 +135,7 @@ Line 469 of `lib/upgrade.sh` says "no global install dependency" then line 480 s
 
 ### 2026-04-05T11:56:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:25Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

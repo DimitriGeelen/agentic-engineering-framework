@@ -4,15 +4,15 @@ name: "Configurable Watchtower port + project service port registry in Watchtowe
 description: >
   Inception: Configurable Watchtower port + project service port registry in Watchtower UI
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T09:38:47Z
-last_update: 2026-04-05T11:52:45Z
+last_update: 2026-04-12T09:26:25Z
 date_finished: null
 ---
 
@@ -195,3 +195,7 @@ All approaches should converge on this file as the single source of truth per pr
 
 ### 2026-04-05T11:52:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:25Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

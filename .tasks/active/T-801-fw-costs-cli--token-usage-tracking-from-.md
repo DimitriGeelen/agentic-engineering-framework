@@ -4,15 +4,15 @@ name: "fw costs CLI — token usage tracking from JSONL transcripts"
 description: >
   Build task following T-799 (GO) and T-800 (GO) inception decisions. Implement fw costs CLI that parses Claude Code JSONL session transcripts to report token usage per-session and project totals. Subscription model — cost measured in tokens consumed, not dollars. Data source: ~/.claude/projects/ JSONL files with per-turn usage objects containing input_tokens, cache_creation_input_tokens, cache_read_input_tokens, output_tokens. Key deliverables: (1) JSONL parser extracting token usage, (2) fw costs command with session/project/summary views, (3) Watchtower integration for token dashboard.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: [cost, tokens, observability, cli]
 components: [bin-fw, budget-gate]
 related_tasks: [T-799, T-800, T-596, T-699]
 created: 2026-04-03T19:01:09Z
-last_update: 2026-04-03T19:07:03Z
+last_update: 2026-04-12T09:26:19Z
 date_finished: null
 ---
 
@@ -77,3 +77,7 @@ test -f .fabric/components/lib-costs.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-801-fw-costs-cli--token-usage-tracking-from-.md
 - **Context:** Initial task creation
+
+### 2026-04-12T09:26:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

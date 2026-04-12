@@ -4,15 +4,15 @@ name: "Watchtower stale task dashboard — notification, batch review, and auto-
 description: >
   Inception: Watchtower stale task dashboard — notification, batch review, and auto-resolution for 54+ pending human review tasks
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T12:41:09Z
-last_update: 2026-04-04T12:41:58Z
+last_update: 2026-04-12T09:26:20Z
 date_finished: null
 ---
 
@@ -97,3 +97,7 @@ OUT: New Watchtower pages (Option A deferred to separate build task)
 
 ### 2026-04-04T12:41:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T09:26:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)

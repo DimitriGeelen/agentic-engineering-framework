@@ -4,15 +4,15 @@ name: "Batch horizon cleanup — move work-completed now tasks to next"
 description: >
   Batch horizon cleanup — move work-completed now tasks to next
 
-status: issues
+status: captured
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T09:51:49Z
-last_update: 2026-04-07T09:52:28Z
+last_update: 2026-04-12T09:26:43Z
 date_finished: null
 ---
 
@@ -55,3 +55,14 @@ cd /opt/999-Agentic-Engineering-Framework && test $(grep -l 'status: work-comple
 ### 2026-04-07T09:52:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → issues
 - **Reason:** User vetoed batch horizon move
+
+### 2026-04-12T09:26:31Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+
+### 2026-04-12T09:26:43Z — status-update [task-update-agent]
+- **Change:** status: issues → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T09:26:43Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
