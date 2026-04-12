@@ -1105,10 +1105,11 @@ concerns:
   - 'T-1108 fix covers Structural Upgrade specifically but does not change the architecture. The next new section (e.g.,
     Dialogue Log per C-001 extension) will hit the same bug.'
   trigger: Any new standardized section heading added to inception task files (Dialogue Log, Chokepoint, Migration, etc.).
-  status: watching
+  status: resolved
+  resolution: 'T-1177 — _extract_all_sections() dynamically parses all ## headings. Extra sections beyond the known set are rendered generically via extra_sections loop in template. No more allowlist maintenance needed.'
   created: 2026-04-11
-  last_reviewed: 2026-04-11
-  related_task: T-1108
+  last_reviewed: 2026-04-12
+  related_task: T-1177
 - id: G-037
   type: gap
   title: 'Enumeration-divergence between do_vendor and do_update excludes lists (L-006 pattern, second instance)'

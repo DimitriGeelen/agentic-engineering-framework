@@ -4,16 +4,16 @@ name: "Fix G-036: Dynamic section parsing for inception detail page — remove h
 description: >
   Fix G-036: Dynamic section parsing for inception detail page — remove hardcoded allowlist
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 created: 2026-04-12T17:26:30Z
-last_update: 2026-04-12T17:26:30Z
-date_finished: null
+last_update: 2026-04-12T17:31:23Z
+date_finished: 2026-04-12T17:31:23Z
 ---
 
 # T-1177: Fix G-036: Dynamic section parsing for inception detail page — remove hardcoded allowlist
@@ -66,3 +66,6 @@ curl -sf http://localhost:3000/inception/T-1146 | grep -q "section-card"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1177-fix-g-036-dynamic-section-parsing-for-in.md
 - **Context:** Initial task creation
+
+### 2026-04-12T17:31:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
