@@ -36,3 +36,17 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-006
+  learning: "Subagent dispatch output verification: always diff subagent output before committing. A backfill agent told to only edit Recommendation section changed status, overwrote Decisions, and corrupted 6 task files. Structural fix: post-dispatch diff check that flags changes outside specified sections. (from 010-termlink PL-003)"
+  source: unknown
+  task: T-1129
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-007
+  learning: "Concerns register auto-closure: gaps should auto-flag for closure when all related_tasks are completed. G-001/G-002/G-003 stayed watching for days after fixes shipped. Structural fix: audit check that detects gaps whose related_tasks are all in completed/ directory. (from 010-termlink PL-005)"
+  source: unknown
+  task: T-1129
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
