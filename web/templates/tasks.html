@@ -402,8 +402,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                             <div>
                                 <label for="task-owner">Owner</label>
                                 <select id="task-owner" name="owner">
-                                    <option value="human">human</option>
-                                    <option value="claude-code">claude-code</option>
+                                    {% for o in enum_owners %}<option value="{{ o }}">{{ o }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div>
@@ -486,7 +485,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-card-meta">
             {{ inline_select(task.id, 'type', enum_types, task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
-            {{ inline_select(task.id, 'owner', ['human','claude-code'], task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
     </article>
     {% endmacro %}
@@ -701,7 +700,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 <span class="type-update-result"></span>
             </td>
             <td>
-                {{ inline_select(task.id, 'owner', ['human','claude-code'], task.owner, hx_target='next .owner-update-result', form_class='inline-flex-center gap-xs') }}
+                {{ inline_select(task.id, 'owner', enum_owners, task.owner, hx_target='next .owner-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="owner-update-result"></span>
             </td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>

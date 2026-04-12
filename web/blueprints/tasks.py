@@ -32,10 +32,12 @@ def _load_enums():
         _ENUM_CACHE["workflow_types"] = data.get("workflow_types", [])
         _ENUM_CACHE["horizons"] = data.get("horizons", [])
         _ENUM_CACHE["statuses"] = data.get("statuses", {}).get("active", [])
+        _ENUM_CACHE["owners"] = data.get("owners", [])
     except Exception:
         _ENUM_CACHE["workflow_types"] = ["build", "test", "refactor", "specification", "design", "decommission", "inception"]
         _ENUM_CACHE["horizons"] = ["now", "next", "later"]
         _ENUM_CACHE["statuses"] = ["captured", "started-work", "issues", "work-completed"]
+        _ENUM_CACHE["owners"] = ["human", "claude-code"]
     return _ENUM_CACHE
 
 
@@ -389,6 +391,7 @@ def tasks():
         view=view,
         enum_types=enums["workflow_types"],
         enum_horizons=enums["horizons"],
+        enum_owners=enums["owners"],
     )
 
 
@@ -470,8 +473,7 @@ def create_task():
     if workflow_type not in enums["workflow_types"]:
         return '<p style="color: var(--pico-del-color);">Invalid workflow type</p>', 400
 
-    allowed_owners = ["human", "claude-code"]
-    if owner not in allowed_owners:
+    if owner not in enums["owners"]:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
     horizon = request.form.get("horizon", "now").strip()
@@ -524,7 +526,8 @@ def update_task_owner(task_id):
         abort(404)
 
     owner = request.form.get("owner", "")
-    if owner not in ("human", "claude-code"):
+    enums = _load_enums()
+    if owner not in enums["owners"]:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])

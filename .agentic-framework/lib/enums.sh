@@ -38,6 +38,8 @@ try:
     print('ALL_STATUSES=\"%s\"' % ' '.join(active + legacy))
     print('VALID_TYPES=\"%s\"' % ' '.join(types))
     print('VALID_HORIZONS=\"%s\"' % ' '.join(horizons))
+    owners = d.get('owners', ['human', 'claude-code'])
+    print('VALID_OWNERS=\"%s\"' % ' '.join(owners))
 
     # Build transition pairs for array
     pairs = []
@@ -62,6 +64,7 @@ if ! _enums_load_yaml "$_ENUMS_YAML" 2>/dev/null; then
     ALL_STATUSES="$VALID_STATUSES $LEGACY_STATUSES"
     VALID_TYPES="specification design build test refactor decommission inception"
     VALID_HORIZONS="now next later"
+    VALID_OWNERS="human claude-code"
     VALID_TRANSITIONS=(
         "captured:started-work"
         "started-work:captured"
@@ -95,6 +98,11 @@ is_valid_horizon() {
     [[ " $VALID_HORIZONS " == *" $horizon "* ]]
 }
 
+is_valid_owner() {
+    local owner="$1"
+    [[ " $VALID_OWNERS " == *" $owner "* ]]
+}
+
 is_recognized_status() {
     local status="$1"
     [[ " $ALL_STATUSES " == *" $status "* ]]
@@ -111,6 +119,7 @@ is_valid_transition() {
 list_valid_statuses() { echo "$VALID_STATUSES"; }
 list_valid_types() { echo "$VALID_TYPES"; }
 list_valid_horizons() { echo "$VALID_HORIZONS"; }
+list_valid_owners() { echo "$VALID_OWNERS"; }
 
 valid_transitions_for() {
     local from="$1"
