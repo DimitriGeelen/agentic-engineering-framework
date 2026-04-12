@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1093, T-1094, T-1099, T-1101, T-1102, T-1103]
 created: 2026-04-11T12:16:16Z
-last_update: 2026-04-12T09:29:42Z
+last_update: 2026-04-12T09:41:08Z
 date_finished: 2026-04-12T09:29:42Z
 ---
 
@@ -227,3 +227,6 @@ Evidence:
 
 ### 2026-04-12T09:29:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:41:08Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
