@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1118: PostToolUse scanner: detect TodoWrite/TaskCreate usage in session transcript
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T07:03:13Z
+# ============================================================================
+
+task_id: T-1118
+task_name: "PostToolUse scanner: detect TodoWrite/TaskCreate usage in session transcript"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T07:00:59Z
+completed: 2026-04-12T07:03:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T09:03:05+02:00
+last_commit: 2026-04-12T09:03:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  PostToolUse scanner for TodoWrite/TaskCreate usage detection
+
+# Key outcomes
+outcomes:
+  - "`agents/context/audit-task-tools.sh` exists, reads stdin JSON,"
+  - "Ignores non-matching tool names (no output, exit 0)"
+  - "`tests/unit/audit_task_tools.bats` passes with 10 test cases"
+  - "Routable via `bin/fw hook audit-task-tools`"
+  - "`fw doctor` passes (0 failures)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/audit-task-tools.sh"
+  - "bin/fw"
+  - ".fabric/components/agents-context-audit-task-tools.yaml"
+  - ".fabric/components/tests-unit-audit_task_tools.yaml"
+  - ".tasks/active/T-1118-posttooluse-scanner-detect-todowritetask.md"
+  - "tests/unit/audit_task_tools.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T09:03:05"
+    action: "T-1118: PostToolUse scanner for TodoWrite/TaskCreate usage detection"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 6
+  lines_added: 201
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1118-posttooluse-scanner-detect-todowritetask.md
+generated_by: context-agent-hybrid
