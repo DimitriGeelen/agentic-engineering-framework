@@ -4,16 +4,16 @@ name: "META-META Inception: Chokepoint + Invariant Test discipline as framework 
 description: >
   Inception task — codify the structural-fix discipline 'fix via chokepoint + invariant test, never via manual call-site edit' as a framework governance rule (CLAUDE.md addition + downstream enforcement). This emerged from the structural-fix discipline pass on T-1100..T-1104, where every worker's RCA proposed a tactical patch (one call site, one conditional, one helper) that left the bug class free to recur. The user's question 'can we make the fix more reliable/structural?' is the meta-question this task answers permanently. Investigate: (1) extract the chokepoint+test pattern from the 5 RCAs (T-1100..T-1104) — what's common about the structural upgrades? (2) draft a CLAUDE.md governance section: 'Recurring Bug Class Fix Discipline' — when a bug recurs (3+ times) or is registered as a class (G-XXX), the fix MUST land via (a) a single chokepoint that's the only legal way to perform the operation AND (b) an invariant test that asserts no code bypasses the chokepoint; (3) define the trigger: when does the discipline apply vs when is a tactical fix sufficient? (4) integrate with existing framework process: how does this discipline land in commit gates, fw doctor, code review, task acceptance criteria? (5) recommend GO/DEFER/NO-GO with cited evidence from T-1100..T-1104. Origin: structural-fix discipline pass. Trigger: 5 same-day RCAs all proposed tactical fixes when structural was needed.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: [T-1100, T-1101, T-1102, T-1103, T-1104, T-1093]
 created: 2026-04-11T13:11:13Z
-last_update: 2026-04-11T13:11:13Z
-date_finished: null
+last_update: 2026-04-12T09:31:53Z
+date_finished: 2026-04-12T09:31:53Z
 ---
 
 # T-1105: META-META Inception: Chokepoint + Invariant Test discipline as framework governance rule
@@ -85,9 +85,9 @@ A-5: The discipline does NOT apply to one-off bug fixes (single-incident, no cla
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -385,3 +385,9 @@ Build decomposition (when GO confirmed):
 3. T-1105c — Add `fw task verify --chokepoint` flag that checks for chokepoint+test ACs on G-descended build tasks, warns if missing
 4. T-1105d — Backport discipline check to `fw audit` — flag any G-XXX gap whose remediation task lacks chokepoint+test ACs
 5. T-1105e — Update `agents/task-create/AGENT.md` to emit chokepoint+test ACs by default for build tasks descended from gaps
+
+### 2026-04-12T09:31:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-04-12T09:31:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

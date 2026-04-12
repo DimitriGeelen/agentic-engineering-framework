@@ -4,16 +4,16 @@ name: "Inception: reconcile FIVE isolation patterns (widened from 2 after /opt/t
 description: >
   Inception task — pick canonical isolation model from FIVE patterns currently in production, or document when to use each, then write migration path. Originally scoped as 2 patterns (vendored dir vs shim) on 2026-04-11 morning; widened to 5 same day after /opt/termlink T-909 transcript revealed `fw vendor` and the symlink mode. The five patterns: (1) vendored plain .agentic-framework/ dir, files in project git, no .git inside (proxmox-ring20-management); (2) `fw vendor` subcommand — explicit copy with size exclusions, ~56MB target; (3) project-detecting shim (ring20-dashboard after fw upgrade); (4) manual cp -r — bloated ~349MB, wrong; (5) symlinked .agentic-framework — current /opt/termlink state, contaminates host install with consumer state. None documented as canonical. Origin: G-031.
 
-status: captured
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1093, T-1094, T-1099, T-1101, T-1102, T-1103]
 created: 2026-04-11T12:16:16Z
-last_update: 2026-04-11T13:00:00Z
-date_finished: null
+last_update: 2026-04-12T09:29:42Z
+date_finished: 2026-04-12T09:29:42Z
 ---
 
 # T-1100: Inception: reconcile FIVE isolation patterns (G-031, widened)
@@ -221,3 +221,9 @@ Evidence:
 - 3 projects have nested `.agentic-framework` inside their vendored dir (Pattern 6 — new bug)
 - `/opt/025-WokrshopDesigner`: vendored VERSION=1.1.14 but .framework.yaml version=1.5.246 (upgrade gap)
 - Full RCA: `docs/reports/T-1100-isolation-patterns-rca.md`
+
+### 2026-04-12T09:29:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-04-12T09:29:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

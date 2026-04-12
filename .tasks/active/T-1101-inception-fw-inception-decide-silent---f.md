@@ -4,7 +4,7 @@ name: "Inception: fw inception decide silent --force bypass — RCA + remediatio
 description: >
   Inception task — investigate the CRITICAL bug at lib/inception.sh:303 where fw inception decide silently passes --force to update-task.sh, bypassing P-010 (agent AC gate), P-011 (verification gate), AND the Human Task Completion Rule. Trigger: /opt/termlink T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Completing human-owned task (--force bypass)' and '3/3 agent AC unchecked (--force bypass)' with the user never having passed --force. Comment at lib/inception.sh:299 cites T-637 with the premise that inception decide is Tier-0-gated, which is FALSE. Investigate: (1) full T-637 history — what problem was it solving and is there a non-bypass solution? (2) the actual call sites of inception decide and whether removing --force breaks anything legitimate; (3) whether splitting decision-recording from task-completion is feasible (decide writes rationale, completion is a separate user action); (4) backwards compat — what existing inceptions would suddenly fail their AC gate if --force is removed; (5) recommend GO/NO-GO/DEFER with concrete remediation path. Origin: G-032.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-1093, G-032]
 created: 2026-04-11T12:37:23Z
-last_update: 2026-04-11T12:37:23Z
+last_update: 2026-04-12T09:30:00Z
 date_finished: null
 ---
 
@@ -218,3 +218,6 @@ Evidence:
 - T-909 live transcript: `3/3 agent AC unchecked (--force bypass)` confirmed
 - T-637 completed in 1 minute, no alternatives recorded — insufficient analysis of `--force` scope
 - Full analysis: `docs/reports/T-1101-fw-inception-decide-force-rca.md`
+
+### 2026-04-12T09:30:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
