@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [web/blueprints/inception.py, web/templates/inception.html]
 related_tasks: []
 created: 2026-04-06T12:11:35Z
-last_update: 2026-04-06T13:03:50Z
+last_update: 2026-04-12T09:27:24Z
 date_finished: 2026-04-06T13:03:50Z
 ---
 
@@ -69,3 +69,6 @@ grep -q "recommendation" web/templates/inception.html
 
 ### 2026-04-06T13:03:50Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:27:24Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

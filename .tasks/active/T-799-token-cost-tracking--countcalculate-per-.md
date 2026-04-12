@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [cost, tokens, observability]
 components: [budget-gate, checkpoint]
 related_tasks: [T-800, T-699, T-596]
 created: 2026-03-31T19:05:13Z
-last_update: 2026-04-01T11:24:04Z
+last_update: 2026-04-12T09:27:22Z
 date_finished: 2026-04-01T11:24:04Z
 ---
 
@@ -160,3 +160,6 @@ The framework tracks task count, traceability, and session context budget — bu
 ### 2026-04-01T11:24:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-12T09:27:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: [tests/playwright/test_terminal.py, web/templates/terminal.html]
 related_tasks: []
 created: 2026-04-06T22:40:09Z
-last_update: 2026-04-06T22:43:16Z
+last_update: 2026-04-12T09:27:25Z
 date_finished: 2026-04-06T22:43:16Z
 ---
 
@@ -67,3 +67,6 @@ python3 -m pytest tests/playwright/test_terminal.py -v
 
 ### 2026-04-06T22:43:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:27:25Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

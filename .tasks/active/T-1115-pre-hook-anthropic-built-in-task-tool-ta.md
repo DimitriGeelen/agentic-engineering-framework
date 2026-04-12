@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T22:18:48Z
-last_update: 2026-04-11T22:46:46Z
+last_update: 2026-04-12T09:27:16Z
 date_finished: 2026-04-11T22:46:46Z
 ---
 
@@ -406,3 +406,6 @@ this session — all changes stay in `tests/spikes/` + CLAUDE.md +
 ### 2026-04-11T22:46:46Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-04-12T09:27:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

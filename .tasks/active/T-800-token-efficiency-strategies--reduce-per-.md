@@ -10,12 +10,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: [cost, tokens, efficiency, context-budget]
 components: [budget-gate, checkpoint, bin-fw, hook-config]
 related_tasks: [T-799, T-596, T-701, T-699, T-136, T-073]
 created: 2026-04-01T09:25:47Z
-last_update: 2026-04-01T22:14:44Z
+last_update: 2026-04-12T09:27:22Z
 date_finished: 2026-04-01T11:24:07Z
 ---
 
@@ -211,3 +211,6 @@ The framework governs token budget as a **session-survival concern** (P-009: don
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Reframed for subscription — token efficiency drives session lifetime and response quality
+
+### 2026-04-12T09:27:22Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T06:52:55Z
-last_update: 2026-04-12T09:07:39Z
+last_update: 2026-04-12T09:27:16Z
 date_finished: 2026-04-12T09:07:19Z
 ---
 
@@ -86,3 +86,6 @@ bats tests/unit/block_task_tools.bats
 
 ### 2026-04-12T09:07:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:27:16Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

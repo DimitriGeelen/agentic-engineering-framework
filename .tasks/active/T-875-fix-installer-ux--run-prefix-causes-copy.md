@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T05:59:41Z
-last_update: 2026-04-05T06:02:41Z
+last_update: 2026-04-12T09:27:24Z
 date_finished: 2026-04-05T06:02:11Z
 ---
 
@@ -60,3 +60,6 @@ grep -q "To see details" install.sh
 
 ### 2026-04-05T06:02:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:27:24Z — status-update [task-update-agent]
+- **Change:** horizon: now → next

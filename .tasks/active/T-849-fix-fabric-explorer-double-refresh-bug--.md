@@ -7,12 +7,12 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T15:03:56Z
-last_update: 2026-04-04T21:59:51Z
+last_update: 2026-04-12T09:27:23Z
 date_finished: 2026-04-04T21:59:51Z
 ---
 
@@ -69,3 +69,6 @@ python3 -c "import sys; html=open('web/templates/fabric_explorer.html').read(); 
 
 ### 2026-04-04T21:59:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-04-12T09:27:23Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
