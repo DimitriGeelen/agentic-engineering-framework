@@ -74,6 +74,39 @@ def _extract_section(body, section_name):
     return text
 
 
+def _extract_all_sections(body):
+    """Extract all ## sections from markdown body as {heading: content} dict.
+
+    Returns an OrderedDict preserving the order sections appear in the file.
+    HTML comments are stripped from content. (T-1177, G-036)
+    """
+    from collections import OrderedDict
+    sections = OrderedDict()
+    lines = body.split("\n")
+    current_heading = None
+    current_lines = []
+
+    for line in lines:
+        if line.startswith("## "):
+            # Save previous section
+            if current_heading is not None:
+                text = "\n".join(current_lines).strip()
+                text = re_mod.sub(r"<!--.*?-->", "", text, flags=re_mod.DOTALL).strip()
+                sections[current_heading] = text
+            current_heading = line[3:].strip()
+            current_lines = []
+        elif current_heading is not None:
+            current_lines.append(line)
+
+    # Save last section
+    if current_heading is not None:
+        text = "\n".join(current_lines).strip()
+        text = re_mod.sub(r"<!--.*?-->", "", text, flags=re_mod.DOTALL).strip()
+        sections[current_heading] = text
+
+    return sections
+
+
 def _load_assumptions():
     """Load assumptions from the project register."""
     af = PROJECT_ROOT / ".context" / "project" / "assumptions.yaml"
@@ -201,19 +234,36 @@ def inception_detail(task_id):
     if not task_data or task_data.get("workflow_type") != "inception":
         abort(404)
 
-    # Extract sections and render markdown to HTML
-    sections = {
-        "problem": _md(_extract_section(task_body, "Problem Statement")),
-        "assumptions_text": _md(_extract_section(task_body, "Assumptions")),
-        "exploration": _md(_extract_section(task_body, "Exploration Plan")),
-        "constraints": _md(_extract_section(task_body, "Technical Constraints")),
-        "scope": _md(_extract_section(task_body, "Scope Fence")),
-        "criteria": _md(_extract_section(task_body, "Go/No-Go Criteria")),
-        "recommendation": _md(_extract_section(task_body, "Recommendation")),
-        "structural_upgrade": _md(_extract_section(task_body, "Structural Upgrade")),
-        "decision": _md(_extract_section(task_body, "Decision")),
-        "updates": _md(_extract_section(task_body, "Updates")),
+    # Extract sections dynamically (T-1177, G-036)
+    all_raw_sections = _extract_all_sections(task_body)
+
+    # Known sections with template-specific rendering
+    KNOWN_SECTIONS = {
+        "Problem Statement", "Assumptions", "Exploration Plan",
+        "Technical Constraints", "Scope Fence", "Go/No-Go Criteria",
+        "Recommendation", "Structural Upgrade", "Decision", "Updates",
+        "Acceptance Criteria", "Verification", "Decisions", "Context",
     }
+
+    # Build legacy sections dict for backward compatibility with template
+    sections = {
+        "problem": _md(all_raw_sections.get("Problem Statement", "")),
+        "assumptions_text": _md(all_raw_sections.get("Assumptions", "")),
+        "exploration": _md(all_raw_sections.get("Exploration Plan", "")),
+        "constraints": _md(all_raw_sections.get("Technical Constraints", "")),
+        "scope": _md(all_raw_sections.get("Scope Fence", "")),
+        "criteria": _md(all_raw_sections.get("Go/No-Go Criteria", "")),
+        "recommendation": _md(all_raw_sections.get("Recommendation", "")),
+        "structural_upgrade": _md(all_raw_sections.get("Structural Upgrade", "")),
+        "decision": _md(all_raw_sections.get("Decision", "")),
+        "updates": _md(all_raw_sections.get("Updates", "")),
+    }
+
+    # Extra sections not in the known set — rendered generically (G-036 fix)
+    extra_sections = []
+    for heading, content in all_raw_sections.items():
+        if heading not in KNOWN_SECTIONS and content:
+            extra_sections.append({"heading": heading, "content": _md(content)})
 
     # T-679: Pre-populate rationale from ## Recommendation section
     rec_raw = _extract_section(task_body, "Recommendation") or ""
@@ -245,6 +295,7 @@ def inception_detail(task_id):
         page_title=f"Inception {task_id}",
         task=task_data,
         sections=sections,
+        extra_sections=extra_sections,
         decision_state=decision_state,
         linked_assumptions=linked_assumptions,
         episodic=episodic,

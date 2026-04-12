@@ -294,6 +294,14 @@
 </article>
 {% endif %}
 
+<!-- Dynamic extra sections (T-1177, G-036 fix) -->
+{% for sec in extra_sections %}
+<article class="section-card">
+    <header>{{ sec.heading }}</header>
+    <div class="section-content">{{ sec.content }}</div>
+</article>
+{% endfor %}
+
 <!-- Decision Details -->
 {% if sections.decision and dec != 'pending' %}
 <article class="section-card">
