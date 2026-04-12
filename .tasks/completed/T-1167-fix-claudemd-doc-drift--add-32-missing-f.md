@@ -4,7 +4,7 @@ name: "Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Refere
 description: >
   Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T13:51:01Z
-last_update: 2026-04-12T13:51:01Z
-date_finished: null
+last_update: 2026-04-12T13:56:11Z
+date_finished: 2026-04-12T13:56:11Z
 ---
 
 # T-1167: Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference
@@ -50,3 +50,6 @@ bash -c 'count=$(bin/fw doctor 2>&1 | grep "Doc drift" | grep -oP "\d+" | head -
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1167-fix-claudemd-doc-drift--add-32-missing-f.md
 - **Context:** Initial task creation
+
+### 2026-04-12T13:56:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
