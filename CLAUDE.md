@@ -913,6 +913,21 @@ After fixing any problem discovered by the human (not found during development):
 If you need to explore before planning, use the Explore agent or `/explore` skill.
 If you need to plan implementation, create a task first, then use `/plan`.
 
+## Built-in Task Tool Ban (T-1115/T-1117)
+
+**NEVER use `TodoWrite`, `TaskCreate`, `TaskUpdate`, `TaskList`, or `TaskGet` tools.** They create a parallel, ungoverned task system outside framework governance:
+- Items appear in the Claude Code UI status line ("X tasks"), visually identical to framework tasks
+- No task gate, no horizon enforcement, no episodic memory, no handover capture
+- Creates confusion about whether the agent is running a parallel ungoverned system
+- Human caught this in session and asked "are you bypassing framework governance?"
+
+**Structural enforcement:** A PreToolUse hook (`block-task-tools.sh`) blocks all five tools with exit 2 and a redirect message. The hook matches `TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet`.
+
+**Use `bin/fw work-on "task name" --type build`** to create real framework tasks.
+Use `bin/fw task create --name "task name"` for more options.
+
+If you need a scratchpad during complex multi-step work, use conversation text or write notes to `.context/working/` — never use Claude Code's built-in todo system.
+
 ## Session Start Protocol
 
 **Before beginning any work:**

@@ -332,3 +332,46 @@ before `check-active-task.sh` was built.
 
 This is provisional. The actual GO/NO-GO + level selection needs the
 human's answers to Q1–Q7 first.
+
+---
+
+## Post-Spike Findings (2026-04-12, TermLink E2E)
+
+### Critical correction: the tool is `TodoWrite`, not `TaskCreate`
+
+The T-1116 TermLink E2E spike (`fw termlink dispatch --name t1116-spike-2`)
+dispatched a fresh `claude -p` worker with the probe hook installed.
+
+**Finding 1 — Tool name mismatch:**
+In `claude -p` mode (Claude Code 2.1.101), the built-in todo/task system
+is backed by `TodoWrite`, NOT `TaskCreate`. The worker reported:
+"TaskCreate is not available in this session — only TodoWrite."
+
+In interactive Claude Code sessions, `TaskCreate|TaskUpdate|TaskList|TaskGet`
+appear as deferred tools (likely the async agent/background-task management
+system, distinct from the UI scratchpad). The UI "X tasks (Y done, Z open)"
+that the human complained about is populated by `TodoWrite`.
+
+**Finding 2 — PreToolUse CONFIRMED on `TodoWrite`:**
+```
+2026-04-12T06:50:18Z pid=3457052 tool_name=TodoWrite
+tool_input={"todos":[{"content":"spike-probe-todowrite","status":"in_progress"}]}
+hook_event_name=PreToolUse
+```
+The probe script received full tool_input JSON on stdin, including the
+todo content, status, and session metadata. Exit 0 allowed the call.
+Exit 2 would block it (proven pattern from `block-plan-mode.sh`).
+
+**Finding 3 — Interactive-mode Task* tools need separate verification:**
+The deferred `TaskCreate|TaskUpdate|TaskList|TaskGet` tools visible in
+interactive sessions may or may not fire PreToolUse hooks. They were NOT
+present in the `-p` mode worker, so the spike could not test them. A
+defensive matcher covering both sets is the pragmatic choice.
+
+### Phase 2 implementation (T-1117)
+
+Based on findings, T-1117 implements:
+- `agents/context/block-task-tools.sh` — exits 2 with redirect message
+- `.claude/settings.json` matcher: `TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet`
+- `tests/unit/block_task_tools.bats` — 7 invariant tests
+- CLAUDE.md §Built-in Task Tool Ban rule

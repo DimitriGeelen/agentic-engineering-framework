@@ -4,7 +4,7 @@ name: "Pre-hook Anthropic built-in Task tool (TaskCreate/TaskUpdate) into framew
 description: >
   Inception: Pre-hook Anthropic built-in Task tool (TaskCreate/TaskUpdate) into framework T-XXX governance
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T22:18:48Z
-last_update: 2026-04-11T22:19:01Z
-date_finished: null
+last_update: 2026-04-11T22:46:46Z
+date_finished: 2026-04-11T22:46:46Z
 ---
 
 # T-1115: Pre-hook Anthropic built-in Task tool (TaskCreate/TaskUpdate) into framework T-XXX governance
@@ -215,18 +215,126 @@ this session — all changes stay in `tests/spikes/` + CLAUDE.md +
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO (two-phase)
+
+Rationale: The recurring Claude-Code-todo-list confusion is a real
+governance signal per human Q7. Cross-tool rewrite is mechanically
+impossible (research confirmed), so the achievable intervention is
+block-with-redirect on exit 2 — modelled on `block-plan-mode.sh`. But
+we do not yet know whether PreToolUse fires on `TaskCreate` at all
+(docs silent; Task* tools absent from the documented capable-tool
+list). Building Level 1 now without verification risks installing a
+hook on traffic that never traverses it.
+
+The two-phase plan unblocks progress: write the spike artifact
+(`tests/spikes/taskcreate-hook-probe.sh`) and the fallback
+(CLAUDE.md rule + PostToolUse scanner) this session, commit both,
+then verify empirically in the next fresh session. Phase 2 branches
+on the spike result:
+- Hooks fire → build Level 1 hook (`block-task-tools.sh`) + bats invariant test
+- Hooks don't fire → promote the fallback to primary
+
+Evidence:
+- Research agent confirmed PreToolUse hook JSON-output contract
+  supports intra-tool `updatedInput` but not cross-tool redirection —
+  rewrite of `TaskCreate → Bash bin/fw work-on` not supported
+- Claude Code docs list PreToolUse-capable tools; Task* tools absent
+  → A1 is UNVERIFIED, must spike
+- `block-plan-mode.sh` proves the exit-2-with-redirect-message pattern
+  for `EnterPlanMode → /plan` — direct template if A1 is true
+- Issue 45427 (human's own RFC) documents PreToolUse subagent bypass
+  + model self-modification as upper bounds on any hook-based
+  enforcement — we acknowledge the ceiling, we do not attempt to build
+  past it; that requires Anthropic to ship the proposed `toolGate`
+- T-1105 chokepoint+invariant-test discipline formally applicable:
+  single chokepoint (hook file), single invariant test (bats pipe-fake-
+  JSON assertion), single bug class (Q7-confirmed recurrence)
+- Human-answered 7 questions (Q1 L1+reroute, Q2 investigate +ingest
+  45427, Q3 both, Q4 block if cannot rewrite, Q5 no mirror, Q6
+  elaborated in research artifact §T-1105 Discipline, Q7 recurring)
+- Phase 1 + Phase 2 split explicitly approved (A=two-phase, B=finish
+  T-1114 first, T-1115 reviewed async)
+
+Build decomposition (Phase 1 — this session, after T-1114 lands):
+- T-1116a: `tests/spikes/taskcreate-hook-probe.sh` + human-run checklist
+- T-1116b: CLAUDE.md §"Claude Code Built-in Task Tool Ban" rule
+- T-1116c: `agents/context/audit-claude-todo.sh` PostToolUse scanner
+- T-1116d: Dedicated bats test for the PostToolUse scanner
+
+Build decomposition (Phase 2 — next session, conditional on spike):
+- T-1116e: Level 1 hook `agents/context/block-task-tools.sh` (if A1 true)
+- T-1116f: `.claude/settings.json` matcher registration (if A1 true)
+- T-1116g: `tests/integration/block-task-tools.bats` invariant test (if A1 true)
+- T-1116h: Consume G-XXX (new gap to register for this bug class)
+
+Scope fence reminder: No modification to live `.claude/settings.json`
+this session — all changes stay in `tests/spikes/` + CLAUDE.md +
+`agents/context/`. Fresh-session test drives Phase 2.
+
+**Date**: 2026-04-11T22:46:46Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (two-phase)
+
+Rationale: The recurring Claude-Code-todo-list confusion is a real
+governance signal per human Q7. Cross-tool rewrite is mechanically
+impossible (research confirmed), so the achievable intervention is
+block-with-redirect on exit 2 — modelled on `block-plan-mode.sh`. But
+we do not yet know whether PreToolUse fires on `TaskCreate` at all
+(docs silent; Task* tools absent from the documented capable-tool
+list). Building Level 1 now without verification risks installing a
+hook on traffic that never traverses it.
+
+The two-phase plan unblocks progress: write the spike artifact
+(`tests/spikes/taskcreate-hook-probe.sh`) and the fallback
+(CLAUDE.md rule + PostToolUse scanner) this session, commit both,
+then verify empirically in the next fresh session. Phase 2 branches
+on the spike result:
+- Hooks fire → build Level 1 hook (`block-task-tools.sh`) + bats invariant test
+- Hooks don't fire → promote the fallback to primary
+
+Evidence:
+- Research agent confirmed PreToolUse hook JSON-output contract
+  supports intra-tool `updatedInput` but not cross-tool redirection —
+  rewrite of `TaskCreate → Bash bin/fw work-on` not supported
+- Claude Code docs list PreToolUse-capable tools; Task* tools absent
+  → A1 is UNVERIFIED, must spike
+- `block-plan-mode.sh` proves the exit-2-with-redirect-message pattern
+  for `EnterPlanMode → /plan` — direct template if A1 is true
+- Issue 45427 (human's own RFC) documents PreToolUse subagent bypass
+  + model self-modification as upper bounds on any hook-based
+  enforcement — we acknowledge the ceiling, we do not attempt to build
+  past it; that requires Anthropic to ship the proposed `toolGate`
+- T-1105 chokepoint+invariant-test discipline formally applicable:
+  single chokepoint (hook file), single invariant test (bats pipe-fake-
+  JSON assertion), single bug class (Q7-confirmed recurrence)
+- Human-answered 7 questions (Q1 L1+reroute, Q2 investigate +ingest
+  45427, Q3 both, Q4 block if cannot rewrite, Q5 no mirror, Q6
+  elaborated in research artifact §T-1105 Discipline, Q7 recurring)
+- Phase 1 + Phase 2 split explicitly approved (A=two-phase, B=finish
+  T-1114 first, T-1115 reviewed async)
+
+Build decomposition (Phase 1 — this session, after T-1114 lands):
+- T-1116a: `tests/spikes/taskcreate-hook-probe.sh` + human-run checklist
+- T-1116b: CLAUDE.md §"Claude Code Built-in Task Tool Ban" rule
+- T-1116c: `agents/context/audit-claude-todo.sh` PostToolUse scanner
+- T-1116d: Dedicated bats test for the PostToolUse scanner
+
+Build decomposition (Phase 2 — next session, conditional on spike):
+- T-1116e: Level 1 hook `agents/context/block-task-tools.sh` (if A1 true)
+- T-1116f: `.claude/settings.json` matcher registration (if A1 true)
+- T-1116g: `tests/integration/block-task-tools.bats` invariant test (if A1 true)
+- T-1116h: Consume G-XXX (new gap to register for this bug class)
+
+Scope fence reminder: No modification to live `.claude/settings.json`
+this session — all changes stay in `tests/spikes/` + CLAUDE.md +
+`agents/context/`. Fresh-session test drives Phase 2.
+
+**Date**: 2026-04-11T22:46:46Z
 
 ## Updates
 
@@ -235,3 +343,66 @@ this session — all changes stay in `tests/spikes/` + CLAUDE.md +
 
 ### 2026-04-11T22:19:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-11T22:46:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (two-phase)
+
+Rationale: The recurring Claude-Code-todo-list confusion is a real
+governance signal per human Q7. Cross-tool rewrite is mechanically
+impossible (research confirmed), so the achievable intervention is
+block-with-redirect on exit 2 — modelled on `block-plan-mode.sh`. But
+we do not yet know whether PreToolUse fires on `TaskCreate` at all
+(docs silent; Task* tools absent from the documented capable-tool
+list). Building Level 1 now without verification risks installing a
+hook on traffic that never traverses it.
+
+The two-phase plan unblocks progress: write the spike artifact
+(`tests/spikes/taskcreate-hook-probe.sh`) and the fallback
+(CLAUDE.md rule + PostToolUse scanner) this session, commit both,
+then verify empirically in the next fresh session. Phase 2 branches
+on the spike result:
+- Hooks fire → build Level 1 hook (`block-task-tools.sh`) + bats invariant test
+- Hooks don't fire → promote the fallback to primary
+
+Evidence:
+- Research agent confirmed PreToolUse hook JSON-output contract
+  supports intra-tool `updatedInput` but not cross-tool redirection —
+  rewrite of `TaskCreate → Bash bin/fw work-on` not supported
+- Claude Code docs list PreToolUse-capable tools; Task* tools absent
+  → A1 is UNVERIFIED, must spike
+- `block-plan-mode.sh` proves the exit-2-with-redirect-message pattern
+  for `EnterPlanMode → /plan` — direct template if A1 is true
+- Issue 45427 (human's own RFC) documents PreToolUse subagent bypass
+  + model self-modification as upper bounds on any hook-based
+  enforcement — we acknowledge the ceiling, we do not attempt to build
+  past it; that requires Anthropic to ship the proposed `toolGate`
+- T-1105 chokepoint+invariant-test discipline formally applicable:
+  single chokepoint (hook file), single invariant test (bats pipe-fake-
+  JSON assertion), single bug class (Q7-confirmed recurrence)
+- Human-answered 7 questions (Q1 L1+reroute, Q2 investigate +ingest
+  45427, Q3 both, Q4 block if cannot rewrite, Q5 no mirror, Q6
+  elaborated in research artifact §T-1105 Discipline, Q7 recurring)
+- Phase 1 + Phase 2 split explicitly approved (A=two-phase, B=finish
+  T-1114 first, T-1115 reviewed async)
+
+Build decomposition (Phase 1 — this session, after T-1114 lands):
+- T-1116a: `tests/spikes/taskcreate-hook-probe.sh` + human-run checklist
+- T-1116b: CLAUDE.md §"Claude Code Built-in Task Tool Ban" rule
+- T-1116c: `agents/context/audit-claude-todo.sh` PostToolUse scanner
+- T-1116d: Dedicated bats test for the PostToolUse scanner
+
+Build decomposition (Phase 2 — next session, conditional on spike):
+- T-1116e: Level 1 hook `agents/context/block-task-tools.sh` (if A1 true)
+- T-1116f: `.claude/settings.json` matcher registration (if A1 true)
+- T-1116g: `tests/integration/block-task-tools.bats` invariant test (if A1 true)
+- T-1116h: Consume G-XXX (new gap to register for this bug class)
+
+Scope fence reminder: No modification to live `.claude/settings.json`
+this session — all changes stay in `tests/spikes/` + CLAUDE.md +
+`agents/context/`. Fresh-session test drives Phase 2.
+
+### 2026-04-11T22:46:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

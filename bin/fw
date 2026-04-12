@@ -3484,7 +3484,7 @@ PYSEARCH
         if [ -z "$_hook_name" ]; then
             echo "Usage: fw hook <name> [args...]" >&2
             echo "Available hooks: check-active-task, check-tier0, check-project-boundary, budget-gate," >&2
-            echo "  block-plan-mode, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
+            echo "  block-plan-mode, block-task-tools, checkpoint, error-watchdog, check-dispatch, check-dispatch-pre," >&2
             echo "  check-fabric-new-file, check-agent-dispatch, commit-cadence, loop-detect, pre-compact, post-compact-resume" >&2
             exit 1
         fi
