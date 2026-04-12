@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1166: Upgrade consumer projects to v1.5.413 — 13 projects behind
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T13:43:41Z
+# ============================================================================
+
+task_id: T-1166
+task_name: "Upgrade consumer projects to v1.5.413 — 13 projects behind"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T13:35:14Z
+completed: 2026-04-12T13:43:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T15:39:55+02:00
+last_commit: 2026-04-12T15:39:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Upgrade 11 consumer projects to v1.5.413 via TermLink batch
+
+# Key outcomes
+outcomes:
+  - "All 11 consumer projects upgraded to current version"
+  - "`fw doctor` shows no version warnings for consumer projects"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1166-upgrade-consumer-projects-to-v15413--13-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T15:39:55"
+    action: "T-1166: Upgrade 11 consumer projects to v1.5.413 via TermLink batch"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 1
+  lines_added: 51
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1166-upgrade-consumer-projects-to-v15413--13-.md
+generated_by: context-agent-hybrid
