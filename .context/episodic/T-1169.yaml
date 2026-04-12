@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1169: Add episodic verification after auto-generation in update-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T16:27:43Z
+# ============================================================================
+
+task_id: T-1169
+task_name: "Add episodic verification after auto-generation in update-task.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T14:05:10Z
+completed: 2026-04-12T14:07:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T16:07:04+02:00
+last_commit: 2026-04-12T16:07:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add episodic verification after auto-generation — detect silent failures. Complete — episodic verification guards silent failures
+
+# Key outcomes
+outcomes:
+  - "After episodic auto-generation, `update-task.sh` checks if the output file exists"
+  - "Warning printed if episodic generation failed (non-blocking — task still completes)"
+  - "Both episodic generation paths (line ~393 and ~838) have verification"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/task-create/update-task.sh"
+  - "agents/task-create/update-task.sh"
+  - ".tasks/active/T-1169-add-episodic-verification-after-auto-gen.md"
+  - ".tasks/completed/T-1169-add-episodic-verification-after-auto-gen.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T16:07:04"
+    action: "T-1169: Add episodic verification after auto-generation — detect silent failures"
+  - time: "2026-04-12T16:07:22"
+    action: "T-1169: Complete — episodic verification guards silent failures"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 103
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1169-add-episodic-verification-after-auto-gen.md
+generated_by: context-agent-hybrid

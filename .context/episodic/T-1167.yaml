@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1167: Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T16:27:42Z
+# ============================================================================
+
+task_id: T-1167
+task_name: "Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T13:51:01Z
+completed: 2026-04-12T13:56:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T15:56:04+02:00
+last_commit: 2026-04-12T15:56:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add 32 missing fw subcommands to CLAUDE.md Quick Reference. Complete — 32 subcommands added to Quick Reference, doc drift eliminated
+
+# Key outcomes
+outcomes:
+  - "Missing fw subcommands added to CLAUDE.md Quick Reference table"
+  - "`fw doctor` doc drift warning reduced or eliminated"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".tasks/active/T-1129-pickup-4-learnings-from-termlink-session.md"
+  - ".tasks/active/T-1167-fix-claudemd-doc-drift--add-32-missing-f.md"
+  - ".tasks/completed/T-1167-fix-claudemd-doc-drift--add-32-missing-f.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T15:56:04"
+    action: "T-1167: Add 32 missing fw subcommands to CLAUDE.md Quick Reference"
+  - time: "2026-04-12T15:56:53"
+    action: "T-1167: Complete — 32 subcommands added to Quick Reference, doc drift eliminated"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 91
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1167-fix-claudemd-doc-drift--add-32-missing-f.md
+generated_by: context-agent-hybrid
