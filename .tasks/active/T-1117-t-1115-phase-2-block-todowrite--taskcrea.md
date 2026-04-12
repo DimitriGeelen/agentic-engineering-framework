@@ -4,16 +4,16 @@ name: "T-1115 Phase 2: block TodoWrite + TaskCreate via PreToolUse hook (Level 1
 description: >
   T-1115 Phase 2: block TodoWrite + TaskCreate via PreToolUse hook (Level 1)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T06:52:55Z
-last_update: 2026-04-12T06:52:55Z
-date_finished: null
+last_update: 2026-04-12T09:07:19Z
+date_finished: 2026-04-12T09:07:19Z
 ---
 
 # T-1117: T-1115 Phase 2: block TodoWrite + TaskCreate via PreToolUse hook (Level 1)
@@ -53,9 +53,9 @@ Spike result: T-1116 Updates (2026-04-12T06:50:18Z)
 
 test -x agents/context/block-task-tools.sh
 echo '{}' | agents/context/block-task-tools.sh 2>/dev/null; test $? -eq 2
-agents/context/block-task-tools.sh 2>&1 | grep -q "fw work-on"
+bash -c 'agents/context/block-task-tools.sh 2>&1 | grep -q "fw work-on"'
 python3 -c "import json; d=json.load(open('.claude/settings.json')); assert any('TodoWrite' in h.get('matcher','') for h in d['hooks']['PreToolUse'])"
-bin/fw test unit -- tests/unit/block_task_tools.bats
+bats tests/unit/block_task_tools.bats
 
 ## Decisions
 
@@ -83,3 +83,6 @@ bin/fw test unit -- tests/unit/block_task_tools.bats
 - **Full chain verified:** PreToolUse fires → block-task-tools.sh exits 2 →
   TodoWrite call blocked → agent sees "Use bin/fw work-on" message
 - **Settings.json restored** after test (B-005 protected — human merges final)
+
+### 2026-04-12T09:07:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
