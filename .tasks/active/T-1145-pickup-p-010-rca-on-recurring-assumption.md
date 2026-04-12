@@ -4,7 +4,7 @@ name: "Pickup: P-010: RCA on recurring assumption fabrication/retraction/correct
 description: >
   Auto-created from pickup envelope. Source: ring20-dashboard, task T-011. Type: feature-proposal.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-12T10:11:59Z
-last_update: 2026-04-12T14:00:20Z
+last_update: 2026-04-12T14:01:20Z
 date_finished: null
 ---
 
@@ -114,3 +114,6 @@ test -f docs/reports/T-1145-assumption-provenance-rca.md
 ### 2026-04-12T13:58:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T14:01:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured

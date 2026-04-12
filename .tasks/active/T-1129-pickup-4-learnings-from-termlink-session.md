@@ -4,7 +4,7 @@ name: "Pickup: 4 learnings from termlink session — subagent scope violation, f
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-944. Type: learning.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-12T08:45:02Z
-last_update: 2026-04-12T13:47:29Z
+last_update: 2026-04-12T14:01:21Z
 date_finished: null
 ---
 
@@ -109,3 +109,6 @@ bash -c 'grep -c "T-1129" .context/project/learnings.yaml | grep -q "[4-9]"'
 ### 2026-04-12T13:45:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-12T14:01:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured

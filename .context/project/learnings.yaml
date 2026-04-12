@@ -36,3 +36,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-006
+  learning: "Self-pickup dedup gap: when fw pickup send is used from the same project, it creates inception tasks for learnings that are already codified in the local project. Pickup processor should detect source_project == current_project and skip or warn."
+  source: P-019
+  task: T-1168
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

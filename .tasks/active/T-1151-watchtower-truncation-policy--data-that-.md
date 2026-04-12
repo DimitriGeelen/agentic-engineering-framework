@@ -4,7 +4,7 @@ name: "Watchtower truncation policy — data that flows into permanent records m
 description: >
   Inception: Watchtower truncation policy — data that flows into permanent records must NEVER be truncated at display layer
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T11:08:23Z
-last_update: 2026-04-12T11:47:50Z
+last_update: 2026-04-12T14:01:13Z
 date_finished: null
 ---
 
@@ -109,3 +109,6 @@ test -f docs/reports/T-1151-truncation-audit.md
 
 ### 2026-04-12T11:14:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T14:01:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
