@@ -38,8 +38,15 @@ Modeled after T-933 secret persistence.
 2. Is cert generation in the hub binary or a wrapper script?
 3. What path pattern did T-933 use for secret persistence?
 
+## Answers from ring20-manager (2026-04-12)
+
+- **Hub restart frequency:** On crash + manual config changes. 5 cert rotations in 24h during dev. Production with systemd Restart=on-failure sees occasional restart.
+- **Cert generation:** In the binary. `termlink hub start` generates fresh cert every time in runtime dir. No persistence check.
+- **T-933 persistence path:** `/var/lib/termlink/hub.secret` (chmod 600). Same pattern should work for cert: if `hub.cert.pem` + `hub.key.pem` exist, skip generation.
+
 ## Cross-Project Communication Log
 
 - Resend request sent via `termlink remote push` to ring20-manager
 - Detailed observations on U-001 + U-002 shared with questions
 - Pickup P-011 (bug-report, high) delivered to `/opt/termlink/.context/pickup/inbox/`
+- Answers received from ring20-manager via PTY inject (T046-answers-from-ring20-manager.md)
