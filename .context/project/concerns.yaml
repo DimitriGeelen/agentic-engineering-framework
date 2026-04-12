@@ -963,12 +963,15 @@ concerns:
   - 'No structural enforcement: no test asserts CLAUDE.md Quick Reference matches `fw help`. No `fw doctor` check for doc/help parity. No CI step that regenerates CLAUDE.md from canonical source. The Quick
     Reference is a hand-maintained snapshot that decays whenever a new feature ships without a doc-update step.'
   trigger: Any new required flag or subcommand added to fw without a corresponding CLAUDE.md Quick Reference update. Multiple times per release cycle.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1104
   resolution_in_progress: 'Multiple structural guards now in place: (1) fw doctor Quick Reference coverage check (T-1147); (2) tests/lint/help-router-parity.bats (T-1185); (3) tests/lint/config-registry-parity.bats
     (T-1187). Agent memory drift remains unguarded but is lower risk.'
+  resolution: 'T-1190: Three structural enforcement layers now guard doc/help/code parity: (1) fw doctor Quick Reference coverage check (T-1147); (2) tests/lint/help-router-parity.bats (T-1185, 2 tests);
+    (3) tests/lint/config-registry-parity.bats (T-1187, 3 tests). Trigger has not fired since creation.'
+  closed_date: '2026-04-12'
 - id: G-036
   type: gap
   title: Watchtower inception detail page hardcoded section allowlist — new sections added to task files are silently dropped
