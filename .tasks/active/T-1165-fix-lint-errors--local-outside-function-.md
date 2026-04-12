@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T13:19:21Z
-last_update: 2026-04-12T13:19:21Z
+last_update: 2026-04-12T13:21:11Z
 date_finished: null
 ---
 
@@ -31,7 +31,7 @@ Shellcheck SC2168 error: `local _push_failed=false` on line 756 of `agents/hando
 
 ## Verification
 
-bash -c 'shellcheck -S error agents/handover/handover.sh 2>&1; exit 0' | grep -c "SC2168" | grep -q "^0$"
+bash -c '! shellcheck -S error agents/handover/handover.sh 2>&1 | grep -q SC2168'
 
 ## Decisions
 
