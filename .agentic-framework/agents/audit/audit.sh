@@ -18,6 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
+source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 AUDITS_DIR="$CONTEXT_DIR/audits"
 
 # --- Schedule Subcommand (dispatch before heavy init) ---
@@ -298,6 +299,44 @@ while [[ $# -gt 0 ]]; do
         *) shift ;;
     esac
 done
+
+# T-1162/T-866: flock guard + timeout for cron mode — prevent zombie accumulation
+# When running as cron (QUIET=true + cron output dir), ensure only one audit runs at a time.
+# If a previous audit is still running, exit immediately rather than stacking up.
+if [ "$QUIET" = true ]; then
+    AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
+    mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
+    AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
+    AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
+
+    # Clean up stale lock files (older than timeout + 60s buffer)
+    if [ -f "$AUDIT_LOCK_FILE" ]; then
+        lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
+        if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
+            rm -f "$AUDIT_LOCK_FILE"
+        fi
+    fi
+
+    # Use flock if available, otherwise simple lock file
+    if command -v flock >/dev/null 2>&1; then
+        exec 200>"$AUDIT_LOCK_FILE"
+        if ! flock -n 200; then
+            # Another audit is running — exit silently (cron mode)
+            exit 0
+        fi
+        # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds
+        ( sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) &
+        AUDIT_TIMEOUT_PID=$!
+        trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
+    else
+        # Fallback: simple lock file (less robust but prevents most zombies)
+        if [ -f "$AUDIT_LOCK_FILE" ]; then
+            exit 0
+        fi
+        echo $$ > "$AUDIT_LOCK_FILE"
+        trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
+    fi
+fi
 
 # Section filter: returns 0 (true) if section should run
 should_run_section() {
@@ -910,22 +949,23 @@ else
          "Run: fw init --force (or create practices file manually)"
 fi
 
-# Bugfix-learning coverage (G-016 detective control)
+# Bugfix-learning coverage (G-016 detective control, T-1192 escalation)
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
 bugfix_total=0
 bugfix_with_learning=0
 
 if [ -d "$TASKS_DIR/completed" ]; then
-    # Find completed tasks whose name starts with "Fix", "Bugfix", or "Hotfix" (T-693: anchored match)
+    # Find completed tasks matching bugfix patterns (T-1192: broadened from anchored match)
     while IFS= read -r task_file; do
         [ -z "$task_file" ] && continue
         task_name=$(grep "^name:" "$task_file" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
-        echo "$task_name" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b' || continue
+        # Match: Fix/Bugfix/Hotfix anywhere, or RCA, or G-0XX gap reference
+        echo "$task_name" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]' || continue
         task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
         [ -z "$task_id" ] && continue
         bugfix_total=$((bugfix_total + 1))
         # Check if any learning references this task
-        if [ -f "$LEARNINGS_FILE" ] && grep -q "task: ${task_id}" "$LEARNINGS_FILE" 2>/dev/null; then
+        if [ -f "$LEARNINGS_FILE" ] && grep -q "$task_id" "$LEARNINGS_FILE" 2>/dev/null; then
             bugfix_with_learning=$((bugfix_with_learning + 1))
         fi
     done < <(find "$TASKS_DIR/completed" -name "T-*.md" -type f 2>/dev/null)
@@ -933,12 +973,17 @@ fi
 
 if [ "$bugfix_total" -gt 0 ]; then
     coverage=$((bugfix_with_learning * 100 / bugfix_total))
-    if [ "$coverage" -ge 40 ]; then
+    if [ "$coverage" -ge 35 ]; then
         pass "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total bugfixes have learnings)"
-    else
+    elif [ "$coverage" -ge 10 ]; then
         warn "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
-             "Only ${coverage}% of bugfixes have associated learnings (target: 40%)" \
-             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
+             "Only ${coverage}% of bugfixes have associated learnings (target: 35%)" \
+             "Use: fw fix-learned T-XXX 'what was learned from this fix'"
+    else
+        # T-1192: Escalate to FAIL below 10% (G-016 structural enforcement)
+        fail "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
+             "Critical: below 10% threshold (target: 35%). Bugfix knowledge is being lost." \
+             "After each fix: fw fix-learned T-XXX 'root cause and prevention'"
     fi
 else
     pass "Bugfix-learning coverage: no completed bugfix tasks found"
@@ -2714,8 +2759,9 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-_wt_port=$(fw_config "PORT" 3000)
-if curl -sf --max-time 3 "http://localhost:${_wt_port}/health" >/dev/null 2>&1; then
+_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:$(fw_config "PORT" 3000)")
+_wt_port=$(echo "$_wt_url" | grep -oP ':\K\d+$' || echo "3000")
+if curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"

@@ -854,11 +854,23 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
         fi
     fi
 
-    # === Learning capture check for bugfix tasks (T-692, G-016) ===
-    # 72% of bugfix tasks produce zero learnings. This structural nudge
-    # prompts the agent when completing a fix task without a learning entry.
+    # === Learning capture check for bugfix tasks (T-692, G-016, T-1192) ===
+    # 0% of bugfix tasks captured learnings (G-016 threshold: 35%).
+    # Enhanced prompt: pre-filled command, guidance questions, visual box.
     TASK_NAME_RAW=$(grep "^name:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
-    if echo "$TASK_NAME_RAW" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b'; then
+    TASK_TYPE_RAW=$(grep "^workflow_type:" "$TASK_FILE" 2>/dev/null | head -1 | sed 's/^workflow_type:[[:space:]]*//')
+    _is_bugfix=false
+    # Detect by name pattern (fix/bugfix/hotfix anywhere, or "RCA" or "G-0" gap reference)
+    if echo "$TASK_NAME_RAW" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]'; then
+        _is_bugfix=true
+    fi
+    # Detect by commit messages referencing "fix" in recent commits for this task
+    if [ "$_is_bugfix" = false ] && [ "$TASK_TYPE_RAW" = "build" ] || [ "$TASK_TYPE_RAW" = "refactor" ]; then
+        if git log --oneline -10 2>/dev/null | grep -qi "$TASK_ID.*fix\|fix.*$TASK_ID"; then
+            _is_bugfix=true
+        fi
+    fi
+    if [ "$_is_bugfix" = true ]; then
         LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
         HAS_LEARNING=false
         if [ -f "$LEARNINGS_FILE" ] && grep -q "$TASK_ID" "$LEARNINGS_FILE" 2>/dev/null; then
@@ -869,7 +881,7 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
             echo -e "${YELLOW}  LEARNING PROMPT — This looks like a bugfix task${NC}"
             echo -e "${YELLOW}  No learning entry references $TASK_ID.${NC}"
-            echo -e "${YELLOW}  Consider: fw context add-learning \"what was learned\" --task $TASK_ID${NC}"
+            echo -e "${YELLOW}  Consider: fw fix-learned $TASK_ID \"what was learned\"${NC}"
             echo -e "${YELLOW}  Ask: Would a future agent benefit from knowing about this fix?${NC}"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
         fi

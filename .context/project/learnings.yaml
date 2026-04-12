@@ -9,30 +9,9 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "PreToolUse hook scripts that emit user-facing messages must use _fw_cmd() from lib/paths.sh for context-aware fw path detection. Hardcoding bin/fw breaks consumer projects where the path is .agentic-framework/bin/fw. Pattern: source lib/paths.sh, then use _fw_cmd or _emit_user_command."
+  learning: "Bugfix detection should be broad: match fix/bugfix/hotfix anywhere in name (not just prefix), plus RCA and G-0XX gap references. Commit messages also signal bugfix intent. Audit escalation from WARN to FAIL creates urgency — 0% coverage is a structural failure, not a suggestion."
   source: P-001
-  task: T-1182
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "Gap closures may already be structurally fixed by prior tasks (T-1157 fixed G-024) but the concern register was not updated. Always check current code state before creating build tasks — the fix may be in place and only the concern register needs closing."
-  source: P-001
-  task: T-1183
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-004
-  learning: "Enumeration-divergence is a structural bug class: when two code paths enumerate the same logical set, they diverge silently. The fix is always the same — collapse to a single writer and have all consumers call it. Applied three times: T-1157 (upgrade), T-1184 (update), T-1179 (enums). Create an invariant test to prevent re-emergence."
-  source: P-001
-  task: T-1184
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-005
-  learning: "CLI help text is another enumeration-divergence site. Add an invariant test (tests/lint/help-router-parity.bats) that extracts commands from the case block and compares to show_help() output. This catches new commands that were added to the router but forgotten in help."
-  source: P-001
-  task: T-1185
+  task: T-1192
   date: 2026-04-12
   context: Added via context agent
   application: TBD

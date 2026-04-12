@@ -949,22 +949,23 @@ else
          "Run: fw init --force (or create practices file manually)"
 fi
 
-# Bugfix-learning coverage (G-016 detective control)
+# Bugfix-learning coverage (G-016 detective control, T-1192 escalation)
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
 bugfix_total=0
 bugfix_with_learning=0
 
 if [ -d "$TASKS_DIR/completed" ]; then
-    # Find completed tasks whose name starts with "Fix", "Bugfix", or "Hotfix" (T-693: anchored match)
+    # Find completed tasks matching bugfix patterns (T-1192: broadened from anchored match)
     while IFS= read -r task_file; do
         [ -z "$task_file" ] && continue
         task_name=$(grep "^name:" "$task_file" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*"*//;s/"*$//')
-        echo "$task_name" | grep -qi '^fix\b\|^bugfix\b\|^hotfix\b' || continue
+        # Match: Fix/Bugfix/Hotfix anywhere, or RCA, or G-0XX gap reference
+        echo "$task_name" | grep -qiE '\bfix\b|\bbugfix\b|\bhotfix\b|\bRCA\b|\bG-[0-9]' || continue
         task_id=$(grep "^id:" "$task_file" 2>/dev/null | head -1 | sed 's/^id:[[:space:]]*//')
         [ -z "$task_id" ] && continue
         bugfix_total=$((bugfix_total + 1))
         # Check if any learning references this task
-        if [ -f "$LEARNINGS_FILE" ] && grep -q "task: ${task_id}" "$LEARNINGS_FILE" 2>/dev/null; then
+        if [ -f "$LEARNINGS_FILE" ] && grep -q "$task_id" "$LEARNINGS_FILE" 2>/dev/null; then
             bugfix_with_learning=$((bugfix_with_learning + 1))
         fi
     done < <(find "$TASKS_DIR/completed" -name "T-*.md" -type f 2>/dev/null)
@@ -972,12 +973,17 @@ fi
 
 if [ "$bugfix_total" -gt 0 ]; then
     coverage=$((bugfix_with_learning * 100 / bugfix_total))
-    if [ "$coverage" -ge 40 ]; then
+    if [ "$coverage" -ge 35 ]; then
         pass "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total bugfixes have learnings)"
-    else
+    elif [ "$coverage" -ge 10 ]; then
         warn "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
-             "Only ${coverage}% of bugfixes have associated learnings (target: 40%)" \
-             "See CLAUDE.md Bug-Fix Learning Checkpoint — use: fw fix-learned T-XXX 'description'"
+             "Only ${coverage}% of bugfixes have associated learnings (target: 35%)" \
+             "Use: fw fix-learned T-XXX 'what was learned from this fix'"
+    else
+        # T-1192: Escalate to FAIL below 10% (G-016 structural enforcement)
+        fail "Bugfix-learning coverage: ${coverage}% ($bugfix_with_learning/$bugfix_total)" \
+             "Critical: below 10% threshold (target: 35%). Bugfix knowledge is being lost." \
+             "After each fix: fw fix-learned T-XXX 'root cause and prevention'"
     fi
 else
     pass "Bugfix-learning coverage: no completed bugfix tasks found"

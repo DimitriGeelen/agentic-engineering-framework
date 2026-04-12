@@ -350,6 +350,8 @@ concerns:
   created: 2026-03-08
   last_reviewed: 2026-03-29
   related_task: T-345
+  resolution_in_progress: 'T-1192: Enhanced bugfix detection (name patterns + commit scan), audit escalation to FAIL below 10% (was WARN-only). Pre-filled fw fix-learned command in prompt. Broader pattern
+    match catches RCA and G-0XX gap-fix tasks.'
 - id: G-017
   type: gap
   title: Execution gates do not cover proposal/suggestion layer
