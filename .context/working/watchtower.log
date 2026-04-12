@@ -11,20 +11,8 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://127.0.0.1:3000
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
-127.0.0.1 - - [12/Apr/2026 12:51:28] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:51:32] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:52:34] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:52:40] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:52:48] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /approvals HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/htmx.min.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/htmx-ext-sse.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/marked.min.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/pico.min.css HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/highlight.min.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/purify.min.js HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /static/logo.png HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:06] "GET /favicon.ico HTTP/1.1" 404 -
-127.0.0.1 - - [12/Apr/2026 12:54:15] "POST /api/approvals/decide HTTP/1.1" 200 -
-127.0.0.1 - - [12/Apr/2026 12:54:16] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 12:57:23] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 12:57:27] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 12:57:36] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 12:57:41] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 12:57:52] "GET /approvals HTTP/1.1" 200 -
