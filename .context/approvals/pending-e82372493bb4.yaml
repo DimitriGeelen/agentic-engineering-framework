@@ -1,0 +1,9 @@
+command_hash: e82372493bb433e0b86bcf7cc8842a3d40aff0bbcc35d45232bd8d54e6ec1aae
+command_preview: for tid in T-1127 T-1130 T-1131; do bin/fw task update "$tid" --status
+  started-work 2>&1 | tail -1; bin/fw task update "$tid" --status work-completed --force
+  2>&1 | grep -E "Status|Complete" | head -1
+risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification
+  gate (P-011)'
+status: pending
+timestamp: '2026-04-12T09:41:22Z'
+type: tier0
