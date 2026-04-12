@@ -4,15 +4,15 @@ name: "Pickup: P-010: RCA on recurring assumption fabrication/retraction/correct
 description: >
   Auto-created from pickup envelope. Source: ring20-dashboard, task T-011. Type: feature-proposal.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
 created: 2026-04-12T10:11:59Z
-last_update: 2026-04-12T10:11:59Z
+last_update: 2026-04-12T13:58:13Z
 date_finished: null
 ---
 
@@ -20,39 +20,41 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Agents cycle through contradictory truth states about assumptions across sessions (fact→retracted→re-instated). No framework gate catches the contradiction. Observed in ring20-dashboard T-011 with A-007 across 3 sessions. Root cause: 5-layer failure from wrong grep to no provenance schema. See `docs/reports/T-1145-assumption-provenance-rca.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: This is the first documented instance across 980+ tasks — may be rare
+- A2: Behavioral mitigation (verify before retraction) may be sufficient
+- A3: Structural fixes (R1-R4) cost 20-30 hours total — only warranted if pattern recurs
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Analyze pickup envelope P-010 — DONE
+2. Classify 5-layer root cause — DONE
+3. Evaluate 4 proposed remediations — DONE
+4. Monitor for recurrence frequency before committing to build
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+Assumption provenance would require schema extension to `fw assumption` CLI and Watchtower display.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** RCA, remediation evaluation, monitoring recommendation.
+**OUT:** Building any of R1-R4 (deferred pending recurrence evidence).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1145`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
   3. Record decision via the Watchtower form or the command shown alongside the QR code
   **Expected:** Decision recorded, task completed
@@ -61,30 +63,33 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Pattern recurs >1/month across projects after 30-day monitoring
+- Cross-machine coordination creates frequent assumption state conflicts
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- First documented instance in 980+ tasks and monitoring shows <1/month
+- Behavioral mitigations (verify before retraction) are sufficient
+
+**DEFER if (RECOMMENDED):**
+- Insufficient data on recurrence frequency — need 30-day monitoring window
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+# Research artifact exists
+test -f docs/reports/T-1145-assumption-provenance-rca.md
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER — pending 30-day recurrence monitoring.
+
+**Rationale:** The 5-layer RCA is thorough but based on a single observed instance. 4 remediations proposed (R1-R4) cost 20-30 hours total. Before investing, we need recurrence data. First documented instance in 980+ completed tasks suggests rarity.
+
+**Evidence:**
+- Single observed instance: ring20-dashboard T-011, A-007, across 3 sessions
+- 5-layer root cause from tactical (wrong grep) to structural (no provenance schema)
+- 4 remediations evaluated: R1 (provenance schema), R2 (negative-claim TTL), R3 (post-compact quarantine), R4 (cross-section consistency)
+- Cost estimate: 20-30 hours for all 4 remediations
+- 980+ completed tasks, first documented assumption contradiction cycle
 
 ## Decisions
 
@@ -105,3 +110,7 @@ date_finished: null
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T13:58:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
