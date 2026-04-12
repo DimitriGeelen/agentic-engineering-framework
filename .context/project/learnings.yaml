@@ -9,79 +9,30 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "TermLink dispatch workers for episodic generation: context-efficient pattern. Dispatched 8-task episodic generation via TermLink worker -- zero parent context cost. Worker ran autonomously, wrote YAML files, committed. Pattern: for tasks that write multiple files to disk, TermLink dispatch is always better than Task tool agents."
-  source: unknown
-  task: T-1135
+  learning: "Subagent dispatch outputs must be verified against scope — diff before committing. A backfill agent told to only edit Recommendation changed status, overwrote Decisions, corrupted 6 files."
+  source: PL-003
+  task: T-1129
   date: 2026-04-12
   context: Added via context agent
   application: TBD
 - id: L-003
-  learning: "Cross-agent inception coordination via TermLink dispatch: dispatched worker to /opt/termlink to investigate persistent session architecture (T-1135). Worker analyzed codebase, found cleanup code in 3 files, confirmed tags infrastructure 90% ready, proposed naming convention, wrote research artifact. Pattern: for inception tasks involving another project's codebase, dispatch worker TO that project rather than reading cross-project files."
-  source: unknown
-  task: T-1135
+  learning: "Concerns register should auto-flag gaps for closure when all related_tasks are in completed/. G-001/G-002/G-003 stayed watching for days after fixes shipped."
+  source: PL-005
+  task: T-1129
   date: 2026-04-12
   context: Added via context agent
   application: TBD
 - id: L-004
-  learning: "Verification command SIGPIPE: 'command-that-exits-nonzero 2>&1 | grep -q pattern' fails under pipefail because grep -q closes pipe early and the non-zero exit propagates. Fix: wrap in bash -c to isolate the pipefail scope. Seen in T-1117 verification gate."
-  source: unknown
-  task: T-1117
+  learning: "Dog-food Watchtower features after building. The approvals page had 3 compound bugs caught by first real use. Build-use-fix cycle catches what tests miss."
+  source: PL-006
+  task: T-1129
   date: 2026-04-12
   context: Added via context agent
   application: TBD
 - id: L-005
-  learning: "fw upgrade doesn't sync new hook scripts: upgrade worker upgraded 11 consumers, all still missing audit-task-tools and block-task-tools. This is the T-1109 enumeration-divergence bug in action -- do_upgrade's handcrafted file list doesn't include new agents/context/*.sh files added after the list was last updated. Further evidence for T-1109 GO."
-  source: unknown
-  task: T-1109
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-006
-  learning: "Subagent dispatch output verification: always diff subagent output before committing. A backfill agent told to only edit Recommendation section changed status, overwrote Decisions, and corrupted 6 task files. Structural fix: post-dispatch diff check that flags changes outside specified sections. (from 010-termlink PL-003)"
-  source: unknown
+  learning: "When generating files for framework consumption, check existing format convention first. Audit expected .yaml episodics but agent generated .md format."
+  source: PL-004
   task: T-1129
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-007
-  learning: "Concerns register auto-closure: gaps should auto-flag for closure when all related_tasks are completed. G-001/G-002/G-003 stayed watching for days after fixes shipped. Structural fix: audit check that detects gaps whose related_tasks are all in completed/ directory. (from 010-termlink PL-005)"
-  source: unknown
-  task: T-1129
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-008
-  learning: "fw doctor config check silently exits function under pipefail: fw_config_list returns non-zero when no overrides exist, pipefail kills the function. All checks after it (cron, doc-drift) were invisible. Fix: add || true to pipeline."
-  source: P-001
-  task: T-1147
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-009
-  learning: "fw upgrade syncs script files but NOT .claude/settings.json hooks — new hooks (block-task-tools, audit-task-tools) were present as files but not registered in settings.json. The fix requires running fw init or manually adding hooks to settings.json after upgrade."
-  source: P-001
-  task: T-1148
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-010
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-011
-  learning: "generate_claude_code_config template in lib/init.sh is the source of truth for settings.json hooks — new hooks must be added here, not just to the framework's own settings.json. The upgrade function calls this template, so template drift = consumer hook drift."
-  source: P-001
-  task: T-1152
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-012
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
   date: 2026-04-12
   context: Added via context agent
   application: TBD
