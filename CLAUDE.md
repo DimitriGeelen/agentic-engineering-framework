@@ -1065,6 +1065,8 @@ TermLink is an optional cross-terminal session communication tool (Rust, 26 comm
 The framework provides a thin wrapper via `fw termlink` that adds task-tagging, budget checks,
 and cleanup tracking while delegating all real work to the `termlink` binary.
 
+**Distribution model contrast:** TermLink is intentionally machine-wide (installed via Homebrew/cargo, single binary on PATH). This is the deliberate inverse of the framework's per-project isolation model. Reason: TermLink's session discovery uses Unix sockets at system paths — per-project vendoring would defeat cross-session, cross-project communication. Do not propose per-project TermLink installs; use the system binary.
+
 - **Repo:** `https://github.com/DimitriGeelen/termlink` (mirrored from OneDev)
 - **Install (macOS):** `brew install DimitriGeelen/termlink/termlink`
 - **Install (from source):** `cargo install --path crates/termlink-cli`
