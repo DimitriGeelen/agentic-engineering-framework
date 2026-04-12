@@ -4,7 +4,7 @@ name: "Watchtower truncation policy — data that flows into permanent records m
 description: >
   Inception: Watchtower truncation policy — data that flows into permanent records must NEVER be truncated at display layer
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T11:08:23Z
-last_update: 2026-04-12T11:08:23Z
+last_update: 2026-04-12T11:14:41Z
 date_finished: null
 ---
 
@@ -29,65 +29,63 @@ Watchtower truncates data at the display layer ([:200], [:197], [:500]) without 
 
 ## Exploration Plan
 
-1. Audit all truncation sites in web/blueprints/ (already done: 20+ sites found)
-2. Classify each as display-only or write-through
-3. Propose structural enforcement (test or code pattern)
+1. Audit all truncation sites in `web/blueprints/*.py` — grep for `[:N]`, `.split()[:N]`, explicit truncation helpers
+2. Classify each as display-only (safe) vs write-through (unsafe — data flows into forms/APIs that write to task files)
+3. Write findings to `docs/reports/T-1151-truncation-audit.md`
+4. Propose structural enforcement (test or code pattern) if warranted
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+No platform constraints — this is a code audit of Python blueprint files.
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN scope:** All `web/blueprints/*.py` files, any `[:N]` slice or explicit truncation function.
+**OUT of scope:** Jinja templates (display-only by nature), JavaScript (client-side display).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
-  2. Review the Agent Recommendation section and go/no-go criteria evaluation
-  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1151`
+  2. Review the research artifact at `docs/reports/T-1151-truncation-audit.md` (62 sites audited, 1 write-through found)
+  3. Record decision via the Watchtower form
   **Expected:** Decision recorded, task completed
   **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Audit reveals additional write-through truncation sites that cause data loss in governance records
+- A structural enforcement mechanism (test, lint rule) is warranted to prevent regression
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- All write-through truncation is already fixed (T-1091, T-1150) and remaining sites are display-only
+- The cost of building enforcement tooling exceeds the risk of future regressions
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
+# Research artifact exists
+test -f docs/reports/T-1151-truncation-audit.md
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** NO-GO
+
+**Rationale:** The audit found 62 truncation sites across 16 blueprint files. Only 1 remaining write-through exists (`discovery.py:421` — conversation title capped at 120 chars), and it's low-risk (Q&A artifact, full content preserved in other fields). The two high-risk write-throughs (rationale pre-fills in `approvals.py` and `inception.py`) were already fixed by T-1091 and T-1150 with explicit comments. Building structural enforcement tooling (grep-based test, AST analysis) would cost more than the risk it mitigates — the pattern is clear, the dangerous sites are fixed, and the codebase shows good separation between display and write paths.
+
+**Evidence:**
+- 62 truncation sites audited across 16 files
+- 24 display-only, 18 error-display, 11 list-cap, 6 file-identity — all safe
+- 2 write-through sites already fixed (T-1091, T-1150) with documenting comments
+- 1 remaining write-through: `discovery.py:421` (`title[:120]`) — low risk, original data preserved in `history` and `final_question` fields
+- No additional governance-impacting truncation found
 
 ## Decisions
 
@@ -108,3 +106,6 @@ Watchtower truncates data at the display layer ([:200], [:197], [:500]) without 
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T11:14:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

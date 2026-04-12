@@ -4,7 +4,7 @@ name: "T-1109 build: fix fw upgrade to sync settings.json hooks — call generat
 description: >
   T-1109 build: fix fw upgrade to sync settings.json hooks — call generate_claude_code_config in do_upgrade
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T11:13:52Z
-last_update: 2026-04-12T11:13:52Z
-date_finished: null
+last_update: 2026-04-12T11:16:17Z
+date_finished: 2026-04-12T11:16:17Z
 ---
 
 # T-1152: T-1109 build: fix fw upgrade to sync settings.json hooks — call generate_claude_code_config in do_upgrade
@@ -52,3 +52,6 @@ grep -q "audit-task-tools" lib/init.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1152-t-1109-build-fix-fw-upgrade-to-sync-sett.md
 - **Context:** Initial task creation
+
+### 2026-04-12T11:16:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

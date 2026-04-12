@@ -12,3 +12,4 @@ WARNING: This is a development server. Do not use it in a production deployment.
  * Running on http://192.168.10.107:3000
 Press CTRL+C to quit
 127.0.0.1 - - [12/Apr/2026 13:09:27] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [12/Apr/2026 13:16:39] "GET / HTTP/1.1" 200 -
