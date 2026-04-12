@@ -74,3 +74,12 @@ bin/fw test unit -- tests/unit/block_task_tools.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1117-t-1115-phase-2-block-todowrite--taskcrea.md
 - **Context:** Initial task creation
+
+### 2026-04-12T07:15:00Z — E2E block verification [TermLink dispatch]
+- **Method:** `fw termlink dispatch --name t1117-block-e2e` with block hook
+  temporarily registered in settings.json
+- **Result:** CONFIRMED — worker attempted TodoWrite, hook returned exit 2,
+  tool call was completely blocked, redirect message displayed to agent.
+- **Full chain verified:** PreToolUse fires → block-task-tools.sh exits 2 →
+  TodoWrite call blocked → agent sees "Use bin/fw work-on" message
+- **Settings.json restored** after test (B-005 protected — human merges final)
