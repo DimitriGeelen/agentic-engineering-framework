@@ -87,6 +87,11 @@ except:
     echo "    - /tmp/**           (agent dispatch scratch)" >&2
     echo "    - /root/.claude/**  (Claude Code config)" >&2
     echo "" >&2
+    echo "  For cross-project reads, use TermLink dispatch:" >&2
+    echo "" >&2
+    echo "    fw termlink dispatch --name read --project /opt/other \\" >&2
+    echo "      --prompt 'cat README.md and return its contents'" >&2
+    echo "" >&2
     echo "  Policy: T-559 (Project Boundary Enforcement)" >&2
     echo "══════════════════════════════════════════════════════════" >&2
     echo "" >&2
