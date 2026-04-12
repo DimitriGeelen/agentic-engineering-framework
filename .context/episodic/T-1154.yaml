@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1154: Upstream watchtower.sh port detection — eliminate all hardcoded port 3000 defaults across framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T13:12:19Z
+# ============================================================================
+
+task_id: T-1154
+task_name: "Upstream watchtower.sh port detection — eliminate all hardcoded port 3000 defaults across framework"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T11:38:30Z
+completed: 2026-04-12T11:43:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T13:43:54+02:00
+last_commit: 2026-04-12T13:43:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Upstream watchtower.sh — single port detection chokepoint, eliminate all hardcoded 3000 defaults
+
+# Key outcomes
+outcomes:
+  - "`lib/watchtower.sh` exists in framework with `_watchtower_url` and `_watchtower_open` functions"
+  - "`lib/review.sh` uses `_watchtower_url` — no inline port detection"
+  - "`lib/verify-acs.sh` uses `_watchtower_url` — no inline port fallback to 3000"
+  - "`agents/audit/audit.sh` uses `_watchtower_url` — no inline port fallback to 3000"
+  - "`bin/watchtower.sh` PID_FILE uses PROJECT_ROOT not FRAMEWORK_ROOT"
+  - "`grep -rn 'fw_config.*PORT.*3000' lib/review.sh lib/verify-acs.sh agents/audit/audit.sh` returns no matches"
+  - "`fw task review T-1154` resolves correct port (not hardcoded 3000)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/audit/audit.sh"
+  - "bin/fw"
+  - "bin/watchtower.sh"
+  - "lib/review.sh"
+  - "lib/verify-acs.sh"
+  - "lib/watchtower.sh"
+  - ".tasks/active/T-1154-upstream-watchtowersh-port-detection--el.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T13:43:54"
+    action: "T-1154: Upstream watchtower.sh — single port detection chokepoint, eliminate all hardcoded 3000 defaults"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 243
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1154-upstream-watchtowersh-port-detection--el.md
+generated_by: context-agent-hybrid

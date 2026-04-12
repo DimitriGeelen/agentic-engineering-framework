@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1158: T-1134 build: Upstream _date_to_epoch to lib/compat.sh + fix 3 GNU-only date -d sites
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T13:12:20Z
+# ============================================================================
+
+task_id: T-1158
+task_name: "T-1134 build: Upstream _date_to_epoch to lib/compat.sh + fix 3 GNU-only date -d sites"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T12:02:02Z
+completed: 2026-04-12T12:05:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T14:05:20+02:00
+last_commit: 2026-04-12T14:05:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Upstream _date_to_epoch + _date_relative to lib/compat.sh — fix 3 GNU-only date -d sites. Fix verification command scope
+
+# Key outcomes
+outcomes:
+  - "`_date_to_epoch` function added to `lib/compat.sh` with GNU→BSD→python3 fallback"
+  - "All `date -d` sites replaced with `_date_to_epoch` calls"
+  - "`_date_relative` function added for relative date calculations"
+  - "`_date_to_epoch \"2026-04-12T12:00:00Z\"` returns a valid epoch number"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification command scope"
+    source: git-mined
+  - description: "Upstream _date_to_epoch + _date_relative to lib/compat.sh — fix 3 GNU-only date -d sites"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/checkpoint.sh"
+  - "agents/context/lib/episodic.sh"
+  - "lib/compat.sh"
+  - "metrics.sh"
+  - ".tasks/active/T-1158-t-1134-build-upstream-datetoepoch-to-lib.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T14:05:20"
+    action: "T-1158: Upstream _date_to_epoch + _date_relative to lib/compat.sh — fix 3 GNU-only date -d sites"
+  - time: "2026-04-12T14:05:38"
+    action: "T-1158: Fix verification command scope"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 5
+  lines_added: 149
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1158-t-1134-build-upstream-datetoepoch-to-lib.md
+generated_by: context-agent-hybrid
