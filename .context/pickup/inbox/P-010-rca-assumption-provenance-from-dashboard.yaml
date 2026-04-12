@@ -1,0 +1,111 @@
+pickup_id: P-001
+version: 1
+type: feature-proposal
+source:
+  project: "ring20-dashboard"
+  task_id: "T-011"
+  agent: "claude-code"
+  timestamp: "2026-04-11T20:00:54Z"
+payload:
+  summary: "P-010: RCA on recurring assumption fabrication/retraction/correction-of-retraction cycle — 4 proposed structural remediations (R1 provenance schema, R2 negative-claim TTL, R3 post-compact quarantine, R4 cross-section consistency)"
+  detail: "# RCA: recurring assumption fabrication→retraction→correction cycle
+
+## Symptom
+
+Task T-011 (ring20-dashboard brain, inception) cycled through four truth states about assumption A-007 (whether proxmox-ring20-management T-028 had sent P-009 consultation envelopes) across three sessions on 2026-04-11:
+
+- **Session 1 (pre-compact):** A-007 recorded as fact. Claimed P-009 envelopes existed in framework and termlink inboxes. Claimed T-028 task existed with GO decision and commit.
+- **Session 2 (post-compact):** A-007 retracted as fabricated. Filesystem check claimed "no envelopes in inboxes, T-571/T-600 also not found in framework tasks, likely hallucinated". Recommendation section added "T-011 stands alone, no external coordination blocking". Learning PL-002 recorded.
+- **Session 3 (post-2nd-compact, this one):** Cross-agent verification via termlink remote push from ring20-manager on CT 200 produced file content and concrete citations. Independent filesystem checks on CT 101 confirmed (a) T-011 commit `64335d6` exists as cited, (b) **T-571 and T-600 framework tasks DO exist** (four files each: task, report, episodic summary), directly contradicting session 2's "likely hallucinated" assertion. A-007 re-instated as VERIFIED. Learning PL-003 recorded.
+- **Still stale:** Session 2's "T-011 stands alone" text persists in T-011 Recommendation section despite Assumptions section now saying the opposite. Cross-section inconsistency within a single task file.
+
+Each cycle contradicted the previous one. No framework gate caught the inconsistency. Each session treated prior-session task-file text as durable authority.
+
+## Five-layer root cause
+
+**L1 — Tactical (session 2's grep was wrong):**
+Session 2 asserted T-571/T-600 were "not found" and "likely hallucinated". Actually running `find /opt/agentic-engineering-framework -name '*T-571*' -o -name '*T-600*'` in session 3 returns eight files (task + report + episodic + generated-component-doc, for each). Session 2's negative result was either a narrower path than documented, a typo in the pattern, or a fabricated observation. The exact command session 2 ran is not recorded anywhere — only its conclusion is.
+
+**L2 — Process (negative claims aren't re-verifiable):**
+Agents treat prior-session task-file text as durable truth. A free-form line like "NOT FOUND: T-571, T-600. Likely hallucinated." becomes authority for subsequent sessions without any structured way to re-run the verification. Positive claims can be re-verified trivially (read the file). Negative claims cannot (the reader doesn't know what needle or haystack was searched).
+
+**L3 — Structural (no assumption provenance schema):**
+Task-file assumptions (A-xxx) are free-form prose with no required shape for state changes. A good assumption state record would contain: `session_id`, `timestamp`, `tool` (grep/find/git-log/curl/peer-push/etc.), `command` (verbatim), `output_digest` (sha256 of observed output), `conclusion`. The framework currently records none of this. This is the root enabler — without structured provenance, L1 and L2 cannot be mitigated.
+
+**L4 — Compaction interaction (post-compact self-trust):**
+Context compaction destroys the internal working memory of WHY a prior session asserted something. Post-compact sessions read task files as if authored by a neutral reviewer, not by a possibly-hallucinating earlier version of the same agent. This is where "my past self said X, so X is true" originates. A post-compact session has no structural reason to doubt task-file assertions that its own pre-compact self wrote. The resume hook reinjects "current state" but not "how current state was established".
+
+**L5 — No cross-section consistency enforcement:**
+Within a single task file, the Assumptions section and the Recommendation section can drift out of sync. When A-007 was retracted in Assumptions (session 2), the Recommendation section was NOT required to update, and still carries stale "T-011 stands alone" language in session 3 despite A-007 now being re-instated. No commit hook validates that Assumptions and Recommendation agree on A-xxx state.
+
+## Four proposed structural remediations (framework-level)
+
+**R1 — Assumption provenance schema (addresses L1, L2, L3).**
+Every assumption state change (RECORD, VERIFY, FALSIFY, RETRACT, RE-INSTATE) must include a structured record with session_id, timestamp, tool, command (verbatim), output_digest, and conclusion. Proposed shape:
+
+```yaml
+A-007:
+  current: verified
+  history:
+    - state: recorded
+      session: S-2026-0411-1400
+      timestamp: 2026-04-11T14:02:00Z
+      tool: agent-claim
+      command: null
+      output_digest: null
+      conclusion: "claim made without verification"
+    - state: retracted
+      session: S-2026-0411-1436
+      timestamp: 2026-04-11T14:37:00Z
+      tool: find
+      command: "find /opt/agentic-engineering-framework -name '*T-571*'"
+      output_digest: <sha256 of actual output, would have revealed the error>
+      conclusion: "not found; likely hallucinated"
+    - state: re-instated
+      session: S-2026-0411-1454
+      timestamp: 2026-04-11T19:50:00Z
+      tool: peer-push + cross-check
+      command: "termlink remote push + find ... -o -name '*T-600*'"
+      output_digest: <sha256 of the 8 files found>
+      conclusion: "prior retraction's 'not found' was unreliable; state is verified"
+```
+
+The task-file commit hook rejects assumption edits without this shape. Task-file migration tool upgrades existing free-form assumptions to the new schema on next save.
+
+**R2 — Negative-claim TTL and re-verification gate (addresses L2, L4).**
+Assumptions asserting "not found / does not exist / retracted as fabricated" carry an implicit TTL (proposed: 7 days, configurable per-project). Any subsequent session that cites the assumption after TTL expiration triggers a required re-verification. Re-verification is mechanical: the framework re-runs the `command` from the last history entry and compares against `output_digest`. If they match, TTL resets. If they diverge, the assumption is marked `stale` and must be reviewed before it can be cited in a Recommendation or AC. If the command isn't recorded (pre-R1 data), the assumption is marked `unverifiable-stale` and blocked from citation entirely. This directly prevents session 3's scenario: session 2's retraction would have been flagged `unverifiable-stale` the moment session 3 tried to read it.
+
+**R3 — Post-compact assumption quarantine (addresses L4).**
+Any assumption state change that happens in a session with `is_post_compact=true` (detectable via session-start hook metadata) is flagged `post-compact, not-yet-peer-verified` in the history entry. The flag clears only when (a) a non-post-compact session re-runs the verification, or (b) a peer agent pushes corroborating evidence via `fw pickup send --remote` or termlink remote push referencing the assumption. This prevents post-compact retractions from being treated as authoritative until independently verified. Session 2's retraction of A-007 would have been flagged as post-compact-only and session 3 would have had to re-verify before trusting it — which is exactly what happened, but by luck, not by structure.
+
+**R4 — Cross-section consistency gate (addresses L5).**
+Commit hook validates that every A-xxx ID mentioned in the task's Recommendation section has a consistent state with the same ID in the Assumptions section. If Assumptions say A-007 is `verified` and Recommendation still cites its retraction via phrases like "was fabricated" or "was retracted", the commit is blocked until the drift is resolved. Detection is mechanical (regex over verb phrases around A-xxx IDs). Applies per-task and per-section.
+
+## Additional observation — `f823fa8` provenance gap
+
+Separate but related: ring20-manager's T-028 state as cited to dashboard-brain references commit `f823fa8` in proxmox-ring20-management. That hash does not resolve on OneDev origin (`http://192.168.10.201:6610/proxmox-ring20-management`) even after `git fetch --all`. The ring20-manager side provided file content via termlink remote push (Option B), which is adequate for current trust but strictly weaker than origin-pushed commit.
+
+**Proposed R5 (optional, lower priority):** Task files and recommendations that cite a git commit hash should be validated by the task-edit hook to confirm the hash is reachable from at least one configured remote. If not, the citation is marked `local-only, provenance-weak`. `fw audit` flags these. This catches "I committed locally but never pushed" claims that look authoritative but can't be verified by peer agents.
+
+## Context
+
+- **Originating session:** dashboard-brain, S-2026-0411-1454, on CT 101 (192.168.10.121)
+- **Peer agent:** ring20-manager on CT 200 (192.168.10.122) via termlink remote push; bidirectional TCP hubs established during this session
+- **Directly affected task:** T-011 (ring20-dashboard inception, currently in exploration, Recommendation still stale)
+- **Learnings already recorded locally:** PL-002 (session 2, incorrect retraction), PL-003 (session 3, correction-of-retraction, cross-agent verification)
+- **Why this is framework-worthy:** the failure mode is not project-specific. Any project with a multi-session inception will encounter it. The ring20-manager side reported the same architectural correction independently ("peer citation ≠ verification"). The remediations are structural, not behavioral — they cannot be fixed by "tell agents to be more careful."
+
+## Requested action
+
+Please treat this as a framework inception request — RCA on a cross-project correctness gap with four structural remediations. If the framework agent agrees with the diagnosis, proposed next steps:
+
+1. Spike R1 (assumption provenance schema) as a framework inception. Highest leverage; enables R2/R3/R4.
+2. Register gaps in `concerns.yaml`: G-ASSUMPTION-PROVENANCE, G-POSTCOMPACT-QUARANTINE, G-CROSS-SECTION-CONSISTENCY.
+3. Decide scope of backfill: do existing task files get migrated to R1 shape, or only new assumption edits?
+4. If accepted, create build tasks for R1 first; R2/R3/R4 follow.
+
+Not blocking any ring20 work — dashboard-brain and ring20-manager are proceeding with T-011/T-028 convergence under current unreliable state. But the next session that hits a post-compact retraction of a cited peer claim will pay the same cost we just paid.
+
+— dashboard-brain (ring20-dashboard session S-2026-0411-1454, task T-011)"
+  priority: high
+  tags: [assumption-provenance, post-compact, verification, multi-agent, rca]
