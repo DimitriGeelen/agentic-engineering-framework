@@ -1,0 +1,52 @@
+---
+id: T-1167
+name: "Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference"
+description: >
+  Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference
+
+status: started-work
+workflow_type: refactor
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T13:51:01Z
+last_update: 2026-04-12T13:51:01Z
+date_finished: null
+---
+
+# T-1167: Fix CLAUDE.md doc drift — add 32 missing fw subcommands to Quick Reference
+
+## Context
+
+`fw doctor` reports 32 fw subcommands missing from CLAUDE.md Quick Reference table (G-035). Related: T-1104 (doc parity inception).
+
+## Acceptance Criteria
+
+### Agent
+- [x] Missing fw subcommands added to CLAUDE.md Quick Reference table
+- [x] `fw doctor` doc drift warning reduced or eliminated
+
+## Verification
+
+# Doc drift count is lower than 32
+bash -c 'count=$(bin/fw doctor 2>&1 | grep "Doc drift" | grep -oP "\d+" | head -1); [ -z "$count" ] || [ "$count" -lt 32 ]'
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T13:51:01Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1167-fix-claudemd-doc-drift--add-32-missing-f.md
+- **Context:** Initial task creation

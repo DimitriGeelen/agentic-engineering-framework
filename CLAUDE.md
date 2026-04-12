@@ -1060,6 +1060,38 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | TermLink status | `fw termlink status` | List active TermLink sessions |
 | TermLink cleanup | `fw termlink cleanup` | Deregister sessions, close windows |
 | TermLink result | `fw termlink result <name>` | Read worker result file |
+| Approvals queue | `fw approvals` | Approval queue management |
+| Ask knowledge | `fw ask` | Query project knowledge (RAG) |
+| Build from task | `fw build` | Generate build plan from task ACs |
+| Consolidate | `fw consolidate scan` | Scan for consolidation opportunities |
+| View decisions | `fw decisions` | Show all recorded decisions |
+| Deploy | `fw deploy scaffold` | Ring20 deployment management |
+| Docs lookup | `fw docs` | Show component documentation |
+| Enforcement | `fw enforcement baseline` | Enforcement baseline management |
+| Fix-learned | `fw fix-learned` | Record bugfix learning |
+| Harvest learnings | `fw harvest` | Cross-project learning harvest |
+| Hook management | `fw hook` | Run hook script directly |
+| View learnings | `fw learnings` | Show all captured learnings |
+| MCP management | `fw mcp` | MCP server process management |
+| Quick note | `fw note` | Lightweight observation capture |
+| Onboarding | `fw onboarding status` | Onboarding state management |
+| Plugin audit | `fw plugin-audit` | Check plugin task-awareness |
+| View practices | `fw practices` | Show active practices |
+| Preflight check | `fw preflight` | Dependency check before operations |
+| Push all remotes | `fw push` | Push to all configured remotes |
+| Recall knowledge | `fw recall` | Semantic search in project memory |
+| Scan artifacts | `fw scan` | Scan project artifacts |
+| Search | `fw search` | Full-text search across project |
+| Self audit | `fw self-audit` | Internal audit consistency check |
+| Self test | `fw self-test` | Run framework self-tests |
+| Start Watchtower | `fw serve` | Start Watchtower web UI |
+| Test onboarding | `fw test-onboarding` | Verify onboarding flow |
+| View timeline | `fw timeline` | Show session timeline |
+| Traceability | `fw traceability baseline` | Git traceability management |
+| Update framework | `fw update` | Update framework to latest version |
+| Upstream report | `fw upstream` | Report issues to upstream repo |
+| Validate init | `fw validate-init` | Verify fw init output correctness |
+| Vendor framework | `fw vendor` | Copy framework for full isolation |
 | **Auto-restart** | **`claude-fw [args...]`** | Wrapper: runs claude, auto-restarts on handover signal |
 | No auto-restart | `claude-fw --no-restart [args...]` | Wrapper with auto-restart disabled |
 
