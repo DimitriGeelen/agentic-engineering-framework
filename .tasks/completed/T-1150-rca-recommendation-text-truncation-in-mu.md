@@ -4,7 +4,7 @@ name: "RCA: recommendation text truncation in multiple surfaces — fix + incept
 description: >
   RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T11:05:48Z
-last_update: 2026-04-12T11:05:48Z
-date_finished: null
+last_update: 2026-04-12T11:09:13Z
+date_finished: 2026-04-12T11:09:13Z
 ---
 
 # T-1150: RCA: recommendation text truncation in multiple surfaces — fix + inception for remediation
@@ -51,3 +51,6 @@ grep -q "NO truncation" web/blueprints/approvals.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1150-rca-recommendation-text-truncation-in-mu.md
 - **Context:** Initial task creation
+
+### 2026-04-12T11:09:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
