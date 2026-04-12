@@ -22,3 +22,10 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-004
+  learning: "Enumeration-divergence is a structural bug class: when two code paths enumerate the same logical set, they diverge silently. The fix is always the same — collapse to a single writer and have all consumers call it. Applied three times: T-1157 (upgrade), T-1184 (update), T-1179 (enums). Create an invariant test to prevent re-emergence."
+  source: P-001
+  task: T-1184
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD

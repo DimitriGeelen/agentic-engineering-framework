@@ -175,60 +175,12 @@ _do_update_vendored() {
     cp -r "$vendored_dir" "$rollback_dir"
     echo -e "  ${GREEN}✓${NC} Backup saved to .agentic-framework.rollback/"
 
-    # Re-vendor from upstream
+    # Re-vendor from upstream using do_vendor (T-1184/G-037: single includes list)
+    # do_vendor (bin/fw:118) maintains the canonical includes/excludes.
+    # Eliminates enumeration-divergence — same fix as T-1157 applied to do_upgrade.
     echo ""
     echo -e "${YELLOW}Applying update...${NC}"
-
-    # Use the same include list as do_vendor
-    local includes=(
-        bin
-        lib
-        agents
-        web
-        docs
-        .tasks/templates
-        FRAMEWORK.md
-        metrics.sh
-    )
-
-    local excludes=(
-        __pycache__
-        "*.pyc"
-        ".DS_Store"
-    )
-
-    # Build rsync exclude args
-    local rsync_excludes=""
-    for item in "${excludes[@]}"; do
-        rsync_excludes="$rsync_excludes --exclude=$item"
-    done
-
-    # Copy each include from upstream
-    for item in "${includes[@]}"; do
-        if [ -e "$tmpdir/upstream/$item" ]; then
-            local dest_dir
-            dest_dir=$(dirname "$vendored_dir/$item")
-            mkdir -p "$dest_dir"
-
-            if [ -d "$tmpdir/upstream/$item" ]; then
-                if command -v rsync &>/dev/null; then
-                    # shellcheck disable=SC2086 # rsync_excludes is intentionally word-split
-                    rsync -a --delete $rsync_excludes "$tmpdir/upstream/$item/" "$vendored_dir/$item/"
-                else
-                    rm -rf "${vendored_dir:?}/${item:?}"
-                    cp -r "$tmpdir/upstream/$item" "$vendored_dir/$item"
-                    find "$vendored_dir/$item" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
-                    find "$vendored_dir/$item" -name "*.pyc" -delete 2>/dev/null || true
-                    find "$vendored_dir/$item" -name ".DS_Store" -delete 2>/dev/null || true
-                fi
-            else
-                cp "$tmpdir/upstream/$item" "$vendored_dir/$item"
-            fi
-            echo -e "  ${GREEN}✓${NC} $item"
-        else
-            echo -e "  ${YELLOW}⊘${NC} $item (not in upstream)"
-        fi
-    done
+    do_vendor --source "$tmpdir/upstream" --target "$project_root" 2>&1 | sed 's/^/  /'
 
     # Update VERSION file
     echo "$new_version" > "$vendored_dir/VERSION"

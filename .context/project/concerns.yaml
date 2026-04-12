@@ -1012,10 +1012,13 @@ concerns:
     boundary.'
   - 'Related: T-1109 (collapses do_upgrade into do_vendor), L-006 (enumeration-divergence class), G-024 (original T-1109 trigger).'
   trigger: Anyone adds a new include (e.g., `deploy/`, `.fabric/`) to do_vendor or do_update without updating the other.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
+  resolution: 'T-1184: Replaced lib/update.sh inline includes/excludes/rsync loop with do_vendor --source call. Single vendor writer: do_vendor (bin/fw) is now the only place includes are enumerated. Invariant
+    tests expanded (6 tests, all pass).'
+  closed_date: '2026-04-12'
 - id: G-038
   type: gap
   title: web/blueprints/tasks.py hardcodes workflow_types and horizons — bypasses status-transitions.yaml single source of truth

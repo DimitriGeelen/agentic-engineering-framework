@@ -1,0 +1,58 @@
+---
+id: T-1184
+name: "Fix G-037: collapse lib/update.sh inline rsync into do_vendor call — eliminate second includes enumeration"
+description: >
+  Fix G-037: collapse lib/update.sh inline rsync into do_vendor call — eliminate second includes enumeration
+
+status: work-completed
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-12T21:13:08Z
+last_update: 2026-04-12T21:15:52Z
+date_finished: 2026-04-12T21:15:52Z
+---
+
+# T-1184: Fix G-037: collapse lib/update.sh inline rsync into do_vendor call — eliminate second includes enumeration
+
+## Context
+
+G-037: `lib/update.sh:_do_update_vendored()` maintains its own `includes=()` and `excludes=()` arrays parallel to `do_vendor()` in `bin/fw`. Same enumeration-divergence class as G-024. Fix: replace inline rsync loop with `do_vendor --source ... --target ...`.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `lib/update.sh` no longer has its own `includes=()` array for vendor files
+- [x] `lib/update.sh` calls `do_vendor --source ... --target ...` for vendored file sync
+- [x] Invariant test passes: `tests/lint/single-vendor-writer.bats` (6/6 pass)
+- [x] G-037 marked resolved in concerns.yaml
+
+## Verification
+
+! grep -q 'local includes=(' lib/update.sh
+grep -q 'do_vendor' lib/update.sh
+bats tests/lint/single-vendor-writer.bats
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-12T21:13:08Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1184-fix-g-037-collapse-libupdatesh-inline-rs.md
+- **Context:** Initial task creation
+
+### 2026-04-12T21:15:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
