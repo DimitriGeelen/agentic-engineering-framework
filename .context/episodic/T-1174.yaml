@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1174: Fix T-1093 placeholder ACs — retroactive AC cleanup for completed gap registration task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T16:55:44Z
+# ============================================================================
+
+task_id: T-1174
+task_name: "Fix T-1093 placeholder ACs — retroactive AC cleanup for completed gap registration task"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T16:54:20Z
+completed: 2026-04-12T16:55:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T18:55:35+02:00
+last_commit: 2026-04-12T18:55:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix T-1093 placeholder ACs — retroactive cleanup
+
+# Key outcomes
+outcomes:
+  - "T-1093 ACs replaced with real criteria reflecting actual work done"
+  - "All G-025 through G-030 verified present in concerns.yaml"
+  - "CTL-012 audit warning for T-1093 resolved"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix T-1093 placeholder ACs — retroactive cleanup"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1174-fix-t-1093-placeholder-acs--retroactive-.md"
+  - ".tasks/completed/T-1093-register-g-025g-030-from-ring20-dashboar.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T18:55:35"
+    action: "T-1174: Fix T-1093 placeholder ACs — retroactive cleanup"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 55
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1174-fix-t-1093-placeholder-acs--retroactive-.md
+generated_by: context-agent-hybrid
