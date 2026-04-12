@@ -1,0 +1,13 @@
+pickup_id: P-019
+version: 1
+type: pattern
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-04-12T09:43:29Z"
+payload:
+  summary: "T-1135 persistent TermLink agent sessions — cross-agent coordination results from framework + termlink project"
+  detail: "Framework inception T-1135 coordinated with TermLink project (T-967) via dispatch worker. Key findings: (1) TermLink cleanup is PID-based in 3 locations (supervisor.rs, manager.rs, remote_store.rs), no tag awareness; (2) Tags infrastructure 90% ready (registration, discovery, filtering work); (3) Fix is 3 code changes to skip persistent-tagged sessions; (4) Naming convention: {project}-agent with tags persistent,receptionist; (5) Cost: ~2KB disk + 1FD per session (TermLink overhead negligible); (6) Counter-proposal: emit session.needs_restart event for dead persistent sessions. Recommendation: GO. Build decomposition: TermLink upstream tag-aware cleanup, framework /resume health check, fw doctor report, .framework.yaml config. Full report: docs/reports/T-1135-persistent-termlink-agents.md"
+  priority: high
+  tags: [termlink, persistent-sessions, cross-agent, T-1135]
