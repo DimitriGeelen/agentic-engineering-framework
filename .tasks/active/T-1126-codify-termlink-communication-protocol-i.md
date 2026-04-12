@@ -4,7 +4,7 @@ name: "Codify TermLink communication protocol: inject for interactive, push for 
 description: >
   Inception: Codify TermLink communication protocol: inject for interactive, push for async — structural enforcement
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T08:21:39Z
-last_update: 2026-04-12T08:21:59Z
-date_finished: null
+last_update: 2026-04-12T08:39:59Z
+date_finished: 2026-04-12T08:39:59Z
 ---
 
 # T-1126: Codify TermLink communication protocol: inject for interactive, push for async — structural enforcement
@@ -109,18 +109,20 @@ codification, agents will keep defaulting to push and getting silence.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Live evidence: 2 push attempts got zero response, 1 inject got immediate response. Fix is      
+  CLAUDE.md rule, no arch changes, immediate cross-network impact.
+
+**Date**: 2026-04-12T08:39:59Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Live evidence: 2 push attempts got zero response, 1 inject got immediate response. Fix is      
+  CLAUDE.md rule, no arch changes, immediate cross-network impact.
+
+**Date**: 2026-04-12T08:39:59Z
 
 ## Updates
 
@@ -129,3 +131,13 @@ codification, agents will keep defaulting to push and getting silence.
 
 ### 2026-04-12T08:21:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T08:39:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Live evidence: 2 push attempts got zero response, 1 inject got immediate response. Fix is      
+  CLAUDE.md rule, no arch changes, immediate cross-network impact.
+
+### 2026-04-12T08:39:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

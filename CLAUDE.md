@@ -1104,6 +1104,21 @@ When `TERMLINK_TASK_GOVERNANCE=1` is set (configured in `.mcp.json`), TermLink M
 
 The task_id is the current task from `focus.yaml`. When task_id is passed, it propagates to session tags as `task:T-XXX` for observability.
 
+### Cross-Agent Communication Protocol (T-1126)
+
+When communicating with agents on other machines via TermLink remote, choose the tool based on whether you need a response:
+
+| Need | Tool | Why |
+|------|------|-----|
+| Ask a question, request action, get feedback | `termlink remote inject <session> --enter "message"` | Direct PTY input — agent processes immediately |
+| Deliver files/pickups (no response needed) | `termlink remote push` | Async inbox — processed on schedule |
+| Execute a command and get structured output | `termlink remote exec <session> "command"` | Synchronous, returns stdout |
+| Send a file to a specific session | `termlink remote send-file` | **Caveat: ok:true = hub accepted, NOT delivered.** Files silently lost to event-only sessions. Always verify receipt. |
+
+**The rule:** If you need a response, use `inject`. If you're delivering and don't need confirmation, use `push`. Never use `push` for questions — the receiving agent won't see it until their next cron or prompt.
+
+**Evidence:** Session S-2026-0412 sent 2 push messages to ring20-manager — zero response. Switched to inject — immediate response + file resend within seconds.
+
 ### Budget Rules
 
 - **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget
