@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1180: Fix G-040: Add owners enum to status-transitions.yaml and remove hardcoded owner lists
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-12T17:50:47Z
+# ============================================================================
+
+task_id: T-1180
+task_name: "Fix G-040: Add owners enum to status-transitions.yaml and remove hardcoded owner lists"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T17:44:49Z
+completed: 2026-04-12T17:50:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T19:49:57+02:00
+last_commit: 2026-04-12T19:49:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add owners enum to status-transitions.yaml, remove hardcoded owner lists (G-040)
+
+# Key outcomes
+outcomes:
+  - "`owners:` section added to status-transitions.yaml"
+  - "`_load_enums()` in tasks.py reads owners from YAML"
+  - "Hardcoded `allowed_owners` lists removed from tasks.py"
+  - "Template owner dropdowns use dynamic enum"
+  - "Web tests pass"
+  - "lib/enums.sh exports VALID_OWNERS + is_valid_owner() + list_valid_owners()"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/enums.sh"
+  - ".agentic-framework/status-transitions.yaml"
+  - "lib/enums.sh"
+  - "status-transitions.yaml"
+  - ".tasks/active/T-1180-fix-g-040-add-owners-enum-to-status-tran.md"
+  - "web/blueprints/tasks.py"
+  - "web/templates/tasks.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T19:49:57"
+    action: "T-1180: Add owners enum to status-transitions.yaml, remove hardcoded owner lists (G-040)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 7
+  lines_added: 154
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1180-fix-g-040-add-owners-enum-to-status-tran.md
+generated_by: context-agent-hybrid

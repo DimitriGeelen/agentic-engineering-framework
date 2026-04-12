@@ -1228,10 +1228,11 @@ concerns:
   - 'T-1109 L-006 sweep worker output, finding NEW-001: 5 mirror sites, no canonical. Full report at docs/reports/T-1109-l006-sweep.md.'
   - 'Bash<->Python asymmetry confirmed: create-task.sh has no validation on --owner; web side has strict whitelist.'
   trigger: Any addition of a new owner type (e.g., `orchestrator`, `reviewer`) or any refactor that changes the owner whitelist.
-  status: watching
+  status: resolved
+  resolution: 'T-1180 — owners: section added to status-transitions.yaml. Python side reads via _load_enums(), bash side exports VALID_OWNERS + is_valid_owner(). Template dropdowns use Jinja loops. Single canonical source.'
   created: 2026-04-11
-  last_reviewed: 2026-04-11
-  related_task: T-1109
+  last_reviewed: 2026-04-12
+  related_task: T-1180
 - id: G-041
   type: gap
   title: 'Active-status enum has 7+ mirror sites including kanban CSS — new statuses become INVISIBLE in UI'
