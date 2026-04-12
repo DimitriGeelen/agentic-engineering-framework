@@ -1,0 +1,13 @@
+pickup_id: P-013
+version: 1
+type: bug-report
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1125"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:21:02Z"
+payload:
+  summary: "U-003: send-file reports ok on hub acceptance, not delivery — silent file loss to event-only sessions"
+  detail: "termlink remote send-file returns ok:true based on hub acceptance, not end-to-end delivery. ring20-manager sent 3 files to .107, all returned ok. None arrived — silently lost to event-only sessions. Fix: end-to-end delivery confirmation or at minimum warn when target session has no file inbox capability. Origin: ring20-manager T-046 RCA."
+  priority: high
+  tags: [send-file, delivery, silent-loss]
