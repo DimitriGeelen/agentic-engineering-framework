@@ -8,3 +8,24 @@ learnings:
   date: 2026-04-12
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "TermLink dispatch workers for episodic generation: context-efficient pattern. Dispatched 8-task episodic generation via TermLink worker -- zero parent context cost. Worker ran autonomously, wrote YAML files, committed. Pattern: for tasks that write multiple files to disk, TermLink dispatch is always better than Task tool agents."
+  source: unknown
+  task: T-1135
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-003
+  learning: "Cross-agent inception coordination via TermLink dispatch: dispatched worker to /opt/termlink to investigate persistent session architecture (T-1135). Worker analyzed codebase, found cleanup code in 3 files, confirmed tags infrastructure 90% ready, proposed naming convention, wrote research artifact. Pattern: for inception tasks involving another project's codebase, dispatch worker TO that project rather than reading cross-project files."
+  source: unknown
+  task: T-1135
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-004
+  learning: "Verification command SIGPIPE: 'command-that-exits-nonzero 2>&1 | grep -q pattern' fails under pipefail because grep -q closes pipe early and the non-zero exit propagates. Fix: wrap in bash -c to isolate the pipefail scope. Seen in T-1117 verification gate."
+  source: unknown
+  task: T-1117
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
