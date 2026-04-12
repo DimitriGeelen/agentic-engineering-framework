@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T16:29:42Z
-last_update: 2026-04-12T16:29:42Z
+last_update: 2026-04-12T16:36:38Z
 date_finished: null
 ---
 
@@ -32,7 +32,7 @@ date_finished: null
 ## Verification
 
 # fw doctor consumer section clean
-cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -c "WARN.*v1.5" | grep -q "^0$"
+cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -q "All.*consumer.*current"
 
 ## Decisions
 
