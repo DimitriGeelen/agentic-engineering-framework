@@ -5,6 +5,20 @@ learnings:
   learning: "First learning"
   source: unknown
   task: unknown
-  date: 2026-04-11
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-002
+  learning: "TermLink dispatch is a fresh Claude Code session: fw termlink dispatch spawns claude -p which snapshots .claude/settings.json independently. This enables testing hook changes without restarting the parent session. Pattern: modify settings.json, dispatch worker, inspect results, restore settings. Proven in T-1116 spike (TodoWrite hookability verified)."
+  source: P-001
+  task: T-1117
+  date: 2026-04-12
+  context: Added via context agent
+  application: TBD
+- id: L-003
+  learning: "Claude Code built-in todo UI is backed by TodoWrite tool, NOT TaskCreate. TaskCreate/TaskUpdate/TaskList/TaskGet are deferred tools in interactive mode (likely async agent management), not the scratchpad. In claude -p mode, only TodoWrite exists. The T-1115 matcher must include TodoWrite as primary target."
+  source: P-001
+  task: T-1117
+  date: 2026-04-12
   context: Added via context agent
   application: TBD
