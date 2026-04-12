@@ -1212,6 +1212,31 @@ else:
         fi
     fi
 
+    # Check: Isolation model health (T-1189/G-031)
+    # Detect nested .agentic-framework inside vendored dir (Pattern 6 bug)
+    for fw_yaml in /opt/*/.framework.yaml; do
+        [ -f "$fw_yaml" ] || continue
+        local _iso_dir
+        _iso_dir=$(dirname "$fw_yaml")
+        [ "$_iso_dir" = "$FRAMEWORK_ROOT" ] && continue
+        local _nested="$_iso_dir/.agentic-framework/.agentic-framework"
+        if [ -d "$_nested" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Nested .agentic-framework in $(basename "$_iso_dir") — remove: rm -rf $_nested"
+            warnings=$((warnings + 1))
+        fi
+    done
+    # Detect oversized global install (Pattern 4 legacy bloat)
+    local _global_dir="$HOME/.agentic-framework"
+    if [ -d "$_global_dir" ]; then
+        local _global_mb
+        _global_mb=$(du -sm "$_global_dir" 2>/dev/null | cut -f1 || echo "0")
+        if [ "${_global_mb:-0}" -gt 100 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Global install at $_global_dir is ${_global_mb}MB (expected <60MB)"
+            echo -e "         Consider: rm -rf $_global_dir (shim-based dispatch obsoletes it)"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: Hook crash log (T-821)
     local crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
     if [ -f "$crash_log" ] && [ -s "$crash_log" ]; then

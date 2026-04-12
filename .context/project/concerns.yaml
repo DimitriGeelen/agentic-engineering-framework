@@ -847,10 +847,13 @@ concerns:
     anywhere agents would discover it.'
   trigger: Any agent in a consumer project asked to "set up", "vendor", or "isolate" the framework — picks one of five patterns based on which sibling/example it sampled, with no guidance on which is canonical.
     Five patterns means roughly 25 possible migration paths, none documented.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1100
+  resolution: 'T-1189: Documented canonical isolation model (vendored dir + shim) in FRAMEWORK.md. Added fw doctor checks for nested .agentic-framework (Pattern 6) and oversized global install (Pattern
+    4). Inception T-1100 provided the analysis.'
+  closed_date: '2026-04-12'
 - id: G-032
   type: gap
   title: 'CRITICAL: fw inception decide silently passes --force, bypassing agent AC, verification, and human-ownership gates'
@@ -964,6 +967,8 @@ concerns:
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1104
+  resolution_in_progress: 'Multiple structural guards now in place: (1) fw doctor Quick Reference coverage check (T-1147); (2) tests/lint/help-router-parity.bats (T-1185); (3) tests/lint/config-registry-parity.bats
+    (T-1187). Agent memory drift remains unguarded but is lower risk.'
 - id: G-036
   type: gap
   title: Watchtower inception detail page hardcoded section allowlist — new sections added to task files are silently dropped
