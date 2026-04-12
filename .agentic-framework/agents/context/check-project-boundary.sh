@@ -12,6 +12,7 @@
 # Allowed exceptions:
 #   /tmp/**                — Agent dispatch working files
 #   /root/.claude/**       — Claude Code memory/settings
+#   /etc/cron.d/**         — Cron install (T-603/T-1191)
 #   PROJECT_ROOT/**        — Obviously allowed
 #
 # Origin: T-559 — Agent created 6 tasks on another project (T-549 violation)
@@ -166,7 +167,7 @@ for fw_path in fw_pattern.findall(command):
 # Pattern 3: File write operations targeting absolute paths outside project
 write_ops = re.compile(r'(?:>>?\s*|tee\s+)(/[^\s;&|]+)')
 for target_file in write_ops.findall(command):
-    if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/')):
+    if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/', '/etc/cron.d/')):
         continue
     if not target_file.startswith(project_root + '/'):
         print(f'BLOCKED|File write to {target_file} (outside project root)')
