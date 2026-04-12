@@ -300,6 +300,44 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# T-1162/T-866: flock guard + timeout for cron mode — prevent zombie accumulation
+# When running as cron (QUIET=true + cron output dir), ensure only one audit runs at a time.
+# If a previous audit is still running, exit immediately rather than stacking up.
+if [ "$QUIET" = true ]; then
+    AUDIT_LOCK_DIR="${CONTEXT_DIR}/locks"
+    mkdir -p "$AUDIT_LOCK_DIR" 2>/dev/null
+    AUDIT_LOCK_FILE="$AUDIT_LOCK_DIR/audit.lock"
+    AUDIT_TIMEOUT="${FW_AUDIT_TIMEOUT:-600}"
+
+    # Clean up stale lock files (older than timeout + 60s buffer)
+    if [ -f "$AUDIT_LOCK_FILE" ]; then
+        lock_age=$(( $(date +%s) - $(stat -c %Y "$AUDIT_LOCK_FILE" 2>/dev/null || echo 0) ))
+        if [ "$lock_age" -gt $(( AUDIT_TIMEOUT + 60 )) ]; then
+            rm -f "$AUDIT_LOCK_FILE"
+        fi
+    fi
+
+    # Use flock if available, otherwise simple lock file
+    if command -v flock >/dev/null 2>&1; then
+        exec 200>"$AUDIT_LOCK_FILE"
+        if ! flock -n 200; then
+            # Another audit is running — exit silently (cron mode)
+            exit 0
+        fi
+        # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds
+        ( sleep "$AUDIT_TIMEOUT" && kill -TERM $$ 2>/dev/null ) &
+        AUDIT_TIMEOUT_PID=$!
+        trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null; rm -f '$AUDIT_LOCK_FILE'" EXIT
+    else
+        # Fallback: simple lock file (less robust but prevents most zombies)
+        if [ -f "$AUDIT_LOCK_FILE" ]; then
+            exit 0
+        fi
+        echo $$ > "$AUDIT_LOCK_FILE"
+        trap "rm -f '$AUDIT_LOCK_FILE'" EXIT
+    fi
+fi
+
 # Section filter: returns 0 (true) if section should run
 should_run_section() {
     [ -z "$SECTIONS" ] && return 0
