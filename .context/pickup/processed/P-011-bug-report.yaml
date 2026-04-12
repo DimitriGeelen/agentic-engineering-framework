@@ -1,0 +1,33 @@
+pickup_id: P-011
+version: 1
+type: bug-report
+source:
+  project: "010-termlink"
+  task_id: "T-944"
+  agent: "claude-code"
+  timestamp: "2026-04-12T08:15:00Z"
+payload:
+  summary: "Approvals page shows inception tasks without recommendations — creates noise, missing Go/No-Go criteria display"
+  detail: |
+    Follow-up to P-009 (T-939). Three issues remained after the recommendation
+    display fix:
+
+    1. Tasks WITHOUT recommendations were shown alongside ready tasks — cluttering
+       the decision queue with undecidable items.
+    2. Go/No-Go criteria were not displayed, so the reviewer couldn't see what
+       the decision should be evaluated against.
+    3. Placeholder criteria ("[Criterion 1]") were not filtered out.
+
+    Fix applied in termlink vendored copy:
+    - approvals.py: Added `ready` flag (true when recommendation_label exists),
+      extracted gonogo_criteria dict with go/nogo lists, filters placeholder criteria
+    - _approvals_content.html: Split into ready_go (shown with forms) and notready_go
+      (collapsed section with links). Added expandable Go/No-Go criteria on each card.
+
+    Also fixes from T-943 (P-010):
+    - inception.py record_decision() creates review marker automatically so
+      Watchtower GO/NO-GO works without `fw task review` CLI step first.
+
+    All three pickups (P-009, P-010, P-011) should be applied together.
+  priority: medium
+  tags: [watchtower, approvals, inception, filtering, criteria]

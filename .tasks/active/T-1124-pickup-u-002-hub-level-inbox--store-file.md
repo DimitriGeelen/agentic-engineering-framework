@@ -1,49 +1,46 @@
 ---
-id: T-1121
-name: "TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust"
+id: T-1124
+name: "Pickup: U-002: Hub-level inbox — store files at hub for delivery when sessions register (from 999-Agentic-Engineering-Framework)"
 description: >
-  Inception: TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust
+  Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1122. Type: feature-proposal.
 
-status: started-work
+status: captured
 workflow_type: inception
-owner: human
-horizon: now
-tags: []
+owner: agent
+horizon: next
+tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
-created: 2026-04-12T08:04:30Z
-last_update: 2026-04-12T08:16:27Z
+created: 2026-04-12T08:15:03Z
+last_update: 2026-04-12T08:15:03Z
 date_finished: null
 ---
 
-# T-1121: TermLink U-001: TLS cert regenerates on hub restart — breaks all client TOFU trust
+# T-1124: Pickup: U-002: Hub-level inbox — store files at hub for delivery when sessions register (from 999-Agentic-Engineering-Framework)
 
 ## Problem Statement
 
-TermLink hub generates a new TLS certificate on every restart. All clients
-that previously connected via TOFU (Trust On First Use) now reject the hub
-because the fingerprint changed. Live evidence: this session tried
-`termlink remote ping 192.168.10.109:9100` and got TOFU VIOLATION — the
-.109 hub restarted since our last connection, invalidating the fingerprint
-in `/root/.termlink/known_hubs`.
-
-**For whom:** Every TermLink client on every machine that connects to a hub.
-**Why now:** ring20-manager (.109) reported this as U-001 during T-046 RCA.
-We independently confirmed it this session when trying to receive files.
-
-**Proposed fix (from ring20-manager):** Persist the cert like T-933 persists
-secrets — generate once, save to a known path (e.g., `/var/lib/termlink/hub.pem`),
-reload on restart instead of regenerating.
+<!-- What problem are we exploring? For whom? Why now? -->
 
 ## Assumptions
 
-- A1: Hub cert is generated at startup, not persisted (CONFIRMED by TOFU violation)
-- A2: Persisting cert to disk is straightforward (needs verification in TermLink codebase)
+<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+
+## Exploration Plan
+
+<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+
+## Technical Constraints
+
+<!-- What platform, browser, network, or hardware constraints apply?
+     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
+     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
+     For infrastructure: network topology, firewall rules, latency bounds.
+     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
 
 ## Scope Fence
 
-**IN:** Cross-project pickup to /opt/termlink for upstream fix.
-**OUT:** Implementing the fix here — this is TermLink repo's responsibility.
+<!-- What's IN scope for this exploration? What's explicitly OUT? -->
 
 ## Acceptance Criteria
 
@@ -108,6 +105,3 @@ reload on restart instead of regenerating.
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-04-12T08:16:27Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
