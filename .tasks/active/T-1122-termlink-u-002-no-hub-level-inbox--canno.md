@@ -4,7 +4,7 @@ name: "TermLink U-002: no hub-level inbox — cannot push files when zero sessio
 description: >
   Inception: TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T08:05:17Z
-last_update: 2026-04-12T08:05:17Z
+last_update: 2026-04-12T09:27:47Z
 date_finished: null
 ---
 
@@ -48,9 +48,9 @@ exists even when the user isn't logged in.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -64,12 +64,13 @@ exists even when the user isn't logged in.
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- send-file requires active session target confirmed (documented in T-1126 protocol)
+- Hub process persists between sessions (can hold queued files)
+- Pickup P-012 already delivered to /opt/termlink for upstream tracking
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Hub-level inbox adds unacceptable complexity to TermLink (scope creep)
+- Persistent sessions (T-1135) make this moot (always a session to target)
 
 ## Verification
 
@@ -79,15 +80,16 @@ exists even when the user isn't logged in.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** DEFER (pending T-1135 outcome)
+
+**Rationale:** If T-1135 (persistent TermLink agent sessions) ships, every project will always have an active session to target. This makes hub-level inbox less urgent -- there's always "someone home" to receive files. However, hub-level inbox is still valuable for edge cases (machine rebooting, between session respawns). Recommend: let T-1135 ship first, then reassess whether U-002 is still needed.
+
+**Evidence:**
+- ring20-manager reported U-002 during T-046 RCA -- files couldn't be sent when no sessions registered
+- T-1135 (persistent sessions) was GO-recommended today with cross-agent coordination
+- Persistent sessions solve the primary use case (always a target session)
+- Hub-level inbox would handle the gap between persistent session death and respawn
+- Pickup P-012 already delivered to /opt/termlink, T-1124 created from pickup processing
 
 ## Decisions
 
@@ -108,3 +110,6 @@ exists even when the user isn't logged in.
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-12T09:27:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
