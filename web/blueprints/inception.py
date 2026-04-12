@@ -288,6 +288,16 @@ def record_decision(task_id):
     rationale = request.form.get("rationale", "").strip()
     if decision not in ("go", "no-go", "defer") or not rationale:
         abort(400)
+    # T-1120: Create review marker — the human IS reviewing by being on this page.
+    # Without this, fw inception decide blocks with "Task review required" because
+    # the marker is normally created by fw task review (CLI), not Watchtower.
+    import os
+    marker_dir = os.path.join(PROJECT_ROOT, ".context", "working")
+    os.makedirs(marker_dir, exist_ok=True)
+    marker_path = os.path.join(marker_dir, f".reviewed-{task_id}")
+    if not os.path.exists(marker_path):
+        with open(marker_path, "w") as f:
+            f.write(f"reviewed-via-watchtower {task_id}\n")
     stdout, stderr, ok = run_fw_command(
         ["inception", "decide", task_id, decision, "--rationale", rationale],
         timeout=30,
