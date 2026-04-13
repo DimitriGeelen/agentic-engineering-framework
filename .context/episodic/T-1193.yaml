@@ -1,0 +1,157 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1193: Session housekeeping — commit uncommitted artifacts, clean stale state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:13:57Z
+# ============================================================================
+
+task_id: T-1193
+task_name: "Session housekeeping — commit uncommitted artifacts, clean stale state"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T06:08:45Z
+completed: 2026-04-13T06:13:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T08:10:56+02:00
+last_commit: 2026-04-13T08:13:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Housekeeping — commit 73 artifacts, move 89 work-completed tasks to horizon:next. Complete T-992, update housekeeping ACs. Housekeeping task ready for completion. Complete housekeeping — 73 artifacts, 89 horizon moves, T-992 closed
+
+# Key outcomes
+outcomes:
+  - "All uncommitted artifacts committed (generated docs, context, task files, VERSION)"
+  - "89 work-completed tasks moved from horizon:now to horizon:next"
+  - "T-992 completed and archived"
+  - "Git working tree clean"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/approvals/pending-052d7e3f01f4.yaml"
+  - ".context/audits/2026-04-12.yaml"
+  - ".context/audits/2026-04-13.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/audits/discoveries/LATEST.yaml"
+  - ".context/episodic/T-992.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/.gate-bypass-log.yaml"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/generated/components/agents-context-block-task-tools.md"
+  - "docs/generated/components/bin-fw.md"
+  - "docs/generated/components/lib-bus.md"
+  - "docs/generated/components/lib-colors.md"
+  - "docs/generated/components/lib-dispatch.md"
+  - "docs/generated/components/lib-notify.md"
+  - "docs/generated/components/lib-review.md"
+  - "docs/generated/components/lib-setup.md"
+  - "docs/generated/components/lib-update.md"
+  - "docs/generated/components/lib-upstream.md"
+  - "docs/generated/components/lib-watchtower.md"
+  - "docs/generated/components/tests-playwright-conftest.md"
+  - "docs/generated/components/tests-playwright-test_fabric.md"
+  - "docs/generated/components/tests-playwright-test_inception.md"
+  - "docs/generated/components/tests-playwright-test_review.md"
+  - "docs/generated/components/tests-playwright-test_smoke.md"
+  - "docs/generated/components/tests-playwright-test_tasks.md"
+  - "docs/generated/components/tests-playwright-test_terminal.md"
+  - "docs/generated/components/tests-unit-audit_task_tools.md"
+  - "docs/generated/components/tests-unit-block_task_tools.md"
+  - "docs/generated/components/tests-unit-context_episodic.md"
+  - "docs/generated/components/tests-unit-context_init.md"
+  - "docs/generated/components/tests-unit-context_pattern.md"
+  - "docs/generated/components/tests-unit-context_safe_commands.md"
+  - "docs/generated/components/tests-unit-context_status.md"
+  - "docs/generated/components/tests-unit-lib_colors.md"
+  - "docs/generated/components/tests-unit-lib_costs.md"
+  - "docs/generated/components/tests-unit-lib_enums.md"
+  - "docs/generated/components/tests-unit-lib_errors.md"
+  - "docs/generated/components/tests-unit-lib_keylock.md"
+  - "docs/generated/components/tests-unit-lib_paths.md"
+  - "docs/generated/components/tests-unit-lib_tasks.md"
+  - "docs/generated/components/tests-unit-lib_yaml.md"
+  - "docs/generated/components/web-blueprints-tasks.md"
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/active/T-1101-inception-fw-inception-decide-silent---f.md"
+  - ".tasks/active/T-1102-inception-binfw-vs-agentic-frameworkbinf.md"
+  - ".tasks/active/T-1104-meta-inception-claudemd--fw-help--code-d.md"
+  - ".tasks/active/T-1109-inception-fw-upgrade-silently-skips-web-.md"
+  - ".tasks/active/T-1119-pickup-approvals-page-never-displays-age.md"
+  - ".tasks/active/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - ".tasks/active/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md"
+  - ".tasks/active/T-1122-termlink-u-002-no-hub-level-inbox--canno.md"
+  - ".tasks/active/T-1125-termlink-u-003-send-file-reports-ok-on-h.md"
+  - ".tasks/active/T-1134-upstream-portable-date-helpers-from-010-.md"
+  - ".tasks/active/T-1135-persistent-termlink-agent-sessions--alwa.md"
+  - ".tasks/active/T-1136-upstream-session-init-concerns-check-fro.md"
+  - ".tasks/active/T-1139-add-patch-delivery-type-to-pickup-proces.md"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/active/T-1173-batch-consumer-project-upgrade-v15414--v.md"
+  - ".tasks/active/T-1174-fix-t-1093-placeholder-acs--retroactive-.md"
+  - ".tasks/active/T-1175-retroactive-ac-cleanup--fix-5-completed-.md"
+  - ".tasks/active/T-1176-make-inception-commit-gate-configurable-.md"
+  - ".tasks/active/T-1177-fix-g-036-dynamic-section-parsing-for-in.md"
+  - ".tasks/active/T-1178-structural-bugfix-learning-enforcement--.md"
+  - ".tasks/active/T-1179-fix-g-038-replace-hardcoded-enums-in-tas.md"
+  - ".tasks/active/T-1180-fix-g-040-add-owners-enum-to-status-tran.md"
+  - ".tasks/active/T-1181-add-unit-tests-for-validowners--isvalido.md"
+  - ".tasks/active/T-1193-session-housekeeping--commit-uncommitted.md"
+  - ".tasks/completed/T-1193-session-housekeeping--commit-uncommitted.md"
+  - ".tasks/completed/T-992-batch-horizon-cleanup--move-work-complet.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T08:10:56"
+    action: "T-1193: Housekeeping — commit 73 artifacts, move 89 work-completed tasks to horizon:next"
+  - time: "2026-04-13T08:12:35"
+    action: "T-1193: Complete T-992, update housekeeping ACs"
+  - time: "2026-04-13T08:13:00"
+    action: "T-1193: Housekeeping task ready for completion"
+  - time: "2026-04-13T08:13:41"
+    action: "T-1193: Complete housekeeping — 73 artifacts, 89 horizon moves, T-992 closed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 4
+  files_changed: 75
+  lines_added: 11216
+  lines_removed: 9908
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1193-session-housekeeping--commit-uncommitted.md
+generated_by: context-agent-hybrid
