@@ -1,13 +1,10 @@
 ![agentic-engeneering-framework](header.svg)
-> Governance and guardrails for AI coding agents in your repo. Not another chatbot.
-
-This is not an assistant runtime, not an orchestration engine, and not a skills marketplace. It is a governance layer that sits inside your git repo and enforces structural rules on whatever AI coding agent you already use — Claude Code, Cursor, Copilot, or anything with CLI access. The agent cannot edit files without a task. It cannot force-push without human approval. It cannot lose context between sessions.
+> Better context, better agents. Context Fabric captures history. Component Fabric maps blast radius. One rule: nothing runs without a task.
+> The better the instruction — and the context around it — the higher the likelihood of a good result.
 
 I built this because I recognised a pattern. In 25 years of enterprise IT governance — transition management at Shell, operational readiness for infrastructure programmes — the same structural requirements appear every time a powerful actor operates in a shared environment: traceability, approval gates, session continuity, failure memory. The domain changed from human operators to AI agents. The principle did not.
 
 ## What This Has Actually Stopped
-
-Real output from this framework governing its own development (545+ tasks, 488+ completed):
 
 **Agent tries to edit a file without a task:**
 ```
