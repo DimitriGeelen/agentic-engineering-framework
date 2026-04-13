@@ -587,3 +587,227 @@ found unknown escape character 'd'
 127.0.0.1 - - [13/Apr/2026 15:45:14] "GET /static/purify.min.js HTTP/1.1" 304 -
 127.0.0.1 - - [13/Apr/2026 15:45:14] "GET /static/marked.min.js HTTP/1.1" 304 -
 127.0.0.1 - - [13/Apr/2026 15:45:14] "GET /static/logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [13/Apr/2026 15:51:34] "GET /health HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:51:56] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:51:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:51:59] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:51:59] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:51:59] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:51:59] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:01] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:01] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:01] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:01] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:05] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:06] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:06] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:07] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:07] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:08] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:09] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:09] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:09] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:09] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:12] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:17] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:17] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:20] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:52:39] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:41] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:42] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:42] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:42] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:42] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:43] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:43] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:43] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:44] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:47] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:48] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:48] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:49] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:49] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:51] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:51] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:51] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:51] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:51] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:55] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:59] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:52:59] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:53:02] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:54:21] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:24] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:24] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:24] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:24] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:24] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:26] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:26] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:26] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:26] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:29] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:30] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [13/Apr/2026 15:54:30] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:30] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:30] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:30] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:31] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:31] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:32] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:32] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:33] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:33] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:34] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:34] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:34] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:37] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:42] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:42] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:54:45] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:55:03] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:05] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:06] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:06] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:06] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:06] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:08] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:08] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:08] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:08] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:11] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:11] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [13/Apr/2026 15:55:11] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:11] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:11] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:12] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:12] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:12] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:13] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:14] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:15] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:15] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:15] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:15] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:15] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:19] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:23] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:23] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:55:27] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:56:54] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:57] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:57] "GET /approvals HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:57] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:57] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:57] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:59] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:59] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:59] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:56:59] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:02] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /docs/generated HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /graduation HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:03] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:04] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:04] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:06] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:06] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:06] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:06] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:06] "GET /risks HTTP/1.1" 200 -
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml: while parsing a block mapping
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 9, column 1
+expected <block end>, but found '<block sequence start>'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-269.yaml", line 45, column 3
+Failed to parse episodic file /opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml: while scanning a double-quoted scalar
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 12
+found unknown escape character 'd'
+  in "/opt/999-Agentic-Engineering-Framework/.context/episodic/T-675.yaml", line 10, column 20
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:10] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:15] "GET /tasks HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:15] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2026 15:57:18] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:57:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:58:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 15:58:04] "GET / HTTP/1.1" 200 -
