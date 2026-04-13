@@ -73,6 +73,30 @@ do_upgrade() {
         return 1
     fi
 
+    # T-1217: Self-vendor — refresh framework's own .agentic-framework/ before pushing to consumers.
+    # Without this, new lib/*.sh files (e.g., watchtower.sh from T-1154) go stale in the vendored
+    # copy, causing pre-push audit errors for the framework repo itself.
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    if [ -d "$_self_vendor/lib" ]; then
+        local _sv_updated=0
+        for _sv_src in "$FRAMEWORK_ROOT/lib/"*.sh; do
+            [ -f "$_sv_src" ] || continue
+            local _sv_name
+            _sv_name=$(basename "$_sv_src")
+            local _sv_dst="$_self_vendor/lib/$_sv_name"
+            if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
+                if [ "$dry_run" != true ]; then
+                    cp "$_sv_src" "$_sv_dst"
+                    [ -x "$_sv_src" ] && chmod +x "$_sv_dst"
+                fi
+                _sv_updated=$((_sv_updated + 1))
+            fi
+        done
+        if [ "$_sv_updated" -gt 0 ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_sv_updated file(s) to .agentic-framework/lib/"
+        fi
+    fi
+
     local project_name
     project_name=$(basename "$target_dir")
     local changes=0

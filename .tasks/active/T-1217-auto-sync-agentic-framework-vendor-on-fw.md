@@ -1,0 +1,60 @@
+---
+id: T-1217
+name: "Auto-sync .agentic-framework vendor on fw upgrade — prevent stale vendored files"
+description: >
+  Auto-sync .agentic-framework vendor on fw upgrade — prevent stale vendored files
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-13T09:50:30Z
+last_update: 2026-04-13T09:50:30Z
+date_finished: null
+---
+
+# T-1217: Auto-sync .agentic-framework vendor on fw upgrade — prevent stale vendored files
+
+## Context
+
+T-1216 found `lib/watchtower.sh` missing from `.agentic-framework/lib/` because `fw vendor` wasn't
+rerun after T-1154 added the file. Root cause: the framework repo's vendored copy (`.agentic-framework/`)
+goes stale whenever new files are added to `lib/`, `agents/`, etc. No automatic sync exists.
+
+Fix: add a self-vendor step to `lib/upgrade.sh` that syncs `.agentic-framework/` BEFORE pushing to
+consumers. This ensures the vendored copy (used by pre-push audit) is always fresh.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `lib/upgrade.sh` self-syncs `.agentic-framework/` from source dirs when running in framework repo
+- [x] Pre-push audit uses fresh vendored copy (no stale file errors)
+- [x] Self-sync only triggers in framework repo (not consumers)
+
+## Verification
+
+# Verify the self-vendor code exists in upgrade.sh
+grep -q 'Self-vendor' lib/upgrade.sh
+# Verify watchtower.sh is still present
+test -f .agentic-framework/lib/watchtower.sh
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-13T09:50:30Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1217-auto-sync-agentic-framework-vendor-on-fw.md
+- **Context:** Initial task creation
