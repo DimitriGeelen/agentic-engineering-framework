@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1215: Add fw task review warning for inception tasks without Recommendation section (T-1213 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T09:21:54Z
+# ============================================================================
+
+task_id: T-1215
+task_name: "Add fw task review warning for inception tasks without Recommendation section (T-1213 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T09:20:35Z
+completed: 2026-04-13T09:21:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T11:21:38+02:00
+last_commit: 2026-04-13T11:21:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add fw task review warning for inception tasks without Recommendation
+
+# Key outcomes
+outcomes:
+  - "`lib/review.sh` checks for `## Recommendation` on inception tasks"
+  - "Warning emitted when recommendation is missing/empty (not blocking)"
+  - "Existing review flow still works (marker created, URL emitted)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/review.sh"
+  - ".tasks/active/T-1215-add-fw-task-review-warning-for-inception.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T11:21:38"
+    action: "T-1215: Add fw task review warning for inception tasks without Recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 2
+  lines_added: 69
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1215-add-fw-task-review-warning-for-inception.md
+generated_by: context-agent-hybrid

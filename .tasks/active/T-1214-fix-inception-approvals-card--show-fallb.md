@@ -4,16 +4,16 @@ name: "Fix inception approvals card — show fallback context when recommendatio
 description: >
   Fix inception approvals card — show fallback context when recommendation missing (T-1213 GO)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-13T09:18:31Z
-last_update: 2026-04-13T09:18:31Z
-date_finished: null
+last_update: 2026-04-13T09:20:26Z
+date_finished: 2026-04-13T09:20:26Z
 ---
 
 # T-1214: Fix inception approvals card — show fallback context when recommendation missing (T-1213 GO)
@@ -62,3 +62,6 @@ curl -sf -o /dev/null -w "%{http_code}" http://localhost:3001/approvals | grep -
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1214-fix-inception-approvals-card--show-fallb.md
 - **Context:** Initial task creation
+
+### 2026-04-13T09:20:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
