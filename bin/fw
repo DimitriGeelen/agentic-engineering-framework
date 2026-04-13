@@ -662,10 +662,18 @@ for event, entries in data.get('hooks', {}).items():
             cmd = hook.get('command', '')
             total += 1
             parts = cmd.split()
-            # Check for portable 'fw hook' format
+            # Check for portable 'fw hook' format (bare fw in PATH)
             if len(parts) >= 2 and parts[0] == 'fw':
                 if shutil.which('fw'):
                     continue  # fw hook — portable, OK
+                else:
+                    broken += 1
+                    continue
+            # T-1222: vendored hook format (.agentic-framework/bin/fw hook or bin/fw hook)
+            if len(parts) >= 2 and parts[0].endswith('/bin/fw'):
+                fw_path = os.path.join('$PROJECT_ROOT', parts[0])
+                if os.path.isfile(fw_path) and os.access(fw_path, os.X_OK):
+                    continue  # vendored fw hook — OK
                 else:
                     broken += 1
                     continue
