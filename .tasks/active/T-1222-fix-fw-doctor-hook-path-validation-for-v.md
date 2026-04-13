@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T10:49:02Z
-last_update: 2026-04-13T10:59:44Z
+last_update: 2026-04-13T11:00:11Z
 date_finished: null
 ---
 
@@ -33,8 +33,8 @@ format. This causes `fw self-test onboarding` to fail with "17/17 hooks have bro
 
 ## Verification
 
-# Doctor passes for framework repo
-bin/fw doctor 2>&1 | grep -q 'Hook path validation.*portable'
+# Doctor passes for framework repo (grep -c to avoid SIGPIPE)
+bin/fw doctor 2>&1 | grep -c 'Hook path validation.*portable' > /dev/null
 
 ## Decisions
 
