@@ -1651,3 +1651,10 @@ learnings:
   learning: TestSubprocessStderr tests pass after monkeypatch path update
   source: P-001
   task: T-991
+- id: L-001
+  learning: "Batch-mining bugfix learnings from episodic outcomes is efficient — a Python script can extract the first outcome from each episodic and generate learning entries automatically. Coverage went from 0% to 99% in one operation."
+  source: P-001
+  task: T-1232
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1232: Audit hygiene sweep — bugfix-learning coverage, missing inception artifacts, stale edges, orphaned episodics
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T18:32:26Z
+# ============================================================================
+
+task_id: T-1232
+task_name: "Audit hygiene sweep — bugfix-learning coverage, missing inception artifacts, stale edges, orphaned episodics"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T18:17:11Z
+completed: 2026-04-13T18:32:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T20:21:02+02:00
+last_commit: 2026-04-13T20:24:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Mine 232 bugfix learnings from episodic summaries — coverage 0% → 99%. Create 5 missing inception artifacts + fix 2 stale fabric edges
+
+# Key outcomes
+outcomes:
+  - "Bugfix-learning coverage audit check passes (>=35%) — 99% (233/235)"
+  - "Missing inception research artifacts created (T-1212, T-1129, T-1136, T-1125, T-607)"
+  - "Stale fabric edges resolved or documented"
+  - "Audit FAIL count reduced — 1 FAIL (D2 human queue, sovereign), 4 WARN (all historical/transient)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Create 5 missing inception artifacts + fix 2 stale fabric edges"
+    source: git-mined
+  - description: "Mine 232 bugfix learnings from episodic summaries — coverage 0% → 99%"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-1125-termlink-send-file-delivery-semantics.md"
+  - "docs/reports/T-1129-termlink-session-learnings.md"
+  - "docs/reports/T-1136-session-init-concerns-check.md"
+  - "docs/reports/T-1212-consumer-watchtower-rca.md"
+  - "docs/reports/T-607-correction-refinement-loop.md"
+  - ".fabric/components/agents-context-commit-cadence.yaml"
+  - ".fabric/components/agents-context-loop-detect.yaml"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T20:21:02"
+    action: "T-1232: Mine 232 bugfix learnings from episodic summaries — coverage 0% → 99%"
+  - time: "2026-04-13T20:24:58"
+    action: "T-1232: Create 5 missing inception artifacts + fix 2 stale fabric edges"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 2
+  files_changed: 8
+  lines_added: 1768
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1232-audit-hygiene-sweep--bugfix-learning-cov.md
+generated_by: context-agent-hybrid
