@@ -100,7 +100,20 @@ test -f docs/reports/T-1151-truncation-audit.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO
+
+Rationale: The audit found 62 truncation sites across 16 blueprint files. Only 1 remaining write-through exists (`discovery.py:421` — conversation title capped at 120 chars), and it's low-risk (Q&A artifact, full content preserved in other fields). The two high-risk write-throughs (rationale pre-fills in `approvals.py` and `inception.py`) were already fixed by T-1091 and T-1150 with explicit comments. Building structural enforcement tooling (grep-based test, AST analysis) would cost more than the risk it mitigates — the pattern is clear, the dangerous sites are fixed, and the codebase shows good separation between display and write paths.
+
+Evidence:
+- 62 truncation sites audited across 16 files
+- 24 display-only, 18 error-display, 11 list-cap, 6 file-identity — all safe
+- 2 write-through sites already fixed (T-1091, T-1150) with documenting comments
+- 1 remaining write-through: `discovery.py:421` (`title[:120]`) — low risk, original data preserved in `history` and `final_question` fields
+- No additional governance-impacting truncation found
+
+**Date**: 2026-04-13T11:07:12Z
 
 ## Updates
 
@@ -112,3 +125,17 @@ test -f docs/reports/T-1151-truncation-audit.md
 
 ### 2026-04-12T14:01:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-04-13T11:07:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+
+Rationale: The audit found 62 truncation sites across 16 blueprint files. Only 1 remaining write-through exists (`discovery.py:421` — conversation title capped at 120 chars), and it's low-risk (Q&A artifact, full content preserved in other fields). The two high-risk write-throughs (rationale pre-fills in `approvals.py` and `inception.py`) were already fixed by T-1091 and T-1150 with explicit comments. Building structural enforcement tooling (grep-based test, AST analysis) would cost more than the risk it mitigates — the pattern is clear, the dangerous sites are fixed, and the codebase shows good separation between display and write paths.
+
+Evidence:
+- 62 truncation sites audited across 16 files
+- 24 display-only, 18 error-display, 11 list-cap, 6 file-identity — all safe
+- 2 write-through sites already fixed (T-1091, T-1150) with documenting comments
+- 1 remaining write-through: `discovery.py:421` (`title[:120]`) — low risk, original data preserved in `history` and `final_question` fields
+- No additional governance-impacting truncation found

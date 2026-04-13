@@ -126,7 +126,18 @@ Line 469 of `lib/upgrade.sh` says "no global install dependency" then line 480 s
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO (Option B — remove sync + deprecation warning)
+- Rationale: T-662 decided GO on eliminating global dependency. The shim handles PATH resolution. All 11 projects are vendored. The sync maintains a copy nothing uses and contradicts the isolation principle. Removing 80 lines of sync code + adding a 5-line `fw doctor` deprecation warning completes the T-662 migration.
+- Evidence:
+  - `~/.local/bin/fw` is a project-detecting shim (confirmed via `file` command)
+  - All 11 consumer projects have vendored `.agentic-framework/bin/fw`
+  - `lib/upgrade.sh:480-558` syncs to unused global install
+  - Line 469 says "no global install dependency", line 480 syncs to it — self-contradictory
+  - No runtime dependencies found on `~/.agentic-framework/` in grep of all scripts
+
+**Date**: 2026-04-13T11:08:52Z
 
 ## Updates
 
@@ -139,3 +150,15 @@ Line 469 of `lib/upgrade.sh` says "no global install dependency" then line 480 s
 ### 2026-04-12T09:26:25Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:08:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO (Option B — remove sync + deprecation warning)
+- Rationale: T-662 decided GO on eliminating global dependency. The shim handles PATH resolution. All 11 projects are vendored. The sync maintains a copy nothing uses and contradicts the isolation principle. Removing 80 lines of sync code + adding a 5-line `fw doctor` deprecation warning completes the T-662 migration.
+- Evidence:
+  - `~/.local/bin/fw` is a project-detecting shim (confirmed via `file` command)
+  - All 11 consumer projects have vendored `.agentic-framework/bin/fw`
+  - `lib/upgrade.sh:480-558` syncs to unused global install
+  - Line 469 says "no global install dependency", line 480 syncs to it — self-contradictory
+  - No runtime dependencies found on `~/.agentic-framework/` in grep of all scripts

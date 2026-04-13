@@ -104,7 +104,20 @@ test -f docs/reports/T-1145-assumption-provenance-rca.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Recommendation: DEFER — pending 30-day recurrence monitoring.
+
+Rationale: The 5-layer RCA is thorough but based on a single observed instance. 4 remediations proposed (R1-R4) cost 20-30 hours total. Before investing, we need recurrence data. First documented instance in 980+ completed tasks suggests rarity.
+
+Evidence:
+- Single observed instance: ring20-dashboard T-011, A-007, across 3 sessions
+- 5-layer root cause from tactical (wrong grep) to structural (no provenance schema)
+- 4 remediations evaluated: R1 (provenance schema), R2 (negative-claim TTL), R3 (post-compact quarantine), R4 (cross-section consistency)
+- Cost estimate: 20-30 hours for all 4 remediations
+- 980+ completed tasks, first documented assumption contradiction cycle
+
+**Date**: 2026-04-13T11:06:59Z
 
 ## Updates
 
@@ -117,3 +130,17 @@ test -f docs/reports/T-1145-assumption-provenance-rca.md
 
 ### 2026-04-12T14:01:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-04-13T11:06:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Recommendation: DEFER — pending 30-day recurrence monitoring.
+
+Rationale: The 5-layer RCA is thorough but based on a single observed instance. 4 remediations proposed (R1-R4) cost 20-30 hours total. Before investing, we need recurrence data. First documented instance in 980+ completed tasks suggests rarity.
+
+Evidence:
+- Single observed instance: ring20-dashboard T-011, A-007, across 3 sessions
+- 5-layer root cause from tactical (wrong grep) to structural (no provenance schema)
+- 4 remediations evaluated: R1 (provenance schema), R2 (negative-claim TTL), R3 (post-compact quarantine), R4 (cross-section consistency)
+- Cost estimate: 20-30 hours for all 4 remediations
+- 980+ completed tasks, first documented assumption contradiction cycle

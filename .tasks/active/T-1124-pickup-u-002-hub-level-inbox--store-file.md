@@ -61,12 +61,12 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Root cause identified with bounded fix
+- Fix is scoped and testable
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Root cause identified with bounded fix
+- Fix is scoped and testable
 
 ## Verification
 

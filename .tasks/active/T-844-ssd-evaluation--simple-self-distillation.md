@@ -91,7 +91,13 @@ OUT: Reproducing the paper's experiments, fine-tuning models, building SSD pipel
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: - Recommendation: DEFER
+- Rationale: SSD requires model fine-tuning — we consume Claude as a service. The precision-exploration conflict (locks vs forks) is a useful mental model for agentic behavior but has no immediate build target. Worth revisiting if inference-time analogs emerge.
+- Evidence: Full analysis in `docs/reports/T-844-ssd-self-distillation-evaluation.md`
+
+**Date**: 2026-04-13T11:08:29Z
 
 ## Updates
 
@@ -103,3 +109,10 @@ OUT: Reproducing the paper's experiments, fine-tuning models, building SSD pipel
 
 ### 2026-04-06T22:23:16Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-04-13T11:08:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** - Recommendation: DEFER
+- Rationale: SSD requires model fine-tuning — we consume Claude as a service. The precision-exploration conflict (locks vs forks) is a useful mental model for agentic behavior but has no immediate build target. Worth revisiting if inference-time analogs emerge.
+- Evidence: Full analysis in `docs/reports/T-844-ssd-self-distillation-evaluation.md`

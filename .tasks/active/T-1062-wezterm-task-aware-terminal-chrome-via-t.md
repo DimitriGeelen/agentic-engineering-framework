@@ -12,7 +12,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-04-13T06:25:19Z
+last_update: 2026-04-13T10:36:13Z
 date_finished: null
 ---
 
@@ -74,3 +74,9 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ### 2026-04-13T06:25:19Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-04-13T08:01:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → now
+
+### 2026-04-13T10:36:13Z — status-update [task-update-agent]
+- **Change:** horizon: now → now

@@ -97,7 +97,18 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: SPLIT — NO-GO on integration, GO on pattern adoption
+- Rationale: traceAI solves runtime telemetry (OTel spans), which our `fw costs` already covers at the level we need. Their architecture is Python SDK-level instrumentation — fundamentally different from our bash/file governance layer. But 2 patterns are directly applicable: null object fallback for hooks, and 3-tier config resolution (explicit > env var > default).
+- Evidence:
+  - D1 Antifragility: Weak — catches errors but no learning loop
+  - D2 Reliability: Mixed — great app observability, silent tracing failures
+  - D3 Usability: Strong — 3-line setup, env-var config, privacy controls
+  - D4 Portability: Excellent — OTel-native, 4 languages, 50+ providers
+  - Full analysis: `docs/reports/T-815-traceai-evaluation.md`
+
+**Date**: 2026-04-13T11:07:21Z
 
 ## Updates
 
@@ -110,3 +121,15 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
 ### 2026-04-12T09:26:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:07:21Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: SPLIT — NO-GO on integration, GO on pattern adoption
+- Rationale: traceAI solves runtime telemetry (OTel spans), which our `fw costs` already covers at the level we need. Their architecture is Python SDK-level instrumentation — fundamentally different from our bash/file governance layer. But 2 patterns are directly applicable: null object fallback for hooks, and 3-tier config resolution (explicit > env var > default).
+- Evidence:
+  - D1 Antifragility: Weak — catches errors but no learning loop
+  - D2 Reliability: Mixed — great app observability, silent tracing failures
+  - D3 Usability: Strong — 3-line setup, env-var config, privacy controls
+  - D4 Portability: Excellent — OTel-native, 4 languages, 50+ providers
+  - Full analysis: `docs/reports/T-815-traceai-evaluation.md`

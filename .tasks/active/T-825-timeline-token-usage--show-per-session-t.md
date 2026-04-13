@@ -94,7 +94,11 @@ None — display-only change, data already exists, no new dependencies.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: GO — Minimal effort (<30 min), data already available in every handover file, adds meaningful temporal context to token usage visibility. The /costs page provides detailed breakdowns; the timeline adds the trend dimension.
+
+**Date**: 2026-04-13T11:07:33Z
 
 ## Updates
 
@@ -107,3 +111,8 @@ None — display-only change, data already exists, no new dependencies.
 ### 2026-04-12T09:26:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:07:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** GO — Minimal effort (<30 min), data already available in every handover file, adds meaningful temporal context to token usage visibility. The /costs page provides detailed breakdowns; the timeline adds the trend dimension.

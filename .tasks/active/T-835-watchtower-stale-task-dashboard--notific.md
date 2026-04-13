@@ -88,7 +88,14 @@ OUT: New Watchtower pages (Option A deferred to separate build task)
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 77 tasks in stale backlog, growing at 7/day. Option B auto-closes 31 RUBBER-STAMP tasks (S effort). Option A handles remaining 48 REVIEW tasks with batch UI (M effort).
+- Evidence: 3 TermLink research reports in `docs/reports/T-835-agent-{a,b,c}-.md`
+- Build tasks after GO: T-836 (verify-acs --auto-close), T-837 (batch approval page)
+
+**Date**: 2026-04-13T11:07:46Z
 
 ## Updates
 
@@ -101,3 +108,19 @@ OUT: New Watchtower pages (Option A deferred to separate build task)
 ### 2026-04-12T09:26:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:07:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: 77 tasks in stale backlog, growing at 7/day. Option B auto-closes 31 RUBBER-STAMP tasks (S effort). Option A handles remaining 48 REVIEW tasks with batch UI (M effort).
+- Evidence: 3 TermLink research reports in `docs/reports/T-835-agent-{a,b,c}-.md`
+- Build tasks after GO: T-836 (verify-acs --auto-close), T-837 (batch approval page)
+
+### 2026-04-13T11:07:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - Recommendation: GO
+- Rationale: 77 tasks in stale backlog, growing at 7/day. Option B auto-closes 31 RUBBER-STAMP tasks (S effort). Option A handles remaining 48 REVIEW tasks with batch UI (M effort).
+- Evidence: 3 TermLink research reports in `docs/reports/T-835-agent-{a,b,c}-.md`
+- Build tasks after GO: T-836 (verify-acs --auto-close), T-837 (batch approval page)

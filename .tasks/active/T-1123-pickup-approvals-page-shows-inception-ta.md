@@ -4,16 +4,16 @@ name: "Pickup: Approvals page shows inception tasks without recommendations — 
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-944. Type: bug-report.
 
-status: started-work
+status: work-completed
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T08:15:01Z
-last_update: 2026-04-13T09:53:43Z
-date_finished: null
+last_update: 2026-04-13T11:06:33Z
+date_finished: 2026-04-13T11:06:33Z
 ---
 
 # T-1123: Pickup: Approvals page shows inception tasks without recommendations — creates noise, missing Go/No-Go criteria display (from 010-termlink)
@@ -105,7 +105,20 @@ Both are completed. No additional work needed.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO — superseded by T-1213.
+
+Rationale: This pickup predated the full RCA (T-1213) which identified the same issue and
+produced two build tasks: T-1214 (template fallback context) and T-1215 (`fw task review` warning).
+Both are completed. No additional work needed.
+
+Evidence:
+- T-1213 GO decision: inception approvals bare cards RCA
+- T-1214 completed: template shows fallback context when recommendation missing
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+**Date**: 2026-04-13T11:06:33Z
 
 ## Updates
 
@@ -119,3 +132,21 @@ Both are completed. No additional work needed.
 ### 2026-04-13T09:53:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-13T11:06:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO — superseded by T-1213.
+
+Rationale: This pickup predated the full RCA (T-1213) which identified the same issue and
+produced two build tasks: T-1214 (template fallback context) and T-1215 (`fw task review` warning).
+Both are completed. No additional work needed.
+
+Evidence:
+- T-1213 GO decision: inception approvals bare cards RCA
+- T-1214 completed: template shows fallback context when recommendation missing
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+### 2026-04-13T11:06:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
