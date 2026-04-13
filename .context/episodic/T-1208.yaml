@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1208: Refactor context init.sh bare fw commands to use _fw_cmd (T-1146 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T08:43:12Z
+# ============================================================================
+
+task_id: T-1208
+task_name: "Refactor context init.sh bare fw commands to use _fw_cmd (T-1146 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T08:41:07Z
+completed: 2026-04-13T08:43:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T10:43:05+02:00
+last_commit: 2026-04-13T10:43:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Refactor init.sh bare fw commands to use _fw_cmd
+
+# Key outcomes
+outcomes:
+  - "All bare `fw` commands in init.sh replaced with `_fw_cmd()`"
+  - "Invariant test extended"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/context/lib/init.sh"
+  - ".tasks/active/T-1208-refactor-context-initsh-bare-fw-commands.md"
+  - "tests/lint/no-bare-fw-in-gate-scripts.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T10:43:05"
+    action: "T-1208: Refactor init.sh bare fw commands to use _fw_cmd"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 67
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1208-refactor-context-initsh-bare-fw-commands.md
+generated_by: context-agent-hybrid
