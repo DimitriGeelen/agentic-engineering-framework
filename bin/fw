@@ -2081,8 +2081,10 @@ for job in jobs:
     name = job.get('name', '')
     status = job.get('status', 'active')
 
-    if command.startswith('fw '):
-        resolved = f'PROJECT_ROOT=\"{project_root}\" \"{fw_path}\" {command[3:]}'
+    # T-1249: Resolve ALL occurrences of bare 'fw' (not just leading)
+    if 'fw ' in command:
+        resolved = re.sub(r'\bfw\b', f'\"{fw_path}\"', command)
+        resolved = f'PROJECT_ROOT=\"{project_root}\" {resolved}'
     else:
         # All non-fw commands run from project root (relative paths need it)
         resolved = f'cd \"{project_root}\" && {command}'

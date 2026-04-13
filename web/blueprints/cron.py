@@ -484,13 +484,17 @@ def _regenerate_cron() -> None:
         name = job.get("name", "")
         status = job.get("status", "active")
 
-        # Resolve fw commands
-        if command.startswith("fw "):
-            resolved = f'PROJECT_ROOT="{PROJECT_ROOT}" "{fw_path}" {command[3:]}'
-        elif command.startswith("find "):
-            resolved = f'cd "{PROJECT_ROOT}" && {command}'
-        else:
-            resolved = command
+        # Resolve fw commands — replace ALL occurrences of bare 'fw ' (T-1249)
+        resolved = command
+        if "fw " in resolved:
+            resolved = re.sub(
+                r'\bfw\b',
+                f'"{fw_path}"',
+                resolved,
+            )
+            resolved = f'PROJECT_ROOT="{PROJECT_ROOT}" {resolved}'
+        elif resolved.startswith("find "):
+            resolved = f'cd "{PROJECT_ROOT}" && {resolved}'
 
         # Add 2>/dev/null to suppress noise
         if "2>/dev/null" not in resolved:

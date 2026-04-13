@@ -36,4 +36,4 @@ PATH=/usr/local/bin:/usr/bin:/bin
 0 9 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 -c "import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]" 2>/dev/null
 
 # Pickup inbox processor (30s)
-* * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process; sleep 30; fw pickup process 2>/dev/null
+* * * * * root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process; sleep 30; "/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process 2>/dev/null
