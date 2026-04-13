@@ -1,0 +1,136 @@
+# ============================================================================
+# EPISODIC MEMORY - T-549: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T13:22:20Z
+# ============================================================================
+
+task_id: T-549
+task_name: "OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T11:32:07Z
+completed: 2026-04-13T13:22:17Z
+duration_days: 20
+updates_count: 6
+first_commit: 2026-03-23T12:34:33+01:00
+last_commit: 2026-03-23T22:51:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OpenClaw deep-dive inception — problem statement, exploration plan, research artifact. Infrastructure setup complete + pickup prompt for OpenClaw evaluation. GO decision + framework/TermLink-enabled pickup prompt. Phase 4 meta-learnings — 9 tasks created, 6 research artifacts harvested, 10 learnings captured. Create 10 OpenClaw round-2 investigation tasks (T-561–T-570). Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577). Create 14 tasks from OpenClaw round-2 findings review
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Infrastructure on .107 operational (SSH, clone, fw init, doctor passes)"
+  - "Component fabric maps OpenClaw at meaningful quality"
+  - "Pickup prompt generated for handoff session"
+  - "Assumptions tested"
+  - "Go/No-Go decision made (GO — proceed with full evaluation)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - "docs/reports/T-549-openclaw-architecture-mapping.md"
+  - "docs/reports/T-549-openclaw-component-quality.md"
+  - "docs/reports/T-549-openclaw-design-patterns.md"
+  - "docs/reports/T-549-openclaw-evaluation-research.md"
+  - "docs/reports/T-549-openclaw-framework-learnings.md"
+  - "docs/reports/T-549-openclaw-pickup-prompt.md"
+  - "docs/reports/T-549-openclaw-termlink-learnings.md"
+  - "docs/reports/T-549-openclaw-value-extraction.md"
+  - ".tasks/active/T-549-openclaw-deep-dive--ingest-existing-proj.md"
+  - ".tasks/active/T-550-composition-based-adapter-pattern--evalu.md"
+  - ".tasks/active/T-551-fabric-register-scan-then-confirm--previ.md"
+  - ".tasks/active/T-552-enrichpy-typescriptjavascript-import-det.md"
+  - ".tasks/active/T-553-fix-enrichpy-line-586--undefined-framewo.md"
+  - ".tasks/active/T-554-single-started-work-gate--enforce-one-ac.md"
+  - ".tasks/active/T-555-reject-template-placeholder-task-names-i.md"
+  - ".tasks/active/T-556-handover-commit-attribution--use-session.md"
+  - ".tasks/active/T-557-inception-go-decision-human-confirm-gate.md"
+  - ".tasks/active/T-558-build-task-risk-signal-detection--pretoo.md"
+  - ".tasks/active/T-560-investigate-task-hook-reliability-on-lin.md"
+  - ".tasks/active/T-561-openclaw-comparative-tool-call-policy-en.md"
+  - ".tasks/active/T-562-openclaw-comparative-safety-guardrails--.md"
+  - ".tasks/active/T-563-openclaw-comparative-extension-sdk-desig.md"
+  - ".tasks/active/T-564-openclaw-comparative-agent-isolation-and.md"
+  - ".tasks/active/T-565-openclaw-comparative-monitoring-and-obse.md"
+  - ".tasks/active/T-566-openclaw-comparative-synthesis--what-wou.md"
+  - ".tasks/active/T-567-openclaw-deep-dive-p1-p4-value-extractio.md"
+  - ".tasks/active/T-568-openclaw-deep-dive-architecture-patterns.md"
+  - ".tasks/active/T-569-openclaw-deep-dive-quality-and-testing-p.md"
+  - ".tasks/active/T-570-openclaw-learnings-framework-fixes--audi.md"
+  - ".tasks/active/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/active/T-572-pickup-001-path-isolation-failures-in-mu.md"
+  - ".tasks/active/T-573-pickup-002-doctor-hook-validation-doesnt.md"
+  - ".tasks/active/T-574-pickup-003-doctor-scope-confusion--consu.md"
+  - ".tasks/active/T-575-pickup-004-init-fails-to-detect-upstream.md"
+  - ".tasks/active/T-576-pickup-006-claudecode-env-var-blocks-ter.md"
+  - ".tasks/active/T-577-pickup-007-termlink-run-timeout-creates-.md"
+  - ".tasks/active/T-578-inception-posttooluse-loop-detection--de.md"
+  - ".tasks/active/T-579-inception-idempotencydedup-layer--preven.md"
+  - ".tasks/active/T-580-inception-error-classification--permanen.md"
+  - ".tasks/active/T-581-inception-hook-error-boundaries--critica.md"
+  - ".tasks/active/T-582-inception-session-scoped-agent-isolation.md"
+  - ".tasks/active/T-583-inception-background-health-check--perio.md"
+  - ".tasks/active/T-584-inception-structured-logging-helper--sub.md"
+  - ".tasks/active/T-585-inception-skills-token-budget-management.md"
+  - ".tasks/active/T-586-language-strategy--typescript-adoption-f.md"
+  - ".tasks/active/T-587-keyed-async-queue--per-key-serialization.md"
+  - ".tasks/active/T-588-declarative-status-transition-rules--com.md"
+  - ".tasks/active/T-589-inception-yamljson-fuzz-testing--securit.md"
+  - ".tasks/active/T-590-traceability-baseline--audit-ignores-pre.md"
+  - ".tasks/active/T-591-commit-cadence-warning--posttooluse-hook.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T12:34:33"
+    action: "T-549: OpenClaw deep-dive inception — problem statement, exploration plan, research artifact"
+  - time: "2026-03-23T12:46:05"
+    action: "T-549: Infrastructure setup complete + pickup prompt for OpenClaw evaluation"
+  - time: "2026-03-23T12:52:42"
+    action: "T-549: GO decision + framework/TermLink-enabled pickup prompt"
+  - time: "2026-03-23T17:38:43"
+    action: "T-549: Phase 4 meta-learnings — 9 tasks created, 6 research artifacts harvested, 10 learnings captured"
+  - time: "2026-03-23T18:18:21"
+    action: "T-549: Create 10 OpenClaw round-2 investigation tasks (T-561–T-570)"
+  - time: "2026-03-23T21:58:53"
+    action: "T-549: Triage 7 pickup requests from 150-skills-manager — 6 new tasks (T-572–T-577)"
+  - time: "2026-03-23T22:51:14"
+    action: "T-549: Create 14 tasks from OpenClaw round-2 findings review"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 30350 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 30350
+  commits: 7
+  files_changed: 51
+  lines_added: 4978
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-549-openclaw-deep-dive--ingest-existing-proj.md
+generated_by: context-agent-hybrid

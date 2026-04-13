@@ -4,16 +4,16 @@ name: "Auto-detect context window from model — eliminate hardcoded CONTEXT_WIN
 description: >
   Inception: Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T12:58:31Z
-last_update: 2026-04-06T22:23:16Z
-date_finished: null
+last_update: 2026-04-13T11:31:37Z
+date_finished: 2026-04-13T11:30:46Z
 ---
 
 # T-837: Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default
@@ -96,6 +96,92 @@ Hardcoded 300K context window default doesn't adapt to model capabilities (Opus 
 - **Change:** horizon: now → later
 
 ### 2026-04-13T11:18:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:22:31Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:22:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:24:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:27:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:29:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:30:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO
+Rationale: 300K default + FW_CONTEXT_WINDOW env var is sufficient. Auto-detection adds complexity without clear benefit — the user explicitly wants 300K for quality+cost control, not the model's maximum. Different models have different optimal working windows that don't equal their context limits.
+Evidence:
+- User feedback: explicit preference for 300K, NOT 1M (even on Opus 4.6 with 1M context)
+- FW_CONTEXT_WINDOW env var already provides per-project override capability
+- Auto-detection would require API calls or model metadata that may not be available offline
+- The "right" context window is a user preference, not a model property
+
+### 2026-04-13T11:30:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+### 2026-04-13T11:30:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: NO-GO
+
+### 2026-04-13T11:31:37Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** NO-GO
 - **Rationale:** Recommendation: NO-GO

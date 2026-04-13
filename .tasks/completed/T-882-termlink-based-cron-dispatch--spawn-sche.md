@@ -4,16 +4,16 @@ name: "TermLink-based cron dispatch — spawn scheduled Claude sessions for dete
 description: >
   Inception: TermLink-based cron dispatch — spawn scheduled Claude sessions for deterministic audit/health tasks with interpreted output
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:58:24Z
-last_update: 2026-04-12T09:26:20Z
-date_finished: null
+last_update: 2026-04-13T13:20:23Z
+date_finished: 2026-04-13T13:20:23Z
 ---
 
 # T-882: TermLink-based cron dispatch — spawn scheduled Claude sessions for deterministic audit/health tasks with interpreted output
@@ -142,7 +142,18 @@ The idea: use TermLink to spawn scheduled Claude sessions (`claude -p` or `claud
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: 5 high-value use cases identified. `fw termlink dispatch` mechanism already works. Token cost ~$1-3/day. Safety model (read-only + structured output + action separation) prevents unintended mutations.
+- Evidence:
+  - 4 dispatch mechanisms evaluated, Option C (fw termlink dispatch) is best
+  - `claude -p` works headlessly from cron (no TTY needed)
+  - `--json-schema` enables deterministic structured output
+  - Hybrid local/API approach reduces cost for simple tasks
+  - Research in `docs/reports/T-882-termlink-cron-dispatch.md`
+
+**Date**: 2026-04-13T11:27:35Z
 
 ## Updates
 
@@ -155,3 +166,24 @@ The idea: use TermLink to spawn scheduled Claude sessions (`claude -p` or `claud
 ### 2026-04-12T09:26:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:27:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: GO
+- Rationale: 5 high-value use cases identified. `fw termlink dispatch` mechanism already works. Token cost ~$1-3/day. Safety model (read-only + structured output + action separation) prevents unintended mutations.
+- Evidence:
+  - 4 dispatch mechanisms evaluated, Option C (fw termlink dispatch) is best
+  - `claude -p` works headlessly from cron (no TTY needed)
+  - `--json-schema` enables deterministic structured output
+  - Hybrid local/API approach reduces cost for simple tasks
+  - Research in `docs/reports/T-882-termlink-cron-dispatch.md`
+
+### 2026-04-13T13:20:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: Status fix for stuck inception
+
+### 2026-04-13T13:20:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision recorded via Watchtower

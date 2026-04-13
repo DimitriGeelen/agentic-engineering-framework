@@ -4,16 +4,16 @@ name: "Timeline token usage — show per-session token costs in Watchtower /time
 description: >
   Inception: Timeline token usage — show per-session token costs in Watchtower /timeline
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T23:19:05Z
-last_update: 2026-04-12T09:26:20Z
-date_finished: null
+last_update: 2026-04-13T13:21:39Z
+date_finished: 2026-04-13T13:21:39Z
 ---
 
 # T-825: Timeline token usage — show per-session token costs in Watchtower /timeline
@@ -116,3 +116,12 @@ None — display-only change, data already exists, no new dependencies.
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** GO — Minimal effort (<30 min), data already available in every handover file, adds meaningful temporal context to token usage visibility. The /costs page provides detailed breakdowns; the timeline adds the trend dimension.
+
+### 2026-04-13T13:21:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

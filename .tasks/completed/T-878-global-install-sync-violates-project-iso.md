@@ -4,16 +4,16 @@ name: "Global install sync violates project isolation — fw upgrade still write
 description: >
   fw upgrade step 4c syncs scripts to ~/.agentic-framework despite T-662 establishing project isolation. The INFO message says 'no global install dependency' but then immediately syncs to global. Contradicts isolation principle.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T06:08:16Z
-last_update: 2026-04-12T09:26:25Z
-date_finished: null
+last_update: 2026-04-13T13:21:41Z
+date_finished: 2026-04-13T13:21:41Z
 ---
 
 # T-878: Global install sync violates project isolation — fw upgrade still writes to ~/.agentic-framework
@@ -162,3 +162,12 @@ Line 469 of `lib/upgrade.sh` says "no global install dependency" then line 480 s
   - `lib/upgrade.sh:480-558` syncs to unused global install
   - Line 469 says "no global install dependency", line 480 syncs to it — self-contradictory
   - No runtime dependencies found on `~/.agentic-framework/` in grep of all scripts
+
+### 2026-04-13T13:21:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

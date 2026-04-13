@@ -4,16 +4,16 @@ name: "TermLink dispatch project context — fix worker CWD resolution so hooks 
 description: >
   Inception: TermLink dispatch project context — fix worker CWD resolution so hooks find correct PROJECT_ROOT
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T18:23:31Z
-last_update: 2026-04-06T22:23:16Z
-date_finished: null
+last_update: 2026-04-13T13:20:22Z
+date_finished: 2026-04-13T13:20:22Z
 ---
 
 # T-856: TermLink dispatch project context — fix worker CWD resolution so hooks find correct PROJECT_ROOT
@@ -114,7 +114,17 @@ were research-only (no Write/Edit needed inside the project).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: NO-GO (already fixed by T-792)
+- Rationale: The core issue (worker CWD resolution) was fixed by commit `305038d8` (T-792) which exports `PROJECT_ROOT` and `FRAMEWORK_ROOT` in the worker's `run.sh` before launching `claude -p`. All four assumptions were invalidated — no TermLink binary changes, no `--cwd` flag, no symlink hacks needed. The fix is simpler than any proposed approach.
+- Evidence:
+  - T-792 commit `305038d8` exports PROJECT_ROOT in `agents/termlink/termlink.sh:300-308`
+  - `lib/paths.sh:33` respects pre-set PROJECT_ROOT
+  - T-856 was created (18:23 UTC) before T-792 was committed (19:47 UTC)
+  - Suggested action: close T-856 as superseded by T-792
+
+**Date**: 2026-04-13T11:27:34Z
 
 ## Updates
 
@@ -126,3 +136,23 @@ were research-only (no Write/Edit needed inside the project).
 
 ### 2026-04-06T22:23:16Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-04-13T11:27:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: NO-GO (already fixed by T-792)
+- Rationale: The core issue (worker CWD resolution) was fixed by commit `305038d8` (T-792) which exports `PROJECT_ROOT` and `FRAMEWORK_ROOT` in the worker's `run.sh` before launching `claude -p`. All four assumptions were invalidated — no TermLink binary changes, no `--cwd` flag, no symlink hacks needed. The fix is simpler than any proposed approach.
+- Evidence:
+  - T-792 commit `305038d8` exports PROJECT_ROOT in `agents/termlink/termlink.sh:300-308`
+  - `lib/paths.sh:33` respects pre-set PROJECT_ROOT
+  - T-856 was created (18:23 UTC) before T-792 was committed (19:47 UTC)
+  - Suggested action: close T-856 as superseded by T-792
+
+### 2026-04-13T13:20:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** T-1226: Status fix for stuck inception
+
+### 2026-04-13T13:20:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision recorded via Watchtower

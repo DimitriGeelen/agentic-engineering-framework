@@ -4,16 +4,16 @@ name: "Language strategy — TypeScript adoption for new framework components vs
 description: >
   Fundamental architectural decision: should new framework components (loop detection, health checks, event loops, session management, token budget) be written in TypeScript instead of the current bash+Python hybrid? The framework is already three languages (bash orchestration, Python data processing, Python/Flask web). Every non-trivial hook shells out to Python. Patterns extracted from OpenClaw are all TypeScript requiring rewrite. This is a multi-session inception spanning language audit, prototype spikes, migration path analysis, and constitutional directive review.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [architecture, language, constitutional]
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T-593, T-594, T-595]
 created: 2026-03-23T21:32:53Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-13T13:21:29Z
+date_finished: 2026-04-13T13:21:29Z
 ---
 
 # T-586: Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo
@@ -362,3 +362,12 @@ Key exchanges that shaped this inception. Captures WHY and HOW reasoning evolved
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-13T13:21:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

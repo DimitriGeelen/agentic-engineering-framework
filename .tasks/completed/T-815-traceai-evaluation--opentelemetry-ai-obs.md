@@ -4,16 +4,16 @@ name: "traceAI evaluation — OpenTelemetry AI observability vs framework direct
 description: >
   Inception: traceAI evaluation — OpenTelemetry AI observability vs framework directives
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T20:43:08Z
-last_update: 2026-04-12T09:26:20Z
-date_finished: null
+last_update: 2026-04-13T13:21:38Z
+date_finished: 2026-04-13T13:21:38Z
 ---
 
 # T-815: traceAI evaluation — OpenTelemetry AI observability vs framework directives
@@ -133,3 +133,12 @@ Evaluate traceAI (open-source OpenTelemetry-based AI observability) against our 
   - D3 Usability: Strong — 3-line setup, env-var config, privacy controls
   - D4 Portability: Excellent — OTel-native, 4 languages, 50+ providers
   - Full analysis: `docs/reports/T-815-traceai-evaluation.md`
+
+### 2026-04-13T13:21:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

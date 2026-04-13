@@ -4,16 +4,16 @@ name: "Watchtower stale task dashboard — notification, batch review, and auto-
 description: >
   Inception: Watchtower stale task dashboard — notification, batch review, and auto-resolution for 54+ pending human review tasks
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T12:41:09Z
-last_update: 2026-04-12T09:26:20Z
-date_finished: null
+last_update: 2026-04-13T13:21:40Z
+date_finished: 2026-04-13T13:21:40Z
 ---
 
 # T-835: Watchtower stale task dashboard — notification, batch review, and auto-resolution for 54+ pending human review tasks
@@ -124,3 +124,12 @@ OUT: New Watchtower pages (Option A deferred to separate build task)
 - Rationale: 77 tasks in stale backlog, growing at 7/day. Option B auto-closes 31 RUBBER-STAMP tasks (S effort). Option A handles remaining 48 REVIEW tasks with batch UI (M effort).
 - Evidence: 3 TermLink research reports in `docs/reports/T-835-agent-{a,b,c}-.md`
 - Build tasks after GO: T-836 (verify-acs --auto-close), T-837 (batch approval page)
+
+### 2026-04-13T13:21:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

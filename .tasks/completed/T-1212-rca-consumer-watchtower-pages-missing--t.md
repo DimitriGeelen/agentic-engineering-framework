@@ -4,7 +4,7 @@ name: "RCA: Consumer Watchtower pages missing — terminal page 404, approvals b
 description: >
   Inception: RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T09:08:36Z
-last_update: 2026-04-13T09:47:48Z
-date_finished: null
+last_update: 2026-04-13T13:20:41Z
+date_finished: 2026-04-13T13:20:41Z
 ---
 
 # T-1212: RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers
@@ -47,9 +47,9 @@ T-1213 covered the correct RCA and produced T-1214 + T-1215 as build tasks.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (superseded by T-1213 — wrong scope identified)
+- [x] Assumptions tested (N/A — superseded before testing)
+- [x] Recommendation written with rationale (NO-GO — superseded by T-1213)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -154,3 +154,7 @@ Evidence:
 - T-1213 GO decision recorded, RCA complete
 - T-1214 completed: template fallback context for missing recommendations
 - T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+### 2026-04-13T13:20:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision — superseded by T-1213

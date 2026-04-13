@@ -4,16 +4,16 @@ name: "Inception: Project boundary exceptions — /etc/cron.d and other legitima
 description: >
   T-602 fixed the cron collision symptom, but the boundary exception itself is unexamined. The project boundary gate (T-559) blocks writes outside PROJECT_ROOT, yet /etc/cron.d/ is a legitimate exception. Questions: (1) Is /etc/cron.d/ the only legitimate outside-boundary write? (2) How should T-559 gate coexist with this exception — whitelist, escape hatch, or structural carve-out? (3) What is the attack surface if agents learn 'some outside writes are OK'? (4) Do the cron-triggered audits cover the full project scope (confirmed: yes via PROJECT_ROOT), and is this documented? Related: T-559, T-602, G-022.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [urgent, security]
 components: []
 related_tasks: [T-559, T-602, T-601]
 created: 2026-03-24T09:44:00Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-13T13:21:32Z
+date_finished: 2026-04-13T13:21:32Z
 ---
 
 # T-603: Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes
@@ -177,3 +177,12 @@ T-602 fixed the multi-project collision symptom, but the boundary exception itse
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-13T13:21:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

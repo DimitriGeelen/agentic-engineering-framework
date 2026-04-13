@@ -4,16 +4,16 @@ name: "Batch operation governance — prevent agent batch-modifying task horizon
 description: >
   Inception: Batch operation governance — prevent agent batch-modifying task horizons without per-task justification
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T09:53:46Z
-last_update: 2026-04-12T09:26:26Z
-date_finished: null
+last_update: 2026-04-13T13:20:24Z
+date_finished: 2026-04-13T13:20:24Z
 ---
 
 # T-993: Batch operation governance — prevent agent batch-modifying task horizons without per-task justification
@@ -111,7 +111,23 @@ Research artifact: `docs/reports/T-993-batch-operation-governance.md`
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: GO — Implement Option C + B (combined)
+
+Rationale: Option C (--reason flag in update-task.sh for horizon changes) provides structural enforcement at the point of action. Combined with Option B (CLAUDE.md rule), this gives both enforcement and guidance. Option D (batch detection) adds unnecessary complexity for a rare event.
+
+Evidence:
+- T-992: Agent proposed batch-moving 30+ tasks without justification — user had to intervene manually
+- check-tier0.sh already enforces inception decisions (T-557) — same pattern could work for batch detection, but simpler to gate at the tool level
+- update-task.sh already validates horizon values — adding --reason is a small change
+- CLAUDE.md already has §Human Task Completion Rule (T-372) as precedent for "evidence before change"
+
+Proposed implementation (2 build tasks):
+1. Build task 1: Add `--reason` flag to `fw task update --horizon` — log reason in Updates section. Without --reason, print warning but allow (soft gate initially).
+2. Build task 2: Add CLAUDE.md rule: "Each horizon change requires justification. Never batch-modify >3 tasks without per-task evidence."
+
+**Date**: 2026-04-13T11:27:37Z
 
 ## Updates
 
@@ -124,3 +140,29 @@ Research artifact: `docs/reports/T-993-batch-operation-governance.md`
 ### 2026-04-12T09:26:26Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:27:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: GO — Implement Option C + B (combined)
+
+Rationale: Option C (--reason flag in update-task.sh for horizon changes) provides structural enforcement at the point of action. Combined with Option B (CLAUDE.md rule), this gives both enforcement and guidance. Option D (batch detection) adds unnecessary complexity for a rare event.
+
+Evidence:
+- T-992: Agent proposed batch-moving 30+ tasks without justification — user had to intervene manually
+- check-tier0.sh already enforces inception decisions (T-557) — same pattern could work for batch detection, but simpler to gate at the tool level
+- update-task.sh already validates horizon values — adding --reason is a small change
+- CLAUDE.md already has §Human Task Completion Rule (T-372) as precedent for "evidence before change"
+
+Proposed implementation (2 build tasks):
+1. Build task 1: Add `--reason` flag to `fw task update --horizon` — log reason in Updates section. Without --reason, print warning but allow (soft gate initially).
+2. Build task 2: Add CLAUDE.md rule: "Each horizon change requires justification. Never batch-modify >3 tasks without per-task evidence."
+
+### 2026-04-13T13:20:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: Status fix for stuck inception
+
+### 2026-04-13T13:20:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision recorded via Watchtower

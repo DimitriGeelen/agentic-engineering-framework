@@ -8,16 +8,16 @@ description: >
   web UI approval button, TermLink out-of-band channel. Hard constraint: agent must not be able to
   bypass or fake the confirmation. Related: T-557 (inception decide gate), T-559 (boundary gate).
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
-components: []
+components: [bin/fw, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-25T15:26:08Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-13T13:21:35Z
+date_finished: 2026-04-13T13:21:35Z
 ---
 
 # T-608: Frictionless Tier 0 human confirmation — prove human acted without terminal switching
@@ -161,3 +161,12 @@ Tier 0 gates (destructive commands, inception decisions) require human authority
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-13T13:21:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:21:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower

@@ -4,16 +4,16 @@ name: "Configurable Watchtower port + project service port registry in Watchtowe
 description: >
   Inception: Configurable Watchtower port + project service port registry in Watchtower UI
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T09:38:47Z
-last_update: 2026-04-12T09:26:25Z
-date_finished: null
+last_update: 2026-04-13T13:20:24Z
+date_finished: 2026-04-13T13:20:24Z
 ---
 
 # T-885: Configurable Watchtower port + project service port registry in Watchtower UI
@@ -186,7 +186,18 @@ All approaches should converge on this file as the single source of truth per pr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: - Recommendation: GO
+- Rationale: All three spikes confirm the work is bounded, achievable, and immediately useful. The multi-project port collision is a real daily friction (11 projects, all defaulting to :3000, watchtower.sh actively kills port holders). Fix requires adding one YAML tier to `fw_config`, extending `.framework.yaml` schema, and one new Watchtower page. No new dependencies. Backward compatible.
+- Evidence:
+  - 7 code paths already use `fw_config "PORT"` — adding a file tier catches them all
+  - `watchtower.sh:159-178` actively kills port holders — proven collision mechanism
+  - All 11 consumer projects have `.framework.yaml` — no setup needed
+  - `web/config.py:20-27` already reads `settings.yaml` — same pattern applies
+  - Proposed 7-task build decomposition, all small-to-medium effort
+
+**Date**: 2026-04-13T11:27:36Z
 
 ## Updates
 
@@ -199,3 +210,24 @@ All approaches should converge on this file as the single source of truth per pr
 ### 2026-04-12T09:26:25Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T11:27:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** - Recommendation: GO
+- Rationale: All three spikes confirm the work is bounded, achievable, and immediately useful. The multi-project port collision is a real daily friction (11 projects, all defaulting to :3000, watchtower.sh actively kills port holders). Fix requires adding one YAML tier to `fw_config`, extending `.framework.yaml` schema, and one new Watchtower page. No new dependencies. Backward compatible.
+- Evidence:
+  - 7 code paths already use `fw_config "PORT"` — adding a file tier catches them all
+  - `watchtower.sh:159-178` actively kills port holders — proven collision mechanism
+  - All 11 consumer projects have `.framework.yaml` — no setup needed
+  - `web/config.py:20-27` already reads `settings.yaml` — same pattern applies
+  - Proposed 7-task build decomposition, all small-to-medium effort
+
+### 2026-04-13T13:20:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** T-1226: Status fix for stuck inception
+
+### 2026-04-13T13:20:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision recorded via Watchtower

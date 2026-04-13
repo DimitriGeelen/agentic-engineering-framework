@@ -4,16 +4,16 @@ name: "Watchtower truncation policy — data that flows into permanent records m
 description: >
   Inception: Watchtower truncation policy — data that flows into permanent records must NEVER be truncated at display layer
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/blueprints/inception.py]
 related_tasks: []
 created: 2026-04-12T11:08:23Z
-last_update: 2026-04-12T14:01:13Z
-date_finished: null
+last_update: 2026-04-13T13:20:11Z
+date_finished: 2026-04-13T13:20:11Z
 ---
 
 # T-1151: Watchtower truncation policy — data that flows into permanent records must NEVER be truncated at display layer
@@ -139,3 +139,11 @@ Evidence:
 - 2 write-through sites already fixed (T-1091, T-1150) with documenting comments
 - 1 remaining write-through: `discovery.py:421` (`title[:120]`) — low risk, original data preserved in `history` and `final_question` fields
 - No additional governance-impacting truncation found
+
+### 2026-04-13T13:20:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** T-1226: Status fix — decision already recorded via Watchtower
+
+### 2026-04-13T13:20:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: NO-GO decision already recorded via Watchtower

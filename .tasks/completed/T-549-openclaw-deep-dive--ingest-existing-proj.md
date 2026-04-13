@@ -4,16 +4,16 @@ name: "OpenClaw deep-dive — ingest existing project, evaluate architecture, ex
 description: >
   Inception: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh, bin/fw]
 related_tasks: []
 created: 2026-03-23T11:32:07Z
-last_update: 2026-04-06T22:29:32Z
-date_finished: null
+last_update: 2026-04-13T13:22:17Z
+date_finished: 2026-04-13T13:22:17Z
 ---
 
 # T-549: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings
@@ -111,12 +111,12 @@ This is a **dual-purpose evaluation:**
 
 ## Acceptance Criteria
 
-- [ ] Problem statement validated
-- [ ] Infrastructure on .107 operational (SSH, clone, fw init, doctor passes)
-- [ ] Component fabric maps OpenClaw at meaningful quality
-- [ ] Pickup prompt generated for handoff session
-- [ ] Assumptions tested
-- [ ] Go/No-Go decision made (proceed with full evaluation or not)
+- [x] Problem statement validated
+- [x] Infrastructure on .107 operational (SSH, clone, fw init, doctor passes)
+- [x] Component fabric maps OpenClaw at meaningful quality
+- [x] Pickup prompt generated for handoff session
+- [x] Assumptions tested
+- [x] Go/No-Go decision made (GO — proceed with full evaluation)
 
 ## Go/No-Go Criteria
 
@@ -178,3 +178,12 @@ This is a **dual-purpose evaluation:**
 
 ### 2026-04-06T22:29:32Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
+
+### 2026-04-13T13:21:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** T-1226: GO decision already recorded
+
+### 2026-04-13T13:22:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-1226: GO decision recorded via Watchtower
