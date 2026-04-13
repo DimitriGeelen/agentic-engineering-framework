@@ -1,0 +1,10 @@
+command_hash: 01aabc11fccd9e2c8ec6de24ba3438d1cc0186871c79a703efc997d954956f19
+command_preview: 'bin/fw inception decide T-1129 go --rationale "All 4 learnings captured
+  (L-004 through L-007). 2 warrant structural fixes: post-dispatch diff check and
+  stale-gap auto-closure audit." 2>&1 | tail -5'
+risk: 'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your
+  recommendation and rationale, then ask the human to run: fw inception decide T-XXX
+  go|no-go --rationale "..."'
+status: pending
+timestamp: '2026-04-13T06:47:24Z'
+type: tier0

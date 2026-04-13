@@ -4,7 +4,7 @@ name: "Pickup: CRITICAL RCA: Agent command amnesia has 3 structural root causes 
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-972. Type: learning.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-12T10:12:02Z
-last_update: 2026-04-12T14:01:20Z
+last_update: 2026-04-13T06:48:09Z
 date_finished: null
 ---
 
@@ -54,7 +54,7 @@ Framework gate scripts (hooks, update-task, audit) output bare CLI commands as e
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1146`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -122,3 +122,6 @@ test -f docs/reports/T-1146-command-amnesia-rca.md
 
 ### 2026-04-12T14:01:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-04-13T06:48:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
