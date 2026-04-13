@@ -110,20 +110,20 @@ EOF
         if [ "$onboard_count" -gt 0 ]; then
             echo "Onboarding tasks are ready ($onboard_count tasks). Start with:"
             echo ""
-            echo "  fw work-on T-001"
+            echo "  $(_fw_cmd) work-on T-001"
             echo ""
             echo "The tasks guide you through framework setup step by step."
         else
             echo "This looks like a new project. Here's how to get started:"
             echo ""
             echo "  1. Start working on something:"
-            echo "     fw work-on 'Your task name' --type build"
+            echo "     $(_fw_cmd) work-on 'Your task name' --type build"
             echo ""
             echo "  2. Or start an inception (exploration):"
-            echo "     fw inception start 'Explore problem X'"
+            echo "     $(_fw_cmd) inception start 'Explore problem X'"
         fi
         echo ""
-        echo "  Run 'fw help' for all commands, 'fw doctor' to check setup."
+        echo "  Run '$(_fw_cmd) help' for all commands, '$(_fw_cmd) doctor' to check setup."
     fi
 
     # Auto-generate watch-patterns.yaml if missing (T-367)
@@ -149,7 +149,7 @@ patterns:
 WPEOF
         echo ""
         echo -e "${GREEN}Generated .fabric/watch-patterns.yaml${NC} (default patterns)"
-        echo "  Edit to match your project layout, then run: fw fabric scan"
+        echo "  Edit to match your project layout, then run: $(_fw_cmd) fabric scan"
     fi
 
     # Auto-run watchtower scan (Phase 4)
@@ -178,7 +178,7 @@ WPEOF
         [ -n "$cron_sections" ] && echo "  Sections: $cron_sections"
         echo -e "  Pass: ${cron_pass:-0}  Warn: ${cron_warn:-0}  Fail: ${cron_fail:-0}"
         if [ "${cron_warn:-0}" -gt 0 ] || [ "${cron_fail:-0}" -gt 0 ]; then
-            echo -e "  ${YELLOW}Run 'fw audit' for details${NC}"
+            echo -e "  ${YELLOW}Run '$(_fw_cmd) audit' for details${NC}"
         fi
     fi
 
@@ -200,7 +200,7 @@ except Exception:
         if [ "${watching_count:-0}" -gt 0 ]; then
             echo ""
             echo -e "Concerns register: ${YELLOW}${watching_count} watching${NC}"
-            echo -e "  Run ${CYAN}fw gaps${NC} for details"
+            echo -e "  Run ${CYAN}$(_fw_cmd) gaps${NC} for details"
         fi
     fi
 

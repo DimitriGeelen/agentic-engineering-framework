@@ -81,3 +81,11 @@
         | wc -l)
     [ "$bare" -eq 0 ]
 }
+
+@test "init.sh has no bare fw in welcome messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/lib/init.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}
