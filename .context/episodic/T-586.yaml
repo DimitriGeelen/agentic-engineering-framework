@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-586: Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T14:10:49Z
+# ============================================================================
+
+task_id: T-586
+task_name: "Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-23T21:32:53Z
+completed: 2026-04-13T13:21:29Z
+duration_days: 20
+updates_count: 5
+first_commit: 2026-03-23T22:54:28+01:00
+last_commit: 2026-03-24T00:03:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Phase 1 language audit — quantify bash+Python hybrid reality. Phase 1 complete — language audit + 5 deep investigations + termlink fix. Phase 2 complete — prototype comparison, TS wins 8-2-1. Phase 3+4 complete — migration path + constitutional review. Phase 5 complete — final GO decision, all agent ACs done. Create 4 build tasks + dialogue log + research index
+
+# Key outcomes
+outcomes:
+  - "Phase 1 complete: language audit artifact with quantified distribution"
+  - "Phase 2 complete: prototype comparison artifact with measurable results"
+  - "Phase 3 complete: migration path artifact with concrete design"
+  - "Phase 4 complete: constitutional review artifact with directive-by-directive analysis"
+  - "Phase 5 complete: GO/NO-GO decision recorded with full rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Phase 1 complete — language audit + 5 deep investigations + termlink fix"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/termlink/termlink.sh"
+  - ".context/project/learnings.yaml"
+  - ".context/project/patterns.yaml"
+  - "docs/reports/T-586-constitutional-review.md"
+  - "docs/reports/T-586-language-audit.md"
+  - "docs/reports/T-586-migration-path.md"
+  - "docs/reports/T-586-prototype-comparison.md"
+  - "docs/reports/T-586-q1-compilation.md"
+  - "docs/reports/T-586-q2-vendoring.md"
+  - "docs/reports/T-586-q3-inspectability.md"
+  - "docs/reports/T-586-q4-shell-escaping.md"
+  - "docs/reports/T-586-q5-language-count.md"
+  - "docs/spikes/T-586-benchmark.sh"
+  - "docs/spikes/T-586-loop-detect-bash/loop-detect.sh"
+  - "docs/spikes/T-586-loop-detect-ts/loop-detect.js"
+  - "docs/spikes/T-586-loop-detect-ts/loop-detect.ts"
+  - ".tasks/active/T-586-language-strategy--typescript-adoption-f.md"
+  - ".tasks/active/T-592-scaffold-libts--typescript-build-infrast.md"
+  - ".tasks/active/T-593-build-fw-util--typescript-multi-subcomma.md"
+  - ".tasks/active/T-594-port-loop-detector-to-typescript--first-.md"
+  - ".tasks/active/T-595-migrate-highest-risk-inline-python-block.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-23T22:54:28"
+    action: "T-586: Phase 1 language audit — quantify bash+Python hybrid reality"
+  - time: "2026-03-23T23:30:44"
+    action: "T-586: Phase 1 complete — language audit + 5 deep investigations + termlink fix"
+  - time: "2026-03-23T23:41:35"
+    action: "T-586: Phase 2 complete — prototype comparison, TS wins 8-2-1"
+  - time: "2026-03-23T23:45:59"
+    action: "T-586: Phase 3+4 complete — migration path + constitutional review"
+  - time: "2026-03-23T23:47:30"
+    action: "T-586: Phase 5 complete — final GO decision, all agent ACs done"
+  - time: "2026-03-24T00:03:20"
+    action: "T-586: Create 4 build tasks + dialogue log + research index"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 29748 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [architecture, language, constitutional]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29748
+  commits: 6
+  files_changed: 21
+  lines_added: 2833
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-586-language-strategy--typescript-adoption-f.md
+generated_by: context-agent-hybrid

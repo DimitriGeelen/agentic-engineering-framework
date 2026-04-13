@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-835: Watchtower stale task dashboard — notification, batch review, and auto-resolution for 54+ pending human review tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T14:10:51Z
+# ============================================================================
+
+task_id: T-835
+task_name: "Watchtower stale task dashboard — notification, batch review, and auto-resolution for 54+ pending human review tasks"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T12:41:09Z
+completed: 2026-04-13T13:21:40Z
+duration_days: 9
+updates_count: 6
+first_commit: 2026-04-04T14:43:43+02:00
+last_commit: 2026-04-04T14:51:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — stale task dashboard research artifact + TermLink dispatch. Inception complete — stale task dashboard research (GO recommended)
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated (77 tasks, 79 unchecked ACs)"
+  - "3 TermLink workers completed research"
+  - "Recommendation written: GO — Option B (auto-close RUBBER-STAMP) first"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-835-agent-a-backlog-analysis.md"
+  - "docs/reports/T-835-agent-b-tooling-audit.md"
+  - "docs/reports/T-835-agent-c-design-options.md"
+  - "docs/reports/T-835-stale-task-dashboard.md"
+  - ".tasks/active/T-835-watchtower-stale-task-dashboard--notific.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T14:43:43"
+    action: "T-835: Inception — stale task dashboard research artifact + TermLink dispatch"
+  - time: "2026-04-04T14:51:33"
+    action: "T-835: Inception complete — stale task dashboard research (GO recommended)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13000 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13000
+  commits: 2
+  files_changed: 5
+  lines_added: 735
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-835-watchtower-stale-task-dashboard--notific.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-993: Batch operation governance — prevent agent batch-modifying task horizons without per-task justification
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T14:10:49Z
+# ============================================================================
+
+task_id: T-993
+task_name: "Batch operation governance — prevent agent batch-modifying task horizons without per-task justification"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-07T09:53:46Z
+completed: 2026-04-13T13:20:24Z
+duration_days: 6
+updates_count: 5
+first_commit: 2026-04-07T11:57:03+02:00
+last_commit: 2026-04-07T11:57:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception research — batch operation governance, recommend --reason flag + CLAUDE.md rule
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/VERSION"
+  - ".context/project/assumptions.yaml"
+  - "docs/reports/T-993-batch-operation-governance.md"
+  - ".tasks/active/T-993-batch-operation-governance--prevent-agen.md"
+  - "VERSION"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-07T11:57:03"
+    action: "T-993: Inception research — batch operation governance, recommend --reason flag + CLAUDE.md rule"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8846 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8846
+  commits: 1
+  files_changed: 5
+  lines_added: 212
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-993-batch-operation-governance--prevent-agen.md
+generated_by: context-agent-hybrid

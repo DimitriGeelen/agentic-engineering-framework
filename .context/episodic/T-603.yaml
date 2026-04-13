@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-603: Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T14:10:50Z
+# ============================================================================
+
+task_id: T-603
+task_name: "Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-24T09:44:00Z
+completed: 2026-04-13T13:21:32Z
+duration_days: 19
+updates_count: 6
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "Complete inventory of all framework writes outside PROJECT_ROOT"
+  - "Evaluate 3+ exception mechanism options with pros/cons"
+  - "Document current audit scope (what cron checks cover for consumer projects)"
+  - "Research artifact created at `docs/reports/T-603-boundary-exceptions.md`"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 29017 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [urgent, security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29017
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-603-inception-project-boundary-exceptions--e.md
+generated_by: context-agent-hybrid
