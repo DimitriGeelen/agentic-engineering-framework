@@ -6,7 +6,10 @@ from datetime import datetime, timezone
 import yaml
 from flask import Blueprint, abort, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import (
+    FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
+    get_all_task_metadata, get_episodic_tags,
+)
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("tasks", __name__)
@@ -278,36 +281,10 @@ def _toggle_ac_line(file_path, line_idx):
 
 @bp.route("/tasks")
 def tasks():
-    all_tasks = []
-
-    active_dir = PROJECT_ROOT / ".tasks" / "active"
-    if active_dir.exists():
-        for f in sorted(active_dir.glob("T-*.md")):
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
-                fm["_location"] = "active"
-                all_tasks.append(fm)
-
-    completed_dir = PROJECT_ROOT / ".tasks" / "completed"
-    if completed_dir.exists():
-        for f in sorted(completed_dir.glob("T-*.md")):
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
-                fm["_location"] = "completed"
-                all_tasks.append(fm)
-
-    # Load episodic tags for component filtering
-    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
-    task_tags = {}
-    if episodic_dir.exists():
-        for f in episodic_dir.glob("T-*.yaml"):
-            try:
-                with open(f) as fh:
-                    edata = yaml.safe_load(fh)
-                if isinstance(edata, dict):
-                    task_tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
-            except yaml.YAMLError:
-                continue
+    # T-1233: Use cached task metadata (avoids re-reading 1200+ files per request)
+    import copy
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+    task_tags = get_episodic_tags()
 
     for t in all_tasks:
         # Merge frontmatter tags with episodic tags (deduplicated)

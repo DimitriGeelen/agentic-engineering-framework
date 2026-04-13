@@ -195,6 +195,78 @@ def parse_frontmatter(content):
     return fm, fm_match.group(2)
 
 
+# ---------------------------------------------------------------------------
+# Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
+# ---------------------------------------------------------------------------
+
+import time as _time
+
+_task_cache = {"data": None, "names": None, "tags": None, "ts": 0}
+_TASK_CACHE_TTL = 30  # seconds
+
+
+def get_all_task_metadata():
+    """Return list of frontmatter dicts for all tasks (active + completed).
+
+    Cached for _TASK_CACHE_TTL seconds. Each dict has '_location' key.
+    """
+    now = _time.monotonic()
+    if _task_cache["data"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["data"]
+
+    all_tasks = []
+    names = {}
+    for location in ("active", "completed"):
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if not task_dir.exists():
+            continue
+        for f in sorted(task_dir.glob("T-*.md")):
+            fm, _ = parse_frontmatter(f.read_text())
+            if fm:
+                fm["_location"] = location
+                all_tasks.append(fm)
+                tid = fm.get("id", "")
+                name = fm.get("name", "")
+                if tid and name:
+                    names[tid] = name
+
+    _task_cache["data"] = all_tasks
+    _task_cache["names"] = names
+    _task_cache["ts"] = now
+    return all_tasks
+
+
+def get_task_names():
+    """Return {task_id: name} dict. Uses task cache."""
+    now = _time.monotonic()
+    if _task_cache["names"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["names"]
+    get_all_task_metadata()  # populate cache
+    return _task_cache["names"] or {}
+
+
+def get_episodic_tags():
+    """Return {task_id: [tags]} from episodic files. Cached."""
+    now = _time.monotonic()
+    if _task_cache["tags"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+        return _task_cache["tags"]
+
+    tags = {}
+    episodic_dir = PROJECT_ROOT / ".context" / "episodic"
+    if episodic_dir.exists():
+        for f in episodic_dir.glob("T-*.yaml"):
+            try:
+                with open(f) as fh:
+                    edata = yaml.safe_load(fh)
+                if isinstance(edata, dict):
+                    tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
+            except yaml.YAMLError:
+                continue
+
+    _task_cache["tags"] = tags
+    return tags
+
+
 def sse_event(event_type, **kwargs):
     """Format a Server-Sent Event string.
 
