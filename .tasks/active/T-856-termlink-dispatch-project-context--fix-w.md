@@ -83,10 +83,6 @@ were research-only (no Write/Edit needed inside the project).
 - All viable fixes require TermLink binary changes (defer to T-682)
 - The fix introduces fragile symlink or env var hacks that break on path changes
 
-**NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
-
 ## Verification
 
 <!-- Shell commands that MUST pass before work-completed. One per line.

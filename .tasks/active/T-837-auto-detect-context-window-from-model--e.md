@@ -61,12 +61,10 @@ Hardcoded 300K context window default doesn't adapt to model capabilities (Opus 
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Auto-detection provides clear benefit over manual FW_CONTEXT_WINDOW
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- User preference (300K) matters more than model capability (which it does)
 
 ## Verification
 
