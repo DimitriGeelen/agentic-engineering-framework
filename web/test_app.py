@@ -1105,7 +1105,15 @@ class TestEmptyTaskFiles:
         completed.mkdir(parents=True, exist_ok=True)
         episodic = tmp_path / ".context" / "episodic"
         episodic.mkdir(parents=True, exist_ok=True)
+        # T-1239: Must also patch shared.PROJECT_ROOT for the task cache (T-1233)
+        monkeypatch.setattr("web.shared.PROJECT_ROOT", tmp_path)
         monkeypatch.setattr("web.blueprints.tasks.PROJECT_ROOT", tmp_path)
+        # Invalidate task cache so it re-reads from patched path
+        from web.shared import _task_cache
+        _task_cache["data"] = None
+        _task_cache["names"] = None
+        _task_cache["tags"] = None
+        _task_cache["ts"] = 0
         resp = client.get("/tasks?view=list")
         assert resp.status_code == 200
         assert b"T-996" in resp.data
