@@ -1658,3 +1658,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "Watchtower routes that scan all task/episodic/handover files become O(n) slow at scale (1200+ tasks). Use TTL-based in-memory caches in web/shared.py. For cross-file searches like _count_applications(), build a reverse index on first call instead of N*M file reads."
+  source: P-001
+  task: T-1233
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
