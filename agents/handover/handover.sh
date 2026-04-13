@@ -274,7 +274,7 @@ if [ "$PENDING_OBS" -gt 0 ]; then
     else
         echo -e "${CYAN}Observation inbox: $PENDING_OBS pending${NC}"
     fi
-    echo "  Run: fw note triage"
+    echo "  Run: $(_emit_user_command "note triage")"
 else
     echo -e "${GREEN}✓ Observation inbox clean${NC}"
 fi
@@ -776,7 +776,7 @@ else
     echo "1. Review $HANDOVER_FILE (auto-filled from git data)"
     echo "2. Edit if needed — enrich Decisions, Gotchas, Open Questions"
     _resolve_commit_task
-    echo "3. Commit with: fw git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\""
+    echo "3. Commit with: $(_emit_user_command "git commit -m \"$COMMIT_TASK: Session handover $SESSION_ID\"")"
     echo ""
     echo -e "${CYAN}Key sections to complete:${NC}"
     echo "- Where We Are (summary)"

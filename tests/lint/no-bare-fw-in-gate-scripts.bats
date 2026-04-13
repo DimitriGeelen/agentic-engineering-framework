@@ -33,3 +33,11 @@
 @test "hooks.sh install output uses _emit_user_command" {
     grep 'Bypass:.*tier0' agents/git/lib/hooks.sh | grep -q '_emit_user_command'
 }
+
+@test "handover.sh terminal output uses _emit_user_command" {
+    # Terminal echo lines with fw should use _emit_user_command (not markdown content)
+    bare=$(grep 'echo.*".*Run:.*\bfw\b' agents/handover/handover.sh \
+        | grep -v '_fw_cmd\|_emit_user_command' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}
