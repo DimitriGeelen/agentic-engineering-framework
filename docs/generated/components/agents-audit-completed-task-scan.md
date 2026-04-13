@@ -1,6 +1,6 @@
 # completed-task-scan
 
-> TODO: describe what this component does
+> Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria
 
 **Type:** script | **Subsystem:** audit | **Location:** `agents/audit/completed-task-scan.py`
 

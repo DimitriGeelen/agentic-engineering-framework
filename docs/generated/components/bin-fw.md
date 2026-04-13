@@ -32,7 +32,7 @@ fw upgrade /opt/my-project  # Sync framework to consumer project
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (41)
+## Dependencies (43)
 
 | Target | Relationship |
 |--------|-------------|
@@ -77,8 +77,10 @@ fw upgrade /opt/my-project  # Sync framework to consumer project
 | `lib/colors.sh` | calls |
 | `lib/costs.sh` | calls |
 | `lib/config.sh` | calls |
+| `lib/task-audit.sh` | calls |
+| `lib/watchtower.sh` | calls |
 
-## Used By (87)
+## Used By (88)
 
 | Component | Relationship |
 |-----------|-------------|

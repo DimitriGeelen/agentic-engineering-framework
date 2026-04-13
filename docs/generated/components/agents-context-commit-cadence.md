@@ -17,6 +17,18 @@ Counter reset: post-commit git hook resets .edit-counter to 0
 Exit code: always 0 (PostToolUse hooks are advisory, cannot block)
 Output: JSON with additionalContext when warning threshold reached
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `.context/working/.edit-counter` | reads |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/checkpoint.sh` | complements |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-commit-cadence.yaml`*
 *Last verified: 2026-03-27*

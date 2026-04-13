@@ -8,6 +8,11 @@
 
 Should have inception task cards or table rows
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ## Related
 
 ### Tasks

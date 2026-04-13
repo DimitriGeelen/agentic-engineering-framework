@@ -1,6 +1,6 @@
 # active-task-scan
 
-> TODO: describe what this component does
+> Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass
 
 **Type:** script | **Subsystem:** audit | **Location:** `agents/audit/active-task-scan.py`
 

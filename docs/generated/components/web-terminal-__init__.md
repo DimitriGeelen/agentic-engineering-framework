@@ -1,6 +1,6 @@
 # __init__
 
-> TODO: describe what this component does
+> Package entry point that manages PTY processes and bridges them to Flask-SocketIO WebSocket connections for the web terminal
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/__init__.py`
 

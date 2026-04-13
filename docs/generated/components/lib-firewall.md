@@ -1,6 +1,6 @@
 # firewall
 
-> TODO: describe what this component does
+> Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/firewall.sh`
 

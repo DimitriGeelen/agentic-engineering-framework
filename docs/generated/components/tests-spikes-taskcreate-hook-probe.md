@@ -17,6 +17,11 @@ tests/spikes/taskcreate-hook-probe-settings-fragment.json into
 If the log fills up after Task* tool calls → A1 (hookability) TRUE
 → proceed with T-1115 Phase 2 Level 1 implementation.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-spikes-taskcreate-hook-probe.yaml`*
 *Last verified: 2026-04-11*

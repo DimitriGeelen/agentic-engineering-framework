@@ -17,15 +17,16 @@ Flow:
 3. If keywords found, Python detailed pattern matching
 4. If destructive pattern matched:
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Target | Relationship |
 |--------|-------------|
 | `lib/paths.sh` | calls |
 | `lib/config.sh` | calls |
 | `lib/notify.sh` | calls |
+| `lib/watchtower.sh` | calls |
 
-## Used By (6)
+## Used By (7)
 
 | Component | Relationship |
 |-----------|-------------|

@@ -1,6 +1,6 @@
 # config
 
-> TODO: describe what this component does
+> Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/config.sh`
 
@@ -36,7 +36,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 |--------|-------------|
 | `lib/config.sh` | calls |
 
-## Used By (20)
+## Used By (21)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -60,6 +60,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `lib/verify-acs.sh` | called_by |
 | `tests/unit/lib_config.bats` | called_by |
 | `web/templates/config.html` | read_by |
+| `agents/git/lib/hooks.sh` | called_by |
 
 ## Related
 

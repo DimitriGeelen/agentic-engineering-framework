@@ -1,6 +1,6 @@
 # config
 
-> TODO: describe what this component does
+> Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/config.py`
 
@@ -31,7 +31,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | `web/shared.py` | calls |
 | `web/templates/config.html` | renders |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|

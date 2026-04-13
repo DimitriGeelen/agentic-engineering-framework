@@ -16,7 +16,7 @@ Split by type
 | `web/templates/risks.html` | renders |
 | `web/context_loader.py` | calls |
 
-## Used By (4)
+## Used By (5)
 
 | Component | Relationship |
 |-----------|-------------|

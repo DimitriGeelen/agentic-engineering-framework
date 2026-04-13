@@ -29,7 +29,7 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 | `web/templates/task_detail.html` | renders |
 | `web/subprocess_utils.py` | calls |
 
-## Used By (8)
+## Used By (9)
 
 | Component | Relationship |
 |-----------|-------------|

@@ -19,7 +19,7 @@ audit.sh --cron                       # Shorthand for --output .context/audits/c
 audit.sh schedule install|remove|status  # Manage cron schedule
 Sections: structure, compliance, quality, traceability, enforcement,
 
-## Dependencies (9)
+## Dependencies (10)
 
 | Target | Relationship |
 |--------|-------------|
@@ -32,6 +32,7 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | `lib/config.sh` | calls |
 | `agents/audit/active-task-scan.py` | calls |
 | `agents/audit/completed-task-scan.py` | calls |
+| `lib/watchtower.sh` | calls |
 
 ## Used By (5)
 

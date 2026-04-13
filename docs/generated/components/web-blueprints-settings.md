@@ -14,7 +14,7 @@
 | `web/shared.py` | calls |
 | `web/templates/settings.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|

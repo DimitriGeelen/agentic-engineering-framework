@@ -28,7 +28,7 @@ Creates handover documents for session continuity
 | `agents/context/session-metrics.sh` | calls |
 | `lib/notify.sh` | calls |
 
-## Used By (7)
+## Used By (8)
 
 | Component | Relationship |
 |-----------|-------------|
@@ -39,6 +39,7 @@ Creates handover documents for session continuity
 | `agents/context/checkpoint.sh` | called-by |
 | `tests/unit/handover.bats` | tested_by |
 | `tests/unit/handover.bats` | called_by |
+| `agents/session-capture/AGENT.md` | triggers_by |
 
 ## Documentation
 

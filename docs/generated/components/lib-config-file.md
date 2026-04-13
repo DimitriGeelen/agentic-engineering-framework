@@ -1,6 +1,6 @@
 # config-file
 
-> TODO: describe what this component does
+> Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/config-file.sh`
 

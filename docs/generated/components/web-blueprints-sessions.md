@@ -1,6 +1,6 @@
 # sessions
 
-> TODO: describe what this component does
+> Flask blueprint that renders the terminal session management page listing active and historical sessions
 
 **Type:** route | **Subsystem:** watchtower | **Location:** `web/blueprints/sessions.py`
 
@@ -14,7 +14,7 @@
 | `web/terminal/registry.py` | calls |
 | `web/templates/sessions.html` | renders |
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|

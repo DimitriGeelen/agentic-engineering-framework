@@ -10,12 +10,13 @@
 
 Mandatory Dispatch Preamble
 
-## Used By (2)
+## Used By (3)
 
 | Component | Relationship |
 |-----------|-------------|
 | `agents/context/check-dispatch.sh` | referenced_by |
 | `agents/context/check-dispatch.sh` | references_by |
+| `agents/context/check-dispatch-pre.sh` | read_by |
 
 ## Related
 

@@ -1,6 +1,6 @@
 # watchtower
 
-> TODO: describe what this component does
+> Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/watchtower.sh`
 
@@ -15,6 +15,15 @@ source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 url=$(_watchtower_url T-XXX)                    # get base URL with correct port
 _watchtower_open "http://host:port/path"         # open in browser (desktop-user aware)
 Requires: PROJECT_ROOT (from paths.sh chain), config.sh for fw_config
+
+## Used By (4)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/check-tier0.sh` | called_by |
+| `C-004` | called_by |
+| `bin/fw` | called_by |
+| `lib/verify-acs.sh` | called_by |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower.yaml`*

@@ -6,6 +6,11 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_navigation.yaml`*
 *Last verified: 2026-04-07*

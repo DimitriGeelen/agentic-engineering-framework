@@ -11,6 +11,18 @@ Called via: fw hook loop-detect
 Reads PostToolUse JSON from stdin, outputs additionalContext on stderr
 Exit: 0=ok/warning, 2=block
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+| `lib/ts/dist/loop-detect.js` | calls |
+
+## Used By (1)
+
+| Component | Relationship |
+|-----------|-------------|
+| `agents/context/error-watchdog.sh` | complements |
+
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-loop-detect.yaml`*
 *Last verified: 2026-03-27*

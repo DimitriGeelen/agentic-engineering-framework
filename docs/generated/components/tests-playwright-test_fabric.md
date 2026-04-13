@@ -8,6 +8,11 @@
 
 Should list subsystems or components
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ## Related
 
 ### Tasks

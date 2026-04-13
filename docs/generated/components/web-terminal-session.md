@@ -1,6 +1,6 @@
 # session
 
-> TODO: describe what this component does
+> Provider-neutral dataclass defining the terminal session descriptor schema with metadata, capabilities, and process info
 
 **Type:** script | **Subsystem:** watchtower | **Location:** `web/terminal/session.py`
 

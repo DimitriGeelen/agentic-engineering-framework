@@ -16,7 +16,7 @@
 | `web/shared.py` | calls |
 | `web/templates/discoveries.html` | renders |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|

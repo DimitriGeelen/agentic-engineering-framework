@@ -1,6 +1,6 @@
 # pickup
 
-> TODO: describe what this component does
+> Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks
 
 **Type:** script | **Subsystem:** framework-core | **Location:** `lib/pickup.sh`
 
@@ -27,7 +27,7 @@ Before acting on a pickup message:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (3)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|

@@ -8,6 +8,11 @@
 
 200 if all healthy, 503 if Ollama unreachable (still valid)
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_health.yaml`*
 *Last verified: 2026-04-07*

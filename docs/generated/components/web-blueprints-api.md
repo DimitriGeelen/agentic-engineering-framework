@@ -15,7 +15,7 @@
 | `web/embeddings.py` | calls |
 | `web/search.py` | calls |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship |
 |-----------|-------------|

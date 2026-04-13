@@ -10,6 +10,11 @@ Integration tests for fw pickup subcommand
 Tests the full pickup pipeline through the fw CLI entry point.
 Unit tests in tests/unit/lib_pickup.bats cover internal functions.
 
+## Dependencies (1)
+
+| Target | Relationship |
+|--------|-------------|
+
 ## Related
 
 ### Tasks
