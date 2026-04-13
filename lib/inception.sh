@@ -276,7 +276,7 @@ in_decision = False
 decision_written = False
 
 for line in lines:
-    if line.startswith('## Decision'):
+    if line.strip() == '## Decision':
         in_decision = True
         new_lines.append(line)
         new_lines.append('')
