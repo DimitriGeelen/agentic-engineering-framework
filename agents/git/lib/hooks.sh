@@ -193,6 +193,27 @@ if [ -n "$TASK_REF" ] && ls "$PROJECT_ROOT/.tasks/completed/${TASK_REF}-"* >/dev
     echo ""
 fi
 
+# --- Critical YAML Shrinkage Guard (T-1243) ---
+# Warn when learnings.yaml, patterns.yaml, or practices.yaml lose >50% of entries.
+# Advisory only (WARN, not BLOCK) — legitimate cleanup is rare but possible.
+for _yaml_file in .context/project/learnings.yaml .context/project/patterns.yaml .context/project/practices.yaml; do
+    if git diff --cached --name-only | grep -q "^${_yaml_file}$"; then
+        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || echo 0)
+        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || echo 0)
+        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || echo 0)
+        if [ "$_old_lines" -gt 10 ] && [ "$_del_lines" -gt 0 ]; then
+            _remaining=$((_old_lines - _del_lines + _new_lines))
+            if [ "$_remaining" -lt $((_old_lines / 2)) ]; then
+                echo ""
+                echo "WARNING: ${_yaml_file} shrunk from ${_old_lines} to ~${_remaining} entries (>50% loss)"
+                echo "  If intentional, proceed. If accidental: git checkout HEAD -- ${_yaml_file}"
+                echo "  Use 'fw context add-learning' instead of direct file edits."
+                echo ""
+            fi
+        fi
+    fi
+done
+
 exit 0
 HOOK_EOF
 
