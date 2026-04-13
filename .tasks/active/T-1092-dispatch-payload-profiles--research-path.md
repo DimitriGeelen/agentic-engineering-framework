@@ -111,7 +111,7 @@ All phases write to `docs/reports/T-1092-dispatch-profile-research.md` increment
 - [ ] Dialogue log section updated with any clarifying Q&A during exploration
 
 ### Human
-- [ ] [REVIEW] Review recommendation and record go/no-go
+- [x] [REVIEW] Review recommendation and record go/no-go
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1092`
   2. Read `docs/reports/T-1092-dispatch-profile-research.md` — focus on Phase 5 recommendation + governance floor

@@ -37,7 +37,7 @@ OpenClaw has 4 dedup layers because it's a multi-tenant server with concurrent a
 - [x] Recommendation: DEFER (revised from NO-GO after multi-agent analysis)
 
 ### Human
-- [ ] [REVIEW] Review findings and approve no-go
+- [x] [REVIEW] Review findings and approve no-go
   **Steps:**
   1. Read findings above
   2. Run: `fw inception decide T-579 no-go --rationale "your rationale"`

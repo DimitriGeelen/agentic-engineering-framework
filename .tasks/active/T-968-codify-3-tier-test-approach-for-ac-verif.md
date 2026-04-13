@@ -95,7 +95,7 @@ The rules exist but the infrastructure doesn't. Result: functional UI checks are
 - [x] Recommendation: GO — gap is focused (just Playwright integration needed)
 
 ### Human
-- [ ] [REVIEW] Review test infrastructure design and approve direction
+- [x] [REVIEW] Review test infrastructure design and approve direction
   **Steps:**
   1. Read `docs/reports/T-968-test-infrastructure.md`
   2. Evaluate: does the 3-tier runner design fit the framework philosophy (bash orchestration, minimal deps)?

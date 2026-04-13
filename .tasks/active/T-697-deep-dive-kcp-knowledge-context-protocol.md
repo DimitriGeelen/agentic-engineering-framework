@@ -94,7 +94,7 @@ This deep-dive serves two purposes:
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review deep-dive findings and friction log
+- [x] [REVIEW] Review deep-dive findings and friction log
   **Steps:**
   1. Read `docs/reports/T-697-kcp-deep-dive.md`
   2. Evaluate friction points — are they framework issues or project-specific?

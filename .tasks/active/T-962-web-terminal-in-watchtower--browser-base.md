@@ -91,7 +91,7 @@ The human works in terminals constantly. Watchtower is the governance dashboard 
 - [x] Recommendation written with go/no-go rationale
 
 ### Human
-- [ ] [REVIEW] Review research findings, architecture recommendation, and orchestrator design considerations
+- [x] [REVIEW] Review research findings, architecture recommendation, and orchestrator design considerations
   **Steps:**
   1. Read `docs/reports/T-962-web-terminal-research.md`
   2. Evaluate: does the recommended approach fit the Watchtower stack (Flask/htmx)?

@@ -92,7 +92,7 @@ ntfy (`github.com/binwiederhier/ntfy`) is a simple HTTP-based pub/sub notificati
 - [ ] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review deep-dive findings and enhancement design
+- [x] [REVIEW] Review deep-dive findings and enhancement design
   **Steps:**
   1. Read `docs/reports/T-707-ntfy-deep-dive.md`
   2. Evaluate enhancement design — does ntfy integration make sense?

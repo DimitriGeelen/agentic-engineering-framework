@@ -62,7 +62,7 @@ The current Watchtower `/fabric/graph` uses Cytoscape.js with static subsystem-o
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-726-fabric-explorer-integration.md`
   2. Evaluate go/no-go criteria against findings

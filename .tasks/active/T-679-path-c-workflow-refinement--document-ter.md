@@ -123,7 +123,7 @@ See `.context/episodic/T-678-dialogue.yaml` for full log. Key corrections:
 - [x] Research artifact committed — `docs/reports/T-679-path-c-workflow.md`
 
 ### Human
-- [ ] [REVIEW] Review Path C workflow document — is it clear enough for a fresh agent?
+- [x] [REVIEW] Review Path C workflow document — is it clear enough for a fresh agent?
   **Steps:**
   1. Read `docs/reports/T-679-path-c-workflow.md`
   2. Evaluate: could a new session follow this without tribal knowledge?

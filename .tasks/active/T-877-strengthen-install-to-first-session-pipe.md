@@ -88,7 +88,7 @@ The install-to-first-session pipeline has 6+ user-facing failure modes discovere
 - [x] Recommendation written with rationale and implementation plan
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-877-install-pipeline.md`
   2. Evaluate whether proposed auto-remediations are safe

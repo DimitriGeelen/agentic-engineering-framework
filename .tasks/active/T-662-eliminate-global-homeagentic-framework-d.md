@@ -85,7 +85,7 @@ T-660 made the problem worse by syncing MORE files to the global install during 
 - [x] Research artifact committed: `docs/reports/T-662-eliminate-global-install.md`
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-662-eliminate-global-install.md`
   2. Evaluate whether the proposed approach preserves terminal UX while achieving isolation

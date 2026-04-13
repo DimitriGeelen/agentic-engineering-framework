@@ -49,7 +49,7 @@ Research artifact: `docs/reports/T-1017-test-task-pollution.md`
 - [x] Recommendation written with rationale — GO with A+B (audit detection + test_helper guard)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1017`
   2. Review research artifact at `docs/reports/T-1017-test-task-pollution.md`

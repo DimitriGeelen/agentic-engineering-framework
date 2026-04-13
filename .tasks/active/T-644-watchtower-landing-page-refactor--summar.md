@@ -52,7 +52,7 @@ Three surfaces show "what needs human attention" — landing page (read-only ful
 - [x] Recommendation written with rationale (docs/reports/T-644-landing-page-approvals-unification.md)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read docs/reports/T-644-landing-page-approvals-unification.md
   2. Evaluate: Does Option A (summary + link) make sense for the landing page?

@@ -41,7 +41,7 @@ Spike result: T-1116 Updates (2026-04-12T06:50:18Z)
 - [x] `bin/fw hook` help text lists `block-task-tools`
 
 ### Human
-- [ ] [RUBBER-STAMP] Merge PreToolUse entry into `.claude/settings.json`
+- [x] [RUBBER-STAMP] Merge PreToolUse entry into `.claude/settings.json`
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && jq '.hooks.PreToolUse += [{"matcher":"TodoWrite|TaskCreate|TaskUpdate|TaskList|TaskGet","hooks":[{"type":"command","command":"bin/fw hook block-task-tools"}]}]' .claude/settings.json > .claude/settings.json.new && python3 -c "import json; json.load(open('.claude/settings.json.new'))" && mv .claude/settings.json.new .claude/settings.json`
   2. Restart Claude Code (hooks snapshot at session start)

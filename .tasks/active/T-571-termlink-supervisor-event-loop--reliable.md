@@ -57,7 +57,7 @@ Current `fw termlink dispatch` is fire-and-forget with file-based polling. Worke
 - [x] Go/No-Go recommendation made (CONDITIONAL GO — Phase 1 lightweight)
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Read `docs/reports/T-571-termlink-supervisor-event-loop.md`
   2. Evaluate whether Phase 1 (crash detection + graceful shutdown) is worth building now vs deferring entirely

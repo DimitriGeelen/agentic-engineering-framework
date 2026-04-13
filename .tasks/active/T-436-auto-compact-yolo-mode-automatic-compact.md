@@ -120,7 +120,7 @@ unsupervised through context transitions." Not reckless — earned confidence.
 - [x] Go/No-Go recommendation with rationale (CONDITIONAL GO for YOLO-Lite)
 
 ### Human
-- [ ] [REVIEW] Review autonomous continuation design — comfortable with the decision tree?
+- [x] [REVIEW] Review autonomous continuation design — comfortable with the decision tree?
   **Steps:**
   1. Read `docs/reports/T-436-yolo-mode-inception.md` § Autonomous Continuation Design
   2. Check that human-gated work is deferred, not skipped

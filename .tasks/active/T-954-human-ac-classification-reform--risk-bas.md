@@ -75,7 +75,7 @@ Human ACs are piling up across multiple projects (82 tasks, 12 waiting >14 days)
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review classification model and approve go/no-go decision
+- [x] [REVIEW] Review classification model and approve go/no-go decision
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && cat docs/reports/T-954-human-ac-classification-reform.md`
   2. Evaluate: does the risk classification model match your intuition about what needs human eyes?

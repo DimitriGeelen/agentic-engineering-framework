@@ -55,7 +55,7 @@ TermLink commands are invoked via bash wrappers — opaque to MCP tool catalogs.
 - [x] Go/No-Go recommendation made (CONDITIONAL GO for minimal wiring)
 
 ### Human
-- [ ] [REVIEW] Review findings and approve minimal wiring
+- [x] [REVIEW] Review findings and approve minimal wiring
   **Steps:**
   1. Read `docs/reports/T-599-termlink-mcp-server.md`
   2. Consider: MCP tools bypass hooks — acceptable?

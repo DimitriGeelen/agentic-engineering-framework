@@ -106,7 +106,7 @@ If both platforms remain active, what's the minimal sync strategy? Push to both 
 - [x] Research artifact written to `docs/reports/T-479-platform-decision.md`
 
 ### Human
-- [ ] [REVIEW] Decision made: which option (A, B, or C) and why
+- [x] [REVIEW] Decision made: which option (A, B, or C) and why
   **Steps:**
   1. Read `docs/reports/T-479-platform-decision.md`
   2. Review the directive scoring and recommendation (Option B: GitHub primary)

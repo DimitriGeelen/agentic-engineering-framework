@@ -29,7 +29,7 @@ T-630 GO: Universal task gate. Spike 2 proved check-active-task.sh already handl
 - [x] Documented required settings.json change
 
 ### Human
-- [ ] [RUBBER-STAMP] Add Agent|TaskCreate matcher to settings.json
+- [x] [RUBBER-STAMP] Add Agent|TaskCreate matcher to settings.json
   **Steps:**
   1. Open `.claude/settings.json` in editor
   2. Add new PreToolUse entry: `{"matcher": "Agent|TaskCreate|TaskUpdate", "hooks": [{"type": "command", "command": "fw hook check-active-task"}]}`
