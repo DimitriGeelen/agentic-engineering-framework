@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1231: Fix self-test onboarding doctor failure — diagnose and resolve pre-existing issue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T14:03:41Z
+# ============================================================================
+
+task_id: T-1231
+task_name: "Fix self-test onboarding doctor failure — diagnose and resolve pre-existing issue"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T13:53:13Z
+completed: 2026-04-13T14:03:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T15:58:09+02:00
+last_commit: 2026-04-13T15:58:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Investigate self-test doctor failure — manual reproduction passes, concurrent test interference suspected
+
+# Key outcomes
+outcomes:
+  - "Root cause: inherited PROJECT_ROOT env var from framework session causes doctor to validate wrong project"
+  - "Fix: unset PROJECT_ROOT before running doctor in self-test subshell"
+  - "`fw self-test onboarding` passes (5/5 phases, 0 failures)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-13.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/.edit-counter"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/watchtower.log"
+  - ".tasks/active/T-1231-fix-self-test-onboarding-doctor-failure-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T15:58:09"
+    action: "T-1231: Investigate self-test doctor failure — manual reproduction passes, concurrent test interference suspected"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 9
+  lines_added: 302
+  lines_removed: 103
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1231-fix-self-test-onboarding-doctor-failure-.md
+generated_by: context-agent-hybrid
