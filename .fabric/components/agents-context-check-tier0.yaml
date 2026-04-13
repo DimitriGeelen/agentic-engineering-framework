@@ -29,6 +29,7 @@ depended_by:
   type: used-by
 - target: agents/audit/audit.sh
   type: called-by
+- tests/lint/no-bare-fw-in-gate-scripts.bats
 last_enriched: '2026-04-13'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md

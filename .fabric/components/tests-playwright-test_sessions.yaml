@@ -4,17 +4,9 @@ type: script
 subsystem: tests-playwright
 location: tests/playwright/test_sessions.py
 tags: []
-
-purpose: "Playwright tests for Sessions page (T-983)"
-
+purpose: Playwright tests for Sessions page (T-983)
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- web/blueprints/sessions.py
+depended_by: []
 last_verified: 2026-04-06
 created_by: unknown

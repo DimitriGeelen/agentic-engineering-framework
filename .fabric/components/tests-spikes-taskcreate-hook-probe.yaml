@@ -4,17 +4,9 @@ type: script
 subsystem: unknown
 location: tests/spikes/taskcreate-hook-probe.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- agents/context/block-task-tools.sh
+depended_by: []
 last_verified: 2026-04-11
 created_by: unknown

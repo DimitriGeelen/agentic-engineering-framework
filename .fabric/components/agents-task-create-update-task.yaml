@@ -22,7 +22,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'
 depended_by:
 - target: C-004
   type: called_by
@@ -34,6 +34,8 @@ depended_by:
   type: tested_by
 - target: tests/unit/update_task.bats
   type: called_by
+- target: docs/reports/T-1067-horizon-status-invariants.md
+  type: references_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
   title: 'Deep Dive: The Authority Model'

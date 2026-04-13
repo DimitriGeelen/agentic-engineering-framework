@@ -4,7 +4,8 @@ type: route
 subsystem: watchtower
 location: web/blueprints/settings.py
 tags: []
-purpose: "Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state."
+purpose: 'Watchtower settings blueprint: framework configuration display — shows hooks,
+  cron config, notification state.'
 depends_on:
 - target: web/shared.py
   type: imports
@@ -17,6 +18,7 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- tests/playwright/test_settings.py
 last_verified: 2026-03-09
 created_by: unknown
 last_enriched: '2026-03-28'

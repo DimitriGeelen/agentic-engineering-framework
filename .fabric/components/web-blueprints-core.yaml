@@ -46,3 +46,8 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- tests/playwright/test_core.py
+- tests/playwright/test_directives.py
+- tests/playwright/test_graduation.py
+- tests/playwright/test_interactions.py
+- tests/playwright/test_search.py

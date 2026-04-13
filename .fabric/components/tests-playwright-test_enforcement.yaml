@@ -4,17 +4,9 @@ type: script
 subsystem: tests-playwright
 location: tests/playwright/test_enforcement.py
 tags: []
-
-purpose: "Playwright tests for Enforcement dashboard (T-986)"
-
+purpose: Playwright tests for Enforcement dashboard (T-986)
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- web/blueprints/enforcement.py
+depended_by: []
 last_verified: 2026-04-07
 created_by: unknown

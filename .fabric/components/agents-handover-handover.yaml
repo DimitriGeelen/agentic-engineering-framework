@@ -24,7 +24,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by
@@ -40,6 +40,8 @@ depended_by:
   type: tested_by
 - target: tests/unit/handover.bats
   type: called_by
+- target: agents/session-capture/AGENT.md
+  type: triggers_by
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

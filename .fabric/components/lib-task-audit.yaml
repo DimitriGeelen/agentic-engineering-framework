@@ -4,13 +4,16 @@ type: script
 subsystem: framework-core
 location: lib/task-audit.sh
 tags: []
-purpose: Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved
+purpose: Scans task files for literal placeholder content that should have been replaced
+  during authoring, blocking review and inception decisions until resolved
 depends_on: []
 depended_by:
 - target: bin/fw
   type: called_by
 - target: lib/inception.sh
   type: called_by
+- tests/integration/audit_blocks_review_and_decide.bats
+- tests/unit/lib_task_audit.bats
 last_verified: 2026-04-11
 created_by: unknown
 last_enriched: '2026-04-13'

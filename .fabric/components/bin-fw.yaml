@@ -4,8 +4,9 @@ type: script
 subsystem: framework-core
 location: bin/fw
 tags: []
-purpose: Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT,
-  then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes.
+purpose: Single entry point for all framework operations. Reads .framework.yaml from
+  the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate
+  agent. Supports both in-repo and shared tooling modes.
 depends_on:
 - target: agents/task-create/create-task.sh
   type: calls
@@ -278,3 +279,4 @@ depended_by:
   type: called_by
 - target: tests/integration/fw_work_on.bats
   type: called_by
+- tests/integration/cron_install.bats

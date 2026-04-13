@@ -17,6 +17,8 @@ depended_by:
   note: check-dispatch.sh warning messages direct users to this preamble
 - target: agents/context/check-dispatch.sh
   type: references_by
+- target: agents/context/check-dispatch-pre.sh
+  type: read_by
 last_verified: 2026-03-01
 created_by: T-227
-last_enriched: '2026-03-28'
+last_enriched: '2026-04-13'

@@ -4,7 +4,8 @@ type: script
 subsystem: framework-core
 location: lib/pickup.sh
 tags: []
-purpose: Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks
+purpose: Cross-project pickup pipeline that validates, deduplicates, and processes
+  incoming YAML envelopes into inception tasks
 depends_on: []
 depended_by:
 - target: tests/unit/lib_pickup.bats
@@ -13,6 +14,7 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_pickup.bats
   type: called_by
+- tests/integration/fw_pickup.bats
 last_verified: 2026-03-30
 created_by: unknown
 last_enriched: '2026-04-09'

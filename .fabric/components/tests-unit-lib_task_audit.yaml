@@ -4,17 +4,9 @@ type: script
 subsystem: unknown
 location: tests/unit/lib_task_audit.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- lib/task-audit.sh
+depended_by: []
 last_verified: 2026-04-11
 created_by: unknown

@@ -34,3 +34,4 @@ depended_by:
   type: called_by
 - target: web/blueprints/review.py
   type: registered_by
+- tests/playwright/test_tasks.py

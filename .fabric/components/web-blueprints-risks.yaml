@@ -24,3 +24,4 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- tests/playwright/test_risks.py

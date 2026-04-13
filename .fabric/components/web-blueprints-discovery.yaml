@@ -49,6 +49,7 @@ depended_by:
   type: imported_by_by
 - target: web/static/js/chat.js
   type: called_by
+- tests/playwright/test_patterns.py
 last_verified: 2026-04-05
 created_by: T-917
 last_enriched: '2026-04-09'

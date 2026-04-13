@@ -4,15 +4,14 @@ type: script
 subsystem: context-fabric
 location: agents/context/audit-task-tools.sh
 tags: []
-
-purpose: "PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory — warns agent when banned task tools are used."
-
+purpose: PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory
+  — warns agent when banned task tools are used.
 depends_on:
-  - target: .claude/settings.json
-    type: reads
+- target: .claude/settings.json
+  type: reads
 depended_by:
-  - target: agents/context/block-task-tools.sh
-    type: complements
-
+- target: agents/context/block-task-tools.sh
+  type: complements
+- tests/unit/audit_task_tools.bats
 last_verified: 2026-04-12
 created_by: unknown

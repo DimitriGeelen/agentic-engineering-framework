@@ -30,3 +30,4 @@ depended_by:
   type: used-by
 - target: web/templates/fabric_explorer.html
   type: rendered_by_by
+- tests/playwright/test_fabric.py

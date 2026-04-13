@@ -7,8 +7,8 @@ tags:
 - web
 - blueprint
 - watchtower
-purpose: Flask blueprint serving /discoveries route. Displays audit discovery findings with WARN/FAIL status from cron and
-  manual audits.
+purpose: Flask blueprint serving /discoveries route. Displays audit discovery findings
+  with WARN/FAIL status from cron and manual audits.
 depends_on:
 - id: web/app.py
   relationship: registered-by
@@ -24,3 +24,5 @@ depended_by:
   type: called_by
 - target: web/blueprints/__init__.py
   type: registered_by
+- tests/playwright/test_discoveries.py
+- tests/playwright/test_discovery.py

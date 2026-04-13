@@ -19,4 +19,5 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_inception.bats
   type: called_by
+- tests/lint/inception-decision-exact-match.bats
 last_enriched: '2026-04-13'
