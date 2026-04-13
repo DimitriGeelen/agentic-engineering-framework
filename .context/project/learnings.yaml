@@ -1665,3 +1665,17 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-003
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-004
+  learning: "At scale (1200+ tasks, 1166 episodics, 580 handovers, 71 JSONL sessions), Watchtower routes need TTL-based caches for all file-scanning operations. Shared caches in web/shared.py are reusable across blueprints. For cross-file searches (like _count_applications), build a reverse index once instead of N*M scans."
+  source: P-001
+  task: T-1235
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
