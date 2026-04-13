@@ -174,7 +174,7 @@ auto_emit_review_if_partial() {
             source "$FRAMEWORK_ROOT/lib/review.sh"
             emit_review "$TASK_ID" "$TASK_FILE"
         else
-            echo "  fw task review $TASK_ID"
+            echo "  $(_emit_user_command "task review $TASK_ID")"
         fi
     fi
 }
@@ -395,7 +395,7 @@ if [ -n "$NEW_STATUS" ]; then
                         EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
                         if [ ! -f "$EPISODIC_FILE" ]; then
                             echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
-                            echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                            echo -e "  Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")" >&2
                         fi
                     fi
                 fi
@@ -455,7 +455,7 @@ if [ -n "$NEW_STATUS" ]; then
                     echo "  ... and $((_other_count - 5)) more"
                 fi
                 echo "  Consider pausing tasks you're not actively working on:"
-                echo "    fw task update T-XXX --status captured"
+                echo "    $(_emit_user_command "task update T-XXX --status captured")"
                 echo ""
             fi
         fi
@@ -646,7 +646,7 @@ if [ -n "$NEW_STATUS" ] && [ "$OLD_STATUS" != "$NEW_STATUS" ]; then
             PROJECT_ROOT="$PROJECT_ROOT" "$HEALING_AGENT" diagnose "$TASK_ID" || true
         else
             echo -e "${YELLOW}Healing agent not found at $HEALING_AGENT${NC}"
-            echo "Run manually: fw healing diagnose $TASK_ID"
+            echo "Run manually: $(_emit_user_command "healing diagnose $TASK_ID")"
         fi
     fi
 fi
@@ -713,7 +713,7 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             FOCUSED_TASK=$(grep "^current_task:" "$FOCUS_FILE" | sed 's/current_task:[[:space:]]*//')
             if [ "$FOCUSED_TASK" = "$TASK_ID" ]; then
                 _sed_i "s/^current_task:.*/current_task: null/" "$FOCUS_FILE"
-                echo -e "${YELLOW}Focus cleared (task completed). Set new focus: fw work-on T-XXX${NC}"
+                echo -e "${YELLOW}Focus cleared (task completed). Set new focus: $(_fw_cmd) work-on T-XXX${NC}"
             fi
         fi
     fi
@@ -846,11 +846,11 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             EPISODIC_FILE="$CONTEXT_DIR/episodic/$TASK_ID.yaml"
             if [ ! -f "$EPISODIC_FILE" ]; then
                 echo -e "  ${YELLOW}WARNING: Episodic not created for $TASK_ID — generation may have failed silently${NC}" >&2
-                echo -e "  Run manually: fw context generate-episodic $TASK_ID" >&2
+                echo -e "  Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")" >&2
             fi
         else
             echo -e "${YELLOW}Context agent not found${NC}"
-            echo "Run manually: fw context generate-episodic $TASK_ID"
+            echo "Run manually: $(_emit_user_command "context generate-episodic $TASK_ID")"
         fi
     fi
 
@@ -881,7 +881,7 @@ components: [$RESOLVED_COMPONENTS]" "$TASK_FILE"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
             echo -e "${YELLOW}  LEARNING PROMPT — This looks like a bugfix task${NC}"
             echo -e "${YELLOW}  No learning entry references $TASK_ID.${NC}"
-            echo -e "${YELLOW}  Consider: fw fix-learned $TASK_ID \"what was learned\"${NC}"
+            echo -e "${YELLOW}  Consider: $(_emit_user_command "fix-learned $TASK_ID \"what was learned\"")${NC}"
             echo -e "${YELLOW}  Ask: Would a future agent benefit from knowing about this fix?${NC}"
             echo -e "${YELLOW}────────────────────────────────────────────${NC}"
         fi
