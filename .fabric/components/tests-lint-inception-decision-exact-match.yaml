@@ -1,0 +1,20 @@
+id: tests/lint/inception-decision-exact-match.bats
+name: inception-decision-exact-match
+type: script
+subsystem: unknown
+location: tests/lint/inception-decision-exact-match.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-04-13
+created_by: unknown
