@@ -1,0 +1,13 @@
+created_by: unknown
+depended_by: []
+depends_on:
+- target: lib/inception.sh
+  type: produced-by
+id: docs/reports/T-1129-termlink-session-learnings.md
+last_verified: 2026-04-13
+location: docs/reports/T-1129-termlink-session-learnings.md
+name: T-1129-termlink-session-learnings
+purpose: 4 learnings from TermLink session — subagent scope, format, stale gaps, dog-food
+subsystem: docs
+tags: []
+type: document

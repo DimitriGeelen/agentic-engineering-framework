@@ -1,0 +1,13 @@
+created_by: unknown
+depended_by: []
+depends_on:
+- target: lib/inception.sh
+  type: produced-by
+id: docs/reports/T-1212-consumer-watchtower-rca.md
+last_verified: 2026-04-13
+location: docs/reports/T-1212-consumer-watchtower-rca.md
+name: T-1212-consumer-watchtower-rca
+purpose: NO-GO RCA — consumer Watchtower pages misscoped, superseded by T-1213
+subsystem: docs
+tags: []
+type: document

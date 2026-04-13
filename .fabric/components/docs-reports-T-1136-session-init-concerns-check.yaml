@@ -1,0 +1,13 @@
+created_by: unknown
+depended_by: []
+depends_on:
+- target: lib/inception.sh
+  type: produced-by
+id: docs/reports/T-1136-session-init-concerns-check.md
+last_verified: 2026-04-13
+location: docs/reports/T-1136-session-init-concerns-check.md
+name: T-1136-session-init-concerns-check
+purpose: GO — upstream session-init concerns check from 010-termlink
+subsystem: docs
+tags: []
+type: document

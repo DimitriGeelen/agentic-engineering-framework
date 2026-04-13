@@ -1,0 +1,13 @@
+created_by: unknown
+depended_by: []
+depends_on:
+- target: lib/inception.sh
+  type: produced-by
+id: docs/reports/T-607-correction-refinement-loop.md
+last_verified: 2026-04-13
+location: docs/reports/T-607-correction-refinement-loop.md
+name: T-607-correction-refinement-loop
+purpose: Correction and refinement loop research — absorbed into framework
+subsystem: docs
+tags: []
+type: document

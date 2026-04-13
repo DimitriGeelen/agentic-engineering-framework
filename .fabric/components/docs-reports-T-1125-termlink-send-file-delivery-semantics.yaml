@@ -1,0 +1,13 @@
+created_by: unknown
+depended_by: []
+depends_on:
+- target: lib/inception.sh
+  type: produced-by
+id: docs/reports/T-1125-termlink-send-file-delivery-semantics.md
+last_verified: 2026-04-13
+location: docs/reports/T-1125-termlink-send-file-delivery-semantics.md
+name: T-1125-termlink-send-file-delivery-semantics
+purpose: GO — TermLink send-file hub acceptance vs delivery semantics
+subsystem: docs
+tags: []
+type: document
