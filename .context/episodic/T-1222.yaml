@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1222: Fix fw doctor hook path validation for vendored .agentic-framework paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T11:01:52Z
+# ============================================================================
+
+task_id: T-1222
+task_name: "Fix fw doctor hook path validation for vendored .agentic-framework paths"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T10:49:02Z
+completed: 2026-04-13T11:01:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T12:59:44+02:00
+last_commit: 2026-04-13T13:01:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix doctor hook path validation for vendored .agentic-framework paths. Update ACs — self-test failure is pre-existing. Fix SIGPIPE in verification command
+
+# Key outcomes
+outcomes:
+  - "Doctor recognizes `.agentic-framework/bin/fw hook` as valid hook format"
+  - "Doctor recognizes `bin/fw hook` as valid hook format (framework repo)"
+  - "`fw self-test onboarding` doctor phase — pre-existing failure unrelated to this fix (confirmed by stash test)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix SIGPIPE in verification command"
+    source: git-mined
+  - description: "Fix doctor hook path validation for vendored .agentic-framework paths"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - ".tasks/active/T-1222-fix-fw-doctor-hook-path-validation-for-v.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T12:59:44"
+    action: "T-1222: Fix doctor hook path validation for vendored .agentic-framework paths"
+  - time: "2026-04-13T13:00:11"
+    action: "T-1222: Update ACs — self-test failure is pre-existing"
+  - time: "2026-04-13T13:01:18"
+    action: "T-1222: Fix SIGPIPE in verification command"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 2
+  lines_added: 69
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1222-fix-fw-doctor-hook-path-validation-for-v.md
+generated_by: context-agent-hybrid
