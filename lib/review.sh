@@ -70,6 +70,20 @@ emit_review() {
         fi
     done < "$task_file"
 
+    # T-1215: Warn if inception task has no substantive ## Recommendation
+    if [ "$workflow_type" = "inception" ]; then
+        local _rec_content=""
+        _rec_content=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null \
+            | grep -v '^## ' | grep -v '^<!--' | grep -v '^\-\->' | grep -v '^$' | head -1)
+        if [ -z "$_rec_content" ]; then
+            echo "" >&2
+            echo -e "  ${YELLOW}WARNING: No ## Recommendation written yet${NC}" >&2
+            echo -e "  ${YELLOW}The human will see a bare decision card on /approvals.${NC}" >&2
+            echo -e "  ${YELLOW}Write a recommendation before presenting for review.${NC}" >&2
+            echo "" >&2
+        fi
+    fi
+
     echo ""
     echo -e "══════════════════════════════════════════"
     echo -e "  ${BOLD}${review_label}: $task_id${NC}"
