@@ -12,7 +12,7 @@ tags: [cost, tokens, observability, cli]
 components: [bin-fw, budget-gate]
 related_tasks: [T-799, T-800, T-596, T-699]
 created: 2026-04-03T19:01:09Z
-last_update: 2026-04-12T09:26:19Z
+last_update: 2026-04-13T07:11:07Z
 date_finished: null
 ---
 
@@ -79,5 +79,13 @@ test -f .fabric/components/lib-costs.yaml
 - **Context:** Initial task creation
 
 ### 2026-04-12T09:26:19Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T07:10:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-13T07:11:07Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)

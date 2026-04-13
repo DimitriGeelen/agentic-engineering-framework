@@ -4,16 +4,16 @@ name: "Fix config-registry-parity — add CONSUMER_SCAN_DIRS to web/blueprints/c
 description: >
   Fix config-registry-parity — add CONSUMER_SCAN_DIRS to web/blueprints/config.py
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/config.py]
 related_tasks: []
 created: 2026-04-13T07:23:56Z
-last_update: 2026-04-13T07:23:56Z
-date_finished: null
+last_update: 2026-04-13T07:25:38Z
+date_finished: 2026-04-13T07:25:38Z
 ---
 
 # T-1199: Fix config-registry-parity — add CONSUMER_SCAN_DIRS to web/blueprints/config.py
@@ -50,3 +50,6 @@ bats tests/lint/config-registry-parity.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1199-fix-config-registry-parity--add-consumer.md
 - **Context:** Initial task creation
+
+### 2026-04-13T07:25:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

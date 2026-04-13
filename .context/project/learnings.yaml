@@ -5,55 +5,13 @@ learnings:
   learning: "First learning"
   source: unknown
   task: unknown
-  date: 2026-04-12
+  date: 2026-04-13
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "Bugfix detection should be broad: match fix/bugfix/hotfix anywhere in name (not just prefix), plus RCA and G-0XX gap references. Commit messages also signal bugfix intent. Audit escalation from WARN to FAIL creates urgency — 0% coverage is a structural failure, not a suggestion."
+  learning: "Adding a config key to lib/config.sh requires matching addition to web/blueprints/config.py SETTINGS and CLAUDE.md config table. The config-registry-parity invariant test catches drift."
   source: P-001
-  task: T-1192
-  date: 2026-04-12
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "Test learning from Playwright"
-  source: unknown
-  task: T-1030
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-004
-  learning: "Subagent scope violation: dispatched agents can corrupt files outside their stated scope. Post-dispatch diff check needed to detect unintended modifications."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-005
-  learning: "Format assumption: agents generate .md when framework expects .yaml. Always specify exact output format in dispatch prompts."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-006
-  learning: "Stale gaps accumulate: gaps stay 'watching' days after fixes ship. Need audit check that auto-flags resolved gaps for closure."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-007
-  learning: "Dog-food features immediately: 3 compound bugs in approvals page were caught only by first real use. Use Watchtower for your own approvals."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-008
-  learning: "Status enum divergence: when templates hardcode status arrays, new statuses become invisible. Fix: pass enum_statuses from _load_enums() to template, use |default guard for resilience. CSS colors defined via Jinja loop over status_colors mapping."
-  source: P-001
-  task: T-1197
+  task: T-1199
   date: 2026-04-13
   context: Added via context agent
   application: TBD
