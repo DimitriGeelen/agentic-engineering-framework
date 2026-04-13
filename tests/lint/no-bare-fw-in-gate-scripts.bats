@@ -41,3 +41,11 @@
         | wc -l)
     [ "$bare" -eq 0 ]
 }
+
+@test "check-active-task.sh has no bare fw in block messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/check-active-task.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}

@@ -128,11 +128,11 @@ fi
 if [ ! -f "$FOCUS_FILE" ]; then
     if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
         # Project is initialized but governance not active — block
-        echo "BLOCKED: Project initialized but session not active. Run 'fw context init' first." >&2
+        echo "BLOCKED: Project initialized but session not active. Run '$(_emit_user_command "context init")' first." >&2
         exit 2
     fi
     # True bootstrap — no .framework.yaml yet, allow
-    echo "Note: Context not initialized. Run 'fw context init' for task tracking." >&2
+    echo "Note: Context not initialized. Run '$(_emit_user_command "context init")' for task tracking." >&2
     exit 0
 fi
 
@@ -165,8 +165,8 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "BLOCKED: No active task. Framework rule: nothing gets done without a task." >&2
     echo "" >&2
     echo "To unblock:" >&2
-    echo "  1. Create a task:  fw task create --name '...' --type build --start" >&2
-    echo "  2. Set focus:      fw context focus T-XXX" >&2
+    echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
+    echo "  2. Set focus:      $(_fw_cmd) context focus T-XXX" >&2
     echo "" >&2
     echo "Attempting to modify: $FILE_PATH" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
@@ -195,10 +195,10 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     echo "  Current session: $CURRENT_SESSION" >&2
     echo "" >&2
     echo "  Focus was set in a previous session. To continue this task:" >&2
-    echo "    fw work-on $CURRENT_TASK" >&2
+    echo "    $(_fw_cmd) work-on $CURRENT_TASK" >&2
     echo "" >&2
     echo "  To start different work:" >&2
-    echo "    fw work-on 'New task name' --type build" >&2
+    echo "    $(_fw_cmd) work-on 'New task name' --type build" >&2
     echo "" >&2
     echo "  Attempting to modify: $FILE_PATH" >&2
     echo "  Policy: T-560 (Session-Stamped Focus Enforcement)" >&2
@@ -214,8 +214,8 @@ if [ -z "$ACTIVE_FILE" ]; then
     echo "BLOCKED: Task $CURRENT_TASK is not active (may be completed or missing)." >&2
     echo "" >&2
     echo "To unblock:" >&2
-    echo "  fw work-on T-XXX   (resume an active task)" >&2
-    echo "  fw work-on 'name'  (create a new task)" >&2
+    echo "  $(_fw_cmd) work-on T-XXX   (resume an active task)" >&2
+    echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
     echo "" >&2
     echo "Attempting to modify: $FILE_PATH" >&2
     echo "Policy: P-002 (Structural Enforcement Over Agent Discipline)" >&2
@@ -235,7 +235,7 @@ case "$TASK_STATUS" in
         echo "BLOCKED: Task $CURRENT_TASK has status 'captured' (work not started)." >&2
         echo "" >&2
         echo "To unblock:" >&2
-        echo "  fw work-on $CURRENT_TASK   (sets status to started-work)" >&2
+        echo "  $(_fw_cmd) work-on $CURRENT_TASK   (sets status to started-work)" >&2
         echo "" >&2
         echo "Attempting to modify: $FILE_PATH" >&2
         echo "Policy: P-002 (Task must be started before modifying files)" >&2
@@ -246,8 +246,8 @@ case "$TASK_STATUS" in
         echo "BLOCKED: Task $CURRENT_TASK has status 'work-completed'." >&2
         echo "" >&2
         echo "To unblock:" >&2
-        echo "  fw work-on T-XXX   (resume another task)" >&2
-        echo "  fw work-on 'name'  (create a new task)" >&2
+        echo "  $(_fw_cmd) work-on T-XXX   (resume another task)" >&2
+        echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
         echo "" >&2
         echo "Attempting to modify: $FILE_PATH" >&2
         echo "Policy: P-002 (Cannot modify files under a completed task)" >&2
@@ -293,10 +293,10 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
             echo "Remaining onboarding tasks:" >&2
             echo -e "$INCOMPLETE_ONBOARDING" >&2
             echo "To work on onboarding:" >&2
-            echo "  fw work-on T-001" >&2
+            echo "  $(_fw_cmd) work-on T-001" >&2
             echo "" >&2
             echo "To skip onboarding (not recommended):" >&2
-            echo "  fw onboarding skip" >&2
+            echo "  $(_fw_cmd) onboarding skip" >&2
             echo "" >&2
             echo "Attempting to modify: $FILE_PATH" >&2
             echo "Policy: T-532 (Onboarding Enforcement Gate)" >&2
@@ -341,7 +341,7 @@ if [ -n "$ACTIVE_FILE" ]; then
                 echo "To unblock:" >&2
                 echo "  1. Edit the task file: replace [First criterion] with real ACs" >&2
                 echo "  2. Or change to inception:" >&2
-                echo "     fw task update $CURRENT_TASK --type inception" >&2
+                echo "     $(_fw_cmd) task update $CURRENT_TASK --type inception" >&2
                 echo "" >&2
                 echo "Attempting to modify: $FILE_PATH" >&2
                 echo "Policy: G-020 (Pickup message governance bypass prevention)" >&2
@@ -389,7 +389,7 @@ else:
     print(count)
 " 2>/dev/null || echo 0)
     if [ "$DEP_COUNT" -gt 0 ]; then
-        echo "FABRIC: $REL_PATH has $DEP_COUNT downstream dependent(s). Consider: fw fabric blast-radius after commit." >&2
+        echo "FABRIC: $REL_PATH has $DEP_COUNT downstream dependent(s). Consider: $(_fw_cmd) fabric blast-radius after commit." >&2
     fi
 fi
 
