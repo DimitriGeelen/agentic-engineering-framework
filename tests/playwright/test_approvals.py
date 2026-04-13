@@ -50,3 +50,26 @@ class TestApprovalsPage:
         page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "inception" in content
+
+    def test_approvals_inception_cards_have_context(self, page: Page):
+        """T-1214: Inception cards show recommendation OR fallback context — never bare."""
+        page.goto(_url("/approvals"))
+        page.wait_for_load_state("domcontentloaded")
+        # Every go-decision card should have either recommendation or fallback
+        cards = page.locator(".go-decision")
+        if cards.count() > 0:
+            for i in range(cards.count()):
+                card = cards.nth(i)
+                html = card.inner_html()
+                has_recommendation = "Agent Recommendation" in html
+                has_fallback = "No agent recommendation" in html
+                assert has_recommendation or has_fallback, (
+                    f"Inception card {i} has neither recommendation nor fallback context"
+                )
+
+    def test_approvals_content_returns_summary_bar(self, page: Page):
+        """Content endpoint returns the summary counts bar for htmx polling."""
+        resp = page.goto(_url("/approvals/content"))
+        assert resp.status == 200
+        content = page.content()
+        assert "approvals-summary" in content or "stat-value" in content
