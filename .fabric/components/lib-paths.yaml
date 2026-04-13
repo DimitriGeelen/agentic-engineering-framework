@@ -109,6 +109,10 @@ depended_by:
   type: called_by
 - target: tests/unit/lib_paths.bats
   type: called_by
+- target: agents/context/block-task-tools.sh
+  type: called_by
+- target: agents/git/lib/hooks.sh
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'

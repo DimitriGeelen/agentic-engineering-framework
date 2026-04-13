@@ -8,6 +8,8 @@ purpose: fw inception - Inception phase workflow
 depends_on:
 - target: lib/review.sh
   type: calls
+- target: lib/task-audit.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 depended_by:
@@ -17,4 +19,4 @@ depended_by:
   type: called-by
 - target: tests/unit/lib_inception.bats
   type: called_by
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'

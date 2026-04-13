@@ -89,9 +89,13 @@ depends_on:
   type: calls
 - target: lib/config.sh
   type: calls
+- target: lib/task-audit.sh
+  type: calls
+- target: lib/watchtower.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

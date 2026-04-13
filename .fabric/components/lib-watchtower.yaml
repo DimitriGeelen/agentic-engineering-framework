@@ -4,17 +4,17 @@ type: script
 subsystem: framework-core
 location: lib/watchtower.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/context/check-tier0.sh
+  type: called_by
+- target: C-004
+  type: called_by
+- target: bin/fw
+  type: called_by
+- target: lib/verify-acs.sh
+  type: called_by
 last_verified: 2026-04-12
 created_by: unknown
+last_enriched: '2026-04-13'

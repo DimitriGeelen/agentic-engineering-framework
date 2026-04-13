@@ -36,6 +36,8 @@ depends_on:
   type: calls
 - target: agents/audit/completed-task-scan.py
   type: calls
+- target: lib/watchtower.sh
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -50,4 +52,4 @@ depended_by:
   type: tested_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-04-09'
+last_enriched: '2026-04-13'
