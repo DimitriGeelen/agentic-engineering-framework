@@ -8,7 +8,7 @@ import yaml
 from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata
 
 logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
@@ -27,20 +27,51 @@ def _md(text):
 bp = Blueprint("inception", __name__)
 
 
+import time as _time_mod
+import copy as _copy_mod
+
+# Cache for inception task bodies (frontmatter from shared cache, bodies read on demand)
+_inception_cache = {"data": None, "all_count": 0, "ts": 0}
+_INCEPTION_CACHE_TTL = 30
+
+
 def _load_all_tasks():
-    """Load all tasks from active and completed directories."""
+    """Load all tasks with inception tasks enriched with body text.
+
+    Uses the shared task metadata cache for frontmatter (avoids reading 1200+ files).
+    Only reads body text for inception tasks (~200 files instead of 1200+).
+    """
+    import copy
+    now = _time_mod.monotonic()
+    all_meta = get_all_task_metadata()
+
+    # Check if cache is still valid (same task count + within TTL)
+    if (_inception_cache["data"] is not None
+            and len(all_meta) == _inception_cache["all_count"]
+            and (now - _inception_cache["ts"]) < _INCEPTION_CACHE_TTL):
+        return _inception_cache["data"]
+
     tasks = []
-    for location in ["active", "completed"]:
-        task_dir = PROJECT_ROOT / ".tasks" / location
-        if not task_dir.exists():
-            continue
-        for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
-            fm, body = parse_frontmatter(f.read_text())
-            if not fm:
-                continue
-            fm["_location"] = location
-            fm["_body"] = body
-            tasks.append(fm)
+    for fm in all_meta:
+        t = copy.copy(fm)
+        if fm.get("workflow_type") == "inception":
+            # Read body text only for inception tasks
+            task_id = fm.get("id", "")
+            location = fm.get("_location", "active")
+            task_dir = PROJECT_ROOT / ".tasks" / location
+            body = ""
+            if task_dir.exists():
+                for f in task_dir.glob(f"{task_id}-*.md"):
+                    _, body = parse_frontmatter(f.read_text())
+                    break
+            t["_body"] = body
+        else:
+            t["_body"] = ""
+        tasks.append(t)
+
+    _inception_cache["data"] = tasks
+    _inception_cache["all_count"] = len(all_meta)
+    _inception_cache["ts"] = now
     return tasks
 
 
@@ -123,12 +154,44 @@ def _load_assumptions():
     return data.get("assumptions", [])
 
 
+# --- Reports index cache (T-1245) ---
+_reports_cache = {"index": None, "count": 0, "ts": 0}
+_REPORTS_CACHE_TTL = 60
+
+
+def _get_reports_index():
+    """Build {task_id: 'docs/reports/filename.md'} index from reports directory."""
+    now = _time_mod.monotonic()
+    reports_dir = PROJECT_ROOT / "docs" / "reports"
+    if not reports_dir.exists():
+        return {}
+    current_count = len(list(reports_dir.glob("*.md")))
+    if (_reports_cache["index"] is not None
+            and current_count == _reports_cache["count"]
+            and (now - _reports_cache["ts"]) < _REPORTS_CACHE_TTL):
+        return _reports_cache["index"]
+
+    index = {}
+    for rf in reports_dir.iterdir():
+        if rf.suffix != ".md":
+            continue
+        m = re_mod.search(r"(T-\d+)", rf.name, re_mod.IGNORECASE)
+        if m:
+            tid = m.group(1).upper()
+            index[tid] = f"docs/reports/{rf.name}"
+    _reports_cache["index"] = index
+    _reports_cache["count"] = current_count
+    _reports_cache["ts"] = now
+    return index
+
+
 @bp.route("/inception")
 def inception_list():
     all_tasks = _load_all_tasks()
     inception_tasks = [t for t in all_tasks if t.get("workflow_type") == "inception"]
 
     assumptions = _load_assumptions()
+    _reports_index = _get_reports_index()
 
     # Enrich inception tasks with decision state, assumption counts, and recommendation (T-959)
     for t in inception_tasks:
@@ -164,16 +227,12 @@ def inception_list():
             t["_recommendation"] = ""
             t["_rec_type"] = ""
 
-        # T-959: Check for research artifact
-        reports_dir = PROJECT_ROOT / "docs" / "reports"
+        # T-959: Check for research artifact (T-1245: cached index)
         t["_has_artifact"] = False
         t["_artifact_path"] = ""
-        if reports_dir.exists() and task_id:
-            for rf in reports_dir.iterdir():
-                if task_id.lower() in rf.name.lower() and rf.suffix == ".md":
-                    t["_has_artifact"] = True
-                    t["_artifact_path"] = f"docs/reports/{rf.name}"
-                    break
+        if task_id and task_id in _reports_index:
+            t["_has_artifact"] = True
+            t["_artifact_path"] = _reports_index[task_id]
 
     # Filter
     decision_filter = request.args.get("decision", "").strip().lower()
