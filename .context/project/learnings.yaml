@@ -8,3 +8,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "Inherited PROJECT_ROOT env var causes cross-project contamination in subprocess tests. Any test that spawns fw doctor/init/upgrade in a temp project must unset PROJECT_ROOT first — otherwise the subprocess validates the wrong project's hooks, tasks, and config."
+  source: P-001
+  task: T-1231
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
