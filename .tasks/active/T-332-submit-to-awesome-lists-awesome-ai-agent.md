@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:40Z
-last_update: 2026-03-08T20:39:39Z
+last_update: 2026-04-13T20:57:38Z
 date_finished: null
 ---
 
@@ -60,3 +60,6 @@ test -f docs/reports/T-332-awesome-list-research.md
 
 ### 2026-03-05T02:11:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-13T20:57:38Z — status-update [task-update-agent]
+- **Change:** horizon: next → now

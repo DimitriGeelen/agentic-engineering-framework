@@ -315,6 +315,13 @@ EOF
     # P-010 (AC gate) and P-011 (verification gate) are NOT bypassed (T-1101/T-1142).
     if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then
         echo ""
+        # T-1223: If task is in captured status, transition to started-work first.
+        # The lifecycle requires captured → started-work → work-completed (no skip).
+        local _current_status
+        _current_status=$(grep '^status:' "$task_file" 2>/dev/null | head -1 | sed 's/status:[[:space:]]*//')
+        if [ "$_current_status" = "captured" ]; then
+            "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status started-work --skip-sovereignty --reason "Inception decision in progress" 2>&1
+        fi
         "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --skip-sovereignty --reason "Inception decision: $decision_upper" 2>&1
     fi
 

@@ -4,7 +4,7 @@ name: "Fix cron pickup double-run — second fw uses bare path, fails in cron"
 description: >
   Fix cron pickup double-run — second fw uses bare path, fails in cron
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T21:17:30Z
-last_update: 2026-04-13T21:17:30Z
-date_finished: null
+last_update: 2026-04-13T22:15:54Z
+date_finished: 2026-04-13T22:15:54Z
 ---
 
 # T-1249: Fix cron pickup double-run — second fw uses bare path, fails in cron
@@ -51,3 +51,6 @@ grep "pickup" /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1249-fix-cron-pickup-double-run--second-fw-us.md
 - **Context:** Initial task creation
+
+### 2026-04-13T22:15:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

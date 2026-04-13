@@ -4,16 +4,16 @@ name: "Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs al
 description: >
   Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T19:50:36Z
-last_update: 2026-04-13T19:50:36Z
-date_finished: null
+last_update: 2026-04-13T20:12:06Z
+date_finished: 2026-04-13T20:12:06Z
 ---
 
 # T-1241: Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data
@@ -30,7 +30,7 @@ Also: non-audit jobs (docs, retention, pickup) have no `--section` flag so match
 - [x] `_last_run_info()` scans enough files to find the most recent output for each unique section key
 - [x] Non-audit jobs (docs, retention, pickup) show last-run info when available
 - [x] /cron page shows data for all jobs that have executed at least once (10/11, only oe-weekly pending Monday)
-- [ ] Web tests pass (142/142)
+- [x] Web tests pass (142/142)
 - [x] Pickup processor interval changed from 15min to 30s (sleep trick)
 
 ### Human
@@ -62,3 +62,6 @@ curl -sf http://localhost:3000/cron | python3 -c "import sys,re; html=sys.stdin.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1241-fix-watchtower-cron-page--last-5-files-t.md
 - **Context:** Initial task creation
+
+### 2026-04-13T20:12:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
