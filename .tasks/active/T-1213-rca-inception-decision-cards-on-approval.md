@@ -4,7 +4,7 @@ name: "RCA: Inception decision cards on /approvals show bare radio buttons — n
 description: >
   Inception: RCA: Inception decision cards on /approvals show bare radio buttons — no recommendation, no rationale, no context for human decision
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T09:09:39Z
-last_update: 2026-04-13T09:09:54Z
-date_finished: null
+last_update: 2026-04-13T09:18:12Z
+date_finished: 2026-04-13T09:18:12Z
 ---
 
 # T-1213: RCA: Inception decision cards on /approvals show bare radio buttons — no recommendation, no rationale, no context for human decision
@@ -111,7 +111,24 @@ test -f docs/reports/T-1213-inception-approvals-bare-cards-rca.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — 3 bounded fixes addressing both UI and process gaps.
+
+Rationale: The root cause has two layers: (1) the template hides the recommendation block entirely when data is missing (`{% if t.recommendation %}`), leaving bare radio buttons; (2) the agent inconsistently writes `## Recommendation` sections — no structural gate enforces this before the task reaches `/approvals`. Both are fixable: template fallback for UI, `fw task review` warning for process.
+
+Evidence:
+- Framework cards render correctly (3/3 tested with full recommendation + prefill)
+- Consumer cards appear bare when `## Recommendation` is absent from task files
+- Template line 87: `{% if t.recommendation %}` — hides entire context block
+- Backend already extracts Go/No-Go Criteria as rationale_hint fallback, but ONLY for textarea — not for visible display
+- User confirmed: "often you do it correct and often you forget" — recurring agent behavioral failure
+
+Proposed build tasks (2):
+1. Fix template to show fallback context (Go/No-Go Criteria, problem statement, warning) when recommendation is missing
+2. Add warning to `fw task review` for inception tasks without substantive `## Recommendation`
+
+**Date**: 2026-04-13T09:18:12Z
 
 ## Updates
 
@@ -120,3 +137,25 @@ test -f docs/reports/T-1213-inception-approvals-bare-cards-rca.md
 
 ### 2026-04-13T09:09:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-13T09:18:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — 3 bounded fixes addressing both UI and process gaps.
+
+Rationale: The root cause has two layers: (1) the template hides the recommendation block entirely when data is missing (`{% if t.recommendation %}`), leaving bare radio buttons; (2) the agent inconsistently writes `## Recommendation` sections — no structural gate enforces this before the task reaches `/approvals`. Both are fixable: template fallback for UI, `fw task review` warning for process.
+
+Evidence:
+- Framework cards render correctly (3/3 tested with full recommendation + prefill)
+- Consumer cards appear bare when `## Recommendation` is absent from task files
+- Template line 87: `{% if t.recommendation %}` — hides entire context block
+- Backend already extracts Go/No-Go Criteria as rationale_hint fallback, but ONLY for textarea — not for visible display
+- User confirmed: "often you do it correct and often you forget" — recurring agent behavioral failure
+
+Proposed build tasks (2):
+1. Fix template to show fallback context (Go/No-Go Criteria, problem statement, warning) when recommendation is missing
+2. Add warning to `fw task review` for inception tasks without substantive `## Recommendation`
+
+### 2026-04-13T09:18:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
