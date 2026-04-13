@@ -31,7 +31,6 @@ Inception: T-451 | Build: T-454
 ## Related
 
 ### Tasks
-- T-761: Fix shellcheck warnings in update.sh, upstream.sh, init.sh, notify.sh, setup.sh
 - T-797: Shellcheck cleanup: audit.sh and remaining framework scripts
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 

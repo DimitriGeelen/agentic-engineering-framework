@@ -27,6 +27,7 @@ fw context init      # Initialize session
 fw git commit -m "T-XXX: description"
 fw handover --commit # Generate and commit handover
 fw task create --name "Fix bug" --type build --owner human
+fw upgrade /opt/my-project  # Sync framework to consumer project
 ```
 
 *(truncated — see CLAUDE.md for full section)*
@@ -177,11 +178,11 @@ fw task create --name "Fix bug" --type build --owner human
 ## Related
 
 ### Tasks
-- T-873: Fix fw approvals status exit 1 with no resolved approvals
 - T-874: Sync vendored bin/fw with T-873 approvals fix
 - T-889: fw config set/get — read and write persistent settings in .framework.yaml
 - T-890: Add fw config to help output and CLAUDE.md quick reference
 - T-898: Fix _derive_version — use framework git repo, not cwd
+- T-969: Playwright test infrastructure — tests/playwright/ + fw test playwright + conftest.py (T-968 Phase 1)
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-fw.yaml`*

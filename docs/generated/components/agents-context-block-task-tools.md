@@ -8,7 +8,7 @@
 
 Block Claude Code built-in task/todo tools — bypasses framework governance (T-1115/T-1117)
 The built-in TodoWrite/TaskCreate tools populate a parallel, ungoverned
-task list. Use bin/fw work-on to create real framework tasks instead.
+task list. Use fw work-on to create real framework tasks instead.
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-task-tools.yaml`*

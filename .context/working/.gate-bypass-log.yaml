@@ -28,3 +28,8 @@
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-04-12T22:15:38Z'
+  task: 'T-1178'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'

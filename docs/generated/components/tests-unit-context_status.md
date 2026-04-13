@@ -20,11 +20,6 @@ Tests the do_status() function:
 |--------|-------------|
 | `agents/context/context.sh` | calls |
 
-## Related
-
-### Tasks
-- T-758: Add unit tests for context pattern and status libs (16+ tests)
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_status.yaml`*
 *Last verified: 2026-04-05*

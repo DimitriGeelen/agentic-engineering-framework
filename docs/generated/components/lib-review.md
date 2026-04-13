@@ -12,7 +12,6 @@ Called by: fw task review, update-task.sh (partial-complete), inception.sh (deci
 Usage:
 source "$FRAMEWORK_ROOT/lib/review.sh"
 emit_review T-XXX [task_file]
-Requires: PROJECT_ROOT, BOLD, NC, CYAN (from colors.sh/paths.sh chain)
 
 ### Framework Reference
 

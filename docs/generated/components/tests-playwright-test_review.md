@@ -11,6 +11,7 @@ Find a task ID from the tasks page to test review
 ## Related
 
 ### Tasks
+- T-970: 5 initial Playwright regression tests — terminal, inception, tasks, fabric, search (T-968 Phase 2)
 - T-982: Deduplicate approvals Playwright tests (T-981 follow-up)
 
 ---

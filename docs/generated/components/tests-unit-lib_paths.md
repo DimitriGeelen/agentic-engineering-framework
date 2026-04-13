@@ -17,11 +17,6 @@ Tests path resolution: FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR
 |--------|-------------|
 | `lib/paths.sh` | calls |
 
-## Related
-
-### Tasks
-- T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_paths.yaml`*
 *Last verified: 2026-04-05*

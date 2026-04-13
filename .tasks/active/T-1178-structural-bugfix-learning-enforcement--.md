@@ -4,16 +4,16 @@ name: "Structural bugfix-learning enforcement — ensure every bugfix task captu
 description: >
   Inception: Structural bugfix-learning enforcement — ensure every bugfix task captures a learning (G-016)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-12T17:32:17Z
-last_update: 2026-04-12T17:32:53Z
-date_finished: null
+last_update: 2026-04-12T22:15:38Z
+date_finished: 2026-04-12T22:15:38Z
 ---
 
 # T-1178: Structural bugfix-learning enforcement — ensure every bugfix task captures a learning (G-016)
@@ -104,11 +104,86 @@ test -f docs/reports/T-1178-bugfix-learning-enforcement.md
 
 ## Decisions
 
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — enhance update-task.sh learning prompt with actionable guidance + fw fix-learned shortcut
+
+Rationale: The current learning prompt in `update-task.sh` is generic ("Consider: fw context add-learning...") and easily ignored. Three escalation levels are feasible:
+
+1. Level 1 (enhanced prompt): Replace the generic prompt with specific guidance based on the bugfix class. Include the exact `fw fix-learned T-XXX "description"` command with task ID pre-filled. Make it visually prominent (colored box, not just text).
+
+2. Level 2 (audit escalation): The audit already tracks bugfix-learning coverage at WARN. Escalate to FAIL when ratio drops below 10% (currently 0%). This makes it visible in `fw doctor` and pre-push audit.
+
+3. Level 3 (soft gate): Add a "learning missing" check to the completion flow that prints a WARNING but does NOT block. The agent sees it, the human sees it in Watchtower. Over time, the combination of prompt + audit + visibility should raise the ratio.
+
+Evidence:
+- Current ratio: 0% (0/145 bugfix tasks have learnings)
+- G-016 decision trigger met: ratio far below 35% threshold
+- `update-task.sh` already detects bugfix tasks and prints a prompt (line ~800)
+- `fw fix-learned` already exists but is never invoked
+- Audit already tracks `Bugfix-learning coverage` as WARN
+
+Proposed build tasks:
+1. Enhance `update-task.sh` learning prompt — pre-fill `fw fix-learned T-XXX` command, make visually prominent
+2. Escalate audit bugfix-learning check from WARN to FAIL below 10%
+
+**Date**: 2026-04-12T22:15:38Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — enhance update-task.sh learning prompt with actionable guidance + fw fix-learned shortcut
+
+Rationale: The current learning prompt in `update-task.sh` is generic ("Consider: fw context add-learning...") and easily ignored. Three escalation levels are feasible:
+
+1. Level 1 (enhanced prompt): Replace the generic prompt with specific guidance based on the bugfix class. Include the exact `fw fix-learned T-XXX "description"` command with task ID pre-filled. Make it visually prominent (colored box, not just text).
+
+2. Level 2 (audit escalation): The audit already tracks bugfix-learning coverage at WARN. Escalate to FAIL when ratio drops below 10% (currently 0%). This makes it visible in `fw doctor` and pre-push audit.
+
+3. Level 3 (soft gate): Add a "learning missing" check to the completion flow that prints a WARNING but does NOT block. The agent sees it, the human sees it in Watchtower. Over time, the combination of prompt + audit + visibility should raise the ratio.
+
+Evidence:
+- Current ratio: 0% (0/145 bugfix tasks have learnings)
+- G-016 decision trigger met: ratio far below 35% threshold
+- `update-task.sh` already detects bugfix tasks and prints a prompt (line ~800)
+- `fw fix-learned` already exists but is never invoked
+- Audit already tracks `Bugfix-learning coverage` as WARN
+
+Proposed build tasks:
+1. Enhance `update-task.sh` learning prompt — pre-fill `fw fix-learned T-XXX` command, make visually prominent
+2. Escalate audit bugfix-learning check from WARN to FAIL below 10%
+
+**Date**: 2026-04-12T22:15:38Z
 
 ## Updates
 
 ### 2026-04-12T17:32:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-12T22:15:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — enhance update-task.sh learning prompt with actionable guidance + fw fix-learned shortcut
+
+Rationale: The current learning prompt in `update-task.sh` is generic ("Consider: fw context add-learning...") and easily ignored. Three escalation levels are feasible:
+
+1. Level 1 (enhanced prompt): Replace the generic prompt with specific guidance based on the bugfix class. Include the exact `fw fix-learned T-XXX "description"` command with task ID pre-filled. Make it visually prominent (colored box, not just text).
+
+2. Level 2 (audit escalation): The audit already tracks bugfix-learning coverage at WARN. Escalate to FAIL when ratio drops below 10% (currently 0%). This makes it visible in `fw doctor` and pre-push audit.
+
+3. Level 3 (soft gate): Add a "learning missing" check to the completion flow that prints a WARNING but does NOT block. The agent sees it, the human sees it in Watchtower. Over time, the combination of prompt + audit + visibility should raise the ratio.
+
+Evidence:
+- Current ratio: 0% (0/145 bugfix tasks have learnings)
+- G-016 decision trigger met: ratio far below 35% threshold
+- `update-task.sh` already detects bugfix tasks and prints a prompt (line ~800)
+- `fw fix-learned` already exists but is never invoked
+- Audit already tracks `Bugfix-learning coverage` as WARN
+
+Proposed build tasks:
+1. Enhance `update-task.sh` learning prompt — pre-fill `fw fix-learned T-XXX` command, make visually prominent
+2. Escalate audit bugfix-learning check from WARN to FAIL below 10%
+
+### 2026-04-12T22:15:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

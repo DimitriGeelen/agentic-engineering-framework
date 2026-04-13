@@ -17,11 +17,6 @@ Tests find_task_file(), task_exists(), get_task_name()
 |--------|-------------|
 | `lib/tasks.sh` | calls |
 
-## Related
-
-### Tasks
-- T-764: Add unit tests for core libs — tasks, yaml, keylock, enums, paths
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_tasks.yaml`*
 *Last verified: 2026-04-05*

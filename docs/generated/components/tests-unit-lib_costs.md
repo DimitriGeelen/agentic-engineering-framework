@@ -17,6 +17,11 @@ Tests: _costs_jsonl_dir, costs_main routing, Python JSONL parsing, edge cases
 |--------|-------------|
 | `lib/costs.sh` | calls |
 
+## Related
+
+### Tasks
+- T-807: Unit tests for lib/costs.sh token tracking
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_costs.yaml`*
 *Last verified: 2026-04-03*

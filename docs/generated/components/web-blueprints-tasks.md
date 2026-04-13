@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Helpers — file finding and frontmatter editing (T-181 spike)
+Enum loading from status-transitions.yaml (T-1179, G-038)
 
 ### Framework Reference
 
