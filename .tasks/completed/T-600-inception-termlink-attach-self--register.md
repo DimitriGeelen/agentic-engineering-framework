@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-24T09:06:05Z
-last_update: 2026-03-28T17:07:13Z
+last_update: 2026-04-13T06:29:08Z
 date_finished: 2026-03-28T17:07:13Z
 ---
 
@@ -55,7 +55,7 @@ Remote agents need to be reachable via TermLink. **Key finding:** `termlink regi
 - [x] Go/No-Go recommendation made (DEFER)
 
 ### Human
-- [ ] [REVIEW] Review and confirm defer
+- [x] [REVIEW] Review and confirm defer
   **Steps:**
   1. Read `docs/reports/T-600-termlink-attach-self.md`
   2. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-600 no-go --rationale "your rationale"`

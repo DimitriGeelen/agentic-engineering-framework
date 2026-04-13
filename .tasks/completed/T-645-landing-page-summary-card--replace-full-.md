@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-27T12:38:18Z
-last_update: 2026-04-06T22:29:19Z
+last_update: 2026-04-13T06:29:06Z
 date_finished: 2026-03-27T13:57:58Z
 ---
 
@@ -33,7 +33,7 @@ T-644 build task. Replace landing page "Awaiting Your Verification" full list wi
 - [x] Landing page loads without errors
 
 ### Human
-- [ ] [REVIEW] Landing page summary card looks clean and useful
+- [x] [REVIEW] Landing page summary card looks clean and useful
   **Steps:**
   1. Open http://192.168.10.107:8089/ in browser
   2. Verify "Action Required" summary replaces old full list

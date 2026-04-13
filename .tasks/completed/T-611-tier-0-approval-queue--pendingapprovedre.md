@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: [T-608, T-610, T-612]
 created: 2026-03-25T16:51:23Z
-last_update: 2026-03-27T18:32:01Z
+last_update: 2026-04-13T06:29:07Z
 date_finished: 2026-03-27T18:32:01Z
 ---
 
@@ -34,7 +34,7 @@ Core of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 - [x] Agent file writes to `.context/approvals/` are request-only — response written by Flask endpoint
 
 ### Human
-- [ ] [REVIEW] Approval cards are clear and usable — approve/reject flow works intuitively
+- [x] [REVIEW] Approval cards are clear and usable — approve/reject flow works intuitively
   **Steps:**
   1. Trigger a Tier 0 block (e.g., agent attempts `rm -rf /tmp/test`)
   2. Open http://localhost:3000/approvals in browser

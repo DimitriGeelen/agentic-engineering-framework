@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-611: Tier 0 approval queue — pending/approved/rejected cards in Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:29:07Z
+# ============================================================================
+
+task_id: T-611
+task_name: "Tier 0 approval queue — pending/approved/rejected cards in Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-25T16:51:23Z
+completed: 2026-03-27T18:32:01Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-03-25T17:52:45+01:00
+last_commit: 2026-03-25T18:37:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-608: Create 3 build tasks for Watchtower approval surface. Tier 0 approval queue in Watchtower
+
+# Key outcomes
+outcomes:
+  - "`.context/approvals/` directory structure defined with YAML schema for pending/approved/rejected"
+  - "`check-tier0.sh` writes pending approval YAML to `.context/approvals/` when blocking"
+  - "Watchtower blueprint `/approvals` shows pending approval queue"
+  - "Each approval card has approve/reject buttons + feedback textarea"
+  - "POST `/api/approvals/decide` endpoint writes response to approval ledger"
+  - "Approval expiry: pending approvals older than 1 hour marked stale"
+  - "Agent file writes to `.context/approvals/` are request-only — response written by Flask endpoint"
+  - "[REVIEW] Approval cards are clear and usable — approve/reject flow works intuitively"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/agents/context/check-tier0.sh"
+  - ".tasks/active/T-610-parse-agenthuman-ac-sections--confidence.md"
+  - ".tasks/active/T-611-tier-0-approval-queue--pendingapprovedre.md"
+  - ".tasks/active/T-612-agent-approval-pickup--hookcron-scanning.md"
+  - "web/blueprints/approvals.py"
+  - "web/blueprints/__init__.py"
+  - "web/shared.py"
+  - "web/templates/approvals.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-25T17:52:45"
+    action: "T-608: Create 3 build tasks for Watchtower approval surface"
+  - time: "2026-03-25T18:37:33"
+    action: "T-611: Tier 0 approval queue in Watchtower"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2980 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2980
+  commits: 3
+  files_changed: 16
+  lines_added: 982
+  lines_removed: 201
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-611-tier-0-approval-queue--pendingapprovedre.md
+generated_by: context-agent-hybrid

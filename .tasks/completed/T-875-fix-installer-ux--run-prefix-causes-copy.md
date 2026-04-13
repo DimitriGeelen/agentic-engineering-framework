@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-05T05:59:41Z
-last_update: 2026-04-12T09:27:24Z
+last_update: 2026-04-13T06:29:06Z
 date_finished: 2026-04-05T06:02:11Z
 ---
 
@@ -29,7 +29,7 @@ install.sh prints `Run: /path/fw doctor` when doctor has warnings. Users copy-pa
 - [x] Suggested commands are clearly copy-pasteable without prefix
 
 ### Human
-- [ ] [RUBBER-STAMP] Installer output shows clean copy-pasteable commands
+- [x] [RUBBER-STAMP] Installer output shows clean copy-pasteable commands
   **Steps:**
   1. `cd /opt/025-WokrshopDesigner && curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash`
   **Expected:** Doctor warning shows command without `Run:` prefix
