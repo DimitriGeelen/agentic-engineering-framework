@@ -4,51 +4,37 @@ name: "Fix remaining hardcoded status strings in watchtower blueprints (core.py,
 description: >
   Fix remaining hardcoded status strings in watchtower blueprints (core.py, metrics.py, prioritizer.py)
 
-status: captured
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T07:08:06Z
-last_update: 2026-04-13T07:08:50Z
-date_finished: null
+last_update: 2026-04-13T13:30:31Z
+date_finished: 2026-04-13T13:30:31Z
 ---
 
 # T-1198: Fix remaining hardcoded status strings in watchtower blueprints (core.py, metrics.py, prioritizer.py)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Investigated hardcoded status strings in core.py and metrics.py. No centralized status enum exists.
+The comparisons are semantic display logic (color coding, sorting), not business logic enforcement.
+No fix needed — the strings match the actual lifecycle statuses and handle unknown values gracefully.
+prioritizer.py does not exist.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
+- [x] Investigated all three files mentioned in task name
+- [x] Confirmed no centralized status constants exist to import
+- [x] Confirmed status comparisons are display-only, not business logic
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
+# No code changes — verification is investigative
 
 ## Decisions
 
@@ -72,3 +58,11 @@ date_finished: null
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Python status comparisons are semantic, not enumeration — they handle unknown statuses gracefully. No fix needed.
+
+### 2026-04-13T13:29:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-04-13T13:30:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** No fix needed — status comparisons are semantic display logic, no enum to centralize
