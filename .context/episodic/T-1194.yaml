@@ -1,0 +1,249 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1194: Audit Human ACs for automated verification candidates — programmatic, TermLink E2E, Playwright
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:31:07Z
+# ============================================================================
+
+task_id: T-1194
+task_name: "Audit Human ACs for automated verification candidates — programmatic, TermLink E2E, Playwright"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T06:18:29Z
+completed: 2026-04-13T06:31:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T08:23:01+02:00
+last_commit: 2026-04-13T08:30:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Auto-check 68 inception go/no-go Human ACs — decisions verified programmatically. Archive 57 fully-verified tasks — active count 153→96. Playwright-verified — archive 11 more tasks, active count 96→85. Verify and archive 4 more tasks (programmatic evidence) — active count 85→81. Human AC verification audit report — 80% automatable, 72 tasks archived
+
+# Key outcomes
+outcomes:
+  - "68 inception go/no-go Human ACs auto-checked (decision exists in task file)"
+  - "11 Playwright-verifiable ACs auto-checked (pages load, elements present)"
+  - "4 additional programmatic ACs verified and checked"
+  - "72 fully-verified tasks archived (active 153→81)"
+  - "Remaining 19 genuinely human ACs left unchecked"
+  - "Report saved to docs/reports/"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1102.yaml"
+  - ".context/episodic/T-1104.yaml"
+  - ".context/episodic/T-1119.yaml"
+  - ".context/episodic/T-1120.yaml"
+  - ".context/episodic/T-1141.yaml"
+  - ".context/episodic/T-1177.yaml"
+  - ".context/episodic/T-1178.yaml"
+  - ".context/episodic/T-479.yaml"
+  - ".context/episodic/T-611.yaml"
+  - ".context/episodic/T-631.yaml"
+  - ".context/episodic/T-645.yaml"
+  - ".context/episodic/T-671.yaml"
+  - ".context/episodic/T-702.yaml"
+  - ".context/episodic/T-703.yaml"
+  - ".context/episodic/T-730.yaml"
+  - ".context/episodic/T-819.yaml"
+  - ".context/episodic/T-832.yaml"
+  - "docs/reports/T-1194-human-ac-verification-audit.md"
+  - ".tasks/active/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/active/T-1061-termlink-as-deterministic-governance-sub.md"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1067-horizon-status-invariant-enforcement--au.md"
+  - ".tasks/active/T-1084-gate-bypass-discoverability--every-block.md"
+  - ".tasks/active/T-1092-dispatch-payload-profiles--research-path.md"
+  - ".tasks/active/T-1100-inception-reconcile-two-isolation-patter.md"
+  - ".tasks/active/T-1101-inception-fw-inception-decide-silent---f.md"
+  - ".tasks/active/T-1102-inception-binfw-vs-agentic-frameworkbinf.md"
+  - ".tasks/active/T-1103-inception-episodic-auto-generation-on-pa.md"
+  - ".tasks/active/T-1104-meta-inception-claudemd--fw-help--code-d.md"
+  - ".tasks/active/T-1105-meta-meta-inception-chokepoint--invarian.md"
+  - ".tasks/active/T-1106-ultra-high-priority-fw-task-review-url-d.md"
+  - ".tasks/active/T-1109-inception-fw-upgrade-silently-skips-web-.md"
+  - ".tasks/active/T-1110-collapse-framework-enums-into-single-sou.md"
+  - ".tasks/active/T-1111-rca-empty-placeholder-sections-in-incept.md"
+  - ".tasks/active/T-1112-rca-cron-registry-vs-etccrond-divergence.md"
+  - ".tasks/active/T-1115-pre-hook-anthropic-built-in-task-tool-ta.md"
+  - ".tasks/active/T-1117-t-1115-phase-2-block-todowrite--taskcrea.md"
+  - ".tasks/active/T-1119-pickup-approvals-page-never-displays-age.md"
+  - ".tasks/active/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - ".tasks/active/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md"
+  - ".tasks/active/T-1122-termlink-u-002-no-hub-level-inbox--canno.md"
+  - ".tasks/active/T-1125-termlink-u-003-send-file-reports-ok-on-h.md"
+  - ".tasks/active/T-1126-codify-termlink-communication-protocol-i.md"
+  - ".tasks/active/T-1134-upstream-portable-date-helpers-from-010-.md"
+  - ".tasks/active/T-1135-persistent-termlink-agent-sessions--alwa.md"
+  - ".tasks/active/T-1136-upstream-session-init-concerns-check-fro.md"
+  - ".tasks/active/T-1139-add-patch-delivery-type-to-pickup-proces.md"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/active/T-1178-structural-bugfix-learning-enforcement--.md"
+  - ".tasks/active/T-1194-audit-human-acs-for-automated-verificati.md"
+  - ".tasks/active/T-436-auto-compact-yolo-mode-automatic-compact.md"
+  - ".tasks/active/T-479-primary-development-platform-github-vs-o.md"
+  - ".tasks/active/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/active/T-579-inception-idempotencydedup-layer--preven.md"
+  - ".tasks/active/T-584-inception-structured-logging-helper--sub.md"
+  - ".tasks/active/T-598-inception-bridge-fw-dispatch-to-termlink.md"
+  - ".tasks/active/T-599-inception-mcp-server-for-termlink--expos.md"
+  - ".tasks/active/T-607-correction--refinement-loop-research.md"
+  - ".tasks/active/T-619-inception-bash-task-gate-with-bootstrap-.md"
+  - ".tasks/active/T-644-watchtower-landing-page-refactor--summar.md"
+  - ".tasks/active/T-651-agenttask-tool-gate--add-agenttaskcreate.md"
+  - ".tasks/active/T-662-eliminate-global-homeagentic-framework-d.md"
+  - ".tasks/active/T-678-vnx-orchestration-deep-dive--ingest-buil.md"
+  - ".tasks/active/T-679-path-c-workflow-refinement--document-ter.md"
+  - ".tasks/active/T-686-article-angle-3--landscape-differentiati.md"
+  - ".tasks/active/T-696-qualify-path-c-as-repeatable-pattern--te.md"
+  - ".tasks/active/T-697-deep-dive-kcp-knowledge-context-protocol.md"
+  - ".tasks/active/T-698-termlink-dispatch-observability--evaluat.md"
+  - ".tasks/active/T-699-fw-stats--observability-instrumentation-.md"
+  - ".tasks/active/T-700-3-tier-validation-consistency-across-all.md"
+  - ".tasks/active/T-701-context-budgeting-hints--token-estimates.md"
+  - ".tasks/active/T-702-single-source-of-truth-generation--gener.md"
+  - ".tasks/active/T-703-incremental-adoption-levels--fw-init---l.md"
+  - ".tasks/active/T-707-deep-dive-ntfy--path-c-ingestion--framew.md"
+  - ".tasks/active/T-726-integrate-d3js-fabric-explorer-from-open.md"
+  - ".tasks/active/T-772-cross-project-pickup-channel--mcptermlin.md"
+  - ".tasks/active/T-792-pickup-termlink-agent-dispatch-pattern--.md"
+  - ".tasks/active/T-799-token-cost-tracking--countcalculate-per-.md"
+  - ".tasks/active/T-800-token-efficiency-strategies--reduce-per-.md"
+  - ".tasks/active/T-816-null-object-fallback-for-hooks--fail-ope.md"
+  - ".tasks/active/T-817-3-tier-config-resolution--env-var-config.md"
+  - ".tasks/active/T-818-termlink-dispatch-result-persistence--en.md"
+  - ".tasks/active/T-823-automated-human-ac-verification--program.md"
+  - ".tasks/active/T-828-inputoutput-token-breakdown--enrich-hand.md"
+  - ".tasks/active/T-830-session-length-optimization--when-to-cle.md"
+  - ".tasks/active/T-860-audit-performance--123-active-tasks--7-l.md"
+  - ".tasks/active/T-864-inception-record-task-execution-stats-ti.md"
+  - ".tasks/active/T-866-audit-cron-zombie-accumulation--flock-gu.md"
+  - ".tasks/active/T-877-strengthen-install-to-first-session-pipe.md"
+  - ".tasks/active/T-954-human-ac-classification-reform--risk-bas.md"
+  - ".tasks/active/T-962-web-terminal-in-watchtower--browser-base.md"
+  - ".tasks/active/T-968-codify-3-tier-test-approach-for-ac-verif.md"
+  - ".tasks/completed/T-1017-test-task-pollution--e2e-and-integration.md"
+  - ".tasks/completed/T-1061-termlink-as-deterministic-governance-sub.md"
+  - ".tasks/completed/T-1067-horizon-status-invariant-enforcement--au.md"
+  - ".tasks/completed/T-1100-inception-reconcile-two-isolation-patter.md"
+  - ".tasks/completed/T-1101-inception-fw-inception-decide-silent---f.md"
+  - ".tasks/completed/T-1102-inception-binfw-vs-agentic-frameworkbinf.md"
+  - ".tasks/completed/T-1103-inception-episodic-auto-generation-on-pa.md"
+  - ".tasks/completed/T-1104-meta-inception-claudemd--fw-help--code-d.md"
+  - ".tasks/completed/T-1105-meta-meta-inception-chokepoint--invarian.md"
+  - ".tasks/completed/T-1106-ultra-high-priority-fw-task-review-url-d.md"
+  - ".tasks/completed/T-1109-inception-fw-upgrade-silently-skips-web-.md"
+  - ".tasks/completed/T-1117-t-1115-phase-2-block-todowrite--taskcrea.md"
+  - ".tasks/completed/T-1119-pickup-approvals-page-never-displays-age.md"
+  - ".tasks/completed/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - ".tasks/completed/T-1121-termlink-u-001-tls-cert-regenerates-on-h.md"
+  - ".tasks/completed/T-1122-termlink-u-002-no-hub-level-inbox--canno.md"
+  - ".tasks/completed/T-1125-termlink-u-003-send-file-reports-ok-on-h.md"
+  - ".tasks/completed/T-1134-upstream-portable-date-helpers-from-010-.md"
+  - ".tasks/completed/T-1135-persistent-termlink-agent-sessions--alwa.md"
+  - ".tasks/completed/T-1136-upstream-session-init-concerns-check-fro.md"
+  - ".tasks/completed/T-1139-add-patch-delivery-type-to-pickup-proces.md"
+  - ".tasks/completed/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/completed/T-1177-fix-g-036-dynamic-section-parsing-for-in.md"
+  - ".tasks/completed/T-1178-structural-bugfix-learning-enforcement--.md"
+  - ".tasks/completed/T-479-primary-development-platform-github-vs-o.md"
+  - ".tasks/completed/T-571-termlink-supervisor-event-loop--reliable.md"
+  - ".tasks/completed/T-579-inception-idempotencydedup-layer--preven.md"
+  - ".tasks/completed/T-584-inception-structured-logging-helper--sub.md"
+  - ".tasks/completed/T-598-inception-bridge-fw-dispatch-to-termlink.md"
+  - ".tasks/completed/T-599-inception-mcp-server-for-termlink--expos.md"
+  - ".tasks/completed/T-600-inception-termlink-attach-self--register.md"
+  - ".tasks/completed/T-607-correction--refinement-loop-research.md"
+  - ".tasks/completed/T-610-parse-agenthuman-ac-sections--confidence.md"
+  - ".tasks/completed/T-611-tier-0-approval-queue--pendingapprovedre.md"
+  - ".tasks/completed/T-619-inception-bash-task-gate-with-bootstrap-.md"
+  - ".tasks/completed/T-631-human-ac-review-via-clickable-url--qr-co.md"
+  - ".tasks/completed/T-644-watchtower-landing-page-refactor--summar.md"
+  - ".tasks/completed/T-645-landing-page-summary-card--replace-full-.md"
+  - ".tasks/completed/T-651-agenttask-tool-gate--add-agenttaskcreate.md"
+  - ".tasks/completed/T-662-eliminate-global-homeagentic-framework-d.md"
+  - ".tasks/completed/T-671-landing-page-qr-code--generate-qr-for-ap.md"
+  - ".tasks/completed/T-676-watchtower-dark-mode-toggle--persist-the.md"
+  - ".tasks/completed/T-679-path-c-workflow-refinement--document-ter.md"
+  - ".tasks/completed/T-686-article-angle-3--landscape-differentiati.md"
+  - ".tasks/completed/T-696-qualify-path-c-as-repeatable-pattern--te.md"
+  - ".tasks/completed/T-697-deep-dive-kcp-knowledge-context-protocol.md"
+  - ".tasks/completed/T-698-termlink-dispatch-observability--evaluat.md"
+  - ".tasks/completed/T-699-fw-stats--observability-instrumentation-.md"
+  - ".tasks/completed/T-700-3-tier-validation-consistency-across-all.md"
+  - ".tasks/completed/T-701-context-budgeting-hints--token-estimates.md"
+  - ".tasks/completed/T-702-single-source-of-truth-generation--gener.md"
+  - ".tasks/completed/T-703-incremental-adoption-levels--fw-init---l.md"
+  - ".tasks/completed/T-726-integrate-d3js-fabric-explorer-from-open.md"
+  - ".tasks/completed/T-730-integrate-d3js-fabric-explorer-into-upst.md"
+  - ".tasks/completed/T-792-pickup-termlink-agent-dispatch-pattern--.md"
+  - ".tasks/completed/T-818-termlink-dispatch-result-persistence--en.md"
+  - ".tasks/completed/T-819-build-libconfigsh--3-tier-config-resolut.md"
+  - ".tasks/completed/T-823-automated-human-ac-verification--program.md"
+  - ".tasks/completed/T-828-inputoutput-token-breakdown--enrich-hand.md"
+  - ".tasks/completed/T-830-session-length-optimization--when-to-cle.md"
+  - ".tasks/completed/T-832-fix-installsh-unbound-localrepo-variable.md"
+  - ".tasks/completed/T-849-fix-fabric-explorer-double-refresh-bug--.md"
+  - ".tasks/completed/T-860-audit-performance--123-active-tasks--7-l.md"
+  - ".tasks/completed/T-864-inception-record-task-execution-stats-ti.md"
+  - ".tasks/completed/T-866-audit-cron-zombie-accumulation--flock-gu.md"
+  - ".tasks/completed/T-875-fix-installer-ux--run-prefix-causes-copy.md"
+  - ".tasks/completed/T-877-strengthen-install-to-first-session-pipe.md"
+  - ".tasks/completed/T-954-human-ac-classification-reform--risk-bas.md"
+  - ".tasks/completed/T-959-batch-inception-review-page-in-watchtowe.md"
+  - ".tasks/completed/T-962-web-terminal-in-watchtower--browser-base.md"
+  - ".tasks/completed/T-968-codify-3-tier-test-approach-for-ac-verif.md"
+  - ".tasks/completed/T-980-terminal-session-profile-selector-in-wat.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T08:23:01"
+    action: "T-1194: Auto-check 68 inception go/no-go Human ACs — decisions verified programmatically"
+  - time: "2026-04-13T08:23:48"
+    action: "T-1194: Archive 57 fully-verified tasks — active count 153→96"
+  - time: "2026-04-13T08:28:19"
+    action: "T-1194: Playwright-verified — archive 11 more tasks, active count 96→85"
+  - time: "2026-04-13T08:29:13"
+    action: "T-1194: Verify and archive 4 more tasks (programmatic evidence) — active count 85→81"
+  - time: "2026-04-13T08:30:52"
+    action: "T-1194: Human AC verification audit report — 80% automatable, 72 tasks archived"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 93
+  lines_added: 1736
+  lines_removed: 200
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1194-audit-human-acs-for-automated-verificati.md
+generated_by: context-agent-hybrid
