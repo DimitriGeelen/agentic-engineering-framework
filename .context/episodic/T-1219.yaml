@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1219: Fabric enrichment — reduce edgeless cards from 49 to <20
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T10:27:38Z
+# ============================================================================
+
+task_id: T-1219
+task_name: "Fabric enrichment — reduce edgeless cards from 49 to <20"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T10:22:22Z
+completed: 2026-04-13T10:27:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T12:23:53+02:00
+last_commit: 2026-04-13T12:27:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fabric enrichment — auto-enrich 11 cards, +18 edges. Manual enrichment of 7 non-test edgeless fabric cards — 0 remaining
+
+# Key outcomes
+outcomes:
+  - "Edgeless card count reduced to <20 (from 49; 0 non-test remaining)"
+  - "No orphaned or stale edges introduced"
+  - "Fabric drift check passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-context-audit-task-tools.yaml"
+  - ".fabric/components/agents-context-block-task-tools.yaml"
+  - ".fabric/components/agents-context-check-dispatch-pre.yaml"
+  - ".fabric/components/agents-context-check-tier0.yaml"
+  - ".fabric/components/agents-context-commit-cadence.yaml"
+  - ".fabric/components/agents-context-loop-detect.yaml"
+  - ".fabric/components/agents-git-lib-hooks.yaml"
+  - ".fabric/components/agents-session-capture.yaml"
+  - ".fabric/components/audit-yaml-validator.yaml"
+  - ".fabric/components/bin-fw.yaml"
+  - ".fabric/components/docs-reports-T-1067-horizon-status-invariants.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-inception.yaml"
+  - ".fabric/components/lib-paths.yaml"
+  - ".fabric/components/lib-task-audit.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/lib-watchtower.yaml"
+  - ".fabric/components/web-terminal-adapters-base.yaml"
+  - ".tasks/active/T-1219-fabric-enrichment--reduce-edgeless-cards.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T12:23:53"
+    action: "T-1219: Fabric enrichment — auto-enrich 11 cards, +18 edges"
+  - time: "2026-04-13T12:27:30"
+    action: "T-1219: Manual enrichment of 7 non-test edgeless fabric cards — 0 remaining"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 19
+  lines_added: 149
+  lines_removed: 88
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1219-fabric-enrichment--reduce-edgeless-cards.md
+generated_by: context-agent-hybrid
