@@ -8,7 +8,7 @@ from flask import Blueprint, abort, request
 
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
-    get_all_task_metadata, get_episodic_tags,
+    get_all_task_metadata, get_episodic_tags, task_id_sort_key,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -333,7 +333,7 @@ def tasks():
     if sort_by == "name":
         all_tasks.sort(key=lambda t: t.get("name", ""))
     else:
-        all_tasks.sort(key=lambda t: t.get("id", ""))
+        all_tasks.sort(key=task_id_sort_key)
 
     statuses = sorted(set(t.get("status", "") for t in all_tasks if t.get("status")))
     types = sorted(set(t.get("workflow_type", "") for t in all_tasks if t.get("workflow_type")))

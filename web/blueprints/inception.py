@@ -8,7 +8,7 @@ import yaml
 from flask import Blueprint, abort, redirect, request, url_for
 from markupsafe import Markup
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key
 
 logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
@@ -34,7 +34,7 @@ def _load_all_tasks():
         task_dir = PROJECT_ROOT / ".tasks" / location
         if not task_dir.exists():
             continue
-        for f in sorted(task_dir.glob("T-*.md")):
+        for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
             fm, body = parse_frontmatter(f.read_text())
             if not fm:
                 continue
@@ -188,7 +188,7 @@ def inception_list():
         inception_tasks = [t for t in inception_tasks if t["_location"] == location_filter]
 
     # Sort: active first, then by ID
-    inception_tasks.sort(key=lambda t: (0 if t["_location"] == "active" else 1, t.get("id", "")))
+    inception_tasks.sort(key=lambda t: (0 if t["_location"] == "active" else 1, task_id_sort_key(t)))
 
     # Summary counts
     all_inception = [t for t in all_tasks if t.get("workflow_type") == "inception"]

@@ -15,6 +15,12 @@ from pathlib import Path
 import yaml
 
 
+def _task_file_sort_key(path):
+    """Extract numeric portion of task filename for natural sorting."""
+    m = re.search(r"T-(\d+)", path.stem)
+    return int(m.group(1)) if m else 0
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -88,7 +94,7 @@ def gather_inputs(project_root, framework_root, errors=None):
     active_tasks = []
     active_dir = project_root / ".tasks" / "active"
     if active_dir.exists():
-        for f in sorted(active_dir.glob("T-*.md")):
+        for f in sorted(active_dir.glob("T-*.md"), key=_task_file_sort_key):
             task = parse_task(f)
             if task:
                 active_tasks.append(task)
@@ -97,7 +103,7 @@ def gather_inputs(project_root, framework_root, errors=None):
     completed_tasks = []
     completed_dir = project_root / ".tasks" / "completed"
     if completed_dir.exists():
-        for f in sorted(completed_dir.glob("T-*.md")):
+        for f in sorted(completed_dir.glob("T-*.md"), key=_task_file_sort_key):
             task = parse_task(f)
             if task:
                 completed_tasks.append(task)

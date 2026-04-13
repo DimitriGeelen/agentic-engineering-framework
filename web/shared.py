@@ -21,6 +21,16 @@ APP_DIR = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = APP_DIR.parent
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", str(FRAMEWORK_ROOT)))
 
+
+def task_id_sort_key(value):
+    """Extract numeric portion of task ID for natural sorting.
+
+    Works with task ID strings ('T-1000'), Path objects, or dicts with 'id' key.
+    """
+    s = value.get("id", "") if isinstance(value, dict) else str(value)
+    m = re_mod.search(r"T-(\d+)", s)
+    return int(m.group(1)) if m else 0
+
 # ---------------------------------------------------------------------------
 # Navigation — grouped for Watchtower command center
 # ---------------------------------------------------------------------------
@@ -81,7 +91,7 @@ def build_ambient():
     # Focus task — currently active tasks
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     if active_dir.exists():
-        active_tasks = sorted(active_dir.glob("T-*.md"))
+        active_tasks = sorted(active_dir.glob("T-*.md"), key=task_id_sort_key)
         if active_tasks:
             # Use the first active task as focus
             stem = active_tasks[0].stem
@@ -220,7 +230,7 @@ def get_all_task_metadata():
         task_dir = PROJECT_ROOT / ".tasks" / location
         if not task_dir.exists():
             continue
-        for f in sorted(task_dir.glob("T-*.md")):
+        for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
             fm, _ = parse_frontmatter(f.read_text())
             if fm:
                 fm["_location"] = location

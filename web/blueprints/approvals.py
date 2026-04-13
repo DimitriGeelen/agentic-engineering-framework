@@ -14,7 +14,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key
 
 bp = Blueprint("approvals", __name__)
 
@@ -89,7 +89,7 @@ def _load_pending_go_decisions():
     assumptions = _load_assumptions()
     results = []
 
-    for f in sorted(task_dir.glob("T-*.md")):
+    for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
         try:
             content = f.read_text()
         except OSError:
@@ -201,7 +201,7 @@ def _load_pending_human_acs():
     results = []
     now = time.time()
 
-    for f in sorted(task_dir.glob("T-*.md")):
+    for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
         try:
             content = f.read_text()
         except OSError:
