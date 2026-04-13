@@ -9,44 +9,9 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "Adding a config key to lib/config.sh requires matching addition to web/blueprints/config.py SETTINGS and CLAUDE.md config table. The config-registry-parity invariant test catches drift."
+  learning: "Gate scripts must use _fw_cmd()/_emit_user_command() for all command output — bare 'fw' commands in block messages cause PL-007 violations because agents relay them verbatim. The _emit_user_command() helper (lib/paths.sh) adds cd prefix + correct fw path. Invariant test at tests/lint/no-bare-fw-in-gate-scripts.bats guards 7 gate scripts with 12 assertions."
   source: P-001
-  task: T-1199
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-003
-  learning: "Subagent scope violation: dispatched agents can corrupt files outside their stated scope. Post-dispatch diff check needed."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-004
-  learning: "Format assumption: agents generate .md when framework expects .yaml. Always specify exact output format in dispatch prompts."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-005
-  learning: "Stale gaps accumulate: gaps stay watching days after fixes ship. Need audit check that auto-flags resolved gaps for closure."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-006
-  learning: "Dog-food features immediately: 3 compound bugs in approvals page caught only by first real use."
-  source: P-001
-  task: T-1129
-  date: 2026-04-13
-  context: Added via context agent
-  application: TBD
-- id: L-007
-  learning: "Section header prefix collision: startswith('## Decision') matches both '## Decisions' and '## Decision'. Always use exact match (==) for Markdown section headers that share a prefix."
-  source: P-001
-  task: T-1202
+  task: T-1207
   date: 2026-04-13
   context: Added via context agent
   application: TBD
