@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1216: Fix vendored .agentic-framework missing watchtower.sh — pre-push audit errors on every push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T12:53:04Z
+# ============================================================================
+
+task_id: T-1216
+task_name: "Fix vendored .agentic-framework missing watchtower.sh — pre-push audit errors on every push"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T09:46:00Z
+completed: 2026-04-13T09:47:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T11:47:32+02:00
+last_commit: 2026-04-13T11:48:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add missing watchtower.sh to vendored .agentic-framework/lib. Complete, cleanup T-1212, generate missing episodics T-1203/T-1204
+
+# Key outcomes
+outcomes:
+  - "`.agentic-framework/lib/watchtower.sh` exists and matches `lib/watchtower.sh`"
+  - "Pre-push audit runs without `No such file or directory` error"
+  - "All 11 local consumer projects upgraded with the new file"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/lib/watchtower.sh"
+  - ".context/episodic/T-1203.yaml"
+  - ".context/episodic/T-1204.yaml"
+  - ".tasks/active/T-1212-rca-consumer-watchtower-pages-missing--t.md"
+  - ".tasks/active/T-1216-fix-vendored-agentic-framework-missing-w.md"
+  - ".tasks/completed/T-1216-fix-vendored-agentic-framework-missing-w.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T11:47:32"
+    action: "T-1216: Add missing watchtower.sh to vendored .agentic-framework/lib"
+  - time: "2026-04-13T11:48:54"
+    action: "T-1216: Complete, cleanup T-1212, generate missing episodics T-1203/T-1204"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 6
+  lines_added: 550
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1216-fix-vendored-agentic-framework-missing-w.md
+generated_by: context-agent-hybrid
