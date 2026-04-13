@@ -4,6 +4,9 @@
 # NOT maintain their own vendoring enumerations. This prevents T-1109-class bugs.
 # Note: lib/upgrade.sh step 4c (global install sync to ~/.agentic-framework) is a
 # DIFFERENT code path and intentionally has its own sync logic.
+#
+# T-1218: Self-vendor tests — upgrade.sh must sync lib/*.sh to .agentic-framework/
+# before pushing to consumers (prevents T-1216-class stale vendored file bugs).
 
 @test "lib/upgrade.sh does not have its own agent_dirs enumeration" {
     # The old code had: agent_dirs="task-create handover git healing..."
@@ -36,5 +39,23 @@
 
 @test "lib/update.sh calls do_vendor for vendored file sync" {
     run grep 'do_vendor' lib/update.sh
+    [ "$status" -eq 0 ]
+}
+
+# T-1218: Self-vendor mechanism tests
+@test "lib/upgrade.sh has self-vendor step for .agentic-framework" {
+    run grep 'T-1217.*Self-vendor\|self_vendor\|Self-vendor' lib/upgrade.sh
+    [ "$status" -eq 0 ]
+}
+
+@test "lib/upgrade.sh self-vendor syncs lib/*.sh via glob not hardcoded list" {
+    # Must use glob pattern (lib/"*.sh), not enumerated file names
+    # The self-vendor block (T-1217) loops over _sv_src in lib/*.sh
+    run grep '_sv_src.*lib/.*\*\.sh' lib/upgrade.sh
+    [ "$status" -eq 0 ]
+}
+
+@test "lib/upgrade.sh self-vendor targets .agentic-framework" {
+    run grep '_self_vendor.*\.agentic-framework\|self_vendor.*agentic-framework' lib/upgrade.sh
     [ "$status" -eq 0 ]
 }
