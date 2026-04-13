@@ -61,12 +61,10 @@ date_finished: 2026-04-03T21:35:59Z
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Fail-open provides measurable safety benefit over fail-closed
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Fail-closed is the correct default for safety-critical hooks (which it is)
 
 ## Verification
 

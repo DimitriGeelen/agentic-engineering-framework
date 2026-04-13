@@ -61,12 +61,10 @@ date_finished: 2026-04-03T21:36:02Z
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Pattern already exists ad-hoc and standardization is bounded
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Config resolution adds complexity without reducing ad-hoc patterns
 
 ## Verification
 
