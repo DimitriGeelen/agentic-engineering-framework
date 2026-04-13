@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1119: Pickup: Approvals page never displays agent recommendation or argumentation — rationale_hint only pre-fills textarea, no visible recommendation block (from 010-termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:17Z
+# ============================================================================
+
+task_id: T-1119
+task_name: "Pickup: Approvals page never displays agent recommendation or argumentation — rationale_hint only pre-fills textarea, no visible recommendation block (from 010-termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T07:45:01Z
+completed: 2026-04-12T11:02:26Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T12:50:15+02:00
+last_commit: 2026-04-12T12:53:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Show agent recommendation on approvals page — full recommendation block with color-coded decision. Session housekeeping — context sync, task updates
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/2026-04-12.yaml"
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/reports/T-1119-approvals-recommendation-display.md"
+  - ".tasks/active/T-1101-inception-fw-inception-decide-silent---f.md"
+  - ".tasks/active/T-1102-inception-binfw-vs-agentic-frameworkbinf.md"
+  - ".tasks/active/T-1104-meta-inception-claudemd--fw-help--code-d.md"
+  - ".tasks/active/T-1119-pickup-approvals-page-never-displays-age.md"
+  - ".tasks/active/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - ".tasks/active/T-1139-add-patch-delivery-type-to-pickup-proces.md"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+  - ".tasks/completed/T-1142-t-1101-build-decompose---force-into-narr.md"
+  - ".tasks/completed/T-1143-t-1102-build-context-aware-fw-path-helpe.md"
+  - ".tasks/completed/T-1144-add-git-push-to-session-end-protocol-and.md"
+  - ".tasks/completed/T-1147-t-1104-build-fw-doctor-doc-drift-check--.md"
+  - ".tasks/completed/T-1148-upgrade-11-consumer-projects--sync-audit.md"
+  - "web/blueprints/approvals.py"
+  - "web/templates/_approvals_content.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:50:15"
+    action: "T-1119: Show agent recommendation on approvals page — full recommendation block with color-coded decision"
+  - time: "2026-04-12T12:53:03"
+    action: "T-1119: Session housekeeping — context sync, task updates"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 197 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 197
+  commits: 2
+  files_changed: 16
+  lines_added: 195
+  lines_removed: 672
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1119-pickup-approvals-page-never-displays-age.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1178: Structural bugfix-learning enforcement — ensure every bugfix task captures a learning (G-016)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:21Z
+# ============================================================================
+
+task_id: T-1178
+task_name: "Structural bugfix-learning enforcement — ensure every bugfix task captures a learning (G-016)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T17:32:17Z
+completed: 2026-04-12T22:15:38Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T19:34:30+02:00
+last_commit: 2026-04-12T19:34:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — structural bugfix-learning enforcement (G-016), GO recommendation
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Inception — structural bugfix-learning enforcement (G-016), GO recommendation"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1178-bugfix-learning-enforcement.md"
+  - ".tasks/active/T-1178-structural-bugfix-learning-enforcement--.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T19:34:30"
+    action: "T-1178: Inception — structural bugfix-learning enforcement (G-016), GO recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 283 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 283
+  commits: 1
+  files_changed: 2
+  lines_added: 162
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1178-structural-bugfix-learning-enforcement--.md
+generated_by: context-agent-hybrid

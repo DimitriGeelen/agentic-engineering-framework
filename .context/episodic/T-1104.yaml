@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1104: META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of doc parity (G-035)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:16Z
+# ============================================================================
+
+task_id: T-1104
+task_name: "META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of doc parity (G-035)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-11T12:44:58Z
+completed: 2026-04-12T10:41:08Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-04-11T14:46:05+02:00
+last_commit: 2026-04-11T14:46:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Register G-035 META-GAP — CLAUDE.md/fw help/code drift, no structural enforcement of doc parity
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1104-meta-inception-claudemd--fw-help--code-d.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-11T14:46:05"
+    action: "T-1104: Register G-035 META-GAP — CLAUDE.md/fw help/code drift, no structural enforcement of doc parity"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1316 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1316
+  commits: 3
+  files_changed: 16
+  lines_added: 2660
+  lines_removed: 172
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1104-meta-inception-claudemd--fw-help--code-d.md
+generated_by: context-agent-hybrid

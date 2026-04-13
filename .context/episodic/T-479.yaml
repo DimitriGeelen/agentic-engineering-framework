@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-479: Primary development platform: GitHub vs OneDev — source of truth, CI, issues, community interaction for post-launch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:21Z
+# ============================================================================
+
+task_id: T-479
+task_name: "Primary development platform: GitHub vs OneDev — source of truth, CI, issues, community interaction for post-launch"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-14T12:51:19Z
+completed: 2026-03-28T17:08:00Z
+duration_days: 14
+updates_count: 4
+first_commit: 2026-03-17T17:27:56+01:00
+last_commit: 2026-03-17T17:27:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Platform decision research — GitHub vs OneDev analysis with directive scoring
+
+# Key outcomes
+outcomes:
+  - "Current OneDev usage audited — what would be lost?"
+  - "GitHub community readiness assessed"
+  - "Sync strategy evaluated with operational cost estimate"
+  - "Research artifact written to `docs/reports/T-479-platform-decision.md`"
+  - "[REVIEW] Decision made: which option (A, B, or C) and why"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-479-platform-decision.md"
+  - ".tasks/active/T-479-primary-development-platform-github-vs-o.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-17T17:27:56"
+    action: "T-479: Platform decision research — GitHub vs OneDev analysis with directive scoring"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20416 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [infrastructure, launch, portability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20416
+  commits: 1
+  files_changed: 2
+  lines_added: 161
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-479-primary-development-platform-github-vs-o.md
+generated_by: context-agent-hybrid

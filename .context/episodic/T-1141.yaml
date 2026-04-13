@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1141: Pickup: PL-007: Never dump terminal commands — always use fw task review + termlink inject (from 010-termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:20Z
+# ============================================================================
+
+task_id: T-1141
+task_name: "Pickup: PL-007: Never dump terminal commands — always use fw task review + termlink inject (from 010-termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T09:57:49Z
+completed: 2026-04-12T11:05:06Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-04-12T12:43:10+02:00
+last_commit: 2026-04-12T12:55:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception — PL-007 enforcement, GO recommendation, consolidate with T-1146. Complete T-1119 + T-1120 inceptions — approvals page fixes
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Complete T-1119 + T-1120 inceptions — approvals page fixes"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/approvals/resolved-5a8b04ae5127.yaml"
+  - ".context/working/.approval-notified"
+  - ".context/working/focus.yaml"
+  - ".context/working/watchtower.log"
+  - "docs/reports/T-1141-pl-007-enforcement.md"
+  - ".tasks/active/T-1119-pickup-approvals-page-never-displays-age.md"
+  - ".tasks/active/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - ".tasks/active/T-1141-pickup-pl-007-never-dump-terminal-comman.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:43:10"
+    action: "T-1141: Inception — PL-007 enforcement, GO recommendation, consolidate with T-1146"
+  - time: "2026-04-12T12:55:36"
+    action: "T-1141: Complete T-1119 + T-1120 inceptions — approvals page fixes"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 67 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, learning]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 67
+  commits: 2
+  files_changed: 8
+  lines_added: 146
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1141-pickup-pl-007-never-dump-terminal-comman.md
+generated_by: context-agent-hybrid

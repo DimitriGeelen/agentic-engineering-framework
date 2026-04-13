@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1120: Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking approve button gets Task review required error (from 010-termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:23:18Z
+# ============================================================================
+
+task_id: T-1120
+task_name: "Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking approve button gets Task review required error (from 010-termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:00:02Z
+completed: 2026-04-12T11:02:36Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-04-12T12:47:00+02:00
+last_commit: 2026-04-12T12:47:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix Watchtower inception approve — create review marker before decide call
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix Watchtower inception approve — create review marker before decide call"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1120-review-marker-watchtower.md"
+  - ".tasks/active/T-1120-pickup-review-marker-gate-blocks-watchto.md"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T12:47:00"
+    action: "T-1120: Fix Watchtower inception approve — create review marker before decide call"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 182 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, bug-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 182
+  commits: 1
+  files_changed: 3
+  lines_added: 56
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1120-pickup-review-marker-gate-blocks-watchto.md
+generated_by: context-agent-hybrid
