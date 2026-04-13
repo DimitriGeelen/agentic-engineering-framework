@@ -392,6 +392,7 @@ def tasks():
         enum_types=enums["workflow_types"],
         enum_horizons=enums["horizons"],
         enum_owners=enums["owners"],
+        enum_statuses=enums["statuses"],
     )
 
 

@@ -145,19 +145,7 @@ main.container:has(.tasks-toolbar) {
     color: var(--pico-muted-color);
 }
 
-/* Column border colors */
-.kanban-column[data-status="captured"] .kanban-column-header {
-    border-bottom-color: var(--pico-muted-border-color);
-}
-.kanban-column[data-status="started-work"] .kanban-column-header {
-    border-bottom-color: #2196f3;
-}
-.kanban-column[data-status="issues"] .kanban-column-header {
-    border-bottom-color: #c62828;
-}
-.kanban-column[data-status="work-completed"] .kanban-column-header {
-    border-bottom-color: #2e7d32;
-}
+/* Column border colors — generated dynamically, see kanban-status-colors block below */
 
 /* ── Kanban Cards ───────────────────────────────────────── */
 .kanban-card {
@@ -170,16 +158,7 @@ main.container:has(.tasks-toolbar) {
 }
 .kanban-card:last-child { margin-bottom: 0; }
 
-/* Left border accent per status */
-.kanban-column[data-status="started-work"] .kanban-card {
-    border-left: 3px solid #2196f3;
-}
-.kanban-column[data-status="issues"] .kanban-card {
-    border-left: 3px solid #c62828;
-}
-.kanban-column[data-status="work-completed"] .kanban-card {
-    border-left: 3px solid #2e7d32;
-}
+/* Left border accent per status — generated dynamically below */
 
 .kanban-card-header {
     display: flex;
@@ -187,8 +166,8 @@ main.container:has(.tasks-toolbar) {
     justify-content: space-between;
     margin-bottom: 0.15rem;
 }
-/* ── Completed column cap ──────────────────────────────── */
-.kanban-column[data-status="work-completed"] .kanban-card:nth-child(n+12) {
+/* ── Completed column cap (last status in enum) ────────── */
+.kanban-column:last-child .kanban-card:nth-child(n+12) {
     display: none;
 }
 .kanban-overflow-note {
@@ -366,6 +345,22 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     cursor: pointer;
     font-weight: 600;
 }
+
+/* ── Dynamic status colors (T-1197/G-041) ─────────────── */
+/* Status → color mapping. Default is muted; known statuses get colors. */
+{% set status_colors = {
+    'captured': 'var(--pico-muted-border-color)',
+    'started-work': '#2196f3',
+    'issues': '#c62828',
+    'work-completed': '#2e7d32'
+} %}
+{% for s in enum_statuses|default(['captured','started-work','issues','work-completed']) %}
+{% set color = status_colors.get(s, 'var(--pico-muted-border-color)') %}
+.kanban-column[data-status="{{ s }}"] .kanban-column-header { border-bottom-color: {{ color }}; }
+{% if color != 'var(--pico-muted-border-color)' %}
+.kanban-column[data-status="{{ s }}"] .kanban-card { border-left: 3px solid {{ color }}; }
+{% endif %}
+{% endfor %}
 </style>
 
 <div class="tasks-toolbar">
@@ -466,10 +461,12 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 <!-- ════════════════════════════════════════════════════════
      KANBAN BOARD VIEW
      ════════════════════════════════════════════════════════ -->
-{% set captured = tasks|selectattr('status', 'equalto', 'captured')|list %}
-{% set in_progress = tasks|selectattr('status', 'equalto', 'started-work')|list %}
-{% set issues = tasks|selectattr('status', 'equalto', 'issues')|list %}
-{% set completed = tasks|selectattr('status', 'equalto', 'work-completed')|list %}
+{% set status_display = {'captured':'Captured','started-work':'In Progress','issues':'Issues','work-completed':'Completed'} %}
+{% set _statuses = enum_statuses|default(['captured','started-work','issues','work-completed']) %}
+{% set tasks_by_status = {} %}
+{% for s in _statuses %}
+{% set _ = tasks_by_status.update({s: tasks|selectattr('status', 'equalto', s)|list}) %}
+{% endfor %}
 
 <div class="kanban-board">
     {# ── Kanban card macro ─────────────────────────────────── #}
@@ -478,7 +475,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-card-header">
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
                hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
-            {{ inline_select(task.id, 'status', ['captured','started-work','issues','work-completed'], task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'status', enum_statuses|default(['captured','started-work','issues','work-completed']), task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
               onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
@@ -490,61 +487,29 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     </article>
     {% endmacro %}
 
-    <!-- Captured -->
-    <div class="kanban-column" data-status="captured">
+    {# ── Dynamic kanban columns from enum_statuses (T-1197/G-041) ── #}
+    {% for s in _statuses %}
+    {% set col_tasks = tasks_by_status.get(s, []) %}
+    {% set is_last = loop.last %}
+    <div class="kanban-column" data-status="{{ s }}">
         <div class="kanban-column-header">
-            Captured <span class="count">({{ captured|length }})</span>
+            {{ status_display.get(s, s|replace('-',' ')|title) }} <span class="count">({{ col_tasks|length }})</span>
         </div>
-        {% for task in captured %}
+        {% for task in (col_tasks[:10] if is_last else col_tasks) %}
         {{ kanban_card(task) }}
         {% else %}
         <div class="kanban-empty">No tasks</div>
         {% endfor %}
-    </div>
-
-    <!-- In Progress -->
-    <div class="kanban-column" data-status="started-work">
-        <div class="kanban-column-header">
-            In Progress <span class="count">({{ in_progress|length }})</span>
-        </div>
-        {% for task in in_progress %}
-        {{ kanban_card(task) }}
-        {% else %}
-        <div class="kanban-empty">No tasks</div>
-        {% endfor %}
-    </div>
-
-    <!-- Issues -->
-    <div class="kanban-column" data-status="issues">
-        <div class="kanban-column-header">
-            Issues <span class="count">({{ issues|length }})</span>
-        </div>
-        {% for task in issues %}
-        {{ kanban_card(task) }}
-        {% else %}
-        <div class="kanban-empty">No tasks</div>
-        {% endfor %}
-    </div>
-
-    <!-- Completed (capped at 10, most recent first) -->
-    <div class="kanban-column" data-status="work-completed">
-        <div class="kanban-column-header">
-            Completed <span class="count">({{ completed|length }})</span>
-        </div>
-        {% for task in completed[:10] %}
-        {{ kanban_card(task) }}
-        {% else %}
-        <div class="kanban-empty">No tasks</div>
-        {% endfor %}
-        {% if completed|length > 10 %}
+        {% if is_last and col_tasks|length > 10 %}
         <div class="kanban-overflow-note">
-            <a href="/tasks?view=list&status=work-completed"
-               hx-get="/tasks?view=list&status=work-completed" hx-target="#content" hx-push-url="true">
-                +{{ completed|length - 10 }} more &rarr;
+            <a href="/tasks?view=list&status={{ s }}"
+               hx-get="/tasks?view=list&status={{ s }}" hx-target="#content" hx-push-url="true">
+                +{{ col_tasks|length - 10 }} more &rarr;
             </a>
         </div>
         {% endif %}
     </div>
+    {% endfor %}
 </div>
 
 <!-- Inline editing + reload after actions -->
@@ -641,7 +606,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
     <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="{{ all_filters }}">
         <option value="">All Statuses</option>
-        {% for s in ['captured','started-work','issues','work-completed'] %}
+        {% for s in enum_statuses|default(['captured','started-work','issues','work-completed']) %}
         <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
@@ -688,7 +653,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
                       onclick="startKanbanNameEdit(this, '{{ task.id }}')"
                       title="Click to edit">{{ task.name }}</span></td>
             <td>
-                {{ inline_select(task.id, 'status', ['captured','started-work','issues','work-completed'], task.status, hx_target='next .status-update-result', form_class='inline-flex-center gap-xs') }}
+                {{ inline_select(task.id, 'status', enum_statuses|default(['captured','started-work','issues','work-completed']), task.status, hx_target='next .status-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="status-update-result"></span>
             </td>
             <td>
