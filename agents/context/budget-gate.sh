@@ -135,11 +135,11 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  Context is at ~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
             echo "  Task files already have all essential state. Time to wrap up." >&2
             echo "" >&2
-            echo "  ALLOWED: git commit, fw handover, reading files," >&2
+            echo "  ALLOWED: git commit, $(_fw_cmd) handover, reading files," >&2
             echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
             echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
             echo "" >&2
-            echo "  Action: Commit your work, then run 'fw handover'" >&2
+            echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             exit 2
@@ -266,11 +266,11 @@ case "$LEVEL" in
         echo "  Context is at ~$((TOKENS * 100 / CONTEXT_WINDOW))% of context window." >&2
         echo "  Task files already have all essential state. Time to wrap up." >&2
         echo "" >&2
-        echo "  ALLOWED: git commit, fw handover, reading files," >&2
+        echo "  ALLOWED: git commit, $(_fw_cmd) handover, reading files," >&2
         echo "           Write/Edit to .context/ .tasks/ .claude/" >&2
         echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
         echo "" >&2
-        echo "  Action: Commit your work, then run 'fw handover'" >&2
+        echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
         exit 2

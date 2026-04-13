@@ -90,7 +90,7 @@ except:
     echo "" >&2
     echo "  For cross-project reads, use TermLink dispatch:" >&2
     echo "" >&2
-    echo "    fw termlink dispatch --name read --project /opt/other \\" >&2
+    echo "    $(_fw_cmd) termlink dispatch --name read --project /opt/other \\" >&2
     echo "      --prompt 'cat README.md and return its contents'" >&2
     echo "" >&2
     echo "  Policy: T-559 (Project Boundary Enforcement)" >&2
@@ -196,7 +196,7 @@ PYEOF
     echo "  For legitimate cross-project work, use TermLink dispatch which" >&2
     echo "  runs the command in the target project's own session context:" >&2
     echo "" >&2
-    echo "    fw termlink dispatch --name work --project /opt/other \\" >&2
+    echo "    $(_fw_cmd) termlink dispatch --name work --project /opt/other \\" >&2
     echo "      --prompt 'describe the work for the target project'" >&2
     echo "" >&2
     echo "  Or spawn an interactive TermLink session rooted in the target:" >&2

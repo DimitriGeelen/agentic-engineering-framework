@@ -49,3 +49,35 @@
         | wc -l)
     [ "$bare" -eq 0 ]
 }
+
+@test "checkpoint.sh has no bare fw in guidance messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/checkpoint.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}
+
+@test "budget-gate.sh has no bare fw in block messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/budget-gate.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}
+
+@test "check-agent-dispatch.sh has no bare fw in block messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/check-agent-dispatch.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}
+
+@test "check-project-boundary.sh has no bare fw in block messages" {
+    bare=$(grep 'echo.*".*\bfw\b ' agents/context/check-project-boundary.sh \
+        | grep -v '^\s*#' \
+        | grep -v '_fw_cmd\|_emit_user_command\|FRAMEWORK_ROOT\|termlink\b' \
+        | wc -l)
+    [ "$bare" -eq 0 ]
+}

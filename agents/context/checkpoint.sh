@@ -172,7 +172,7 @@ warn_by_tokens() {
 SIGNAL_EOF
                 echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
             else
-                echo "AUTO-HANDOVER: Failed — run 'fw handover' manually." >&2
+                echo "AUTO-HANDOVER: Failed — run '$(_fw_cmd) handover' manually." >&2
             fi
             rm -f "$handover_lock"
         fi
@@ -180,7 +180,7 @@ SIGNAL_EOF
         echo "" >&2
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of context window)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
-        echo "ACTION: Commit work, then 'fw handover --checkpoint'" >&2
+        echo "ACTION: Commit work, then '$(_fw_cmd) handover --checkpoint'" >&2
         echo "" >&2
     elif [ "$tokens" -ge "$TOKEN_WARN" ]; then
         echo "" >&2
@@ -205,7 +205,7 @@ detect_compaction() {
             echo "===========================================" >&2
             echo "COMPACTION DETECTED: Tokens dropped ${prev} -> ${tokens}." >&2
             echo "Context was summarized — working memory is lost." >&2
-            echo "ACTION: Run 'fw resume status' then 'fw resume sync'." >&2
+            echo "ACTION: Run '$(_fw_cmd) resume status' then '$(_fw_cmd) resume sync'." >&2
             echo "===========================================" >&2
             echo "" >&2
         fi
@@ -219,13 +219,13 @@ warn_by_calls() {
         echo "" >&2
         echo "===========================================" >&2
         echo "CRITICAL: $count tool calls since last commit (no token data)." >&2
-        echo "ACTION: Commit now, then 'fw handover'." >&2
+        echo "ACTION: Commit now, then '$(_fw_cmd) handover'." >&2
         echo "===========================================" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_URGENT" ]; then
         echo "" >&2
         echo "WARNING: $count tool calls since last commit (no token data)." >&2
-        echo "Consider: fw handover --checkpoint" >&2
+        echo "Consider: $(_fw_cmd) handover --checkpoint" >&2
         echo "" >&2
     elif [ "$count" -ge "$CALL_WARN" ]; then
         echo "" >&2
