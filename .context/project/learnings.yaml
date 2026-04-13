@@ -1679,3 +1679,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-005
+  learning: "Episodic YAML files containing regex patterns (backslash-d, backslash-b) break YAML parsing when double-quoted. The generate-episodic agent inherits the problematic string from the task name field. Fix: strip backslashes or use single quotes for strings containing regex chars."
+  source: P-001
+  task: T-1236
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD

@@ -4,7 +4,7 @@ name: "Fix malformed episodic YAML — T-269 and T-675 parse errors on every /se
 description: >
   Fix malformed episodic YAML — T-269 and T-675 parse errors on every /search load
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T18:52:00Z
-last_update: 2026-04-13T18:52:00Z
-date_finished: null
+last_update: 2026-04-13T18:55:09Z
+date_finished: 2026-04-13T18:55:09Z
 ---
 
 # T-1236: Fix malformed episodic YAML — T-269 and T-675 parse errors on every /search load
@@ -68,3 +68,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1236-fix-malformed-episodic-yaml--t-269-and-t.md
 - **Context:** Initial task creation
+
+### 2026-04-13T18:55:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Both episodics fixed, 0 broken files across 1166 episodics
