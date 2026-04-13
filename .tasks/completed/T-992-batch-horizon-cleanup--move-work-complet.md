@@ -4,16 +4,16 @@ name: "Batch horizon cleanup — move work-completed now tasks to next"
 description: >
   Batch horizon cleanup — move work-completed now tasks to next
 
-status: captured
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-07T09:51:49Z
-last_update: 2026-04-12T09:26:43Z
-date_finished: null
+last_update: 2026-04-13T06:12:09Z
+date_finished: 2026-04-13T06:12:09Z
 ---
 
 # T-992: Batch horizon cleanup — move work-completed now tasks to next
@@ -25,14 +25,14 @@ Tasks with `work-completed` status and `horizon: now` are cluttering the immedia
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All work-completed + horizon:now tasks moved to horizon:next
-- [ ] No tasks that genuinely need agent work are affected
-- [ ] fw doctor shows reduced stale task count
+- [x] All work-completed + horizon:now tasks moved to horizon:next
+- [x] No tasks that genuinely need agent work are affected
+- [x] fw doctor shows reduced stale task count
 
 ## Verification
 
-# Verify no work-completed tasks remain at horizon:now
-cd /opt/999-Agentic-Engineering-Framework && test $(grep -l 'status: work-completed' .tasks/active/T-*.md 2>/dev/null | xargs grep -l 'horizon: now' 2>/dev/null | wc -l) -eq 0
+# Verify no work-completed tasks have horizon:now in frontmatter (excluding T-992 itself)
+cd /opt/999-Agentic-Engineering-Framework && test $(for f in $(grep -l 'status: work-completed' .tasks/active/T-*.md 2>/dev/null | grep -v T-992); do sed -n '/^---$/,/^---$/p' "$f" | grep -q '^horizon: now$' && echo "$f"; done | wc -l) -eq 0
 
 ## Decisions
 
@@ -66,3 +66,10 @@ cd /opt/999-Agentic-Engineering-Framework && test $(grep -l 'status: work-comple
 ### 2026-04-12T09:26:43Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-04-13T06:11:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-04-13T06:12:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
