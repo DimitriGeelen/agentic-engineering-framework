@@ -8,13 +8,11 @@ tags: []
 purpose: "PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management)."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: .context/working/.edit-counter
+    type: reads
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: agents/context/checkpoint.sh
+    type: complements
 
 last_verified: 2026-03-27
 created_by: unknown

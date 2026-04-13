@@ -5,16 +5,14 @@ subsystem: context-fabric
 location: agents/context/audit-task-tools.sh
 tags: []
 
-purpose: "TODO: describe what this component does"
+purpose: "PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory — warns agent when banned task tools are used."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: .claude/settings.json
+    type: reads
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: agents/context/block-task-tools.sh
+    type: complements
 
 last_verified: 2026-04-12
 created_by: unknown

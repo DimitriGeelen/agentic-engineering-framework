@@ -8,13 +8,11 @@ tags: []
 purpose: "PreToolUse hook: gate agent dispatch count — blocks Agent tool when parallel limit reached (max 5). Prevents T-073-class context explosions."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: agents/dispatch/preamble.md
+    type: reads
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: agents/context/check-agent-dispatch.sh
+    type: complements
 
 last_verified: 2026-03-23
 created_by: unknown

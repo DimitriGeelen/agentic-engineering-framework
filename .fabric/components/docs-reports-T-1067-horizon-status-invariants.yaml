@@ -1,20 +1,18 @@
 id: docs/reports/T-1067-horizon-status-invariants.md
 name: T-1067-horizon-status-invariants
-type: script
-subsystem: unknown
+type: report
+subsystem: task-system
 location: docs/reports/T-1067-horizon-status-invariants.md
-tags: []
+tags: [research, invariants]
 
-purpose: "TODO: describe what this component does"
+purpose: "Research report: horizon/status invariant rules. Defines the consistency rules enforced by update-task.sh (T-1068)."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+  - target: agents/task-create/update-task.sh
+    type: references
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: tests/unit/update-task.bats
+    type: tests
 
 last_verified: 2026-04-09
 created_by: unknown

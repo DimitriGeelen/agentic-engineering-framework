@@ -7,9 +7,12 @@ tags: [agent, session-capture, checklist]
 
 purpose: "Session capture checklist — ensures all work, decisions, and learnings are recorded before session end"
 
-depends_on: []
-
-depended_by: []
+depends_on:
+  - target: agents/handover/handover.sh
+    type: triggers
+depended_by:
+  - target: CLAUDE.md
+    type: references
 
 last_verified: 2026-04-05
 created_by: T-917
