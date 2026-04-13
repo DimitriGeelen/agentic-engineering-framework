@@ -59,13 +59,14 @@ date_finished: null
 
 ## Go/No-Go Criteria
 
+<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Root cause identified with bounded fix path
+- Fix is scoped, testable, and reversible
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Problem requires fundamental redesign or unbounded scope
+- Fix cost exceeds benefit given current evidence
 
 ## Verification
 
