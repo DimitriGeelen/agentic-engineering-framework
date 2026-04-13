@@ -195,6 +195,9 @@ def _get_stale_tasks():
                         last = datetime.datetime.fromisoformat(last.replace("Z", "+00:00"))
                     except ValueError:
                         continue
+                # YAML may parse dates as datetime.date — coerce to datetime
+                if isinstance(last, datetime.date) and not isinstance(last, datetime.datetime):
+                    last = datetime.datetime.combine(last, datetime.time.min, tzinfo=datetime.timezone.utc)
                 if hasattr(last, "tzinfo") and last.tzinfo is None:
                     last = last.replace(tzinfo=datetime.timezone.utc)
                 if (now - last).days > 7:
