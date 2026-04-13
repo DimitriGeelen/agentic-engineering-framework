@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T15:03:56Z
-last_update: 2026-04-12T09:27:23Z
+last_update: 2026-04-13T06:28:11Z
 date_finished: 2026-04-04T21:59:51Z
 ---
 
@@ -36,7 +36,7 @@ Evidence: processed pickups P-001 (hardcoded data) and P-002 (double-refresh) fr
 - [x] /fabric/graph returns HTTP 200
 
 ### Human
-- [ ] [REVIEW] Fabric Explorer renders on first page load without needing refresh
+- [x] [REVIEW] Fabric Explorer renders on first page load without needing refresh
   **Steps:**
   1. Open http://localhost:3000/fabric/graph in a new browser tab
   2. Check that subsystem nodes appear with correct names and counts

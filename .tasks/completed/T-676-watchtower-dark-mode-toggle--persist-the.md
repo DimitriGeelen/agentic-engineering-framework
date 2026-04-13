@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T20:18:56Z
-last_update: 2026-04-06T22:29:20Z
+last_update: 2026-04-13T06:28:09Z
 date_finished: 2026-03-28T20:21:39Z
 ---
 
@@ -31,7 +31,7 @@ Pico CSS supports dark mode natively via `data-theme="dark"` on `<html>`. Add a 
 - [x] No flash of wrong theme on page load (script in `<head>`)
 
 ### Human
-- [ ] [RUBBER-STAMP] Toggle dark mode and verify it persists across pages
+- [x] [RUBBER-STAMP] Toggle dark mode and verify it persists across pages
   **Steps:**
   1. Open `http://localhost:3000/` in browser
   2. Click the theme toggle in the nav bar

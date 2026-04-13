@@ -7,12 +7,12 @@ description: >
 status: captured
 workflow_type: build
 owner: human
-horizon: next
+horizon: now
 tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:02Z
-last_update: 2026-04-08T05:46:01Z
+last_update: 2026-04-13T06:25:19Z
 date_finished: null
 ---
 
@@ -71,3 +71,6 @@ grep -q "termlink" plugins/wezterm/termlink-chrome.lua
 
 ### 2026-04-08T05:46:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-13T06:25:19Z — status-update [task-update-agent]
+- **Change:** horizon: next → now

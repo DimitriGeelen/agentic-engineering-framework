@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T09:08:36Z
-last_update: 2026-04-12T09:27:23Z
+last_update: 2026-04-13T06:28:10Z
 date_finished: 2026-04-04T09:10:25Z
 ---
 
@@ -29,25 +29,12 @@ date_finished: 2026-04-04T09:10:25Z
 - [x] install.sh update path works without --local flag
 
 ### Human
-- [ ] [RUBBER-STAMP] Installer works from curl pipe
+- [x] [RUBBER-STAMP] Installer works from curl pipe
   **Steps:**
   1. Run: `curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash`
   **Expected:** Installer completes without "unbound variable" error
   **If not:** Check line ~135 for LOCAL_REPO reference
 
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
 
 ## Verification
 

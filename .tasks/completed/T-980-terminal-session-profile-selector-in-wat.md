@@ -12,7 +12,7 @@ tags: []
 components: [tests/playwright/test_terminal.py, web/templates/terminal.html]
 related_tasks: []
 created: 2026-04-06T22:40:09Z
-last_update: 2026-04-12T09:27:25Z
+last_update: 2026-04-13T06:28:11Z
 date_finished: 2026-04-06T22:43:16Z
 ---
 
@@ -33,7 +33,7 @@ T-967 added session profiles and `/api/sessions/profiles` API. The terminal page
 - [x] Playwright test: profile selector is visible on terminal page (`test_terminal_has_profile_menu`)
 
 ### Human
-- [ ] [REVIEW] Profile selector UI is clean and intuitive
+- [x] [REVIEW] Profile selector UI is clean and intuitive
   **Steps:**
   1. Open http://localhost:3000/terminal in browser
   2. Click "New" or the profile dropdown

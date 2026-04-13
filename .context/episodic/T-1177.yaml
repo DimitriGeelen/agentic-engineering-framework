@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1177: Fix G-036: Dynamic section parsing for inception detail page — remove hardcoded allowlist
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:28:12Z
+# ============================================================================
+
+task_id: T-1177
+task_name: "Fix G-036: Dynamic section parsing for inception detail page — remove hardcoded allowlist"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T17:26:30Z
+completed: 2026-04-12T17:32:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-12T19:31:15+02:00
+last_commit: 2026-04-12T19:32:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Dynamic section parsing for inception detail — fix G-036 hardcoded allowlist. Complete — G-036 resolved, dynamic inception sections
+
+# Key outcomes
+outcomes:
+  - "inception.py dynamically extracts all `## ` sections instead of hardcoded list"
+  - "Inception detail page renders all sections from task file"
+  - "Existing known sections still display correctly (backward compatible)"
+  - "Web tests pass"
+  - "[RUBBER-STAMP] Inception detail page shows all sections"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Dynamic section parsing for inception detail — fix G-036 hardcoded allowlist"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/concerns.yaml"
+  - ".tasks/active/T-1177-fix-g-036-dynamic-section-parsing-for-in.md"
+  - "web/blueprints/inception.py"
+  - "web/templates/inception_detail.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T19:31:15"
+    action: "T-1177: Dynamic section parsing for inception detail — fix G-036 hardcoded allowlist"
+  - time: "2026-04-12T19:32:09"
+    action: "T-1177: Complete — G-036 resolved, dynamic inception sections"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 150
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1177-fix-g-036-dynamic-section-parsing-for-in.md
+generated_by: context-agent-hybrid

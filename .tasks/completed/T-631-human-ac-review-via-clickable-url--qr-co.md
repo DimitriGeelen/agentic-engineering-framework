@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-26T22:20:03Z
-last_update: 2026-03-27T18:30:38Z
+last_update: 2026-04-13T06:28:08Z
 date_finished: 2026-03-27T18:30:38Z
 ---
 
@@ -37,7 +37,7 @@ Prerequisites: Watchtower AC checkboxes (T-620), toggle-ac API, Python qrcode 7.
 - [x] URL opens correct task page in browser (reclassified from Human RUBBER-STAMP per T-954)
 
 ### Human
-- [ ] [RUBBER-STAMP] QR code scans and opens same page on phone
+- [x] [RUBBER-STAMP] QR code scans and opens same page on phone
   **Steps:**
   1. Scan the terminal QR code with phone camera
   2. Open the link

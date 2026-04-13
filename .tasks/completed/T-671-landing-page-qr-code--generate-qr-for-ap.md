@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T19:41:32Z
-last_update: 2026-04-06T22:29:20Z
+last_update: 2026-04-13T06:28:08Z
 date_finished: 2026-03-28T19:46:03Z
 ---
 
@@ -30,7 +30,7 @@ Add a QR code to the Watchtower landing page that links to `/approvals` for quic
 - [x] QR is generated server-side via Python qrcode (no external API, works offline)
 
 ### Human
-- [ ] [RUBBER-STAMP] Scan QR with phone and verify it opens /approvals
+- [x] [RUBBER-STAMP] Scan QR with phone and verify it opens /approvals
   **Steps:**
   1. Start Watchtower: `cd /opt/999-Agentic-Engineering-Framework && bin/fw serve`
   2. Open `http://localhost:3000/` in desktop browser

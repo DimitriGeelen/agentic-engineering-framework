@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: [T-608, T-611, T-612]
 created: 2026-03-25T16:51:14Z
-last_update: 2026-03-27T18:31:55Z
+last_update: 2026-04-13T06:28:07Z
 date_finished: 2026-03-27T18:31:55Z
 ---
 
@@ -32,7 +32,7 @@ Part of T-608 Watchtower approval surface (GO decision 2026-03-25). See `docs/re
 - [x] Task detail page groups ACs under Agent/Human headers when sections exist
 
 ### Human
-- [ ] [REVIEW] Human AC cards render correctly with structured layout
+- [x] [REVIEW] Human AC cards render correctly with structured layout
   **Steps:**
   1. Start Watchtower: `cd /opt/999-Agentic-Engineering-Framework && python3 web/app.py`
   2. Open http://localhost:3000/tasks/T-608 (or any task with Human ACs)

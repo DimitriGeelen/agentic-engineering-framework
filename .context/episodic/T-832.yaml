@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-832: Fix install.sh unbound LOCAL_REPO variable in update path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:28:10Z
+# ============================================================================
+
+task_id: T-832
+task_name: "Fix install.sh unbound LOCAL_REPO variable in update path"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-04T09:08:36Z
+completed: 2026-04-12T09:27:23Z
+duration_days: 8
+updates_count: 3
+first_commit: 2026-04-04T11:10:19+02:00
+last_commit: 2026-04-04T11:17:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix install.sh unbound LOCAL_REPO variable in update path. T-012: Session housekeeping — T-831/T-832 completion, T-833 captured
+
+# Key outcomes
+outcomes:
+  - "LOCAL_REPO initialized to empty string before use"
+  - "install.sh update path works without --local flag"
+  - "[RUBBER-STAMP] Installer works from curl pipe"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix install.sh unbound LOCAL_REPO variable in update path"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-827.yaml"
+  - ".context/episodic/T-828.yaml"
+  - ".context/episodic/T-829.yaml"
+  - ".context/episodic/T-830.yaml"
+  - ".context/working/.agent-dispatch-counter"
+  - ".context/working/.approval-notified"
+  - ".context/working/.budget-status"
+  - ".context/working/.compact-log"
+  - ".context/working/focus.yaml"
+  - ".context/working/.handover-cooldown"
+  - ".context/working/.new-file-counter"
+  - ".context/working/.restart-requested"
+  - ".context/working/.session-metrics.yaml"
+  - ".context/working/session.yaml"
+  - ".context/working/.tier0-approval"
+  - ".context/working/.tier0-approval.pending"
+  - ".context/working/watchtower.log"
+  - ".context/working/watchtower.pid"
+  - "install.sh"
+  - ".tasks/active/T-831-session-quality-metrics--session-metrics.md"
+  - ".tasks/active/T-832-fix-installsh-unbound-localrepo-variable.md"
+  - ".tasks/active/T-833-fix-installsh-sigpipe-exit-141--head--1-.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-04T11:10:19"
+    action: "T-832: Fix install.sh unbound LOCAL_REPO variable in update path"
+  - time: "2026-04-04T11:17:25"
+    action: "T-012: Session housekeeping — T-831/T-832 completion, T-833 captured"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11538 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11538
+  commits: 2
+  files_changed: 22
+  lines_added: 1057
+  lines_removed: 251
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-832-fix-installsh-unbound-localrepo-variable.md
+generated_by: context-agent-hybrid

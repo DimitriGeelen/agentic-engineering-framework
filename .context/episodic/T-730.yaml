@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-730: Integrate D3.js Fabric Explorer into upstream Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T06:28:09Z
+# ============================================================================
+
+task_id: T-730
+task_name: "Integrate D3.js Fabric Explorer into upstream Watchtower"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-03-29T20:13:54Z
+completed: 2026-04-06T22:29:22Z
+duration_days: 7
+updates_count: 3
+first_commit: 2026-03-29T22:15:10+02:00
+last_commit: 2026-03-29T22:36:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fabric Explorer build task — ACs and verification defined. Integrate D3.js Fabric Explorer into upstream Watchtower. Register fabric cards for D3 explorer and d3.v7.min.js. Fix verification commands — curl -sf + grep -q SIGPIPE on large responses. Fix verification — use process substitution to avoid curl SIGPIPE. Add recommendation for human review
+
+# Key outcomes
+outcomes:
+  - "fabric_explorer.html copied and adapted for framework paths"
+  - "fabric.py merged — new graph route + 2 API routes + enhanced _load_subsystems"
+  - "d3.v7.min.js vendored to web/static/"
+  - "Existing routes still work: /fabric, /fabric/component/<name>"
+  - "New routes work: /fabric/graph (explorer), /api/fabric/report, /api/fabric/source"
+  - "Path traversal protection verified on source API"
+  - "Vendor copies synced to .agentic-framework/"
+  - "[REVIEW] Fabric Explorer renders correctly with interactive graph"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix verification — use process substitution to avoid curl SIGPIPE"
+    source: git-mined
+  - description: "Fix verification commands — curl -sf + grep -q SIGPIPE on large responses"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".agentic-framework/web/blueprints/fabric.py"
+  - ".agentic-framework/web/static/d3.v7.min.js"
+  - ".agentic-framework/web/templates/fabric_explorer.html"
+  - ".fabric/components/web-static-d3.yaml"
+  - ".fabric/components/web-templates-fabric_explorer.yaml"
+  - ".tasks/active/T-730-integrate-d3js-fabric-explorer-into-upst.md"
+  - "web/blueprints/fabric.py"
+  - "web/static/d3.v7.min.js"
+  - "web/templates/fabric_explorer.html"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-03-29T22:15:10"
+    action: "T-730: Fabric Explorer build task — ACs and verification defined"
+  - time: "2026-03-29T22:34:49"
+    action: "T-730: Integrate D3.js Fabric Explorer into upstream Watchtower"
+  - time: "2026-03-29T22:35:18"
+    action: "T-730: Register fabric cards for D3 explorer and d3.v7.min.js"
+  - time: "2026-03-29T22:35:55"
+    action: "T-730: Fix verification commands — curl -sf + grep -q SIGPIPE on large responses"
+  - time: "2026-03-29T22:36:24"
+    action: "T-730: Fix verification — use process substitution to avoid curl SIGPIPE"
+  - time: "2026-03-29T22:36:54"
+    action: "T-730: Add recommendation for human review"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 11655 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11655
+  commits: 6
+  files_changed: 9
+  lines_added: 3444
+  lines_removed: 99
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-730-integrate-d3js-fabric-explorer-into-upst.md
+generated_by: context-agent-hybrid

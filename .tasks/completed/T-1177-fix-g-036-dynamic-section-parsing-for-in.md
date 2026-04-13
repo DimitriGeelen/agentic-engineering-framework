@@ -12,7 +12,7 @@ tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 created: 2026-04-12T17:26:30Z
-last_update: 2026-04-12T17:32:09Z
+last_update: 2026-04-13T06:28:11Z
 date_finished: 2026-04-12T17:31:23Z
 ---
 
@@ -31,7 +31,7 @@ G-036: `web/blueprints/inception.py:205-214` uses a hardcoded section allowlist.
 - [x] Web tests pass
 
 ### Human
-- [ ] [RUBBER-STAMP] Inception detail page shows all sections
+- [x] [RUBBER-STAMP] Inception detail page shows all sections
   **Steps:**
   1. Open Watchtower at http://localhost:3000/inception/T-1146
   2. Verify sections like Problem Statement, Assumptions, Recommendation are visible
