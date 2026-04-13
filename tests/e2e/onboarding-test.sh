@@ -170,7 +170,10 @@ fi
 # Phase 3: Doctor — run fw doctor, check exit code
 # =========================================================================
 # Run doctor from the temp project root (PROJECT_ROOT should resolve via .framework.yaml)
-DOCTOR_OUTPUT=$(cd "$TMPDIR_BASE" && "$FRAMEWORK_ROOT/bin/fw" doctor 2>&1) || DOCTOR_EXIT=$?
+# T-1231: Unset PROJECT_ROOT so doctor resolves from the temp project, not the
+# inherited framework repo. Without this, the inherited env var causes doctor to
+# validate the framework's own hooks instead of the temp project's hooks.
+DOCTOR_OUTPUT=$(cd "$TMPDIR_BASE" && unset PROJECT_ROOT && "$FRAMEWORK_ROOT/bin/fw" doctor 2>&1) || DOCTOR_EXIT=$?
 DOCTOR_EXIT=${DOCTOR_EXIT:-0}
 
 # Count doctor results
