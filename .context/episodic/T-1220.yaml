@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1220: Fill TODO purposes in 21 non-test fabric cards
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T10:38:14Z
+# ============================================================================
+
+task_id: T-1220
+task_name: "Fill TODO purposes in 21 non-test fabric cards"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T10:33:57Z
+completed: 2026-04-13T10:38:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T12:37:24+02:00
+last_commit: 2026-04-13T12:38:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fill purpose descriptions in 21 fabric cards. Mark ACs complete
+
+# Key outcomes
+outcomes:
+  - "All 21 non-test cards have real purpose descriptions (no TODO)"
+  - "YAML remains valid in all modified cards"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".fabric/components/agents-audit-active-task-scan.yaml"
+  - ".fabric/components/agents-audit-completed-task-scan.yaml"
+  - ".fabric/components/agents-context-block-task-tools.yaml"
+  - ".fabric/components/lib-config-file.yaml"
+  - ".fabric/components/lib-config.yaml"
+  - ".fabric/components/lib-firewall.yaml"
+  - ".fabric/components/lib-pickup.yaml"
+  - ".fabric/components/lib-task-audit.yaml"
+  - ".fabric/components/lib-verify-acs.yaml"
+  - ".fabric/components/lib-watchtower.yaml"
+  - ".fabric/components/web-blueprints-config.yaml"
+  - ".fabric/components/web-blueprints-sessions.yaml"
+  - ".fabric/components/web-blueprints-terminal.yaml"
+  - ".fabric/components/web-templates-sessions.yaml"
+  - ".fabric/components/web-templates-terminal.yaml"
+  - ".fabric/components/web-terminal-adapters-claude_code.yaml"
+  - ".fabric/components/web-terminal-adapters-local_shell.yaml"
+  - ".fabric/components/web-terminal-__init__.yaml"
+  - ".fabric/components/web-terminal-profiles.yaml"
+  - ".fabric/components/web-terminal-registry.yaml"
+  - ".fabric/components/web-terminal-session.yaml"
+  - ".tasks/active/T-1220-fill-todo-purposes-in-21-non-test-fabric.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T12:37:24"
+    action: "T-1220: Fill purpose descriptions in 21 fabric cards"
+  - time: "2026-04-13T12:38:07"
+    action: "T-1220: Mark ACs complete"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 22
+  lines_added: 74
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1220-fill-todo-purposes-in-21-non-test-fabric.md
+generated_by: context-agent-hybrid
