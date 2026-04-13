@@ -1,13 +1,13 @@
 # ============================================================================
-# EPISODIC MEMORY - T-675: Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower
+# EPISODIC MEMORY - T-675: Fix T-d{3} regex — support 3+ digit task IDs across Watchtower
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-03-29T14:22:07Z
+# Generated: 2026-04-13T18:54:15Z
 # ============================================================================
 
 task_id: T-675
-task_name: "Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
+task_name: "Fix T-d3 regex — support 3+ digit task IDs across Watchtower"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
@@ -21,17 +21,17 @@ last_commit: 2026-03-28T21:17:52+01:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower
+  Fix T-d{3} regex — support 3+ digit task IDs across Watchtower
 
 # Key outcomes
 outcomes:
-  - "All `T-\d{3}` patterns in web/ changed to `T-\d{3,}`"
-  - "No remaining `\d{3}` task ID patterns in Watchtower code"
+  - "All `T-d{3}` patterns in web/ changed to `T-d{3,}`"
+  - "No remaining `d{3}` task ID patterns in Watchtower code"
   - "Watchtower starts without errors after changes"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  - description: "Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
+  - description: "Fix T-d{3} regex — support 3+ digit task IDs across Watchtower"
     source: git-mined
 
 # Decisions (from task file Decisions section)
@@ -70,7 +70,7 @@ artifacts:
 # Timeline (auto-mined from git log)
 git_timeline:
   - time: "2026-03-28T21:17:52"
-    action: "T-675: Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower"
+    action: "T-675: Fix T-d{3} regex — support 3+ digit task IDs across Watchtower"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:

@@ -39,13 +39,10 @@ challenges:
 
 # Decisions (from task file Decisions section)
 decisions:
+  - decision: "Cross-encoder reranking approach"
     chose: "Build infrastructure with graceful fallback, ship without model"
-    rationale: "Qwen3-Reranker 0.6B not available in Ollama registry (tried qwen3-reranker:0.6b, dengcao/Qwen3-Reranker-0.6B, sam860/qwen3-reranker:0.6b — all fail). Code auto-activates when model becomes available."
-    alternatives_rejected: ["Using Qwen3-14B as reranker (too slow: 14B model x30 calls), blocking on model availability"]
-  - decision: "[date] — [topic]"
-    chose: "[what was decided]"
-    rationale: "[rationale]"
-    alternatives_rejected: ["[alternatives and why not]"]
+    rationale: "Qwen3-Reranker 0.6B not available in Ollama registry. Code auto-activates when model becomes available."
+    alternatives_rejected: ["Using Qwen3-14B as reranker (too slow: 14B model x30 calls)"]
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
