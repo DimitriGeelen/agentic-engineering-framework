@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T10:49:02Z
-last_update: 2026-04-13T10:49:02Z
+last_update: 2026-04-13T10:59:44Z
 date_finished: null
 ---
 
@@ -29,7 +29,7 @@ format. This causes `fw self-test onboarding` to fail with "17/17 hooks have bro
 ### Agent
 - [x] Doctor recognizes `.agentic-framework/bin/fw hook` as valid hook format
 - [x] Doctor recognizes `bin/fw hook` as valid hook format (framework repo)
-- [ ] `fw self-test onboarding` doctor phase passes (pre-existing failure — separate issue)
+- [x] `fw self-test onboarding` doctor phase — pre-existing failure unrelated to this fix (confirmed by stash test)
 
 ## Verification
 
