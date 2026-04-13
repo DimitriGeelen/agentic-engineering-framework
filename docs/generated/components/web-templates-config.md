@@ -39,6 +39,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 ## Related
 
 ### Tasks
+- T-819: Build lib/config.sh — 3-tier config resolution for framework settings
 - T-881: Upgrade consumer projects with T-879 xargs fix and T-880 init improvements
 - T-895: Update Watchtower config page template for .framework.yaml source
 - T-901: Add project info section to Watchtower /config page

@@ -60,6 +60,7 @@ Path resolution
 ## Related
 
 ### Tasks
+- T-819: Build lib/config.sh — 3-tier config resolution for framework settings
 - T-851: Linkable task references in handover session summary — clickable T-XXX links to Watchtower task pages
 - T-855: Sync vendored .agentic-framework/ with T-849 through T-854 fixes
 - T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1129: Pickup: 4 learnings from termlink session — subagent scope violation, format assumptions, stale gaps, dog-fooding (from 010-termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T07:35:45Z
+# ============================================================================
+
+task_id: T-1129
+task_name: "Pickup: 4 learnings from termlink session — subagent scope violation, format assumptions, stale gaps, dog-fooding (from 010-termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T08:45:02Z
+completed: 2026-04-13T07:35:42Z
+duration_days: 1
+updates_count: 6
+first_commit: 2026-04-12T15:47:29+02:00
+last_commit: 2026-04-12T15:47:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Capture 4 learnings (PL-003 to PL-006), GO recommendation
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1129-pickup-4-learnings-from-termlink-session.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T15:47:29"
+    action: "T-1129: Capture 4 learnings (PL-003 to PL-006), GO recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1370 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, learning]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1370
+  commits: 1
+  files_changed: 2
+  lines_added: 47
+  lines_removed: 92
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1129-pickup-4-learnings-from-termlink-session.md
+generated_by: context-agent-hybrid

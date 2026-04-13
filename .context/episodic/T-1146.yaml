@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1146: Pickup: CRITICAL RCA: Agent command amnesia has 3 structural root causes — framework scripts ARE the violation source (from 010-termlink)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T07:36:24Z
+# ============================================================================
+
+task_id: T-1146
+task_name: "Pickup: CRITICAL RCA: Agent command amnesia has 3 structural root causes — framework scripts ARE the violation source (from 010-termlink)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-12T10:12:02Z
+completed: 2026-04-13T07:36:21Z
+duration_days: 1
+updates_count: 5
+first_commit: 2026-04-12T15:31:56+02:00
+last_commit: 2026-04-12T15:31:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Inception complete — 40 bare command sites, GO recommendation
+
+# Key outcomes
+outcomes:
+  - "Problem statement validated"
+  - "Assumptions tested"
+  - "Recommendation written with rationale"
+  - "[REVIEW] Review exploration findings and approve go/no-go decision"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "docs/reports/T-1146-command-amnesia-rca.md"
+  - ".tasks/active/T-1146-pickup-critical-rca-agent-command-amnesi.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-12T15:31:56"
+    action: "T-1146: Inception complete — 40 bare command sites, GO recommendation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1284 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [pickup, learning]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1284
+  commits: 1
+  files_changed: 2
+  lines_added: 119
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1146-pickup-critical-rca-agent-command-amnesi.md
+generated_by: context-agent-hybrid
