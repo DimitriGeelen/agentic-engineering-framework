@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/verify-acs.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible
 depends_on:
 - target: lib/verify-acs.sh
   type: calls

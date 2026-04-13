@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/terminal/registry.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Provides CRUD operations and YAML file persistence for terminal session records stored in .context/sessions/
 depends_on:
 - target: web/terminal/session.py
   type: calls

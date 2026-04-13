@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/firewall.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive
 depends_on:
 - target: lib/firewall.sh
   type: calls

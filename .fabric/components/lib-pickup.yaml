@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/pickup.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks
 depends_on: []
 depended_by:
 - target: tests/unit/lib_pickup.bats

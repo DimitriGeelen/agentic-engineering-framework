@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/terminal.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Jinja2 template rendering the interactive web terminal UI with tabbed sessions, xterm.js integration, and session controls
 depends_on: []
 depended_by:
 - target: web/blueprints/terminal.py

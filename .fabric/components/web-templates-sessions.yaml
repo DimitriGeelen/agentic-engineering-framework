@@ -4,7 +4,7 @@ type: template
 subsystem: watchtower
 location: web/templates/sessions.html
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Jinja2 template rendering the sessions management page with session cards showing provider, status, and metadata
 depends_on: []
 depended_by:
 - target: web/blueprints/sessions.py

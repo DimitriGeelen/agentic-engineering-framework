@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/config.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources
 depends_on:
 - target: web/shared.py
   type: calls

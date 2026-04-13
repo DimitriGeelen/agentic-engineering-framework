@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/terminal/__init__.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Package entry point that manages PTY processes and bridges them to Flask-SocketIO WebSocket connections for the web terminal
 depends_on:
 - target: web/terminal/adapters/local_shell.py
   type: calls

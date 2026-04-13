@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/watchtower.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI
 depends_on: []
 depended_by:
 - target: agents/context/check-tier0.sh

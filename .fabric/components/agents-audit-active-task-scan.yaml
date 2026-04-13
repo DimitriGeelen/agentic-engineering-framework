@@ -4,7 +4,7 @@ type: script
 subsystem: audit
 location: agents/audit/active-task-scan.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass
 depends_on: []
 depended_by:
 - target: C-004

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/config.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default
 depends_on:
 - target: lib/config.sh
   type: calls

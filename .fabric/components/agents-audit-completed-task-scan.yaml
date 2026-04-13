@@ -4,7 +4,7 @@ type: script
 subsystem: audit
 location: agents/audit/completed-task-scan.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria
 depends_on: []
 depended_by:
 - target: C-004

@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/terminal/adapters/claude_code.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands
 depends_on: []
 depended_by:
 - target: web/blueprints/terminal.py

@@ -4,7 +4,7 @@ type: route
 subsystem: watchtower
 location: web/blueprints/sessions.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Flask blueprint that renders the terminal session management page listing active and historical sessions
 depends_on:
 - target: web/shared.py
   type: calls

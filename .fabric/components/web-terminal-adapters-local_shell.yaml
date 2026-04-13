@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/terminal/adapters/local_shell.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal
 depends_on: []
 depended_by:
 - target: web/blueprints/terminal.py

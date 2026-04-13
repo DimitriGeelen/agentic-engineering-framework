@@ -4,7 +4,7 @@ type: script
 subsystem: watchtower
 location: web/terminal/profiles.py
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Loads named session profile presets from profiles.yaml for the terminal session creation UI
 depends_on: []
 depended_by:
 - target: web/blueprints/terminal.py

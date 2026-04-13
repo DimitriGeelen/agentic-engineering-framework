@@ -4,7 +4,7 @@ type: script
 subsystem: context-fabric
 location: agents/context/block-task-tools.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: PreToolUse hook that blocks Claude Code built-in task/todo tools to prevent bypassing framework task governance
 depends_on:
 - target: lib/paths.sh
   type: calls

@@ -4,7 +4,7 @@ type: script
 subsystem: framework-core
 location: lib/config-file.sh
 tags: []
-purpose: 'TODO: describe what this component does'
+purpose: Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments
 depends_on:
 - target: lib/config-file.sh
   type: calls
