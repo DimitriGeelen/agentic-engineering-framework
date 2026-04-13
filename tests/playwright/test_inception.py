@@ -71,3 +71,35 @@ class TestInceptionDetail:
             content = page.content()
             has_form = "GO" in content or "Record Decision" in content or "decision" in content.lower()
             assert has_form, "Inception detail should have decision form"
+
+
+class TestInceptionEndpointHealth:
+    """T-1223/T-1230: Inception endpoints return 200, not 500."""
+
+    def test_inception_detail_pages_no_500(self, page: Page):
+        """Every inception detail page must return 200, not 500."""
+        page.goto(_url("/inception"))
+        page.wait_for_load_state("domcontentloaded")
+        links = page.locator("a[href*='/inception/T-']")
+        # Collect hrefs first, then visit each
+        hrefs = []
+        for i in range(min(links.count(), 5)):
+            hrefs.append(links.nth(i).get_attribute("href"))
+        for href in hrefs:
+            url = _url(href) if href.startswith("/") else href
+            resp = page.goto(url)
+            assert resp.status == 200, f"Inception detail {href} returned {resp.status}"
+
+    def test_inception_list_summary_present(self, page: Page):
+        """Inception list has summary stats."""
+        page.goto(_url("/inception"))
+        page.wait_for_load_state("domcontentloaded")
+        stats = page.locator(".stat-value")
+        if stats.count() > 0:
+            first = stats.first.inner_text().strip()
+            assert first, "Summary stats should have values"
+
+    def test_assumptions_page_loads(self, page: Page):
+        """Assumptions page loads without error."""
+        resp = page.goto(_url("/assumptions"))
+        assert resp.status == 200
