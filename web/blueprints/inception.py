@@ -354,6 +354,14 @@ def record_decision(task_id):
         timeout=30,
     )
 
+    # T-1223: log errors for debugging
+    if not ok:
+        import logging
+        logging.getLogger(__name__).error(
+            "inception decide %s failed: stdout=%r stderr=%r",
+            task_id, stdout[:500], stderr[:500]
+        )
+
     # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
     if request.headers.get("HX-Request"):
         if ok:
