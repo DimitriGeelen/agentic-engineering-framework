@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1195: Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T08:07:42Z
+# ============================================================================
+
+task_id: T-1195
+task_name: "Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T06:39:42Z
+completed: 2026-04-13T06:45:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T08:43:23+02:00
+last_commit: 2026-04-13T08:43:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Replace hardcoded /opt/* consumer discovery with FW_CONSUMER_SCAN_DIRS (G-044)
+
+# Key outcomes
+outcomes:
+  - "`FW_CONSUMER_SCAN_DIRS` config added to lib/config.sh (default: `/opt`)"
+  - "Both /opt/* globs in bin/fw replaced with configurable scan"
+  - "No hardcoded /opt/* consumer discovery patterns remain in bin/fw"
+  - "CLAUDE.md config table updated with new setting"
+  - "fw doctor still finds consumer projects on this machine"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "bin/fw"
+  - "CLAUDE.md"
+  - "lib/config.sh"
+  - ".tasks/active/T-1195-fix-g-044-replace-hardcoded-opt-consumer.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T08:43:23"
+    action: "T-1195: Replace hardcoded /opt/* consumer discovery with FW_CONSUMER_SCAN_DIRS (G-044)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 82
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1195-fix-g-044-replace-hardcoded-opt-consumer.md
+generated_by: context-agent-hybrid
