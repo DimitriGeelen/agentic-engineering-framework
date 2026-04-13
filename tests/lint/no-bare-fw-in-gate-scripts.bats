@@ -20,3 +20,16 @@
 @test "check-tier0.sh uses _emit_user_command for CLI fallback" {
     grep -q '_emit_user_command' agents/context/check-tier0.sh
 }
+
+@test "hooks.sh commit-msg hook sources paths.sh" {
+    grep -q 'source.*paths.sh' agents/git/lib/hooks.sh
+}
+
+@test "hooks.sh inception gate uses _emit_user_command" {
+    # The inception gate block message should use _emit_user_command, not bare fw
+    grep -A2 'Record a decision' agents/git/lib/hooks.sh | grep -q '_emit_user_command'
+}
+
+@test "hooks.sh install output uses _emit_user_command" {
+    grep 'Bypass:.*tier0' agents/git/lib/hooks.sh | grep -q '_emit_user_command'
+}

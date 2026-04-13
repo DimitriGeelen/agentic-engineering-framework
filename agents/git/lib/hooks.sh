@@ -103,6 +103,10 @@ fi
 if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/config.sh"
 fi
+# Source paths for _emit_user_command (T-1204, T-1146 GO)
+if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
+    source "$FRAMEWORK_ROOT/lib/paths.sh"
+fi
 INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
 
 # --- Inception Gate (T-126, T-1176) ---
@@ -129,19 +133,19 @@ if [ -n "$TASK_REF" ]; then
                 echo "Inception tasks allow $INCEPTION_COMMIT_LIMIT exploration commits, then require a decision."
                 echo ""
                 echo "Record a decision:"
-                echo "  1. Review: fw task review $TASK_REF  (creates review marker)"
-                echo "  2. Decide: fw inception decide $TASK_REF go --rationale 'reason'"
-                echo "          or fw inception decide $TASK_REF no-go --rationale 'reason'"
+                echo "  1. Review: $(_emit_user_command "task review $TASK_REF")"
+                echo "  2. Decide: $(_emit_user_command "inception decide $TASK_REF go --rationale 'reason'")"
+                echo "          or: $(_emit_user_command "inception decide $TASK_REF no-go --rationale 'reason'")"
                 echo ""
                 echo "Bypass: git commit --no-verify"
                 echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"
-                echo "  Configure: fw config set inception_commit_limit N"
+                echo "  Configure: $(_emit_user_command "config set inception_commit_limit N")"
                 exit 1
             else
                 echo ""
                 echo "NOTE: Inception task $TASK_REF — no decision yet (commit $((INCEPTION_COMMITS + 1))/$INCEPTION_COMMIT_LIMIT before gate)"
                 echo "  After exploration:"
-                echo "    fw inception decide $TASK_REF go --rationale '...'"
+                echo "    $(_emit_user_command "inception decide $TASK_REF go --rationale '...'")"
                 echo ""
             fi
         fi
@@ -204,6 +208,15 @@ HOOK_EOF
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
+# Resolve FRAMEWORK_ROOT for _emit_user_command (T-1204)
+FRAMEWORK_ROOT="$PROJECT_ROOT"
+if [ -f "$PROJECT_ROOT/.framework.yaml" ]; then
+    _fw_path=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    [ -n "$_fw_path" ] && [ -d "$_fw_path" ] && FRAMEWORK_ROOT="$_fw_path"
+fi
+[ ! -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/paths.sh" ] && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+[ -f "$FRAMEWORK_ROOT/lib/paths.sh" ] && source "$FRAMEWORK_ROOT/lib/paths.sh"
+
 # Get the commit message
 COMMIT_MSG=$(git log -1 --format=%B HEAD)
 
@@ -256,7 +269,7 @@ if [ -d "$FABRIC_DIR" ]; then
         echo ""
         echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
         if [ "$DEP_COUNT" -gt 5 ]; then
-            echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radius HEAD"
+            echo "  High connectivity ($DEP_COUNT edges) — consider: $(_fw_cmd 2>/dev/null || echo fw) fabric blast-radius HEAD"
         fi
     fi
 fi
@@ -287,7 +300,7 @@ if [ -d "$FABRIC_DIR" ]; then
     if [ "$UNREG_COUNT" -gt 0 ]; then
         echo ""
         echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
-        echo "  Register: fw fabric register <path>"
+        echo "  Register: $(_fw_cmd 2>/dev/null || echo fw) fabric register <path>"
     fi
 fi
 
@@ -302,7 +315,7 @@ if [ -f "$LATEST" ]; then
         if [ "$ELAPSED" -gt 60 ]; then
             echo ""
             echo "HANDOVER STALE: Last handover has $TODO_COUNT unfilled [TODO] sections (${ELAPSED}min old)"
-            echo "  Run: fw handover --commit"
+            echo "  Run: $(_emit_user_command "handover --commit" 2>/dev/null || echo "fw handover --commit")"
             echo ""
         fi
     fi
@@ -410,7 +423,7 @@ HOOK_EOF
     echo "  - Blocks commits without task references (T-XXX)"
     echo "  - Allows merge commits and rebases"
     echo "  - Runs audit before push (blocks on FAIL, warns on WARN)"
-    echo "  - Bypass: fw tier0 approve (Tier 0 protected)"
+    echo "  - Bypass: $(_emit_user_command "tier0 approve") (Tier 0 protected)"
     echo "           then: git commit/push --no-verify"
 }
 
