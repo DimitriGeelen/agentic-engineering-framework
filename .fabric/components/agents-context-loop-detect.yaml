@@ -8,7 +8,7 @@ tags: []
 purpose: "PostToolUse hook: detect repetitive tool call patterns — warns when agent appears stuck in a loop (same tool+args repeated)."
 
 depends_on:
-  - target: lib/ts/dist/loop-detect.js
+  - target: lib/ts/src/loop-detect.ts
     type: calls
 depended_by:
   - target: agents/context/error-watchdog.sh
