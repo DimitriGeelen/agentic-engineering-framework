@@ -89,18 +89,39 @@ def _parse_session(filepath):
     return stats
 
 
+# T-1235: Cache parsed JSONL sessions (71 files, 242MB+ — parsing takes ~2s)
+import time as _time_mod
+
+_session_cache = {"data": None, "count": 0, "ts": 0}
+_SESSION_CACHE_TTL = 120  # seconds — JSONL files change slowly
+
+
 def _load_all_sessions():
-    """Load and parse all JSONL transcripts for this project."""
+    """Load and parse all JSONL transcripts for this project.
+
+    T-1235: Cached for 120s. Cache invalidates when file count changes.
+    """
     jdir = _jsonl_dir()
     if not jdir.exists():
         return []
 
     files = sorted(jdir.glob("*.jsonl"), key=lambda f: f.stat().st_mtime)
     files = [f for f in files if not f.name.startswith("agent-")]
+    current_count = len(files)
+    now = _time_mod.monotonic()
+
+    if (_session_cache["data"] is not None
+            and current_count == _session_cache["count"]
+            and (now - _session_cache["ts"]) < _SESSION_CACHE_TTL):
+        return _session_cache["data"]
 
     sessions = []
     for f in files:
         sessions.append(_parse_session(str(f)))
+
+    _session_cache["data"] = sessions
+    _session_cache["count"] = current_count
+    _session_cache["ts"] = now
     return sessions
 
 

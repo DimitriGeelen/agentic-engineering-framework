@@ -6,30 +6,33 @@ import markdown2
 from flask import Blueprint, abort
 
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
-from web.shared import PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan, parse_frontmatter, load_latest_audit
+from web.shared import (
+    PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan,
+    parse_frontmatter, load_latest_audit, get_all_task_metadata,
+)
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("core", __name__)
 
 
 def _get_attention_items():
-    """Build the 'needs attention' list for the dashboard."""
+    """Build the 'needs attention' list for the dashboard.
+
+    T-1235: Uses shared task cache instead of re-reading all files.
+    """
     items = []
 
-    # Active tasks with no recent update
-    active_dir = PROJECT_ROOT / ".tasks" / "active"
-    if active_dir.exists():
-        for f in active_dir.glob("T-*.md"):
-            content = f.read_text(errors="replace")
-            fm, _ = parse_frontmatter(content)
-            if fm:
-                tid = fm.get("id", f.stem[:5])
-                status = fm.get("status", "")
-                name = fm.get("name", "")[:40]
-                if status == "issues":
-                    items.append({"type": "task", "id": tid, "message": f"{name} — has issues"})
-                else:
-                    items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
+    # Active tasks with no recent update — use shared cache
+    for fm in get_all_task_metadata():
+        if fm.get("_location") != "active":
+            continue
+        tid = fm.get("id", "")
+        status = fm.get("status", "")
+        name = fm.get("name", "")[:40]
+        if status == "issues":
+            items.append({"type": "task", "id": tid, "message": f"{name} — has issues"})
+        else:
+            items.append({"type": "task", "id": tid, "message": f"{name} — {status}"})
 
     # Concerns near trigger (T-398: migrated from gaps.yaml to concerns.yaml)
     for c in load_concerns():
@@ -172,17 +175,15 @@ def _get_focus_task():
 
 
 def _get_stale_tasks():
-    """Count stale tasks: active with issues or >7d without update (T-398)."""
+    """Count stale tasks: active with issues or >7d without update (T-398).
+
+    T-1235: Uses shared task cache instead of re-reading all files.
+    """
     import datetime
     stale = []
-    active_dir = PROJECT_ROOT / ".tasks" / "active"
-    if not active_dir.exists():
-        return stale
     now = datetime.datetime.now(datetime.timezone.utc)
-    for f in active_dir.glob("T-*.md"):
-        content = f.read_text(errors="replace")
-        fm, _ = parse_frontmatter(content)
-        if not fm:
+    for fm in get_all_task_metadata():
+        if fm.get("_location") != "active":
             continue
         status = fm.get("status", "")
         if status == "issues":
@@ -285,10 +286,10 @@ def _get_token_usage():
 
 @bp.route("/")
 def index():
-    active_dir = PROJECT_ROOT / ".tasks" / "active"
-    completed_dir = PROJECT_ROOT / ".tasks" / "completed"
-    active_count = len(list(active_dir.glob("T-*.md"))) if active_dir.exists() else 0
-    completed_count = len(list(completed_dir.glob("T-*.md"))) if completed_dir.exists() else 0
+    # T-1235: Use shared cache for task counts
+    all_task_data = get_all_task_metadata()
+    active_count = sum(1 for t in all_task_data if t.get("_location") == "active")
+    completed_count = sum(1 for t in all_task_data if t.get("_location") == "completed")
 
     # Inception detection: no tasks at all
     is_inception = (active_count == 0 and completed_count == 0)
