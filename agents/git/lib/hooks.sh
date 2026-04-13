@@ -198,9 +198,9 @@ fi
 # Advisory only (WARN, not BLOCK) — legitimate cleanup is rare but possible.
 for _yaml_file in .context/project/learnings.yaml .context/project/patterns.yaml .context/project/practices.yaml; do
     if git diff --cached --name-only | grep -q "^${_yaml_file}$"; then
-        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || echo 0)
-        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || echo 0)
-        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || echo 0)
+        _old_lines=$(git show HEAD:"${_yaml_file}" 2>/dev/null | grep -c "^- " || true)
+        _new_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^+- " || true)
+        _del_lines=$(git diff --cached -- "${_yaml_file}" | grep -c "^-- " || true)
         if [ "$_old_lines" -gt 10 ] && [ "$_del_lines" -gt 0 ]; then
             _remaining=$((_old_lines - _del_lines + _new_lines))
             if [ "$_remaining" -lt $((_old_lines / 2)) ]; then

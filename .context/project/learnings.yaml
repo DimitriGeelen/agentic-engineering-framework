@@ -8,3 +8,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-002
+  learning: "In bash, grep -c prints count but exits 1 on zero matches. Using '|| echo 0' appends extra '0' producing multi-line vars that break arithmetic. Use '|| true' to suppress exit code without producing output."
+  source: P-001
+  task: T-1250
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
