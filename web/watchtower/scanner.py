@@ -9,7 +9,7 @@ It NEVER directly mutates tasks, patterns, or context.
 import os
 import re
 import subprocess
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
 import yaml
@@ -265,6 +265,8 @@ def compute_health(inputs):
                     lu = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
                 elif isinstance(last_update, datetime):
                     lu = last_update if last_update.tzinfo else last_update.replace(tzinfo=timezone.utc)
+                elif isinstance(last_update, date):
+                    lu = datetime.combine(last_update, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 if (now - lu).days >= 14:
@@ -342,6 +344,8 @@ def extract_warnings(inputs):
                     lu = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
                 elif isinstance(last_update, datetime):
                     lu = last_update if last_update.tzinfo else last_update.replace(tzinfo=timezone.utc)
+                elif isinstance(last_update, date):
+                    lu = datetime.combine(last_update, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 days = (now - lu).days
@@ -407,6 +411,8 @@ def _compute_velocity(completed_tasks):
                     dt = datetime.fromisoformat(finished.replace("Z", "+00:00"))
                 elif isinstance(finished, datetime):
                     dt = finished if finished.tzinfo else finished.replace(tzinfo=timezone.utc)
+                elif isinstance(finished, date):
+                    dt = datetime.combine(finished, time.min, tzinfo=timezone.utc)
                 else:
                     continue
                 if (now - dt) <= window:
