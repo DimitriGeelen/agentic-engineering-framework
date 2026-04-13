@@ -8,7 +8,7 @@ from __future__ import annotations
 
 
 import re
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timezone
 
 
 # Status priority weights (lower = higher priority)
@@ -89,13 +89,16 @@ def _extract_handover_tasks(handover: str | None) -> set:
 
 
 def _parse_datetime(value) -> datetime | None:
-    """Parse datetime from YAML value."""
+    """Parse datetime from YAML value (handles date, datetime, and str)."""
     if value is None or value == "null":
         return None
     if isinstance(value, datetime):
         if value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value
+    # YAML safe_load parses date-like strings as datetime.date (T-1209)
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return datetime.combine(value, time.min, tzinfo=timezone.utc)
     if isinstance(value, str):
         try:
             return datetime.fromisoformat(value.replace("Z", "+00:00"))
