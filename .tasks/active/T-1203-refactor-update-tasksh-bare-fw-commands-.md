@@ -35,8 +35,8 @@ Related: T-1154 (watchtower URL helper), T-1201 (review.sh terminal overflow fix
 
 ## Verification
 
-# No bare fw commands in echo statements (excluding comments and heredocs)
-grep -n 'echo.*".*\bfw\b ' agents/task-create/update-task.sh | grep -v '^\s*#' | grep -v '_fw_cmd\|_emit_user_command' | wc -l | grep -q '^0$'
+# Invariant test passes
+bats tests/lint/no-bare-fw-in-gate-scripts.bats
 # paths.sh is sourced
 grep -q 'source.*paths.sh' agents/task-create/update-task.sh
 
