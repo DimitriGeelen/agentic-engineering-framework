@@ -1,37 +1,37 @@
 # ============================================================================
-# EPISODIC MEMORY - T-1246: Cache home page QR + concerns + traceability — reduce 0.47s warm cache
+# EPISODIC MEMORY - T-1248: Upgrade all consumers to v1.5.599 — direct fw upgrade (TermLink workers slow)
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
 # Generated: 2026-04-13T21:07:31Z
 # ============================================================================
 
-task_id: T-1246
-task_name: "Cache home page QR + concerns + traceability — reduce 0.47s warm cache"
+task_id: T-1248
+task_name: "Upgrade all consumers to v1.5.599 — direct fw upgrade (TermLink workers slow)"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
-created: 2026-04-13T20:43:32Z
-completed: 2026-04-13T20:56:01Z
+created: 2026-04-13T20:57:36Z
+completed: 2026-04-13T21:00:16Z
 duration_days: 0
 updates_count: 2
-first_commit: 2026-04-13T22:47:57+02:00
-last_commit: 2026-04-13T22:47:57+02:00
+first_commit: 2026-04-13T23:00:08+02:00
+last_commit: 2026-04-13T23:00:08+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  Cache home page QR + concerns + traceability — 0.47s → 0.26s
+  Upgrade all 11 consumers to v1.5.600 — sort fix, cron, performance caches
 
 # Key outcomes
 outcomes:
-  - "Add TTL caches to _get_approval_qr, _get_concerns_summary, _get_traceability"
-  - "Home page warm cache improved (0.47s → 0.26s)"
-  - "Web tests pass (142/142)"
+  - "All 11 consumers upgraded to v1.5.600"
+  - "fw upgrade runs successfully for each consumer"
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: "Upgrade all 11 consumers to v1.5.600 — sort fix, cron, performance caches"
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -42,17 +42,16 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  - ".tasks/active/T-1246-cache-home-page-qr--concerns--traceabili.md"
-  - "web/blueprints/core.py"
+  - ".tasks/active/T-1248-upgrade-all-consumers-to-v15599--direct-.md"
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  - time: "2026-04-13T22:47:57"
-    action: "T-1246: Cache home page QR + concerns + traceability — 0.47s → 0.26s"
+  - time: "2026-04-13T23:00:08"
+    action: "T-1248: Upgrade all 11 consumers to v1.5.600 — sort fix, cron, performance caches"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 1 commit(s), 12 min
+  # Completed successfully in 1 commit(s), 2 min
 
 # Related tasks
 related_tasks:
@@ -65,12 +64,12 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 12
+  wall_clock_minutes: 2
   commits: 1
-  files_changed: 2
-  lines_added: 91
-  lines_removed: 10
+  files_changed: 1
+  lines_added: 51
+  lines_removed: 0
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1246-cache-home-page-qr--concerns--traceabili.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1248-upgrade-all-consumers-to-v15599--direct-.md
 generated_by: context-agent-hybrid
