@@ -22,3 +22,31 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-004
+  learning: "Subagent scope violation: dispatched agents can corrupt files outside their stated scope. Post-dispatch diff check needed to detect unintended modifications."
+  source: P-001
+  task: T-1129
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-005
+  learning: "Format assumption: agents generate .md when framework expects .yaml. Always specify exact output format in dispatch prompts."
+  source: P-001
+  task: T-1129
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-006
+  learning: "Stale gaps accumulate: gaps stay 'watching' days after fixes ship. Need audit check that auto-flags resolved gaps for closure."
+  source: P-001
+  task: T-1129
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-007
+  learning: "Dog-food features immediately: 3 compound bugs in approvals page were caught only by first real use. Use Watchtower for your own approvals."
+  source: P-001
+  task: T-1129
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD

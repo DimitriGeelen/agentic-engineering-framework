@@ -4,7 +4,7 @@ name: "Pickup: 4 learnings from termlink session — subagent scope violation, f
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-944. Type: learning.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,7 +12,7 @@ tags: [pickup, learning]
 components: []
 related_tasks: []
 created: 2026-04-12T08:45:02Z
-last_update: 2026-04-12T14:01:21Z
+last_update: 2026-04-13T06:46:08Z
 date_finished: null
 ---
 
@@ -49,7 +49,7 @@ No platform constraints — knowledge capture task.
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework && bin/fw task review T-1129`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -112,3 +112,6 @@ bash -c 'grep -c "T-1129" .context/project/learnings.yaml | grep -q "[4-9]"'
 
 ### 2026-04-12T14:01:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-04-13T06:46:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
