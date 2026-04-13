@@ -1134,11 +1134,12 @@ concerns:
   - 'Kanban CSS risk: a new status added to status-transitions.yaml would not display on the kanban board because the column layout is hand-coded with explicit status-name selectors. This is the worst structural
     fragility in the L-006 family discovered so far — silent UI invisibility, not just logical rejection.'
   trigger: Any addition of a new task status (e.g., `reviewing`, `waiting-on-human`) to status-transitions.yaml.
-  status: watching
+  status: resolved
   created: 2026-04-11
   last_reviewed: 2026-04-11
   related_task: T-1109
   resolution_in_progress: 'T-1188: Python-side hardcoded status lists replaced with _load_enums(). Remaining: kanban CSS/HTML template needs Jinja loop refactor (deferred — separate inception).'
+  resolution: 'T-1197: Kanban columns + CSS generated from enum_statuses Jinja var. T-1188 fixed Python side. All status arrays use |default guard. 17 Playwright tests pass.'
 - id: G-042
   type: gap
   title: fw hook usage list × 4 mirror sites — new hooks do not appear in help or enforcement panel
@@ -1203,8 +1204,8 @@ concerns:
   what_works_now: Consumer discovery works for /opt/ installations (the framework dev environment)
   what_remains: Non-/opt/ installations invisible to fw doctor
   tier0_resolution: null
-  resolution: null
-  status: watching
+  resolution: 'T-1195: fw_consumer_yamls() reads FW_CONSUMER_SCAN_DIRS (default /opt, colon-separated). Both hardcoded /opt/* globs replaced.'
+  status: resolved
   created: '2026-04-12'
   last_reviewed: '2026-04-12'
   trigger_fired_date: null
