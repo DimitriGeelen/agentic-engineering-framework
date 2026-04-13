@@ -1,0 +1,60 @@
+---
+id: T-1195
+name: "Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path"
+description: >
+  Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-13T06:39:42Z
+last_update: 2026-04-13T06:39:42Z
+date_finished: null
+---
+
+# T-1195: Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path
+
+## Context
+
+G-044: `fw doctor` scans `/opt/*/.framework.yaml` to find consumer projects. Breaks on non-/opt installations. Two hardcoded sites at bin/fw:1141 and bin/fw:1217.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `FW_CONSUMER_SCAN_DIRS` config added to lib/config.sh (default: `/opt`)
+- [x] Both /opt/* globs in bin/fw replaced with configurable scan
+- [x] No hardcoded /opt/* consumer discovery patterns remain in bin/fw
+- [x] CLAUDE.md config table updated with new setting
+- [x] fw doctor still finds consumer projects on this machine
+
+## Verification
+
+# No hardcoded /opt/* in consumer discovery (body text references are OK)
+cd /opt/999-Agentic-Engineering-Framework && ! grep -n 'for fw_yaml in /opt/\*/' bin/fw
+# Config key registered
+grep -q 'FW_CONSUMER_SCAN_DIRS' lib/config.sh
+# fw doctor runs without error
+cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -q 'Consumer Projects'
+# The completion gate runs each command — if any exits non-zero, completion is blocked.
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-13T06:39:42Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1195-fix-g-044-replace-hardcoded-opt-consumer.md
+- **Context:** Initial task creation

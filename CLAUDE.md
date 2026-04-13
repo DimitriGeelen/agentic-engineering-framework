@@ -521,6 +521,7 @@ Persistent per-project configuration: `fw config set KEY VALUE` writes to `.fram
 | TermLink worker timeout | `FW_TERMLINK_WORKER_TIMEOUT` | `600` | TermLink worker execution timeout (seconds) |
 | Handover dedup cooldown | `FW_HANDOVER_DEDUP_COOLDOWN` | `300` | Seconds between duplicate handover detection |
 | Inception commit limit | `FW_INCEPTION_COMMIT_LIMIT` | `2` | Max exploration commits before inception decision gate |
+| Consumer scan dirs | `FW_CONSUMER_SCAN_DIRS` | `/opt` | Colon-separated dirs to scan for consumer projects |
 
 Check overrides: `fw config list` (file) or `env | grep FW_` (env).
 Validate: `fw doctor` shows warnings for out-of-range values.

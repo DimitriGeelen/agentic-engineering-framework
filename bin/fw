@@ -1130,15 +1130,15 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         fi
     fi
 
-    # Check: Consumer project fleet health (T-616)
-    # Only runs from framework repo — scans /opt for .framework.yaml
+    # Check: Consumer project fleet health (T-616, T-1195/G-044)
+    # Only runs from framework repo — scans FW_CONSUMER_SCAN_DIRS for .framework.yaml
     if [ "$FRAMEWORK_ROOT" = "$PROJECT_ROOT" ]; then
         local consumer_count=0
         local consumer_issues=0
         local fw_settings_file="$FRAMEWORK_ROOT/.claude/settings.json"
         echo ""
         echo -e "  ${BOLD}Consumer Projects${NC}"
-        for fw_yaml in /opt/*/.framework.yaml; do
+        for fw_yaml in $(fw_consumer_yamls); do
             [ -f "$fw_yaml" ] || continue
             local consumer_dir
             consumer_dir=$(dirname "$fw_yaml")
@@ -1212,9 +1212,9 @@ else:
         fi
     fi
 
-    # Check: Isolation model health (T-1189/G-031)
+    # Check: Isolation model health (T-1189/G-031, T-1195/G-044)
     # Detect nested .agentic-framework inside vendored dir (Pattern 6 bug)
-    for fw_yaml in /opt/*/.framework.yaml; do
+    for fw_yaml in $(fw_consumer_yamls); do
         [ -f "$fw_yaml" ] || continue
         local _iso_dir
         _iso_dir=$(dirname "$fw_yaml")
