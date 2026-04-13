@@ -36,7 +36,7 @@ and handover staleness messages. Part of T-1146 GO (command amnesia remediation)
 ## Verification
 
 # Hooks install without error
-bin/fw git install-hooks --force 2>&1 | grep -qi 'installed'
+bin/fw git install-hooks --force 2>&1 | grep -ci 'installed' > /dev/null
 # Invariant test passes
 bats tests/lint/no-bare-fw-in-gate-scripts.bats
 
