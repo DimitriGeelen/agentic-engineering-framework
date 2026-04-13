@@ -128,12 +128,19 @@ def _next_run_approx(schedule: str) -> Optional[str]:
     return None
 
 
+import time as _time_mod
+
+_run_info_cache = {"data": None, "count": 0, "ts": 0}
+_RUN_INFO_CACHE_TTL = 60  # seconds
+
+
 def _last_run_info() -> dict:
     """Get last run info from cron audit output files.
 
     Scans files newest-first, collecting the most recent result for each unique
     section key.  Stops once all known section keys have been found or after
     200 files (~3 days of data at current cadence).
+    Cached with file-count invalidation (T-1247).
     """
     if not AUDIT_CRON_DIR.exists():
         return {}
@@ -141,6 +148,13 @@ def _last_run_info() -> dict:
     files = sorted(AUDIT_CRON_DIR.glob("20*.yaml"), reverse=True)
     if not files:
         return {}
+
+    now = _time_mod.monotonic()
+    current_count = len(files)
+    if (_run_info_cache["data"] is not None
+            and current_count == _run_info_cache["count"]
+            and (now - _run_info_cache["ts"]) < _RUN_INFO_CACHE_TTL):
+        return _run_info_cache["data"]
 
     info = {}
     for f in files[:200]:
@@ -164,6 +178,9 @@ def _last_run_info() -> dict:
             logger.warning("Failed to parse cron audit file %s: %s", f, e)
             continue
 
+    _run_info_cache["data"] = info
+    _run_info_cache["count"] = current_count
+    _run_info_cache["ts"] = now
     return info
 
 
