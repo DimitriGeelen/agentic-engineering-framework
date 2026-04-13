@@ -4,16 +4,16 @@ name: "Fix fw task review terminal overflow — wrap URLs, compact output"
 description: >
   Fix fw task review terminal overflow — wrap URLs, compact output
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/review.sh]
 related_tasks: []
 created: 2026-04-13T07:40:24Z
-last_update: 2026-04-13T07:40:24Z
-date_finished: null
+last_update: 2026-04-13T07:42:33Z
+date_finished: 2026-04-13T07:42:33Z
 ---
 
 # T-1201: Fix fw task review terminal overflow — wrap URLs, compact output
@@ -51,3 +51,6 @@ cd /opt/999-Agentic-Engineering-Framework && test $(bin/fw task review T-1200 2>
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1201-fix-fw-task-review-terminal-overflow--wr.md
 - **Context:** Initial task creation
+
+### 2026-04-13T07:42:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
