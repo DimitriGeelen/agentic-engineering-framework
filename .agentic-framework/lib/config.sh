@@ -125,6 +125,21 @@ fw_config_list() {
     env | grep "^FW_" | sort
 }
 
+# fw_consumer_yamls — Emit .framework.yaml paths for all consumer projects
+# Uses FW_CONSUMER_SCAN_DIRS (colon-separated, default: /opt)
+# Origin: T-1195/G-044 — replaces hardcoded /opt/* globs
+fw_consumer_yamls() {
+    local scan_dirs
+    scan_dirs=$(fw_config "CONSUMER_SCAN_DIRS" "/opt")
+    local IFS=':'
+    for dir in $scan_dirs; do
+        [ -d "$dir" ] || continue
+        for fw_yaml in "$dir"/*/.framework.yaml; do
+            [ -f "$fw_yaml" ] && echo "$fw_yaml"
+        done
+    done
+}
+
 # Known settings registry — used by fw doctor and Watchtower /config
 # Format: KEY|DEFAULT|DESCRIPTION
 FW_CONFIG_REGISTRY=(
@@ -146,6 +161,7 @@ FW_CONFIG_REGISTRY=(
     "TERMLINK_WORKER_TIMEOUT|600|TermLink worker execution timeout in seconds"
     "HANDOVER_DEDUP_COOLDOWN|300|Seconds between duplicate handover detection"
     "INCEPTION_COMMIT_LIMIT|2|Max exploration commits before inception decision gate"
+    "CONSUMER_SCAN_DIRS|/opt|Colon-separated directories to scan for consumer projects"
 )
 
 # fw_config_registry — Print all known settings with current values

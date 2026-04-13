@@ -90,8 +90,8 @@ do_inception_start() {
         echo "2. Register assumptions:"
         echo "     fw assumption add 'Users want X' --task $task_id"
         echo "3. Conduct exploration (spikes, prototypes, research)"
-        echo "4. Record decision:"
-        echo "     fw inception decide $task_id go --rationale '...'"
+        echo "4. Record decision via Watchtower:"
+        echo "     fw task review $task_id"
     fi
 }
 
@@ -276,7 +276,7 @@ in_decision = False
 decision_written = False
 
 for line in lines:
-    if line.startswith('## Decision'):
+    if line.strip() == '## Decision':
         in_decision = True
         new_lines.append(line)
         new_lines.append('')

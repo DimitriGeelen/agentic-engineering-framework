@@ -4,15 +4,15 @@ name: "Pickup: Approvals page shows inception tasks without recommendations — 
 description: >
   Auto-created from pickup envelope. Source: 010-termlink, task T-944. Type: bug-report.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-12T08:15:01Z
-last_update: 2026-04-12T10:58:41Z
+last_update: 2026-04-13T09:53:43Z
 date_finished: null
 ---
 
@@ -20,7 +20,9 @@ date_finished: null
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+Superseded by T-1213 (inception GO → T-1214, T-1215). This pickup from 010-termlink described the same
+issue: inception cards on /approvals showing bare radio buttons without recommendations. T-1213 performed
+the full RCA and produced fixes (template fallback context + `fw task review` warning).
 
 ## Assumptions
 
@@ -45,9 +47,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated (superseded by T-1213)
+- [x] Assumptions tested (covered by T-1213 RCA)
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -61,12 +63,10 @@ date_finished: null
 ## Go/No-Go Criteria
 
 **GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Distinct issue not covered by T-1213
 
 **NO-GO if:**
-- [Criterion 1]
-- [Criterion 2]
+- Superseded by T-1213 (which it is)
 
 ## Verification
 
@@ -76,12 +76,18 @@ date_finished: null
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
+**Recommendation:** NO-GO — superseded by T-1213.
+
+**Rationale:** This pickup predated the full RCA (T-1213) which identified the same issue and
+produced two build tasks: T-1214 (template fallback context) and T-1215 (`fw task review` warning).
+Both are completed. No additional work needed.
+
+**Evidence:**
+- T-1213 GO decision: inception approvals bare cards RCA
+- T-1214 completed: template shows fallback context when recommendation missing
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+<!--
      - Finding 1
      - Finding 2
 -->
@@ -109,3 +115,7 @@ date_finished: null
 ### 2026-04-12T10:58:41Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
 - **Reason:** Covered by T-1149 — approvals page now filters tasks without recommendations
+
+### 2026-04-13T09:53:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

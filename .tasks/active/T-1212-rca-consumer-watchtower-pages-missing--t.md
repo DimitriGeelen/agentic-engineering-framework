@@ -101,7 +101,21 @@ both completed.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: NO-GO
+
+**Rationale**: Recommendation: NO-GO — superseded by T-1213.
+
+Rationale: This task was created with the wrong scope (consumer Watchtower pages missing) before the user
+clarified the real problem: inception decision cards on /approvals showing bare radio buttons without
+recommendation/rationale. T-1213 correctly scoped the RCA and produced two build tasks (T-1214, T-1215),
+both completed.
+
+Evidence:
+- T-1213 GO decision recorded, RCA complete
+- T-1214 completed: template fallback context for missing recommendations
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+**Date**: 2026-04-13T09:49:13Z
 
 ## Updates
 
@@ -110,3 +124,33 @@ both completed.
 
 ### 2026-04-13T09:47:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-13T09:49:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO — superseded by T-1213.
+
+Rationale: This task was created with the wrong scope (consumer Watchtower pages missing) before the user
+clarified the real problem: inception decision cards on /approvals showing bare radio buttons without
+recommendation/rationale. T-1213 correctly scoped the RCA and produced two build tasks (T-1214, T-1215),
+both completed.
+
+Evidence:
+- T-1213 GO decision recorded, RCA complete
+- T-1214 completed: template fallback context for missing recommendations
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`
+
+### 2026-04-13T09:49:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** NO-GO
+- **Rationale:** Recommendation: NO-GO — superseded by T-1213.
+
+Rationale: This task was created with the wrong scope (consumer Watchtower pages missing) before the user
+clarified the real problem: inception decision cards on /approvals showing bare radio buttons without
+recommendation/rationale. T-1213 correctly scoped the RCA and produced two build tasks (T-1214, T-1215),
+both completed.
+
+Evidence:
+- T-1213 GO decision recorded, RCA complete
+- T-1214 completed: template fallback context for missing recommendations
+- T-1215 completed: `fw task review` warning for inception tasks without `## Recommendation`

@@ -13,8 +13,8 @@
 [[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
 # Requires: PROJECT_ROOT, BOLD, NC, CYAN (from colors.sh/paths.sh chain)
 
-# Source config for PORT setting (guard protects double-source)
-source "${FRAMEWORK_ROOT:-.}/lib/config.sh"
+# Source watchtower helper for URL detection (T-1154: single source of truth)
+source "${FRAMEWORK_ROOT:-.}/lib/watchtower.sh"
 
 emit_review() {
     local task_id="${1:-}"
@@ -37,23 +37,9 @@ emit_review() {
         return 1
     fi
 
-    # Determine Watchtower URL (env > running PID port+host > default)
-    local base_url="${WATCHTOWER_URL:-}"
-    if [ -z "$base_url" ]; then
-        local wt_port="" wt_host="" wt_pid=""
-        if [ -f "$PROJECT_ROOT/.context/working/watchtower.pid" ]; then
-            wt_pid=$(cat "$PROJECT_ROOT/.context/working/watchtower.pid" 2>/dev/null)
-            if [ -n "$wt_pid" ] && kill -0 "$wt_pid" 2>/dev/null; then
-                wt_port=$(ss -tlnp 2>/dev/null | grep "pid=$wt_pid" | grep -oP ':(\d+)\s' | tr -d ': ' | head -1)
-            fi
-        fi
-        wt_host=$(hostname -I 2>/dev/null | awk '{print $1}')
-        wt_host="${wt_host:-$(hostname 2>/dev/null)}"
-        wt_host="${wt_host:-localhost}"
-        local default_port
-        default_port=$(fw_config "PORT" 3000 2>/dev/null || echo 3000)
-        base_url="http://${wt_host}:${wt_port:-$default_port}"
-    fi
+    # Determine Watchtower URL via shared helper (T-1154: single chokepoint)
+    local base_url
+    base_url=$(_watchtower_url "$task_id")
     # Detect workflow type for URL routing (T-642)
     local workflow_type=""
     workflow_type=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
@@ -84,8 +70,22 @@ emit_review() {
         fi
     done < "$task_file"
 
+    # T-1215: Warn if inception task has no substantive ## Recommendation
+    if [ "$workflow_type" = "inception" ]; then
+        local _rec_content=""
+        _rec_content=$(sed -n '/^## Recommendation/,/^## /p' "$task_file" 2>/dev/null \
+            | grep -v '^## ' | grep -v '^<!--' | grep -v '^\-\->' | grep -v '^$' | head -1)
+        if [ -z "$_rec_content" ]; then
+            echo "" >&2
+            echo -e "  ${YELLOW}WARNING: No ## Recommendation written yet${NC}" >&2
+            echo -e "  ${YELLOW}The human will see a bare decision card on /approvals.${NC}" >&2
+            echo -e "  ${YELLOW}Write a recommendation before presenting for review.${NC}" >&2
+            echo "" >&2
+        fi
+    fi
+
     echo ""
-    echo -e "══════════════════════════════════════════════════"
+    echo -e "══════════════════════════════════════════"
     echo -e "  ${BOLD}${review_label}: $task_id${NC}"
     echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
     echo -e ""
@@ -105,33 +105,39 @@ except ImportError:
     print('  (install python3-qrcode for QR code)')
 " 2>/dev/null
 
-    # Research artifacts (T-633)
+    # Research artifacts (T-633, T-1201: show filename only)
     local artifacts_found=false
     local tid_lower
     tid_lower=$(echo "$task_id" | tr '[:upper:]' '[:lower:]' | tr -d '-')
     for artifact in "$PROJECT_ROOT"/docs/reports/"$task_id"-*.md "$PROJECT_ROOT"/docs/reports/fw-agent-"$tid_lower"-*.md; do
         if [ -f "$artifact" ]; then
             if ! $artifacts_found; then
-                echo -e "  ${BOLD}Research Artifacts:${NC}"
+                echo -e "  ${BOLD}Artifacts:${NC} (in docs/reports/)"
                 artifacts_found=true
             fi
-            local rel_path="${artifact#"$PROJECT_ROOT"/}"
-            echo "  ${base_url}/file/${rel_path}"
+            echo "    $(basename "$artifact")"
         fi
     done
     if $artifacts_found; then echo ""; fi
 
-    echo -e "  Click the link or scan QR to review Human ACs"
+    echo -e "  Scan QR or open link above"
     echo ""
 
-    # Show decision command for inception tasks (T-973)
+    # CLI alternative for inception tasks (T-973, T-1201)
     if [ "$workflow_type" = "inception" ]; then
-        echo -e "  ${BOLD}After review, run:${NC}"
-        echo "  $(_emit_user_command "inception decide $task_id go --rationale \"your rationale\"")"
+        # Extract recommendation line for pre-filled rationale
+        local _rec_line=""
+        _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null | head -1 | sed 's/^\*\*Recommendation:\*\*[[:space:]]*//')
+        [ -z "$_rec_line" ] && _rec_line="your rationale"
+        # Truncate to fit terminal (keep under 60 chars)
+        _rec_line="${_rec_line:0:58}"
+        echo -e "  ${BOLD}CLI:${NC} cd $PROJECT_ROOT &&"
+        echo "    $(_fw_cmd) inception decide $task_id go \\"
+        echo "    --rationale \"${_rec_line}\""
         echo ""
     fi
 
-    echo -e "══════════════════════════════════════════════════"
+    echo -e "══════════════════════════════════════════"
     echo ""
 
     # Mark task as reviewed — prerequisite gate for fw inception decide (T-973)
