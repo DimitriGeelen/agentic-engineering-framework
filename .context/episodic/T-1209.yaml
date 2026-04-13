@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1209: Fix Watchtower 500 on consumer home — datetime.date vs datetime.datetime in stale tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T08:51:24Z
+# ============================================================================
+
+task_id: T-1209
+task_name: "Fix Watchtower 500 on consumer home — datetime.date vs datetime.datetime in stale tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T08:48:45Z
+completed: 2026-04-13T08:51:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T10:51:17+02:00
+last_commit: 2026-04-13T10:51:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix Watchtower 500 on consumer home — datetime.date coercion
+
+# Key outcomes
+outcomes:
+  - "`_get_stale_tasks()` handles `datetime.date` objects from YAML"
+  - "Framework Watchtower home page loads (HTTP 200)"
+  - "Consumer Watchtower home page loads after restart"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix Watchtower 500 on consumer home — datetime.date coercion"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1209-fix-watchtower-500-on-consumer-home--dat.md"
+  - "web/blueprints/core.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T10:51:17"
+    action: "T-1209: Fix Watchtower 500 on consumer home — datetime.date coercion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 58
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1209-fix-watchtower-500-on-consumer-home--dat.md
+generated_by: context-agent-hybrid

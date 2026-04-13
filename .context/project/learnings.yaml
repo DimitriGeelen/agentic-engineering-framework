@@ -9,9 +9,9 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "Gate scripts must use _fw_cmd()/_emit_user_command() for all command output — bare 'fw' commands in block messages cause PL-007 violations because agents relay them verbatim. The _emit_user_command() helper (lib/paths.sh) adds cd prefix + correct fw path. Invariant test at tests/lint/no-bare-fw-in-gate-scripts.bats guards 7 gate scripts with 12 assertions."
+  learning: "YAML safe_load parses date-like strings as datetime.date, not datetime.datetime. When doing datetime arithmetic, always coerce date to datetime via datetime.combine(d, time.min, tzinfo=utc) before subtraction. This pattern recurs anywhere YAML frontmatter dates are used with datetime.datetime.now()."
   source: P-001
-  task: T-1207
+  task: T-1209
   date: 2026-04-13
   context: Added via context agent
   application: TBD
