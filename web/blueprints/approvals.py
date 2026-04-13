@@ -160,11 +160,15 @@ def _load_pending_go_decisions():
                         go_lines.append(stripped[2:].strip())
                 rationale_hint = "; ".join(go_lines) if go_lines else ""
 
+        # T-1214: Extract Go/No-Go Criteria for fallback display when recommendation missing
+        go_nogo_raw = _extract_section(body, "Go/No-Go Criteria")
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
             "status": fm.get("status", ""),
             "problem_excerpt": problem_excerpt,
+            "problem_full": problem,
             "assumption_counts": {
                 "total": len(linked),
                 "validated": sum(1 for a in linked if a.get("status") == "validated"),
@@ -173,6 +177,7 @@ def _load_pending_go_decisions():
             "rationale_hint": rationale_hint,
             "recommendation": rec_display,
             "rec_decision": rec_decision,
+            "go_nogo_criteria": go_nogo_raw,
         })
 
     return results

@@ -100,6 +100,28 @@
         </summary>
         <div style="font-size:0.85rem; margin-top:0.4rem; white-space:pre-wrap; line-height:1.5;">{{ t.recommendation }}</div>
     </details>
+    {% else %}
+    {# T-1214: Fallback context when agent recommendation is missing #}
+    <div style="margin-top:0.5rem; background:#f59e0b11; border:1px solid #f59e0b44; padding:0.5rem 0.75rem; border-radius:4px;">
+        <div style="font-size:0.8rem; font-weight:600; color:#b45309; margin-bottom:0.3rem;">
+            No agent recommendation written yet
+        </div>
+        {% if t.problem_full %}
+        <div style="font-size:0.85rem; margin-top:0.3rem;">
+            <strong>Problem:</strong> {{ t.problem_full[:300] }}{% if t.problem_full|length > 300 %}...{% endif %}
+        </div>
+        {% endif %}
+        {% if t.go_nogo_criteria %}
+        <details style="margin-top:0.3rem;" open>
+            <summary style="font-size:0.85rem; font-weight:600; cursor:pointer;">Go/No-Go Criteria</summary>
+            <div style="font-size:0.85rem; margin-top:0.3rem; white-space:pre-wrap; line-height:1.4;">{{ t.go_nogo_criteria }}</div>
+        </details>
+        {% endif %}
+        <div style="font-size:0.75rem; color:#b45309; margin-top:0.4rem;">
+            Review the <a href="/inception/{{ t.task_id }}">full task</a> for research findings,
+            or ask the agent to write a recommendation.
+        </div>
+    </div>
     {% endif %}
     <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
           style="margin-top:0.5rem;">
