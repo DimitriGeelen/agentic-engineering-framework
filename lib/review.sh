@@ -71,7 +71,7 @@ emit_review() {
     done < "$task_file"
 
     echo ""
-    echo -e "══════════════════════════════════════════════════"
+    echo -e "══════════════════════════════════════════"
     echo -e "  ${BOLD}${review_label}: $task_id${NC}"
     echo -e "  ${CYAN}${human_checked}/${human_total} checked${NC}"
     echo -e ""
@@ -91,33 +91,39 @@ except ImportError:
     print('  (install python3-qrcode for QR code)')
 " 2>/dev/null
 
-    # Research artifacts (T-633)
+    # Research artifacts (T-633, T-1201: show filename only)
     local artifacts_found=false
     local tid_lower
     tid_lower=$(echo "$task_id" | tr '[:upper:]' '[:lower:]' | tr -d '-')
     for artifact in "$PROJECT_ROOT"/docs/reports/"$task_id"-*.md "$PROJECT_ROOT"/docs/reports/fw-agent-"$tid_lower"-*.md; do
         if [ -f "$artifact" ]; then
             if ! $artifacts_found; then
-                echo -e "  ${BOLD}Research Artifacts:${NC}"
+                echo -e "  ${BOLD}Artifacts:${NC} (in docs/reports/)"
                 artifacts_found=true
             fi
-            local rel_path="${artifact#"$PROJECT_ROOT"/}"
-            echo "  ${base_url}/file/${rel_path}"
+            echo "    $(basename "$artifact")"
         fi
     done
     if $artifacts_found; then echo ""; fi
 
-    echo -e "  Click the link or scan QR to review Human ACs"
+    echo -e "  Scan QR or open link above"
     echo ""
 
-    # Show decision command for inception tasks (T-973)
+    # CLI alternative for inception tasks (T-973, T-1201)
     if [ "$workflow_type" = "inception" ]; then
-        echo -e "  ${BOLD}After review, run:${NC}"
-        echo "  $(_emit_user_command "inception decide $task_id go --rationale \"your rationale\"")"
+        # Extract recommendation line for pre-filled rationale
+        local _rec_line=""
+        _rec_line=$(grep -A1 '^\*\*Recommendation:\*\*' "$task_file" 2>/dev/null | head -1 | sed 's/^\*\*Recommendation:\*\*[[:space:]]*//')
+        [ -z "$_rec_line" ] && _rec_line="your rationale"
+        # Truncate to fit terminal (keep under 60 chars)
+        _rec_line="${_rec_line:0:58}"
+        echo -e "  ${BOLD}CLI:${NC} cd $PROJECT_ROOT &&"
+        echo "    $(_fw_cmd) inception decide $task_id go \\"
+        echo "    --rationale \"${_rec_line}\""
         echo ""
     fi
 
-    echo -e "══════════════════════════════════════════════════"
+    echo -e "══════════════════════════════════════════"
     echo ""
 
     # Mark task as reviewed — prerequisite gate for fw inception decide (T-973)
