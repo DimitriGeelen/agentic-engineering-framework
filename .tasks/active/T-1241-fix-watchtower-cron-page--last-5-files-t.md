@@ -1,0 +1,64 @@
+---
+id: T-1241
+name: "Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data"
+description: >
+  Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data
+
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-13T19:50:36Z
+last_update: 2026-04-13T19:50:36Z
+date_finished: null
+---
+
+# T-1241: Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data
+
+## Context
+
+`_last_run_info()` in `web/blueprints/cron.py` only reads last 5 cron output files.
+With jobs running every 15-30 min, 5 files cover ~2.5 hours. Daily/weekly/6h jobs never appear.
+Also: non-audit jobs (docs, retention, pickup) have no `--section` flag so matching fails entirely.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `_last_run_info()` scans enough files to find the most recent output for each unique section key
+- [x] Non-audit jobs (docs, retention, pickup) show last-run info when available
+- [x] /cron page shows data for all jobs that have executed at least once (10/11, only oe-weekly pending Monday)
+- [ ] Web tests pass (142/142)
+- [x] Pickup processor interval changed from 15min to 30s (sleep trick)
+
+### Human
+- [ ] [RUBBER-STAMP] /cron page shows last-run data for all 11 jobs
+  **Steps:**
+  1. Open http://localhost:3000/cron
+  2. Check that all 11 jobs show a timestamp (not "no data")
+  **Expected:** At most OE weekly (runs Mondays) may show "no data" if it hasn't run this week
+  **If not:** Note which jobs still show "no data"
+
+## Verification
+
+curl -sf http://localhost:3000/cron | python3 -c "import sys,re; html=sys.stdin.read(); count=len(re.findall(r'no data', html)); exit(0 if count <= 2 else 1)"
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Updates
+
+### 2026-04-13T19:50:36Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1241-fix-watchtower-cron-page--last-5-files-t.md
+- **Context:** Initial task creation
