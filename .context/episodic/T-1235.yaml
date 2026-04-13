@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1235: Optimize remaining slow Watchtower routes — /search, /discoveries, /
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T19:02:25Z
+# ============================================================================
+
+task_id: T-1235
+task_name: "Optimize remaining slow Watchtower routes — /search, /discoveries, /"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T18:44:12Z
+completed: 2026-04-13T18:51:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T20:50:56+02:00
+last_commit: 2026-04-13T20:51:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Add TTL caches for /, /search, /discoveries, /graduation routes. Complete — all routes optimized, learning captured
+
+# Key outcomes
+outcomes:
+  - "/ (home) route responds within 3s on warm cache — 0.48s"
+  - "/search route responds within 3s on warm cache — 0.05s"
+  - "/discoveries route responds within 3s on warm cache — 0.05s"
+  - "All Playwright response time tests pass (381/381)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/audits/cron/LATEST-CRON.yaml"
+  - ".context/project/decisions.yaml"
+  - ".context/project/learnings.yaml"
+  - ".context/project/metrics-history.yaml"
+  - ".context/working/focus.yaml"
+  - ".context/working/session.yaml"
+  - ".tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md"
+  - ".tasks/active/T-1235-optimize-remaining-slow-watchtower-route.md"
+  - ".tasks/completed/T-1235-optimize-remaining-slow-watchtower-route.md"
+  - "web/blueprints/core.py"
+  - "web/blueprints/costs.py"
+  - "web/metrics_history.py"
+  - "web/search_utils.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T20:50:56"
+    action: "T-1235: Add TTL caches for /, /search, /discoveries, /graduation routes"
+  - time: "2026-04-13T20:51:16"
+    action: "T-1235: Complete — all routes optimized, learning captured"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 13
+  lines_added: 213
+  lines_removed: 92
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1235-optimize-remaining-slow-watchtower-route.md
+generated_by: context-agent-hybrid
