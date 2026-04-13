@@ -9,9 +9,86 @@ learnings:
   context: Added via context agent
   application: TBD
 - id: L-002
-  learning: "YAML safe_load parses date-like strings as datetime.date, not datetime.datetime. When doing datetime arithmetic, always coerce date to datetime via datetime.combine(d, time.min, tzinfo=utc) before subtraction. This pattern recurs anywhere YAML frontmatter dates are used with datetime.datetime.now()."
+  learning: "YAML frontmatter parsing is fragile — 18 tasks fixed YAML issues. Always use parse_frontmatter() or try/except around yaml.safe_load. Multi-line description fields and special characters in names are common failure triggers."
   source: P-001
-  task: T-1209
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-003
+  learning: "Hook system bugs are the #2 bug category (22 fixes). Hooks must: snapshot at session start, use absolute paths, handle missing files gracefully, and never modify state silently. Test hooks in isolation before deployment."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-004
+  learning: "Test infrastructure needs its own hygiene — 20 tasks fixed test issues. Common: test pollution (writing to real files instead of temp), timing-dependent assertions, fixture cleanup, and exit code semantics. Tests that touch shared state need isolation."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-005
+  learning: "Consumer upgrade path is a recurring failure source (15 fixes). The fw upgrade command must: validate destination, handle partial sync, detect version drift, and never leave consumers in inconsistent state. Self-vendor mechanism (T-1217) helps but doesn't solve all cases."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-006
+  learning: "Shell compatibility issues (11 fixes): macOS bash 3.2 vs Linux bash 5+. Avoid: declare -A, ((x++)) with set -e, GNU-specific date flags. Use POSIX-compatible alternatives. ShellCheck catches syntax but not behavioral differences."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-007
+  learning: "Audit system self-correction (15 fixes): audit checks that are too strict block legitimate work; too lenient miss real issues. Calibrate thresholds based on actual project state. Recurring audit noise should trigger threshold adjustment, not suppression."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-008
+  learning: "Template and placeholder content reaches production (7 fixes). Placeholders like [Criterion 1] and [TODO] must be detected by gates before review/completion. The inception template systemic fix (T-1223 session) replaced placeholders with real defaults — a structural prevention."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-009
+  learning: "Watchtower web bugs (12 fixes): CSRF token mismatch (port collision), template caching (Flask debug mode), htmx partial returns, and form validation errors. Always restart Watchtower after template edits in production. Port conflicts are the #1 cause of mysterious 403 errors."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-010
+  learning: "Component fabric drift (8 fixes): fabric cards become stale when files are renamed, moved, or deleted. The drift detector catches missing files but not semantic drift (purpose changed, deps outdated). Run fw fabric enrich after bulk changes."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-011
+  learning: "SIGPIPE (exit 141) from grep -q in pipes. When grep -q finds its match, it closes the pipe while the upstream process still writes. Replace grep -q with grep -c > /dev/null in verification commands and any shell pipe where the writer is framework code."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-012
+  learning: "Inception workflow has 3 structural gates: review marker (T-973), recommendation section (T-974), placeholder audit (T-1111). When any gate fails, the error message must name the gate, show the fix command, and explain what to do. 6 inception fixes were required before this was stable."
+  source: P-001
+  task: T-1229
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
+- id: L-013
+  learning: "Task lifecycle transitions must follow captured → started-work → work-completed. Skipping started-work was the root cause of T-1223 (inception decide 500 error). The update-task.sh validator enforces this, but code that calls it directly must handle the intermediate step."
+  source: P-001
+  task: T-1229
   date: 2026-04-13
   context: Added via context agent
   application: TBD
