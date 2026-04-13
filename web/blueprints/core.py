@@ -1,6 +1,7 @@
 """Core blueprint — dashboard, project docs, directives."""
 
 import re as re_mod
+import time as _time_mod
 
 import markdown2
 from flask import Blueprint, abort
@@ -13,6 +14,12 @@ from web.shared import (
 from web.subprocess_utils import run_git_command
 
 bp = Blueprint("core", __name__)
+
+# --- Dashboard caches (T-1246) ---
+_trace_cache = {"data": None, "ts": 0}
+_qr_cache = {"data": None, "ts": 0}
+_concerns_cache = {"data": None, "ts": 0}
+_DASHBOARD_CACHE_TTL = 60  # seconds
 
 
 def _get_attention_items():
@@ -79,14 +86,20 @@ def _get_knowledge_counts():
 
 
 def _get_traceability():
-    """Get git traceability percentage."""
+    """Get git traceability percentage. Cached for 60s (T-1246)."""
+    now = _time_mod.monotonic()
+    if _trace_cache["data"] is not None and (now - _trace_cache["ts"]) < _DASHBOARD_CACHE_TTL:
+        return _trace_cache["data"]
     output, ok = run_git_command(["log", "--oneline", "--all"])
+    result = 0
     if ok and output:
         lines = output.split("\n")
         total = len(lines)
         traced = sum(1 for l in lines if re_mod.search(r"T-\d{3,}", l))
-        return int(traced * 100 / total) if total > 0 else 0
-    return 0
+        result = int(traced * 100 / total) if total > 0 else 0
+    _trace_cache["data"] = result
+    _trace_cache["ts"] = now
+    return result
 
 
 def _get_audit_status():
@@ -140,18 +153,24 @@ def _get_inception_checklist():
 
 
 def _get_concerns_summary():
-    """Summarize concerns register for dashboard (T-398)."""
+    """Summarize concerns register for dashboard (T-398). Cached for 60s (T-1246)."""
+    now = _time_mod.monotonic()
+    if _concerns_cache["data"] is not None and (now - _concerns_cache["ts"]) < _DASHBOARD_CACHE_TTL:
+        return _concerns_cache["data"]
     all_concerns = load_concerns()
     watching = [c for c in all_concerns if c.get("status") == "watching"]
     gaps = [c for c in watching if c.get("type", "gap") == "gap"]
     risks = [c for c in watching if c.get("type") == "risk"]
     high = [c for c in watching if c.get("severity") in ("high",) or c.get("ranking") in ("high", "urgent")]
-    return {
+    result = {
         "total_watching": len(watching),
         "gaps": len(gaps),
         "risks": len(risks),
         "high": len(high),
     }
+    _concerns_cache["data"] = result
+    _concerns_cache["ts"] = now
+    return result
 
 
 def _get_focus_task():
@@ -218,17 +237,24 @@ def _get_pattern_summary():
 
 
 def _get_approval_qr():
-    """Build approval summary and QR data URL for mobile access (T-671)."""
+    """Build approval summary and QR data URL for mobile access (T-671). Cached for 60s (T-1246)."""
+    now = _time_mod.monotonic()
+    if _qr_cache["data"] is not None and (now - _qr_cache["ts"]) < _DASHBOARD_CACHE_TTL:
+        return _qr_cache["data"]
     try:
         from web.blueprints.approvals import _build_approvals_context
         ctx = _build_approvals_context()
         total = ctx.get("total_count", 0)
         if total == 0:
-            return None, None, None
+            _qr_cache["data"] = (None, None, None)
+            _qr_cache["ts"] = _time_mod.monotonic()
+            return _qr_cache["data"]
         summary = {"total": total, "tier0": ctx.get("tier0_count", 0),
                    "go": ctx.get("go_count", 0), "acs": ctx.get("ac_task_count", 0)}
     except Exception:
-        return None, None, None
+        _qr_cache["data"] = (None, None, None)
+        _qr_cache["ts"] = _time_mod.monotonic()
+        return _qr_cache["data"]
 
     # Generate QR code as data URL
     try:
@@ -257,9 +283,12 @@ def _get_approval_qr():
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         data_url = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
-        return summary, data_url, url
+        result = (summary, data_url, url)
     except Exception:
-        return summary, None, None
+        result = (summary, None, None)
+    _qr_cache["data"] = result
+    _qr_cache["ts"] = _time_mod.monotonic()
+    return result
 
 
 def _get_token_usage():
