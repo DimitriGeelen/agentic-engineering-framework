@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1223: Fix inception decide 500 error on approvals page
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T11:32:06Z
+# ============================================================================
+
+task_id: T-1223
+task_name: "Fix inception decide 500 error on approvals page"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T11:28:20Z
+completed: 2026-04-13T11:32:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T13:31:58+02:00
+last_commit: 2026-04-13T13:31:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix inception decide 500 — add captured→started-work transition before completion
+
+# Key outcomes
+outcomes:
+  - "Root cause: captured → work-completed is invalid transition; fix adds captured → started-work step"
+  - "All inception decide buttons on /approvals return 200 (confirmed via Playwright)"
+  - "Playwright test confirms buttons work"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix inception decide 500 — add captured→started-work transition before completion"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "lib/inception.sh"
+  - ".tasks/active/T-1223-fix-inception-decide-500-error-on-approv.md"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T13:31:58"
+    action: "T-1223: Fix inception decide 500 — add captured→started-work transition before completion"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 3
+  lines_added: 69
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1223-fix-inception-decide-500-error-on-approv.md
+generated_by: context-agent-hybrid
