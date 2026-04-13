@@ -372,3 +372,14 @@ found unknown escape character 'd'
 127.0.0.1 - - [13/Apr/2026 09:36:51] "GET /tasks HTTP/1.1" 200 -
 127.0.0.1 - - [13/Apr/2026 09:36:51] "GET /terminal HTTP/1.1" 200 -
 127.0.0.1 - - [13/Apr/2026 09:36:54] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /inception/T-1200 HTTP/1.1" 200 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:43:50] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [13/Apr/2026 09:44:14] "POST /inception/T-1200/decide HTTP/1.1" 500 -
+192.168.10.107 - - [13/Apr/2026 09:44:26] "POST /inception/T-1200/decide HTTP/1.1" 200 -

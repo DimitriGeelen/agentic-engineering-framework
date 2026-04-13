@@ -43,3 +43,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-007
+  learning: "Section header prefix collision: startswith('## Decision') matches both '## Decisions' and '## Decision'. Always use exact match (==) for Markdown section headers that share a prefix."
+  source: P-001
+  task: T-1202
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD

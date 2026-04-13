@@ -4,7 +4,7 @@ name: "RCA: Watchtower inception-decide writes duplicate decision blocks — dou
 description: >
   Inception: RCA: Watchtower inception-decide writes duplicate decision blocks — double ## Decision sections
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T07:35:55Z
-last_update: 2026-04-13T07:36:59Z
-date_finished: null
+last_update: 2026-04-13T07:44:26Z
+date_finished: 2026-04-13T07:44:12Z
 ---
 
 # T-1200: RCA: Watchtower inception-decide writes duplicate decision blocks — double ## Decision sections
@@ -85,18 +85,34 @@ test -f docs/reports/T-1200-duplicate-decision-rca.md
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+**Decision**: GO
 
+**Rationale**: Recommendation: GO — one-line fix, clear root cause, zero risk.
+
+Rationale: `lib/inception.sh:279` uses `line.startswith('## Decision')` which matches both `## Decisions` (standard section) and `## Decision` (inception placeholder). Fix: change to `line.strip() == '## Decision'` (exact match). This is a single-character semantic difference ('s' suffix) causing duplicate writes.
+
+Evidence:
+- T-1129 after Watchtower approval: decision block written into both `## Decisions` (line 89) and `## Decision` (line 100)
+- Update entries also duplicated (appended twice)
+- Python code at `lib/inception.sh:279`: `if line.startswith('## Decision')` — prefix match confirmed
+- Fix verified: `line.strip() == '## Decision'` passes only for the inception section
+
+**Date**: 2026-04-13T07:44:26Z
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — one-line fix, clear root cause, zero risk.
+
+Rationale: `lib/inception.sh:279` uses `line.startswith('## Decision')` which matches both `## Decisions` (standard section) and `## Decision` (inception placeholder). Fix: change to `line.strip() == '## Decision'` (exact match). This is a single-character semantic difference ('s' suffix) causing duplicate writes.
+
+Evidence:
+- T-1129 after Watchtower approval: decision block written into both `## Decisions` (line 89) and `## Decision` (line 100)
+- Update entries also duplicated (appended twice)
+- Python code at `lib/inception.sh:279`: `if line.startswith('## Decision')` — prefix match confirmed
+- Fix verified: `line.strip() == '## Decision'` passes only for the inception section
+
+**Date**: 2026-04-13T07:44:26Z
 
 ## Updates
 
@@ -105,3 +121,33 @@ test -f docs/reports/T-1200-duplicate-decision-rca.md
 
 ### 2026-04-13T07:36:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-13T07:44:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — one-line fix, clear root cause, zero risk.
+
+Rationale: `lib/inception.sh:279` uses `line.startswith('## Decision')` which matches both `## Decisions` (standard section) and `## Decision` (inception placeholder). Fix: change to `line.strip() == '## Decision'` (exact match). This is a single-character semantic difference ('s' suffix) causing duplicate writes.
+
+Evidence:
+- T-1129 after Watchtower approval: decision block written into both `## Decisions` (line 89) and `## Decision` (line 100)
+- Update entries also duplicated (appended twice)
+- Python code at `lib/inception.sh:279`: `if line.startswith('## Decision')` — prefix match confirmed
+- Fix verified: `line.strip() == '## Decision'` passes only for the inception section
+
+### 2026-04-13T07:44:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+### 2026-04-13T07:44:26Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — one-line fix, clear root cause, zero risk.
+
+Rationale: `lib/inception.sh:279` uses `line.startswith('## Decision')` which matches both `## Decisions` (standard section) and `## Decision` (inception placeholder). Fix: change to `line.strip() == '## Decision'` (exact match). This is a single-character semantic difference ('s' suffix) causing duplicate writes.
+
+Evidence:
+- T-1129 after Watchtower approval: decision block written into both `## Decisions` (line 89) and `## Decision` (line 100)
+- Update entries also duplicated (appended twice)
+- Python code at `lib/inception.sh:279`: `if line.startswith('## Decision')` — prefix match confirmed
+- Fix verified: `line.strip() == '## Decision'` passes only for the inception section
