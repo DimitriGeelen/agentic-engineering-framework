@@ -50,3 +50,10 @@ learnings:
   date: 2026-04-13
   context: Added via context agent
   application: TBD
+- id: L-008
+  learning: "Status enum divergence: when templates hardcode status arrays, new statuses become invisible. Fix: pass enum_statuses from _load_enums() to template, use |default guard for resilience. CSS colors defined via Jinja loop over status_colors mapping."
+  source: P-001
+  task: T-1197
+  date: 2026-04-13
+  context: Added via context agent
+  application: TBD
