@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1246: Cache home page QR + concerns + traceability — reduce 0.47s warm cache
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T20:54:26Z
+# ============================================================================
+
+task_id: T-1246
+task_name: "Cache home page QR + concerns + traceability — reduce 0.47s warm cache"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T20:43:32Z
+completed: 2026-04-13T20:47:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-04-13T22:47:57+02:00
+last_commit: 2026-04-13T22:47:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Cache home page QR + concerns + traceability — 0.47s → 0.26s
+
+# Key outcomes
+outcomes:
+  - "Add TTL caches to _get_approval_qr, _get_concerns_summary, _get_traceability"
+  - "Home page warm cache improved (0.47s → 0.26s)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1246-cache-home-page-qr--concerns--traceabili.md"
+  - "web/blueprints/core.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T22:47:57"
+    action: "T-1246: Cache home page QR + concerns + traceability — 0.47s → 0.26s"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 91
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1246-cache-home-page-qr--concerns--traceabili.md
+generated_by: context-agent-hybrid

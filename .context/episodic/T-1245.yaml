@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1245: Optimize Watchtower /inception route — 1.2s on warm cache
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T20:54:18Z
+# ============================================================================
+
+task_id: T-1245
+task_name: "Optimize Watchtower /inception route — 1.2s on warm cache"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T20:30:41Z
+completed: 2026-04-13T20:43:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T22:35:11+02:00
+last_commit: 2026-04-13T22:35:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Optimize /inception — shared cache + reports index, 1.2s → 0.065s
+
+# Key outcomes
+outcomes:
+  - "/inception warm cache response <0.5s (achieved: 0.065s, 18x faster)"
+  - "Use shared task cache for frontmatter, read body only for inception tasks"
+  - "Cache reports index for artifact lookup"
+  - "Web tests pass (142/142)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".tasks/active/T-1245-optimize-watchtower-inception-route--12s.md"
+  - "web/blueprints/inception.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T22:35:11"
+    action: "T-1245: Optimize /inception — shared cache + reports index, 1.2s → 0.065s"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 1
+  files_changed: 2
+  lines_added: 134
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1245-optimize-watchtower-inception-route--12s.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1241: Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T20:54:17Z
+# ============================================================================
+
+task_id: T-1241
+task_name: "Fix Watchtower /cron page — last 5 files too narrow, infrequent jobs always show no data"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T19:50:36Z
+completed: 2026-04-13T20:12:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T21:54:02+02:00
+last_commit: 2026-04-13T21:54:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Fix /cron page — scan all section keys, add non-audit job detection, pickup to 30s
+
+# Key outcomes
+outcomes:
+  - "`_last_run_info()` scans enough files to find the most recent output for each unique section key"
+  - "Non-audit jobs (docs, retention, pickup) show last-run info when available"
+  - "/cron page shows data for all jobs that have executed at least once (10/11, only oe-weekly pending Monday)"
+  - "Web tests pass (142/142)"
+  - "Pickup processor interval changed from 15min to 30s (sleep trick)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Fix /cron page — scan all section keys, add non-audit job detection, pickup to 30s"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".tasks/active/T-1241-fix-watchtower-cron-page--last-5-files-t.md"
+  - "web/blueprints/cron.py"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T21:54:02"
+    action: "T-1241: Fix /cron page — scan all section keys, add non-audit job detection, pickup to 30s"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 4
+  lines_added: 117
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1241-fix-watchtower-cron-page--last-5-files-t.md
+generated_by: context-agent-hybrid

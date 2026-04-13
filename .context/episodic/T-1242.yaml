@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1242: Restore 239 learnings lost in T-1239 commit — learnings.yaml overwritten
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-13T20:54:18Z
+# ============================================================================
+
+task_id: T-1242
+task_name: "Restore 239 learnings lost in T-1239 commit — learnings.yaml overwritten"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-13T20:17:44Z
+completed: 2026-04-13T20:20:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-13T22:20:30+02:00
+last_commit: 2026-04-13T22:20:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Restore 239 learnings lost in T-1239 commit + generate T-1239 episodic
+
+# Key outcomes
+outcomes:
+  - "learnings.yaml restored to >= 239 entries"
+  - "Bugfix-learning audit check passes"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - ".context/episodic/T-1239.yaml"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1242-restore-239-learnings-lost-in-t-1239-com.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-13T22:20:30"
+    action: "T-1242: Restore 239 learnings lost in T-1239 commit + generate T-1239 episodic"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 1814
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1242-restore-239-learnings-lost-in-t-1239-com.md
+generated_by: context-agent-hybrid
