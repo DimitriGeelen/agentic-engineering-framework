@@ -3895,6 +3895,11 @@ PYPREDICT
         source "$FW_LIB_DIR/costs.sh"
         costs_main "$@"
         ;;
+    release)
+        # T-1256: Release tagging + push + GitHub Release
+        source "$FW_LIB_DIR/release.sh"
+        release_main "$@"
+        ;;
     test)
         _test_exit=0
 

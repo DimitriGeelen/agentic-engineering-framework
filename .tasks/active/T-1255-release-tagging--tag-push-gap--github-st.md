@@ -4,7 +4,7 @@ name: "Release tagging + tag-push gap — GitHub stuck at v1.0.0"
 description: >
   Inception: Release tagging + tag-push gap — GitHub stuck at v1.0.0
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T20:32:43Z
-last_update: 2026-04-14T20:32:43Z
-date_finished: null
+last_update: 2026-04-14T20:42:34Z
+date_finished: 2026-04-14T20:39:20Z
 ---
 
 # T-1255: Release tagging + tag-push gap — GitHub stuck at v1.0.0
@@ -145,9 +145,66 @@ Full research artifact: `docs/reports/T-1255-release-tagging.md`
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — four-part structural fix
+
+Rationale: Public-facing release surface invisible for 8+ days. Three
+independent root causes (push gap, cadence gap, Release gap) all bounded,
+testable, reversible.
+
+Evidence:
+- Local `v1.5.742` tag never pushed to github/onedev (both stop at v1.4.0)
+- VERSION `1.5.614` is synthetic (pre-push stamper formula) — not a fetchable tag
+- 614 commits since last tag = no bump cadence at all
+- `gh` CLI v2.89.0 available on host — Release automation feasible
+- `--follow-tags` is standard git, zero new surface
+- Cron already used for other framework auto-tasks
+
+Proposed changes (1h total):
+1. `handover.sh:759` → add `--follow-tags` (5 min)
+2. Weekly cron auto-tag via `lib/release.sh` (30 min)
+3. `gh release create --generate-notes` on new tags (15 min)
+4. Backfill: push existing `v1.5.742`, optionally cut `v1.5.614` (5 min)
+
+Next step if GO: Create `T-1256-build: implement weekly release tagging + push-tags fix`
+
+Full research artifact: `docs/reports/T-1255-release-tagging.md`
+
+**Date**: 2026-04-14T20:39:20Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-04-14T20:39:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — four-part structural fix
+
+Rationale: Public-facing release surface invisible for 8+ days. Three
+independent root causes (push gap, cadence gap, Release gap) all bounded,
+testable, reversible.
+
+Evidence:
+- Local `v1.5.742` tag never pushed to github/onedev (both stop at v1.4.0)
+- VERSION `1.5.614` is synthetic (pre-push stamper formula) — not a fetchable tag
+- 614 commits since last tag = no bump cadence at all
+- `gh` CLI v2.89.0 available on host — Release automation feasible
+- `--follow-tags` is standard git, zero new surface
+- Cron already used for other framework auto-tasks
+
+Proposed changes (1h total):
+1. `handover.sh:759` → add `--follow-tags` (5 min)
+2. Weekly cron auto-tag via `lib/release.sh` (30 min)
+3. `gh release create --generate-notes` on new tags (15 min)
+4. Backfill: push existing `v1.5.742`, optionally cut `v1.5.614` (5 min)
+
+Next step if GO: Create `T-1256-build: implement weekly release tagging + push-tags fix`
+
+Full research artifact: `docs/reports/T-1255-release-tagging.md`
+
+### 2026-04-14T20:39:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

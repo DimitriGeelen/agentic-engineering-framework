@@ -105,3 +105,12 @@ jobs:
     origin_task: T-778
     status: active
     description: "Scans pickup inbox for cross-project proposals, validates, dedup-checks, and creates inception tasks. Runs twice per minute (at :00 and :30) via sleep trick."
+
+  - id: release-weekly
+    name: "Weekly release tagging (Monday 10:00)"
+    schedule: "0 10 * * 1"
+    command: "fw release tag-and-release"
+    source_file: agentic-audit.crontab
+    origin_task: T-1256
+    status: active
+    description: "Cuts a new patch-level tag (vX.Y.Z+1), pushes to all remotes with --follow-tags, and creates a GitHub Release with auto-generated notes. Idempotent — skips if no commits since last tag. Offset from OE weekly (Monday 09:00) to avoid collision."

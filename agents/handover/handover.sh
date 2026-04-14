@@ -756,7 +756,7 @@ if [ "$AUTO_COMMIT" = true ]; then
         _push_failed=false
         while IFS= read -r remote_name; do
             [ -z "$remote_name" ] && continue
-            if git -C "$PROJECT_ROOT" push "$remote_name" HEAD 2>&1; then
+            if git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then
                 echo -e "  ${GREEN}Pushed to $remote_name ✓${NC}"
             else
                 echo -e "  ${YELLOW}WARNING: Push to $remote_name failed (non-blocking)${NC}" >&2
