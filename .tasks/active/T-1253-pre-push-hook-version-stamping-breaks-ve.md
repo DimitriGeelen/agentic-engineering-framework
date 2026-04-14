@@ -1,0 +1,133 @@
+---
+id: T-1253
+name: "Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)"
+description: >
+  Inception: Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)
+
+status: started-work
+workflow_type: inception
+owner: agent
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-04-14T07:02:41Z
+last_update: 2026-04-14T07:06:16Z
+date_finished: null
+---
+
+# T-1253: Pre-push hook VERSION-stamping breaks version.json-based consumer projects (T-106 blocker, T-648 regression)
+
+## Problem Statement
+
+The framework's `pre-push` hook contains a VERSION-stamping block (introduced in T-648)
+that writes `git describe --tags --match 'v[0-9]*'` output to `VERSION` and
+`.agentic-framework/VERSION` on every push. This assumes tag-based versioning.
+
+Consumer projects that use `version.json`/`version_prod.json`-based versioning
+(e.g., T-106 blocker) have their version silently overwritten on every push,
+reverting manual bumps to whatever the latest matching git tag is.
+
+Reported by .109 cross-agent: "VERSION gets rewritten to 3.1.alpha every push
+even after we bump version.json to 3.2.9-alpha."
+
+## Assumptions
+
+- A1: The VERSION-stamping block in pre-push is the root cause (not some other hook)
+- A2: Consumer projects legitimately use non-git-tag versioning (version.json)
+- A3: Stripping the block locally is safe for version.json-based projects
+- A4: A version.json-aware stamping block can detect which scheme the project uses
+- A5: `fw upgrade` alone does not fix this because the template itself is wrong
+
+## Exploration Plan
+
+1. **Spike A (15min):** Read `agents/git/lib/hooks.sh` pre-push section; confirm
+   the stamping block exists and is unconditional.
+2. **Spike B (15min):** Check if `version.json` presence is detectable at hook-time.
+3. **Spike C (30min):** Evaluate 3 fix paths against portability + usability directives:
+   - Path 1: Make stamping block opt-in (flag in .framework.yaml)
+   - Path 2: Auto-detect version.json and skip stamping when present
+   - Path 3: Remove the stamping block entirely (make it manual)
+
+## Technical Constraints
+
+- Hook runs in every consumer's git repo; must work without additional deps
+- version.json is a convention in some projects, not a framework standard
+- The pre-push hook must remain fast (<100ms) — no heavy parsing
+- Must not break projects that DO use git-tag versioning
+
+## Scope Fence
+
+**IN:** Diagnose the stamping block, choose a fix path, produce a build proposal
+**OUT:** Actually implementing the fix (becomes a separate build task after GO)
+**OUT:** Addressing T-106 AC#2 directly (needs Tier 2 authorization for global framework)
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Spike A complete: stamping block located in pre-push template, block documented
+- [ ] Spike B complete: detection method for version.json-based projects identified
+- [ ] Spike C complete: 3 fix paths evaluated against directives (Antifragility/Reliability/Usability/Portability)
+- [ ] Research artifact written to docs/reports/T-1253-pre-push-version-stamping.md
+- [ ] Recommendation written with rationale and GO/NO-GO/DEFER
+
+### Human
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
+**GO if:**
+- Root cause identified with bounded fix path
+- Fix is scoped, testable, and reversible
+
+**NO-GO if:**
+- Problem requires fundamental redesign or unbounded scope
+- Fix cost exceeds benefit given current evidence
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+
+## Recommendation
+
+<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
+     Watchtower reads this section — if it's empty, the human sees nothing.
+     Format:
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence from exploration)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-04-14T07:06:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
