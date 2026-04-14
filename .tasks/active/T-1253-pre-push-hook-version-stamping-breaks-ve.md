@@ -65,11 +65,11 @@ even after we bump version.json to 3.2.9-alpha."
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: stamping block located in pre-push template, block documented
-- [ ] Spike B complete: detection method for version.json-based projects identified
-- [ ] Spike C complete: 3 fix paths evaluated against directives (Antifragility/Reliability/Usability/Portability)
-- [ ] Research artifact written to docs/reports/T-1253-pre-push-version-stamping.md
-- [ ] Recommendation written with rationale and GO/NO-GO/DEFER
+- [x] Spike A complete: stamping block located in pre-push template, block documented
+- [x] Spike B complete: detection method for version.json-based projects identified
+- [x] Spike C complete: 3 fix paths evaluated against directives (Antifragility/Reliability/Usability/Portability)
+- [x] Research artifact written to docs/reports/T-1253-pre-push-version-stamping.md
+- [x] Recommendation written with rationale and GO/NO-GO/DEFER
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -99,15 +99,20 @@ even after we bump version.json to 3.2.9-alpha."
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Path 2 (auto-detect version.json / package.json / pyproject.toml)
+scores best on Usability and Portability with no regression for git-tag users.
+The fix is bounded (modify the stamping block in `agents/git/lib/hooks.sh` plus
+the installed copy in `.git/hooks/pre-push`), testable, and reversible.
+
+**Evidence:**
+- Stamping block isolated to ~20 lines (agents/git/lib/hooks.sh:385-403)
+- Real consumer bug demonstrated: /opt/050-email-archive has version.json=0.17.3 but VERSION=0.12.1055 (5 versions behind)
+- Detection signals are mechanical (file existence + grep for version key)
+- See full research artifact: docs/reports/T-1253-pre-push-version-stamping.md
+
+**Next step if GO:** Create `T-1254-build: implement version-scheme detection in pre-push stamping block`
 
 ## Decisions
 

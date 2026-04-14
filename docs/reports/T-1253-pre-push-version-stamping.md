@@ -37,31 +37,104 @@ behavior for version.json-based projects. Fixing the audit path doesn't address 
 
 ## Spikes
 
-### Spike A — Locate and confirm stamping block
+### Spike A — Locate and confirm stamping block — DONE
 
-<!-- Read agents/git/lib/hooks.sh pre-push section. Confirm block exists and is unconditional. -->
+Block is at `agents/git/lib/hooks.sh:385-403`:
 
-### Spike B — Version.json detection at hook-time
+```sh
+# Stamp VERSION file from git describe (T-648: git-derived versioning)
+_version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+if [ -n "$_version" ]; then
+    _version="${_version#v}"
+    if [[ "$_version" == *-*-* ]]; then
+        _base="${_version%%-*}"
+        _rest="${_version#*-}"
+        _commits="${_rest%%-*}"
+        _major_minor="${_base%.*}"
+        _stamped="${_major_minor}.${_commits}"
+    else
+        _stamped="$_version"
+    fi
+    echo "$_stamped" > "$PROJECT_ROOT/VERSION"
+    if [ -d "$PROJECT_ROOT/.agentic-framework" ]; then
+        echo "$_stamped" > "$PROJECT_ROOT/.agentic-framework/VERSION"
+    fi
+    echo "VERSION stamped: $_stamped"
+fi
+```
 
-<!-- Can we detect `version.json` from the hook? What about `pyproject.toml` [project.version]? -->
+Unconditional — runs whenever `git describe` returns anything. No check for
+alternative versioning schemes. Writes to both VERSION and .agentic-framework/VERSION.
 
-### Spike C — Fix-path evaluation
+### Spike B — Version.json detection at hook-time — DONE
 
-<!--
-Path 1: Opt-in via .framework.yaml (explicit flag: enable_version_stamping: true/false)
-Path 2: Auto-detect — skip stamping when version.json or similar is present
-Path 3: Remove the stamping block entirely (make VERSION manual)
+Detection signals (in priority order):
+1. `$PROJECT_ROOT/.framework.yaml` contains `version_stamping: off` → explicit opt-out
+2. `$PROJECT_ROOT/version.json` exists → version.json-based
+3. `$PROJECT_ROOT/package.json` contains top-level `"version":` → npm-based
+4. `$PROJECT_ROOT/pyproject.toml` contains `version = "..."` → Python project
+5. None of the above → git-derived versioning is appropriate
 
-Score each against: Antifragility, Reliability, Usability, Portability.
--->
+Real-world evidence from a local consumer:
+- `/opt/050-email-archive/version.json`: `{"version": "0.17.3"}` (authoritative per project)
+- `/opt/050-email-archive/VERSION`: `0.12.1055` (stamped by hook from `v0.12.0-1055-g…`)
+- git describe: `v0.12.0-1067-g74d383eb` (latest matching tag is v0.12.0)
+- `git tag -l 'v*'`: one tag, `v0.12.0`
+
+Gap of 5 minor versions — VERSION stamp is 5 versions behind the real project version.
+
+### Spike C — Fix-path evaluation — DONE
+
+Four paths scored against the four constitutional directives:
+
+| Path | Antifragility | Reliability | Usability | Portability |
+|------|:-------------:|:-----------:|:---------:|:-----------:|
+| 1 — Opt-in flag in `.framework.yaml` | = | = | − (requires config) | + |
+| 2 — Auto-detect alternative schemes | + | + | ++ | ++ |
+| 3 — Remove stamping entirely | − | − | + | − |
+| 4 — Hybrid: auto-detect + opt-in override | + | + | + | ++ |
+
+**Path 1 (opt-in)** — Bad default. Every consumer using version.json must know about
+the flag; defaults to buggy behavior. Rejected.
+
+**Path 2 (auto-detect)** — Skip stamping when version.json/package.json/pyproject.toml
+has a version. Fallback to git-derived when none present. Works out-of-the-box for
+both ecosystems. **Recommended.**
+
+**Path 3 (remove entirely)** — Regression for T-648 users who rely on git-derived
+VERSION. Breaks .agentic-framework/VERSION sync. Rejected.
+
+**Path 4 (hybrid)** — Path 2 plus a `.framework.yaml` escape hatch. Overkill unless
+an edge case emerges. Keep in reserve.
 
 ## Findings
 
-<!-- Populated as spikes complete. -->
+1. The stamping block is unconditional and assumes git-tag versioning is the only scheme
+2. Real consumers in the /opt tree already demonstrate the bug (050-email-archive)
+3. Detection is mechanical and cheap — file existence + grep for `version` key
+4. Path 2 (auto-detect) scores best across all four directives
 
 ## Recommendation
 
-<!-- GO/NO-GO/DEFER with rationale. -->
+**Recommendation:** GO
+
+**Rationale:** Path 2 (auto-detect version.json / package.json / pyproject.toml)
+scores best on Usability and Portability with no regression for git-tag users.
+The fix is bounded (modify the stamping block in `agents/git/lib/hooks.sh` plus
+the installed copy in `.git/hooks/pre-push`), testable (add unit tests for each
+detection path), and reversible (behind a possible `.framework.yaml` escape hatch
+later if edge cases appear).
+
+**Evidence:**
+- Stamping block isolated to ~20 lines in one file
+- Detection signals are deterministic and fast (file existence + 1-line grep)
+- Example bug concretely demonstrated in /opt/050-email-archive
+- No competing inception or task addresses this
+
+**Build follow-up (after GO):**
+- Create `T-1254-build: implement version-scheme detection in pre-push stamping block`
+- Ship in framework template; propagate to consumers via `fw upgrade`
+- Add bats test coverage for each detection branch
 
 ## Dialogue Log
 
