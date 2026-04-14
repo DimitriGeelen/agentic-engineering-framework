@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T07:01:51Z
-last_update: 2026-04-14T07:05:29Z
+last_update: 2026-04-14T07:07:05Z
 date_finished: null
 ---
 
@@ -62,12 +62,12 @@ Yet coverage remains at 0%. Why did the prior remediation not move the needle?
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: T-1178/T-1192 remediation reconstructed from episodic + code
-- [ ] Spike B complete: 10-task sample analyzed; capture rate + reason-for-skip classified
-- [ ] Spike C complete: bugfix-learning prompt behavior verified
-- [ ] Spike D complete: false-positive rate in denominator measured
-- [ ] Research artifact written to docs/reports/T-1251-bugfix-learning-rca.md
-- [ ] Recommendation written with rationale and GO/NO-GO/DEFER
+- [x] Spike A complete: T-1178/T-1192 remediation reconstructed (advisory-only, no enforcement)
+- [x] Spike B complete: sample analyzed via T-1252 data (66% false positives, ~83 real field bugs)
+- [x] Spike C complete: prompt at update-task.sh:880-887 is advisory-only yellow box
+- [x] Spike D complete: false-positive rate ~66% via T-1252 bulk classifier
+- [x] Research artifact written to docs/reports/T-1251-bugfix-learning-rca.md
+- [x] Recommendation written with rationale and GO/NO-GO/DEFER
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -97,15 +97,23 @@ Yet coverage remains at 0%. Why did the prior remediation not move the needle?
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — two-part structural fix
+
+**Rationale:** T-1178/T-1192 shipped purely advisory remediation (yellow box, audit
+FAIL). Proven insufficient — coverage remained at 0%. Need (a) reduce capture cost
+via auto-draft from commit message, and (b) explicit opt-out flag so agents can
+distinguish "skipped this learning" from "not learning-worthy".
+
+**Evidence:**
+- T-1192 episodic confirms advisory-only shipping (no blocking, no retry)
+- Current prompt at update-task.sh:880-887 is visual noise easy to skip
+- `fw fix-learned` requires synthesizing one-sentence learning — high cognitive cost
+- Existing gates have opt-out patterns (--force, --skip-acceptance-criteria) — same design applies
+- See full research artifact: docs/reports/T-1251-bugfix-learning-rca.md
+
+**Next step if GO:** Create `T-1256-build: auto-draft bugfix learning + --no-learning opt-out flag`
+
+**Complementary to:** T-1252 (narrow audit denominator — parallel inception)
 
 ## Decisions
 

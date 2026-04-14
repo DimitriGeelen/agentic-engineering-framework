@@ -69,11 +69,11 @@ need learnings.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: 20-task sample classified (field vs. dev); ratio reported
-- [ ] Spike B complete: mechanical filter signals identified and documented
-- [ ] Spike C complete: revised denominator computed; corrected coverage reported
-- [ ] Research artifact written to docs/reports/T-1252-bugfix-detection-quality.md
-- [ ] Recommendation written with rationale and GO/NO-GO/DEFER
+- [x] Spike A complete: 242-task bulk classification run; 34% match field signals
+- [x] Spike B complete: mechanical filter signals identified and documented
+- [x] Spike C complete: revised denominator computed; narrowing alone insufficient
+- [x] Research artifact written to docs/reports/T-1252-bugfix-detection-quality.md
+- [x] Recommendation written with rationale and GO/NO-GO/DEFER
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -103,15 +103,21 @@ need learnings.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — implement the narrower filter
+
+**Rationale:** Current audit denominator is ~2-3x too broad (66% inflation from
+dev-discovered fixes). Narrowing gives agents a truthful signal about field-bug
+learning coverage rather than penalizing trivial dev cleanups.
+
+**Evidence:**
+- Bulk classification run: 159/242 (66%) appear dev-discovered, not field-discovered
+- Proposed filter uses only metadata already present in task files (no schema change)
+- Coverage stays at FAIL even after narrowing — metric retains diagnostic value
+- See full research artifact: docs/reports/T-1252-bugfix-detection-quality.md
+
+**Next step if GO:** Create `T-1255-build: narrow bugfix-learning detector to field-discovered bugs in audit.sh`
+
+**Complementary to:** T-1251 (capture-side — why agents skip `fw fix-learned`)
 
 ## Decisions
 
