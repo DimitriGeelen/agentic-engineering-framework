@@ -714,26 +714,43 @@ After **every commit**, briefly report what was done and ask if the user wants t
 
 **Structural enforcement (T-139, T-478, T-596):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=285K tokens, ~95% of 300K window). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `FW_CONTEXT_WINDOW` env var (default: 300K).
 
-### Copy-Pasteable Commands (T-609)
+### Copy-Pasteable Commands (T-609, T-1257)
 When giving the human a command to run (Tier 0 approvals, inception decisions, verification steps, Human AC instructions), the command MUST be:
 
 1. **Single-line, copy-pasteable** — works when pasted into any terminal, from any directory
 2. **Prefixed with `cd`** — always include `cd /path/to/project &&` so directory context is explicit
-3. **Use `bin/fw` not `fw`** — the global `fw` may resolve to a different install (e.g., `/root/.agentic-framework/bin/fw`)
-4. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line. Never rely on the human copy-pasting multiple separate lines (line breaks cause partial execution errors)
+3. **Use the right `fw` path for the project's context (T-1257):**
+   - **Framework repo** (contains `FRAMEWORK.md` + `bin/fw` at its root — e.g. `/opt/999-Agentic-Engineering-Framework`): use `bin/fw`
+   - **Consumer project** (contains `.agentic-framework/bin/fw` — any project initialised via `fw init`): use `.agentic-framework/bin/fw`
+   - Bare `fw` only when you know the shim at `~/.local/bin/fw` is installed and routing works — otherwise it may resolve to a stale global install
+4. **Verify before suggesting** — before pasting a `fw` command into chat, confirm the chosen path exists in the target project (check for `bin/fw` OR `.agentic-framework/bin/fw`). Don't apply the framework-repo pattern to a consumer.
+5. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line. Never rely on the human copy-pasting multiple separate lines (line breaks cause partial execution errors)
 
-**Good:**
+**Good — framework repo:**
 ```
 cd /opt/999-Agentic-Engineering-Framework && bin/fw tier0 approve && bin/fw inception decide T-608 go --rationale "approved"
 ```
 
-**Bad:**
+**Good — consumer project:**
+```
+cd /003-NTB-ATC-Plugin && .agentic-framework/bin/fw inception decide T-006 go --rationale "approved"
+```
+
+**Bad — applies framework-repo pattern to a consumer project:**
+```
+cd /003-NTB-ATC-Plugin && bin/fw inception decide T-006 go
+# → bash: bin/fw: No such file or directory   (consumer has NO bin/ at root)
+```
+
+**Bad — bare, no cd:**
 ```
 fw tier0 approve
 fw inception decide T-608 go --rationale "approved"
 ```
 
-**Why this exists (T-609):** User ran `fw inception decide` from `/home/dimitri-mint-dev/` — got "No framework project detected". The global `fw` pointed to a different install. Three separate errors from one missing `cd`.
+**Why this exists:**
+- **T-609:** User ran `fw inception decide` from `/home/dimitri-mint-dev/` — got "No framework project detected". Three errors from one missing `cd`.
+- **T-1257:** Agent on `/003-NTB-ATC-Plugin` (consumer) told user to run `bin/fw` — consumer has no `bin/` at root, only `.agentic-framework/bin/fw`. The generic rule "use `bin/fw`" was correct for the framework repo but wrong for consumers.
 
 ### Inception Discipline
 When the active task has `workflow_type: inception`:
@@ -834,7 +851,7 @@ Optionally prefix the criterion with a confidence marker:
 
 **Prerequisite awareness (T-358):** Steps must start from the human's actual environment, not the agent's dev context. If the feature requires deployment, upgrade, or setup before testing (e.g., `brew upgrade fw`, restart a service, push config), include those steps first. Ask: "What must the human do before step 1 is possible?" If the answer isn't "nothing," add prerequisite steps.
 
-**Full-path commands (T-609):** Every command in Steps MUST be copy-pasteable from any directory. Include `cd /path/to/project &&` prefix. Use `bin/fw` not bare `fw`. Chain multiple commands with `&&` on one line — never assume the human will paste lines separately. See §Copy-Pasteable Commands.
+**Full-path commands (T-609, T-1257):** Every command in Steps MUST be copy-pasteable from any directory. Include `cd /path/to/project &&` prefix. Use the project-appropriate `fw` path: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in consumer projects, bare `fw` only when the shim is confirmed. Chain multiple commands with `&&` on one line — never assume the human will paste lines separately. See §Copy-Pasteable Commands.
 
 If a human AC cannot be made specific (e.g., "code quality is acceptable"), replace it with a measurable proxy or remove it. Vague ACs that nobody acts on are worse than no AC.
 
