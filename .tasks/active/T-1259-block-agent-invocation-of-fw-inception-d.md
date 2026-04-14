@@ -4,15 +4,15 @@ name: "Block agent invocation of fw inception decide — enforce T-679 via CLAUD
 description: >
   Block agent invocation of fw inception decide — enforce T-679 via CLAUDECODE env check
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T22:53:22Z
-last_update: 2026-04-14T22:53:22Z
+last_update: 2026-04-14T23:01:07Z
 date_finished: null
 ---
 
@@ -67,3 +67,7 @@ grep -q "T-1259\|CLAUDECODE" CLAUDE.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1259-block-agent-invocation-of-fw-inception-d.md
 - **Context:** Initial task creation
+
+### 2026-04-14T23:01:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
