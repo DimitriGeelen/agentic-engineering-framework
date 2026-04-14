@@ -138,6 +138,19 @@ later if edge cases appear).
 
 ## Dialogue Log
 
+### 2026-04-14 — Live reproduction of auth-rot (related concern)
+
+While working on this inception, peer review attempts from .121 and .109 via
+TermLink all failed due to stale hub secrets:
+- .107 framework-agent: up, 0 sessions registered (resolved: registered tl-4zyplaci this session)
+- .109 ring20-manager: 10s TCP timeout
+- .121 ring20-dashboard: connection refused
+
+Inject, file_send, and inbox primitives all require live targets. No queue-for-absent-session.
+This is a clean reproduction of the auth-rot problem — and it actively prevented the
+peer review of this inception. Not blocking T-1253 GO decision, but worth its own
+inception (follow-up).
+
 ### 2026-04-14 — Cross-agent report from .109
 
 `.109` reported the T-106 blocker via cross-agent TermLink channel:
