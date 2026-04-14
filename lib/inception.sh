@@ -181,17 +181,38 @@ do_inception_decide() {
             ;;
     esac
 
-    # Parse rationale
+    # Parse rationale + --i-am-human override (T-1259)
     local rationale=""
+    local i_am_human=false
     while [[ $# -gt 0 ]]; do
         case $1 in
             --rationale) rationale="$2"; shift 2 ;;
+            --i-am-human) i_am_human=true; shift ;;
             *) shift ;;
         esac
     done
 
     if [ -z "$rationale" ]; then
         echo -e "${RED}Rationale required: --rationale 'explanation'${NC}"
+        exit 1
+    fi
+
+    # Gate (T-1259): block agent invocation — enforces T-679
+    # Agents must use `fw task review T-XXX` + Watchtower; never call decide directly.
+    # $CLAUDECODE=1 is set by Claude Code when running agent sessions.
+    # Override: --i-am-human (for legitimate script/test contexts).
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$i_am_human" = false ]; then
+        echo -e "${RED}ERROR: Agents must not invoke 'fw inception decide' directly (T-679, T-1259)${NC}" >&2
+        echo "" >&2
+        echo -e "You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
+        echo -e "Inception decisions belong to the human, recorded via Watchtower." >&2
+        echo "" >&2
+        echo -e "Correct flow:" >&2
+        echo -e "  1. Agent: $(_emit_user_command "task review $task_id")" >&2
+        echo -e "  2. Human: open the Watchtower URL, record GO/NO-GO there" >&2
+        echo "" >&2
+        echo -e "If this is a human running inside an agent session (rare), pass --i-am-human." >&2
+        echo -e "See CLAUDE.md §Presenting Work for Human Review." >&2
         exit 1
     fi
 
