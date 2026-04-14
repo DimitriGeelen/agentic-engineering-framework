@@ -3,18 +3,19 @@ name: loop-detect
 type: script
 subsystem: framework-core
 location: lib/ts/src/loop-detect.ts
-tags: []
+tags: [typescript, hook, loop-detection, post-tool-use]
 
-purpose: "TODO: describe what this component does"
+purpose: "TypeScript PostToolUse loop detector — reads hook JSON on stdin, detects repetitive tool call patterns (generic_repeat, ping_pong, no_progress), and emits additionalContext or blocks at critical threshold. Compiled to lib/ts/dist/loop-detect.js. Origin: T-586 Phase 2 prototype, T-594 production port."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+  - target: .context/working/.loop-detect.json
+    type: writes
+  - target: transcript
+    type: reads
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+  - target: agents/context/loop-detect.sh
+    type: called_by
 
 last_verified: 2026-04-14
-created_by: unknown
+created_by: T-594
