@@ -101,7 +101,7 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Hourly OE checks: CTL-008,020 (hourly, offset from structural)
 30 * * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-hourly --cron 2>/dev/null
 
-# Daily OE checks: CTL-002,005,006,007,009,010,011,012,013,019 (daily at 7am)
+# Daily OE checks: CTL-002,005,006,007,009,010,011,012,013,019,027 (daily at 7am)
 0 7 * * * root PROJECT_ROOT="$PROJECT_ROOT" "$FW_PATH" audit --section oe-daily --cron 2>/dev/null
 
 # Weekly OE checks: CTL-016 (Monday 9am)
@@ -1713,6 +1713,28 @@ for task_file in "$TASKS_DIR/active"/*.md "$TASKS_DIR/completed"/*.md; do
                  "Inception commit gate may not be installed" \
                  "Run: fw git install-hooks"
         fi
+    fi
+done
+shopt -u nullglob
+
+# CTL-027 OE: Inception Template Sections — inception tasks must have ## Recommendation and ## Decision (T-1263)
+shopt -s nullglob
+for task_file in "$TASKS_DIR/active"/*.md; do
+    [ -f "$task_file" ] || continue
+    task_workflow=$(grep "^workflow_type:" "$task_file" | head -1 | cut -d: -f2 | tr -d ' ')
+    [ "$task_workflow" != "inception" ] && continue
+    task_id=$(grep "^id:" "$task_file" | head -1 | sed 's/id: //' | tr -d ' ')
+    [ -z "$task_id" ] && continue
+
+    _missing=""
+    grep -qE '^## Recommendation[[:space:]]*$' "$task_file" || _missing="## Recommendation"
+    grep -qE '^## Decision[[:space:]]*$' "$task_file" || _missing="${_missing:+$_missing, }## Decision"
+    if [ -n "$_missing" ]; then
+        fail "CTL-027: Inception $task_id missing required sections: $_missing" \
+             "fw inception decide will fail or duplicate decision blocks" \
+             "Add missing sections to task file: $task_file"
+    else
+        pass "CTL-027: Inception $task_id has Recommendation + Decision sections"
     fi
 done
 shopt -u nullglob

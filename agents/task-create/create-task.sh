@@ -271,6 +271,21 @@ if ! grep -q "^id: $TASK_ID" "$FILEPATH"; then
     exit 1
 fi
 
+# T-1263: Inception tasks must have ## Recommendation and ## Decision sections
+# Fail-fast at creation time rather than blocking late at fw inception decide
+if [ "$WORKFLOW_TYPE" = "inception" ]; then
+    _missing=""
+    grep -qE '^## Recommendation[[:space:]]*$' "$FILEPATH" || _missing="## Recommendation"
+    grep -qE '^## Decision[[:space:]]*$' "$FILEPATH" || _missing="${_missing:+$_missing, }## Decision"
+    if [ -n "$_missing" ]; then
+        echo -e "${RED}ERROR: Inception template missing required sections: $_missing${NC}" >&2
+        echo "The inception decide pipeline requires both ## Recommendation and ## Decision." >&2
+        echo "Fix the template at: $TASKS_DIR/templates/inception.md" >&2
+        rm -f "$FILEPATH"
+        exit 1
+    fi
+fi
+
 # Success output
 echo ""
 echo -e "${GREEN}=== Task Created ===${NC}"
