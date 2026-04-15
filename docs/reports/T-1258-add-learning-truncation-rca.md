@@ -1,4 +1,126 @@
-# T-1258 — `fw context add-learning` truncates learnings.yaml: RCA + structural fix
+# T-1258 — learnings.yaml truncation: RCA + fix
+
+**Status:** RESOLVED 2026-04-15T20:05Z. Root cause: `tests/unit/context_learning.bats:60-73` destroys the real framework `.context/project/learnings.yaml` on every run via `PROJECT_ROOT=$FRAMEWORK_ROOT` + `rm -f`. Fixed in-session by aliasing `FRAMEWORK_ROOT=TEST_TEMP_DIR` instead. Same bug-class in `tests/unit/context_decision.bats:60-73` fixed in same commit.
+
+> **Note:** Sections below marked **[SUPERSEDED]** reflect two earlier (incorrect) hypotheses. Kept for audit trail. The confirmed RCA is in the **"Confirmed Root Cause (2026-04-15T20:05Z)"** section further down.
+
+---
+
+## Confirmed Root Cause (2026-04-15T20:05Z)
+
+**File:** `tests/unit/context_learning.bats:60-73`
+
+```bash
+@test "add learning: creates first entry with L-001 ID in framework project" {
+    rm -f "$CONTEXT_DIR/project/learnings.yaml"
+    # Set PROJECT_ROOT == FRAMEWORK_ROOT to get L- prefix (framework mode)
+    export PROJECT_ROOT="$FRAMEWORK_ROOT"                    # ← redirects to real framework
+    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    mkdir -p "$CONTEXT_DIR/project"
+    local learnings_file="$CONTEXT_DIR/project/learnings.yaml"
+    rm -f "$learnings_file"                                  # ← DESTROYS real framework file
+    run do_add_learning "First learning"                     # ← creates fresh L-001
+    ...
+}
+```
+
+The test redirects `PROJECT_ROOT` to the actual framework directory to exercise the `id_prefix=L` code path (`do_add_learning` uses `PL-` prefix when `PROJECT_ROOT != FRAMEWORK_ROOT`). In doing so it operates on the real `.context/project/learnings.yaml`. The `rm -f` destroys the file, then `do_add_learning "First learning"` creates a fresh one-entry file. Cleanup restores `PROJECT_ROOT` but NOT the destroyed content.
+
+### Reproduction (definitive)
+
+```
+$ wc -l .context/project/learnings.yaml
+1709 .context/project/learnings.yaml
+
+$ bats tests/unit/context_learning.bats -f "creates first entry with L-001 ID in framework project"
+ok 1 add learning: creates first entry with L-001 ID in framework project
+
+$ wc -l .context/project/learnings.yaml
+10 .context/project/learnings.yaml   ← DESTROYED (1709 → 10)
+
+$ head -10 .context/project/learnings.yaml
+# Project Learnings - Knowledge gained during development
+# Added via: fw context add-learning "description" --task T-XXX
+learnings:
+- id: L-001
+  learning: "First learning"
+  source: unknown
+  task: unknown
+  date: 2026-04-15
+  context: Added via context agent
+  application: TBD
+```
+
+Post-state matches the **exact shape** observed in commit `41264a3a` (the T-1257 truncation commit): L-001 with `learning: "First learning"`, unsorted keys starting with `id`, today's date.
+
+### Trigger in past sessions
+
+Any invocation of the bats unit suite that includes `context_learning.bats`:
+- `fw test unit`
+- `fw test all`
+- `bats tests/unit/`
+- `bats tests/unit/context_learning.bats`
+
+Four truncation commits in April 2026 (`5d90f655`, `96cd1080`, `4eb23e81`, `41264a3a`) all followed test runs during completion/handover workflows. The agent did not notice; the next `git commit -a` or `git add -A` swept the destruction into version control.
+
+### Same bug-class: context_decision.bats
+
+`tests/unit/context_decision.bats:60-73` has an identical pattern for `decisions.yaml` — would destroy the framework's decisions.yaml on every run. Fixed in the same commit as the learnings fix.
+
+### Why prior hypotheses were wrong
+
+**Hypothesis 1 (original):** agents using Write/Edit tool directly on learnings.yaml — disproven; grep showed no such pattern in recent sessions, and the Write-tool path would not produce the exact format observed.
+
+**Hypothesis 2 (session S-2026-0415-1929):** truncation during `fw task update --status work-completed` (auto-capture decisions / generate-episodic / fabric-enrich) — disproven; strace of two probe completions (T-1264, T-1266) showed the flow opens learnings.yaml O_RDONLY only. No writer touches it during completion.
+
+Both hypotheses missed the bats test because:
+- The test file contains `do_add_learning "First learning"` — matching the observed L-001 shape — but was not inspected until the third spike attempt
+- Prior RCAs assumed the destruction happened in production code paths, not test code
+
+### Fix
+
+```bash
+@test "add learning: creates first entry with L-001 ID in framework project" {
+    local save_framework_root="$FRAMEWORK_ROOT"
+    export FRAMEWORK_ROOT="$TEST_TEMP_DIR"   # alias into bats temp
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
+    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    mkdir -p "$CONTEXT_DIR/project"
+    local learnings_file="$CONTEXT_DIR/project/learnings.yaml"
+    rm -f "$learnings_file"
+    run do_add_learning "First learning"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"L-001"* ]]
+    export FRAMEWORK_ROOT="$save_framework_root"
+}
+```
+
+By aliasing `FRAMEWORK_ROOT` to `TEST_TEMP_DIR` instead of the reverse, the `id_prefix=L` branch is still taken (since `PROJECT_ROOT == FRAMEWORK_ROOT`), but all file operations land in the bats temp dir. Cleanup via `teardown() { rm -rf "$TEST_TEMP_DIR" }` correctly disposes of the test artifacts.
+
+Same fix applied to `context_decision.bats`.
+
+### Verification
+
+- All 10 context_learning.bats tests pass
+- All 11 context_decision.bats tests pass
+- Framework `.context/project/learnings.yaml`: 1709 lines pre, 1709 lines post
+- Framework `.context/project/decisions.yaml`: 24 lines pre, 24 lines post
+
+### Follow-up (future inception — not this task)
+
+The broader pattern `PROJECT_ROOT="$FRAMEWORK_ROOT"` in `setup()` exists in 6 other bats files:
+- `tests/integration/fw_fabric.bats`
+- `tests/unit/create_task.bats`
+- `tests/integration/fw_harvest.bats`
+- `tests/unit/update_task.bats`
+- `tests/unit/verify_acs.bats`
+- `tests/unit/lib_version.bats`
+
+These overrides TASKS_DIR/other paths so are not directly destructive, but share the same design anti-pattern. A separate inception (not T-1258) should audit them for safety and propose a test_helper utility (e.g., `setup_fake_framework_root()`) that sets up a temp "framework" dir with seed files, preventing any test from pointing at the real framework.
+
+---
+
+## [SUPERSEDED] Hypothesis 1 — agent Write/Edit tool bypass
 
 **Status:** Captured 2026-04-15. Fourth recurrence in 10 days. Most recent restoration (T-1257, commit `a0ed0fcd`) brought back 241 entries. Bug is NOT in `add-learning` — it's a different write path that the warning guard doesn't block.
 

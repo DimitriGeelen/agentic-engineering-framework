@@ -58,9 +58,14 @@ teardown() {
 }
 
 @test "add learning: creates first entry with L-001 ID in framework project" {
-    rm -f "$CONTEXT_DIR/project/learnings.yaml"
-    # Set PROJECT_ROOT == FRAMEWORK_ROOT to get L- prefix (framework mode)
-    export PROJECT_ROOT="$FRAMEWORK_ROOT"
+    # T-1258: DO NOT set PROJECT_ROOT=FRAMEWORK_ROOT — it destroys the real
+    # learnings.yaml on every test run (observed 4× in April 2026, commits 41264a3a,
+    # 5d90f655, 96cd1080, 4eb23e81). Instead, simulate "framework mode" by setting
+    # FRAMEWORK_ROOT == PROJECT_ROOT == TEST_TEMP_DIR so the id_prefix=L branch in
+    # do_add_learning is taken without touching the real framework.
+    local save_framework_root="$FRAMEWORK_ROOT"
+    export FRAMEWORK_ROOT="$TEST_TEMP_DIR"
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
     export CONTEXT_DIR="$PROJECT_ROOT/.context"
     mkdir -p "$CONTEXT_DIR/project"
     local learnings_file="$CONTEXT_DIR/project/learnings.yaml"
@@ -69,8 +74,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"L-001"* ]]
     # Restore
-    export PROJECT_ROOT="$TEST_TEMP_DIR"
-    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    export FRAMEWORK_ROOT="$save_framework_root"
 }
 
 # --- ID sequencing ---

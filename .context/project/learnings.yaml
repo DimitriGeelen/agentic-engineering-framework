@@ -1707,3 +1707,10 @@ learnings:
   date: 2026-04-15
   context: Added via context agent
   application: TBD
+- id: L-009
+  learning: "Bats tests that redirect PROJECT_ROOT to the real FRAMEWORK_ROOT can destroy framework state (learnings.yaml, decisions.yaml) via rm -f + recreate. Fix: alias FRAMEWORK_ROOT into TEST_TEMP_DIR so id_prefix checks still pass but all file ops land in the temp dir. Pattern to audit: any 'export PROJECT_ROOT=$FRAMEWORK_ROOT' in tests/."
+  source: P-001
+  task: T-1258
+  date: 2026-04-15
+  context: Added via context agent
+  application: TBD

@@ -58,9 +58,13 @@ teardown() {
 }
 
 @test "add decision: creates first entry with D-001 ID in framework project" {
-    rm -f "$CONTEXT_DIR/project/decisions.yaml"
-    # Set PROJECT_ROOT == FRAMEWORK_ROOT to get D- prefix (framework mode)
-    export PROJECT_ROOT="$FRAMEWORK_ROOT"
+    # T-1258: DO NOT set PROJECT_ROOT=FRAMEWORK_ROOT — it destroys the real
+    # decisions.yaml (same bug class that destroys learnings.yaml; see T-1258 RCA).
+    # Instead, simulate "framework mode" by aliasing FRAMEWORK_ROOT to TEST_TEMP_DIR
+    # so the id_prefix=D branch in do_add_decision is taken without touching the real framework.
+    local save_framework_root="$FRAMEWORK_ROOT"
+    export FRAMEWORK_ROOT="$TEST_TEMP_DIR"
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
     export CONTEXT_DIR="$PROJECT_ROOT/.context"
     mkdir -p "$CONTEXT_DIR/project"
     rm -f "$CONTEXT_DIR/project/decisions.yaml"
@@ -68,8 +72,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"D-001"* ]]
     # Restore
-    export PROJECT_ROOT="$TEST_TEMP_DIR"
-    export CONTEXT_DIR="$PROJECT_ROOT/.context"
+    export FRAMEWORK_ROOT="$save_framework_root"
 }
 
 # --- ID sequencing ---
