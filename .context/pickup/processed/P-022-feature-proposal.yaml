@@ -1,0 +1,13 @@
+pickup_id: P-022
+version: 1
+type: feature-proposal
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: "T-1270"
+  agent: "claude-code"
+  timestamp: "2026-04-15T21:39:55Z"
+payload:
+  summary: "Peer-learning cron: exchange 15-min reflections between TermLink-connected agents"
+  detail: "Proposal from /opt/999-Agentic-Engineering-Framework T-1270 inception. Every 15 min, enumerate reachable TermLink peers (local + configured hubs), inject a short reflection prompt (<200 tok response): 'what did you learn in the last 15 min? what friction? anything we should know?' Collect responses in a shared inbox (.context/mesh/ or pickup), agents ingest opportunistically on session-init. Self-dampening, no-response is valid. Includes inline adoption request — cron propagates to new peers organically. IN scope: design + envelope + ingestion + propagation + security. OUT: build (post-GO), boundary gate changes (see T-1268), sync RPC. See .tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md in the framework repo for full inception."
+  priority: medium
+  tags: [cron, termlink, peer-learning, propagation]
