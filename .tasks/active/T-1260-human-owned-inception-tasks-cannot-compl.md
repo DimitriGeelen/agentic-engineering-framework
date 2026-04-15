@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T23:01:08Z
-last_update: 2026-04-14T23:02:48Z
+last_update: 2026-04-14T23:03:56Z
 date_finished: null
 ---
 
@@ -79,14 +79,14 @@ blocks from multiple Watchtower clicks), status never advances.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: sovereignty gate asymmetry traced; finding documented
-- [ ] Spike B complete: dispatch script origin identified; linked to T-007
-- [ ] Spike C complete: template completeness audit done; gaps listed
-- [ ] Spike D complete: recommendation gate ordering diagnosed
-- [ ] Spike E complete: Tier 0 hash drift reproduced or ruled out
-- [ ] Spike F complete: human-terminal workaround verified + documented
-- [ ] Research artifact written to `docs/reports/T-1260-human-inception-completion.md`
-- [ ] Recommendation with GO/NO-GO/DEFER + concrete bugfix task list for build follow-up
+- [x] Spike A complete: sovereignty gate asymmetry traced — CLAUDECODE inheritance regression confirmed (T-1259 blocks Watchtower decide)
+- [x] Spike B complete: dispatch script origin identified — `fabric-purpose-fill` is stale worker reference, no in-codebase definition; class L-006 again
+- [x] Spike C complete: template completeness audit done — current template OK, older tasks need backfill
+- [x] Spike D complete: recommendation gate ordering diagnosed — order is correct, but Decision block writer is non-idempotent (root of T-002's duplicates)
+- [x] Spike E complete: Tier 0 hash drift root cause — raw command hashed without whitespace/quote normalization
+- [x] Spike F complete: human-terminal workaround verified — T-006 case confirms the path works; documented
+- [x] Research artifact written to `docs/reports/T-1260-human-inception-completion.md`
+- [x] Recommendation with GO/NO-GO/DEFER + concrete bugfix task list for build follow-up (B1-B9 with P0/P1/P2/P3 tags)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -116,15 +116,28 @@ blocks from multiple Watchtower clicks), status never advances.
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Five distinct failure surfaces identified across the inception-completion path. Most critical (P0) is a regression from my own T-1259 commit (`4589bc60`) — `lib/inception.sh:204` CLAUDECODE guard fires on Watchtower-driven decisions because Flask inherits `CLAUDECODE=1` from its parent Claude Code shell (`web/subprocess_utils.py:51` passes `{**os.environ, ...}`). The fix is bounded (~30 LOC for B1-B3): pass `--from-watchtower` flag from `inception.py` to `fw inception decide`, exempt that flag from the guard. P1 fixes (B4-B5) prevent the T-002 stuck-state compounding (3+ duplicate Decision blocks from repeated clicks). Workaround validated: human's own terminal (no `CLAUDECODE` env) bypasses all five surfaces — T-006 transitioned cleanly via that path.
+
+**Evidence:**
+- `web/subprocess_utils.py:51` — `env={**os.environ, ...}` inherits CLAUDECODE in subprocess
+- `echo $CLAUDECODE` in current session returns `1` — every fw subprocess inherits this
+- `lib/inception.sh:204` (T-1259) blocks on CLAUDECODE=1 unless `--i-am-human` passed; `web/blueprints/inception.py:411` does not pass any human-identity flag → **regression confirmed**
+- `lib/inception.sh:336` comment: `--skip-sovereignty` bypasses ONLY R-033, NOT P-010 (AC gate) or P-011 (verification gate) — explains "Status does NOT transition" when Agent ACs unchecked
+- `lib/inception.sh:295-318` Decision block writer appends rather than replacing → multiple clicks compound
+- `agents/context/check-tier0.sh:167` hashes raw command string (no normalization) → whitespace/quote drift between retries
+- `.tasks/templates/inception.md` confirmed has all three required sections; older inception tasks may need backfill (B7)
+- `grep -r fabric-purpose-fill` finds zero non-task references → stale worker name, recoverable
+- T-006 case validates workaround: direct human terminal bypasses CLAUDECODE+Watchtower+R-033 entirely
+
+**Critical interim warning (until B1-B2 ship):**
+> Watchtower GO/NO-GO buttons are likely broken for any session where Watchtower was started inside a Claude Code shell. Use human's own terminal:
+> ```bash
+> cd /path/to/project && [bin/fw|.agentic-framework/bin/fw] inception decide T-XXX go --rationale "..."
+> ```
+
+**Research artifact:** `docs/reports/T-1260-human-inception-completion.md` (full 6-spike findings, build decomposition B1-B9 with P0/P1/P2/P3 priority tags).
 
 ## Decisions
 
