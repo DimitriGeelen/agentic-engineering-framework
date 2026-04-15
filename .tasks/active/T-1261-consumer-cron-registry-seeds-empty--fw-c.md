@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T09:56:07Z
-last_update: 2026-04-15T09:57:21Z
+last_update: 2026-04-15T09:57:44Z
 date_finished: null
 ---
 
@@ -130,9 +130,9 @@ but at a different layer — T-1112 was "two populated systems drift", this is
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested (A1-A5 — A1 confirmed via /opt/termlink, A2 confirmed via blast radius spike, A3 confirmed orthogonality, A4 chosen — template file approach, A5 confirmed legacy command kept as deprecated)
+- [x] Recommendation written with rationale (GO — see ## Recommendation section)
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -162,15 +162,23 @@ but at a different layer — T-1112 was "two populated systems drift", this is
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO
+
+**Rationale:** Two-line root cause confirmed (`lib/init.sh:157-162` and `lib/upgrade.sh:305-314` both seed `jobs: []`). Blast radius enumerated: **2 of 4 consumers (50%)** on this host are currently trapped — running `fw cron install` would wipe their working 10-job audit cron. Fix is bounded (~340 LOC across 10 build tasks B1-B10), reversible, idempotent (existing populated registries unaffected), and validated by an independent reference (`/opt/termlink` runs the proposed 11-job consumer-safe set successfully). Same L-006 class as T-1112; the proven chokepoint+invariant-test pattern applies.
+
+**Evidence:**
+- Field report 2026-04-15 on `/003-NTB-ATC-Plugin`: `fw cron install` proposed to DELETE all 10 existing audit jobs and replace with empty crontab
+- `/003-NTB-ATC-Plugin/.context/cron-registry.yaml` confirmed 196 bytes, `jobs: []`
+- `/opt/150-skills-manager/.context/cron-registry.yaml` confirmed `jobs: []` (same trap)
+- `/opt/termlink/.context/cron-registry.yaml` has 11 jobs running successfully — independent validation of the consumer-safe set
+- Framework's own `.context/cron-registry.yaml` has 12 jobs but `release-weekly` is framework-dev-specific (tags `/opt/999-Agentic-Engineering-Framework`) — must NOT be seeded for consumers
+- `bin/fw` cron install dispatch has no safety guard against bulk job removal (Spike C)
+- Both seed sites have `[ ! -f ... ]` guard, so seed change is forward-only — existing trapped consumers need a separate one-shot remediation (B8)
+
+**Critical user-facing warning (immediate, until B1-B4 ship):**
+> Do NOT run `fw cron install` on any consumer where `cron-registry.yaml` shows `jobs: []` AND `/etc/cron.d/agentic-audit-<slug>` exists. The install will silently wipe the working audit schedule. Affected on this host: `/003-NTB-ATC-Plugin`, `/opt/150-skills-manager`. Use legacy `fw audit schedule install` until structural fix lands.
+
+**Research artifact:** `docs/reports/T-1261-consumer-cron-seed.md` (full spike findings, build decomposition table B1-B10, blast radius enumeration).
 
 ## Decisions
 
