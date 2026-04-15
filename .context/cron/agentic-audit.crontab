@@ -40,3 +40,9 @@ PATH=/usr/local/bin:/usr/bin:/bin
 
 # Weekly release tagging (Monday 10:00)
 0 10 * * 1 root PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" release tag-and-release 2>/dev/null
+
+# TermLink hub + Claude + Watchtower liveness (1 min)
+* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>/dev/null
+
+# Liveness check on startup
+@reboot root cd "/opt/999-Agentic-Engineering-Framework" && LIVENESS_BOOT_MARKER=1 /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>/dev/null

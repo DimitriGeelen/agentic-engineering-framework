@@ -114,3 +114,21 @@ jobs:
     origin_task: T-1256
     status: active
     description: "Cuts a new patch-level tag (vX.Y.Z+1), pushes to all remotes with --follow-tags, and creates a GitHub Release with auto-generated notes. Idempotent — skips if no commits since last tag. Offset from OE weekly (Monday 09:00) to avoid collision."
+
+  - id: liveness-1m
+    name: "TermLink hub + Claude + Watchtower liveness (1 min)"
+    schedule: "* * * * *"
+    command: "/opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh"
+    source_file: agentic-audit.crontab
+    origin_task: T-1269
+    status: active
+    description: "Pings TermLink hub, counts Claude Code processes, and checks Watchtower every minute. Appends to .context/monitors/liveness.jsonl + writes latest snapshot YAML."
+
+  - id: liveness-boot
+    name: "Liveness check on startup"
+    schedule: "@reboot"
+    command: "LIVENESS_BOOT_MARKER=1 /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh"
+    source_file: agentic-audit.crontab
+    origin_task: T-1269
+    status: active
+    description: "Runs liveness-check once at boot with boot_marker=1 so the log records a service-start datapoint."
