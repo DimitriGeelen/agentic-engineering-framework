@@ -37,12 +37,14 @@ flag available for edge cases (tests, scripts, rare legitimate agent cases).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/inception.sh` `do_inception_decide` adds `$CLAUDECODE=1` detection + refusal (early gate, before other checks)
-- [ ] Refusal message references T-679 + suggests `fw task review T-XXX` instead
-- [ ] `--i-am-human` flag bypasses the block (for explicit human override if needed)
-- [ ] `bats tests/unit/lib_inception.bats` adds test: with CLAUDECODE=1 no flag → exit non-zero with clear message; with CLAUDECODE=1 --i-am-human → passes gate; without CLAUDECODE → passes gate
-- [ ] CLAUDE.md §"Presenting Work for Human Review" updated to note the new enforcement
-- [ ] All existing tests still pass (`fw test unit`)
+- [x] `lib/inception.sh` `do_inception_decide` adds `$CLAUDECODE=1` detection + refusal (early gate, before other checks) — landed in commit 4589bc60
+- [x] Refusal message references T-679 + suggests `fw task review T-XXX` instead (lib/inception.sh:204-217)
+- [x] `--i-am-human` flag bypasses the block (lib/inception.sh:188 parser, line 204 condition)
+- [x] `bats tests/unit/lib_inception.bats` adds 3 tests for blocked / bypassed / no-env (lib_inception.bats:127-153)
+- [x] CLAUDE.md §"Presenting Work for Human Review" updated with structural enforcement note + T-1260 caveat about Watchtower regression
+- [x] All 15 inception unit tests pass (also fixed setup() to unset CLAUDECODE for env-determinism — was breaking pre-existing tests 9-10)
+
+**Note:** T-1260 Spike A identified that this guard regresses Watchtower-driven decide because Flask inherits `CLAUDECODE=1`. Fix tracked under T-1260 build B1-B3 (`--from-watchtower` exemption). T-1259's own contract is met; the Watchtower regression is queued separately.
 
 ## Verification
 

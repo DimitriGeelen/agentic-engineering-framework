@@ -12,6 +12,9 @@ setup() {
     export AGENTS_DIR="$FRAMEWORK_ROOT/agents"
     export FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
     export NO_COLOR=1
+    # T-1259: tests must be deterministic w.r.t. parent shell's CLAUDECODE.
+    # Individual tests opt back in via `CLAUDECODE=1 run ...` when needed.
+    unset CLAUDECODE
     source "$FRAMEWORK_ROOT/lib/colors.sh"
     source "$FRAMEWORK_ROOT/lib/errors.sh"
     source "$FRAMEWORK_ROOT/lib/tasks.sh"
@@ -121,4 +124,32 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"T-888"* ]]
     [[ "$output" == *"Test inception"* ]]
+}
+
+# === T-1259: CLAUDECODE guard tests ===
+
+@test "inception: CLAUDECODE=1 without --i-am-human is blocked (T-1259)" {
+    CLAUDECODE=1 run do_inception_decide T-999 go --rationale "test"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"T-1259"* ]] || [[ "$output" == *"T-679"* ]]
+    [[ "$output" == *"Watchtower"* ]] || [[ "$output" == *"task review"* ]]
+}
+
+@test "inception: CLAUDECODE=1 with --i-am-human bypasses guard (T-1259)" {
+    # Guard passes; next failure should be "task not found" (different error path)
+    CLAUDECODE=1 run do_inception_decide T-999 go --rationale "test" --i-am-human
+    [ "$status" -ne 0 ]
+    # Must NOT be the CLAUDECODE block message
+    [[ "$output" != *"T-1259"* ]]
+    # Must be the not-found path instead
+    [[ "$output" == *"not found"* ]]
+}
+
+@test "inception: CLAUDECODE unset passes guard (T-1259)" {
+    # Guard passes when env var not set; next failure is task-not-found
+    unset CLAUDECODE
+    run do_inception_decide T-999 go --rationale "test"
+    [ "$status" -ne 0 ]
+    [[ "$output" != *"T-1259"* ]]
+    [[ "$output" == *"not found"* ]]
 }

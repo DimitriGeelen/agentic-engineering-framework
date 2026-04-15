@@ -881,6 +881,8 @@ When agent ACs are complete and human ACs remain:
 
 **Why this rule exists:** The agent defaults to (a) pasting CLI commands instead of using Watchtower, and (b) leaving the rationale blank for the human to figure out. Both were corrected 3 times in the same session (T-679). The agent has all the evidence — the human needs a recommendation to confirm or override, not a blank form.
 
+**Structural enforcement (T-1259):** `lib/inception.sh do_inception_decide` checks `$CLAUDECODE` and refuses if set to `1` (the agent is running inside Claude Code). The error message points to `fw task review T-XXX` as the correct path. Override flag `--i-am-human` exists for legitimate script/test contexts. Invariant test: `tests/unit/lib_inception.bats` covers blocked + bypass + no-env cases. **Caveat (T-1260, Spike A):** Watchtower's Flask backend inherits `CLAUDECODE=1` when started inside a Claude Code session, so Watchtower-driven `decide` POST also gets blocked. Fix tracked under T-1260 build B1-B3 (`--from-watchtower` flag).
+
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
 1. **State the symptom** in one sentence
