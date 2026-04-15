@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-15T13:43:12Z
-last_update: 2026-04-15T21:04:21Z
+last_update: 2026-04-15T21:38:59Z
 date_finished: null
 ---
 
@@ -46,6 +46,26 @@ grep -q 'CTL-027' agents/audit/audit.sh
 - **Chose:** `grep -qE '^## Decision[[:space:]]*$'` (anchor to end of line, allow trailing whitespace)
 - **Why:** Unanchored `grep '^## Decision'` matches `## Decisions` (plural) — a different section in the same template. Missing Decision section would be falsely reported as present because Decisions exists. Tolerating trailing whitespace avoids false negatives from editor artifacts.
 - **Rejected:** Strict `$` anchor (breaks on trailing spaces); word boundary `\\b` (non-portable across grep variants).
+
+## Recommendation
+
+**Recommendation:** GO (complete with one AC deferred)
+
+**Rationale:** The core fix landed: both `agents/task-create/create-task.sh:278-279` and `agents/audit/audit.sh:1730-1731` now use `grep -qE '^## (Recommendation|Decision)[[:space:]]*$'` to anchor to line end. This closes the false-positive where `## Decisions` (plural) would satisfy the `## Decision` (singular) check. Regression tested: `create_task.bats` test 20 (previously failing) now passes. 754 existing tests still green. The audit-section unit test is deferred because oe-daily has many sibling CTL checks that need a proper stub fixture — noted in AC list.
+
+**Evidence:**
+- `create_task.bats:234-242` regression test for missing-Decision now passes
+- `agents/task-create/create-task.sh:278-279` + `agents/audit/audit.sh:1730-1731` use anchored grep
+- Commit `cdca4216` ships the fix
+- Manual audit run against live repo correctly flags inception tasks missing Decision section (verified during session)
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Follow-up
+
+Create separate build task for audit-level CTL-027 unit tests once a proper framework-stub fixture utility is built. Current blocker: oe-daily checks CTL-002/005/006/007/009/010/011/012/013/019/027 — all would need stub data in the temp project root.
 
 ## Updates
 

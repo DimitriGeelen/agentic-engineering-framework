@@ -98,13 +98,13 @@ jobs:
     description: "Prunes cron audit files older than 7 days using filename date (not mtime which gets reset by git)."
 
   - id: pickup-process
-    name: "Pickup inbox processor (30s)"
+    name: "Pickup inbox processor (1 min)"
     schedule: "* * * * *"
-    command: "fw pickup process; sleep 30; fw pickup process"
+    command: "fw pickup process"
     source_file: agentic-audit.crontab
     origin_task: T-778
     status: active
-    description: "Scans pickup inbox for cross-project proposals, validates, dedup-checks, and creates inception tasks. Runs twice per minute (at :00 and :30) via sleep trick."
+    description: "Scans pickup inbox for cross-project proposals, validates, dedup-checks, and creates inception tasks. Runs once per minute (T-1270 adjustment — removed sleep 30 twice-per-min trick)."
 
   - id: release-weekly
     name: "Weekly release tagging (Monday 10:00)"
