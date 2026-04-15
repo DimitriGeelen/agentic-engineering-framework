@@ -153,3 +153,15 @@ EOF
     [[ "$output" != *"T-1259"* ]]
     [[ "$output" == *"not found"* ]]
 }
+
+# === T-1262: --from-watchtower exemption ===
+
+@test "inception: CLAUDECODE=1 with --from-watchtower bypasses guard (T-1262)" {
+    # Watchtower's Flask subprocess inherits CLAUDECODE=1 — this flag exempts it
+    CLAUDECODE=1 run do_inception_decide T-999 go --rationale "test" --from-watchtower
+    [ "$status" -ne 0 ]
+    # Must NOT be the CLAUDECODE block message
+    [[ "$output" != *"T-1259"* ]]
+    # Must be the not-found path instead — i.e., guard was bypassed
+    [[ "$output" == *"not found"* ]]
+}

@@ -41,14 +41,21 @@ def run_fw_command(args: list[str], *, timeout: int = 30) -> tuple[str, str, boo
     """Run a fw CLI command.
 
     Returns (stdout, stderr, ok). Errors are caught and logged.
+
+    T-1262 defence in depth: strip CLAUDECODE from the subprocess environment.
+    Flask inherits CLAUDECODE=1 when started inside a Claude Code session, which
+    regresses `fw inception decide` (T-1259 agent-invocation guard). Watchtower IS
+    the human surface even though the Flask process inherits the agent env var.
     """
+    subprocess_env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    subprocess_env["PROJECT_ROOT"] = str(PROJECT_ROOT)
     try:
         result = subprocess.run(
             [str(FRAMEWORK_ROOT / "bin" / "fw")] + args,
             capture_output=True,
             text=True,
             timeout=timeout,
-            env={**os.environ, "PROJECT_ROOT": str(PROJECT_ROOT)},
+            env=subprocess_env,
         )
         return result.stdout.strip(), result.stderr.strip(), result.returncode == 0
     except subprocess.TimeoutExpired:

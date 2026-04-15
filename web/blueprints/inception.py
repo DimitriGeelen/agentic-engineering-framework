@@ -408,8 +408,11 @@ def record_decision(task_id):
     if not os.path.exists(marker_path):
         with open(marker_path, "w") as f:
             f.write(f"reviewed-via-watchtower {task_id}\n")
+    # T-1262: pass --from-watchtower to exempt the T-1259 CLAUDECODE guard.
+    # Flask inherits CLAUDECODE=1 from its parent Claude Code shell; without
+    # this flag, Watchtower's decide POST is blocked by the agent-invocation guard.
     stdout, stderr, ok = run_fw_command(
-        ["inception", "decide", task_id, decision, "--rationale", rationale],
+        ["inception", "decide", task_id, decision, "--rationale", rationale, "--from-watchtower"],
         timeout=30,
     )
 
