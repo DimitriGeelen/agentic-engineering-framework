@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T22:05:42Z
-last_update: 2026-04-15T15:31:24Z
+last_update: 2026-04-15T15:33:52Z
 date_finished: null
 ---
 
@@ -78,7 +78,11 @@ All spikes executed 2026-04-15 via direct investigation:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** DEFER (was GO — downgraded after live reproduction)
+
+**Update 2026-04-15T19:15Z:** Original RCA (Write/Edit tool bypass) was WRONG. The truncation was reproduced live during this session's T-1262 completion flow — NOT via Write/Edit tool. The proposed B1-B7 fix would have added defence in depth but would NOT have prevented the actual truncation. Recommendation DEFERRED pending proper spike of update-task.sh lines 790-855 (auto-capture decisions, generate-episodic, fabric-enrich, bugfix-learning check). See corrected Updates section and next-session action.
+
+**Original (incorrect) rationale retained below for history:**
 
 **Rationale:** Fourth recurrence confirms the existing WARN-only guard is insufficient. Root cause identified: agents using Write tool directly on learnings.yaml instead of `fw context add-learning`. The write-time PreToolUse hook (B1) closes the gap structurally — agents cannot accidentally overwrite the file; they receive an immediate redirect to the correct command. Same structural pattern as T-1115/T-1117 (block TodoWrite et al.) — proven to work. Layered with commit-msg BLOCK (B3) and invariant test (B4), recurrence is prevented by construction rather than by warning.
 
@@ -117,3 +121,31 @@ All spikes executed 2026-04-15 via direct investigation:
 ### 2026-04-15T15:31:24Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → inception
 - **Reason:** RCA task — inception is the correct workflow type per T-1115/T-1117 pattern
+
+### 2026-04-15T19:15:00Z — RCA CORRECTION — reproduced bug live
+
+Previous RCA was WRONG. Root cause is NOT agents using Write/Edit tool.
+Reproduced the truncation in real time during this session:
+
+1. Committed T-1262 at 676136a2 (learnings.yaml: 241 entries intact)
+2. Ran `bin/fw task update T-1262 --status work-completed`
+3. Flow triggered: auto-capture decisions, generate-episodic, fabric refresh
+4. After flow completed, learnings.yaml was at 1 entry (L-001, regenerated with today's date)
+5. Subsequent `fw fix-learned T-1262` added L-002 on top of the truncation
+
+The completion flow (update-task.sh lines 790-855) is the culprit, NOT any
+Write/Edit tool call. Something in:
+- `auto-capture decisions from task file` (calls `add-decision` — uses awk, should be safe)
+- `generate-episodic` (calls `context.sh generate-episodic` → `lib/episodic.sh`)
+- `fabric-enrich` (via fabric.sh)
+
+...rewrites learnings.yaml with just L-001.
+
+Supporting evidence:
+- decisions.yaml was ALSO modified: D-001 date updated from 2026-04-13 to 2026-04-15, D-002 appended
+- Same "first entry date updated" pattern on both files
+- decisions.yaml preserved remaining entries; learnings.yaml did not (because decisions.yaml only had 1 entry, so no loss to measure)
+
+**NEXT-SESSION ACTION:** spike the completion flow (update-task.sh lines 790-855) with strace or by disabling each handler one at a time to identify the truncation line. The B1-B7 structural fix (PreToolUse hook) may still help as defence in depth, but the PRIMARY fix is elsewhere.
+
+Learnings.yaml has been RESTORED (git checkout HEAD) and L-242 added via add-learning. Commit to follow.

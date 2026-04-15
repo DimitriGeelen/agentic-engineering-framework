@@ -5,6 +5,13 @@ decisions:
   - id: D-001
     decision: "Use YAML for config"
     scope: project
-    date: 2026-04-13
+    date: 2026-04-15
     task: unknown
     rationale: "Not specified"
+
+  - id: D-002
+    decision: "Option 1 — --from-watchtower flag pass-through"
+    scope: project
+    date: 2026-04-15
+    task: T-1262
+    rationale: "Auto-captured from task file on completion"

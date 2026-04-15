@@ -1700,3 +1700,10 @@ learnings:
   date: 2026-04-15
   context: Added manually (add-learning truncation bug recurrence — see T-1258)
   application: CLAUDE.md §Copy-Pasteable Commands + feedback_full_path_commands.md memory
+- id: L-008
+  learning: "Environment inheritance between framework surfaces is load-bearing: guards checking CLAUDECODE in subprocess calls must exempt legitimate human surfaces (Watchtower via --from-watchtower flag) AND strip CLAUDECODE from subprocess env as defence in depth. Flask subprocess inherits os.environ — never trust parent-shell env reflects invocation intent."
+  source: P-001
+  task: T-1262
+  date: 2026-04-15
+  context: Added via context agent
+  application: TBD
