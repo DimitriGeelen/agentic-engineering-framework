@@ -1,0 +1,13 @@
+pickup_id: P-023
+version: 1
+type: learning
+source:
+  project: "999-Agentic-Engineering-Framework"
+  task_id: ""
+  agent: "claude-code"
+  timestamp: "2026-04-16T05:39:02Z"
+payload:
+  summary: "Pickup inbox cron updated to 1-minute frequency (was 30s x2 sleep hack). Consumer cron registries are empty (T-1261 known issue). Remote TermLink hubs (ring20-dashboard, ring20-management) unreachable — cross-machine propagation deferred until auth secrets refreshed."
+  detail: ""
+  priority: medium
+  tags: []
