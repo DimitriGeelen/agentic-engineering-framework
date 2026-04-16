@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1256: Implement weekly release tagging + push-tags fix
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-16T05:33:25Z
+# ============================================================================
+
+task_id: T-1256
+task_name: "Implement weekly release tagging + push-tags fix"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-14T20:42:44Z
+completed: 2026-04-14T21:22:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-04-14T23:07:22+02:00
+last_commit: 2026-04-14T23:07:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Release tagging + tag-push fix (handover, lib/release.sh, weekly cron, gh Release)
+
+# Key outcomes
+outcomes:
+  - "`agents/handover/handover.sh` line 759 uses `git push --follow-tags` (not bare `push HEAD`)"
+  - "`lib/release.sh` exists with `tag-and-release` subcommand that:"
+  - "Cron registry entry `release-weekly` added to `.context/cron-registry.yaml` (Monday 10:00)"
+  - "`fw release` command routes to `lib/release.sh release_main` (`--dry-run`, `--bump`, `status`, `help` supported)"
+  - "Dry-run shows what would happen without making changes"
+  - "Unit tests: `tests/unit/lib_release.bats` — 17 tests, all passing (bumping, idempotent, dry-run, status, main routing, happy path with tag creation)"
+  - "All existing tests still pass (`fw test unit` → 747 tests, exit 0)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Release tagging + tag-push fix (handover, lib/release.sh, weekly cron, gh Release)"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "agents/handover/handover.sh"
+  - "bin/fw"
+  - ".context/cron/agentic-audit.crontab"
+  - ".context/cron-registry.yaml"
+  - ".fabric/components/lib-release.yaml"
+  - "lib/release.sh"
+  - ".tasks/active/T-1255-release-tagging--tag-push-gap--github-st.md"
+  - ".tasks/active/T-1256-implement-weekly-release-tagging--push-t.md"
+  - "tests/unit/lib_release.bats"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-14T23:07:22"
+    action: "T-1256: Release tagging + tag-push fix (handover, lib/release.sh, weekly cron, gh Release)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 39 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 39
+  commits: 1
+  files_changed: 9
+  lines_added: 528
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1256-implement-weekly-release-tagging--push-t.md
+generated_by: context-agent-hybrid

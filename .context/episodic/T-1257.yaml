@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1257: Fix context-blind fw path rule in CLAUDE.md — consumers use .agentic-framework/bin/fw
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-16T05:33:25Z
+# ============================================================================
+
+task_id: T-1257
+task_name: "Fix context-blind fw path rule in CLAUDE.md — consumers use .agentic-framework/bin/fw"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-14T22:00:28Z
+completed: 2026-04-16T04:41:10Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-04-15T00:04:07+02:00
+last_commit: 2026-04-16T06:41:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Context-aware fw path rule — distinguish framework repo from consumer. Restore learnings.yaml (241 entries) — add-learning truncation bug recurrence. Complete — context-aware fw path rule in CLAUDE.md + memory + OBS-013 filed
+
+# Key outcomes
+outcomes:
+  - "CLAUDE.md § \"Copy-Pasteable Commands\" rule 3 rewritten to be context-aware: in framework repo → `bin/fw`; in consumer project → `.agentic-framework/bin/fw`; shim-resolved bare `fw` acceptable when shim is installed"
+  - "CLAUDE.md § \"Human AC Format Requirements\" (T-325) \"Full-path commands\" bullet matches the new rule"
+  - "Memory file `feedback_full_path_commands.md` updated with the same context-aware rule"
+  - "New memory file or append clarifying how to detect context (check for `FRAMEWORK.md` → framework repo, `.agentic-framework/` → consumer)"
+  - "Observation filed about memory-gate-blocks-during-onboarding (separate concern register entry)"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: "Restore learnings.yaml (241 entries) — add-learning truncation bug recurrence"
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - "CLAUDE.md"
+  - ".context/inbox.yaml"
+  - ".context/project/learnings.yaml"
+  - ".tasks/active/T-1257-fix-context-blind-fw-path-rule-in-claude.md"
+  - ".tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md"
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-04-15T00:04:07"
+    action: "T-1257: Context-aware fw path rule — distinguish framework repo from consumer"
+  - time: "2026-04-15T00:05:38"
+    action: "T-1257: Restore learnings.yaml (241 entries) — add-learning truncation bug recurrence"
+  - time: "2026-04-16T06:41:17"
+    action: "T-1257: Complete — context-aware fw path rule in CLAUDE.md + memory + OBS-013 filed"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1840 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1840
+  commits: 3
+  files_changed: 5
+  lines_added: 1869
+  lines_removed: 1696
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1257-fix-context-blind-fw-path-rule-in-claude.md
+generated_by: context-agent-hybrid
