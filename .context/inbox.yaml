@@ -81,3 +81,17 @@ observations:
     tags: [test]
     status: dismissed
     promoted_to: null
+  - id: OBS-012
+    text: "add"
+    captured: 2026-04-14T22:03:09Z
+    context_task: T-1257
+    tags: []
+    status: pending
+    promoted_to: null
+  - id: OBS-013
+    text: "Memory writes (claude auto-memory) blocked by onboarding task gate — agent on consumer project couldn't save memory about wrong fw path because T-001-T-005 weren't complete. Memory is the exact mechanism that would prevent recurrence of the problem being observed. Memory should not be gated by task onboarding."
+    captured: 2026-04-16T04:40:55Z
+    context_task: T-1257
+    tags: []
+    status: pending
+    promoted_to: null
