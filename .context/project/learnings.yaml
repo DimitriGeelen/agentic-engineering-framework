@@ -1714,3 +1714,24 @@ learnings:
   date: 2026-04-15
   context: Added via context agent
   application: TBD
+- id: PL-001
+  learning: "Fleet doctor observed auth-mismatch on hub 'ring20-dashboard' (192.168.10.121:9100). date_observed=2026-04-16T04:39:06Z hub_fingerprint=sha256:9d14057d957d954f1095325fc3669fa58ffea6c28653909279b5b0701358f3e8. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-04-16
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-010
+  learning: "Test learning from Playwright"
+  source: unknown
+  task: T-1030
+  date: 2026-04-16
+  context: Added via context agent
+  application: TBD
+- id: L-011
+  learning: "When remote hub rotates BOTH secret and TLS cert: need TWO steps: (1) fleet reauth --bootstrap-from file:... for the secret, (2) termlink tofu clear addr:port to drop stale cert pin. TOFU clear alone is not enough — secret must match too. Observed 2026-04-16 for ring20-dashboard."
+  source: cross-project via TermLink (termlink PL-021)
+  task: T-012
+  date: 2026-04-16
+  context: Added via context agent
+  application: TBD
