@@ -1,6 +1,6 @@
 #!/bin/bash
-# liveness-check.sh — TermLink hub + Claude instance + Watchtower liveness
-# T-1269: runs every 1 minute via cron and on @reboot
+# liveness-check.sh — TermLink hub + framework agent + Claude instance + Watchtower liveness
+# T-1269/T-1273: runs every 1 minute via cron and on @reboot
 # Outputs: .context/monitors/liveness.jsonl (append-only), liveness-latest.yaml (snapshot)
 
 set -euo pipefail
@@ -38,17 +38,27 @@ claude_count=$(pgrep -fc "claude-desktop|/claude[[:space:]]|claude-fw|claude-cod
 claude_count=${claude_count:-0}
 claude_count=$((claude_count + 0))
 
+fw_agent_session="none"
+fw_agent_id=""
+if command -v termlink >/dev/null 2>&1; then
+    agent_line=$(termlink list 2>/dev/null | grep -iE "agent|pickup" | grep -ivE "upg|upgrade|rec[0-9]" | head -1 || true)
+    if [ -n "$agent_line" ]; then
+        fw_agent_id=$(echo "$agent_line" | awk '{print $1}')
+        fw_agent_session=$(echo "$agent_line" | awk '{print $3}')
+    fi
+fi
+
 watchtower_state="stopped"
 if curl -sf -m 2 http://localhost:3000/ >/dev/null 2>&1; then
     watchtower_state="running"
 fi
 
-printf '{"ts":"%s","host":"%s","boot":%s,"termlink_hub":"%s","termlink_hub_detail":"%s","claude_instances":%d,"watchtower":"%s"}\n' \
-    "$timestamp" "$hostname" "$boot_marker" "$hub_state" "$hub_detail" "$claude_count" "$watchtower_state" \
+printf '{"ts":"%s","host":"%s","boot":%s,"termlink_hub":"%s","termlink_hub_detail":"%s","claude_instances":%d,"fw_agent_session":"%s","fw_agent_id":"%s","watchtower":"%s"}\n' \
+    "$timestamp" "$hostname" "$boot_marker" "$hub_state" "$hub_detail" "$claude_count" "$fw_agent_session" "$fw_agent_id" "$watchtower_state" \
     >> "$LOG_FILE"
 
 cat > "$LATEST_FILE" <<EOF
-# Liveness snapshot (T-1269)
+# Liveness snapshot (T-1269, T-1273)
 timestamp: $timestamp
 host: $hostname
 boot_marker: $boot_marker
@@ -56,6 +66,9 @@ termlink:
   hub: $hub_state
   detail: "$hub_detail"
 claude_instances: $claude_count
+framework_agent:
+  session: $fw_agent_session
+  id: "$fw_agent_id"
 watchtower: $watchtower_state
 EOF
 

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1273: Enhance liveness-check: verify framework agent TermLink session is spawned and listening
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-04-16T05:23:35Z
+# ============================================================================
+
+task_id: T-1273
+task_name: "Enhance liveness-check: verify framework agent TermLink session is spawned and listening"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-04-16T05:21:22Z
+completed: 2026-04-16T05:23:32Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - "liveness-check.sh detects whether a framework agent TermLink session exists (tagged `agent` or `pickup`, excludes upgrade/rec workers)"
+  - "JSONL output includes `fw_agent_session` (state) and `fw_agent_id` (session ID) fields"
+  - "YAML snapshot includes `framework_agent` section with session state and ID"
+  - "Script runs without error when no TermLink sessions exist"
+  - "Existing liveness checks (hub, claude count, watchtower) still work"
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: "[date] — [topic]"
+    chose: "[what was decided]"
+    rationale: "[rationale]"
+    alternatives_rejected: ["[alternatives and why not]"]
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1273-enhance-liveness-check-verify-framework-.md
+generated_by: context-agent-hybrid
