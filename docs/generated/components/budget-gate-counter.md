@@ -17,8 +17,8 @@
 ## Related
 
 ### Tasks
-- T-816: Null object fallback for hooks — fail-open resilience pattern
 - T-817: 3-tier config resolution — env var configuration layer for framework settings
+- T-825: Timeline token usage — show per-session token costs in Watchtower /timeline
 - T-847: Session housekeeping — memory updates and handover
 - T-937: Commit pending handover checkpoints
 - T-938: Add more dynamic working files to .gitignore

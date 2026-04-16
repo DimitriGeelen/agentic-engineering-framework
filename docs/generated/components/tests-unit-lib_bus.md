@@ -17,11 +17,6 @@ Tests do_bus_post, do_bus_read, do_bus_manifest, do_bus_clear
 |--------|-------------|
 | `lib/bus.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_bus.yaml`*
 *Last verified: 2026-04-05*

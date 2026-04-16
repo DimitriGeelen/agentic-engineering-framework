@@ -21,7 +21,7 @@ Output: JSON with additionalContext when warning threshold reached
 
 | Target | Relationship |
 |--------|-------------|
-| `.context/working/.edit-counter` | reads |
+| `agents/context/checkpoint.sh` | reads |
 
 ## Used By (1)
 

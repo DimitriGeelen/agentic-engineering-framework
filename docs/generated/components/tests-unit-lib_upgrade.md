@@ -15,11 +15,6 @@ Tests do_upgrade argument parsing, help, and guards
 |--------|-------------|
 | `lib/upgrade.sh` | calls |
 
-## Related
-
-### Tasks
-- T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_upgrade.yaml`*
 *Last verified: 2026-03-30*

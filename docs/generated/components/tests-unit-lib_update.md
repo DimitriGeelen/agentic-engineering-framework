@@ -17,11 +17,6 @@ Tests do_update argument parsing and help
 |--------|-------------|
 | `lib/update.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_update.yaml`*
 *Last verified: 2026-04-05*

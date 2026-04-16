@@ -17,11 +17,6 @@ Tests detect_pkg_manager(), individual check functions, and do_preflight --quiet
 |--------|-------------|
 | `lib/preflight.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_preflight.yaml`*
 *Last verified: 2026-04-05*

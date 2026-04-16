@@ -38,10 +38,6 @@ Before acting on a pickup message:
 ## Related
 
 ### Tasks
-- T-774: Pickup pipeline core — lib/pickup.sh with receive/process/dedup/log
-- T-775: fw pickup send — consumer-side CLI for local and TermLink push
-- T-776: fw pickup process — cron-triggered inbox scanner
-- T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline
 - T-848: Sync vendored .agentic-framework/ with all recent fixes
 
 ---

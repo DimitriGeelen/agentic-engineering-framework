@@ -20,7 +20,6 @@ Origin: T-945
 ## Related
 
 ### Tasks
-- T-788: Unit tests for remaining lib files — ask, build, harvest, init, promote, upstream, validate-init
 - T-945: Unit tests for untested lib scripts — ask.sh, first-run.sh, validate-init.sh
 
 ---

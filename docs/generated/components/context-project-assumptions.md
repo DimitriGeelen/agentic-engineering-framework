@@ -15,6 +15,11 @@
 | `agents/audit/audit.sh` | read_by |
 | `lib/assumption.sh` | read_by |
 
+## Related
+
+### Tasks
+- T-993: Batch operation governance — prevent agent batch-modifying task horizons without per-task justification
+
 ---
 *Auto-generated from Component Fabric. Card: `context-project-assumptions.yaml`*
 *Last verified: 2026-03-04*

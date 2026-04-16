@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Active tasks with no recent update
+Active tasks with no recent update — use shared cache
 
 ### Framework Reference
 

@@ -17,11 +17,6 @@ Tests do_dispatch routing, help, send validation
 |--------|-------------|
 | `lib/dispatch.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_dispatch.yaml`*
 *Last verified: 2026-04-05*

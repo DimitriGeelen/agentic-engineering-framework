@@ -15,7 +15,7 @@ Exit: 0=ok/warning, 2=block
 
 | Target | Relationship |
 |--------|-------------|
-| `lib/ts/dist/loop-detect.js` | calls |
+| `lib/ts/src/loop-detect.ts` | calls |
 
 ## Used By (1)
 

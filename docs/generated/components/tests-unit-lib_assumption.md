@@ -17,11 +17,6 @@ Tests do_assumption routing, help, validation, ensure_assumptions_file
 |--------|-------------|
 | `lib/assumption.sh` | calls |
 
-## Related
-
-### Tasks
-- T-780: Unit tests for untested lib files — version, preflight, notify, bus, inception
-
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_assumption.yaml`*
 *Last verified: 2026-04-05*
