@@ -1101,6 +1101,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Preflight check | `fw preflight` | Dependency check before operations |
 | Push all remotes | `fw push` | Push to all configured remotes |
 | Recall knowledge | `fw recall` | Semantic search in project memory |
+| Release tag | `fw release` | Cut tag, push, create GitHub Release |
+| Release status | `fw release status` | Show current tag and remote state |
 | Scan artifacts | `fw scan` | Scan project artifacts |
 | Search | `fw search` | Full-text search across project |
 | Self audit | `fw self-audit` | Internal audit consistency check |
