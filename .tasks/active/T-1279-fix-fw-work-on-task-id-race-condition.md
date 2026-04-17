@@ -1,0 +1,116 @@
+---
+id: T-1279
+name: "Fix fw work-on / task-create race condition on task-ID allocation"
+description: >
+  agents/task-create/create-task.sh generate_id() reads max_id by scanning
+  .tasks/active and .tasks/completed, then returns max_id+1. No lock between
+  read and write — concurrent invocations all see the same max_id and all
+  allocate the same new ID. Observed during T-1277/T-1278 investigation:
+  four distinct `fw work-on` calls within ~2s all produced `T-1278-*.md`
+  files with id: T-1278 in the frontmatter.
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
+tags: [bug, tooling, race-condition, task-system]
+components:
+  - agents/task-create/create-task.sh
+  - lib/keylock.sh
+related_tasks: [T-1277, T-1278]
+created: 2026-04-17T10:35:00Z
+last_update: 2026-04-17T10:35:00Z
+date_finished: null
+---
+
+# T-1279: Fix fw work-on / task-create race condition on task-ID allocation
+
+## Context
+
+During the T-1277 + T-1278 investigation session, four `fw work-on` calls fired in parallel (one from my explicit command + three from concurrent sessions / autonomous cron triggers). All four produced colliding task files:
+
+```
+T-1278-e2e-test-inception-decide-on-consumer-pr.md    created 2026-04-17T10:16:32Z
+T-1278-e2e-test-inception-decide-on-vendored-co.md    created 2026-04-17T10:16:32Z
+T-1278-fix-inception-decide-on-consumer-project.md    created 2026-04-17T10:16:31Z
+T-1278-fix-unbounded-git-push-in-handover-auto-.md    created 2026-04-17T10:16:33Z
+```
+
+Every file has `id: T-1278` in the YAML frontmatter. Timestamps span ~2 seconds.
+
+Responsible code — `agents/task-create/create-task.sh:111-126`:
+
+```bash
+generate_id() {
+    local max_id=0
+    shopt -s nullglob
+    for f in "$TASKS_DIR"/active/T-*.md "$TASKS_DIR"/completed/T-*.md; do
+        [ -f "$f" ] || continue
+        local id
+        id=$(basename "$f" | grep -oE 'T-[0-9]+' | grep -oE '[0-9]+')
+        if [ -n "$id" ] && [ "$((10#$id))" -gt "$max_id" ]; then
+            max_id=$((10#$id))
+        fi
+    done
+    shopt -u nullglob
+    printf "T-%03d" $((max_id + 1))
+}
+```
+
+Classic TOCTOU — `max_id` is observed, then (much later, after slug generation, path construction, template copy) a file is written. Nothing serialises readers against writers.
+
+## Impact
+
+- **ID collisions** — multiple tasks share the same ID. Downstream tools that assume `T-NNNN` is unique (episodic memory, fabric refs, audit, commit message validation) degrade unpredictably.
+- **Filename collisions avoided only by slug divergence** — if two parallel invocations happened to have the same name, the second `cp` would silently overwrite the first. Data loss possible.
+- **Commit-message enforcement fooled** — `git commit -m "T-1278: …"` matches ANY of four tasks; traceability is compromised.
+- **Episodic memory confusion** — generate-episodic for T-1278 picks up content from whichever file comes first; the other three tasks have no episodic.
+- **Human confusion** — agent or human running `fw task show T-1278` gets unpredictable results depending on which file glob hits first.
+
+Not detected by any existing check (no audit gate, no bats test).
+
+## Why it happens now
+
+Multiple concurrent trigger sources:
+- Autonomous cron agents (`bin/fw` liveness-checks, pickup processing)
+- Cross-session TermLink dispatches calling `fw work-on`
+- User + agent running `fw work-on` in overlapping sessions
+- The ~6-minute `fw work-on` latency (on this repo, partly from RAG context enrichment) widens the race window significantly
+
+## Acceptance Criteria
+
+### Agent
+
+- [ ] `generate_id()` acquires a per-framework lock (via `lib/keylock.sh`) covering the entire read-max → write-file sequence, not just the ID computation
+- [ ] Lock key: `task-id-allocation` (or similar single-key), scope: project-wide
+- [ ] Lock timeout: 10s max wait before erroring out with a clear "task allocation contention, retry" message
+- [ ] Bats test `tests/unit/task_id_race.bats` — spawns 5 parallel `create-task.sh` invocations and asserts 5 distinct IDs
+- [ ] `fw audit` check: detect any two task files sharing the same `id:` frontmatter value; report as FAIL with both paths
+- [ ] Repair tool: `fw task reid T-XXXX --new T-YYYY` — safely renames one of a duplicate pair (update filename + frontmatter + refs)
+- [ ] Clean up the 3 stray T-1278 files from this session: pick real IDs, update frontmatter + filename, commit
+
+### Human
+
+- [ ] [REVIEW] After fix, spawn 10 parallel `fw work-on` with distinct names and verify all get distinct IDs
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework`
+  2. `for i in $(seq 1 10); do bin/fw work-on "race-test-$i" --type build & done; wait`
+  3. `ls .tasks/active/T-*race-test*.md | awk '{print $NF}' | grep -oE 'T-[0-9]+' | sort -u | wc -l`
+  **Expected:** output is `10` (ten distinct IDs).
+  **If not:** capture which IDs collided and reopen task.
+
+## Verification
+
+# Must pass before work-completed
+bats tests/unit/task_id_race.bats
+grep -q 'keylock_acquire.*task-id' agents/task-create/create-task.sh
+bin/fw audit 2>&1 | grep -v 'duplicate task id' > /dev/null
+
+## Decisions
+
+<!-- Record when choosing between alternatives -->
+
+## Updates
+
+### 2026-04-17T10:35:00Z — task-created [manual]
+- **Action:** Created T-1279 directly (not via fw work-on — would've raced with itself)
+- **Context:** Discovered during T-1277/T-1278 investigation. See docs… er, .context/working/observations/issue-report-fw-work-on-id-race.md.
