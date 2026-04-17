@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-17T16:48:04Z
-last_update: 2026-04-17T16:51:01Z
+last_update: 2026-04-17T16:53:36Z
 date_finished: null
 ---
 
@@ -69,9 +69,9 @@ identity endpoint, multi-Watchtower coordination (one-per-project vs shared).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Problem statement validated
-- [ ] Assumptions tested
-- [ ] Recommendation written with rationale
+- [x] Problem statement validated
+- [x] Assumptions tested
+- [x] Recommendation written with rationale
 
 ### Human
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
@@ -139,7 +139,30 @@ See: docs/reports/T-1284-watchtower-port-discovery-redesign.md
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The current `_watchtower_url` port discovery fails Reliability 
+(silent wrong answer observed) and Antifragility (any sibling Python service 
+can masquerade). The 3-layer redesign (PID/port/URL triple → identity 
+handshake → fail-loud) restores all four directives. Scope is bounded into 
+6 build units, each under one session. Fix is reversible (current function 
+is the only caller surface).
+
+Evidence:
+- Reproduced regression live: `fw task review T-1283` returned `:8080` when 
+  Watchtower was on `:3000` and the :8080 service is unrelated (see artifact)
+- :8080 returned 200 for `/inception/T-1283` because it's a catch-all — no 
+  identity check would pass it as Watchtower
+- Three fallback layers in current function can all converge on wrong service; 
+  single-source-of-truth (PID triple) eliminates ambiguity
+- Pattern (identity handshake) is reusable for any future framework service
+- Full scoring of current vs proposed against four directives in the artifact
+
+See: docs/reports/T-1284-watchtower-port-discovery-redesign.md
+
+**Date**: 2026-04-17T19:21:20Z
 
 ## Updates
 
@@ -148,3 +171,51 @@ See: docs/reports/T-1284-watchtower-port-discovery-redesign.md
 
 ### 2026-04-17T16:51:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-04-17T19:20:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The current `_watchtower_url` port discovery fails Reliability 
+(silent wrong answer observed) and Antifragility (any sibling Python service 
+can masquerade). The 3-layer redesign (PID/port/URL triple → identity 
+handshake → fail-loud) restores all four directives. Scope is bounded into 
+6 build units, each under one session. Fix is reversible (current function 
+is the only caller surface).
+
+Evidence:
+- Reproduced regression live: `fw task review T-1283` returned `:8080` when 
+  Watchtower was on `:3000` and the :8080 service is unrelated (see artifact)
+- :8080 returned 200 for `/inception/T-1283` because it's a catch-all — no 
+  identity check would pass it as Watchtower
+- Three fallback layers in current function can all converge on wrong service; 
+  single-source-of-truth (PID triple) eliminates ambiguity
+- Pattern (identity handshake) is reusable for any future framework service
+- Full scoring of current vs proposed against four directives in the artifact
+
+See: docs/reports/T-1284-watchtower-port-discovery-redesign.md
+
+### 2026-04-17T19:21:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The current `_watchtower_url` port discovery fails Reliability 
+(silent wrong answer observed) and Antifragility (any sibling Python service 
+can masquerade). The 3-layer redesign (PID/port/URL triple → identity 
+handshake → fail-loud) restores all four directives. Scope is bounded into 
+6 build units, each under one session. Fix is reversible (current function 
+is the only caller surface).
+
+Evidence:
+- Reproduced regression live: `fw task review T-1283` returned `:8080` when 
+  Watchtower was on `:3000` and the :8080 service is unrelated (see artifact)
+- :8080 returned 200 for `/inception/T-1283` because it's a catch-all — no 
+  identity check would pass it as Watchtower
+- Three fallback layers in current function can all converge on wrong service; 
+  single-source-of-truth (PID triple) eliminates ambiguity
+- Pattern (identity handshake) is reusable for any future framework service
+- Full scoring of current vs proposed against four directives in the artifact
+
+See: docs/reports/T-1284-watchtower-port-discovery-redesign.md

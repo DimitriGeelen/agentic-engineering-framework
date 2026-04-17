@@ -17,6 +17,7 @@ Environment:
 """
 
 import argparse
+import datetime
 import logging
 import os
 import secrets
@@ -286,6 +287,21 @@ def create_app() -> Flask:
 
         code = 200 if healthy else 503
         return jsonify(result), code
+
+    # -------------------------------------------------------------------
+    # Identity endpoint (T-1284 B1)
+    # -------------------------------------------------------------------
+
+    _started_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    @app.route("/api/_identity")
+    def identity():
+        return jsonify({
+            "service": "watchtower",
+            "version": _ver,
+            "project_root": str(PROJECT_ROOT),
+            "started_at": _started_at,
+        })
 
     # -------------------------------------------------------------------
     # Error handlers
