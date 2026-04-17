@@ -879,6 +879,33 @@ else:
         fi
     fi
 
+    # Check: Watchtower discovery triple (T-1292 / T-1284 B4)
+    local _wt_pid_f="$PROJECT_ROOT/.context/working/watchtower.pid"
+    local _wt_url_f="$PROJECT_ROOT/.context/working/watchtower.url"
+    if [ -f "$_wt_pid_f" ] || [ -f "$_wt_url_f" ]; then
+        local _wt_pid _wt_url
+        _wt_pid=$(cat "$_wt_pid_f" 2>/dev/null | tr -d '[:space:]')
+        _wt_url=$(cat "$_wt_url_f" 2>/dev/null | tr -d '[:space:]')
+        if [ -n "$_wt_pid" ] && kill -0 "$_wt_pid" 2>/dev/null && [ -n "$_wt_url" ]; then
+            local _wt_ident
+            _wt_ident=$(curl -sf --max-time 2 "$_wt_url/api/_identity" 2>/dev/null || echo "")
+            if [ -n "$_wt_ident" ] && echo "$_wt_ident" | grep -q "\"service\"[[:space:]]*:[[:space:]]*\"watchtower\"" \
+                && echo "$_wt_ident" | grep -q "\"project_root\"[[:space:]]*:[[:space:]]*\"$PROJECT_ROOT\""; then
+                echo -e "  ${GREEN}OK${NC}  Watchtower running ($_wt_url, pid $_wt_pid)"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  Watchtower triple present but identity mismatch or endpoint down"
+                echo -e "         Run: bin/watchtower.sh restart"
+                warnings=$((warnings + 1))
+            fi
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Stale Watchtower triple (pid $_wt_pid not running)"
+            echo -e "         Run: bin/watchtower.sh stop && bin/watchtower.sh start"
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
+    fi
+
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
     if [ -f "$settings_file" ]; then
         local hook_result
